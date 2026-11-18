@@ -1,42 +1,61 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 -- | The display of generation: progress and its outcome stay until dismissed.
-module Xynolog.State.Yield
-  ( YieldStateUnit, newYieldStateUnit, isGenerating, progress, outcome, failure, jobId, generate, dismissProgress, dispose ) where
+module Xynolog.State.Yield (YieldStateUnit, newYieldStateUnit, isGenerating, progress, outcome, failure, jobId, generate, dismissProgress, dispose) where
 
 import Control.Concurrent.STM
-import Control.Exception (SomeException, catches, Handler(..), finally, toException)
-import Control.Monad (unless, when, void)
+import Control.Exception (Handler (..), SomeException, catches, finally, toException)
+import Control.Monad (unless, void, when)
 import Control.Monad.IO.Class (liftIO)
 import Data.Scientific (Scientific)
 import Data.Text (Text)
-import qualified Data.Text as Text
-import qualified Xynolog.Client as Client
-import qualified Xynolog.Delegation as Delegation
-import qualified Xynolog.ErrorCodes as Code
+import Data.Text qualified as Text
+import Streaming.Prelude qualified as Stream
+import Xynolog.Client qualified as Client
+import Xynolog.Delegation qualified as Delegation
+import Xynolog.ErrorCodes qualified as Code
 import Xynolog.Errors (BusRequestError, TransportError)
-import qualified Xynolog.Internal.StateTasks as Tasks
-import qualified Xynolog.Internal.StateValue as State
-import qualified Xynolog.Running as Running
-import qualified Xynolog.Yield as Yield
+import Xynolog.Internal.StateTasks qualified as Tasks
+import Xynolog.Internal.StateValue qualified as State
+import Xynolog.Running qualified as Running
 import Xynolog.Types
-import qualified Streaming.Prelude as Stream
+import Xynolog.Yield qualified as Yield
 
-data YieldStateUnit = YieldStateUnit Tasks.Tasks Client.Client Text
-  (State.StateValue Bool) (State.StateValue (Maybe JobProgress)) (State.StateValue (Maybe YieldJobDone))
-  (State.StateValue (Maybe SomeException)) (State.StateValue (Maybe JobId))
+data YieldStateUnit
+  = YieldStateUnit
+      Tasks.Tasks
+      Client.Client
+      Text
+      (State.StateValue Bool)
+      (State.StateValue (Maybe JobProgress))
+      (State.StateValue (Maybe YieldJobDone))
+      (State.StateValue (Maybe SomeException))
+      (State.StateValue (Maybe JobId))
+
 newYieldStateUnit :: Client.Client -> Text -> IO YieldStateUnit
 newYieldStateUnit client locale = do
   tasks <- Tasks.newTasks "yield state unit is closed"
-  atomically (YieldStateUnit tasks client locale <$> State.newStateValue False <*> State.newStateValue Nothing
-    <*> State.newStateValue Nothing <*> State.newStateValue Nothing <*> State.newStateValue Nothing)
+  atomically
+    ( YieldStateUnit tasks client locale
+        <$> State.newStateValue False
+        <*> State.newStateValue Nothing
+        <*> State.newStateValue Nothing
+        <*> State.newStateValue Nothing
+        <*> State.newStateValue Nothing
+    )
+
 isGenerating :: YieldStateUnit -> State.StateValue Bool
 isGenerating (YieldStateUnit _ _ _ value _ _ _ _) = value
+
 progress :: YieldStateUnit -> State.StateValue (Maybe JobProgress)
 progress (YieldStateUnit _ _ _ _ value _ _ _) = value
+
 outcome :: YieldStateUnit -> State.StateValue (Maybe YieldJobDone)
 outcome (YieldStateUnit _ _ _ _ _ value _ _) = value
+
 failure :: YieldStateUnit -> State.StateValue (Maybe SomeException)
 failure (YieldStateUnit _ _ _ _ _ _ value _) = value
+
 jobId :: YieldStateUnit -> State.StateValue (Maybe JobId)
 jobId (YieldStateUnit _ _ _ _ _ _ _ value) = value
 
@@ -48,9 +67,9 @@ generate unit@(YieldStateUnit tasks client locale _ _ _ _ _) params deadline = d
     pure (not over)
   when accepted $ Tasks.submit tasks $ \acceptedJob -> do
     created <- newTVarIO Nothing
-    let selected=params {generationJobParamsLanguage=case generationJobParamsLanguage params of Nothing->Just locale; Just value | Text.null value->Just locale; other->other}
+    let selected = params {generationJobParamsLanguage = case generationJobParamsLanguage params of Nothing -> Just locale; Just value | Text.null value -> Just locale; other -> other}
         report event = do
-          case event of Delegation.Created _ -> acceptedJob; _ -> pure ()
+          case event of { Delegation.Created _ -> acceptedJob; _ -> pure () }
           atomically $ case event of
             Delegation.Created value -> writeTVar created (Just (jobCreatedResultResponseJobId value)) >> State.update (jobId unit) (Just (jobCreatedResultResponseJobId value))
             Delegation.Progress value -> State.update (progress unit) (Just value) >> State.update (isGenerating unit) True
@@ -63,20 +82,25 @@ generate unit@(YieldStateUnit tasks client locale _ _ _ _ _) params deadline = d
         failed problem cancelled = atomically $ do
           State.update (failure unit) (Just problem)
           unless cancelled (State.update (progress unit) Nothing)
-    work `catches`
-      [Handler (\problem -> failed (toException problem) (Delegation.jobErrorCode problem==Code.JobCancelled))
-      ,Handler (\problem -> failed (toException (problem::BusRequestError)) False)
-      ,Handler (\problem -> failed (toException (problem::TransportError)) False)]
+    work
+      `catches` [ Handler (\problem -> failed (toException problem) (Delegation.jobErrorCode problem == Code.JobCancelled)),
+                  Handler (\problem -> failed (toException (problem :: BusRequestError)) False),
+                  Handler (\problem -> failed (toException (problem :: TransportError)) False)
+                ]
     atomically $ do
       State.update (isGenerating unit) False
       ours <- readTVar created
       current <- State.current (jobId unit)
-      when (ours/=Nothing && ours==current) (State.update (jobId unit) Nothing)
+      when (ours /= Nothing && ours == current) (State.update (jobId unit) Nothing)
 
 clear :: YieldStateUnit -> STM ()
 clear unit = State.update (progress unit) Nothing >> State.update (outcome unit) Nothing >> State.update (failure unit) Nothing
+
 dismissProgress :: YieldStateUnit -> STM ()
 dismissProgress unit@(YieldStateUnit tasks _ _ _ _ _ _ _) = Tasks.closed tasks >>= \over -> unless over (clear unit)
+
 dispose :: YieldStateUnit -> IO ()
-dispose unit@(YieldStateUnit tasks _ _ _ _ _ _ _) = Tasks.dispose tasks `finally` atomically
-  (State.complete (isGenerating unit) >> State.complete (progress unit) >> State.complete (outcome unit) >> State.complete (failure unit) >> State.complete (jobId unit))
+dispose unit@(YieldStateUnit tasks _ _ _ _ _ _ _) =
+  Tasks.dispose tasks
+    `finally` atomically
+      (State.complete (isGenerating unit) >> State.complete (progress unit) >> State.complete (outcome unit) >> State.complete (failure unit) >> State.complete (jobId unit))

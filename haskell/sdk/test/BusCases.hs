@@ -4,29 +4,29 @@ module BusCases (busCases) where
 
 import Control.Concurrent.Async (async, cancel, wait)
 import Control.Concurrent.STM
-import Control.Exception (AsyncException(UserInterrupt), bracket, finally, throwIO, try)
+import Control.Exception (AsyncException (UserInterrupt), bracket, finally, throwIO, try)
 import Control.Monad (unless)
-import Data.Aeson (Value(..), toJSON)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.Set as Set
-import qualified Data.Text as Text
-import qualified OpenTelemetry.Context as Context
-import OpenTelemetry.Context.ThreadLocal (getContext, attachContext, detachContext)
-import qualified Xynolog.Internal.Running as Running
-import qualified Xynolog.Bus as Bus
+import Data.Aeson (Value (..), toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.Set qualified as Set
+import Data.Text qualified as Text
+import OpenTelemetry.Context qualified as Context
+import OpenTelemetry.Context.ThreadLocal (attachContext, detachContext, getContext)
+import Streaming (Of, Stream)
+import Streaming.Prelude qualified as Stream
+import System.Timeout (timeout)
+import Xynolog.Bus qualified as Bus
 import Xynolog.Channels
-import qualified Xynolog.ErrorCodes as Code
+import Xynolog.ErrorCodes qualified as Code
 import Xynolog.Errors
-import qualified Xynolog.EventBus as Local
-import qualified Xynolog.StateValue as State
-import qualified Xynolog.Timing as Timing
-import qualified Xynolog.Transport as Transport
+import Xynolog.EventBus qualified as Local
+import Xynolog.Internal.Running qualified as Running
+import Xynolog.StateValue qualified as State
+import Xynolog.Timing qualified as Timing
+import Xynolog.Transport qualified as Transport
 import Xynolog.Transport.Facts (traceField, userField)
 import Xynolog.Types
-import Streaming (Of, Stream)
-import qualified Streaming.Prelude as Stream
-import System.Timeout (timeout)
 
 require :: String -> Bool -> IO ()
 require label good = unless good (ioError (userError label))
@@ -48,23 +48,26 @@ unreported input observations = do
   require "a refused reply was published to the transport's failure report" (noticed == [marker])
 
 rig :: (BusFrame -> IO (Maybe Integer)) -> IO () -> (Transport.Transport -> Transport.TransportInput -> IO result) -> IO result
-rig send shutdown action = bracket
-  (Transport.newTransport (Transport.TransportOptions "local://haskell" (Set.fromList channelNames) send shutdown))
-  (Transport.dispose . fst) (uncurry action)
+rig send shutdown action =
+  bracket
+    (Transport.newTransport (Transport.TransportOptions "local://haskell" (Set.fromList channelNames) send shutdown))
+    (Transport.dispose . fst)
+    (uncurry action)
 
 requestOptions :: TVar Integer -> TQueue Integer -> IO Bus.BusOptions
 requestOptions clock waits = do
   ids <- newTVarIO (0 :: Integer)
-  pure Bus.BusOptions
-    { Bus.requestNow = readTVarIO clock
-    , Bus.requestWaitUntil = \deadline -> do
-        atomically (writeTQueue waits deadline)
-        atomically (readTVar clock >>= check . (>= deadline))
-    , Bus.nextCorrelationId = atomically $ do
-        modifyTVar' ids (+ 1)
-        number <- readTVar ids
-        pure ("request-" <> Text.pack (show number))
-    }
+  pure
+    Bus.BusOptions
+      { Bus.requestNow = readTVarIO clock,
+        Bus.requestWaitUntil = \deadline -> do
+          atomically (writeTQueue waits deadline)
+          atomically (readTVar clock >>= check . (>= deadline)),
+        Bus.nextCorrelationId = atomically $ do
+          modifyTVar' ids (+ 1)
+          number <- readTVar ids
+          pure ("request-" <> Text.pack (show number))
+      }
 
 -- | Each failure row: the code a peer's failure states, the code its request fails with, and the code the failure is
 -- read with.
@@ -78,51 +81,66 @@ requestFailures :: FrameAddEntityTypeCommand -> BrowseResourceRequest -> [(Maybe
 requestFailures command browse failureRows = do
   let operation = FrameAddEntityTypeOperation
       (_, _, failure) = operationChannels operation
-      failureWith code = KM.fromList (("message", String "peer refused") : ("details", String "preserved")
-        : maybe [] (\value -> [("code", String value)]) code)
-  mapM_ (\(stated, expected, readCode) -> do
-    inputCell <- newEmptyTMVarIO
-    let payload = failureWith stated
-        send frame = do
-          input <- atomically (readTMVar inputCell)
-          Transport.receive input (BusFrame (channelName failure) (busFrameCorrelationId frame) (BusFramePayload payload) Nothing)
-          pure Nothing
-    rig send (pure ()) $ \transport input -> do
-      atomically (putTMVar inputCell input)
-      ready input
-      clock <- newTVarIO 0
-      waits <- newTQueueIO
-      options <- requestOptions clock waits
-      outcome <- try (Bus.request (Bus.newBus options transport) operation command Timing.busRequestTimeoutMs) :: IO (Either BusRequestError EmptyBusPayload)
-      case outcome of
-        Left problem -> require "peer failure lost its code, its words, or the failure as read"
-          (busRequestErrorCode problem == expected && busRequestErrorMessage problem == "peer refused" && busRequestFailure problem == Just (failureWith readCode))
-        Right _ -> ioError (userError "failure reply became a successful result")) failureRows
+      failureWith code =
+        KM.fromList
+          ( ("message", String "peer refused")
+              : ("details", String "preserved")
+              : maybe [] (\value -> [("code", String value)]) code
+          )
+  mapM_
+    ( \(stated, expected, readCode) -> do
+        inputCell <- newEmptyTMVarIO
+        let payload = failureWith stated
+            send frame = do
+              input <- atomically (readTMVar inputCell)
+              Transport.receive input (BusFrame (channelName failure) (busFrameCorrelationId frame) (BusFramePayload payload) Nothing)
+              pure Nothing
+        rig send (pure ()) $ \transport input -> do
+          atomically (putTMVar inputCell input)
+          ready input
+          clock <- newTVarIO 0
+          waits <- newTQueueIO
+          options <- requestOptions clock waits
+          outcome <- try (Bus.request (Bus.newBus options transport) operation command Timing.busRequestTimeoutMs) :: IO (Either BusRequestError EmptyBusPayload)
+          case outcome of
+            Left problem ->
+              require
+                "peer failure lost its code, its words, or the failure as read"
+                (busRequestErrorCode problem == expected && busRequestErrorMessage problem == "peer refused" && busRequestFailure problem == Just (failureWith readCode))
+            Right _ -> ioError (userError "failure reply became a successful result")
+    )
+    failureRows
   -- A failure that is not its channel's is refused, naming its first fault, and is never given words.
   -- It is told to the request awaiting it, and the transport's failure report carries nothing.
-  mapM_ (\(payload, said) -> do
-    inputCell <- newEmptyTMVarIO
-    let send frame = do
-          input <- atomically (readTMVar inputCell)
-          Transport.receive input (BusFrame (channelName failure) (busFrameCorrelationId frame) (BusFramePayload payload) Nothing)
-          pure Nothing
-    rig send (pure ()) $ \transport input -> do
-      atomically (putTMVar inputCell input)
-      ready input
-      clock <- newTVarIO 0
-      waits <- newTQueueIO
-      options <- requestOptions clock waits
-      Transport.errors transport $ \observations -> do
-        outcome <- try (Bus.request (Bus.newBus options transport) operation command Timing.busRequestTimeoutMs) :: IO (Either TransportError EmptyBusPayload)
-        case outcome of
-          Left problem -> require ("a failure that is not its channel's was not refused as " ++ Text.unpack said)
-            (transportErrorCode problem == Code.TransportError
-              && transportErrorMessage problem == "a payload on " <> channelName failure <> " is not that channel's: " <> said)
-          Right _ -> ioError (userError "a failure that is not its channel's became a successful result")
-        unreported input observations)
-    [ (KM.empty, "it has no `message`")
-    , (KM.fromList [("code", String "not-found")], "it has no `message`")
-    , (KM.fromList [("message", String "peer refused"), ("code", Number 7)], "its `code` is malformed") ]
+  mapM_
+    ( \(payload, said) -> do
+        inputCell <- newEmptyTMVarIO
+        let send frame = do
+              input <- atomically (readTMVar inputCell)
+              Transport.receive input (BusFrame (channelName failure) (busFrameCorrelationId frame) (BusFramePayload payload) Nothing)
+              pure Nothing
+        rig send (pure ()) $ \transport input -> do
+          atomically (putTMVar inputCell input)
+          ready input
+          clock <- newTVarIO 0
+          waits <- newTQueueIO
+          options <- requestOptions clock waits
+          Transport.errors transport $ \observations -> do
+            outcome <- try (Bus.request (Bus.newBus options transport) operation command Timing.busRequestTimeoutMs) :: IO (Either TransportError EmptyBusPayload)
+            case outcome of
+              Left problem ->
+                require
+                  ("a failure that is not its channel's was not refused as " ++ Text.unpack said)
+                  ( transportErrorCode problem == Code.TransportError
+                      && transportErrorMessage problem == "a payload on " <> channelName failure <> " is not that channel's: " <> said
+                  )
+              Right _ -> ioError (userError "a failure that is not its channel's became a successful result")
+            unreported input observations
+    )
+    [ (KM.empty, "it has no `message`"),
+      (KM.fromList [("code", String "not-found")], "it has no `message`"),
+      (KM.fromList [("message", String "peer refused"), ("code", Number 7)], "its `code` is malformed")
+    ]
   -- A malformed result is an error at the typed boundary, told to the request awaiting it alone.
   inputCell <- newEmptyTMVarIO
   let (_, result, _) = operationChannels BrowseResourceRequestedOperation
@@ -142,9 +160,17 @@ requestFailures command browse failureRows = do
         Left problem -> require "malformed result did not name its missing member" (transportErrorCode problem == Code.TransportError && Text.isInfixOf "it has no `response`" (transportErrorMessage problem))
         Right _ -> ioError (userError "malformed result was accepted")
       unreported input observations
-  bracket (Transport.newTransport (Transport.TransportOptions "local://unsubscribed" Set.empty
-    (const (ioError (userError "unsubscribed request emitted"))) (pure ())))
-    (Transport.dispose . fst) $ \(transport, _) -> do
+  bracket
+    ( Transport.newTransport
+        ( Transport.TransportOptions
+            "local://unsubscribed"
+            Set.empty
+            (const (ioError (userError "unsubscribed request emitted")))
+            (pure ())
+        )
+    )
+    (Transport.dispose . fst)
+    $ \(transport, _) -> do
       clock <- newTVarIO 0
       waits <- newTQueueIO
       options <- requestOptions clock waits
@@ -155,7 +181,7 @@ requestFailures command browse failureRows = do
     clock <- newTVarIO 0
     waits <- newTQueueIO
     options <- requestOptions clock waits
-    let invalid = options { Bus.nextCorrelationId = pure "" }
+    let invalid = options {Bus.nextCorrelationId = pure ""}
     outcome <- try (Bus.request (Bus.newBus invalid transport) operation command Timing.busRequestTimeoutMs) :: IO (Either TransportError EmptyBusPayload)
     require "invalid correlation was not refused" (fmap transportErrorCode (either Just (const Nothing) outcome) == Just Code.TransportError)
     (_, _, pending, _) <- atomically (Transport.subscriptions input)
@@ -166,7 +192,7 @@ requestFailures command browse failureRows = do
     clock <- newTVarIO 0
     waits <- newTQueueIO
     options <- requestOptions clock waits
-    let repeated = options { Bus.nextCorrelationId = pure "same-correlation" }
+    let repeated = options {Bus.nextCorrelationId = pure "same-correlation"}
         bus = Bus.newBus repeated transport
     first <- async (Bus.request bus operation command Timing.busRequestTimeoutMs)
     atomically (takeTMVar sent)
@@ -215,7 +241,8 @@ requests command = do
       answer <- wait worker
       seen <- Stream.toList_ (Stream.take 2 observations)
       require "typed request returned the wrong result" (answer == EmptyBusPayload)
-      require "a duplicate bridge duplicated a raw frame, or the continuation overtook it"
+      require
+        "a duplicate bridge duplicated a raw frame, or the continuation overtook it"
         (map Transport.carriedCorrelationId seen == [Just "request-1", Nothing])
       (_, _, pending, _) <- atomically (Transport.subscriptions input)
       require "settled request remained tracked" (null pending)
@@ -350,8 +377,10 @@ lifecycle = do
   entered <- newEmptyTMVarIO
   finish <- newEmptyTMVarIO
   shutdowns <- newTVarIO (0 :: Int)
-  rig (const (pure Nothing))
-    (atomically (modifyTVar' shutdowns (+ 1) >> putTMVar entered ()) >> atomically (takeTMVar finish)) $ \transport _ -> do
+  rig
+    (const (pure Nothing))
+    (atomically (modifyTVar' shutdowns (+ 1) >> putTMVar entered ()) >> atomically (takeTMVar finish))
+    $ \transport _ -> do
       first <- async (Transport.dispose transport)
       atomically (takeTMVar entered)
       cancel first
@@ -369,8 +398,10 @@ lifecycle = do
   -- teardown must not publish another failure into the still-open queue.
   shuttingDown <- newEmptyTMVarIO
   finishClose <- newEmptyTMVarIO
-  rig (const (pure Nothing))
-    (atomically (putTMVar shuttingDown ()) >> atomically (takeTMVar finishClose)) $ \transport input ->
+  rig
+    (const (pure Nothing))
+    (atomically (putTMVar shuttingDown ()) >> atomically (takeTMVar finishClose))
+    $ \transport input ->
       Transport.errors transport $ \observations -> do
         closer <- async (Transport.dispose transport)
         atomically (takeTMVar shuttingDown)
@@ -388,8 +419,10 @@ lifecycle = do
 keptForFirstReader :: IO ()
 keptForFirstReader = do
   let beyond = 3
-      met = [TransportError Code.TransportUnavailable (Text.pack ("request " <> show serial <> " unanswered")) Nothing Nothing
-        | serial <- [1 .. fromInteger Timing.errorsKeptForFirstReaderCount + beyond]]
+      met =
+        [ TransportError Code.TransportUnavailable (Text.pack ("request " <> show serial <> " unanswered")) Nothing Nothing
+        | serial <- [1 .. fromInteger Timing.errorsKeptForFirstReaderCount + beyond]
+        ]
       later = TransportError Code.TransportUnavailable "met once the first reader came" Nothing Nothing
   rig (const (pure Nothing)) (pure ()) $ \transport input -> do
     mapM_ (Transport.reportError input) met
@@ -397,7 +430,8 @@ keptForFirstReader = do
       Transport.reportError input later
       Transport.dispose transport
       (,) <$> Stream.toList_ firstReader <*> Stream.toList_ secondReader
-    require "the first reader was not given the latest the transport met before it came, in order, and then what came after"
+    require
+      "the first reader was not given the latest the transport met before it came, in order, and then what came after"
       (first == drop beyond met <> [later])
     require "a reader after the first was given what was kept for the first" (second == [later])
   rig (const (pure Nothing)) (pure ()) $ \transport input -> do

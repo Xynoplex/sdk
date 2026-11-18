@@ -4,9 +4,9 @@
    accepts or refuses. A kind's required shape is a string and its pattern,
    and nothing else, or the module would not hold all its schema says. *)
 
-let string = Text.ocaml_quoted
+module O = Ocaml_syntax
 
-let header =
+let banner =
   Banner.ocaml
     ~from_:
       "protocol/specs/src/identifiers/kinds.json and the kinds' required shapes"
@@ -61,45 +61,58 @@ let files (spec : Spec.t) (shapes : (string * Required.Shape.shape) list) =
       kinds
   in
   let step (s : Required.Shape.step) =
-    Printf.sprintf "([%s], %d, %s)"
-      (String.concat "; "
-         (List.map (fun (a, b) -> Printf.sprintf "(%d, %d)" a b) s.of_))
-      s.min
-      (match s.max with None -> "None" | Some m -> Printf.sprintf "Some %d" m)
+    O.tuple
+      [
+        O.list (List.map (fun (a, b) -> O.tuple [ O.int a; O.int b ]) s.of_);
+        O.int s.min;
+        (match s.max with None -> O.none | Some m -> O.some (O.int m));
+      ]
   in
+  let value = O.ident "value" in
+  let t = O.type_ "t" and string = O.type_ "string" in
   let implementation ((k : Tables.Identifiers_kinds.kind), name, steps) =
-    Printf.sprintf
-      "module %s = struct\n\
-      \  type t = string\n\
-      \  let of_string value =\n\
-      \    if Pattern.matches [%s] value then Ok value\n\
-      \    else Error %s\n\
-      \  let to_string value = value\n\
-      \  let compare = String.compare\n\
-      \  let equal = String.equal\n\
-       end\n"
-      name
-      (String.concat "; " (List.map step steps))
-      (string ("Invalid " ^ k.schema))
+    O.module_ name
+      [
+        O.type_item (O.type_declaration "t" Abstract ~manifest:string);
+        O.let_ "of_string"
+          (O.fun_
+             [ O.Pattern.var "value" ]
+             (O.if_
+                (O.apply
+                   (O.ident "Pattern.matches")
+                   [ O.list (List.map step steps); value ])
+                (O.construct "Ok" ~arg:value)
+                (O.construct "Error" ~arg:(O.string ("Invalid " ^ k.schema)))));
+        O.let_ "to_string" (O.fun_ [ O.Pattern.var "value" ] value);
+        O.let_ "compare" (O.ident "String.compare");
+        O.let_ "equal" (O.ident "String.equal");
+      ]
   in
   let signature (_, name, _) =
-    Printf.sprintf
-      "module %s : sig\n\
-      \  type t\n\
-      \  val of_string : string -> (t, string) result\n\
-      \  val to_string : t -> string\n\
-      \  val compare : t -> t -> int\n\
-      \  val equal : t -> t -> bool\n\
-       end\n"
-      name
+    O.module_spec name
+      [
+        O.type_spec (O.type_declaration "t" Abstract);
+        O.val_ "of_string"
+          (O.arrow string (O.type_ "result" ~args:[ t; string ]));
+        O.val_ "to_string" (O.arrow t string);
+        O.val_ "compare" (O.arrow t (O.arrow t (O.type_ "int")));
+        O.val_ "equal" (O.arrow t (O.arrow t (O.type_ "bool")));
+      ]
   in
   let tests ((k : Tables.Identifiers_kinds.kind), name, _) =
     let case accepted (id, why) =
-      Printf.sprintf
-        "  Alcotest.(check bool) %s %b\n\
-        \    (Result.is_ok (Xynolog.Identifiers.%s.of_string %s));"
-        (string (k.schema ^ ": " ^ why))
-        accepted name (string id)
+      O.apply (O.ident "Alcotest.check")
+        [
+          O.ident "Alcotest.bool";
+          O.string (k.schema ^ ": " ^ why);
+          O.bool accepted;
+          O.apply (O.ident "Result.is_ok")
+            [
+              O.apply
+                (O.ident ("Xynolog.Identifiers." ^ name ^ ".of_string"))
+                [ O.string id ];
+            ];
+        ]
     in
     List.map (case true)
       (List.map
@@ -114,20 +127,14 @@ let files (spec : Spec.t) (shapes : (string * Required.Shape.shape) list) =
   | [] ->
       Ok
         [
-          {
-            Output.path = "ocaml/sdk/lib/identifiers.ml";
-            text = header ^ String.concat "\n" (List.map implementation modules);
-          };
-          {
-            Output.path = "ocaml/sdk/lib/identifiers.mli";
-            text = header ^ String.concat "\n" (List.map signature modules);
-          };
-          {
-            Output.path = "ocaml/sdk/test/identifiers.ml";
-            text =
-              header ^ "let () =\n"
-              ^ String.concat "\n" (List.concat_map tests modules)
-              ^ "\n  ()\n";
-          };
+          O.implementation ~path:"ocaml/sdk/lib/identifiers.ml" ~banner
+            (List.map implementation modules);
+          O.interface ~path:"ocaml/sdk/lib/identifiers.mli" ~banner
+            (List.map signature modules);
+          O.implementation ~path:"ocaml/sdk/test/identifiers.ml" ~banner
+            [
+              O.let_unit
+                (O.sequence (List.concat_map tests modules @ [ O.unit ]));
+            ];
         ]
   | errors -> Error (List.rev errors)

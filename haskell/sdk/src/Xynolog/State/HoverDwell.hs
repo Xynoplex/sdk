@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 -- | Hover after a pointer rests; leaving cancels that rest. Time and waits
 -- belong to the caller, and disposal joins the callback in flight.
 module Xynolog.State.HoverDwell (HoverDwell, newHoverDwell, enter, leave, dispose) where
@@ -7,11 +8,12 @@ import Control.Concurrent.Async (race)
 import Control.Concurrent.STM
 import Control.Monad (unless, void, when)
 import OpenTelemetry.Context.ThreadLocal.Propagation (propagateContext)
-import qualified Xynolog.Internal.StateTasks as Tasks
-import Xynolog.Retry (RetryOptions(..))
+import Xynolog.Internal.StateTasks qualified as Tasks
+import Xynolog.Retry (RetryOptions (..))
 import Xynolog.Types (AnnotationId)
 
 data Command = Enter AnnotationId Integer (IO ()) | Leave (IO ())
+
 data HoverDwell = HoverDwell Tasks.Tasks RetryOptions Integer (TQueue Command) (Maybe AnnotationId -> IO ())
 
 newHoverDwell :: RetryOptions -> Integer -> (Maybe AnnotationId -> IO ()) -> IO HoverDwell

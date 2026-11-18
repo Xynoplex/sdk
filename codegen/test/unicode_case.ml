@@ -219,13 +219,13 @@ let haskell =
           "module"
           "module Xynolog.Internal.Generated.UnicodeCase (lowercase, \
            finalLowercase, casedRanges, caseIgnorableRanges, whiteSpaceRanges) \
-           where\n\
+           where\n\n\
            import Data.Char (chr)\n\
-           import qualified Data.IntMap.Strict as Map\n\
+           import Data.IntMap.Strict qualified as Map\n\n\
            lowercase, finalLowercase :: Map.IntMap String\n\
            lowercase = Map.fromDistinctAscList [(65, [chr 97]), (304, [chr \
            105, chr 775])]\n\
-           finalLowercase = Map.fromDistinctAscList [(931, [chr 962])]\n\
+           finalLowercase = Map.fromDistinctAscList [(931, [chr 962])]\n\n\
            casedRanges, caseIgnorableRanges, whiteSpaceRanges :: [(Int, Int)]\n\
            casedRanges = [(65, 90)]\n\
            caseIgnorableRanges = [(39, 39)]\n\

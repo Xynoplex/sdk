@@ -1,12 +1,11 @@
 (* Generated from OpenAPI component schemas through codegen/lib/required/shape.ml. Do not edit.
    Regenerate: make generate (codegen/lib/required/ocaml.ml) *)
 
-[@@@ocamlformat "disable"]
-
 type 'schema t
 type 'schema descriptor
 type fault = { member : string; reason : [ `Lacks | `Malformed ] }
 type decode_error = Invalid_json of string | Invalid_payload of fault
+
 val decode : 'schema descriptor -> string -> ('schema t, decode_error) result
 val encode : 'schema t -> string
 val json : 'schema t -> Yojson.Raw.t
@@ -27,7 +26,10 @@ val annotation : [ `Annotation ] descriptor
 val annotation_added_payload : [ `AnnotationAddedPayload ] descriptor
 val annotation_bodies : [ `AnnotationBodies ] descriptor
 val annotation_body : [ `AnnotationBody ] descriptor
-val annotation_body_updated_payload : [ `AnnotationBodyUpdatedPayload ] descriptor
+
+val annotation_body_updated_payload :
+  [ `AnnotationBodyUpdatedPayload ] descriptor
+
 val annotation_id : [ `AnnotationId ] descriptor
 val annotation_removed_payload : [ `AnnotationRemovedPayload ] descriptor
 val annotation_selector : [ `AnnotationSelector ] descriptor
@@ -51,18 +53,29 @@ val body_operation_add : [ `BodyOperationAdd ] descriptor
 val body_operation_remove : [ `BodyOperationRemove ] descriptor
 val body_operation_replace : [ `BodyOperationReplace ] descriptor
 val body_purpose : [ `BodyPurpose ] descriptor
-val browse_annotation_history_request : [ `BrowseAnnotationHistoryRequest ] descriptor
-val browse_annotation_history_result : [ `BrowseAnnotationHistoryResult ] descriptor
+
+val browse_annotation_history_request :
+  [ `BrowseAnnotationHistoryRequest ] descriptor
+
+val browse_annotation_history_result :
+  [ `BrowseAnnotationHistoryResult ] descriptor
+
 val browse_annotation_request : [ `BrowseAnnotationRequest ] descriptor
 val browse_annotation_result : [ `BrowseAnnotationResult ] descriptor
 val browse_click_event : [ `BrowseClickEvent ] descriptor
 val browse_directory_failed : [ `BrowseDirectoryFailed ] descriptor
 val browse_directory_request : [ `BrowseDirectoryRequest ] descriptor
 val browse_directory_result : [ `BrowseDirectoryResult ] descriptor
-val browse_directory_result_response : [ `BrowseDirectoryResultResponse ] descriptor
+
+val browse_directory_result_response :
+  [ `BrowseDirectoryResultResponse ] descriptor
+
 val browse_engines_request : [ `BrowseEnginesRequest ] descriptor
 val browse_engines_result : [ `BrowseEnginesResult ] descriptor
-val browse_entity_type_clicked_event : [ `BrowseEntityTypeClickedEvent ] descriptor
+
+val browse_entity_type_clicked_event :
+  [ `BrowseEntityTypeClickedEvent ] descriptor
+
 val browse_entity_types_request : [ `BrowseEntityTypesRequest ] descriptor
 val browse_entity_types_result : [ `BrowseEntityTypesResult ] descriptor
 val browse_events_request : [ `BrowseEventsRequest ] descriptor
@@ -95,7 +108,10 @@ val bus_ping_message : [ `BusPingMessage ] descriptor
 val bus_resume_gap : [ `BusResumeGap ] descriptor
 val bus_stream_message : [ `BusStreamMessage ] descriptor
 val bus_subscribe_request : [ `BusSubscribeRequest ] descriptor
-val clone_resource_with_token_response : [ `CloneResourceWithTokenResponse ] descriptor
+
+val clone_resource_with_token_response :
+  [ `CloneResourceWithTokenResponse ] descriptor
+
 val command_error : [ `CommandError ] descriptor
 val commenting_job_params : [ `CommentingJobParams ] descriptor
 val content_format : [ `ContentFormat ] descriptor
@@ -139,18 +155,27 @@ val gather_referenced_by_result : [ `GatherReferencedByResult ] descriptor
 val gather_resource_complete : [ `GatherResourceComplete ] descriptor
 val gather_resource_failed : [ `GatherResourceFailed ] descriptor
 val gather_resource_request : [ `GatherResourceRequest ] descriptor
-val gather_resource_request_options : [ `GatherResourceRequestOptions ] descriptor
+
+val gather_resource_request_options :
+  [ `GatherResourceRequestOptions ] descriptor
+
 val gather_summary_request : [ `GatherSummaryRequest ] descriptor
 val gathered_context : [ `GatheredContext ] descriptor
 val generation_job_params : [ `GenerationJobParams ] descriptor
 val generation_job_request : [ `GenerationJobRequest ] descriptor
-val get_annotation_history_response : [ `GetAnnotationHistoryResponse ] descriptor
+
+val get_annotation_history_response :
+  [ `GetAnnotationHistoryResponse ] descriptor
+
 val get_annotation_response : [ `GetAnnotationResponse ] descriptor
 val get_annotations_response : [ `GetAnnotationsResponse ] descriptor
 val get_entity_types_response : [ `GetEntityTypesResponse ] descriptor
 val get_events_response : [ `GetEventsResponse ] descriptor
 val get_referenced_by_response : [ `GetReferencedByResponse ] descriptor
-val get_referenced_by_response_referenced_by_item : [ `GetReferencedByResponseReferencedByItem ] descriptor
+
+val get_referenced_by_response_referenced_by_item :
+  [ `GetReferencedByResponseReferencedByItem ] descriptor
+
 val get_resource_by_token_response : [ `GetResourceByTokenResponse ] descriptor
 val get_resource_response : [ `GetResourceResponse ] descriptor
 val get_tag_schemas_response : [ `GetTagSchemasResponse ] descriptor
@@ -193,12 +218,24 @@ val job_progress : [ `JobProgress ] descriptor
 val job_progress_analyzing : [ `JobProgressAnalyzing ] descriptor
 val job_progress_analyzing_tags : [ `JobProgressAnalyzingTags ] descriptor
 val job_progress_complete_created : [ `JobProgressCompleteCreated ] descriptor
-val job_progress_complete_generated : [ `JobProgressCompleteGenerated ] descriptor
-val job_progress_creating_annotations : [ `JobProgressCreatingAnnotations ] descriptor
+
+val job_progress_complete_generated :
+  [ `JobProgressCompleteGenerated ] descriptor
+
+val job_progress_creating_annotations :
+  [ `JobProgressCreatingAnnotations ] descriptor
+
 val job_progress_creating_resource : [ `JobProgressCreatingResource ] descriptor
-val job_progress_creating_tag_annotations : [ `JobProgressCreatingTagAnnotations ] descriptor
-val job_progress_detecting_entities : [ `JobProgressDetectingEntities ] descriptor
-val job_progress_generating_resource : [ `JobProgressGeneratingResource ] descriptor
+
+val job_progress_creating_tag_annotations :
+  [ `JobProgressCreatingTagAnnotations ] descriptor
+
+val job_progress_detecting_entities :
+  [ `JobProgressDetectingEntities ] descriptor
+
+val job_progress_generating_resource :
+  [ `JobProgressGeneratingResource ] descriptor
+
 val job_progress_loading : [ `JobProgressLoading ] descriptor
 val job_progress_message : [ `JobProgressMessage ] descriptor
 val job_queued_event : [ `JobQueuedEvent ] descriptor
@@ -249,7 +286,10 @@ val mark_requested_event : [ `MarkRequestedEvent ] descriptor
 val mark_submit_event : [ `MarkSubmitEvent ] descriptor
 val mark_unarchive_command : [ `MarkUnarchiveCommand ] descriptor
 val mark_update_body_command : [ `MarkUpdateBodyCommand ] descriptor
-val mark_update_entity_types_command : [ `MarkUpdateEntityTypesCommand ] descriptor
+
+val mark_update_entity_types_command :
+  [ `MarkUpdateEntityTypesCommand ] descriptor
+
 val match_resources_request : [ `MatchResourcesRequest ] descriptor
 val match_resources_response : [ `MatchResourcesResponse ] descriptor
 val match_resources_result : [ `MatchResourcesResult ] descriptor
@@ -277,7 +317,10 @@ val reply_event_id : [ `ReplyEventId ] descriptor
 val representation : [ `Representation ] descriptor
 val representation_added_payload : [ `RepresentationAddedPayload ] descriptor
 val representation_not_found : [ `RepresentationNotFound ] descriptor
-val representation_removed_payload : [ `RepresentationRemovedPayload ] descriptor
+
+val representation_removed_payload :
+  [ `RepresentationRemovedPayload ] descriptor
+
 val resource_annotations : [ `ResourceAnnotations ] descriptor
 val resource_archived_payload : [ `ResourceArchivedPayload ] descriptor
 val resource_cloned_payload : [ `ResourceClonedPayload ] descriptor
@@ -295,7 +338,10 @@ val selector : [ `Selector ] descriptor
 val semantic_match : [ `SemanticMatch ] descriptor
 val session_joined_event : [ `SessionJoinedEvent ] descriptor
 val session_left_event : [ `SessionLeftEvent ] descriptor
-val settings_hover_delay_changed_event : [ `SettingsHoverDelayChangedEvent ] descriptor
+
+val settings_hover_delay_changed_event :
+  [ `SettingsHoverDelayChangedEvent ] descriptor
+
 val settings_locale_changed_event : [ `SettingsLocaleChangedEvent ] descriptor
 val settings_theme_changed_event : [ `SettingsThemeChangedEvent ] descriptor
 val smelt_rebuild_anchors_command : [ `SmeltRebuildAnchorsCommand ] descriptor

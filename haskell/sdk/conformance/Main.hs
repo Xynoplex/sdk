@@ -1,75 +1,79 @@
-{-# LANGUAGE GADTs, OverloadedStrings, ScopedTypeVariables, RankNTypes #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Main (main) where
 
 import Control.Concurrent (yield)
-import DriverProtocol
 import Control.Concurrent.Async
 import Control.Concurrent.MVar
 import Control.Concurrent.STM
 import Control.Exception
-import qualified Data.HashMap.Strict as HashMap
-import Data.List.NonEmpty (nonEmpty)
-import Data.Time (getCurrentTime, formatTime, defaultTimeLocale)
-import qualified OpenTelemetry.Context as Context
-import OpenTelemetry.Context.ThreadLocal (getContext, attachContext, detachContext)
-import qualified OpenTelemetry.Propagator as Propagator
-import OpenTelemetry.Attributes (toAttribute)
-import qualified Xynolog.Worker as Worker
-import Xynolog.Worker.Types
-import Xynolog.Claims (jobClaimChannels, jobCommitChannels)
 import Control.Monad (forM_, unless, void, when)
 import Data.Aeson hiding (decode)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString as Bytes
-import qualified Data.ByteString.Char8 as Char8
-import qualified Data.ByteString.Base64 as Base64
-import qualified Data.ByteString.Lazy as Lazy
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString qualified as Bytes
+import Data.ByteString.Base64 qualified as Base64
+import Data.ByteString.Char8 qualified as Char8
+import Data.ByteString.Lazy qualified as Lazy
+import Data.HashMap.Strict qualified as HashMap
+import Data.List.NonEmpty (nonEmpty)
+import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Data.Text (Text)
-import qualified Data.Text as Text
-import Data.Text.Encoding (encodeUtf8, decodeUtf8)
-import qualified Data.UUID.V4 as UUID
-import qualified Data.UUID.Types as UUID
+import Data.Text qualified as Text
+import Data.Text.Encoding (decodeUtf8, encodeUtf8)
+import Data.Time (defaultTimeLocale, formatTime, getCurrentTime)
+import Data.UUID.Types qualified as UUID
+import Data.UUID.V4 qualified as UUID
+import DriverProtocol
 import Network.HTTP.Client (defaultManagerSettings, noProxy)
-import qualified OpenTelemetry.Trace.Core as TraceCore
-import qualified OpenTelemetry.Trace as Trace
-import qualified OpenTelemetry.Metric as Metric
-import qualified Xynolog.Bus as Bus
+import OpenTelemetry.Attributes (toAttribute)
+import OpenTelemetry.Context qualified as Context
+import OpenTelemetry.Context.ThreadLocal (attachContext, detachContext, getContext)
+import OpenTelemetry.Metric qualified as Metric
+import OpenTelemetry.Propagator qualified as Propagator
+import OpenTelemetry.Trace qualified as Trace
+import OpenTelemetry.Trace.Core qualified as TraceCore
+import Streaming.Prelude qualified as Stream
+import System.Environment (getArgs, lookupEnv)
+import System.IO
+import System.Random (randomRIO)
+import Xynolog.Bus qualified as Bus
 import Xynolog.Channels
-import qualified Xynolog.Content as Content
-import qualified Xynolog.ErrorCodes as Code
-import qualified Xynolog.Gateway as Gateway
-import qualified Xynolog.Http as Http
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.StateValue as State
-import qualified Xynolog.Timing.Settings as Timing
-import qualified Xynolog.Transport as Transport
+import Xynolog.Claims (jobClaimChannels, jobCommitChannels)
+import Xynolog.Content qualified as Content
+import Xynolog.ErrorCodes qualified as Code
+import Xynolog.Gateway qualified as Gateway
+import Xynolog.Http qualified as Http
+import Xynolog.Retry qualified as Retry
+import Xynolog.StateValue qualified as State
+import Xynolog.Timing.Settings qualified as Timing
+import Xynolog.Transport qualified as Transport
 import Xynolog.Transport.Facts (connectionStateName)
 import Xynolog.Types
-import System.IO
-import System.Environment (lookupEnv, getArgs)
-import System.Random (randomRIO)
-import qualified Streaming.Prelude as Stream
+import Xynolog.Worker qualified as Worker
+import Xynolog.Worker.Types
 
 data ActiveJob = ActiveJob Worker.SomeHeldJob Context.Context
 
 data Driver = Driver
-  { connection :: TVar (Maybe Http.HttpTransport)
-  , credential :: TVar (Maybe Text)
-  , holds :: TVar (Map.Map ResourceId [IO ()])
-  , reporters :: TVar [Async ()]
-  , jobs :: TVar (Map.Map Integer (Async ()))
-  , output :: MVar ()
-  , fatal :: TMVar SomeException
-  , pool :: Http.HttpClient
-  , time :: Retry.RetryOptions
-  , reported :: TVar (Maybe Transport.ConnectionState)
-  , workerMode :: Bool
-  , claims :: TVar (Maybe Worker.Claims)
-  , currentJob :: TVar (Maybe ActiveJob)
-  , workerTimings :: TVar Timing.Settings
+  { connection :: TVar (Maybe Http.HttpTransport),
+    credential :: TVar (Maybe Text),
+    holds :: TVar (Map.Map ResourceId [IO ()]),
+    reporters :: TVar [Async ()],
+    jobs :: TVar (Map.Map Integer (Async ())),
+    output :: MVar (),
+    fatal :: TMVar SomeException,
+    pool :: Http.HttpClient,
+    time :: Retry.RetryOptions,
+    reported :: TVar (Maybe Transport.ConnectionState),
+    workerMode :: Bool,
+    claims :: TVar (Maybe Worker.Claims),
+    currentJob :: TVar (Maybe ActiveJob),
+    workerTimings :: TVar Timing.Settings
   }
 
 say :: Driver -> Value -> IO ()
@@ -96,14 +100,16 @@ reportState driver state = withMVar (output driver) $ \() -> do
 reporter :: Driver -> (IO () -> IO ()) -> IO ()
 reporter driver action = mask $ \restore -> do
   ready <- newEmptyMVar
-  worker <- async $ restore (action (putMVar ready ())) `catch` \(problem :: SomeException) -> do
-    case fromException problem :: Maybe SomeAsyncException of
-      Just _ -> pure ()
-      Nothing -> atomically (void (tryPutTMVar (fatal driver) problem))
-    throwIO problem
+  worker <-
+    async $
+      restore (action (putMVar ready ())) `catch` \(problem :: SomeException) -> do
+        case fromException problem :: Maybe SomeAsyncException of
+          Just _ -> pure ()
+          Nothing -> atomically (void (tryPutTMVar (fatal driver) problem))
+        throwIO problem
   atomically (modifyTVar' (reporters driver) (worker :))
   result <- restore (race (takeMVar ready) (wait worker)) `onException` cancel worker
-  case result of Left () -> pure (); Right () -> throwIO (Misuse "Reporter ended before registering")
+  case result of { Left () -> pure (); Right () -> throwIO (Misuse "Reporter ended before registering") }
 
 open :: Driver -> Object -> IO Value
 open driver args = do
@@ -111,10 +117,12 @@ open driver args = do
   when (maybe False (const True) previous) (throwIO (Misuse "A transport is already open"))
   address <- need args "baseUrl"
   token <- need args "token"
-  channels <- if workerMode driver then do
-    commits <- maybe False id <$> optional args "commits"
-    pure (jobClaimChannels ++ if commits then jobCommitChannels else [])
-    else need args "channels"
+  channels <-
+    if workerMode driver
+      then do
+        commits <- maybe False id <$> optional args "commits"
+        pure (jobClaimChannels ++ if commits then jobCommitChannels else [])
+      else need args "channels"
   overrides <- maybe (pure (Object KM.empty)) pure =<< optional args "timing"
   timings <- either (throwIO . Misuse) pure (Timing.withOverrides overrides)
   atomically (writeTVar (workerTimings driver) timings)
@@ -125,14 +133,29 @@ open driver args = do
         case tokens of
           [] -> pure Nothing
           next : rest -> writeTVar remaining rest >> writeTVar (credential driver) (Just next) >> pure (Just next)
-      options = Http.HttpOptions address (pool driver) (readTVarIO (credential driver)) renew (time driver) timings UUID.nextRandom
-        (Set.fromList channels) (pure Map.empty) (\_ _ -> pure ())
+      options =
+        Http.HttpOptions
+          address
+          (pool driver)
+          (readTVarIO (credential driver))
+          renew
+          (time driver)
+          timings
+          UUID.nextRandom
+          (Set.fromList channels)
+          (pure Map.empty)
+          (\_ _ -> pure ())
   http <- Http.newHttpTransport options
   atomically (writeTVar (connection driver) (Just http))
   let transport = Http.transport http
   reporter driver $ \ready -> State.watch (Transport.state transport) $ \states -> ready >> Stream.mapM_ (reportState driver) states
-  reporter driver $ \ready -> Transport.errors transport $ \errors -> ready >> Stream.mapM_ (\problem ->
-    case failure (toException problem) of Just value -> say driver (object ["error" .= value]); Nothing -> throwIO problem) errors
+  reporter driver $ \ready -> Transport.errors transport $ \errors ->
+    ready
+      >> Stream.mapM_
+        ( \problem ->
+            case failure (toException problem) of Just value -> say driver (object ["error" .= value]); Nothing -> throwIO problem
+        )
+        errors
   pure Null
 
 request :: Driver -> Object -> IO Value
@@ -144,13 +167,15 @@ request driver args = do
   let bus = Bus.newBus (Bus.BusOptions now waitUntil (UUID.toText <$> UUID.nextRandom)) (Http.transport http)
       find [] = throwIO (Misuse ("Unknown bus operation " ++ Text.unpack name))
       find (SomeOperation operation : rest) =
-        let (asked, answered, _) = operationChannels operation in
-        if channelName asked /= name then find rest else do
-          input <- either (throwIO . Misuse) pure (decodePayload asked payload)
-          response <- encodePayload answered <$> Bus.request bus operation input timeoutMs
-          case response of
-            Object fields -> pure (object (maybe [] (\value -> ["response" .= value]) (KM.lookup "response" fields)))
-            _ -> throwIO (Misuse "Operation answered without an object")
+        let (asked, answered, _) = operationChannels operation
+         in if channelName asked /= name
+              then find rest
+              else do
+                input <- either (throwIO . Misuse) pure (decodePayload asked payload)
+                response <- encodePayload answered <$> Bus.request bus operation input timeoutMs
+                case response of
+                  Object fields -> pure (object (maybe [] (\value -> ["response" .= value]) (KM.lookup "response" fields)))
+                  _ -> throwIO (Misuse "Operation answered without an object")
   find allOperations
 
 upload :: Driver -> Integer -> Bool -> Object -> IO Value
@@ -161,8 +186,14 @@ upload driver identifier progress args = do
   let fields = foldr KM.delete args ["id", "op", "bytes"]
       formValue key value = if key `elem` ["entityTypes", "isDraft"] then String (decodeUtf8 (Lazy.toStrict (encode value))) else value
   metadata <- decode (Object (KM.mapWithKey formValue fields))
-  let notice value = when progress $ say driver $ object ["progress" .= object
-        ["upload" .= identifier, "bytesUploaded" .= Content.bytesUploaded value, "totalBytes" .= Content.totalBytes value]]
+  let notice value =
+        when progress
+          $ say driver
+          $ object
+            [ "progress"
+                .= object
+                  ["upload" .= identifier, "bytesUploaded" .= Content.bytesUploaded value, "totalBytes" .= Content.totalBytes value]
+            ]
   created <- Content.putBinary (Http.content http) Nothing metadata (Content.bytesBody bytes) notice
   pure (object ["resourceId" .= created])
 
@@ -178,10 +209,15 @@ perform driver identifier operation args = case operation of
   "listen" -> Just $ do
     transport <- Http.transport <$> opened driver
     channel <- need args "channel"
-    reporter driver $ \ready -> Transport.frames transport channel $ \frames -> ready >> Stream.mapM_ (\frame ->
-      case frame of
-        Transport.Arrived value -> say driver (object ["frame" .= Transport.wireFrame value])
-        Transport.FrameRejected _ -> throwIO (Misuse "wire corpus carried a refused frame")) frames
+    reporter driver $ \ready -> Transport.frames transport channel $ \frames ->
+      ready
+        >> Stream.mapM_
+          ( \frame ->
+              case frame of
+                Transport.Arrived value -> say driver (object ["frame" .= Transport.wireFrame value])
+                Transport.FrameRejected _ -> throwIO (Misuse "wire corpus carried a refused frame")
+          )
+          frames
     pure Null
   "subscribe-resource" -> Just $ do
     transport <- Http.transport <$> opened driver
@@ -237,12 +273,12 @@ perform driver identifier operation args = case operation of
   _ -> Nothing
   where
     binaryValue media bytes = object ["contentType" .= media, "bytes" .= decodeUtf8 (Base64.encode bytes)]
-    contentRead :: ToJSON answer => (Content.ContentTransport -> Maybe Text -> ResourceId -> IO answer) -> IO Value
+    contentRead :: (ToJSON answer) => (Content.ContentTransport -> Maybe Text -> ResourceId -> IO answer) -> IO Value
     contentRead readContent = do
       contents <- Http.content <$> opened driver
       resource <- need args "resource"
       toJSON <$> readContent contents Nothing resource
-    gatewayRead :: ToJSON answer => (Gateway.GatewayOperations -> IO answer) -> IO Value
+    gatewayRead :: (ToJSON answer) => (Gateway.GatewayOperations -> IO answer) -> IO Value
     gatewayRead readGateway = opened driver >>= fmap toJSON . readGateway . Http.gateway
 
 withJob :: Driver -> (forall result. Worker.HeldJob result -> IO Value) -> IO Value
@@ -260,27 +296,42 @@ reportJobs driver worker = do
         runJob job = do
           propagator <- Propagator.getGlobalTextMapPropagator
           let carrier = case toJSON (Worker.trace job) of
-                Object fields -> Propagator.textMapFromList [(Key.toText key,value) | (key,String value) <- KM.toList fields]
+                Object fields -> Propagator.textMapFromList [(Key.toText key, value) | (key, String value) <- KM.toList fields]
                 _ -> Propagator.emptyTextMap
           parent <- Propagator.extract propagator carrier Context.empty
           bracket (attachContext parent) detachContext $ \_ -> do
             provider <- Trace.getGlobalTracerProvider
             tracer <- Trace.getTracer provider (TraceCore.instrumentationLibrary "xynolog-conformance" "1") Trace.tracerOptions
-            Trace.inSpan'' tracer ("job:" <> (case Worker.jobType job of JobTypeMark -> "mark"; JobTypeYield -> "yield"))
-              Trace.defaultSpanArguments { Trace.attributes = HashMap.singleton "job.id" (toAttribute (jobIdValue (Worker.jobId job))) } $ \_ -> do
+            Trace.inSpan''
+              tracer
+              ("job:" <> (case Worker.jobType job of JobTypeMark -> "mark"; JobTypeYield -> "yield"))
+              Trace.defaultSpanArguments {Trace.attributes = HashMap.singleton "job.id" (toAttribute (jobIdValue (Worker.jobId job)))}
+              $ \_ -> do
                 context <- getContext
                 atomically (writeTVar (currentJob driver) (Just (ActiveJob some context)))
-                say driver (object ["claimed" .= object
-                  ["jobId" .= Worker.jobId job, "jobType" .= Worker.jobType job, "resourceId" .= Worker.resourceId job,
-                   "params" .= Worker.params job, "completedUnits" .= Worker.completedUnits job, "unitCursors" .= Worker.unitCursors job,
-                   "retryCount" .= Worker.retryCount job, "maxRetries" .= Worker.maxRetries job]])
+                say
+                  driver
+                  ( object
+                      [ "claimed"
+                          .= object
+                            [ "jobId" .= Worker.jobId job,
+                              "jobType" .= Worker.jobType job,
+                              "resourceId" .= Worker.resourceId job,
+                              "params" .= Worker.params job,
+                              "completedUnits" .= Worker.completedUnits job,
+                              "unitCursors" .= Worker.unitCursors job,
+                              "retryCount" .= Worker.retryCount job,
+                              "maxRetries" .= Worker.maxRetries job
+                            ]
+                      ]
+                  )
                 let waitSettled = atomically (Worker.settled job >>= check)
                     cancellation = do
                       signalled <- atomically ((Worker.cancelled job >>= check >> pure True) `orElse` (Worker.settled job >>= check >> pure False))
                       when signalled (say driver (object ["signalled" .= Worker.jobId job]))
                 withAsync cancellation (const waitSettled)
                 atomically (writeTVar (currentJob driver) Nothing)
-    case some of Worker.HeldMark job -> runJob job; Worker.HeldYield job -> runJob job
+    case some of { Worker.HeldMark job -> runJob job; Worker.HeldYield job -> runJob job }
     reportJobs driver worker
 
 workerPerform :: Driver -> Integer -> Text -> Object -> Maybe (IO Value)
@@ -299,18 +350,30 @@ workerPerform driver identifier operation args = case operation of
         timestamp = Text.pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%QZ" <$> getCurrentTime
     worker <- Worker.newClaims (Http.transport http) (Worker.WorkerOptions filters clock timing timestamp)
     atomically (writeTVar (claims driver) (Just worker))
-    reporter driver $ \ready -> Worker.refused worker $ \events -> ready >> Stream.mapM_ (\refusal -> say driver (object ["refused" .= object
-      (["detail" .= claimRefusalMessage refusal] ++ maybe [] (\code -> ["code" .= Code.busRequestCode code]) (claimRefusalCode refusal))])) events
+    reporter driver $ \ready -> Worker.refused worker $ \events ->
+      ready
+        >> Stream.mapM_
+          ( \refusal ->
+              say
+                driver
+                ( object
+                    [ "refused"
+                        .= object
+                          (["detail" .= claimRefusalMessage refusal] ++ maybe [] (\code -> ["code" .= Code.busRequestCode code]) (claimRefusalCode refusal))
+                    ]
+                )
+          )
+          events
     reporter driver $ \ready -> Worker.stalled worker $ \events -> ready >> Stream.mapM_ (\event -> say driver (object ["stalled" .= heldJobStallJobId event])) events
     reporter driver $ \ready -> ready >> reportJobs driver worker
     pure Null
   "start" -> Just $ withJob driver (\job -> Worker.start job >> pure Null)
   "progress" -> Just $ withJob driver $ \job -> do
-    value <- decode (Object (foldr KM.delete args ["id","op"]))
+    value <- decode (Object (foldr KM.delete args ["id", "op"]))
     Worker.progress job value
     pure Null
   "checkpoint" -> Just $ withJob driver $ \job -> do
-    value <- decode (Object (foldr KM.delete args ["id","op"]))
+    value <- decode (Object (foldr KM.delete args ["id", "op"]))
     Worker.checkpoint job value
     pure Null
   "commit" -> Just $ withJob driver $ \job -> do
@@ -327,11 +390,11 @@ workerPerform driver identifier operation args = case operation of
     pure Null
   "fail" -> Just $ withJob driver $ \job -> do
     message <- need args "error"
-    failureValue <- decode (Object (foldr KM.delete args ["id","op","error"]))
+    failureValue <- decode (Object (foldr KM.delete args ["id", "op", "error"]))
     Worker.fail job message (Just failureValue)
     pure Null
   "cancel" -> Just $ withJob driver $ \job -> do
-    reached <- decode (Object (foldr KM.delete args ["id","op"]))
+    reached <- decode (Object (foldr KM.delete args ["id", "op"]))
     Worker.cancel job (Just reached)
     pure Null
   "vitals" -> Just $ do
@@ -350,24 +413,30 @@ dispatch :: Driver -> Object -> IO ()
 dispatch driver args = do
   identifier <- need args "id"
   operation <- need args "op"
-  if operation == "abandon" then answer driver identifier $ do
-    target <- need args "request"
-    active <- readTVarIO (jobs driver)
-    maybe (throwIO (Misuse "No active operation to abandon")) cancel (Map.lookup target active)
-    pure Null
-  else case (if workerMode driver then workerPerform driver identifier operation args else perform driver identifier operation args) of
-    Nothing -> say driver (object ["id" .= identifier, "unsupported" .= True])
-    Just action -> if operation `elem` ["open", "close", "set-token", "listen", "subscribe-resource", "release-resource", "sync"]
-        then answer driver identifier action
-        else mask $ \restore -> do
-          go <- newEmptyMVar
-          worker <- async $ (takeMVar go >> restore (answer driver identifier action))
-            `finally` atomically (modifyTVar' (jobs driver) (Map.delete identifier))
-          (atomically $ do
-            active <- readTVar (jobs driver)
-            when (Map.member identifier active) (throwSTM (Misuse "Operation id is already active"))
-            writeTVar (jobs driver) (Map.insert identifier worker active)) `onException` cancel worker
-          putMVar go ()
+  if operation == "abandon"
+    then answer driver identifier $ do
+      target <- need args "request"
+      active <- readTVarIO (jobs driver)
+      maybe (throwIO (Misuse "No active operation to abandon")) cancel (Map.lookup target active)
+      pure Null
+    else case (if workerMode driver then workerPerform driver identifier operation args else perform driver identifier operation args) of
+      Nothing -> say driver (object ["id" .= identifier, "unsupported" .= True])
+      Just action ->
+        if operation `elem` ["open", "close", "set-token", "listen", "subscribe-resource", "release-resource", "sync"]
+          then answer driver identifier action
+          else mask $ \restore -> do
+            go <- newEmptyMVar
+            worker <-
+              async $
+                (takeMVar go >> restore (answer driver identifier action))
+                  `finally` atomically (modifyTVar' (jobs driver) (Map.delete identifier))
+            ( atomically $ do
+                active <- readTVar (jobs driver)
+                when (Map.member identifier active) (throwSTM (Misuse "Operation id is already active"))
+                writeTVar (jobs driver) (Map.insert identifier worker active)
+              )
+              `onException` cancel worker
+            putMVar go ()
 
 serve :: Driver -> IO ()
 serve driver = do
@@ -402,7 +471,20 @@ run = do
   mode <- case arguments of [] -> pure False; ["--worker"] -> pure True; _ -> throwIO (Misuse "Unknown driver arguments")
   hSetBuffering stdout NoBuffering
   client <- Http.newHttpClient noProxy defaultManagerSettings
-  driver <- Driver <$> newTVarIO Nothing <*> newTVarIO Nothing <*> newTVarIO Map.empty
-    <*> newTVarIO [] <*> newTVarIO Map.empty <*> newMVar () <*> newEmptyTMVarIO <*> pure client
-    <*> pure (Retry.RetryOptions now waitUntil (randomRIO (0,1))) <*> newTVarIO Nothing <*> pure mode <*> newTVarIO Nothing <*> newTVarIO Nothing <*> newTVarIO Timing.protocolSettings
+  driver <-
+    Driver
+      <$> newTVarIO Nothing
+      <*> newTVarIO Nothing
+      <*> newTVarIO Map.empty
+      <*> newTVarIO []
+      <*> newTVarIO Map.empty
+      <*> newMVar ()
+      <*> newEmptyTMVarIO
+      <*> pure client
+      <*> pure (Retry.RetryOptions now waitUntil (randomRIO (0, 1)))
+      <*> newTVarIO Nothing
+      <*> pure mode
+      <*> newTVarIO Nothing
+      <*> newTVarIO Nothing
+      <*> newTVarIO Timing.protocolSettings
   void (race (serve driver) (atomically (readTMVar (fatal driver)) >>= throwIO)) `finally` dispose driver

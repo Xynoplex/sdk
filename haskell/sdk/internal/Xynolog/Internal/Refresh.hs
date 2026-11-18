@@ -1,56 +1,82 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Xynolog.Internal.Refresh
-  ( Refresher, SubjectInfo(..), Target(..), Write, Acts(..), newRefresher, owes, dispose
-  , cacheTargets, writeTargets, patchTargets, endTargets
-  ) where
+  ( Refresher,
+    SubjectInfo (..),
+    Target (..),
+    Write,
+    Acts (..),
+    newRefresher,
+    owes,
+    dispose,
+    cacheTargets,
+    writeTargets,
+    patchTargets,
+    endTargets,
+  )
+where
 
 import Control.Concurrent.STM
-import Control.Exception (SomeException, SomeAsyncException, bracket, fromException, mask, mask_, onException, finally, throwIO, toException, try)
+import Control.Exception (SomeAsyncException, SomeException, bracket, finally, fromException, mask, mask_, onException, throwIO, toException, try)
 import Control.Monad (forM_, forever, unless, void, when)
-import Data.Aeson (FromJSON, Result(..), Value(..), fromJSON)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
+import Data.Aeson (FromJSON, Result (..), Value (..), fromJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
 import Data.List (find)
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict qualified as Map
 import Data.Maybe (fromMaybe, isJust, isNothing)
 import Data.Text (Text)
-import qualified OpenTelemetry.Context as Context
+import OpenTelemetry.Context qualified as Context
 import OpenTelemetry.Context.ThreadLocal (attachContext, detachContext)
-import qualified Xynolog.Bus as Bus
-import qualified Xynolog.ErrorCodes as Code
-import Xynolog.Errors (BusRequestError(..), TransportError(..))
-import qualified Xynolog.Internal.Cache as Cache
-import qualified Xynolog.Internal.Generated.CacheRefresh as Fact
-import qualified Xynolog.Internal.Lifetime as Lifetime
-import qualified Xynolog.Internal.Required as Required
-import qualified Xynolog.Internal.StateValue as State
-import qualified Xynolog.Internal.Transport as Transport
-import qualified Xynolog.Timing.Settings as Timing
-import qualified Xynolog.Transport.Facts as Connection
-import Xynolog.Types (Annotation, AnnotationId, ResourceId, BusFrame(..), BusFramePayload(..))
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
+import Xynolog.Bus qualified as Bus
+import Xynolog.ErrorCodes qualified as Code
+import Xynolog.Errors (BusRequestError (..), TransportError (..))
+import Xynolog.Internal.Cache qualified as Cache
+import Xynolog.Internal.Generated.CacheRefresh qualified as Fact
+import Xynolog.Internal.Lifetime qualified as Lifetime
+import Xynolog.Internal.Required qualified as Required
+import Xynolog.Internal.StateValue qualified as State
+import Xynolog.Internal.Transport qualified as Transport
+import Xynolog.Timing.Settings qualified as Timing
+import Xynolog.Transport.Facts qualified as Connection
+import Xynolog.Types (Annotation, AnnotationId, BusFrame (..), BusFramePayload (..), ResourceId)
 
 data SubjectInfo = SubjectInfo
-  { subjectWhen :: Maybe Text, subjectResource :: Maybe ResourceId
-  , subjectAnnotation :: Maybe AnnotationId, subjectWritten :: Maybe Annotation
-  } deriving (Eq, Show)
+  { subjectWhen :: Maybe Text,
+    subjectResource :: Maybe ResourceId,
+    subjectAnnotation :: Maybe AnnotationId,
+    subjectWritten :: Maybe Annotation
+  }
+  deriving (Eq, Show)
+
 data Target = Target Text (STM (IO ()))
+
 -- | A replaced value settles what its key's window owes. A patched one changes
 -- only its written member, so the refetch the window owes still runs.
 data Write = Replace (SubjectInfo -> STM [Target]) | Patch (SubjectInfo -> STM [Target])
+
 data Acts = Acts
-  { refetch :: SubjectInfo -> Fact.Reach -> STM [Target]
-  , write :: Maybe Write
-  , end :: Maybe (SubjectInfo -> STM [Target])
+  { refetch :: SubjectInfo -> Fact.Reach -> STM [Target],
+    write :: Maybe Write,
+    end :: Maybe (SubjectInfo -> STM [Target])
   }
+
 type Parent = Maybe Context.Context
+
 data Window = Window Integer (Maybe (Parent, STM (IO ())))
+
 data Refresher = Refresher
-  { lifetime :: Lifetime.Lifetime, closed :: TVar Bool
-  , windows :: TVar (Map.Map (Fact.Query,Text) Window), counter :: TVar Integer
-  , queue :: TQueue (Parent,IO ()), clock :: Bus.BusOptions, timing :: Timing.Settings
-  , acts :: Map.Map Fact.Query Acts
-  , release :: IO ()
+  { lifetime :: Lifetime.Lifetime,
+    closed :: TVar Bool,
+    windows :: TVar (Map.Map (Fact.Query, Text) Window),
+    counter :: TVar Integer,
+    queue :: TQueue (Parent, IO ()),
+    clock :: Bus.BusOptions,
+    timing :: Timing.Settings,
+    acts :: Map.Map Fact.Query Acts,
+    release :: IO ()
   }
 
 -- | The member a way ends at: Just Nothing where it, or a member on it, is
@@ -59,12 +85,14 @@ data Refresher = Refresher
 memberAt :: [Text] -> Value -> Maybe (Maybe Value)
 memberAt _ Null = Just Nothing
 memberAt [] value = Just (Just value)
-memberAt (key:rest) (Object fields) = maybe (Just Nothing) (memberAt rest) (KM.lookup (Key.fromText key) fields)
+memberAt (key : rest) (Object fields) = maybe (Just Nothing) (memberAt rest) (KM.lookup (Key.fromText key) fields)
 memberAt _ _ = Nothing
+
 -- | What a way names, read as its type: Nothing where the event is unreadable there.
-readPart :: FromJSON value => Maybe [Text] -> Value -> Maybe (Maybe value)
+readPart :: (FromJSON value) => Maybe [Text] -> Value -> Maybe (Maybe value)
 readPart Nothing _ = Just Nothing
 readPart (Just way) value = memberAt way value >>= traverse (\raw -> case fromJSON raw of Error _ -> Nothing; Success parsed -> Just parsed)
+
 -- | What an event on a channel names, by the ways of its row; Nothing when
 -- the event is unreadable. A split channel's event is enriched when the member
 -- its enriched row carries is present.
@@ -86,7 +114,7 @@ subject channel value = do
 withParent :: Parent -> IO value -> IO value
 withParent parent action = bracket (attachContext (fromMaybe Context.empty parent)) detachContext (const action)
 
-newRefresher :: Transport.EventBus -> Transport.Transport -> Bus.BusOptions -> Timing.Settings -> [(Fact.Query,Acts)] -> IO Refresher
+newRefresher :: Transport.EventBus -> Transport.Transport -> Bus.BusOptions -> Timing.Settings -> [(Fact.Query, Acts)] -> IO Refresher
 newRefresher local wire options settings controls = mask $ \restore -> do
   when (Timing.invalidationWindowMs settings < 0) (ioError (userError "negative invalidation window"))
   let owned = Map.fromList controls
@@ -103,10 +131,10 @@ newRefresher local wire options settings controls = mask $ \restore -> do
   ready <- newTQueueIO
   let runtime = Refresher life stopped active sequenceNumber ready options settings owned (pure ())
   detach <- Transport.tapLocal local (receive runtime)
-  let result = runtime { release = detach }
+  let result = runtime {release = detach}
   let begin = do
         void $ Lifetime.start life $ restore $ forever $ do
-          (parent,action) <- atomically (readTQueue ready)
+          (parent, action) <- atomically (readTQueue ready)
           outcome <- try (withParent parent action)
           case outcome of
             Right () -> pure ()
@@ -120,7 +148,7 @@ newRefresher local wire options settings controls = mask $ \restore -> do
                 item <- Stream.next values
                 case item of
                   Left () -> pure ()
-                  Right (state,rest) -> case state of
+                  Right (state, rest) -> case state of
                     Connection.Open -> do
                       when (opened && dropped) (atomically (apply result Fact.reopened Nothing nothingNamed))
                       loop True False rest
@@ -156,39 +184,40 @@ apply runtime trigger parent info = do
     row <- case candidates of [one] -> pure one; _ -> throwSTM (userError "refresh trigger has no single matching row")
     let Fact.Row _ _ reach _ fetches writes removes = row
         immediate select query = forM_ (Map.lookup query (acts runtime)) $ \control -> do
-          (settles,action) <- case select control of Just value -> pure value; Nothing -> throwSTM (userError "refresh action has no implementation")
+          (settles, action) <- case select control of Just value -> pure value; Nothing -> throwSTM (userError "refresh action has no implementation")
           targets <- action info
           forM_ targets $ \(Target identity mutation) -> do
-            when settles (modifyTVar' (windows runtime) (Map.delete (query,identity)))
+            when settles (modifyTVar' (windows runtime) (Map.delete (query, identity)))
             launch <- mutation
-            writeTQueue (queue runtime) (parent,launch)
+            writeTQueue (queue runtime) (parent, launch)
         written control = case write control of
-          Just (Replace action) -> Just (True,action)
-          Just (Patch action) -> Just (False,action)
+          Just (Replace action) -> Just (True, action)
+          Just (Patch action) -> Just (False, action)
           Nothing -> Nothing
         ended control = (,) True <$> end control
     mapM_ (immediate written) writes
     mapM_ (immediate ended) removes
     forM_ fetches $ \query -> forM_ (Map.lookup query (acts runtime)) $ \control -> do
       targets <- refetch control info reach
-      forM_ targets $ \(Target identity mutation) -> coalesce runtime (query,identity) parent mutation
+      forM_ targets $ \(Target identity mutation) -> coalesce runtime (query, identity) parent mutation
 
-coalesce :: Refresher -> (Fact.Query,Text) -> Parent -> STM (IO ()) -> STM ()
+coalesce :: Refresher -> (Fact.Query, Text) -> Parent -> STM (IO ()) -> STM ()
 coalesce runtime key parent mutation = do
   held <- readTVar (windows runtime)
   case Map.lookup key held of
-    Just (Window generation _) -> writeTVar (windows runtime) (Map.insert key (Window generation (Just (parent,mutation))) held)
+    Just (Window generation _) -> writeTVar (windows runtime) (Map.insert key (Window generation (Just (parent, mutation))) held)
     Nothing -> do
       generation <- next runtime
       writeTVar (windows runtime) (Map.insert key (Window generation Nothing) held)
       launch <- mutation
-      writeTQueue (queue runtime) (parent,launch >> startTimer runtime key generation)
+      writeTQueue (queue runtime) (parent, launch >> startTimer runtime key generation)
 
 next :: Refresher -> STM Integer
 next runtime = do
-  modifyTVar' (counter runtime) (+1)
+  modifyTVar' (counter runtime) (+ 1)
   readTVar (counter runtime)
-startTimer :: Refresher -> (Fact.Query,Text) -> Integer -> IO ()
+
+startTimer :: Refresher -> (Fact.Query, Text) -> Integer -> IO ()
 startTimer runtime key generation = do
   stopped <- readTVarIO (closed runtime)
   unless stopped $ void $ Lifetime.start (lifetime runtime) $ do
@@ -200,16 +229,17 @@ startTimer runtime key generation = do
       unless over $ case Map.lookup key held of
         Just (Window current owed) | current == generation -> case owed of
           Nothing -> writeTVar (windows runtime) (Map.delete key held)
-          Just (parent,mutation) -> do
+          Just (parent, mutation) -> do
             following <- next runtime
             writeTVar (windows runtime) (Map.insert key (Window following Nothing) held)
             launch <- mutation
-            writeTQueue (queue runtime) (parent,launch >> startTimer runtime key following)
+            writeTQueue (queue runtime) (parent, launch >> startTimer runtime key following)
         _ -> pure ()
 
 -- | Whether a window holds an invalidation it has not yet run (B19).
 owes :: Refresher -> STM Bool
 owes runtime = any (\(Window _ owed) -> isJust owed) . Map.elems <$> readTVar (windows runtime)
+
 dispose :: Refresher -> IO ()
 dispose runtime = mask_ $ do
   atomically $ do
@@ -225,16 +255,24 @@ cacheTargets :: Cache.Cache key value -> (SubjectInfo -> key -> Bool) -> Subject
 cacheTargets cache matches info reach = do
   keys <- Cache.keys cache
   let selected = filter (\key -> reach == Fact.Held || matches info key) keys
-  pure [Target (Cache.encodeKey cache key) (do
-    current <- Cache.keys cache
-    case find (\candidate -> Cache.encodeKey cache candidate == Cache.encodeKey cache key) current of
-      Nothing -> pure (pure ())
-      Just found -> Cache.invalidateSTM cache found) | key <- selected]
+  pure
+    [ Target
+        (Cache.encodeKey cache key)
+        ( do
+            current <- Cache.keys cache
+            case find (\candidate -> Cache.encodeKey cache candidate == Cache.encodeKey cache key) current of
+              Nothing -> pure (pure ())
+              Just found -> Cache.invalidateSTM cache found
+        )
+    | key <- selected
+    ]
+
 writeTargets :: Cache.Cache key value -> (SubjectInfo -> key -> Bool) -> (SubjectInfo -> Maybe value -> Maybe value) -> Write
 writeTargets cache matches update = Replace $ \info -> do
   keys <- Cache.keys cache
-  found <- mapM (\key -> do value <- Cache.get cache key; pure (key,update info value)) (filter (matches info) keys)
-  pure [Target (Cache.encodeKey cache key) (Cache.setSTM cache key value) | (key,Just value) <- found]
+  found <- mapM (\key -> do value <- Cache.get cache key; pure (key, update info value)) (filter (matches info) keys)
+  pure [Target (Cache.encodeKey cache key) (Cache.setSTM cache key value) | (key, Just value) <- found]
+
 patchTargets :: Cache.Cache key value -> (SubjectInfo -> key -> Bool) -> (SubjectInfo -> value -> value) -> Write
 patchTargets cache matches change = Patch $ \info -> do
   keys <- Cache.keys cache
@@ -243,5 +281,14 @@ patchTargets cache matches change = Patch $ \info -> do
 endTargets :: Cache.Cache key value -> (SubjectInfo -> key -> Bool) -> SubjectInfo -> STM [Target]
 endTargets cache matches info = do
   keys <- Cache.keys cache
-  pure [Target (Cache.encodeKey cache key) (Cache.removeSTM cache key
-    (toException (BusRequestError Code.BusRequestNotFound "the cached entity was removed" Nothing))) | key <- keys, matches info key]
+  pure
+    [ Target
+        (Cache.encodeKey cache key)
+        ( Cache.removeSTM
+            cache
+            key
+            (toException (BusRequestError Code.BusRequestNotFound "the cached entity was removed" Nothing))
+        )
+    | key <- keys,
+      matches info key
+    ]

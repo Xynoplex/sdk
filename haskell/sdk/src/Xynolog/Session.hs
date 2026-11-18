@@ -1,111 +1,142 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- | One connection's token and confirmed person. Disposal ends the session's
 -- work and observations; the client remains owned by whoever constructed it.
 -- What went wrong, the session's own errors and its transport's failures, is
 -- said once each on its one errors stream, in the order met.
 module Xynolog.Session
-  ( Session, SessionOptions(..), OpenedSession(..), SessionEndReason(..)
-  , newSession, fromHttp, fromIssuedSession, fromKeptSession, signInDevice, signInAgent, signOut, id, kb, client, token, user, streamState, errors, ready
-  , expiresAt, refresh, dispose
-  ) where
+  ( Session,
+    SessionOptions (..),
+    OpenedSession (..),
+    SessionEndReason (..),
+    newSession,
+    fromHttp,
+    fromIssuedSession,
+    fromKeptSession,
+    signInDevice,
+    signInAgent,
+    signOut,
+    id,
+    kb,
+    client,
+    token,
+    user,
+    streamState,
+    errors,
+    ready,
+    expiresAt,
+    refresh,
+    dispose,
+  )
+where
 
-import Prelude hiding (id)
-import qualified Prelude
 import Control.Concurrent.Async (race)
-import Control.Concurrent.MVar (MVar, newMVar, modifyMVar, modifyMVar_)
+import Control.Concurrent.MVar (MVar, modifyMVar, modifyMVar_, newMVar)
 import Control.Concurrent.STM
-import Control.Exception (SomeException, SomeAsyncException, displayException, fromException, throwIO, try, mask, onException, finally, toException)
+import Control.Exception (SomeAsyncException, SomeException, displayException, finally, fromException, mask, onException, throwIO, toException, try)
 import Control.Monad (forM_, unless, void, when)
 import Control.Monad.IO.Class (liftIO)
-import Data.Maybe (isJust)
 import Data.IORef
+import Data.Maybe (isJust)
 import Data.Scientific (Scientific)
 import Data.Text (Text)
-import qualified Data.Text as Text
-import qualified Xynolog.Client as Client
-import qualified Xynolog.ErrorCodes as Code
-import Xynolog.Errors
-import qualified Xynolog.Http as Http
-import qualified Xynolog.Internal.Issuer as Issuer
-import qualified Xynolog.ServiceToken as Service
-import qualified Xynolog.Auth as Auth
-import qualified Xynolog.Gateway as Gateway
-import qualified Xynolog.Internal.Broadcast as Broadcast
-import Xynolog.Internal.Kept (personKey)
-import qualified Xynolog.Internal.Lifetime as Lifetime
-import qualified Xynolog.Internal.StateValue as State
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.SessionStorage as Storage
-import qualified Xynolog.SignIn as SignIn
-import qualified Xynolog.Timing.Settings as Timing
-import qualified Xynolog.Tokens as Tokens
-import qualified Xynolog.Transport as Transport
-import qualified Xynolog.Internal.Transport as Transport (relayErrors)
-import Xynolog.Timing (RetryBudget)
-import Xynolog.Types (KbTarget(..), StoredSession(..), UserResponse(..), userIdValue, KbEndpoint(..), HttpEndpoint, DeviceCode, IssuerEndpoints(..), IssuedTokens(..), SessionEndReason(..))
+import Data.Text qualified as Text
 import Streaming (Of, Stream)
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
+import Xynolog.Auth qualified as Auth
+import Xynolog.Client qualified as Client
+import Xynolog.ErrorCodes qualified as Code
+import Xynolog.Errors
+import Xynolog.Gateway qualified as Gateway
+import Xynolog.Http qualified as Http
+import Xynolog.Internal.Broadcast qualified as Broadcast
+import Xynolog.Internal.Issuer qualified as Issuer
+import Xynolog.Internal.Kept (personKey)
+import Xynolog.Internal.Lifetime qualified as Lifetime
+import Xynolog.Internal.StateValue qualified as State
+import Xynolog.Internal.Transport qualified as Transport (relayErrors)
+import Xynolog.Retry qualified as Retry
+import Xynolog.ServiceToken qualified as Service
+import Xynolog.SessionStorage qualified as Storage
+import Xynolog.SignIn qualified as SignIn
+import Xynolog.Timing (RetryBudget)
+import Xynolog.Timing.Settings qualified as Timing
+import Xynolog.Tokens qualified as Tokens
+import Xynolog.Transport qualified as Transport
+import Xynolog.Types (DeviceCode, HttpEndpoint, IssuedTokens (..), IssuerEndpoints (..), KbEndpoint (..), KbTarget (..), SessionEndReason (..), StoredSession (..), UserResponse (..), userIdValue)
+import Prelude hiding (id)
+import Prelude qualified
 
 data SessionOptions = SessionOptions
-  { sessionId :: Text
-  , sessionKb :: KbTarget
-  , sessionKept :: SignIn.KeptSignIn
-  , sessionInitialToken :: Maybe Text
-  , sessionRefresh :: Maybe (Maybe Text -> IO (Maybe Text))
-  , sessionValidate :: Maybe (Client.Client -> Text -> IO (Maybe UserResponse))
-  , sessionOnAuthFailed :: SessionEndReason -> IO ()
-  , sessionWallNow :: IO Scientific
-  -- ^ Epoch seconds. Waits use the separate monotonic clock, never this reading.
+  { sessionId :: Text,
+    sessionKb :: KbTarget,
+    sessionKept :: SignIn.KeptSignIn,
+    sessionInitialToken :: Maybe Text,
+    sessionRefresh :: Maybe (Maybe Text -> IO (Maybe Text)),
+    sessionValidate :: Maybe (Client.Client -> Text -> IO (Maybe UserResponse)),
+    sessionOnAuthFailed :: SessionEndReason -> IO (),
+    -- | Epoch seconds. Waits use the separate monotonic clock, never this reading.
+    sessionWallNow :: IO Scientific
   }
 
 data OpenedSession = OpenedSession
-  { openedSession :: Session
-  , closeOpenedSession :: IO ()
+  { openedSession :: Session,
+    closeOpenedSession :: IO ()
   }
 
 data Session = Session
-  { configuration :: SessionOptions
-  , owner :: Client.Client
-  , clock :: Retry.RetryOptions
-  , timings :: Timing.Settings
-  , life :: Lifetime.Lifetime
-  , heldToken :: State.StateValue (Maybe Text)
-  , renewing :: TVar (Maybe Text)
-  -- ^ Handed to each renewal: the token held, expired or not, the one found
-  -- stored at the start though expired, or, once a renewal that got no answer
-  -- left none held, the one that renewal was for.
-  , heldUser :: State.StateValue (Maybe UserResponse)
-  , initialized :: TMVar (Either SomeException ())
-  , commands :: TQueue Command
-  , refusing :: TVar (Maybe (TMVar (Either SomeException (Maybe Text))))
-  , revision :: TVar Integer
-  , unsubscribe :: IO ()
-  , said :: Broadcast.Broadcast (Either SessionError TransportError)
-  , stopRelaying :: STM ()
-  -- ^ Stops saying the transport's failures on the session's stream, where
-  -- each is said within the transaction that reports it.
+  { configuration :: SessionOptions,
+    owner :: Client.Client,
+    clock :: Retry.RetryOptions,
+    timings :: Timing.Settings,
+    life :: Lifetime.Lifetime,
+    heldToken :: State.StateValue (Maybe Text),
+    -- | Handed to each renewal: the token held, expired or not, the one found
+    -- stored at the start though expired, or, once a renewal that got no answer
+    -- left none held, the one that renewal was for.
+    renewing :: TVar (Maybe Text),
+    heldUser :: State.StateValue (Maybe UserResponse),
+    initialized :: TMVar (Either SomeException ()),
+    commands :: TQueue Command,
+    refusing :: TVar (Maybe (TMVar (Either SomeException (Maybe Text)))),
+    revision :: TVar Integer,
+    unsubscribe :: IO (),
+    said :: Broadcast.Broadcast (Either SessionError TransportError),
+    -- | Stops saying the transport's failures on the session's stream, where
+    -- each is said within the transaction that reports it.
+    stopRelaying :: STM ()
   }
 
 data Command = Refusal (Maybe Text) (TMVar (Either SomeException (Maybe Text))) | Changed Integer (Maybe StoredSession)
+
 data Wake = Scheduled | Unanswered
+
 data Schedule = Schedule (Maybe (Integer, Wake)) Integer
 
 data Renewal = Renewed Text | NoGrant | Unrenewed Bool | Superseded
+
 -- The Bool distinguishes a final refusal (including no remaining grant)
 -- from a failure that left the issuer's answer unknown.
 
 id :: Session -> Text
 id = sessionId . configuration
+
 kb :: Session -> KbTarget
 kb = sessionKb . configuration
+
 client :: Session -> Client.Client
 client = owner
+
 token :: Session -> State.StateValue (Maybe Text)
 token = heldToken
+
 user :: Session -> State.StateValue (Maybe UserResponse)
 user = heldUser
+
 streamState :: Session -> State.StateValue Transport.ConnectionState
 streamState = Client.state . owner
+
 -- | What went wrong, each said once, in the order met: the session's own
 -- errors and its transport's failures, each said within the transaction
 -- that reports it. A session made before anyone has read its transport's
@@ -121,10 +152,12 @@ errors :: Session -> (Stream (Of (Either SessionError TransportError)) IO () -> 
 errors session consume = Broadcast.withSubscription (said session) $ \reader ->
   let reading = do
         value <- liftIO (atomically (Broadcast.next reader))
-        case value of Nothing -> pure (); Just next -> Stream.yield next >> reading
-  in consume reading
+        case value of { Nothing -> pure (); Just next -> Stream.yield next >> reading }
+   in consume reading
+
 ready :: Session -> IO ()
 ready session = atomically (readTMVar (initialized session)) >>= either throwIO pure
+
 expiresAt :: Session -> STM (Maybe Scientific)
 expiresAt session = (>>= Tokens.tokenExpiry) <$> State.current (token session)
 
@@ -184,35 +217,44 @@ fromHttp http storage options = mask $ \restore -> do
       refreshRefused refused = do
         session <- atomically (readTMVar holder) >>= either throwIO pure
         refresh session (Just refused)
-      actual = http { Http.httpToken=readToken, Http.httpRenewToken=refreshRefused }
+      actual = http {Http.httpToken = readToken, Http.httpRenewToken = refreshRefused}
   owned <- restore (Client.fromHttp actual Nothing)
   -- Before the keeper, so nothing it says comes before what the transport met first.
   (stream, unrelay) <- atomically (saying owned)
   keeps <- case storage of
     Just kept -> do
-      keeper <- Keeper kept (sessionKept options) owned (kbTargetId (sessionKb options)) ((*1000) <$> sessionWallNow options) stream
-        <$> newMVar Unnamed
+      keeper <-
+        Keeper kept (sessionKept options) owned (kbTargetId (sessionKb options)) ((* 1000) <$> sessionWallNow options) stream
+          <$> newMVar Unnamed
       restore (mapM_ (attach keeper) (stored >>= storedSessionPersonKey)) `onException` Client.dispose owned
-      pure (Just (keeper, options { sessionKept=forgetting keeper, sessionValidate=recording keeper <$> sessionValidate options }))
+      pure (Just (keeper, options {sessionKept = forgetting keeper, sessionValidate = recording keeper <$> sessionValidate options}))
     Nothing -> pure Nothing
   outcome <- try (restore (construct owned (maybe options snd keeps) (Http.httpTime http) (Http.httpTiming http) shared stream unrelay))
   atomically (putTMVar holder outcome)
   let stopped = mapM_ (stop . fst) keeps
   case outcome of
     Left problem -> (Client.dispose owned `finally` stopped) >> throwIO problem
-    Right session -> pure (OpenedSession session (Client.dispose owned `finally` (halt session
-      `finally` (stopped `finally` (closeTold session `finally` silence session)))))
+    Right session ->
+      pure
+        ( OpenedSession
+            session
+            ( Client.dispose owned
+                `finally` ( halt session
+                              `finally` (stopped `finally` (closeTold session `finally` silence session))
+                          )
+            )
+        )
 
 -- | What a session's client keeps for the person its sign-in names.
 data Keeper = Keeper
-  { keeperStorage :: Storage.SessionStorage
-  , keeperSignIn :: SignIn.KeptSignIn
-  , keeperClient :: Client.Client
-  , keeperKbId :: Text
-  , keeperWallNowMs :: IO Scientific
-  , keeperSaid :: Broadcast.Broadcast (Either SessionError TransportError)
-  , keeperState :: MVar Keeping
-  -- ^ Held across each write's check and the write, and by every change.
+  { keeperStorage :: Storage.SessionStorage,
+    keeperSignIn :: SignIn.KeptSignIn,
+    keeperClient :: Client.Client,
+    keeperKbId :: Text,
+    keeperWallNowMs :: IO Scientific,
+    keeperSaid :: Broadcast.Broadcast (Either SessionError TransportError),
+    -- | Held across each write's check and the write, and by every change.
+    keeperState :: MVar Keeping
   }
 
 -- | Nothing kept yet; kept for one person; or nothing kept from now on.
@@ -223,7 +265,8 @@ data Keeping = Unnamed | Named Text | Over
 attach :: Keeper -> Text -> IO ()
 attach keeper person = modifyMVar_ (keeperState keeper) $ \state -> case state of
   Unnamed -> do
-    Client.keepIn (keeperClient keeper)
+    Client.keepIn
+      (keeperClient keeper)
       (Client.CachePersistence (whileNamed keeper) (keeperKbId keeper) person (keeperWallNowMs keeper))
     pure (Named person)
   _ -> pure state
@@ -231,12 +274,15 @@ attach keeper person = modifyMVar_ (keeperState keeper) $ \state -> case state o
 -- | The keeper's storage: each write made only while the sign-in names the
 -- person kept for. A dropped update answers from what is stored, unchanged.
 whileNamed :: Keeper -> Storage.SessionStorage
-whileNamed keeper = Storage.SessionStorage (Storage.get underlying)
-  (\key value -> made keeper (Storage.set underlying key value) (pure ()))
-  (Storage.delete underlying)
-  (\key change -> made keeper (Storage.update underlying key change) (snd . change <$> Storage.get underlying key))
-  (Storage.subscribe underlying)
-  where underlying = keeperStorage keeper
+whileNamed keeper =
+  Storage.SessionStorage
+    (Storage.get underlying)
+    (\key value -> made keeper (Storage.set underlying key value) (pure ()))
+    (Storage.delete underlying)
+    (\key change -> made keeper (Storage.update underlying key change) (snd . change <$> Storage.get underlying key))
+    (Storage.subscribe underlying)
+  where
+    underlying = keeperStorage keeper
 
 data Write result = Made result | Refused SomeException | Unreadable SomeException | Dropped
 
@@ -247,8 +293,9 @@ made keeper write dropped = do
       held <- trySync (SignIn.held (keeperSignIn keeper))
       case held of
         Left problem -> pure (Over, Unreadable problem)
-        Right current | (current >>= storedSessionPersonKey) == Just person ->
-          (,) state . either Refused Made <$> trySync write
+        Right current
+          | (current >>= storedSessionPersonKey) == Just person ->
+              (,) state . either Refused Made <$> trySync write
         Right _ -> pure (Over, Dropped)
     _ -> pure (state, Dropped)
   case outcome of
@@ -275,13 +322,16 @@ recording keeper validateWith owned access = do
       Right False -> pure ()
       Left problem -> do
         ended <- modifyMVar (keeperState keeper) $ \state -> pure $ case state of Over -> (state, False); _ -> (Over, True)
-        when ended $ tell keeper Code.SessionKeepFailed
-          ("The sign-in could not record the person the gateway named: " <> Text.pack (displayException problem))
+        when ended $
+          tell
+            keeper
+            Code.SessionKeepFailed
+            ("The sign-in could not record the person the gateway named: " <> Text.pack (displayException problem))
   pure answer
 
 -- | The session's sign-in, whose forget stops what the client keeps first.
 forgetting :: Keeper -> SignIn.KeptSignIn
-forgetting keeper = (keeperSignIn keeper) { SignIn.forget = stop keeper >> SignIn.forget (keeperSignIn keeper) }
+forgetting keeper = (keeperSignIn keeper) {SignIn.forget = stop keeper >> SignIn.forget (keeperSignIn keeper)}
 
 -- | Nothing more is kept, once a write being made is made.
 stop :: Keeper -> IO ()
@@ -305,13 +355,19 @@ fromKeptSession http storage options = openKept http storage options Nothing
 openKept :: Http.HttpOptions -> Maybe Storage.SessionStorage -> SessionOptions -> Maybe Text -> IO OpenedSession
 openKept http storage options initial = do
   endpoint <- httpTarget options
-  base <- either (\message -> throwIO (SessionError Code.SessionConstructFailed message (kbTargetId (sessionKb options)))) pure
-    (Gateway.gatewayUrl endpoint)
+  base <-
+    either
+      (\message -> throwIO (SessionError Code.SessionConstructFailed message (kbTargetId (sessionKb options))))
+      pure
+      (Gateway.gatewayUrl endpoint)
   let issuer = Issuer.IssuerOptions (Http.httpClient http) (Http.httpTime http) (Http.httpTiming http)
       kept = sessionKept options
-      actual = options { sessionInitialToken=initial,
-        sessionRefresh=Just (\holding -> Issuer.refreshSession issuer kept holding (sessionWallNow options)) }
-  opened <- fromHttp http { Http.httpBaseUrl=base } storage actual
+      actual =
+        options
+          { sessionInitialToken = initial,
+            sessionRefresh = Just (\holding -> Issuer.refreshSession issuer kept holding (sessionWallNow options))
+          }
+  opened <- fromHttp http {Http.httpBaseUrl = base} storage actual
   ready (openedSession opened) `onException` closeOpenedSession opened
   pure opened
 
@@ -328,9 +384,16 @@ signInDevice :: Http.HttpOptions -> Maybe Storage.SessionStorage -> SessionOptio
 signInDevice http storage options onCode = do
   endpoint <- httpTarget options
   let issuerOptions = Issuer.IssuerOptions (Http.httpClient http) (Http.httpTime http) (Http.httpTiming http)
-  (issuer,issued) <- Issuer.signInWithDeviceGrant issuerOptions endpoint onCode
-  let stored = StoredSession (issuedTokensAccess issued) Issuer.scriptClientId Nothing (issuedTokensRefresh issued)
-        (issuerEndpointsRevocation issuer) (issuerEndpointsToken issuer) mempty
+  (issuer, issued) <- Issuer.signInWithDeviceGrant issuerOptions endpoint onCode
+  let stored =
+        StoredSession
+          (issuedTokensAccess issued)
+          Issuer.scriptClientId
+          Nothing
+          (issuedTokensRefresh issued)
+          (issuerEndpointsRevocation issuer)
+          (issuerEndpointsToken issuer)
+          mempty
   fromIssuedSession http storage options stored
 
 -- | An account proves itself to its issuer, and the gateway names that account.
@@ -339,8 +402,11 @@ signInDevice http storage options onCode = do
 signInAgent :: Http.HttpOptions -> SessionOptions -> RetryBudget -> Service.ServiceToken -> IO OpenedSession
 signInAgent http options budget service = Retry.retryWithBackoff (Http.httpTime http) budget accepts delay $ do
   endpoint <- httpTarget options
-  base <- either (\message -> throwIO (SessionError Code.SessionConstructFailed message (kbTargetId (sessionKb options)))) pure
-    (Gateway.gatewayUrl endpoint)
+  base <-
+    either
+      (\message -> throwIO (SessionError Code.SessionConstructFailed message (kbTargetId (sessionKb options))))
+      pure
+      (Gateway.gatewayUrl endpoint)
   access <- Service.token service
   ephemeral <- SignIn.newMemorySignIn
   refused <- newIORef Nothing
@@ -351,10 +417,14 @@ signInAgent http options budget service = Retry.retryWithBackoff (Http.httpTime 
           case answer of
             Left failure -> writeIORef refused (Just failure) >> throwIO failure
             Right person -> pure (Just person)
-      actual=options { sessionKept=ephemeral, sessionInitialToken=Just access,
-        sessionRefresh=Just (\held -> Just <$> maybe (Service.token service) (Service.renew service) held),
-        sessionValidate=Just validateAgent }
-  opened <- fromHttp http { Http.httpBaseUrl=base } Nothing actual
+      actual =
+        options
+          { sessionKept = ephemeral,
+            sessionInitialToken = Just access,
+            sessionRefresh = Just (\held -> Just <$> maybe (Service.token service) (Service.renew service) held),
+            sessionValidate = Just validateAgent
+          }
+  opened <- fromHttp http {Http.httpBaseUrl = base} Nothing actual
   ready (openedSession opened) `onException` closeOpenedSession opened
   person <- atomically (State.current (user (openedSession opened)))
   case person of
@@ -366,11 +436,13 @@ signInAgent http options budget service = Retry.retryWithBackoff (Http.httpTime 
   where
     accepts :: SomeException -> Bool
     accepts failure = case fromException failure of
-      Just problem -> transportErrorCode problem/=Code.TransportUnauthorized
-        && (httpStatus problem==Nothing || Retry.retryable Retry.Boot (httpStatus problem) Nothing False)
+      Just problem ->
+        transportErrorCode problem /= Code.TransportUnauthorized
+          && (httpStatus problem == Nothing || Retry.retryable Retry.Boot (httpStatus problem) Nothing False)
       Nothing -> case fromException failure of
-        Just problem -> signInErrorCode problem `elem` [Code.SignInDiscovery,Code.SignInExchange]
-          && (signInStatus problem==Nothing || Retry.retryable Retry.Boot (signInStatus problem) Nothing False)
+        Just problem ->
+          signInErrorCode problem `elem` [Code.SignInDiscovery, Code.SignInExchange]
+            && (signInStatus problem == Nothing || Retry.retryable Retry.Boot (signInStatus problem) Nothing False)
         Nothing -> False
     delay :: SomeException -> Maybe Integer
     delay failure = fromException failure >>= retryAfterMs
@@ -378,14 +450,26 @@ signInAgent http options budget service = Retry.retryWithBackoff (Http.httpTime 
 httpTarget :: SessionOptions -> IO HttpEndpoint
 httpTarget options = case kbTargetEndpoint (sessionKb options) of
   KbEndpointBranch1 endpoint -> pure endpoint
-  KbEndpointBranch2 _ -> throwIO (SessionError Code.SessionConstructFailed
-    "This sign-in requires an HTTP knowledge base" (kbTargetId (sessionKb options)))
+  KbEndpointBranch2 _ ->
+    throwIO
+      ( SessionError
+          Code.SessionConstructFailed
+          "This sign-in requires an HTTP knowledge base"
+          (kbTargetId (sessionKb options))
+      )
 
 -- | The session over @stream@ and the relay @unrelay@ stops, both from
 -- 'saying'. Should this fail, its caller stops the relay, or closes the
 -- client, which ends it.
-construct :: Client.Client -> SessionOptions -> Retry.RetryOptions -> Timing.Settings
-  -> State.StateValue (Maybe Text) -> Broadcast.Broadcast (Either SessionError TransportError) -> STM () -> IO Session
+construct ::
+  Client.Client ->
+  SessionOptions ->
+  Retry.RetryOptions ->
+  Timing.Settings ->
+  State.StateValue (Maybe Text) ->
+  Broadcast.Broadcast (Either SessionError TransportError) ->
+  STM () ->
+  IO Session
 construct owned options time settings shared stream unrelay = mask $ \restore -> do
   lifetime <- Lifetime.newLifetime "Session is closed"
   person <- atomically (State.newStateValue Nothing)
@@ -394,15 +478,19 @@ construct owned options time settings shared stream unrelay = mask $ \restore ->
   queue <- newTQueueIO
   flight <- newTVarIO Nothing
   generation <- newTVarIO 0
-  detach <- restore (SignIn.subscribe (sessionKept options) $ \stored -> atomically $ do
-    closed <- Lifetime.isClosed lifetime
-    unless closed $ do
-      modifyTVar' generation (+1)
-      version <- readTVar generation
-      State.update shared (storedSessionAccess <$> stored)
-      writeTVar handed Nothing
-      when (stored==Nothing) (State.update person Nothing)
-      writeTQueue queue (Changed version stored)) `onException` Lifetime.close lifetime
+  detach <-
+    restore
+      ( SignIn.subscribe (sessionKept options) $ \stored -> atomically $ do
+          closed <- Lifetime.isClosed lifetime
+          unless closed $ do
+            modifyTVar' generation (+ 1)
+            version <- readTVar generation
+            State.update shared (storedSessionAccess <$> stored)
+            writeTVar handed Nothing
+            when (stored == Nothing) (State.update person Nothing)
+            writeTQueue queue (Changed version stored)
+      )
+      `onException` Lifetime.close lifetime
   released <- newTVarIO False
   let detachOnce = do
         first <- atomically $ do
@@ -414,8 +502,10 @@ construct owned options time settings shared stream unrelay = mask $ \restore ->
       -- A refusal still waiting is given no token once this closes the lifetime.
       finish = do
         atomically (void (tryPutTMVar done (Left (toException (BusRequestError Code.BusRequestClosed "Session is closed" Nothing)))))
-        unsubscribe session `finally` (atomically (State.complete shared >> State.complete person)
-          `finally` Lifetime.close lifetime)
+        unsubscribe session
+          `finally` ( atomically (State.complete shared >> State.complete person)
+                        `finally` Lifetime.close lifetime
+                    )
       work = do
         schedule <- newIORef (Schedule Nothing (Timing.reconnectMs settings))
         started <- try (startup session schedule)
@@ -437,16 +527,21 @@ refresh session refused = do
   answer <- atomically $ do
     closed <- Lifetime.isClosed (life session)
     current <- State.current (token session)
-    if closed then pure (Left Nothing) else if isJust refused && refused/=current then pure (Left current) else do
-      active <- readTVar (refusing session)
-      pending <- case active of
-        Just waiting -> pure waiting
-        Nothing -> do
-          waiting <- newEmptyTMVar
-          writeTVar (refusing session) (Just waiting)
-          writeTQueue (commands session) (Refusal current waiting)
-          pure waiting
-      pure (Right pending)
+    if closed
+      then pure (Left Nothing)
+      else
+        if isJust refused && refused /= current
+          then pure (Left current)
+          else do
+            active <- readTVar (refusing session)
+            pending <- case active of
+              Just waiting -> pure waiting
+              Nothing -> do
+                waiting <- newEmptyTMVar
+                writeTVar (refusing session) (Just waiting)
+                writeTQueue (commands session) (Refusal current waiting)
+                pure waiting
+            pure (Right pending)
   case answer of
     Left current -> pure current
     Right pending -> atomically (ended `orElse` readTMVar pending) >>= either throwIO pure
@@ -458,9 +553,9 @@ loop session schedule = do
   Schedule timer _ <- readIORef schedule
   next <- case timer of
     Nothing -> Left <$> atomically (readTQueue (commands session))
-    Just (due,kind) -> do
+    Just (due, kind) -> do
       answer <- race (atomically (peekTQueue (commands session))) (Retry.retryWaitUntil (clock session) due)
-      case answer of Left _ -> Left <$> atomically (readTQueue (commands session)); Right () -> pure (Right kind)
+      case answer of { Left _ -> Left <$> atomically (readTQueue (commands session)); Right () -> pure (Right kind) }
   case next of
     Left (Refusal expected result) -> do
       answer <- try $ do
@@ -472,12 +567,12 @@ loop session schedule = do
       either throwIO (const (pure ())) answer
     Left (Changed version stored) -> do
       current <- readTVarIO (revision session)
-      when (current==version) $ do
+      when (current == version) $ do
         clear session schedule
         forM_ stored (scheduleToken session schedule . storedSessionAccess)
     Right kind -> do
       modifyIORef' schedule (\(Schedule _ step) -> Schedule Nothing step)
-      ask <- case kind of Scheduled -> pure False; Unanswered -> (==Nothing) <$> atomically (State.current (user session))
+      ask <- case kind of Scheduled -> pure False; Unanswered -> (== Nothing) <$> atomically (State.current (user session))
       void (renew session schedule ask False)
   loop session schedule
 
@@ -494,13 +589,17 @@ attempt session = case sessionRefresh (configuration session) of
     -- One that comes back once the session is closed has nobody left to give
     -- its token to, and ends nothing.
     closed <- atomically (Lifetime.isClosed (life session))
-    pure $ if current/=version || closed then Superseded else case outcome of
-      Right (Just value) -> Renewed value
-      Right Nothing -> NoGrant
-      Left problem -> Unrenewed $ case fromException problem of
-        Just failure -> signInErrorCode failure == Code.SignInExchange
-          && maybe False (\status -> not (Retry.retryable Retry.Refresh (Just status) Nothing False)) (signInStatus failure)
-        Nothing -> False
+    pure $
+      if current /= version || closed
+        then Superseded
+        else case outcome of
+          Right (Just value) -> Renewed value
+          Right Nothing -> NoGrant
+          Left problem -> Unrenewed $ case fromException problem of
+            Just failure ->
+              signInErrorCode failure == Code.SignInExchange
+                && maybe False (\status -> not (Retry.retryable Retry.Refresh (Just status) Nothing False)) (signInStatus failure)
+            Nothing -> False
 
 trySync :: IO value -> IO (Either SomeException value)
 trySync action = do
@@ -519,18 +618,20 @@ startup session schedule = do
     Just value -> do
       now <- sessionWallNow (configuration session)
       let expired = Tokens.isTokenExpired (storedSessionAccess value) now
-      if not expired then validate session schedule (storedSessionAccess value) False True else do
-        atomically (writeTVar (renewing session) (Just (storedSessionAccess value)))
-        outcome <- attempt session
-        case outcome of
-          Renewed access -> accept session schedule access >> validate session schedule access True True
-          Superseded -> pure ()
-          NoGrant -> forget session >> clear session schedule
-          Unrenewed True -> forget session >> clear session schedule
-          Unrenewed False -> do
-            withhold session
-            later session schedule
-            report session Code.SessionAuthFailed "The issuer could not renew the stored credential"
+      if not expired
+        then validate session schedule (storedSessionAccess value) False True
+        else do
+          atomically (writeTVar (renewing session) (Just (storedSessionAccess value)))
+          outcome <- attempt session
+          case outcome of
+            Renewed access -> accept session schedule access >> validate session schedule access True True
+            Superseded -> pure ()
+            NoGrant -> forget session >> clear session schedule
+            Unrenewed True -> forget session >> clear session schedule
+            Unrenewed False -> do
+              withhold session
+              later session schedule
+              report session Code.SessionAuthFailed "The issuer could not renew the stored credential"
 
 validate :: Session -> IORef Schedule -> Text -> Bool -> Bool -> IO ()
 validate session schedule access justIssued reportUnreachable = case sessionValidate (configuration session) of
@@ -540,18 +641,20 @@ validate session schedule access justIssued reportUnreachable = case sessionVali
     answer <- trySync (action (client session) access)
     latest <- readTVarIO (revision session)
     current <- atomically (State.current (token session))
-    when (current == Just access && latest==version) $ case answer of
+    when (current == Just access && latest == version) $ case answer of
       Right person -> atomically (State.update (user session) person)
       Left problem -> case fromException problem of
-        Just failure | transportErrorCode failure == Code.TransportUnauthorized ->
-          if justIssued then signedOut session schedule SessionEndReasonRefused Code.SessionCredentialRefused
-            else void (renew session schedule True reportUnreachable)
+        Just failure
+          | transportErrorCode failure == Code.TransportUnauthorized ->
+              if justIssued
+                then signedOut session schedule SessionEndReasonRefused Code.SessionCredentialRefused
+                else void (renew session schedule True reportUnreachable)
         _ -> when reportUnreachable (report session Code.SessionAuthFailed "The gateway could not confirm the credential")
 
 renew :: Session -> IORef Schedule -> Bool -> Bool -> IO (Maybe Text)
 renew session schedule ask reportUnreachable = do
-  hadToken <- (/=Nothing) <$> atomically (State.current (token session))
-  hadPerson <- (/=Nothing) <$> atomically (State.current (user session))
+  hadToken <- (/= Nothing) <$> atomically (State.current (token session))
+  hadPerson <- (/= Nothing) <$> atomically (State.current (user session))
   outcome <- attempt session
   case outcome of
     Superseded -> pure ()
@@ -560,8 +663,11 @@ renew session schedule ask reportUnreachable = do
       case kept of
         Left _ -> unanswered
         Right Nothing -> do
-          atomically (State.update (token session) Nothing >> State.update (user session) Nothing
-            >> writeTVar (renewing session) Nothing)
+          atomically
+            ( State.update (token session) Nothing
+                >> State.update (user session) Nothing
+                >> writeTVar (renewing session) Nothing
+            )
           clear session schedule
         Right (Just _) -> signedOut session schedule SessionEndReasonExpired Code.SessionRefreshExhausted
     Renewed access -> do
@@ -594,14 +700,18 @@ withhold session = atomically $ do
 accept :: Session -> IORef Schedule -> Text -> IO ()
 accept session schedule access = do
   clear session schedule
-  atomically (modifyTVar' (revision session) (+1) >> State.update (token session) (Just access))
+  atomically (modifyTVar' (revision session) (+ 1) >> State.update (token session) (Just access))
   scheduleToken session schedule access
 
 forget :: Session -> IO ()
 forget session = do
   SignIn.forget (sessionKept (configuration session))
-  atomically (modifyTVar' (revision session) (+1) >> State.update (token session) Nothing >> State.update (user session) Nothing
-    >> writeTVar (renewing session) Nothing)
+  atomically
+    ( modifyTVar' (revision session) (+ 1)
+        >> State.update (token session) Nothing
+        >> State.update (user session) Nothing
+        >> writeTVar (renewing session) Nothing
+    )
 
 signedOut :: Session -> IORef Schedule -> SessionEndReason -> Code.SessionCode -> IO ()
 signedOut session schedule reason code = do
@@ -615,6 +725,7 @@ report session code message = atomically (Broadcast.publish (said session) (Left
 
 clear :: Session -> IORef Schedule -> IO ()
 clear session schedule = writeIORef schedule (Schedule Nothing (Timing.reconnectMs (timings session)))
+
 scheduleToken :: Session -> IORef Schedule -> Text -> IO ()
 scheduleToken session schedule access = do
   now <- sessionWallNow (configuration session)
@@ -622,16 +733,17 @@ scheduleToken session schedule access = do
     Nothing -> pure Nothing
     Just delay -> do
       instant <- Retry.retryNow (clock session)
-      pure (Just (instant + ceiling (delay*1000000000),Scheduled))
+      pure (Just (instant + ceiling (delay * 1000000000), Scheduled))
   modifyIORef' schedule (\(Schedule _ step) -> Schedule due step)
+
 later :: Session -> IORef Schedule -> IO ()
 later session schedule = do
   Schedule _ step <- readIORef schedule
   draw <- Retry.retryRandom (clock session)
-  unless (draw>=0 && draw<=1) (throwIO Retry.InvalidJitter)
+  unless (draw >= 0 && draw <= 1) (throwIO Retry.InvalidJitter)
   now <- Retry.retryNow (clock session)
-  let wait = ceiling (fromInteger (step*1000000)*(1+toRational draw)/2)
-  writeIORef schedule (Schedule (Just (now+wait,Unanswered)) (min (2*step) (Timing.maxReconnectMs (timings session))))
+  let wait = ceiling (fromInteger (step * 1000000) * (1 + toRational draw) / 2)
+  writeIORef schedule (Schedule (Just (now + wait, Unanswered)) (min (2 * step) (Timing.maxReconnectMs (timings session))))
 
 -- | Ends the session's work, observations and errors stream. The client
 -- stays its owner's: closed first, what its transport said, its close's
@@ -642,8 +754,9 @@ dispose :: Session -> IO ()
 dispose session = halt session `finally` (closeTold session `finally` silence session)
 
 halt :: Session -> IO ()
-halt session = Lifetime.close (life session) `finally`
-  (unsubscribe session `finally` atomically (State.complete (token session) >> State.complete (user session)))
+halt session =
+  Lifetime.close (life session)
+    `finally` (unsubscribe session `finally` atomically (State.complete (token session) >> State.complete (user session)))
 
 -- | Once the client's transport is closed, waits until its failures end:
 -- until its close has told what it met, which is then said on the session's

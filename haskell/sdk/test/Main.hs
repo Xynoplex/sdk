@@ -2,76 +2,76 @@
 
 module Main (main) where
 
+import ActorCases (actorCases)
+import AnnotationCases (annotationCases)
+import BusCases (busCases)
+import BusLogCases (busLogCases)
+import CacheCases (cacheCases)
+import CacheDocumentCases (cacheDocumentCases)
+import ClientAssertionCases (clientAssertionCases)
+import ClockCases (cacheClockCases, clientClockCases, clockCensus, discoveryClockCases, httpClockCases, jobPollClockCases)
 import Control.Applicative ((<|>))
 import Control.Monad (forM, forM_, unless)
-import Data.Aeson (FromJSON, Value(..), eitherDecodeStrict', parseJSON, toJSON)
+import Data.Aeson (FromJSON, Value (..), eitherDecodeStrict', parseJSON, toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (parseEither)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString as Bytes
+import Data.ByteString qualified as Bytes
 import Data.Either (isLeft)
 import Data.Foldable (toList)
 import Data.IORef (modifyIORef', newIORef, readIORef)
 import Data.List (isSuffixOf, sortOn)
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Vector as V
-import Xynolog.Internal.Generated.RoundTrip (roundTrip)
-import Xynolog.Internal.Generated.ChannelRoundTrip (roundTripChannel, channelMetadata, operationMetadata)
-import qualified Xynolog.Channels as Channels
-import Xynolog.Internal.Generated.ErrorRoundTrip (roundTripError)
-import Xynolog.Internal.Generated.TimingValues (timingValues)
-import qualified Xynolog.Internal.Generated.DiscoveryReasonRoundTrip as DiscoveryReasons
-import qualified Xynolog.ErrorCodes as Errors
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.Internal.Required as Required
-import qualified Xynolog.Timing.Settings as TimingSettings
-import Xynolog.Internal.Generated.Schemas (schemas)
-import Xynolog.Internal.Schema (checkSchema, normalize, validate, validateNamed)
-import System.Directory (doesDirectoryExist, listDirectory)
-import System.Environment (getArgs)
-import System.IO (hSetBuffering, stdout, BufferMode(LineBuffering), utf8)
-import GHC.IO.Encoding (setFileSystemEncoding)
-import System.FilePath ((</>), takeBaseName)
-import Runtime (runtimeCases)
+import Data.Text qualified as T
+import Data.Vector qualified as V
+import DelegationCases (delegationCases, followerClockCases)
 import Discovery (discoveryCases)
-import BusCases (busCases)
-import HttpCases (httpCases)
-import HttpDiscoveryCases (httpDiscoveryCases)
-import AnnotationCases (annotationCases)
-import IdentityCases (identityCases)
-import BusLogCases (busLogCases)
-import PersistenceCases (persistenceCases)
-import CacheDocumentCases (cacheDocumentCases)
-import PersistedCases (persistedCases)
-import StateUnitCases (stateUnitCases)
 import FlowCases (flowCases)
-import ActorCases (actorCases)
-import TestingCases (testingCases)
-import RegistryCases (registryCases)
-import OpenResourceCases (openResourceCases)
-import RegistryErrorsCases (registryErrorsCases)
-import RegistryRuntimeCases (registryRuntimeCases)
-import LifetimeCases (lifetimeCases)
-import CacheCases (cacheCases)
-import WorkerCases (workerCases)
+import FrameCases (frameCases)
+import GHC.IO.Encoding (setFileSystemEncoding)
 import GatewayCases (gatewayCases)
 import HeldCases (heldCases, heldClockCases)
-import SurfaceCases (surfaceCases)
-import ClockCases (clockCensus, clientClockCases, jobPollClockCases, cacheClockCases, httpClockCases, discoveryClockCases)
-import ResourceCases (resourceCases)
-import FrameCases (frameCases)
+import HttpCases (httpCases)
+import HttpDiscoveryCases (httpDiscoveryCases)
+import IdentityCases (identityCases)
+import IssuerCases (deviceClockCases, issuerCases, serviceTokenCases)
+import LifetimeCases (lifetimeCases)
+import OpenResourceCases (openResourceCases)
+import PersistedCases (persistedCases)
+import PersistenceCases (persistenceCases)
 import RefreshCases (refreshCases)
-import TextCases (textCases)
-import SignInStoreCases (signInStoreCases, storeWriter)
-import ClientAssertionCases (clientAssertionCases)
-import IssuerCases (issuerCases, serviceTokenCases, deviceClockCases)
+import RegistryCases (registryCases)
+import RegistryErrorsCases (registryErrorsCases)
+import RegistryRuntimeCases (registryRuntimeCases)
+import ResourceCases (resourceCases)
+import Runtime (runtimeCases)
+import SchemaCases qualified
 import SessionCases (sessionCases, sessionClockCases)
+import SignInStoreCases (signInStoreCases, storeWriter)
+import StateUnitCases (stateUnitCases)
+import SurfaceCases (surfaceCases)
+import System.Directory (doesDirectoryExist, listDirectory)
+import System.Environment (getArgs)
+import System.FilePath (takeBaseName, (</>))
+import System.IO (BufferMode (LineBuffering), hSetBuffering, stdout, utf8)
+import TestingCases (testingCases)
+import TextCases (textCases)
 import TokenStorageCases (tokenStorageCases)
-import DelegationCases (delegationCases, followerClockCases)
-import qualified SchemaCases
+import WorkerCases (workerCases)
+import Xynolog.Channels qualified as Channels
+import Xynolog.ErrorCodes qualified as Errors
+import Xynolog.Internal.Generated.ChannelRoundTrip (channelMetadata, operationMetadata, roundTripChannel)
+import Xynolog.Internal.Generated.DiscoveryReasonRoundTrip qualified as DiscoveryReasons
+import Xynolog.Internal.Generated.ErrorRoundTrip (roundTripError)
+import Xynolog.Internal.Generated.RoundTrip (roundTrip)
+import Xynolog.Internal.Generated.Schemas (schemas)
+import Xynolog.Internal.Generated.TimingValues (timingValues)
+import Xynolog.Internal.Required qualified as Required
+import Xynolog.Internal.Schema (checkSchema, normalize, validate, validateNamed)
+import Xynolog.Retry qualified as Retry
+import Xynolog.Timing.Settings qualified as TimingSettings
 
 require :: String -> Bool -> IO ()
 require label good = unless good (ioError (userError label))
@@ -121,12 +121,16 @@ sample depth original
                 choose [Array (V.fromList items)]
               Just (String "object") -> do
                 let properties = object (at "properties" normalized)
-                required <- mapM (\key -> case key of
-                  String name -> do
-                    let member = Key.fromText name
-                    definition <- maybe (Left "required field has no schema") Right (KM.lookup member properties)
-                    (,) member <$> nested definition
-                  _ -> Left "required name is not a string") (array (at "required" normalized))
+                required <-
+                  mapM
+                    ( \key -> case key of
+                        String name -> do
+                          let member = Key.fromText name
+                          definition <- maybe (Left "required field has no schema") Right (KM.lookup member properties)
+                          (,) member <$> nested definition
+                        _ -> Left "required name is not a string"
+                    )
+                    (array (at "required" normalized))
                 choose [Object (KM.fromList required)]
               Nothing -> Right Null
               _ -> Left "sample shape unsupported"
@@ -149,10 +153,13 @@ schemaCases root = do
     let properties = object (at "properties" normalized)
         required = array (at "required" normalized)
     forM_ (KM.toList properties) $ \(key, field) -> do
-      if at "nullable" field /= Bool True then pure () else do
-        expectRoundTrip name (Object (KM.insert key Null (object value)))
-        if String (Key.toText key) `elem` required then pure ()
-          else expectRoundTrip name (Object (KM.delete key (object value)))
+      if at "nullable" field /= Bool True
+        then pure ()
+        else do
+          expectRoundTrip name (Object (KM.insert key Null (object value)))
+          if String (Key.toText key) `elem` required
+            then pure ()
+            else expectRoundTrip name (Object (KM.delete key (object value)))
     case value of
       Object fields | at "type" normalized == String "object" && at "additionalProperties" normalized /= Bool False && at "maxProperties" normalized == Null -> do
         extra <- case at "additionalProperties" normalized of
@@ -181,8 +188,11 @@ mergedCases root = do
       (Just merged, Nothing) -> pure (Right merged)
       (Nothing, Just (String refusal)) -> pure (Left (T.unpack refusal))
       _ -> ioError (userError ("merged-schema entry states neither a merge nor a refusal: " ++ show entry))
-    node <- maybe (ioError (userError ("no allOf node at " ++ show (name, path)))) pure
-      (Map.lookup name schemas >>= descend path)
+    node <-
+      maybe
+        (ioError (userError ("no allOf node at " ++ show (name, path))))
+        pure
+        (Map.lookup name schemas >>= descend path)
     let found = normalize schemas node
     pure ((name, path), if found == expected then Nothing else Just (show (name, path) ++ "\n  generator: " ++ show expected ++ "\n  runtime:   " ++ show found))
   let disagreements = [reason | (_, Just reason) <- listed]
@@ -190,9 +200,12 @@ mergedCases root = do
       stated = [(name, path) | (name, schema) <- Map.toAscList schemas, path <- stating [] schema]
   require ("normalize and the generator merge these allOf differently:\n" ++ unlines disagreements) (null disagreements)
   require "merged-schemas.json lists a node twice" (Set.size (Set.fromList places) == length places)
-  require ("merged-schemas.json differs from the nodes stating an allOf; missing: "
-      ++ show (Set.toList (Set.difference (Set.fromList stated) (Set.fromList places)))
-      ++ ", extra: " ++ show (Set.toList (Set.difference (Set.fromList places) (Set.fromList stated))))
+  require
+    ( "merged-schemas.json differs from the nodes stating an allOf; missing: "
+        ++ show (Set.toList (Set.difference (Set.fromList stated) (Set.fromList places)))
+        ++ ", extra: "
+        ++ show (Set.toList (Set.difference (Set.fromList places) (Set.fromList stated)))
+    )
     (Set.fromList stated == Set.fromList places)
   putStrLn ("PASS normalize merges each of " ++ show (length places) ++ " allOf as the generator does")
   where
@@ -207,11 +220,18 @@ mergedCases root = do
     stating :: [Text] -> Value -> [[Text]]
     stating path (Object fields) =
       [reverse path | KM.member "allOf" fields]
-      ++ concat [stating (Key.toText key : "properties" : path) property
-        | Just (Object properties) <- [KM.lookup "properties" fields], (key, property) <- KM.toList properties]
-      ++ concat [stating (Key.toText key : path) child | key <- ["additionalProperties", "items"], Just child <- [KM.lookup key fields]]
-      ++ concat [stating (T.pack (show i) : Key.toText key : path) part
-        | key <- ["allOf", "anyOf", "oneOf"], Just (Array parts) <- [KM.lookup key fields], (i, part) <- zip [0 :: Int ..] (toList parts)]
+        ++ concat
+          [ stating (Key.toText key : "properties" : path) property
+          | Just (Object properties) <- [KM.lookup "properties" fields],
+            (key, property) <- KM.toList properties
+          ]
+        ++ concat [stating (Key.toText key : path) child | key <- ["additionalProperties", "items"], Just child <- [KM.lookup key fields]]
+        ++ concat
+          [ stating (T.pack (show i) : Key.toText key : path) part
+          | key <- ["allOf", "anyOf", "oneOf"],
+            Just (Array parts) <- [KM.lookup key fields],
+            (i, part) <- zip [0 :: Int ..] (toList parts)
+          ]
     stating _ _ = []
 
 identifierCases :: FilePath -> IO ()
@@ -227,10 +247,14 @@ identifierCases root = do
 filesUnder :: FilePath -> IO [FilePath]
 filesUnder directory = do
   names <- listDirectory directory
-  fmap concat $ mapM (\name -> do
-    let path = directory </> name
-    nested <- doesDirectoryExist path
-    if nested then filesUnder path else pure [path | ".json" `isSuffixOf` name]) names
+  fmap concat $
+    mapM
+      ( \name -> do
+          let path = directory </> name
+          nested <- doesDirectoryExist path
+          if nested then filesUnder path else pure [path | ".json" `isSuffixOf` name]
+      )
+      names
 
 corpusCases :: FilePath -> IO ()
 corpusCases root = do
@@ -275,8 +299,9 @@ corpusCases root = do
     files <- filesUnder (root </> "protocol/conformance" </> part)
     forM_ files $ \path -> do
       value <- readJSON path
-      let initial = KM.fromList [(Key.fromText key, String key) | key <- ["r1", "r2", "r3", "a1", "a2"]]
-            <> KM.fromList [(Key.fromText key, String ("did:web:example.org:users:" <> key)) | key <- ["client", "participant"]]
+      let initial =
+            KM.fromList [(Key.fromText key, String key) | key <- ["r1", "r2", "r3", "a1", "a2"]]
+              <> KM.fromList [(Key.fromText key, String ("did:web:example.org:users:" <> key)) | key <- ["client", "participant"]]
       _ <- walk initial value
       pure ()
   count <- readIORef held
@@ -304,7 +329,8 @@ channelCases root = do
     stamped <- case payload of
       Object fields -> pure (Object (KM.insert "__testStamp" (String "gateway-owned") fields))
       _ -> ioError (userError "channel payload is not an object")
-    require ("channel decoder lost a declared stamp or retained an unknown one on " ++ T.unpack name)
+    require
+      ("channel decoder lost a declared stamp or retained an unknown one on " ++ T.unpack name)
       (roundTripChannel name stamped == Right payload)
     require "common channel shape disagrees with the typed codec" (Required.faultChannel name stamped == Nothing)
     require "channel accepted a non-object payload" (isLeft (roundTripChannel name Null))
@@ -339,26 +365,35 @@ factCases root = do
   timings <- readJSON (root </> "protocol/specs/src/client/timing.json")
   let expectedTiming = Map.fromList [(key, at "value" row) | row <- array (at "timing" timings), String key <- [at "name" row]]
   require "timing constants or retry budgets differ from spec" (not (Map.null expectedTiming) && expectedTiming == timingValues)
-  require "configurable timings differ from the protocol constants"
-    (toJSON TimingSettings.protocolSettings == Object (KM.fromList [(Key.fromText key,value) | (key,value) <- Map.toList expectedTiming]))
-  forM_ (Map.toList expectedTiming) $ \(key,value) -> do
+  require
+    "configurable timings differ from the protocol constants"
+    (toJSON TimingSettings.protocolSettings == Object (KM.fromList [(Key.fromText key, value) | (key, value) <- Map.toList expectedTiming]))
+  forM_ (Map.toList expectedTiming) $ \(key, value) -> do
     let changed = case value of
           Number number -> Number (number + 1)
           Object fields -> Object (KM.mapWithKey (\member number -> case number of Number n | member == "attempts" -> Number (n + 1); other -> other) fields)
           other -> other
         overridden = TimingSettings.withOverrides (Object (KM.singleton (Key.fromText key) changed))
-    require "a protocol timing cannot be overridden"
-      (fmap toJSON overridden == Right (Object (KM.fromList [(Key.fromText name,if name == key then changed else original) | (name,original) <- Map.toList expectedTiming])))
-  forM_ [Object (KM.singleton "unknown" (Number 1)), Object (KM.singleton "reconnectMs" (Number (-1))),
-      Object (KM.singleton "emitRetry" (Object KM.empty)), Object (KM.singleton "reconnectMs" (Number 0.5))] $ \invalid ->
-    require "malformed timing override was accepted" (isLeft (TimingSettings.withOverrides invalid))
+    require
+      "a protocol timing cannot be overridden"
+      (fmap toJSON overridden == Right (Object (KM.fromList [(Key.fromText name, if name == key then changed else original) | (name, original) <- Map.toList expectedTiming])))
+  forM_
+    [ Object (KM.singleton "unknown" (Number 1)),
+      Object (KM.singleton "reconnectMs" (Number (-1))),
+      Object (KM.singleton "emitRetry" (Object KM.empty)),
+      Object (KM.singleton "reconnectMs" (Number 0.5))
+    ]
+    $ \invalid ->
+      require "malformed timing override was accepted" (isLeft (TimingSettings.withOverrides invalid))
   putStrLn "PASS every error vocabulary, wire/HTTP classifiers, timing constant and retry budget"
   discovery <- readJSON (root </> "protocol/specs/src/client/discovery-absent.json")
   forM_ (array (at "reasons" discovery)) $ \row -> do
     let reason = at "reason" row
-    require "discovery reason differs from its authority"
+    require
+      "discovery reason differs from its authority"
       (DiscoveryReasons.roundTripError "discoveryAbsent" reason == Right reason)
-  require "unknown discovery reason was accepted"
+  require
+    "unknown discovery reason was accepted"
     (isLeft (DiscoveryReasons.roundTripError "discoveryAbsent" (String "__unknown_test_reason")))
 
 retryCases :: FilePath -> IO ()
@@ -366,10 +401,11 @@ retryCases root = do
   table <- readJSON (root </> "protocol/specs/src/retry/cases.json")
   let rules = [minBound .. maxBound] :: [Retry.RetryRule]
       rows = array (at "rules" table)
-      decode :: FromJSON value => Value -> IO value
+      decode :: (FromJSON value) => Value -> IO value
       decode value = either (ioError . userError) pure (parseEither parseJSON value)
   names <- traverse (decode . at "rule") rows
-  require "retry rule vocabulary differs from its authority"
+  require
+    "retry rule vocabulary differs from its authority"
     (Set.fromList names == Set.fromList (map Retry.ruleName rules))
   forM_ rows $ \row -> do
     require "retry table gained an unhandled fact" (all (`elem` ["why", "rule", "status", "method", "keyed", "retries"]) (KM.keys (object row)))
@@ -394,7 +430,7 @@ main = do
   hSetBuffering stdout LineBuffering
   args <- getArgs
   case args of
-    ["--store-writer",filename,key] -> storeWriter filename (T.pack key)
+    ["--store-writer", filename, key] -> storeWriter filename (T.pack key)
     [root] -> runCases root
     _ -> ioError (userError "expected repository root or a native store peer")
 
@@ -425,7 +461,8 @@ runCases root = do
     let name = Key.toText key
     shape <- maybe (ioError (userError "missing native schema for common required-shape proof")) pure (Map.lookup name schemas)
     value <- either (ioError . userError) pure (sample 0 shape)
-    require ("common required shape refused native sample: " ++ T.unpack name ++ " " ++ show (Required.faultOf name value))
+    require
+      ("common required shape refused native sample: " ++ T.unpack name ++ " " ++ show (Required.faultOf name value))
       (Required.faultOf name value == Nothing)
   putStrLn "PASS common required-shape reader accepts every generated component sample"
   putStrLn "PASS generated schema samples, null presence, open members, exact numbers and enums"
@@ -440,22 +477,27 @@ runCases root = do
   channelCases root
   factCases root
   retryCases root
-  metadata <- either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "JobMetadata.json"))))
-    >>= either (ioError . userError) pure . parseEither parseJSON
+  metadata <-
+    either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "JobMetadata.json"))))
+      >>= either (ioError . userError) pure . parseEither parseJSON
   workerCases root metadata
   gatewayCases root
-  kb <- either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "DiscoveredKB.json"))))
-    >>= either (ioError . userError) pure . parseEither parseJSON
-  document <- either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "DiscoveryDocument.json"))))
-    >>= either (ioError . userError) pure . parseEither parseJSON
+  kb <-
+    either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "DiscoveredKB.json"))))
+      >>= either (ioError . userError) pure . parseEither parseJSON
+  document <-
+    either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "DiscoveryDocument.json"))))
+      >>= either (ioError . userError) pure . parseEither parseJSON
   discoveryCases kb document
   httpDiscoveryCases document
   discoveryClock <- discoveryClockCases root kb
-  command <- either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "FrameAddEntityTypeCommand.json"))))
-    >>= either (ioError . userError) pure . parseEither parseJSON
+  command <-
+    either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "FrameAddEntityTypeCommand.json"))))
+      >>= either (ioError . userError) pure . parseEither parseJSON
   event <- either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "EnrichedResourceEvent.json"))))
-  browse <- either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "BrowseResourceRequest.json"))))
-    >>= either (ioError . userError) pure . parseEither parseJSON
+  browse <-
+    either (ioError . userError) pure (sample 0 (Object (KM.singleton "$ref" (String "BrowseResourceRequest.json"))))
+      >>= either (ioError . userError) pure . parseEither parseJSON
   errorTable <- readJSON (root </> "protocol/specs/src/errors/codes.json")
   let busErrors = at "busRequest" errorTable
   fallback <- either (ioError . userError) pure (parseEither parseJSON (at "unrecognizedFailure" busErrors))

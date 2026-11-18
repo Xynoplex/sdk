@@ -1,16 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.StreamFrame (ReadFrame(..), readFrame) where
 
-import Data.Aeson (Value(..), Result(..), eitherDecodeStrict', fromJSON)
-import qualified Data.Aeson.KeyMap as KM
+module Xynolog.Internal.StreamFrame (ReadFrame (..), readFrame) where
+
+import Data.Aeson (Result (..), Value (..), eitherDecodeStrict', fromJSON)
+import Data.Aeson.KeyMap qualified as KM
 import Data.Text (Text)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Data.Text.Encoding (encodeUtf8)
 import Xynolog.Internal.Required (Fault, faultOf, undecoded)
-import Xynolog.Internal.Transport (FrameRefusal(..))
+import Xynolog.Internal.Transport (FrameRefusal (..))
 import Xynolog.Types (BusFrame)
 
 data ReadFrame = Accepted BusFrame | Refused FrameRefusal | Rejected Fault deriving (Eq, Show)
+
 readFrame :: Text -> ReadFrame
 readFrame text = case eitherDecodeStrict' (encodeUtf8 text) of
   Left _ -> Rejected undecoded
@@ -23,10 +25,16 @@ readFrame text = case eitherDecodeStrict' (encodeUtf8 text) of
     nonempty (Just (String value)) | not (Text.null value) = Just value
     nonempty _ = Nothing
     refuse (Object fields) issue
-      | Just channel <- nonempty (KM.lookup "channel" fields)
-      , Just scope <- readScope (KM.lookup "scope" fields) =
-          Refused (FrameRefusal channel (KM.lookup "payload" fields) scope
-            (nonempty (KM.lookup "correlationId" fields)) issue)
+      | Just channel <- nonempty (KM.lookup "channel" fields),
+        Just scope <- readScope (KM.lookup "scope" fields) =
+          Refused
+            ( FrameRefusal
+                channel
+                (KM.lookup "payload" fields)
+                scope
+                (nonempty (KM.lookup "correlationId" fields))
+                issue
+            )
     refuse _ issue = Rejected issue
     readScope Nothing = Just Nothing
     readScope (Just Null) = Just Nothing

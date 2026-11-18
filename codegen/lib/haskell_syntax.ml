@@ -9,9 +9,12 @@
    data, and a dispatch whose body is the table. Logic that no table varies
    is the SDK's own, written by hand beside it.
 
-   Each declaration is a line, or a line a clause, with none blank between;
-   only a case puts its alternatives on lines of their own. The module
-   exports every declaration it holds, in their order. *)
+   The text is ormolu's fixed point, so the SDK's format check reads a
+   generated module as it reads one written by hand. A blank line parts the
+   module's head, its imports and each declaration; a declaration is a line,
+   or a line a clause, and only a case, a do and a record put what they hold
+   on lines of their own. Imports are in ormolu's order. The module exports
+   every declaration it holds, in their order. *)
 
 type type_ =
   | T_name of string
@@ -71,7 +74,7 @@ type item =
 
 type import = {
   module_ : string;
-  qualified : string option;  (** [import qualified M as Q] *)
+  qualified : string option;  (** [import M qualified as Q] *)
   items : item list option;  (** [None]: the whole module. *)
 }
 
@@ -274,10 +277,10 @@ let rec expr ~depth = function
       let op = if identifier op then "`" ^ op ^ "`" else operator op in
       "(" ^ op ^ " " ^ operand ~depth e ^ ")"
   | Construct (name, fields) ->
-      checked name ^ " { "
+      checked name ^ " {"
       ^ String.concat ", "
           (List.map (fun (f, e) -> variable f ^ " = " ^ expr ~depth e) fields)
-      ^ " }"
+      ^ "}"
   | Do statements ->
       "do"
       ^ String.concat ""
@@ -320,22 +323,37 @@ let doc about =
 let item = function
   | Plain name -> checked name
   | Op symbol -> "(" ^ operator symbol ^ ")"
-  | All name -> checked name ^ "(..)"
+  | All name -> checked name ^ " (..)"
   | With (name, constructors) ->
-      checked name ^ "("
+      checked name ^ " ("
       ^ String.concat ", " (List.map checked constructors)
       ^ ")"
   | Module name -> "module " ^ checked name
 
+(* Ormolu's order of what an import names: names before operators, each by
+   its spelling. *)
+let item_order = function
+  | Op symbol -> (1, symbol)
+  | Plain name | All name | With (name, _) | Module name -> (0, name)
+
 let import_line { module_; qualified; items } =
-  "import "
-  ^ (match qualified with
-    | None -> checked module_
-    | Some q -> "qualified " ^ checked module_ ^ " as " ^ checked q)
+  "import " ^ checked module_
+  ^ (match qualified with None -> "" | Some q -> " qualified as " ^ checked q)
   ^
   match items with
   | None -> ""
-  | Some items -> " (" ^ String.concat ", " (List.map item items) ^ ")"
+  | Some items ->
+      let items =
+        List.sort
+          (fun a b -> compare (item_order a) (item_order b))
+          (List.map
+             (function
+               | With (name, constructors) ->
+                   With (name, List.sort String.compare constructors)
+               | item -> item)
+             items)
+      in
+      " (" ^ String.concat ", " (List.map item items) ^ ")"
 
 let exports = function
   | Data { name; _ } | Record { name; _ } | Gadt { name; _ } -> [ All name ]
@@ -345,9 +363,24 @@ let exports = function
   | Values { values; _ } -> List.map (fun (name, _) -> Plain name) values
   | Instance _ | Private _ -> []
 
-let deriving_clause = function
-  | [] -> ""
-  | classes -> " deriving " ^ tuple (List.map checked classes)
+let deriving_ classes = "deriving " ^ tuple (List.map checked classes)
+let deriving_clause = function [] -> "" | classes -> " " ^ deriving_ classes
+
+(* A record's fields a line each, ended by a comma but the last, and its
+   deriving clause on a line of its own after the brace. *)
+let record_lines fields deriving =
+  let last = List.length fields - 1 in
+  List.mapi
+    (fun i (field, t) ->
+      (if i = 0 then "  { " else "    ")
+      ^ variable field ^ " :: " ^ type_ t
+      ^ if i = last then "" else ",")
+    fields
+  @ "  }"
+    ::
+    (match deriving with
+    | [] -> []
+    | classes -> [ "  " ^ deriving_ classes ])
 
 let head name params =
   String.concat " " (checked name :: List.map variable params)
@@ -376,19 +409,14 @@ let rec decl = function
   | Record { about; name; params; fields; deriving } ->
       doc about
       @ ("data " ^ head name params ^ " = " ^ checked name)
-        :: List.mapi
-             (fun i (field, t) ->
-               (if i = 0 then "  { " else "  , ")
-               ^ variable field ^ " :: " ^ type_ t)
-             fields
-      @ [ "  }" ^ deriving_clause deriving ]
+        :: record_lines fields deriving
   | Newtype { about; name; field; type_ = t; deriving; _ } ->
       doc about
       @ [
           "newtype " ^ checked name ^ " = " ^ checked name
           ^ (match field with
             | None -> " " ^ type_argument t
-            | Some field -> " { " ^ variable field ^ " :: " ^ type_ t ^ " }")
+            | Some field -> " {" ^ variable field ^ " :: " ^ type_ t ^ "}")
           ^ deriving_clause deriving;
         ]
   | Gadt { name; constructors = []; _ } ->
@@ -428,7 +456,6 @@ let rec decl = function
       let context =
         match context with
         | [] -> ""
-        | [ (c, v) ] -> checked c ^ " " ^ variable v ^ " => "
         | cs ->
             tuple (List.map (fun (c, v) -> checked c ^ " " ^ variable v) cs)
             ^ " => "
@@ -561,14 +588,24 @@ let uses body =
   { types = sorted types; values = sorted values }
 
 let text m =
-  String.concat "\n"
-    (List.map (fun l -> if l = "" then "--" else "-- " ^ l) m.banner
+  let opening =
+    List.map (fun l -> if l = "" then "--" else "-- " ^ l) m.banner
     @ List.map (fun e -> "{-# LANGUAGE " ^ checked e ^ " #-}") m.extensions
-    @ [
-        "module " ^ checked m.name ^ " ("
-        ^ String.concat ", " (List.map item (List.concat_map exports m.body))
-        ^ ") where";
-      ]
-    @ List.map import_line m.imports
-    @ List.concat_map decl m.body)
-  ^ "\n"
+  in
+  let header =
+    "module " ^ checked m.name ^ " ("
+    ^ String.concat ", " (List.map item (List.concat_map exports m.body))
+    ^ ") where"
+  in
+  let imports =
+    List.map import_line
+      (List.sort (fun a b -> String.compare a.module_ b.module_) m.imports)
+  in
+  let blocks =
+    List.filter (( <> ) [])
+      ((match m.extensions with
+         | [] -> [ opening @ [ header ] ]
+         | _ -> [ opening; [ header ] ])
+      @ (imports :: List.map decl m.body))
+  in
+  String.concat "\n\n" (List.map (String.concat "\n") blocks) ^ "\n"

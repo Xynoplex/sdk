@@ -4,10 +4,13 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 module Xynolog.Internal.Generated.ChannelRoundTrip (roundTripChannel, channelMetadata, operationMetadata) where
+
 import Data.Aeson (Value)
 import Data.Text (Text)
 import Xynolog.Channels
+
 roundTripChannel :: Text -> Value -> Either String Value
 roundTripChannel name value = case name of
   "yield:created" -> encodePayload YieldCreated <$> decodePayload YieldCreated value
@@ -198,6 +201,7 @@ roundTripChannel name value = case name of
   "session:joined" -> encodePayload SessionJoined <$> decodePayload SessionJoined value
   "session:left" -> encodePayload SessionLeft <$> decodePayload SessionLeft value
   _ -> Left "unknown channel in round-trip dispatcher"
+
 channelMetadata :: Text -> Either String (Text, Text, Bool)
 channelMetadata name = case name of
   "yield:created" -> Right (channelName YieldCreated, channelSchema YieldCreated, channelIsScoped YieldCreated)
@@ -388,5 +392,6 @@ channelMetadata name = case name of
   "session:joined" -> Right (channelName SessionJoined, channelSchema SessionJoined, channelIsScoped SessionJoined)
   "session:left" -> Right (channelName SessionLeft, channelSchema SessionLeft, channelIsScoped SessionLeft)
   _ -> Left "unknown channel in metadata dispatcher"
+
 operationMetadata :: [(Text, Text, Text)]
 operationMetadata = [(channelName BindUpdateBody, channelName BindBodyUpdated, channelName BindBodyUpdateFailed), (channelName BrowseResourceRequested, channelName BrowseResourceResult, channelName BrowseResourceFailed), (channelName BrowseResourcesRequested, channelName BrowseResourcesResult, channelName BrowseResourcesFailed), (channelName BrowseAnnotationRequested, channelName BrowseAnnotationResult, channelName BrowseAnnotationFailed), (channelName BrowseAnnotationHistoryRequested, channelName BrowseAnnotationHistoryResult, channelName BrowseAnnotationHistoryFailed), (channelName BrowseEventsRequested, channelName BrowseEventsResult, channelName BrowseEventsFailed), (channelName BrowseEntityTypesRequested, channelName BrowseEntityTypesResult, channelName BrowseEntityTypesFailed), (channelName BrowseTagSchemasRequested, channelName BrowseTagSchemasResult, channelName BrowseTagSchemasFailed), (channelName BrowseEnginesRequested, channelName BrowseEnginesResult, channelName BrowseEnginesFailed), (channelName BrowseProfilesRequested, channelName BrowseProfilesResult, channelName BrowseProfilesFailed), (channelName BrowseKbRequested, channelName BrowseKbResult, channelName BrowseKbFailed), (channelName BrowseDirectoryRequested, channelName BrowseDirectoryResult, channelName BrowseDirectoryFailed), (channelName FrameAddEntityType, channelName FrameEntityTypeAddOk, channelName FrameEntityTypeAddFailed), (channelName FrameAddTagSchema, channelName FrameTagSchemaAddOk, channelName FrameTagSchemaAddFailed), (channelName GatherRequested, channelName GatherComplete, channelName GatherFailed), (channelName GatherResourceRequested, channelName GatherResourceComplete, channelName GatherResourceFailed), (channelName GatherSummaryRequested, channelName GatherSummaryResult, channelName GatherSummaryFailed), (channelName GatherReferencedByRequested, channelName GatherReferencedByResult, channelName GatherReferencedByFailed), (channelName GatherLimitsRequested, channelName GatherLimitsResult, channelName GatherLimitsFailed), (channelName JobCreate, channelName JobCreated, channelName JobCreateFailed), (channelName JobStatusRequested, channelName JobStatusResult, channelName JobStatusFailed), (channelName JobLimitsRequested, channelName JobLimitsResult, channelName JobLimitsFailed), (channelName JobCancelRequested, channelName JobCancelOk, channelName JobCancelFailed), (channelName JobClaim, channelName JobClaimed, channelName JobClaimFailed), (channelName MarkCreateRequest, channelName MarkCreateOk, channelName MarkCreateFailed), (channelName MarkCommit, channelName MarkCommitOk, channelName MarkCommitFailed), (channelName MarkDelete, channelName MarkDeleteOk, channelName MarkDeleteFailed), (channelName MarkArchive, channelName MarkArchiveOk, channelName MarkArchiveFailed), (channelName MarkUnarchive, channelName MarkUnarchiveOk, channelName MarkUnarchiveFailed), (channelName MarkUpdateEntityTypes, channelName MarkUpdateEntityTypesOk, channelName MarkUpdateEntityTypesFailed), (channelName MatchSearchRequested, channelName MatchSearchResults, channelName MatchSearchFailed), (channelName MatchResourcesRequested, channelName MatchResourcesResult, channelName MatchResourcesFailed), (channelName MatchLimitsRequested, channelName MatchLimitsResult, channelName MatchLimitsFailed), (channelName WeaveRebuild, channelName WeaveRebuildOk, channelName WeaveRebuildFailed), (channelName SmeltRebuildAnchors, channelName SmeltRebuildAnchorsOk, channelName SmeltRebuildAnchorsFailed), (channelName YieldCreate, channelName YieldCreateOk, channelName YieldCreateFailed), (channelName YieldClonePersist, channelName YieldClonePersistOk, channelName YieldClonePersistFailed), (channelName YieldUpdate, channelName YieldUpdateOk, channelName YieldUpdateFailed), (channelName YieldCloneCreate, channelName YieldCloneCreated, channelName YieldCloneCreateFailed), (channelName YieldCloneResourceRequested, channelName YieldCloneResourceResult, channelName YieldCloneResourceFailed), (channelName YieldCloneTokenRequested, channelName YieldCloneTokenGenerated, channelName YieldCloneTokenFailed)]

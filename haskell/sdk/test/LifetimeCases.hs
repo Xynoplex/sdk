@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module LifetimeCases (lifetimeCases) where
 
 import Control.Concurrent.Async (Async, AsyncCancelled, async, cancel, waitCatch)
 import Control.Concurrent.STM
 import Control.Exception (finally, fromException, try)
 import Control.Monad (unless)
-import qualified Xynolog.Internal.Lifetime as Lifetime
-import Xynolog.Errors (BusRequestError(..))
-import Xynolog.ErrorCodes (BusRequestCode(BusRequestClosed))
 import System.Timeout (timeout)
+import Xynolog.ErrorCodes (BusRequestCode (BusRequestClosed))
+import Xynolog.Errors (BusRequestError (..))
+import Xynolog.Internal.Lifetime qualified as Lifetime
 
 require :: String -> Bool -> IO ()
 require label good = unless good (ioError (userError label))
@@ -20,8 +21,12 @@ lifetimeCases = do
     entered <- newEmptyTMVarIO
     cleanup <- newEmptyTMVarIO
     release <- newEmptyTMVarIO
-    child <- Lifetime.start life ((atomically (putTMVar entered ()) >> atomically retry)
-      `finally` (atomically (putTMVar cleanup ()) >> atomically (takeTMVar release)))
+    child <-
+      Lifetime.start
+        life
+        ( (atomically (putTMVar entered ()) >> atomically retry)
+            `finally` (atomically (putTMVar cleanup ()) >> atomically (takeTMVar release))
+        )
     atomically (takeTMVar entered)
     closer <- async (Lifetime.close life)
     atomically (takeTMVar cleanup)
@@ -41,15 +46,24 @@ lifetimeCases = do
     abandoned <- Lifetime.newLifetime "test lifetime is closed"
     running <- newEmptyTMVarIO
     released <- newEmptyTMVarIO
-    request <- async (Lifetime.run abandoned ((atomically (putTMVar running ()) >> atomically retry)
-      `finally` atomically (putTMVar released ())))
+    request <-
+      async
+        ( Lifetime.run
+            abandoned
+            ( (atomically (putTMVar running ()) >> atomically retry)
+                `finally` atomically (putTMVar released ())
+            )
+        )
     atomically (takeTMVar running)
     cancel request
     atomically (takeTMVar released)
     resultAfterCancel <- waitCatch request
-    require "caller cancellation changed its exception" (case resultAfterCancel of
-      Left exception -> case fromException exception :: Maybe AsyncCancelled of Just _ -> True; Nothing -> False
-      Right _ -> False)
+    require
+      "caller cancellation changed its exception"
+      ( case resultAfterCancel of
+          Left exception -> case fromException exception :: Maybe AsyncCancelled of Just _ -> True; Nothing -> False
+          Right _ -> False
+      )
     Lifetime.close abandoned
   require "HTTP lifetime cleanup exceeded its liveness guard" (outcome == Just ())
   putStrLn "PASS HTTP lifetime self-close, caller cancellation and abandoned close waiters"

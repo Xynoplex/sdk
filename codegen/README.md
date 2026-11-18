@@ -204,8 +204,11 @@ per language it writes:
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
-of printable ASCII or an OCaml one, a camel-case name in upper or lower
-snake case, and a comment as Go, Python and TypeScript write one. `Python_layout` lays a Python
+of printable ASCII, a camel-case name in upper or lower snake case, and a
+comment as Go, Python and TypeScript write one. `Ocaml_syntax` builds an
+OCaml module as compiler-libs' Parsetree, prints it with Pprintast and lays
+it out with ocamlformat-lib, so a generated module is one the SDK's
+`ocamlformat --check` leaves as it is. `Python_layout` lays a Python
 statement out as ruff's formatter does at the SDK's line length, so a
 generated module is one `ruff format` leaves as it is. `Swift_syntax` is
 the Swift a writer builds, printed as swift-format 6.4.2 lays it out under
@@ -214,8 +217,7 @@ is that formatter's fixed point. `Banner` is the line
 each generated file opens with, naming the module that writes it; a
 generated Python module also names the lint rules it is exempt from (a long
 line, an ambiguous character, the order of its imports and of its `__all__`,
-and an exemption it does not use), and every other rule holds it; a
-generated OCaml module tells ocamlformat to leave it as written. `Output` is
+and an exemption it does not use), and every other rule holds it. `Output` is
 the drift gate.
 
 ## Running it

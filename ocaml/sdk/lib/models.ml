@@ -1,12 +1,18 @@
 (* Generated from OpenAPI component schemas through codegen/lib/required/shape.ml. Do not edit.
    Regenerate: make generate (codegen/lib/required/ocaml.ml) *)
 
-[@@@ocamlformat "disable"]
-
 type 'schema t = Yojson.Raw.t
 type 'schema descriptor = string
-type fault = Schema_codec.fault = { member : string; reason : [ `Lacks | `Malformed ] }
-type decode_error = Schema_codec.error = Invalid_json of string | Invalid_payload of fault
+
+type fault = Schema_codec.fault = {
+  member : string;
+  reason : [ `Lacks | `Malformed ];
+}
+
+type decode_error = Schema_codec.error =
+  | Invalid_json of string
+  | Invalid_payload of fault
+
 let decode name = Schema_codec.decode (Schema_shape.reference name)
 let encode value = Yojson.Raw.to_string value
 let json value = value
@@ -150,7 +156,10 @@ let get_annotations_response = "GetAnnotationsResponse"
 let get_entity_types_response = "GetEntityTypesResponse"
 let get_events_response = "GetEventsResponse"
 let get_referenced_by_response = "GetReferencedByResponse"
-let get_referenced_by_response_referenced_by_item = "GetReferencedByResponseReferencedByItem"
+
+let get_referenced_by_response_referenced_by_item =
+  "GetReferencedByResponseReferencedByItem"
+
 let get_resource_by_token_response = "GetResourceByTokenResponse"
 let get_resource_response = "GetResourceResponse"
 let get_tag_schemas_response = "GetTagSchemasResponse"

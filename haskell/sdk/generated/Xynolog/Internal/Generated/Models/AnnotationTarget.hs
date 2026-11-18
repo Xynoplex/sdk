@@ -1,20 +1,29 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.AnnotationTarget (AnnotationTarget(..), AnnotationTargetType(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import qualified Data.Aeson.KeyMap as KM
+
+module Xynolog.Internal.Generated.Models.AnnotationTarget (AnnotationTarget (..), AnnotationTargetType (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
+import Data.Aeson.KeyMap qualified as KM
 import Xynolog.Internal.Codec
 import Xynolog.Internal.Generated.Models.AnnotationSelector
 import Xynolog.Internal.Generated.Models.ResourceId
+
 data AnnotationTarget = AnnotationTarget
-  { annotationTargetSelector :: Maybe AnnotationSelector
-  , annotationTargetSource :: ResourceId
-  , annotationTargetType :: Maybe AnnotationTargetType
-  , annotationTargetAdditionalProperties :: KM.KeyMap Value
-  } deriving (Eq, Show)
+  { annotationTargetSelector :: Maybe AnnotationSelector,
+    annotationTargetSource :: ResourceId,
+    annotationTargetType :: Maybe AnnotationTargetType,
+    annotationTargetAdditionalProperties :: KM.KeyMap Value
+  }
+  deriving (Eq, Show)
+
 instance FromJSON AnnotationTarget where parseJSON = checked "AnnotationTarget" $ withObject "AnnotationTarget" (\fields -> AnnotationTarget <$> optional fields "selector" <*> (fields .: "source") <*> optional fields "type" <*> traverse parseJSON (withoutFields ["selector", "source", "type"] fields))
+
 instance ToJSON AnnotationTarget where toJSON value = Object (KM.fromList (concat [optionalPair "selector" (annotationTargetSelector value), [("source", toJSON (annotationTargetSource value))], optionalPair "type" (annotationTargetType value)]) <> fmap toJSON (withoutFields ["selector", "source", "type"] (annotationTargetAdditionalProperties value)))
+
 data AnnotationTargetType = AnnotationTargetTypeSpecificResource deriving (Eq, Show)
+
 instance FromJSON AnnotationTargetType where parseJSON = checked "AnnotationTargetType" $ \value -> if value == String "SpecificResource" then pure AnnotationTargetTypeSpecificResource else fail "unknown enumeration member"
+
 instance ToJSON AnnotationTargetType where toJSON AnnotationTargetTypeSpecificResource = String "SpecificResource"

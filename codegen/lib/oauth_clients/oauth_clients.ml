@@ -139,19 +139,11 @@ let typescript (t : T.t) =
 (* The clients and the scope as the OCaml SDK names them
    (ocaml/sdk/lib/oauth_facts.ml): a client's id by its name, and the scope. *)
 let ocaml (t : T.t) =
-  {
-    Output.path = "ocaml/sdk/lib/oauth_facts.ml";
-    text =
-      Banner.ocaml ~from_:file __FILE__
-      ^ String.concat ""
-          (List.map
-             (fun (c : T.client) ->
-               "let " ^ c.name ^ " = " ^ Text.ocaml_quoted c.id ^ "\n")
-             t.clients)
-      ^ "let scope = "
-      ^ Text.ocaml_quoted t.scope.value
-      ^ "\n";
-  }
+  let module O = Ocaml_syntax in
+  O.implementation ~path:"ocaml/sdk/lib/oauth_facts.ml"
+    ~banner:(Banner.ocaml ~from_:file __FILE__)
+    (List.map (fun (c : T.client) -> O.let_ c.name (O.string c.id)) t.clients
+    @ [ O.let_ "scope" (O.string t.scope.value) ])
 
 let rust (t : T.t) =
   let module R = Rust_syntax in
