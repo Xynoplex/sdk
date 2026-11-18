@@ -7,8 +7,10 @@
    those made in place too, is what the SDK validates a value against
    (WireSchemas).
 
-   An object's properties are its own, its allOf's and those of what it
-   refers to, in order of name. One that is required is [required]; one that
+   A schema that states an allOf is modelled as what its parts merge to
+   ([Normalize]), each model made in place of that written as the validator
+   reads it ([Schema.runtime]). An object's properties are in order of
+   name. One that is required is [required]; one that
    is required, not nullable and admits one string is that string, and is no
    property to set; one that is optional is nullable; and one that is
    optional and nullable is a [Stated]: absent, null or a value. An object
@@ -239,10 +241,11 @@ and type_of state owner property ((schema, json) as node) =
 
 (* A model as the record, union or enumeration it is, named to the
    hand-written converter that reads and writes it. *)
-and declare state name d =
+and declare state name original =
   let read_as attribute : C.attribute =
     { name = "global::Xynolog.Serialization." ^ attribute; args = [] }
   in
+  let d = meant state name original in
   match layer name d.schema with
   | { enum = Some values; _ } ->
       enum name ~attribute:(read_as "WireEnum") values
@@ -250,7 +253,26 @@ and declare state name d =
       union state name (members, child "oneOf" d.json)
   | { any_of = Some members; _ } ->
       union state name (members, child "anyOf" d.json)
-  | _ -> object_ state name ~attribute:(read_as "WireObject") d
+  | _ -> object_ state name ~attribute:(read_as "WireObject") ~original d
+
+(* [d] as what it means: one that states an allOf, what its parts merge to,
+   written as the validator reads it. *)
+and meant state name d =
+  match layer name d.schema with
+  | { all_of = None; _ } -> d
+  | _ ->
+      let schema = Schema.Schema (merged state name d.schema) in
+      { schema; json = Schema.runtime schema }
+
+(* [name]'s [schema] with its allOf merged ([Normalize]). *)
+and merged state name schema =
+  match
+    Normalize.normalize
+      ~find:(fun r -> Ok (definition state (referenced r)).schema)
+      schema
+  with
+  | Ok s -> s
+  | Error message -> refuse "%s: %s" name message
 
 and enum name ~attribute values =
   let members =
@@ -285,61 +307,31 @@ and enum name ~attribute values =
       };
   ]
 
-(* An object's properties, its requirements and whether it is open, gathered
-   from it, its allOf's parts and what it refers to. *)
-and collect state (schema, json) (properties, required, open_) =
-  let s = layer "an object's part" schema in
-  match s.ref_ with
-  | Some r ->
-      let name = referenced r in
-      let d = definition state name in
-      collect state (d.schema, d.json) (properties, required, open_)
-  | None ->
-      let gathered =
-        match s.all_of with
-        | Some parts ->
-            List.fold_left
-              (fun acc (i, part) ->
-                collect state (part, nth i (child "allOf" json)) acc)
-              (properties, required, open_)
-              (List.mapi (fun i p -> (i, p)) parts)
-        | None -> (properties, required, open_)
-      in
-      let properties, required, open_ = gathered in
-      let properties =
-        match s.properties with
-        | Some own ->
-            let members = child "properties" json in
-            List.fold_left
-              (fun acc (key, p) ->
-                (key, (p, child key members)) :: List.remove_assoc key acc)
-              properties own
-        | None -> properties
-      in
-      let required =
-        match s.required with
-        | Some names ->
-            List.fold_left
-              (fun acc n -> if List.mem n acc then acc else acc @ [ n ])
-              required names
-        | None -> required
-      in
-      ( properties,
-        required,
-        open_ || s.additional_properties = Some (Boolean_schema true) )
-
-and object_ state name ~attribute d =
-  let properties, required, open_ =
-    collect state (d.schema, d.json) ([], [], false)
-  in
+and object_ state name ~attribute ~original d =
   let s = layer name d.schema in
-  if s.type_ <> Some [ Object ] && s.all_of = None then
-    refuse "%s is not an object schema." name;
+  if s.type_ <> Some [ Object ] && (layer name original.schema).all_of = None
+  then refuse "%s is not an object schema." name;
+  let properties =
+    match s.properties with
+    | Some own ->
+        let members = child "properties" d.json in
+        List.map (fun (key, p) -> (key, (p, child key members))) own
+    | None -> []
+  in
+  let required = Option.value s.required ~default:[] in
+  let open_ = s.additional_properties = Some (Boolean_schema true) in
   let owner =
     Inherited.of_schemas
       ~find:(fun n -> (definition state n).schema)
-      ~referenced name d.schema
+      ~referenced name original.schema
   in
+  (* A property another schema states is that schema's, and so are the
+     models made in place of it: that schema is modelled first, from what
+     Protocol writes of it. *)
+  List.iter
+    (fun (wire, _) ->
+      if owner wire <> name then ignore (named state (owner wire)))
+    properties;
   let fields =
     List.map
       (fun (wire, ((schema, _) as node)) ->
@@ -454,7 +446,7 @@ and union state name (members, written) =
   let cases =
     List.mapi
       (fun i member ->
-        let v = variant (layer name member) in
+        let v = variant (merged state name member) in
         (pascal v ^ "Case", type_of state name v (member, nth i written)))
       members
   in

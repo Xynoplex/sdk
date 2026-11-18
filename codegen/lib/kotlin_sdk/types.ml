@@ -944,9 +944,10 @@ and tags st property members =
     (fun found raw ->
       Option.bind found (fun found ->
           let member =
-            match reference st.spec raw with
-            | Some r -> schema st.spec r
-            | None -> raw
+            meant st.spec property
+              (match reference st.spec raw with
+              | Some r -> schema st.spec r
+              | None -> raw)
           in
           match Option.bind (property_node member property) only_value with
           | Some tag

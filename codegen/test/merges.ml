@@ -33,7 +33,7 @@ let outcome =
     (Alcotest.testable
        (fun f s ->
          Format.pp_print_string f
-           (Yojson.Safe.to_string (Haskell_sdk.Companions.runtime (Schema s))))
+           (Yojson.Safe.to_string (Schema.runtime (Schema s))))
        ( = ))
     Alcotest.string
 
@@ -150,8 +150,7 @@ let object_ properties =
 let schema =
   Alcotest.testable
     (fun f s ->
-      Format.pp_print_string f
-        (Yojson.Safe.to_string (Haskell_sdk.Companions.runtime s)))
+      Format.pp_print_string f (Yojson.Safe.to_string (Schema.runtime s)))
     ( = )
 
 let written = Alcotest.result schema Alcotest.string

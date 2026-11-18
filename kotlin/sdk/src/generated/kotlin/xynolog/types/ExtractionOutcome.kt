@@ -9,9 +9,8 @@ import kotlinx.serialization.Serializable
 @Serializable(with = ExtractionOutcomeSerializer::class)
 public sealed interface ExtractionOutcome
 
-internal object ExtractionOutcomeSerializer : KindsUnionSerializer<ExtractionOutcome>(
+internal object ExtractionOutcomeSerializer : TaggedUnionSerializer<ExtractionOutcome>(
     ExtractionOutcome::class,
-    strings = { emptyList() },
-    arrays = { emptyList() },
-    objects = { listOf(ExtractedText.serializer(), ExtractionDeclined.serializer()) },
+    "kind",
+    members = { mapOf("extracted" to ExtractedText.serializer(), "declined" to ExtractionDeclined.serializer()) },
 )

@@ -105,16 +105,25 @@ let members_of fragment =
   | "" :: parts -> go parts
   | _ -> None
 
-let rec member_of shapes (shape : Shape.shape) name =
+(* What each of [shape]'s parts states its member [name] as: its own, and
+   each its allOf's parts state. *)
+let rec stated shapes (shape : Shape.shape) name =
   match shape with
-  | Ref ref_ ->
-      Option.bind (List.assoc_opt ref_ shapes) (fun shape ->
-          member_of shapes shape name)
-  | Shape body -> (
-      match List.assoc_opt name body.members with
-      | Some member -> Some member
-      | None ->
-          List.find_map (fun part -> member_of shapes part name) body.all_of)
+  | Ref ref_ -> (
+      match List.assoc_opt ref_ shapes with
+      | Some shape -> stated shapes shape name
+      | None -> [])
+  | Shape body ->
+      Option.to_list (List.assoc_opt name body.members)
+      @ List.concat_map (fun part -> stated shapes part name) body.all_of
+
+(* [shape]'s member [name], as [Normalize] merges an allOf: what its parts
+   state it as, all of them when they state it differently. *)
+let member_of shapes shape name =
+  match List.sort_uniq compare (stated shapes shape name) with
+  | [] -> None
+  | [ member ] -> Some member
+  | members -> Some (Shape.Shape { Shape.empty with all_of = members })
 
 let derive context (table : T.t) =
   let refusals = ref [] in

@@ -771,9 +771,10 @@ and tags st property members =
     | [] -> Some (List.rev acc)
     | member :: rest -> (
         let member =
-          match reference member with
-          | Some target -> schema st target
-          | None -> member
+          D.meant
+            (match reference member with
+            | Some target -> schema st target
+            | None -> member)
         in
         match member with
         | D.Node { required = Some required; properties = Some ps; _ }
