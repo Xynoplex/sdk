@@ -47,6 +47,16 @@ let shapes =
     ("Annotation", object_of [ ("id", Shape.Ref "AnnotationId") ]);
     ("Payload", object_of [ ("annotationId", Shape.Ref "AnnotationId") ]);
     ("Wrapped", Shape.Shape { Shape.empty with all_of = [ Shape.Ref "Event" ] });
+    ( "Restated",
+      Shape.Shape
+        {
+          Shape.empty with
+          all_of =
+            [
+              Shape.Ref "Event";
+              object_of [ ("resourceId", Shape.Ref "AnnotationId") ];
+            ];
+        } );
   ]
 
 let channel ?payload ?(enriched = false) ?(system = false) ?(scoped = false)
@@ -64,6 +74,7 @@ let context =
         ("demo:said", channel ~passing:true ());
         ("demo:system", channel ~payload:"Payload" ~system:true ~scoped:true ());
         ("demo:wrapped", channel ~event:"Wrapped" ());
+        ("demo:restated", channel ~event:"Restated" ());
         ("bus:resume-gap", channel ~passing:true ());
       ];
     shapes;
@@ -662,6 +673,19 @@ let the_rows =
                       ~names:(names [ ("resource", "resourceId") ])
                       ~refetches:[ "thing" ];
                   ]))));
+    case "a way through a member two parts state differently is refused"
+      (refuses
+         (table
+            (rows
+            @ [
+                row "demo:restated"
+                  ~names:(names [ ("resource", "resourceId") ])
+                  ~refetches:[ "thing" ];
+              ]))
+         [
+           "/refresh/5/names/resource: is resourceId, which ends at no \
+            component, not at ResourceId";
+         ]);
     case "a way that is no way is refused"
       (refuses
          (table

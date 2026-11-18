@@ -23,6 +23,10 @@ Pointer of the value refused; nothing is defaulted.
   table that Protocol adds stops the run until the module knows it.
 - `Spec`: every file accounted for, and every `$ref` resolved to a file of
   the kind its place calls for.
+- `Normalize`: what an `allOf` means, its parts merged keyword by keyword
+  into the one schema they describe, which every group's writers read and
+  none decides itself. `Inherited` is which schema states each property it
+  merges, so a writer names a type for the schema that states it.
 
 ## The groups
 
@@ -170,9 +174,8 @@ per language it writes:
   the client registry's records, the stored session's, the HTTP routes'
   bodies and the bus's envelopes, each `allOf` merged into one object, a
   module per cycle of references, with `Xynolog.Types`, the schemas it
-  validates against and the round trips its tests drive; each `allOf` in
-  those schemas as the generator merges it, which the SDK's runtime merge
-  must give (`test/fixtures/merged-schemas.json`); its HTTP routes and
+  validates against, each `allOf` in them merged, and the round trips its
+  tests drive; its HTTP routes and
   what a refused credential is, from the reference transport; its
   transport's facts, from `TRANSPORT-HTTP.md`; its bus's channels and
   operations, with each operation's failure; the worker's channels and
@@ -205,8 +208,8 @@ per language it writes:
   which `identifiers` writes. A union embeds the hand-written generic
   `union` (`go/api/union.go`); `Go_syntax` is the Go it is built of, laid out
   as gofmt leaves it. It reads the schemas as Rust's types do, through `View`
-  (a `$ref`'s schema, a union's members, an `allOf` as one object) and names
-  what it writes in place by `Naming`.
+  (a `$ref`'s schema, a union's members) and `Definitions.meant` (an `allOf`
+  as `Normalize` merges it), and names what it writes in place by `Naming`.
 - `typescript-types`: the TypeScript SDK's `components['schemas']`
   (`typescript/core/src/types.ts`), each component schema as a type written
   as the schema states it, and each kind of id branded. `Typescript_syntax`

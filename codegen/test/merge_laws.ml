@@ -1,5 +1,5 @@
-(* The laws of the generator's allOf merge (Normalize.merge), which the Haskell
-   SDK's runtime merge is held to by haskell/sdk/test/fixtures/merged-schemas.json.
+(* The laws of the generator's allOf merge (Normalize.merge), by which it
+   writes the Haskell SDK's types and the schemas it validates against.
 
    - An empty part is its identity, and a part merged with itself is that part.
    - It is associative, so the parts of an allOf may be merged in any grouping.
@@ -18,7 +18,6 @@
    required and enum as sets. *)
 
 open Xynolog_codegen
-module Normalize = Haskell_sdk.Normalize
 module Gen = QCheck2.Gen
 
 let reference target = { Decode.target; file = ""; pointer = "" }

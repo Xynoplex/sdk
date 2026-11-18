@@ -46,6 +46,10 @@ let canonical ~rewrite : Schema.t -> Schema.t =
 
 let unchanged (r : Decode.reference) = r.target
 
+(* A reference names the schema of its file's base name. *)
+let referenced (r : Decode.reference) =
+  Filename.remove_extension (Filename.basename r.target)
+
 let layer name = function
   | Schema.Schema s -> Ok s
   | Boolean_schema _ -> Error (name ^ " is no schema object")
@@ -146,10 +150,10 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
   in
   let normalize s =
     Normalize.normalize
-      ~find:(fun name ->
-        match List.assoc_opt name components with
+      ~find:(fun r ->
+        match List.assoc_opt (referenced r) components with
         | Some s -> Ok s
-        | None -> Error ("unknown schema reference: " ^ name))
+        | None -> Error ("unknown schema reference: " ^ r.target))
       (canonical ~rewrite:unchanged s)
   in
   let* upload =

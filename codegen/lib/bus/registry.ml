@@ -341,48 +341,51 @@ let referred (reference : Decode.reference) =
       target
 
 (* The stamps [schema], the component [of_] or a schema within it, declares:
-   its own, each of its allOf's, and a union's, on which its members must
-   agree: a stamp is kept or dropped before a frame is read, so before it is
-   known which member the frame is. A schema that refers to a component is
-   read as that component. *)
+   the properties of what it merges to ([Normalize]), and a union's, on which
+   its members must agree: a stamp is kept or dropped before a frame is read,
+   so before it is known which member the frame is. A schema that refers to a
+   component is read as that component. *)
 let stamps component ~of_ (schema : Schema.t) =
   let rec stamped ~of_ (schema : Schema.t) =
-    Schema.para
-      ~boolean:(fun _ () -> [])
-      ~schema:(fun s () ->
-        let union members =
-          match
-            List.map
-              (fun member -> List.sort_uniq String.compare (read ~of_ member))
-              (Option.value members ~default:[])
-          with
-          | [] -> []
-          | first :: rest when List.for_all (( = ) first) rest -> first
-          | each ->
-              problem
-                "%s: its members do not declare the same stamps (%s), and a \
-                 stamp is kept or dropped before it is known which member a \
-                 frame is"
-                of_
-                (String.concat "; "
-                   (List.map
-                      (fun one -> "[" ^ String.concat ", " one ^ "]")
-                      each))
-        in
-        List.filter
-          (fun name -> String.starts_with ~prefix:"_" name)
-          (List.map fst (Option.value s.properties ~default:[]))
-        @ List.concat_map (read ~of_) (Option.value s.all_of ~default:[])
-        @ union s.one_of @ union s.any_of)
-      schema
-  and read ~of_ (part, own) =
-    match part with
-    | Schema.Schema { ref_ = Some reference; _ } ->
+    match schema with
+    | Boolean_schema _ -> []
+    | Schema { ref_ = Some reference; _ } ->
         let name = referred reference in
-        stamped ~of_:name (named component name) ()
-    | _ -> own ()
+        stamped ~of_:name (named component name)
+    | Schema _ -> (
+        match
+          Normalize.normalize
+            ~find:(fun r -> Ok (named component (referred r)))
+            schema
+        with
+        | Error message -> problem "%s: %s" of_ message
+        | Ok s ->
+            let union members =
+              match
+                List.map
+                  (fun member ->
+                    List.sort_uniq String.compare (stamped ~of_ member))
+                  (Option.value members ~default:[])
+              with
+              | [] -> []
+              | first :: rest when List.for_all (( = ) first) rest -> first
+              | each ->
+                  problem
+                    "%s: its members do not declare the same stamps (%s), and \
+                     a stamp is kept or dropped before it is known which \
+                     member a frame is"
+                    of_
+                    (String.concat "; "
+                       (List.map
+                          (fun one -> "[" ^ String.concat ", " one ^ "]")
+                          each))
+            in
+            List.filter
+              (fun name -> String.starts_with ~prefix:"_" name)
+              (List.map fst (Option.value s.properties ~default:[]))
+            @ union s.one_of @ union s.any_of)
   in
-  read ~of_ (schema, stamped ~of_ schema)
+  stamped ~of_ schema
 
 let required (schema : Schema.t) =
   match schema with

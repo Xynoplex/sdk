@@ -9035,6 +9035,7 @@ public struct ScoredResource: Codable, Sendable {
   public var version: String?
   public var wasAttributedTo: OneOrMoreAgents?
   public var wasDerivedFrom: ResourceDescriptorWasDerivedFrom?
+  public var rest: [String: JSONValue]
   public init(
     context: ResourceDescriptorContext, id: ResourceId, type: OneOrMoreStrings? = nil,
     about: OneOrMoreStrings? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
@@ -9045,7 +9046,8 @@ public struct ScoredResource: Codable, Sendable {
     originatedFrom: String? = nil, representations: ResourceDescriptorRepresentations,
     sameAs: [String]? = nil, score: Double? = nil, sourceAnnotationId: AnnotationId? = nil,
     sourceResourceId: ResourceId? = nil, version: String? = nil,
-    wasAttributedTo: OneOrMoreAgents? = nil, wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = nil
+    wasAttributedTo: OneOrMoreAgents? = nil,
+    wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = nil, rest: [String: JSONValue] = [:]
   ) {
     self.context = context
     self.id = id
@@ -9075,6 +9077,7 @@ public struct ScoredResource: Codable, Sendable {
     self.version = version
     self.wasAttributedTo = wasAttributedTo
     self.wasDerivedFrom = wasDerivedFrom
+    self.rest = rest
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
@@ -9106,9 +9109,25 @@ public struct ScoredResource: Codable, Sendable {
     self.version = try c.ifPresent("version")
     self.wasAttributedTo = try c.ifPresent("wasAttributedTo")
     self.wasDerivedFrom = try c.ifPresent("wasDerivedFrom")
+    rest = try c.rest(excluding: [
+      "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo",
+      "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart",
+      "identifier", "isDraft", "isPartOf", "license", "matchReason", "name", "originatedFrom",
+      "representations", "sameAs", "score", "sourceAnnotationId", "sourceResourceId", "version",
+      "wasAttributedTo", "wasDerivedFrom",
+    ])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(
+      rest: rest,
+      excluding: [
+        "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo",
+        "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart",
+        "identifier", "isDraft", "isPartOf", "license", "matchReason", "name", "originatedFrom",
+        "representations", "sameAs", "score", "sourceAnnotationId", "sourceResourceId", "version",
+        "wasAttributedTo", "wasDerivedFrom",
+      ], of: "ScoredResource")
     try c.encode(self.context, as: "@context")
     try c.encode(self.id, as: "@id")
     try c.encodeIfPresent(self.type, as: "@type")

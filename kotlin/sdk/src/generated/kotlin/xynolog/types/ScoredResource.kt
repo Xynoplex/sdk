@@ -4,15 +4,17 @@
 
 package xynolog.types
 
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
+import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonObject
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.ResourceId
 
 /** A resource returned by a search, carrying its relevance score and the reason it matched. */
-@Serializable
-@JsonIgnoreUnknownKeys
+@Serializable(with = ScoredResource.Serializer::class)
+@KeepGeneratedSerializer
 public data class ScoredResource(
     /** JSON-LD context; URI, object, or array of these. */
     @SerialName("@context")
@@ -68,6 +70,9 @@ public data class ScoredResource(
     public val score: Double? = null,
     /** Human-readable reason for the match. */
     public val matchReason: String? = null,
+    /** Every property the schema does not name, as it came. */
+    @Transient
+    public val rest: JsonObject = JsonObject(emptyMap()),
 ) {
     /** How Java makes a `ScoredResource`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -100,6 +105,7 @@ public data class ScoredResource(
         private var originatedFrom: String? = null
         private var score: Double? = null
         private var matchReason: String? = null
+        private var rest: JsonObject = JsonObject(emptyMap())
 
         public fun type(type: OneOrMoreStrings?): Builder = apply { this.type = type }
         public fun description(description: String?): Builder = apply { this.description = description }
@@ -130,8 +136,9 @@ public data class ScoredResource(
         public fun originatedFrom(originatedFrom: String?): Builder = apply { this.originatedFrom = originatedFrom }
         public fun score(score: Double?): Builder = apply { this.score = score }
         public fun matchReason(matchReason: String?): Builder = apply { this.matchReason = matchReason }
+        public fun rest(rest: JsonObject): Builder = apply { this.rest = rest }
 
-        public fun build(): ScoredResource = ScoredResource(context = context, id = id, type = type, name = name, description = description, identifier = identifier, about = about, sameAs = sameAs, isPartOf = isPartOf, hasPart = hasPart, license = license, version = version, dateCreated = dateCreated, dateModified = dateModified, wasDerivedFrom = wasDerivedFrom, wasAttributedTo = wasAttributedTo, generator = generator, conformsTo = conformsTo, availableFormats = availableFormats, representations = representations, archived = archived, entityTypes = entityTypes, isDraft = isDraft, sourceAnnotationId = sourceAnnotationId, sourceResourceId = sourceResourceId, originatedFrom = originatedFrom, score = score, matchReason = matchReason)
+        public fun build(): ScoredResource = ScoredResource(context = context, id = id, type = type, name = name, description = description, identifier = identifier, about = about, sameAs = sameAs, isPartOf = isPartOf, hasPart = hasPart, license = license, version = version, dateCreated = dateCreated, dateModified = dateModified, wasDerivedFrom = wasDerivedFrom, wasAttributedTo = wasAttributedTo, generator = generator, conformsTo = conformsTo, availableFormats = availableFormats, representations = representations, archived = archived, entityTypes = entityTypes, isDraft = isDraft, sourceAnnotationId = sourceAnnotationId, sourceResourceId = sourceResourceId, originatedFrom = originatedFrom, score = score, matchReason = matchReason, rest = rest)
     }
 
     public companion object {
@@ -140,4 +147,10 @@ public data class ScoredResource(
         @JvmExposeBoxed
         public fun builder(context: ResourceDescriptorContext, id: ResourceId, name: String, representations: ResourceDescriptorRepresentations): Builder = Builder(context, id, name, representations)
     }
+
+    internal object Serializer : OpenObjectSerializer<ScoredResource>(
+        ScoredResource.generatedSerializer(),
+        ScoredResource::rest,
+        { named, rest -> named.copy(rest = rest) },
+    )
 }

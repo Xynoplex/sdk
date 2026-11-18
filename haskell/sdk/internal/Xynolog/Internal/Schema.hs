@@ -2,7 +2,6 @@
 
 module Xynolog.Internal.Schema
   ( Schemas,
-    normalize,
     checkSchema,
     validate,
     validateNamed,
@@ -74,7 +73,8 @@ compilePattern value = do
     Right
     (makeRegexOptsM defaultCompOpt {multiline = False} defaultExecOpt expression :: Maybe Regex)
 
--- Check every schema node before code generation; annotation values are not schemas.
+-- Check every schema node the SDK validates against; annotation values are not schemas.
+-- The generator writes each with its allOf merged, so a schema that states one is unsupported.
 checkSchema :: Schemas -> Value -> Either String ()
 checkSchema schemas schema = do
   fields <- objectFields schema
@@ -131,10 +131,10 @@ checkSchema schemas schema = do
     Nothing -> pure ()
     Just (Bool _) | key == "additionalProperties" -> pure ()
     Just value -> checkSchema schemas value
-  forM_ ["allOf", "oneOf", "anyOf"] $ \key -> case KM.lookup key fields of
+  forM_ ["oneOf", "anyOf"] $ \key -> case KM.lookup key fields of
     Nothing -> pure ()
-    Just (Array values) -> ensure (not (V.null values)) "empty union/intersection" >> mapM_ (checkSchema schemas) values
-    Just _ -> Left "union/intersection is not an array"
+    Just (Array values) -> ensure (not (V.null values)) "empty union" >> mapM_ (checkSchema schemas) values
+    Just _ -> Left "union is not an array"
   where
     keywords =
       [ "$ref",
@@ -149,7 +149,6 @@ checkSchema schemas schema = do
         "enum",
         "oneOf",
         "anyOf",
-        "allOf",
         "format",
         "nullable",
         "pattern",
@@ -170,53 +169,6 @@ checkSchema schemas schema = do
         "writeOnly"
       ]
 
--- OpenAPI's object extensions describe one merged object, including its closed fields.
-normalize :: Schemas -> Value -> Either String Value
-normalize schemas = expand []
-  where
-    expand trail value = do
-      fields <- objectFields value
-      case KM.lookup "allOf" fields of
-        Just (Array parts) -> do
-          objects <- traverse (part trail) (toList parts)
-          merged <- foldl merge (Right KM.empty) objects
-          Object <$> merge (Right merged) (KM.delete "allOf" fields)
-        _ -> Right value
-    part trail value = do
-      fields <- objectFields value
-      case KM.lookup "$ref" fields of
-        Just (String name) -> do
-          ensure (name `notElem` trail) ("cyclic schema intersection: " ++ T.unpack name)
-          target <- reference schemas name
-          expanded <- expand (name : trail) target >>= objectFields
-          merge (Right expanded) (KM.delete "$ref" fields)
-        _ -> expand trail value >>= objectFields
-    merge previous next = previous >>= \old -> foldl add (Right old) (KM.toList next)
-    add previous (key, value) = do
-      old <- previous
-      combined <- case (key, KM.lookup key old, value) of
-        ("properties", Just (Object left), Object right) -> Right (Object (KM.unionWith intersection left right))
-        ("required", Just (Array left), Array right) -> Right (Array (V.fromList (nub (toList left ++ toList right))))
-        ("enum", Just (Array left), Array right) -> do
-          let common = V.filter (`V.elem` right) left
-          ensure (not (V.null common)) "empty enum intersection"
-          Right (Array common)
-        ("minimum", Just (Number left), Number right) -> Right (Number (max left right))
-        ("maximum", Just (Number left), Number right) -> Right (Number (min left right))
-        (bound, Just (Number left), Number right) | bound `elem` ["minLength", "minItems"] -> Right (Number (max left right))
-        (bound, Just (Number left), Number right) | bound `elem` ["maxLength", "maxItems", "maxProperties"] -> Right (Number (min left right))
-        ("type", Just left, right) -> ensure (left == right) "incompatible intersection types" >> Right right
-        ("additionalProperties", Just (Bool False), _) -> Right (Bool False)
-        ("uniqueItems", Just (Bool True), _) -> Right (Bool True)
-        (constrained, Just left, right)
-          | constrained `elem` ["pattern", "oneOf", "anyOf", "items", "$ref"] ->
-              ensure (left == right) ("unsupported intersection of " ++ show constrained) >> Right right
-        _ -> Right value
-      pure (KM.insert key combined old)
-    intersection left right
-      | left == right = left
-      | otherwise = Object (KM.singleton "allOf" (Array (V.fromList [left, right])))
-
 validateNamed :: Schemas -> Text -> Value -> Either String ()
 validateNamed schemas name value = case Map.lookup name schemas of
   Nothing -> Left ("unknown schema: " ++ T.unpack name)
@@ -225,14 +177,14 @@ validateNamed schemas name value = case Map.lookup name schemas of
 validateProperty :: Schemas -> Text -> Key.Key -> Value -> Either String ()
 validateProperty schemas named key value = do
   schema <- maybe (Left "unknown enclosing schema") Right (Map.lookup named schemas)
-  fields <- normalize schemas schema >>= objectFields
+  fields <- objectFields schema
   properties <- maybe (Left "schema declares no properties") objectFields (KM.lookup "properties" fields)
   member <- maybe (Left "schema does not declare this property") Right (KM.lookup key properties)
   validate schemas member value
 
 validate :: Schemas -> Value -> Value -> Either String ()
 validate schemas original value = do
-  schema <- normalize schemas original >>= objectFields
+  schema <- objectFields original
   if value == Null && KM.lookup "nullable" schema == Just (Bool True)
     then pure ()
     else do
