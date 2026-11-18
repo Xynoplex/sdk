@@ -1,0 +1,3449 @@
+{
+  "$comment": "Generated from protocol/specs/src; do not edit. Regenerate: make generate (codegen/lib/haskell_sdk/merged.ml) Each node that states an allOf in a schema the Haskell SDK validates against, by the schema's name and the node's path in it, with the generator's merge of it (codegen/lib/haskell_sdk/normalize.ml) as the SDK holds a schema, or the merge's refusal: what the SDK's Xynolog.Internal.Schema.normalize must give.",
+  "merged": [
+    {
+      "schema": "Annotation",
+      "at": [ "properties", "body" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./AnnotationBody.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./AnnotationBody.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
+      "schema": "AnnotationTarget",
+      "at": [ "properties", "selector" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Selector.json" },
+          { "type": "array", "items": { "$ref": "./Selector.json" } }
+        ]
+      }
+    },
+    {
+      "schema": "AnnotationTarget",
+      "at": [ "properties", "source" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "AttributedEvent",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "agent": { "$ref": "./Agent.json" },
+          "id": { "type": "string" },
+          "metadata": { "$ref": "EventMetadata.json" },
+          "payload": { "type": "object", "additionalProperties": true },
+          "resourceId": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "type": { "type": "string" },
+          "userId": { "allOf": [ { "$ref": "./UserId.json" } ] },
+          "version": { "type": "integer" }
+        },
+        "required": [
+          "id", "type", "timestamp", "userId", "version", "payload",
+          "metadata", "agent"
+        ]
+      }
+    },
+    {
+      "schema": "BeckonFocusEvent",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BeckonHoverEvent",
+      "at": [ "properties", "annotationId" ],
+      "merged": {
+        "type": "string",
+        "nullable": true,
+        "pattern": "^[A-Za-z0-9_-]{1,128}$"
+      }
+    },
+    {
+      "schema": "BindInitiateCommand",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BindInitiateCommand",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BindUpdateBodyCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "BindUpdateBodyCommand",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BindUpdateBodyCommand",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BrowseDirectoryFailed",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "peer-unavailable", "not-found", "unauthorized", "none-pending"
+            ]
+          },
+          "details": { "type": "string" },
+          "message": { "type": "string" },
+          "path": { "type": "string" }
+        },
+        "required": [ "message", "path" ]
+      }
+    },
+    {
+      "schema": "BusEmitRequest",
+      "at": [ "properties", "scope" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BusFrame",
+      "at": [ "properties", "scope" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BusResumeGap",
+      "at": [ "properties", "scope" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BusSubscribeRequest",
+      "at": [ "properties", "scoped", "items", "properties", "scope" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "BusSubscribeRequestScopedItem",
+      "at": [ "properties", "scope" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ConnectionIdentity",
+      "at": [ "properties", "description" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "domain": { "type": "string" },
+          "gitBranch": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "required": [ "name", "domain" ]
+      }
+    },
+    {
+      "schema": "ConnectionIdentity",
+      "at": [ "properties", "did" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "CreateAnnotationRequest",
+      "at": [ "properties", "body" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./AnnotationBody.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./AnnotationBody.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
+      "schema": "CreateResourceResponse",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "EnrichedResourceEvent",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "annotation": { "allOf": [ { "$ref": "./Annotation.json" } ] },
+          "id": { "type": "string" },
+          "metadata": { "$ref": "EventMetadata.json" },
+          "payload": { "type": "object", "additionalProperties": true },
+          "resourceId": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "type": { "type": "string" },
+          "userId": { "allOf": [ { "$ref": "./UserId.json" } ] },
+          "version": { "type": "integer" }
+        },
+        "required": [
+          "id", "type", "timestamp", "userId", "version", "payload",
+          "metadata"
+        ]
+      }
+    },
+    {
+      "schema": "EnrichedResourceEvent",
+      "at": [ "allOf", "1", "properties", "annotation" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "type": "string",
+            "enum": [ "http://www.w3.org/ns/anno.jsonld" ]
+          },
+          "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
+          "created": { "type": "string", "format": "date-time" },
+          "creator": { "$ref": "./Agent.json" },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          },
+          "id": { "$ref": "./AnnotationId.json" },
+          "modified": { "type": "string", "format": "date-time" },
+          "motivation": { "$ref": "./Motivation.json" },
+          "target": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "$ref": "./AnnotationTarget.json" }
+            ]
+          },
+          "type": { "type": "string", "enum": [ "Annotation" ] },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "@context", "type", "id", "motivation", "target", "created"
+        ]
+      }
+    },
+    {
+      "schema": "ExtractedText",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "./PdfTextItem.json" }
+          },
+          "kind": { "type": "string", "enum": [ "extracted" ] },
+          "method": {
+            "type": "string",
+            "enum": [
+              "text-passthrough", "pdf-text-layer", "table", "form", "ocr"
+            ]
+          },
+          "ocrConfidence": {
+            "type": "object",
+            "properties": {
+              "lowConfidenceWords": { "type": "integer" },
+              "mean": { "type": "number" },
+              "totalWords": { "type": "integer" }
+            },
+            "required": [ "mean", "lowConfidenceWords", "totalWords" ]
+          },
+          "pdfClass": {
+            "type": "string",
+            "enum": [ "A", "B", "C", "D", "E", "F", "G" ]
+          },
+          "text": { "type": "string" },
+          "unreadPages": { "type": "array", "items": { "type": "integer" } }
+        },
+        "required": [ "text", "items", "kind", "method" ]
+      }
+    },
+    {
+      "schema": "FileEntry",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "FrameAddEntityTypeCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "FrameAddTagSchemaCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "GatherAnnotationComplete",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GatherAnnotationComplete",
+      "at": [ "properties", "response" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "focus": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "annotation": {
+                    "allOf": [ { "$ref": "./Annotation.json" } ]
+                  },
+                  "kind": { "type": "string", "enum": [ "annotation" ] },
+                  "selected": {
+                    "type": "object",
+                    "properties": {
+                      "after": { "type": "string" },
+                      "before": { "type": "string" },
+                      "text": { "type": "string" }
+                    },
+                    "required": [ "text" ]
+                  },
+                  "sourceResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "targetContext": {
+                    "type": "object",
+                    "properties": {
+                      "content": { "type": "string" },
+                      "summary": { "type": "string" }
+                    },
+                    "required": [ "content" ]
+                  },
+                  "targetResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "userHint": { "type": "string" }
+                },
+                "required": [ "kind", "annotation", "sourceResource" ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "main": { "type": "string" },
+                      "related": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" }
+                      }
+                    }
+                  },
+                  "kind": { "type": "string", "enum": [ "resource" ] },
+                  "resource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "suggestedReferences": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "summary": { "type": "string" }
+                },
+                "required": [ "kind", "resource" ]
+              }
+            ]
+          },
+          "graph": { "allOf": [ { "$ref": "./KnowledgeGraph.json" } ] },
+          "inferredRelationshipSummary": { "type": "string" },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "entityTypeFrequencies": {
+                "type": "object",
+                "additionalProperties": { "type": "integer" }
+              },
+              "entityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "language": { "type": "string" },
+              "resourceType": { "type": "string" }
+            }
+          },
+          "semanticContext": {
+            "type": "object",
+            "properties": {
+              "excludedEntityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "similar": {
+                "type": "array",
+                "items": { "$ref": "./SemanticMatch.json" }
+              }
+            },
+            "required": [ "similar" ]
+          }
+        },
+        "required": [ "focus", "graph", "metadata" ]
+      }
+    },
+    {
+      "schema": "GatherAnnotationRequest",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GatherAnnotationRequest",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GatherFailed",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "annotationId": { "allOf": [ { "$ref": "./AnnotationId.json" } ] },
+          "code": {
+            "type": "string",
+            "enum": [
+              "peer-unavailable", "not-found", "unauthorized", "none-pending"
+            ]
+          },
+          "details": { "type": "string" },
+          "message": { "type": "string" }
+        },
+        "required": [ "message", "annotationId" ]
+      }
+    },
+    {
+      "schema": "GatherFailed",
+      "at": [ "allOf", "1", "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GatherReferencedByRequest",
+      "at": [ "properties", "motivation" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "assessing", "commenting", "highlighting", "linking", "tagging"
+        ]
+      }
+    },
+    {
+      "schema": "GatherResourceComplete",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GatherResourceComplete",
+      "at": [ "properties", "response" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "focus": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "annotation": {
+                    "allOf": [ { "$ref": "./Annotation.json" } ]
+                  },
+                  "kind": { "type": "string", "enum": [ "annotation" ] },
+                  "selected": {
+                    "type": "object",
+                    "properties": {
+                      "after": { "type": "string" },
+                      "before": { "type": "string" },
+                      "text": { "type": "string" }
+                    },
+                    "required": [ "text" ]
+                  },
+                  "sourceResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "targetContext": {
+                    "type": "object",
+                    "properties": {
+                      "content": { "type": "string" },
+                      "summary": { "type": "string" }
+                    },
+                    "required": [ "content" ]
+                  },
+                  "targetResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "userHint": { "type": "string" }
+                },
+                "required": [ "kind", "annotation", "sourceResource" ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "main": { "type": "string" },
+                      "related": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" }
+                      }
+                    }
+                  },
+                  "kind": { "type": "string", "enum": [ "resource" ] },
+                  "resource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "suggestedReferences": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "summary": { "type": "string" }
+                },
+                "required": [ "kind", "resource" ]
+              }
+            ]
+          },
+          "graph": { "allOf": [ { "$ref": "./KnowledgeGraph.json" } ] },
+          "inferredRelationshipSummary": { "type": "string" },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "entityTypeFrequencies": {
+                "type": "object",
+                "additionalProperties": { "type": "integer" }
+              },
+              "entityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "language": { "type": "string" },
+              "resourceType": { "type": "string" }
+            }
+          },
+          "semanticContext": {
+            "type": "object",
+            "properties": {
+              "excludedEntityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "similar": {
+                "type": "array",
+                "items": { "$ref": "./SemanticMatch.json" }
+              }
+            },
+            "required": [ "similar" ]
+          }
+        },
+        "required": [ "focus", "graph", "metadata" ]
+      }
+    },
+    {
+      "schema": "GatherResourceFailed",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "peer-unavailable", "not-found", "unauthorized", "none-pending"
+            ]
+          },
+          "details": { "type": "string" },
+          "message": { "type": "string" },
+          "resourceId": { "allOf": [ { "$ref": "./ResourceId.json" } ] }
+        },
+        "required": [ "message", "resourceId" ]
+      }
+    },
+    {
+      "schema": "GatherResourceFailed",
+      "at": [ "allOf", "1", "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GatherResourceRequest",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GatheredContext",
+      "at": [
+        "properties", "focus", "oneOf", "0", "properties", "annotation"
+      ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "type": "string",
+            "enum": [ "http://www.w3.org/ns/anno.jsonld" ]
+          },
+          "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
+          "created": { "type": "string", "format": "date-time" },
+          "creator": { "$ref": "./Agent.json" },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          },
+          "id": { "$ref": "./AnnotationId.json" },
+          "modified": { "type": "string", "format": "date-time" },
+          "motivation": { "$ref": "./Motivation.json" },
+          "target": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "$ref": "./AnnotationTarget.json" }
+            ]
+          },
+          "type": { "type": "string", "enum": [ "Annotation" ] },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "@context", "type", "id", "motivation", "target", "created"
+        ]
+      }
+    },
+    {
+      "schema": "GatheredContext",
+      "at": [
+        "properties", "focus", "oneOf", "0", "properties", "sourceResource"
+      ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContext",
+      "at": [
+        "properties", "focus", "oneOf", "0", "properties", "targetResource"
+      ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContext",
+      "at": [ "properties", "focus", "oneOf", "1", "properties", "resource" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContext",
+      "at": [ "properties", "graph" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "edges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "bidirectional": { "type": "boolean" },
+                "metadata": { "type": "object", "additionalProperties": {} },
+                "source": { "type": "string" },
+                "target": { "type": "string" },
+                "type": { "type": "string" }
+              },
+              "required": [ "source", "target", "type" ]
+            }
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "$ref": "./GraphResourceNode.json" },
+                { "$ref": "./GraphAnnotationNode.json" }
+              ]
+            }
+          },
+          "truncated": { "type": "boolean" }
+        },
+        "required": [ "nodes", "edges" ]
+      }
+    },
+    {
+      "schema": "GatheredContextFocus",
+      "at": [ "oneOf", "0", "properties", "annotation" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "type": "string",
+            "enum": [ "http://www.w3.org/ns/anno.jsonld" ]
+          },
+          "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
+          "created": { "type": "string", "format": "date-time" },
+          "creator": { "$ref": "./Agent.json" },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          },
+          "id": { "$ref": "./AnnotationId.json" },
+          "modified": { "type": "string", "format": "date-time" },
+          "motivation": { "$ref": "./Motivation.json" },
+          "target": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "$ref": "./AnnotationTarget.json" }
+            ]
+          },
+          "type": { "type": "string", "enum": [ "Annotation" ] },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "@context", "type", "id", "motivation", "target", "created"
+        ]
+      }
+    },
+    {
+      "schema": "GatheredContextFocus",
+      "at": [ "oneOf", "0", "properties", "sourceResource" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContextFocus",
+      "at": [ "oneOf", "0", "properties", "targetResource" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContextFocus",
+      "at": [ "oneOf", "1", "properties", "resource" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContextFocusBranch1Value",
+      "at": [ "properties", "annotation" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "type": "string",
+            "enum": [ "http://www.w3.org/ns/anno.jsonld" ]
+          },
+          "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
+          "created": { "type": "string", "format": "date-time" },
+          "creator": { "$ref": "./Agent.json" },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          },
+          "id": { "$ref": "./AnnotationId.json" },
+          "modified": { "type": "string", "format": "date-time" },
+          "motivation": { "$ref": "./Motivation.json" },
+          "target": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "$ref": "./AnnotationTarget.json" }
+            ]
+          },
+          "type": { "type": "string", "enum": [ "Annotation" ] },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Agent.json" },
+                "minItems": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "@context", "type", "id", "motivation", "target", "created"
+        ]
+      }
+    },
+    {
+      "schema": "GatheredContextFocusBranch1Value",
+      "at": [ "properties", "sourceResource" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContextFocusBranch1Value",
+      "at": [ "properties", "targetResource" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GatheredContextFocusBranch2Value",
+      "at": [ "properties", "resource" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GenerationJobParams",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "cite": { "type": "boolean" },
+          "context": { "allOf": [ { "$ref": "./GatheredContext.json" } ] },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "language": { "type": "string" },
+          "maxTokens": { "type": "number" },
+          "outputMediaType": {
+            "allOf": [ { "$ref": "./SupportedMediaType.json" } ]
+          },
+          "prompt": { "type": "string" },
+          "sourceLanguage": { "type": "string" },
+          "storageUri": { "type": "string", "minLength": 1 },
+          "structure": { "type": "string" },
+          "task": { "type": "string" },
+          "temperature": { "type": "number" },
+          "title": { "type": "string", "minLength": 1 }
+        },
+        "required": [ "title", "storageUri", "context" ]
+      }
+    },
+    {
+      "schema": "GenerationJobParams",
+      "at": [ "allOf", "1", "properties", "context" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "focus": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "annotation": {
+                    "allOf": [ { "$ref": "./Annotation.json" } ]
+                  },
+                  "kind": { "type": "string", "enum": [ "annotation" ] },
+                  "selected": {
+                    "type": "object",
+                    "properties": {
+                      "after": { "type": "string" },
+                      "before": { "type": "string" },
+                      "text": { "type": "string" }
+                    },
+                    "required": [ "text" ]
+                  },
+                  "sourceResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "targetContext": {
+                    "type": "object",
+                    "properties": {
+                      "content": { "type": "string" },
+                      "summary": { "type": "string" }
+                    },
+                    "required": [ "content" ]
+                  },
+                  "targetResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "userHint": { "type": "string" }
+                },
+                "required": [ "kind", "annotation", "sourceResource" ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "main": { "type": "string" },
+                      "related": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" }
+                      }
+                    }
+                  },
+                  "kind": { "type": "string", "enum": [ "resource" ] },
+                  "resource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "suggestedReferences": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "summary": { "type": "string" }
+                },
+                "required": [ "kind", "resource" ]
+              }
+            ]
+          },
+          "graph": { "allOf": [ { "$ref": "./KnowledgeGraph.json" } ] },
+          "inferredRelationshipSummary": { "type": "string" },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "entityTypeFrequencies": {
+                "type": "object",
+                "additionalProperties": { "type": "integer" }
+              },
+              "entityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "language": { "type": "string" },
+              "resourceType": { "type": "string" }
+            }
+          },
+          "semanticContext": {
+            "type": "object",
+            "properties": {
+              "excludedEntityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "similar": {
+                "type": "array",
+                "items": { "$ref": "./SemanticMatch.json" }
+              }
+            },
+            "required": [ "similar" ]
+          }
+        },
+        "required": [ "focus", "graph", "metadata" ]
+      }
+    },
+    {
+      "schema": "GenerationJobRequest",
+      "at": [ "properties", "outputMediaType" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "text/plain", "text/markdown", "text/html", "text/css", "text/csv",
+          "text/xml", "application/json", "application/xml",
+          "application/yaml", "application/x-yaml", "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "application/zip", "application/gzip", "application/x-tar",
+          "application/x-7z-compressed", "application/octet-stream",
+          "application/wasm", "image/png", "image/jpeg", "image/gif",
+          "image/webp", "image/svg+xml", "image/bmp", "image/tiff",
+          "image/x-icon", "video/mp4", "video/mpeg", "video/webm",
+          "video/ogg", "video/quicktime", "video/x-msvideo", "audio/mpeg",
+          "audio/wav", "audio/ogg", "audio/webm", "audio/aac", "audio/flac",
+          "text/javascript", "application/javascript", "text/x-typescript",
+          "application/typescript", "text/x-python", "text/x-java",
+          "text/x-c", "text/x-c++", "text/x-csharp", "text/x-go",
+          "text/x-rust", "text/x-ruby", "text/x-php", "text/x-swift",
+          "text/x-kotlin", "text/x-shell", "font/woff", "font/woff2",
+          "font/ttf", "font/otf"
+        ]
+      }
+    },
+    {
+      "schema": "GetAnnotationResponse",
+      "at": [ "properties", "resolvedResource" ],
+      "merged": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GetAnnotationResponse",
+      "at": [ "properties", "resource" ],
+      "merged": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "GetAnnotationsResponse",
+      "at": [ "properties", "motivation" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "assessing", "commenting", "highlighting", "linking", "tagging"
+        ],
+        "nullable": true
+      }
+    },
+    {
+      "schema": "GetReferencedByResponseReferencedByItem",
+      "at": [ "properties", "id" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GetReferencedByResponseReferencedByItem",
+      "at": [ "properties", "target", "properties", "source" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GetReferencedByResponseReferencedByItemTarget",
+      "at": [ "properties", "source" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GraphAnnotationNode",
+      "at": [ "properties", "id" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "GraphResourceNode",
+      "at": [ "properties", "id" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobAssignCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobAssignCommand",
+      "at": [ "properties", "holder" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobAssignCommand",
+      "at": [ "properties", "requester" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobAssignCommand",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobAssignedPayload",
+      "at": [ "properties", "holder" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobAssignedPayload",
+      "at": [ "properties", "requester" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobAssignedPayload",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobCancelCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobCancelCommand",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobCheckpointCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobClaimCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobCompletedPayload",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobCompletedPayload",
+      "at": [ "properties", "resultResourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobFailCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobFailCommand",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobFailedPayload",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobMetadata",
+      "at": [ "properties", "id" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobMetadata",
+      "at": [ "properties", "userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobParams",
+      "at": [ "properties", "schema" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "description": { "type": "string" },
+          "domain": { "type": "string" },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "./TagCategory.json" }
+          }
+        },
+        "required": [ "id", "name", "description", "domain", "tags" ]
+      }
+    },
+    {
+      "schema": "JobProgress",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobProgressCompleteCreated",
+      "at": [ "properties", "motivation" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "assessing", "commenting", "highlighting", "linking", "tagging"
+        ]
+      }
+    },
+    {
+      "schema": "JobReportProgressCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobReportProgressCommand",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobStartCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "JobStartCommand",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "JobStartedPayload",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "KbReadVerdict",
+      "at": [ "oneOf", "0", "properties", "kind" ],
+      "merged": { "type": "string", "enum": [ "recorded" ] }
+    },
+    {
+      "schema": "KbReadVerdict",
+      "at": [ "oneOf", "1", "properties", "kind" ],
+      "merged": { "type": "string", "enum": [ "conflict" ] }
+    },
+    {
+      "schema": "KbReadVerdict",
+      "at": [ "oneOf", "2", "properties", "kind" ],
+      "merged": { "type": "string", "enum": [ "no-verdict" ] }
+    },
+    {
+      "schema": "KbReadVerdictBranch1Value",
+      "at": [ "properties", "kind" ],
+      "merged": { "type": "string", "enum": [ "recorded" ] }
+    },
+    {
+      "schema": "KbReadVerdictBranch2Value",
+      "at": [ "properties", "kind" ],
+      "merged": { "type": "string", "enum": [ "conflict" ] }
+    },
+    {
+      "schema": "KbReadVerdictBranch3Value",
+      "at": [ "properties", "kind" ],
+      "merged": { "type": "string", "enum": [ "no-verdict" ] }
+    },
+    {
+      "schema": "KnowledgeBase",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "did": { "type": "string" },
+          "endpoint": { "$ref": "./KbEndpoint.json" },
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "lastRead": { "allOf": [ { "$ref": "./KbRead.json" } ] }
+        },
+        "required": [ "id", "label", "endpoint", "did" ]
+      }
+    },
+    {
+      "schema": "LimitRefusal",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "allOf": [
+              { "type": "string" },
+              {
+                "type": "string",
+                "enum": [
+                  "streams", "emit-rate", "unanswered-requests", "capacity",
+                  "refusal-rate"
+                ]
+              }
+            ]
+          },
+          "details": {},
+          "error": { "type": "string" },
+          "hint": { "type": "string" }
+        },
+        "required": [ "error", "code" ]
+      }
+    },
+    {
+      "schema": "LimitRefusalCode",
+      "at": [],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "streams", "emit-rate", "unanswered-requests", "capacity",
+          "refusal-rate"
+        ]
+      }
+    },
+    {
+      "schema": "MarkArchiveCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkCommitCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkCommitCommand",
+      "at": [ "properties", "jobId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MarkCommitCommand",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MarkDelegateTimeoutEvent",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MarkDeleteCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkJobCompleteCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkJobCreateCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkJobCreateCommand",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MarkJobQueuedEvent",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MarkJobQueuedEvent",
+      "at": [ "properties", "userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkRequestedEvent",
+      "at": [ "properties", "selector" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Selector.json" },
+          { "type": "array", "items": { "$ref": "./Selector.json" } }
+        ]
+      }
+    },
+    {
+      "schema": "MarkRequestedEvent",
+      "at": [ "properties", "source" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MarkSubmitEvent",
+      "at": [ "properties", "body" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./AnnotationBody.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./AnnotationBody.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
+      "schema": "MarkSubmitEvent",
+      "at": [ "properties", "selector" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Selector.json" },
+          { "type": "array", "items": { "$ref": "./Selector.json" } }
+        ]
+      }
+    },
+    {
+      "schema": "MarkSubmitEvent",
+      "at": [ "properties", "source" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MarkUnarchiveCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkUpdateBodyCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MarkUpdateEntityTypesCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "MatchSearchFailed",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "peer-unavailable", "not-found", "unauthorized", "none-pending"
+            ]
+          },
+          "details": { "type": "string" },
+          "message": { "type": "string" },
+          "referenceId": { "allOf": [ { "$ref": "./AnnotationId.json" } ] }
+        },
+        "required": [ "message", "referenceId" ]
+      }
+    },
+    {
+      "schema": "MatchSearchFailed",
+      "at": [ "allOf", "1", "properties", "referenceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MatchSearchRequest",
+      "at": [ "properties", "context" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "focus": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "annotation": {
+                    "allOf": [ { "$ref": "./Annotation.json" } ]
+                  },
+                  "kind": { "type": "string", "enum": [ "annotation" ] },
+                  "selected": {
+                    "type": "object",
+                    "properties": {
+                      "after": { "type": "string" },
+                      "before": { "type": "string" },
+                      "text": { "type": "string" }
+                    },
+                    "required": [ "text" ]
+                  },
+                  "sourceResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "targetContext": {
+                    "type": "object",
+                    "properties": {
+                      "content": { "type": "string" },
+                      "summary": { "type": "string" }
+                    },
+                    "required": [ "content" ]
+                  },
+                  "targetResource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "userHint": { "type": "string" }
+                },
+                "required": [ "kind", "annotation", "sourceResource" ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "main": { "type": "string" },
+                      "related": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" }
+                      }
+                    }
+                  },
+                  "kind": { "type": "string", "enum": [ "resource" ] },
+                  "resource": {
+                    "allOf": [ { "$ref": "./ResourceDescriptor.json" } ]
+                  },
+                  "suggestedReferences": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "summary": { "type": "string" }
+                },
+                "required": [ "kind", "resource" ]
+              }
+            ]
+          },
+          "graph": { "allOf": [ { "$ref": "./KnowledgeGraph.json" } ] },
+          "inferredRelationshipSummary": { "type": "string" },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "entityTypeFrequencies": {
+                "type": "object",
+                "additionalProperties": { "type": "integer" }
+              },
+              "entityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "language": { "type": "string" },
+              "resourceType": { "type": "string" }
+            }
+          },
+          "semanticContext": {
+            "type": "object",
+            "properties": {
+              "excludedEntityTypes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "similar": {
+                "type": "array",
+                "items": { "$ref": "./SemanticMatch.json" }
+              }
+            },
+            "required": [ "similar" ]
+          }
+        },
+        "required": [ "focus", "graph", "metadata" ]
+      }
+    },
+    {
+      "schema": "MatchSearchRequest",
+      "at": [ "properties", "referenceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MatchSearchRequest",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "MediaTokenRequest",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "NewKnowledgeBase",
+      "at": [ "properties", "lastRead" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "at": { "type": "string", "format": "date-time" },
+          "gitBranch": { "type": "string" }
+        },
+        "required": [ "at" ]
+      }
+    },
+    {
+      "schema": "OpenResource",
+      "at": [ "properties", "id" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "PendingAuthorization",
+      "at": [ "properties", "target" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "host": { "type": "string" },
+          "kind": { "type": "string", "enum": [ "http" ] },
+          "port": { "type": "integer", "minimum": 1.0, "maximum": 65535.0 },
+          "protocol": { "type": "string", "enum": [ "http", "https" ] }
+        },
+        "required": [ "kind", "host", "port", "protocol" ]
+      }
+    },
+    {
+      "schema": "PrincipalProfileCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "RepresentationNotFound",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "allOf": [
+              { "type": "string" },
+              { "type": "string", "enum": [ "resource", "representation" ] }
+            ]
+          },
+          "details": {},
+          "error": { "type": "string" },
+          "hint": { "type": "string" }
+        },
+        "required": [ "error", "code" ]
+      }
+    },
+    {
+      "schema": "RepresentationNotFoundCode",
+      "at": [],
+      "merged": {
+        "type": "string",
+        "enum": [ "resource", "representation" ]
+      }
+    },
+    {
+      "schema": "ResourceCreatedPayload",
+      "at": [ "properties", "jobId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "@id" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "sourceAnnotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "sourceResourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceErrorEvent",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceUpload",
+      "at": [ "properties", "jobId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceUpload",
+      "at": [ "properties", "sourceAnnotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceUpload",
+      "at": [ "properties", "sourceResourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceUploadMetadata",
+      "at": [ "properties", "jobId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceUploadMetadata",
+      "at": [ "properties", "sourceAnnotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceUploadMetadata",
+      "at": [ "properties", "sourceResourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ScoredResource",
+      "at": [],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              { "type": "object", "additionalProperties": true },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "format": "uri" },
+                    { "type": "object", "additionalProperties": true }
+                  ]
+                }
+              }
+            ]
+          },
+          "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
+          "@type": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "about": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          },
+          "archived": { "type": "boolean" },
+          "availableFormats": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "conformsTo": {
+            "oneOf": [
+              { "type": "string", "format": "uri" },
+              {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              }
+            ]
+          },
+          "dateCreated": { "type": "string", "format": "date-time" },
+          "dateModified": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "entityTypes": { "type": "array", "items": { "type": "string" } },
+          "generator": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "hasPart": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "identifier": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": { "type": "string", "format": "uri" },
+                  "scheme": { "type": "string" },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "isDraft": { "type": "boolean" },
+          "isPartOf": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "license": { "type": "string", "format": "uri" },
+          "matchReason": { "type": "string" },
+          "name": { "type": "string" },
+          "originatedFrom": { "type": "string", "format": "uri" },
+          "representations": {
+            "oneOf": [
+              { "$ref": "./Representation.json" },
+              {
+                "type": "array",
+                "items": { "$ref": "./Representation.json" }
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "score": { "type": "number" },
+          "sourceAnnotationId": {
+            "allOf": [ { "$ref": "./AnnotationId.json" } ]
+          },
+          "sourceResourceId": {
+            "allOf": [ { "$ref": "./ResourceId.json" } ]
+          },
+          "version": { "type": "string" },
+          "wasAttributedTo": {
+            "oneOf": [
+              { "$ref": "./Agent.json" },
+              { "type": "array", "items": { "$ref": "./Agent.json" } }
+            ]
+          },
+          "wasDerivedFrom": {
+            "oneOf": [
+              { "$ref": "./ResourceId.json" },
+              { "type": "array", "items": { "$ref": "./ResourceId.json" } }
+            ]
+          }
+        },
+        "required": [ "@context", "@id", "name", "representations" ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "schema": "SemanticMatch",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "SemanticMatch",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "SessionEnded",
+      "at": [ "properties", "reason" ],
+      "merged": { "type": "string", "enum": [ "expired", "refused" ] }
+    },
+    {
+      "schema": "SessionJoinedEvent",
+      "at": [ "properties", "participant" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "SessionLeftEvent",
+      "at": [ "properties", "participant" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "SignInOutcome",
+      "at": [ "properties", "expected" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "did": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "required": [ "did" ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "schema": "SignInOutcome",
+      "at": [ "properties", "kb" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "did": { "type": "string" },
+          "endpoint": { "$ref": "./KbEndpoint.json" },
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "lastRead": { "allOf": [ { "$ref": "./KbRead.json" } ] }
+        },
+        "required": [ "id", "label", "endpoint", "did" ]
+      }
+    },
+    {
+      "schema": "SignedIn",
+      "at": [ "properties", "description" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "domain": { "type": "string" },
+          "gitBranch": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "required": [ "name", "domain" ]
+      }
+    },
+    {
+      "schema": "SignedIn",
+      "at": [ "properties", "endpoint" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./HttpEndpoint.json" },
+          { "$ref": "./LocalEndpoint.json" }
+        ]
+      }
+    },
+    {
+      "schema": "SignedIn",
+      "at": [ "properties", "session" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "access": { "type": "string" },
+          "clientId": { "type": "string" },
+          "personKey": { "type": "string" },
+          "refresh": { "type": "string" },
+          "revocationEndpoint": { "type": "string" },
+          "tokenEndpoint": { "type": "string" }
+        },
+        "required": [ "access", "refresh", "clientId", "tokenEndpoint" ]
+      }
+    },
+    {
+      "schema": "SmeltRebuildAnchorsCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "SmeltRebuildAnchorsCommand",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "SmeltSettled",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "SpecificResource",
+      "at": [ "properties", "purpose" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "assessing", "bookmarking", "classifying", "commenting",
+          "describing", "editing", "highlighting", "identifying", "linking",
+          "moderating", "questioning", "replying", "tagging"
+        ]
+      }
+    },
+    {
+      "schema": "SpecificResource",
+      "at": [ "properties", "source" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "StoredEventResponse",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "StoredEventResponse",
+      "at": [ "properties", "userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "TabCheck",
+      "at": [ "oneOf", "0", "properties", "verdict" ],
+      "merged": { "type": "string", "enum": [ "gone" ] }
+    },
+    {
+      "schema": "TabCheck",
+      "at": [ "oneOf", "1", "properties", "verdict" ],
+      "merged": { "type": "string", "enum": [ "ready" ] }
+    },
+    {
+      "schema": "TabCheck",
+      "at": [ "oneOf", "2", "properties", "verdict" ],
+      "merged": { "type": "string", "enum": [ "unknown" ] }
+    },
+    {
+      "schema": "TabCheckBranch1Value",
+      "at": [ "properties", "verdict" ],
+      "merged": { "type": "string", "enum": [ "gone" ] }
+    },
+    {
+      "schema": "TabCheckBranch2Value",
+      "at": [ "properties", "verdict" ],
+      "merged": { "type": "string", "enum": [ "ready" ] }
+    },
+    {
+      "schema": "TabCheckBranch3Value",
+      "at": [ "properties", "verdict" ],
+      "merged": { "type": "string", "enum": [ "unknown" ] }
+    },
+    {
+      "schema": "TextualBody",
+      "at": [ "properties", "purpose" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "assessing", "bookmarking", "classifying", "commenting",
+          "describing", "editing", "highlighting", "identifying", "linking",
+          "moderating", "questioning", "replying", "tagging"
+        ]
+      }
+    },
+    {
+      "schema": "UpdateAnnotationBodyRequest",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "UserResponse",
+      "at": [ "properties", "did" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "WeaveApplied",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "WeaveRebuildCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "WeaveRebuildCommand",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "YieldCloneCreateCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "YieldClonePersistCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "YieldClonePersistCommand",
+      "at": [ "properties", "parentResourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "YieldCreateCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "YieldCreateCommand",
+      "at": [ "properties", "jobId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "YieldJobCompleteCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "YieldJobCompleteCommand",
+      "at": [ "properties", "annotationId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "YieldJobCreateCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "YieldJobDone",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "YieldJobQueuedEvent",
+      "at": [ "properties", "resourceId" ],
+      "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "YieldJobQueuedEvent",
+      "at": [ "properties", "userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "YieldUpdateCommand",
+      "at": [ "properties", "_userId" ],
+      "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    }
+  ]
+}

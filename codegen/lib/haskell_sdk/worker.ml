@@ -9,15 +9,7 @@ module H = Haskell_syntax
 let source = "typescript/sdk/src/claims.ts"
 let ( let* ) = Result.bind
 let strip = String.trim
-
-(* Each of [results]' values, or the first refusal. *)
-let all results =
-  List.fold_right
-    (fun result rest ->
-      let* value = result in
-      let* values = rest in
-      Ok (value :: values))
-    results (Ok [])
+let refused message = [ { Decode.file = source; pointer = ""; message } ]
 
 let strip_affixes ~prefix ~suffix text =
   let text = strip text in
@@ -29,7 +21,8 @@ let strip_affixes ~prefix ~suffix text =
 (* The quoted names of a literal array: ['a', 'b'] or ['a', 'b',]. *)
 let quoted_list text =
   let* inner =
-    Option.to_result ~none:"worker channels need a literal array"
+    Option.to_result
+      ~none:(refused "worker channels need a literal array")
       (strip_affixes ~prefix:"[" ~suffix:"]" text)
   in
   let entries = String.split_on_char ',' (strip inner) in
@@ -39,7 +32,7 @@ let quoted_list text =
     | _ -> entries
   in
   let* names =
-    all
+    Spec.all
       (List.map
          (fun written ->
            match strip_affixes ~prefix:"'" ~suffix:"'" written with
@@ -52,49 +45,52 @@ let quoted_list text =
                          | _ -> false)
                        value ->
                Ok value
-           | Some _ -> Error "unsupported worker channel name"
-           | None -> Error "worker channels need quoted literal names")
+           | Some _ -> Error (refused "unsupported worker channel name")
+           | None -> Error (refused "worker channels need quoted literal names"))
          entries)
   in
   if
     names <> []
     && List.length (List.sort_uniq String.compare names) = List.length names
   then Ok names
-  else Error "empty or duplicate worker channel names"
+  else Error (refused "empty or duplicate worker channel names")
 
 let channels text =
   let* claim =
-    Marker.between
-      "export const JOB_CLAIM_CHANNELS: readonly (keyof EventMap)[] = [" "\n];"
-      text
+    Result.map_error refused
+      (Marker.between
+         "export const JOB_CLAIM_CHANNELS: readonly (keyof EventMap)[] = ["
+         "\n];" text)
   in
   let* body =
     let claim = strip claim and prefix = "...replyChannelsFor(" in
     if String.starts_with ~prefix claim then
       Ok (Marker.drop (String.length prefix) claim)
-    else Error "unsupported claim channel composition"
+    else Error (refused "unsupported claim channel composition")
   in
   let* requests, extra =
     match Marker.find ")," body with
     | Some i -> Ok (String.sub body 0 i, Marker.drop (i + 2) body)
-    | None -> Error "claim channel composition has no reply list"
+    | None -> Error (refused "claim channel composition has no reply list")
   in
   let* claim_operations = quoted_list requests in
   let* claim_extras = quoted_list ("[" ^ extra ^ "]") in
   let* commit_operations =
     Result.bind
-      (Marker.between "const COMMIT_OPERATIONS = "
-         " as const satisfies readonly BusOperationKey[];" text)
+      (Result.map_error refused
+         (Marker.between "const COMMIT_OPERATIONS = "
+            " as const satisfies readonly BusOperationKey[];" text))
       quoted_list
   in
   let* composition =
-    Marker.between
-      "export const JOB_COMMIT_CHANNELS: readonly (keyof EventMap)[] = " ";\n"
-      text
+    Result.map_error refused
+      (Marker.between
+         "export const JOB_COMMIT_CHANNELS: readonly (keyof EventMap)[] = "
+         ";\n" text)
   in
   let* () =
     if composition = "replyChannelsFor(COMMIT_OPERATIONS)" then Ok ()
-    else Error "unsupported commit channel composition"
+    else Error (refused "unsupported commit channel composition")
   in
   let operations names =
     H.Apply
@@ -148,7 +144,7 @@ let rec uncomment text =
       let before = String.sub text 0 i in
       let rest = Marker.drop (i + 2) text in
       match Marker.find "*/" rest with
-      | None -> Error "unterminated worker interface comment"
+      | None -> Error (refused "unterminated worker interface comment")
       | Some j ->
           Result.map
             (fun after -> before ^ after)
@@ -160,7 +156,7 @@ let split delimiter text =
   let found = ref []
   and current = Buffer.create 64
   and depth = ref 0
-  and refused = ref false in
+  and unbalanced = ref false in
   String.iter
     (fun c ->
       if c = delimiter && !depth = 0 then (
@@ -170,11 +166,12 @@ let split delimiter text =
         (match c with
         | '{' | '<' | '(' | '[' -> incr depth
         | '}' | '>' | ')' | ']' ->
-            if !depth <= 0 then refused := true else decr depth
+            if !depth <= 0 then unbalanced := true else decr depth
         | _ -> ());
         Buffer.add_char current c))
     text;
-  if !refused || !depth <> 0 then Error "unbalanced worker interface type"
+  if !unbalanced || !depth <> 0 then
+    Error (refused "unbalanced worker interface type")
   else
     let last = strip (Buffer.contents current) in
     Ok (List.rev (if last = "" then !found else last :: !found))
@@ -183,11 +180,11 @@ type field = { key : string; type_ : string; optional : bool }
 
 let fields text =
   let* lines = split ';' text in
-  all
+  Spec.all
     (List.map
        (fun line ->
          match String.index_opt (strip line) ':' with
-         | None -> Error "unsupported worker interface field"
+         | None -> Error (refused "unsupported worker interface field")
          | Some i ->
              let line = strip line in
              let raw = String.sub line 0 i in
@@ -204,7 +201,7 @@ let fields text =
                       | _ -> false)
                     key
              then Ok { key; type_ = strip (Marker.drop (i + 1) line); optional }
-             else Error "unsupported worker interface field")
+             else Error (refused "unsupported worker interface field"))
        lines)
 
 let first f text =
@@ -217,22 +214,28 @@ let lower = first Char.lowercase_ascii
 let models = [ "JobId"; "JobType"; "UnitCursor"; "FailureClass" ]
 
 let rec record name members =
-  let* () = if members = [] then Error "empty worker interface" else Ok () in
+  let* () =
+    if members = [] then Error (refused "empty worker interface") else Ok ()
+  in
+  let accessor key = lower name ^ upper key in
   let* typed =
-    all
+    Spec.all
       (List.map
          (fun f ->
            let* t, nested = field_type (name ^ upper f.key) f.type_ in
-           Ok (f, (if f.optional then H.T_apply ("Maybe", [ t ]) else t), nested))
+           let held = H.Apply (Name (accessor f.key), [ Name "value" ]) in
+           let typ, parser, encoder =
+             Models.member ~row:"row" ~key:f.key ~held ~nullable:false
+               ~mandatory:(not f.optional) t
+           in
+           Ok ((accessor f.key, typ), parser, encoder, nested))
          members)
   in
-  let accessor key = lower name ^ upper key in
-  let access key = H.Apply (Name (accessor key), [ Name "value" ]) in
   Ok
-    (List.concat_map (fun (_, _, nested) -> nested) typed
+    (List.concat_map (fun (_, _, _, nested) -> nested) typed
     @ [
         H.record name
-          (List.map (fun (f, t, _) -> (accessor f.key, t)) typed)
+          (List.map (fun (field, _, _, _) -> field) typed)
           ~deriving:[ "Eq"; "Show" ];
         H.instance "FromJSON" (T_name name)
           [
@@ -244,13 +247,8 @@ let rec record name members =
                        Infix
                          ( Name name,
                            List.mapi
-                             (fun i (f, _, _) ->
-                               ( (if i = 0 then "<$>" else "<*>"),
-                                 if f.optional then
-                                   H.Apply
-                                     (Name "optional", [ Name "row"; Str f.key ])
-                                 else Infix (Name "row", [ (".:", Str f.key) ])
-                               ))
+                             (fun i (_, parser, _, _) ->
+                               ((if i = 0 then "<$>" else "<*>"), parser))
                              typed ) ) ));
           ];
         H.instance "ToJSON" (T_name name)
@@ -270,22 +268,7 @@ let rec record name members =
                                   [
                                     List
                                       (List.map
-                                         (fun (f, _, _) ->
-                                           if f.optional then
-                                             H.Apply
-                                               ( Name "optionalPair",
-                                                 [ Str f.key; access f.key ] )
-                                           else
-                                             List
-                                               [
-                                                 Tuple
-                                                   [
-                                                     Str f.key;
-                                                     Apply
-                                                       ( Name "toJSON",
-                                                         [ access f.key ] );
-                                                   ];
-                                               ])
+                                         (fun (_, _, encoder, _) -> encoder)
                                          typed);
                                   ] );
                             ] );
@@ -322,20 +305,21 @@ and field_type name text =
           | "number" -> Ok (H.T_name "Scientific", [])
           | "BusRequestErrorCode" -> Ok (H.T_name "BusRequestCode", [])
           | t when List.mem t models -> Ok (H.T_name t, [])
-          | t -> Error ("unsupported worker interface type: " ^ t)))
-  | _ -> Error ("unsupported worker interface type: " ^ text)
+          | t -> Error (refused ("unsupported worker interface type: " ^ t))))
+  | _ -> Error (refused ("unsupported worker interface type: " ^ text))
 
 let types text =
   let* clean = uncomment text in
   let interface ?(extends = "") name =
     Result.bind
-      (Marker.between
-         ("export interface " ^ name ^ extends ^ " {\n")
-         "\n}" clean)
+      (Result.map_error refused
+         (Marker.between
+            ("export interface " ^ name ^ extends ^ " {\n")
+            "\n}" clean))
       fields
   in
   let* declared =
-    all
+    Spec.all
       (List.map
          (fun name ->
            Result.map (fun members -> (name, members)) (interface name))
@@ -350,7 +334,7 @@ let types text =
     interface "JobFailure" ~extends:" extends Partial<JobCheckpoint>"
   in
   let* records =
-    all
+    Spec.all
       (List.map
          (fun (name, members) -> record name members)
          (declared
