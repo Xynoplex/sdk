@@ -47,7 +47,7 @@ generate:
 check-generated:
 	bash scripts/make-target.sh check-generated
 
-## test-codegen: The generator's own tests and checks: its model reads every file of the pinned Protocol
+## test-codegen: The generator's own tests and checks: its model reads every file of the pinned Protocol, and every sdk path that Protocol names is here
 test-codegen:
 	bash scripts/make-target.sh test-codegen
 
