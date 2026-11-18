@@ -117,6 +117,22 @@ pub(crate) const NONE: Shape = Shape {
     all_of: &[],
 };
 
+/// The shape that is the component schema `name`.
+pub(crate) const fn reference(name: &'static str) -> Shape {
+    Shape {
+        reference: Some(name),
+        ..NONE
+    }
+}
+
+/// The shape of a value of one of `kinds` that states nothing else.
+pub(crate) const fn of(kinds: &'static [Kind]) -> Shape {
+    Shape {
+        kinds: Some(kinds),
+        ..NONE
+    }
+}
+
 include!("generated/required.rs");
 
 /// The first thing wrong with a value: the way to the member it is at (the

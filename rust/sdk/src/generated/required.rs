@@ -6,18 +6,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("AgentPerson"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("AgentOrganization"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("AgentSoftware"),
-                    ..NONE
-                },
+                reference("AgentPerson"),
+                reference("AgentOrganization"),
+                reference("AgentSoftware"),
             ],
             discriminator: Some(Discriminator {
                 property: "@type",
@@ -32,13 +23,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["@type", "name"],
             members: &[
-                (
-                    "@id",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("@id", of(&[Kind::String])),
                 (
                     "@type",
                     Shape {
@@ -47,20 +32,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "homepage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("homepage", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -71,13 +44,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["@type"],
             members: &[
-                (
-                    "@id",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("@id", of(&[Kind::String])),
                 (
                     "@type",
                     Shape {
@@ -86,41 +53,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "email",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "email_sha1",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "homepage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "nickname",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("email", of(&[Kind::String])),
+                ("email_sha1", of(&[Kind::String])),
+                ("homepage", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("nickname", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -131,13 +68,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["@type"],
             members: &[
-                (
-                    "@id",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("@id", of(&[Kind::String])),
                 (
                     "@type",
                     Shape {
@@ -146,34 +77,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "model",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "parameters",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "provider",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("model", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("parameters", of(&[Kind::Object])),
+                ("provider", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -188,20 +95,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "items",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("PdfTextItem"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("PdfTextItem")),
                         ..NONE
                     },
                 ),
-                (
-                    "text",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("text", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -231,18 +129,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("ExtractedText"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("ExtractionDeclined"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("AnchoredTextAbsent"),
-                    ..NONE
-                },
+                reference("ExtractedText"),
+                reference("ExtractionDeclined"),
+                reference("AnchoredTextAbsent"),
             ],
             discriminator: Some(Discriminator {
                 property: "kind",
@@ -327,14 +216,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("AnchoredTextExtractedEntry"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("AnchoredTextDeclinedEntry"),
-                    ..NONE
-                },
+                reference("AnchoredTextExtractedEntry"),
+                reference("AnchoredTextDeclinedEntry"),
             ],
             ..NONE
         },
@@ -353,20 +236,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                             kinds: Some(&[Kind::Object]),
                             required: &["p", "y", "h", "words"],
                             members: &[
-                                (
-                                    "h",
-                                    Shape {
-                                        kinds: Some(&[Kind::Number]),
-                                        ..NONE
-                                    },
-                                ),
-                                (
-                                    "p",
-                                    Shape {
-                                        kinds: Some(&[Kind::Integer]),
-                                        ..NONE
-                                    },
-                                ),
+                                ("h", of(&[Kind::Number])),
+                                ("p", of(&[Kind::Integer])),
                                 (
                                     "words",
                                     Shape {
@@ -375,22 +246,13 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                             kinds: Some(&[Kind::Array]),
                                             min_items: Some(4),
                                             max_items: Some(4),
-                                            items: Some(&Shape {
-                                                kinds: Some(&[Kind::Number]),
-                                                ..NONE
-                                            }),
+                                            items: Some(&of(&[Kind::Number])),
                                             ..NONE
                                         }),
                                         ..NONE
                                     },
                                 ),
-                                (
-                                    "y",
-                                    Shape {
-                                        kinds: Some(&[Kind::Number]),
-                                        ..NONE
-                                    },
-                                ),
+                                ("y", of(&[Kind::Number])),
                             ],
                             closed: Some(&["h", "p", "words", "y"]),
                             ..NONE
@@ -418,27 +280,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         kinds: Some(&[Kind::Object]),
                         required: &["mean", "lowConfidenceWords", "totalWords"],
                         members: &[
-                            (
-                                "lowConfidenceWords",
-                                Shape {
-                                    kinds: Some(&[Kind::Integer]),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "mean",
-                                Shape {
-                                    kinds: Some(&[Kind::Number]),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "totalWords",
-                                Shape {
-                                    kinds: Some(&[Kind::Integer]),
-                                    ..NONE
-                                },
-                            ),
+                            ("lowConfidenceWords", of(&[Kind::Integer])),
+                            ("mean", of(&[Kind::Number])),
+                            ("totalWords", of(&[Kind::Integer])),
                         ],
                         ..NONE
                     },
@@ -467,21 +311,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "text",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("text", of(&[Kind::String])),
                 (
                     "unreadPages",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::Integer]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::Integer])),
                         ..NONE
                     },
                 ),
@@ -559,13 +394,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "entry",
-                    Shape {
-                        reference: Some("AnchoredTextEntry"),
-                        ..NONE
-                    },
-                ),
+                ("entry", reference("AnchoredTextEntry")),
             ],
             closed: Some(&["contentChecksum", "entry"]),
             ..NONE
@@ -585,84 +414,33 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "body",
-                    Shape {
-                        reference: Some("AnnotationBodies"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "created",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "creator",
-                    Shape {
-                        reference: Some("Agent"),
-                        ..NONE
-                    },
-                ),
+                ("body", reference("AnnotationBodies")),
+                ("created", of(&[Kind::String])),
+                ("creator", reference("Agent")),
                 (
                     "generator",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
                                 min_items: Some(1),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "id",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "modified",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
+                ("id", reference("AnnotationId")),
+                ("modified", of(&[Kind::String])),
+                ("motivation", reference("Motivation")),
                 (
                     "target",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::String]),
-                        one_of: &[
-                            Shape {
-                                reference: Some("ResourceId"),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("AnnotationTarget"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[reference("ResourceId"), reference("AnnotationTarget")],
                         ..NONE
                     },
                 ),
@@ -679,17 +457,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
                                 min_items: Some(1),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
@@ -706,20 +478,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotation"],
             members: &[
-                (
-                    "annotation",
-                    Shape {
-                        reference: Some("Annotation"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("annotation", reference("Annotation")),
+                ("contentChecksum", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -729,17 +489,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object, Kind::Array]),
             one_of: &[
-                Shape {
-                    reference: Some("AnnotationBody"),
-                    ..NONE
-                },
+                reference("AnnotationBody"),
                 Shape {
                     kinds: Some(&[Kind::Array]),
                     min_items: Some(1),
-                    items: Some(&Shape {
-                        reference: Some("AnnotationBody"),
-                        ..NONE
-                    }),
+                    items: Some(&reference("AnnotationBody")),
                     ..NONE
                 },
             ],
@@ -750,16 +504,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "AnnotationBody",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("TextualBody"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("SpecificResource"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("TextualBody"), reference("SpecificResource")],
             discriminator: Some(Discriminator {
                 property: "type",
                 mapping: &[("TextualBody", 0), ("SpecificResource", 1)],
@@ -773,13 +518,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotationId", "operations"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
                 (
                     "operations",
                     Shape {
@@ -787,18 +526,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         items: Some(&Shape {
                             kinds: Some(&[Kind::Object]),
                             one_of: &[
-                                Shape {
-                                    reference: Some("BodyOperationAdd"),
-                                    ..NONE
-                                },
-                                Shape {
-                                    reference: Some("BodyOperationRemove"),
-                                    ..NONE
-                                },
-                                Shape {
-                                    reference: Some("BodyOperationReplace"),
-                                    ..NONE
-                                },
+                                reference("BodyOperationAdd"),
+                                reference("BodyOperationRemove"),
+                                reference("BodyOperationReplace"),
                             ],
                             ..NONE
                         }),
@@ -826,13 +556,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["annotationId"],
-            members: &[(
-                "annotationId",
-                Shape {
-                    reference: Some("AnnotationId"),
-                    ..NONE
-                },
-            )],
+            members: &[("annotationId", reference("AnnotationId"))],
             ..NONE
         },
     ),
@@ -841,16 +565,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object, Kind::Array]),
             one_of: &[
-                Shape {
-                    reference: Some("Selector"),
-                    ..NONE
-                },
+                reference("Selector"),
                 Shape {
                     kinds: Some(&[Kind::Array]),
-                    items: Some(&Shape {
-                        reference: Some("Selector"),
-                        ..NONE
-                    }),
+                    items: Some(&reference("Selector")),
                     ..NONE
                 },
             ],
@@ -863,20 +581,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["source"],
             members: &[
-                (
-                    "selector",
-                    Shape {
-                        reference: Some("AnnotationSelector"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "source",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("selector", reference("AnnotationSelector")),
+                ("source", reference("ResourceId")),
                 (
                     "type",
                     Shape {
@@ -915,13 +621,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "engines",
-                    Shape {
-                        reference: Some("ArchivistEngines"),
-                        ..NONE
-                    },
-                ),
+                ("engines", reference("ArchivistEngines")),
                 (
                     "gatewayUrl",
                     Shape {
@@ -947,20 +647,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "logFormat",
-                    Shape {
-                        reference: Some("LogFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logLevel",
-                    Shape {
-                        reference: Some("LogLevel"),
-                        ..NONE
-                    },
-                ),
+                ("logFormat", reference("LogFormat")),
+                ("logLevel", reference("LogLevel")),
                 (
                     "port",
                     Shape {
@@ -978,13 +666,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "skipRebuild",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("skipRebuild", of(&[Kind::Boolean])),
                 (
                     "staging",
                     Shape {
@@ -1048,20 +730,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Object]),
                         members: &[
-                            (
-                                "gatherer",
-                                Shape {
-                                    reference: Some("Engine"),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "matcher",
-                                Shape {
-                                    reference: Some("Engine"),
-                                    ..NONE
-                                },
-                            ),
+                            ("gatherer", reference("Engine")),
+                            ("matcher", reference("Engine")),
                         ],
                         closed: Some(&["gatherer", "matcher"]),
                         ..NONE
@@ -1077,41 +747,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 Shape {
                                     kinds: Some(&[Kind::Object]),
                                     members: &[
-                                        (
-                                            "assessing",
-                                            Shape {
-                                                reference: Some("Engine"),
-                                                ..NONE
-                                            },
-                                        ),
-                                        (
-                                            "commenting",
-                                            Shape {
-                                                reference: Some("Engine"),
-                                                ..NONE
-                                            },
-                                        ),
-                                        (
-                                            "highlighting",
-                                            Shape {
-                                                reference: Some("Engine"),
-                                                ..NONE
-                                            },
-                                        ),
-                                        (
-                                            "linking",
-                                            Shape {
-                                                reference: Some("Engine"),
-                                                ..NONE
-                                            },
-                                        ),
-                                        (
-                                            "tagging",
-                                            Shape {
-                                                reference: Some("Engine"),
-                                                ..NONE
-                                            },
-                                        ),
+                                        ("assessing", reference("Engine")),
+                                        ("commenting", reference("Engine")),
+                                        ("highlighting", reference("Engine")),
+                                        ("linking", reference("Engine")),
+                                        ("tagging", reference("Engine")),
                                     ],
                                     closed: Some(&[
                                         "assessing",
@@ -1123,13 +763,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                     ..NONE
                                 },
                             ),
-                            (
-                                "yield",
-                                Shape {
-                                    reference: Some("Engine"),
-                                    ..NONE
-                                },
-                            ),
+                            ("yield", reference("Engine")),
                         ],
                         closed: Some(&["mark", "yield"]),
                         ..NONE
@@ -1150,10 +784,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "events",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("StoredEventResponse"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("StoredEventResponse")),
                         ..NONE
                     },
                 ),
@@ -1179,10 +810,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "actors",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
@@ -1212,13 +840,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
             ],
             closed: Some(&["lastSequence", "resourceId"]),
             ..NONE
@@ -1233,10 +855,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "streams",
                 Shape {
                     kinds: Some(&[Kind::Array]),
-                    items: Some(&Shape {
-                        reference: Some("ArchivistStream"),
-                        ..NONE
-                    }),
+                    items: Some(&reference("ArchivistStream")),
                     ..NONE
                 },
             )],
@@ -1250,27 +869,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["motivation"],
             members: &[
-                (
-                    "density",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "instructions",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("density", of(&[Kind::Number])),
+                ("instructions", of(&[Kind::String])),
+                ("language", of(&[Kind::String])),
                 (
                     "motivation",
                     Shape {
@@ -1279,13 +880,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "sourceLanguage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("sourceLanguage", of(&[Kind::String])),
                 (
                     "tone",
                     Shape {
@@ -1316,20 +911,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("StoredEventResponse"),
-                    ..NONE
-                },
+                reference("StoredEventResponse"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["agent"],
-                    members: &[(
-                        "agent",
-                        Shape {
-                            reference: Some("Agent"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("agent", reference("Agent"))],
                     ..NONE
                 },
             ],
@@ -1342,20 +928,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -1369,16 +943,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "annotationId",
                 Shape {
                     kinds: Some(&[Kind::String, Kind::Null]),
-                    one_of: &[
-                        Shape {
-                            kinds: Some(&[Kind::Null]),
-                            ..NONE
-                        },
-                        Shape {
-                            reference: Some("AnnotationId"),
-                            ..NONE
-                        },
-                    ],
+                    one_of: &[of(&[Kind::Null]), reference("AnnotationId")],
                     ..NONE
                 },
             )],
@@ -1390,13 +955,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["annotationId"],
-            members: &[(
-                "annotationId",
-                Shape {
-                    reference: Some("AnnotationId"),
-                    ..NONE
-                },
-            )],
+            members: &[("annotationId", reference("AnnotationId"))],
             ..NONE
         },
     ),
@@ -1406,27 +965,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["op"],
             members: &[
-                (
-                    "item",
-                    Shape {
-                        reference: Some("AnnotationBody"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "newItem",
-                    Shape {
-                        reference: Some("AnnotationBody"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "oldItem",
-                    Shape {
-                        reference: Some("AnnotationBody"),
-                        ..NONE
-                    },
-                ),
+                ("item", reference("AnnotationBody")),
+                ("newItem", reference("AnnotationBody")),
+                ("oldItem", reference("AnnotationBody")),
                 (
                     "op",
                     Shape {
@@ -1443,51 +984,24 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             ..NONE
         },
     ),
-    (
-        "BindBodyUpdated",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            ..NONE
-        },
-    ),
+    ("BindBodyUpdated", of(&[Kind::Object])),
     (
         "BindInitiateCommand",
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["annotationId", "resourceId", "defaultTitle", "entityTypes"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "defaultTitle",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("defaultTitle", of(&[Kind::String])),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -1498,38 +1012,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotationId", "resourceId", "operations"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
                 (
                     "operations",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("BindBodyOperation"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("BindBodyOperation")),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -1544,16 +1037,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "item",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        one_of: &[
-                            Shape {
-                                reference: Some("TextualBody"),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("SpecificResource"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[reference("TextualBody"), reference("SpecificResource")],
                         ..NONE
                     },
                 ),
@@ -1579,16 +1063,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "item",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        one_of: &[
-                            Shape {
-                                reference: Some("TextualBody"),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("SpecificResource"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[reference("TextualBody"), reference("SpecificResource")],
                         ..NONE
                     },
                 ),
@@ -1614,16 +1089,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "newItem",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        one_of: &[
-                            Shape {
-                                reference: Some("TextualBody"),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("SpecificResource"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[reference("TextualBody"), reference("SpecificResource")],
                         ..NONE
                     },
                 ),
@@ -1631,16 +1097,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "oldItem",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        one_of: &[
-                            Shape {
-                                reference: Some("TextualBody"),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("SpecificResource"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[reference("TextualBody"), reference("SpecificResource")],
                         ..NONE
                     },
                 ),
@@ -1684,20 +1141,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "annotationId"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -1707,13 +1152,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("GetAnnotationHistoryResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("GetAnnotationHistoryResponse"))],
             ..NONE
         },
     ),
@@ -1723,20 +1162,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "annotationId"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -1746,13 +1173,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("GetAnnotationResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("GetAnnotationResponse"))],
             ..NONE
         },
     ),
@@ -1761,13 +1182,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["annotationId"],
-            members: &[(
-                "annotationId",
-                Shape {
-                    reference: Some("AnnotationId"),
-                    ..NONE
-                },
-            )],
+            members: &[("annotationId", reference("AnnotationId"))],
             ..NONE
         },
     ),
@@ -1776,20 +1191,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("CommandError"),
-                    ..NONE
-                },
+                reference("CommandError"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["path"],
-                    members: &[(
-                        "path",
-                        Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("path", of(&[Kind::String]))],
                     ..NONE
                 },
             ],
@@ -1802,13 +1208,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["path"],
             members: &[
-                (
-                    "path",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("path", of(&[Kind::String])),
                 (
                     "sort",
                     Shape {
@@ -1830,13 +1230,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("BrowseDirectoryResultResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("BrowseDirectoryResultResponse"))],
             ..NONE
         },
     ),
@@ -1850,31 +1244,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "entries",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("DirectoryEntry"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("DirectoryEntry")),
                         ..NONE
                     },
                 ),
-                (
-                    "path",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("path", of(&[Kind::String])),
             ],
             ..NONE
         },
     ),
-    (
-        "BrowseEnginesRequest",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            ..NONE
-        },
-    ),
+    ("BrowseEnginesRequest", of(&[Kind::Object])),
     (
         "BrowseEnginesResult",
         Shape {
@@ -1889,10 +1268,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         "engines",
                         Shape {
                             kinds: Some(&[Kind::Array]),
-                            items: Some(&Shape {
-                                reference: Some("EngineEntry"),
-                                ..NONE
-                            }),
+                            items: Some(&reference("EngineEntry")),
                             ..NONE
                         },
                     )],
@@ -1907,35 +1283,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["entityType"],
-            members: &[(
-                "entityType",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("entityType", of(&[Kind::String]))],
             ..NONE
         },
     ),
-    (
-        "BrowseEntityTypesRequest",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            ..NONE
-        },
-    ),
+    ("BrowseEntityTypesRequest", of(&[Kind::Object])),
     (
         "BrowseEntityTypesResult",
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("GetEntityTypesResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("GetEntityTypesResponse"))],
             ..NONE
         },
     ),
@@ -1945,34 +1303,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
             members: &[
-                (
-                    "limit",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "type",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("limit", of(&[Kind::Integer])),
+                ("resourceId", reference("ResourceId")),
+                ("type", of(&[Kind::String])),
+                ("userId", reference("UserId")),
             ],
             ..NONE
         },
@@ -1982,13 +1316,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("GetEventsResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("GetEventsResponse"))],
             ..NONE
         },
     ),
@@ -1998,20 +1326,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["url"],
             members: &[
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "url",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("url", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -2026,44 +1342,23 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "entries",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("DirectoryEntry"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("DirectoryEntry")),
                         ..NONE
                     },
                 ),
-                (
-                    "path",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("path", of(&[Kind::String])),
             ],
             closed: Some(&["entries", "path"]),
             ..NONE
         },
     ),
-    (
-        "BrowseKbRequest",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            ..NONE
-        },
-    ),
+    ("BrowseKbRequest", of(&[Kind::Object])),
     (
         "BrowseKbResult",
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("KbDescription"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("KbDescription"))],
             ..NONE
         },
     ),
@@ -2073,20 +1368,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["href"],
             members: &[
-                (
-                    "href",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "label",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("href", of(&[Kind::String])),
+                ("label", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -2097,27 +1380,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["panel"],
             members: &[
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "panel",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "scrollToAnnotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("motivation", reference("Motivation")),
+                ("panel", of(&[Kind::String])),
+                ("scrollToAnnotationId", reference("AnnotationId")),
             ],
             ..NONE
         },
@@ -2127,13 +1392,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["panel"],
-            members: &[(
-                "panel",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("panel", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -2148,10 +1407,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     kinds: Some(&[Kind::Array]),
                     min_items: Some(1),
                     max_items: Some(500),
-                    items: Some(&Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    }),
+                    items: Some(&reference("UserId")),
                     ..NONE
                 },
             )],
@@ -2173,10 +1429,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         "profiles",
                         Shape {
                             kinds: Some(&[Kind::Object]),
-                            values: Some(&Shape {
-                                reference: Some("Profile"),
-                                ..NONE
-                            }),
+                            values: Some(&reference("Profile")),
                             ..NONE
                         },
                     )],
@@ -2192,13 +1445,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
-            members: &[(
-                "resourceId",
-                Shape {
-                    reference: Some("ResourceId"),
-                    ..NONE
-                },
-            )],
+            members: &[("resourceId", reference("ResourceId"))],
             ..NONE
         },
     ),
@@ -2207,13 +1454,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
-            members: &[(
-                "resourceId",
-                Shape {
-                    reference: Some("ResourceId"),
-                    ..NONE
-                },
-            )],
+            members: &[("resourceId", reference("ResourceId"))],
             ..NONE
         },
     ),
@@ -2223,20 +1464,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["oldIndex", "newIndex"],
             members: &[
-                (
-                    "newIndex",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "oldIndex",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("newIndex", of(&[Kind::Integer])),
+                ("oldIndex", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -2246,13 +1475,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
-            members: &[(
-                "resourceId",
-                Shape {
-                    reference: Some("ResourceId"),
-                    ..NONE
-                },
-            )],
+            members: &[("resourceId", reference("ResourceId"))],
             ..NONE
         },
     ),
@@ -2275,13 +1498,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 ..NONE
                             },
                         ),
-                        (
-                            "resource",
-                            Shape {
-                                reference: Some("ResourceDescriptor"),
-                                ..NONE
-                            },
-                        ),
+                        ("resource", reference("ResourceDescriptor")),
                     ],
                     closed: Some(&["lastSequence", "resource"]),
                     ..NONE
@@ -2295,13 +1512,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
-            members: &[(
-                "resourceId",
-                Shape {
-                    reference: Some("ResourceId"),
-                    ..NONE
-                },
-            )],
+            members: &[("resourceId", reference("ResourceId"))],
             ..NONE
         },
     ),
@@ -2310,20 +1521,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             members: &[
-                (
-                    "archived",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "entityType",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("archived", of(&[Kind::Boolean])),
+                ("entityType", of(&[Kind::String])),
                 (
                     "limit",
                     Shape {
@@ -2349,13 +1548,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("ListResourcesResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("ListResourcesResponse"))],
             ..NONE
         },
     ),
@@ -2365,43 +1558,19 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["path"],
             members: &[
-                (
-                    "path",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "reason",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("path", of(&[Kind::String])),
+                ("reason", of(&[Kind::String])),
             ],
             ..NONE
         },
     ),
-    (
-        "BrowseTagSchemasRequest",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            ..NONE
-        },
-    ),
+    ("BrowseTagSchemasRequest", of(&[Kind::Object])),
     (
         "BrowseTagSchemasResult",
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("GetTagSchemasResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("GetTagSchemasResponse"))],
             ..NONE
         },
     ),
@@ -2434,13 +1603,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "clientId",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("clientId", of(&[Kind::String])),
                 (
                     "correlationId",
                     Shape {
@@ -2449,20 +1612,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "payload",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "scope",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("payload", of(&[Kind::Object])),
+                ("scope", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -2473,13 +1624,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["event", "id", "data"],
             members: &[
-                (
-                    "data",
-                    Shape {
-                        reference: Some("BusFrame"),
-                        ..NONE
-                    },
-                ),
+                ("data", reference("BusFrame")),
                 (
                     "event",
                     Shape {
@@ -2493,18 +1638,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::String]),
                         one_of: &[
-                            Shape {
-                                reference: Some("PersistedEventId"),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("ReplyEventId"),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("EphemeralEventId"),
-                                ..NONE
-                            },
+                            reference("PersistedEventId"),
+                            reference("ReplyEventId"),
+                            reference("EphemeralEventId"),
                         ],
                         ..NONE
                     },
@@ -2536,20 +1672,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "payload",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "scope",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("payload", of(&[Kind::Object])),
+                ("scope", reference("ResourceId")),
             ],
             closed: Some(&["channel", "correlationId", "payload", "scope"]),
             ..NONE
@@ -2588,13 +1712,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["scope", "lastSeenId", "reason"],
             members: &[
-                (
-                    "lastSeenId",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("lastSeenId", of(&[Kind::String])),
                 (
                     "reason",
                     Shape {
@@ -2608,13 +1726,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "scope",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("scope", reference("ResourceId")),
             ],
             closed: Some(&["lastSeenId", "reason", "scope"]),
             ..NONE
@@ -2624,16 +1736,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "BusStreamMessage",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("BusEventMessage"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("BusPingMessage"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("BusEventMessage"), reference("BusPingMessage")],
             ..NONE
         },
     ),
@@ -2698,20 +1801,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                         ..NONE
                                     },
                                 ),
-                                (
-                                    "lastEventId",
-                                    Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    },
-                                ),
-                                (
-                                    "scope",
-                                    Shape {
-                                        reference: Some("ResourceId"),
-                                        ..NONE
-                                    },
-                                ),
+                                ("lastEventId", of(&[Kind::String])),
+                                ("scope", reference("ResourceId")),
                             ],
                             closed: Some(&["channels", "lastEventId", "scope"]),
                             ..NONE
@@ -2730,27 +1821,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["token", "expiresAt", "resource"],
             members: &[
-                (
-                    "expiresAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resource",
-                    Shape {
-                        reference: Some("ResourceDescriptor"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "token",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("expiresAt", of(&[Kind::String])),
+                ("resource", reference("ResourceDescriptor")),
+                ("token", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -2774,20 +1847,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "details",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "message",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("details", of(&[Kind::String])),
+                ("message", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -2798,27 +1859,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["motivation"],
             members: &[
-                (
-                    "density",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "instructions",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("density", of(&[Kind::Number])),
+                ("instructions", of(&[Kind::String])),
+                ("language", of(&[Kind::String])),
                 (
                     "motivation",
                     Shape {
@@ -2827,13 +1870,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "sourceLanguage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("sourceLanguage", of(&[Kind::String])),
                 (
                     "tone",
                     Shape {
@@ -2859,13 +1896,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             ..NONE
         },
     ),
-    (
-        "ContentFormat",
-        Shape {
-            kinds: Some(&[Kind::String]),
-            ..NONE
-        },
-    ),
+    ("ContentFormat", of(&[Kind::String])),
     (
         "ContextualSummaryResponse",
         Shape {
@@ -2878,27 +1909,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         kinds: Some(&[Kind::Object]),
                         required: &["selected"],
                         members: &[
-                            (
-                                "after",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "before",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "selected",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
+                            ("after", of(&[Kind::String])),
+                            ("before", of(&[Kind::String])),
+                            ("selected", of(&[Kind::String])),
                         ],
                         ..NONE
                     },
@@ -2913,39 +1926,18 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 "entityTypes",
                                 Shape {
                                     kinds: Some(&[Kind::Array]),
-                                    items: Some(&Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    }),
+                                    items: Some(&of(&[Kind::String])),
                                     ..NONE
                                 },
                             ),
-                            (
-                                "resourceId",
-                                Shape {
-                                    reference: Some("ResourceId"),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "resourceName",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
+                            ("resourceId", reference("ResourceId")),
+                            ("resourceName", of(&[Kind::String])),
                         ],
                         closed: Some(&["entityTypes", "resourceId", "resourceName"]),
                         ..NONE
                     },
                 ),
-                (
-                    "summary",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("summary", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -2956,27 +1948,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["target", "motivation"],
             members: &[
-                (
-                    "body",
-                    Shape {
-                        reference: Some("AnnotationBodies"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "target",
-                    Shape {
-                        reference: Some("AnnotationTarget"),
-                        ..NONE
-                    },
-                ),
+                ("body", reference("AnnotationBodies")),
+                ("motivation", reference("Motivation")),
+                ("target", reference("AnnotationTarget")),
             ],
             ..NONE
         },
@@ -2986,13 +1960,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
-            members: &[(
-                "resourceId",
-                Shape {
-                    reference: Some("ResourceId"),
-                    ..NONE
-                },
-            )],
+            members: &[("resourceId", reference("ResourceId"))],
             ..NONE
         },
     ),
@@ -3010,27 +1978,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["type", "name", "path", "mtime"],
             members: &[
-                (
-                    "mtime",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "path",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("mtime", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("path", of(&[Kind::String])),
                 (
                     "type",
                     Shape {
@@ -3048,16 +1998,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "DirectoryEntry",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("FileEntry"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("DirEntry"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("FileEntry"), reference("DirEntry")],
             discriminator: Some(Discriminator {
                 property: "type",
                 mapping: &[("file", 0), ("dir", 1)],
@@ -3071,27 +2012,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["host", "port", "placement", "did", "managedBy"],
             members: &[
-                (
-                    "did",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "host",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "managedBy",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("did", of(&[Kind::String])),
+                ("host", of(&[Kind::String])),
+                ("managedBy", of(&[Kind::String])),
                 (
                     "placement",
                     Shape {
@@ -3100,27 +2023,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "port",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "repo",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "siteName",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("port", of(&[Kind::Integer])),
+                ("repo", of(&[Kind::String])),
+                ("siteName", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -3135,10 +2040,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "kbs",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("DiscoveredKB"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("DiscoveredKB")),
                         ..NONE
                     },
                 ),
@@ -3194,27 +2096,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "kb",
-                    Shape {
-                        reference: Some("KbIdentity"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logFormat",
-                    Shape {
-                        reference: Some("LogFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logLevel",
-                    Shape {
-                        reference: Some("LogLevel"),
-                        ..NONE
-                    },
-                ),
+                ("kb", reference("KbIdentity")),
+                ("logFormat", reference("LogFormat")),
+                ("logLevel", reference("LogLevel")),
                 (
                     "port",
                     Shape {
@@ -3401,14 +2285,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("OllamaEmbeddingConfig"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("VoyageEmbeddingConfig"),
-                    ..NONE
-                },
+                reference("OllamaEmbeddingConfig"),
+                reference("VoyageEmbeddingConfig"),
             ],
             discriminator: Some(Discriminator {
                 property: "type",
@@ -3458,21 +2336,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["engine"],
             members: &[
-                (
-                    "engine",
-                    Shape {
-                        reference: Some("Engine"),
-                        ..NONE
-                    },
-                ),
+                ("engine", reference("Engine")),
                 (
                     "jobs",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("JobFilter"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("JobFilter")),
                         ..NONE
                     },
                 ),
@@ -3487,20 +2356,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["engine", "limits"],
             members: &[
-                (
-                    "engine",
-                    Shape {
-                        reference: Some("Engine"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "limits",
-                    Shape {
-                        reference: Some("InferenceLimits"),
-                        ..NONE
-                    },
-                ),
+                ("engine", reference("Engine")),
+                ("limits", reference("InferenceLimits")),
             ],
             closed: Some(&["engine", "limits"]),
             ..NONE
@@ -3511,19 +2368,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("StoredEventResponse"),
-                    ..NONE
-                },
+                reference("StoredEventResponse"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
-                    members: &[(
-                        "annotation",
-                        Shape {
-                            reference: Some("Annotation"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("annotation", reference("Annotation"))],
                     ..NONE
                 },
             ],
@@ -3535,13 +2383,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["entityType"],
-            members: &[(
-                "entityType",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("entityType", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -3550,13 +2392,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["entityType"],
-            members: &[(
-                "entityType",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("entityType", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -3569,10 +2405,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "entityTypes",
                 Shape {
                     kinds: Some(&[Kind::Array]),
-                    items: Some(&Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    }),
+                    items: Some(&of(&[Kind::String])),
                     ..NONE
                 },
             )],
@@ -3610,27 +2443,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["error"],
             members: &[
-                (
-                    "code",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "error",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "hint",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("code", of(&[Kind::String])),
+                ("error", of(&[Kind::String])),
+                ("hint", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -3640,13 +2455,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["sequenceNumber"],
-            members: &[(
-                "sequenceNumber",
-                Shape {
-                    kinds: Some(&[Kind::Integer]),
-                    ..NONE
-                },
-            )],
+            members: &[("sequenceNumber", of(&[Kind::Integer]))],
             ..NONE
         },
     ),
@@ -3655,10 +2464,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("AnchoredText"),
-                    ..NONE
-                },
+                reference("AnchoredText"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["kind", "method"],
@@ -3691,27 +2497,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 kinds: Some(&[Kind::Object]),
                                 required: &["mean", "lowConfidenceWords", "totalWords"],
                                 members: &[
-                                    (
-                                        "lowConfidenceWords",
-                                        Shape {
-                                            kinds: Some(&[Kind::Integer]),
-                                            ..NONE
-                                        },
-                                    ),
-                                    (
-                                        "mean",
-                                        Shape {
-                                            kinds: Some(&[Kind::Number]),
-                                            ..NONE
-                                        },
-                                    ),
-                                    (
-                                        "totalWords",
-                                        Shape {
-                                            kinds: Some(&[Kind::Integer]),
-                                            ..NONE
-                                        },
-                                    ),
+                                    ("lowConfidenceWords", of(&[Kind::Integer])),
+                                    ("mean", of(&[Kind::Number])),
+                                    ("totalWords", of(&[Kind::Integer])),
                                 ],
                                 ..NONE
                             },
@@ -3736,10 +2524,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                             "unreadPages",
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    kinds: Some(&[Kind::Integer]),
-                                    ..NONE
-                                }),
+                                items: Some(&of(&[Kind::Integer])),
                                 ..NONE
                             },
                         ),
@@ -3785,16 +2570,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "ExtractionOutcome",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("ExtractedText"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("ExtractionDeclined"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("ExtractedText"), reference("ExtractionDeclined")],
             discriminator: Some(Discriminator {
                 property: "kind",
                 mapping: &[("extracted", 0), ("declined", 1)],
@@ -3820,73 +2596,22 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["type", "name", "path", "size", "mtime", "tracked"],
             members: &[
-                (
-                    "annotationCount",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "creator",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("annotationCount", of(&[Kind::Integer])),
+                ("creator", of(&[Kind::String])),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "mtime",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "path",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "size",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "tracked",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("mtime", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("path", of(&[Kind::String])),
+                ("resourceId", reference("ResourceId")),
+                ("size", of(&[Kind::Integer])),
+                ("tracked", of(&[Kind::Boolean])),
                 (
                     "type",
                     Shape {
@@ -3917,13 +2642,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["type", "value"],
             members: &[
-                (
-                    "conformsTo",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("conformsTo", of(&[Kind::String])),
                 (
                     "type",
                     Shape {
@@ -3932,13 +2651,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "value",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("value", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -3949,20 +2662,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["tag"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "tag",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("tag", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -3973,20 +2674,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["schema"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "schema",
-                    Shape {
-                        reference: Some("TagSchema"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("schema", reference("TagSchema")),
             ],
             ..NONE
         },
@@ -4089,27 +2778,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "kb",
-                    Shape {
-                        reference: Some("KbIdentity"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logFormat",
-                    Shape {
-                        reference: Some("LogFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logLevel",
-                    Shape {
-                        reference: Some("LogLevel"),
-                        ..NONE
-                    },
-                ),
+                ("kb", reference("KbIdentity")),
+                ("logFormat", reference("LogFormat")),
+                ("logLevel", reference("LogLevel")),
                 (
                     "port",
                     Shape {
@@ -4194,20 +2865,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotationId", "response"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "response",
-                    Shape {
-                        reference: Some("GatheredContext"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("response", reference("GatheredContext")),
             ],
             ..NONE
         },
@@ -4226,20 +2885,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "includeSourceContext",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "includeTargetContext",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("includeSourceContext", of(&[Kind::Boolean])),
+                ("includeTargetContext", of(&[Kind::Boolean])),
             ],
             ..NONE
         },
@@ -4250,27 +2897,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotationId", "resourceId"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "options",
-                    Shape {
-                        reference: Some("GatherAnnotationOptions"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("options", reference("GatherAnnotationOptions")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -4280,20 +2909,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("CommandError"),
-                    ..NONE
-                },
+                reference("CommandError"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["annotationId"],
-                    members: &[(
-                        "annotationId",
-                        Shape {
-                            reference: Some("AnnotationId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("annotationId", reference("AnnotationId"))],
                     ..NONE
                 },
             ],
@@ -4306,20 +2926,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
             members: &[
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("motivation", reference("Motivation")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -4329,13 +2937,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("GetReferencedByResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("GetReferencedByResponse"))],
             ..NONE
         },
     ),
@@ -4345,20 +2947,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "response"],
             members: &[
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "response",
-                    Shape {
-                        reference: Some("GatheredContext"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("response", reference("GatheredContext")),
             ],
             ..NONE
         },
@@ -4368,20 +2958,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("CommandError"),
-                    ..NONE
-                },
+                reference("CommandError"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["resourceId"],
-                    members: &[(
-                        "resourceId",
-                        Shape {
-                            reference: Some("ResourceId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("resourceId", reference("ResourceId"))],
                     ..NONE
                 },
             ],
@@ -4394,20 +2975,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "options"],
             members: &[
-                (
-                    "options",
-                    Shape {
-                        reference: Some("GatherResourceRequestOptions"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("options", reference("GatherResourceRequestOptions")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -4431,27 +3000,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "excludeEntityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "includeContent",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "includeSummary",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("includeContent", of(&[Kind::Boolean])),
+                ("includeSummary", of(&[Kind::Boolean])),
                 (
                     "maxResources",
                     Shape {
@@ -4471,20 +3025,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotationId", "resourceId"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -4504,13 +3046,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 kinds: Some(&[Kind::Object]),
                                 required: &["kind", "annotation", "sourceResource"],
                                 members: &[
-                                    (
-                                        "annotation",
-                                        Shape {
-                                            reference: Some("Annotation"),
-                                            ..NONE
-                                        },
-                                    ),
+                                    ("annotation", reference("Annotation")),
                                     (
                                         "kind",
                                         Shape {
@@ -4525,76 +3061,28 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                             kinds: Some(&[Kind::Object]),
                                             required: &["text"],
                                             members: &[
-                                                (
-                                                    "after",
-                                                    Shape {
-                                                        kinds: Some(&[Kind::String]),
-                                                        ..NONE
-                                                    },
-                                                ),
-                                                (
-                                                    "before",
-                                                    Shape {
-                                                        kinds: Some(&[Kind::String]),
-                                                        ..NONE
-                                                    },
-                                                ),
-                                                (
-                                                    "text",
-                                                    Shape {
-                                                        kinds: Some(&[Kind::String]),
-                                                        ..NONE
-                                                    },
-                                                ),
+                                                ("after", of(&[Kind::String])),
+                                                ("before", of(&[Kind::String])),
+                                                ("text", of(&[Kind::String])),
                                             ],
                                             ..NONE
                                         },
                                     ),
-                                    (
-                                        "sourceResource",
-                                        Shape {
-                                            reference: Some("ResourceDescriptor"),
-                                            ..NONE
-                                        },
-                                    ),
+                                    ("sourceResource", reference("ResourceDescriptor")),
                                     (
                                         "targetContext",
                                         Shape {
                                             kinds: Some(&[Kind::Object]),
                                             required: &["content"],
                                             members: &[
-                                                (
-                                                    "content",
-                                                    Shape {
-                                                        kinds: Some(&[Kind::String]),
-                                                        ..NONE
-                                                    },
-                                                ),
-                                                (
-                                                    "summary",
-                                                    Shape {
-                                                        kinds: Some(&[Kind::String]),
-                                                        ..NONE
-                                                    },
-                                                ),
+                                                ("content", of(&[Kind::String])),
+                                                ("summary", of(&[Kind::String])),
                                             ],
                                             ..NONE
                                         },
                                     ),
-                                    (
-                                        "targetResource",
-                                        Shape {
-                                            reference: Some("ResourceDescriptor"),
-                                            ..NONE
-                                        },
-                                    ),
-                                    (
-                                        "userHint",
-                                        Shape {
-                                            kinds: Some(&[Kind::String]),
-                                            ..NONE
-                                        },
-                                    ),
+                                    ("targetResource", reference("ResourceDescriptor")),
+                                    ("userHint", of(&[Kind::String])),
                                 ],
                                 ..NONE
                             },
@@ -4607,21 +3095,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                         Shape {
                                             kinds: Some(&[Kind::Object]),
                                             members: &[
-                                                (
-                                                    "main",
-                                                    Shape {
-                                                        kinds: Some(&[Kind::String]),
-                                                        ..NONE
-                                                    },
-                                                ),
+                                                ("main", of(&[Kind::String])),
                                                 (
                                                     "related",
                                                     Shape {
                                                         kinds: Some(&[Kind::Object]),
-                                                        values: Some(&Shape {
-                                                            kinds: Some(&[Kind::String]),
-                                                            ..NONE
-                                                        }),
+                                                        values: Some(&of(&[Kind::String])),
                                                         ..NONE
                                                     },
                                                 ),
@@ -4637,31 +3116,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                             ..NONE
                                         },
                                     ),
-                                    (
-                                        "resource",
-                                        Shape {
-                                            reference: Some("ResourceDescriptor"),
-                                            ..NONE
-                                        },
-                                    ),
+                                    ("resource", reference("ResourceDescriptor")),
                                     (
                                         "suggestedReferences",
                                         Shape {
                                             kinds: Some(&[Kind::Array]),
-                                            items: Some(&Shape {
-                                                kinds: Some(&[Kind::String]),
-                                                ..NONE
-                                            }),
+                                            items: Some(&of(&[Kind::String])),
                                             ..NONE
                                         },
                                     ),
-                                    (
-                                        "summary",
-                                        Shape {
-                                            kinds: Some(&[Kind::String]),
-                                            ..NONE
-                                        },
-                                    ),
+                                    ("summary", of(&[Kind::String])),
                                 ],
                                 ..NONE
                             },
@@ -4669,20 +3133,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "graph",
-                    Shape {
-                        reference: Some("KnowledgeGraph"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "inferredRelationshipSummary",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("graph", reference("KnowledgeGraph")),
+                ("inferredRelationshipSummary", of(&[Kind::String])),
                 (
                     "metadata",
                     Shape {
@@ -4692,10 +3144,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 "entityTypeFrequencies",
                                 Shape {
                                     kinds: Some(&[Kind::Object]),
-                                    values: Some(&Shape {
-                                        kinds: Some(&[Kind::Integer]),
-                                        ..NONE
-                                    }),
+                                    values: Some(&of(&[Kind::Integer])),
                                     ..NONE
                                 },
                             ),
@@ -4703,27 +3152,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 "entityTypes",
                                 Shape {
                                     kinds: Some(&[Kind::Array]),
-                                    items: Some(&Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    }),
+                                    items: Some(&of(&[Kind::String])),
                                     ..NONE
                                 },
                             ),
-                            (
-                                "language",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "resourceType",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
+                            ("language", of(&[Kind::String])),
+                            ("resourceType", of(&[Kind::String])),
                         ],
                         ..NONE
                     },
@@ -4738,10 +3172,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 "excludedEntityTypes",
                                 Shape {
                                     kinds: Some(&[Kind::Array]),
-                                    items: Some(&Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    }),
+                                    items: Some(&of(&[Kind::String])),
                                     ..NONE
                                 },
                             ),
@@ -4749,10 +3180,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 "similar",
                                 Shape {
                                     kinds: Some(&[Kind::Array]),
-                                    items: Some(&Shape {
-                                        reference: Some("SemanticMatch"),
-                                        ..NONE
-                                    }),
+                                    items: Some(&reference("SemanticMatch")),
                                     ..NONE
                                 },
                             ),
@@ -4769,20 +3197,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("GenerationJobRequest"),
-                    ..NONE
-                },
+                reference("GenerationJobRequest"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["context"],
-                    members: &[(
-                        "context",
-                        Shape {
-                            reference: Some("GatheredContext"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("context", reference("GatheredContext"))],
                     ..NONE
                 },
             ],
@@ -4795,59 +3214,20 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["title", "storageUri"],
             members: &[
-                (
-                    "cite",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("cite", of(&[Kind::Boolean])),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "maxTokens",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "outputMediaType",
-                    Shape {
-                        reference: Some("SupportedMediaType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "prompt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "sourceLanguage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("language", of(&[Kind::String])),
+                ("maxTokens", of(&[Kind::Number])),
+                ("outputMediaType", reference("SupportedMediaType")),
+                ("prompt", of(&[Kind::String])),
+                ("sourceLanguage", of(&[Kind::String])),
                 (
                     "storageUri",
                     Shape {
@@ -4856,27 +3236,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "structure",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "task",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "temperature",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("structure", of(&[Kind::String])),
+                ("task", of(&[Kind::String])),
+                ("temperature", of(&[Kind::Number])),
                 (
                     "title",
                     Shape {
@@ -4895,38 +3257,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["events", "total", "annotationId", "resourceId"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
                 (
                     "events",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("AttributedEvent"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("AttributedEvent")),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "total",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("total", of(&[Kind::Number])),
             ],
             ..NONE
         },
@@ -4937,27 +3278,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotation", "resource", "resolvedResource"],
             members: &[
-                (
-                    "annotation",
-                    Shape {
-                        reference: Some("Annotation"),
-                        ..NONE
-                    },
-                ),
+                ("annotation", reference("Annotation")),
                 (
                     "resolvedResource",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Null]),
-                        one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::Null]),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("ResourceDescriptor"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[of(&[Kind::Null]), reference("ResourceDescriptor")],
                         ..NONE
                     },
                 ),
@@ -4965,16 +3291,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "resource",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Null]),
-                        one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::Null]),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("ResourceDescriptor"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[of(&[Kind::Null]), reference("ResourceDescriptor")],
                         ..NONE
                     },
                 ),
@@ -4992,10 +3309,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "annotations",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("Annotation"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("Annotation")),
                         ..NONE
                     },
                 ),
@@ -5003,26 +3317,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "motivation",
                     Shape {
                         kinds: Some(&[Kind::String, Kind::Null]),
-                        one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::Null]),
-                                ..NONE
-                            },
-                            Shape {
-                                reference: Some("Motivation"),
-                                ..NONE
-                            },
-                        ],
+                        one_of: &[of(&[Kind::Null]), reference("Motivation")],
                         ..NONE
                     },
                 ),
-                (
-                    "total",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("total", of(&[Kind::Number])),
             ],
             ..NONE
         },
@@ -5036,10 +3335,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "entityTypes",
                 Shape {
                     kinds: Some(&[Kind::Array]),
-                    items: Some(&Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    }),
+                    items: Some(&of(&[Kind::String])),
                     ..NONE
                 },
             )],
@@ -5056,27 +3352,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "events",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("AttributedEvent"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("AttributedEvent")),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "total",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("total", of(&[Kind::Number])),
             ],
             ..NONE
         },
@@ -5090,10 +3371,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "referencedBy",
                 Shape {
                     kinds: Some(&[Kind::Array]),
-                    items: Some(&Shape {
-                        reference: Some("GetReferencedByResponseReferencedByItem"),
-                        ..NONE
-                    }),
+                    items: Some(&reference("GetReferencedByResponseReferencedByItem")),
                     ..NONE
                 },
             )],
@@ -5106,13 +3384,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["id", "target"],
             members: &[
-                (
-                    "id",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("id", reference("AnnotationId")),
                 (
                     "resourceName",
                     Shape {
@@ -5132,23 +3404,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                 Shape {
                                     kinds: Some(&[Kind::Object]),
                                     required: &["exact"],
-                                    members: &[(
-                                        "exact",
-                                        Shape {
-                                            kinds: Some(&[Kind::String]),
-                                            ..NONE
-                                        },
-                                    )],
+                                    members: &[("exact", of(&[Kind::String]))],
                                     ..NONE
                                 },
                             ),
-                            (
-                                "source",
-                                Shape {
-                                    reference: Some("ResourceId"),
-                                    ..NONE
-                                },
-                            ),
+                            ("source", reference("ResourceId")),
                         ],
                         ..NONE
                     },
@@ -5163,20 +3423,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["sourceResource", "expiresAt"],
             members: &[
-                (
-                    "expiresAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "sourceResource",
-                    Shape {
-                        reference: Some("ResourceDescriptor"),
-                        ..NONE
-                    },
-                ),
+                ("expiresAt", of(&[Kind::String])),
+                ("sourceResource", reference("ResourceDescriptor")),
             ],
             ..NONE
         },
@@ -5191,20 +3439,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "annotations",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("Annotation"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("Annotation")),
                         ..NONE
                     },
                 ),
-                (
-                    "resource",
-                    Shape {
-                        reference: Some("ResourceDescriptor"),
-                        ..NONE
-                    },
-                ),
+                ("resource", reference("ResourceDescriptor")),
             ],
             ..NONE
         },
@@ -5218,10 +3457,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "tagSchemas",
                 Shape {
                     kinds: Some(&[Kind::Array]),
-                    items: Some(&Shape {
-                        reference: Some("TagSchema"),
-                        ..NONE
-                    }),
+                    items: Some(&reference("TagSchema")),
                     ..NONE
                 },
             )],
@@ -5234,45 +3470,18 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["id", "type", "label", "annotation"],
             members: &[
-                (
-                    "annotation",
-                    Shape {
-                        reference: Some("Annotation"),
-                        ..NONE
-                    },
-                ),
+                ("annotation", reference("Annotation")),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "id",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "label",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "metadata",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        ..NONE
-                    },
-                ),
+                ("id", reference("AnnotationId")),
+                ("label", of(&[Kind::String])),
+                ("metadata", of(&[Kind::Object])),
                 (
                     "type",
                     Shape {
@@ -5290,22 +3499,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("Neo4jGraphConfig"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JanusGraphConfig"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("NeptuneGraphConfig"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("MemoryGraphConfig"),
-                    ..NONE
-                },
+                reference("Neo4jGraphConfig"),
+                reference("JanusGraphConfig"),
+                reference("NeptuneGraphConfig"),
+                reference("MemoryGraphConfig"),
             ],
             discriminator: Some(Discriminator {
                 property: "type",
@@ -5329,34 +3526,13 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "id",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "label",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "metadata",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        ..NONE
-                    },
-                ),
+                ("id", reference("ResourceId")),
+                ("label", of(&[Kind::String])),
+                ("metadata", of(&[Kind::Object])),
                 (
                     "type",
                     Shape {
@@ -5375,34 +3551,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["status", "message", "version", "timestamp"],
             members: &[
-                (
-                    "message",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "status",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "timestamp",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "version",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("message", of(&[Kind::String])),
+                ("status", of(&[Kind::String])),
+                ("timestamp", of(&[Kind::String])),
+                ("version", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -5413,20 +3565,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["motivation"],
             members: &[
-                (
-                    "density",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "instructions",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("density", of(&[Kind::Number])),
+                ("instructions", of(&[Kind::String])),
                 (
                     "motivation",
                     Shape {
@@ -5435,13 +3575,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "sourceLanguage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("sourceLanguage", of(&[Kind::String])),
             ],
             closed: Some(&["density", "instructions", "motivation", "sourceLanguage"]),
             ..NONE
@@ -5453,13 +3587,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["kind", "host", "port", "protocol"],
             members: &[
-                (
-                    "host",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("host", of(&[Kind::String])),
                 (
                     "kind",
                     Shape {
@@ -5495,38 +3623,14 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["contextTokens", "maxOutputTokens"],
             members: &[
-                (
-                    "acceptsTemperature",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contextTokens",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "maxOutputTokens",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("acceptsTemperature", of(&[Kind::Boolean])),
+                ("contextTokens", of(&[Kind::Number])),
+                ("maxOutputTokens", of(&[Kind::Number])),
             ],
             ..NONE
         },
     ),
-    (
-        "InferenceLimitsRequest",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            ..NONE
-        },
-    ),
+    ("InferenceLimitsRequest", of(&[Kind::Object])),
     (
         "InferenceLimitsResult",
         Shape {
@@ -5541,10 +3645,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         "limits",
                         Shape {
                             kinds: Some(&[Kind::Array]),
-                            items: Some(&Shape {
-                                reference: Some("EngineLimits"),
-                                ..NONE
-                            }),
+                            items: Some(&reference("EngineLimits")),
                             ..NONE
                         },
                     )],
@@ -5595,26 +3696,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("JobPending"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobRunning"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobComplete"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobFailed"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobCancelled"),
-                    ..NONE
-                },
+                reference("JobPending"),
+                reference("JobRunning"),
+                reference("JobComplete"),
+                reference("JobFailed"),
+                reference("JobCancelled"),
             ],
             discriminator: Some(Discriminator {
                 property: "status",
@@ -5635,48 +3721,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "jobType", "resourceId", "holder", "requester"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "holder",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "requester",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("holder", reference("UserId")),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("requester", reference("UserId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -5687,41 +3737,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "jobType", "resourceId", "holder", "requester"],
             members: &[
-                (
-                    "holder",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "requester",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("holder", reference("UserId")),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("requester", reference("UserId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -5732,60 +3752,24 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "jobId", "jobType"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
                 (
                     "completedUnits",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("resourceId", reference("ResourceId")),
                 (
                     "unitCursors",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        values: Some(&Shape {
-                            reference: Some("UnitCursor"),
-                            ..NONE
-                        }),
+                        values: Some(&reference("UnitCursor")),
                         ..NONE
                     },
                 ),
@@ -5798,13 +3782,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["jobId"],
-            members: &[(
-                "jobId",
-                Shape {
-                    reference: Some("JobId"),
-                    ..NONE
-                },
-            )],
+            members: &[("jobId", reference("JobId"))],
             ..NONE
         },
     ),
@@ -5813,13 +3791,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["cancelled"],
-            members: &[(
-                "cancelled",
-                Shape {
-                    kinds: Some(&[Kind::Boolean]),
-                    ..NONE
-                },
-            )],
+            members: &[("cancelled", of(&[Kind::Boolean]))],
             ..NONE
         },
     ),
@@ -5829,34 +3801,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["status", "metadata", "params", "completedAt"],
             members: &[
-                (
-                    "completedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "metadata",
-                    Shape {
-                        reference: Some("JobMetadata"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("JobParams"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "startedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("completedAt", of(&[Kind::String])),
+                ("metadata", reference("JobMetadata")),
+                ("params", reference("JobParams")),
+                ("startedAt", of(&[Kind::String])),
                 (
                     "status",
                     Shape {
@@ -5876,39 +3824,21 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "completedUnits"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
                 (
                     "completedUnits",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
+                ("jobId", reference("JobId")),
                 (
                     "unitCursors",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        values: Some(&Shape {
-                            reference: Some("UnitCursor"),
-                            ..NONE
-                        }),
+                        values: Some(&reference("UnitCursor")),
                         ..NONE
                     },
                 ),
@@ -5926,29 +3856,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "_roles",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
                 (
                     "accepts",
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            reference: Some("JobFilter"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("JobFilter")),
                         ..NONE
                     },
                 ),
@@ -5961,13 +3879,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("JobRunning"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("JobRunning"))],
             closed: Some(&["response"]),
             ..NONE
         },
@@ -5985,41 +3897,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "result",
             ],
             members: &[
-                (
-                    "completedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "metadata",
-                    Shape {
-                        reference: Some("JobMetadata"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("JobParams"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "result",
-                    Shape {
-                        reference: Some("JobStoredResult"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "startedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("completedAt", of(&[Kind::String])),
+                ("metadata", reference("JobMetadata")),
+                ("params", reference("JobParams")),
+                ("result", reference("JobStoredResult")),
+                ("startedAt", of(&[Kind::String])),
                 (
                     "status",
                     Shape {
@@ -6045,14 +3927,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("MarkJobCompleteCommand"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("YieldJobCompleteCommand"),
-                    ..NONE
-                },
+                reference("MarkJobCompleteCommand"),
+                reference("YieldJobCompleteCommand"),
             ],
             discriminator: Some(Discriminator {
                 property: "jobType",
@@ -6067,76 +3943,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "jobType"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "attempt",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "durability",
-                    Shape {
-                        reference: Some("DurabilityEvidence"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "foundCount",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "result",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resultResourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "totalSteps",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("annotationUri", of(&[Kind::String])),
+                ("attempt", of(&[Kind::Integer])),
+                ("durability", reference("DurabilityEvidence")),
+                ("foundCount", of(&[Kind::Integer])),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("result", of(&[Kind::Object])),
+                ("resultResourceId", reference("ResourceId")),
+                ("totalSteps", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -6146,14 +3962,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("MarkJobCreateCommand"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("YieldJobCreateCommand"),
-                    ..NONE
-                },
+                reference("MarkJobCreateCommand"),
+                reference("YieldJobCreateCommand"),
             ],
             discriminator: Some(Discriminator {
                 property: "jobType",
@@ -6167,13 +3977,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("JobCreatedResultResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("JobCreatedResultResponse"))],
             ..NONE
         },
     ),
@@ -6182,13 +3986,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["jobId"],
-            members: &[(
-                "jobId",
-                Shape {
-                    reference: Some("JobId"),
-                    ..NONE
-                },
-            )],
+            members: &[("jobId", reference("JobId"))],
             ..NONE
         },
     ),
@@ -6231,98 +4029,32 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "jobId", "jobType", "error"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "attempt",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
+                ("attempt", of(&[Kind::Integer])),
                 (
                     "completedUnits",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "durability",
-                    Shape {
-                        reference: Some("DurabilityEvidence"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "error",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "failureClass",
-                    Shape {
-                        reference: Some("FailureClass"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("durability", reference("DurabilityEvidence")),
+                ("error", of(&[Kind::String])),
+                ("failureClass", reference("FailureClass")),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("resourceId", reference("ResourceId")),
                 (
                     "unitCursors",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        values: Some(&Shape {
-                            reference: Some("UnitCursor"),
-                            ..NONE
-                        }),
+                        values: Some(&reference("UnitCursor")),
                         ..NONE
                     },
                 ),
-                (
-                    "willRetry",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("willRetry", of(&[Kind::Boolean])),
             ],
             ..NONE
         },
@@ -6333,48 +4065,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["status", "metadata", "params", "completedAt", "error"],
             members: &[
-                (
-                    "completedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "error",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "failureClass",
-                    Shape {
-                        reference: Some("FailureClass"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "metadata",
-                    Shape {
-                        reference: Some("JobMetadata"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("JobParams"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "startedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("completedAt", of(&[Kind::String])),
+                ("error", of(&[Kind::String])),
+                ("failureClass", reference("FailureClass")),
+                ("metadata", reference("JobMetadata")),
+                ("params", reference("JobParams")),
+                ("startedAt", of(&[Kind::String])),
                 (
                     "status",
                     Shape {
@@ -6402,62 +4098,14 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "jobType", "error"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "attempt",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "durability",
-                    Shape {
-                        reference: Some("DurabilityEvidence"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "error",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "failureClass",
-                    Shape {
-                        reference: Some("FailureClass"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "willRetry",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("attempt", of(&[Kind::Integer])),
+                ("durability", reference("DurabilityEvidence")),
+                ("error", of(&[Kind::String])),
+                ("failureClass", reference("FailureClass")),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("willRetry", of(&[Kind::Boolean])),
             ],
             ..NONE
         },
@@ -6466,16 +4114,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "JobFilter",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("MarkJobFilter"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("YieldJobFilter"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("MarkJobFilter"), reference("YieldJobFilter")],
             discriminator: Some(Discriminator {
                 property: "jobType",
                 mapping: &[("mark", 0), ("yield", 1)],
@@ -6512,27 +4151,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "completedUnits",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "created",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "id",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
+                ("created", of(&[Kind::String])),
+                ("id", reference("JobId")),
                 (
                     "maxRetries",
                     Shape {
@@ -6549,31 +4173,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "type",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
+                ("type", reference("JobType")),
                 (
                     "unitCursors",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        values: Some(&Shape {
-                            reference: Some("UnitCursor"),
-                            ..NONE
-                        }),
+                        values: Some(&reference("UnitCursor")),
                         ..NONE
                     },
                 ),
-                (
-                    "userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("userId", reference("UserId")),
             ],
             closed: Some(&[
                 "completedUnits",
@@ -6594,20 +4203,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
             members: &[
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "schema",
-                    Shape {
-                        reference: Some("TagSchema"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("schema", reference("TagSchema")),
             ],
             ..NONE
         },
@@ -6618,20 +4215,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["status", "metadata", "params"],
             members: &[
-                (
-                    "metadata",
-                    Shape {
-                        reference: Some("JobMetadata"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("JobParams"),
-                        ..NONE
-                    },
-                ),
+                ("metadata", reference("JobMetadata")),
+                ("params", reference("JobParams")),
                 (
                     "status",
                     Shape {
@@ -6651,13 +4236,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["percentage"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
                 (
                     "completedItems",
                     Shape {
@@ -6666,58 +4245,22 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                             kinds: Some(&[Kind::Object]),
                             required: &["value", "foundCount"],
                             members: &[
-                                (
-                                    "foundCount",
-                                    Shape {
-                                        kinds: Some(&[Kind::Integer]),
-                                        ..NONE
-                                    },
-                                ),
-                                (
-                                    "persistedCount",
-                                    Shape {
-                                        kinds: Some(&[Kind::Integer]),
-                                        ..NONE
-                                    },
-                                ),
+                                ("foundCount", of(&[Kind::Integer])),
+                                ("persistedCount", of(&[Kind::Integer])),
                                 (
                                     "underReported",
                                     Shape {
                                         kinds: Some(&[Kind::Object]),
                                         required: &["pieces", "found", "counted"],
                                         members: &[
-                                            (
-                                                "counted",
-                                                Shape {
-                                                    kinds: Some(&[Kind::Integer]),
-                                                    ..NONE
-                                                },
-                                            ),
-                                            (
-                                                "found",
-                                                Shape {
-                                                    kinds: Some(&[Kind::Integer]),
-                                                    ..NONE
-                                                },
-                                            ),
-                                            (
-                                                "pieces",
-                                                Shape {
-                                                    kinds: Some(&[Kind::Integer]),
-                                                    ..NONE
-                                                },
-                                            ),
+                                            ("counted", of(&[Kind::Integer])),
+                                            ("found", of(&[Kind::Integer])),
+                                            ("pieces", of(&[Kind::Integer])),
                                         ],
                                         ..NONE
                                     },
                                 ),
-                                (
-                                    "value",
-                                    Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    },
-                                ),
+                                ("value", of(&[Kind::String])),
                             ],
                             ..NONE
                         }),
@@ -6741,59 +4284,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                     ..NONE
                                 },
                             ),
-                            (
-                                "value",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
+                            ("value", of(&[Kind::String])),
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "entitiesEmitted",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "entitiesExpected",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "entitiesFound",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "message",
-                    Shape {
-                        reference: Some("JobProgressMessage"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "percentage",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "processed",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("entitiesEmitted", of(&[Kind::Integer])),
+                ("entitiesExpected", of(&[Kind::Integer])),
+                ("entitiesFound", of(&[Kind::Integer])),
+                ("message", reference("JobProgressMessage")),
+                ("percentage", of(&[Kind::Number])),
+                ("processed", of(&[Kind::Integer])),
                 (
                     "requestParams",
                     Shape {
@@ -6815,26 +4316,14 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                                         ..NONE
                                     },
                                 ),
-                                (
-                                    "value",
-                                    Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    },
-                                ),
+                                ("value", of(&[Kind::String])),
                             ],
                             ..NONE
                         }),
                         ..NONE
                     },
                 ),
-                (
-                    "total",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("total", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -6885,20 +4374,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "count",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
+                ("count", of(&[Kind::Integer])),
+                ("motivation", reference("Motivation")),
             ],
             ..NONE
         },
@@ -6917,13 +4394,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "truncated",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("truncated", of(&[Kind::Boolean])),
             ],
             ..NONE
         },
@@ -6942,13 +4413,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "count",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("count", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -6983,13 +4448,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "count",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("count", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -7008,13 +4467,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "entityType",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("entityType", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -7056,46 +4509,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("JobProgressLoading"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressAnalyzing"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressAnalyzingTags"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressGeneratingResource"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressCreatingResource"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressCompleteGenerated"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressDetectingEntities"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressCreatingAnnotations"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressCreatingTagAnnotations"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobProgressCompleteCreated"),
-                    ..NONE
-                },
+                reference("JobProgressLoading"),
+                reference("JobProgressAnalyzing"),
+                reference("JobProgressAnalyzingTags"),
+                reference("JobProgressGeneratingResource"),
+                reference("JobProgressCreatingResource"),
+                reference("JobProgressCompleteGenerated"),
+                reference("JobProgressDetectingEntities"),
+                reference("JobProgressCreatingAnnotations"),
+                reference("JobProgressCreatingTagAnnotations"),
+                reference("JobProgressCompleteCreated"),
             ],
             discriminator: Some(Discriminator {
                 property: "code",
@@ -7120,14 +4543,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("MarkJobQueuedEvent"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("YieldJobQueuedEvent"),
-                    ..NONE
-                },
+                reference("MarkJobQueuedEvent"),
+                reference("YieldJobQueuedEvent"),
             ],
             discriminator: Some(Discriminator {
                 property: "jobType",
@@ -7142,20 +4559,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["job", "lastProgressAt"],
             members: &[
-                (
-                    "job",
-                    Shape {
-                        reference: Some("Job"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "lastProgressAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("job", reference("Job")),
+                ("lastProgressAt", of(&[Kind::String])),
             ],
             closed: Some(&["job", "lastProgressAt"]),
             ..NONE
@@ -7167,62 +4572,14 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "jobId", "jobType", "percentage"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "attempt",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "percentage",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "progress",
-                    Shape {
-                        reference: Some("JobProgress"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
+                ("attempt", of(&[Kind::Integer])),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("percentage", of(&[Kind::Number])),
+                ("progress", reference("JobProgress")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -7232,18 +4589,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("MarkJobDone"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("YieldJobDone"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobDeclined"),
-                    ..NONE
-                },
+                reference("MarkJobDone"),
+                reference("YieldJobDone"),
+                reference("JobDeclined"),
             ],
             ..NONE
         },
@@ -7254,34 +4602,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["status", "metadata", "params", "startedAt", "progress"],
             members: &[
-                (
-                    "metadata",
-                    Shape {
-                        reference: Some("JobMetadata"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("JobParams"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "progress",
-                    Shape {
-                        reference: Some("JobStoredProgress"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "startedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("metadata", reference("JobMetadata")),
+                ("params", reference("JobParams")),
+                ("progress", reference("JobStoredProgress")),
+                ("startedAt", of(&[Kind::String])),
                 (
                     "status",
                     Shape {
@@ -7301,48 +4625,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "jobId", "jobType"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "attempt",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
+                ("attempt", of(&[Kind::Integer])),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -7353,34 +4641,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "jobType"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobType",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "totalSteps",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
+                ("jobId", reference("JobId")),
+                ("jobType", reference("JobType")),
+                ("totalSteps", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -7390,13 +4654,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["jobId"],
-            members: &[(
-                "jobId",
-                Shape {
-                    reference: Some("JobId"),
-                    ..NONE
-                },
-            )],
+            members: &[("jobId", reference("JobId"))],
             ..NONE
         },
     ),
@@ -7406,62 +4664,14 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "type", "status", "userId", "created"],
             members: &[
-                (
-                    "completedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "created",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "error",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "failureClass",
-                    Shape {
-                        reference: Some("FailureClass"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "progress",
-                    Shape {
-                        reference: Some("JobStoredProgress"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "result",
-                    Shape {
-                        reference: Some("JobStoredResult"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "startedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("completedAt", of(&[Kind::String])),
+                ("created", of(&[Kind::String])),
+                ("error", of(&[Kind::String])),
+                ("failureClass", reference("FailureClass")),
+                ("jobId", reference("JobId")),
+                ("progress", reference("JobStoredProgress")),
+                ("result", reference("JobStoredResult")),
+                ("startedAt", of(&[Kind::String])),
                 (
                     "status",
                     Shape {
@@ -7476,20 +4686,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "type",
-                    Shape {
-                        reference: Some("JobType"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("type", reference("JobType")),
+                ("userId", reference("UserId")),
             ],
             ..NONE
         },
@@ -7499,13 +4697,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("JobStatusResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("JobStatusResponse"))],
             ..NONE
         },
     ),
@@ -7514,10 +4706,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("JobProgress"),
-                    ..NONE
-                },
+                reference("JobProgress"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     closed: Some(&[]),
@@ -7532,10 +4721,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("JobResult"),
-                    ..NONE
-                },
+                reference("JobResult"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     closed: Some(&[]),
@@ -7559,27 +4745,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["name", "domain"],
             members: &[
-                (
-                    "domain",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "gitBranch",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("domain", of(&[Kind::String])),
+                ("gitBranch", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -7588,16 +4756,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "KbEndpoint",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("HttpEndpoint"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("LocalEndpoint"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("HttpEndpoint"), reference("LocalEndpoint")],
             discriminator: Some(Discriminator {
                 property: "kind",
                 mapping: &[("http", 0), ("local", 1)],
@@ -7655,20 +4814,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["at"],
             members: &[
-                (
-                    "at",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "gitBranch",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("at", of(&[Kind::String])),
+                ("gitBranch", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -7679,27 +4826,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["id", "label", "endpoint"],
             members: &[
-                (
-                    "endpoint",
-                    Shape {
-                        reference: Some("KbEndpoint"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "id",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "label",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("endpoint", reference("KbEndpoint")),
+                ("id", of(&[Kind::String])),
+                ("label", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -7708,16 +4837,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "KnowledgeBase",
         Shape {
             kinds: Some(&[Kind::Object]),
-            all_of: &[
-                Shape {
-                    reference: Some("KbTarget"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("NewKnowledgeBase"),
-                    ..NONE
-                },
-            ],
+            all_of: &[reference("KbTarget"), reference("NewKnowledgeBase")],
             ..NONE
         },
     ),
@@ -7735,41 +4855,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                             kinds: Some(&[Kind::Object]),
                             required: &["source", "target", "type"],
                             members: &[
-                                (
-                                    "bidirectional",
-                                    Shape {
-                                        kinds: Some(&[Kind::Boolean]),
-                                        ..NONE
-                                    },
-                                ),
-                                (
-                                    "metadata",
-                                    Shape {
-                                        kinds: Some(&[Kind::Object]),
-                                        ..NONE
-                                    },
-                                ),
-                                (
-                                    "source",
-                                    Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    },
-                                ),
-                                (
-                                    "target",
-                                    Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    },
-                                ),
-                                (
-                                    "type",
-                                    Shape {
-                                        kinds: Some(&[Kind::String]),
-                                        ..NONE
-                                    },
-                                ),
+                                ("bidirectional", of(&[Kind::Boolean])),
+                                ("metadata", of(&[Kind::Object])),
+                                ("source", of(&[Kind::String])),
+                                ("target", of(&[Kind::String])),
+                                ("type", of(&[Kind::String])),
                             ],
                             ..NONE
                         }),
@@ -7783,14 +4873,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         items: Some(&Shape {
                             kinds: Some(&[Kind::Object]),
                             one_of: &[
-                                Shape {
-                                    reference: Some("GraphResourceNode"),
-                                    ..NONE
-                                },
-                                Shape {
-                                    reference: Some("GraphAnnotationNode"),
-                                    ..NONE
-                                },
+                                reference("GraphResourceNode"),
+                                reference("GraphAnnotationNode"),
                             ],
                             discriminator: Some(Discriminator {
                                 property: "type",
@@ -7801,13 +4885,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "truncated",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("truncated", of(&[Kind::Boolean])),
             ],
             ..NONE
         },
@@ -7862,13 +4940,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "embedding",
-                    Shape {
-                        reference: Some("EmbeddingConfig"),
-                        ..NONE
-                    },
-                ),
+                ("embedding", reference("EmbeddingConfig")),
                 (
                     "gatewayUrl",
                     Shape {
@@ -7894,20 +4966,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "gatherer",
-                    Shape {
-                        reference: Some("LibrarianEngineConfig"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "graph",
-                    Shape {
-                        reference: Some("GraphConfig"),
-                        ..NONE
-                    },
-                ),
+                ("gatherer", reference("LibrarianEngineConfig")),
+                ("graph", reference("GraphConfig")),
                 (
                     "identity",
                     Shape {
@@ -7925,34 +4985,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "kb",
-                    Shape {
-                        reference: Some("KbIdentity"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logFormat",
-                    Shape {
-                        reference: Some("LogFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logLevel",
-                    Shape {
-                        reference: Some("LogLevel"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "matcher",
-                    Shape {
-                        reference: Some("LibrarianEngineConfig"),
-                        ..NONE
-                    },
-                ),
+                ("kb", reference("KbIdentity")),
+                ("logFormat", reference("LogFormat")),
+                ("logLevel", reference("LogLevel")),
+                ("matcher", reference("LibrarianEngineConfig")),
                 (
                     "modelCatalogue",
                     Shape {
@@ -7988,13 +5024,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "vectors",
-                    Shape {
-                        reference: Some("VectorsConfig"),
-                        ..NONE
-                    },
-                ),
+                ("vectors", reference("VectorsConfig")),
             ],
             closed: Some(&[
                 "archivist",
@@ -8038,13 +5068,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "engine",
-                    Shape {
-                        reference: Some("Engine"),
-                        ..NONE
-                    },
-                ),
+                ("engine", reference("Engine")),
             ],
             closed: Some(&["apiKeyEnv", "baseUrl", "engine"]),
             ..NONE
@@ -8055,10 +5079,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("ErrorResponse"),
-                    ..NONE
-                },
+                reference("ErrorResponse"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["code"],
@@ -8093,27 +5114,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "includeDescriptiveReferences",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("includeDescriptiveReferences", of(&[Kind::Boolean])),
+                ("language", of(&[Kind::String])),
                 (
                     "motivation",
                     Shape {
@@ -8122,13 +5128,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "sourceLanguage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("sourceLanguage", of(&[Kind::String])),
             ],
             closed: Some(&[
                 "entityTypes",
@@ -8146,38 +5146,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resources", "total", "offset", "limit"],
             members: &[
-                (
-                    "limit",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "offset",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("limit", of(&[Kind::Number])),
+                ("offset", of(&[Kind::Number])),
                 (
                     "resources",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("ResourceDescriptor"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("ResourceDescriptor")),
                         ..NONE
                     },
                 ),
-                (
-                    "total",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("total", of(&[Kind::Number])),
             ],
             ..NONE
         },
@@ -8188,13 +5167,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["kind", "kbId"],
             members: &[
-                (
-                    "kbId",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("kbId", of(&[Kind::String])),
                 (
                     "kind",
                     Shape {
@@ -8235,34 +5208,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "keepFile",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("keepFile", of(&[Kind::Boolean])),
+                ("resourceId", reference("ResourceId")),
+                ("storageUri", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -8277,45 +5226,21 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "_roles",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
                 (
                     "annotations",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("Annotation"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("Annotation")),
                         ..NONE
                     },
                 ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("jobId", reference("JobId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -8335,20 +5260,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                             "annotationIds",
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("AnnotationId"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("AnnotationId")),
                                 ..NONE
                             },
                         ),
-                        (
-                            "persisted",
-                            Shape {
-                                kinds: Some(&[Kind::Integer]),
-                                ..NONE
-                            },
-                        ),
+                        ("persisted", of(&[Kind::Integer])),
                     ],
                     ..NONE
                 },
@@ -8361,13 +5277,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("MarkCreateOkResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("MarkCreateOkResponse"))],
             ..NONE
         },
     ),
@@ -8376,13 +5286,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["annotationId"],
-            members: &[(
-                "annotationId",
-                Shape {
-                    reference: Some("AnnotationId"),
-                    ..NONE
-                },
-            )],
+            members: &[("annotationId", reference("AnnotationId"))],
             ..NONE
         },
     ),
@@ -8392,20 +5296,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "request"],
             members: &[
-                (
-                    "request",
-                    Shape {
-                        reference: Some("CreateAnnotationRequest"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("request", reference("CreateAnnotationRequest")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -8416,20 +5308,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "motivation"],
             members: &[
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("motivation", reference("Motivation")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -8440,27 +5320,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotationId"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -8475,13 +5337,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["annotationId"],
-                    members: &[(
-                        "annotationId",
-                        Shape {
-                            reference: Some("AnnotationId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("annotationId", reference("AnnotationId"))],
                     ..NONE
                 },
             )],
@@ -8494,34 +5350,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "jobId", "jobType"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "attempt",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "durability",
-                    Shape {
-                        reference: Some("DurabilityEvidence"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("attempt", of(&[Kind::Integer])),
+                ("durability", reference("DurabilityEvidence")),
+                ("jobId", reference("JobId")),
                 (
                     "jobType",
                     Shape {
@@ -8530,20 +5362,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "result",
-                    Shape {
-                        reference: Some("MarkJobResult"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("result", reference("MarkJobResult")),
             ],
             ..NONE
         },
@@ -8558,20 +5378,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "_roles",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
                 (
                     "jobType",
                     Shape {
@@ -8580,20 +5391,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("MarkJobParams"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("params", reference("MarkJobParams")),
+                ("resourceId", reference("ResourceId")),
             ],
             closed: Some(&["_roles", "_userId", "jobType", "params", "resourceId"]),
             ..NONE
@@ -8609,10 +5408,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "byCategory",
                     Shape {
                         kinds: Some(&[Kind::Object]),
-                        values: Some(&Shape {
-                            kinds: Some(&[Kind::Integer]),
-                            ..NONE
-                        }),
+                        values: Some(&of(&[Kind::Integer])),
                         ..NONE
                     },
                 ),
@@ -8648,13 +5444,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "underReportedPieces",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("underReportedPieces", of(&[Kind::Integer])),
             ],
             closed: Some(&[
                 "byCategory",
@@ -8686,13 +5476,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Object]),
                         required: &["motivation"],
-                        members: &[(
-                            "motivation",
-                            Shape {
-                                reference: Some("Motivation"),
-                                ..NONE
-                            },
-                        )],
+                        members: &[("motivation", reference("Motivation"))],
                         closed: Some(&["motivation"]),
                         ..NONE
                     },
@@ -8707,26 +5491,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("HighlightingJobParams"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("CommentingJobParams"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("AssessingJobParams"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("LinkingJobParams"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("TaggingJobParams"),
-                    ..NONE
-                },
+                reference("HighlightingJobParams"),
+                reference("CommentingJobParams"),
+                reference("AssessingJobParams"),
+                reference("LinkingJobParams"),
+                reference("TaggingJobParams"),
             ],
             discriminator: Some(Discriminator {
                 property: "motivation",
@@ -8747,13 +5516,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "jobType", "resourceId", "userId", "params"],
             members: &[
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
+                ("jobId", reference("JobId")),
                 (
                     "jobType",
                     Shape {
@@ -8762,27 +5525,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("MarkJobParams"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("params", reference("MarkJobParams")),
+                ("resourceId", reference("ResourceId")),
+                ("userId", reference("UserId")),
             ],
             ..NONE
         },
@@ -8791,16 +5536,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "MarkJobResult",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("MarkJobDone"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobDeclined"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("MarkJobDone"), reference("JobDeclined")],
             ..NONE
         },
     ),
@@ -8810,27 +5546,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["source", "selector", "motivation"],
             members: &[
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "selector",
-                    Shape {
-                        reference: Some("AnnotationSelector"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "source",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("motivation", reference("Motivation")),
+                ("selector", reference("AnnotationSelector")),
+                ("source", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -8841,34 +5559,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["source", "motivation", "selector"],
             members: &[
-                (
-                    "body",
-                    Shape {
-                        reference: Some("AnnotationBodies"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "motivation",
-                    Shape {
-                        reference: Some("Motivation"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "selector",
-                    Shape {
-                        reference: Some("AnnotationSelector"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "source",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("body", reference("AnnotationBodies")),
+                ("motivation", reference("Motivation")),
+                ("selector", reference("AnnotationSelector")),
+                ("source", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -8879,27 +5573,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("resourceId", reference("ResourceId")),
+                ("storageUri", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -8910,20 +5586,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["annotationId", "resourceId", "operations"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
                 (
                     "operations",
                     Shape {
@@ -8931,31 +5595,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         items: Some(&Shape {
                             kinds: Some(&[Kind::Object]),
                             one_of: &[
-                                Shape {
-                                    reference: Some("BodyOperationAdd"),
-                                    ..NONE
-                                },
-                                Shape {
-                                    reference: Some("BodyOperationRemove"),
-                                    ..NONE
-                                },
-                                Shape {
-                                    reference: Some("BodyOperationReplace"),
-                                    ..NONE
-                                },
+                                reference("BodyOperationAdd"),
+                                reference("BodyOperationRemove"),
+                                reference("BodyOperationReplace"),
                             ],
                             ..NONE
                         }),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -8966,39 +5615,21 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "currentEntityTypes", "updatedEntityTypes"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
                 (
                     "currentEntityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
                 (
                     "updatedEntityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
@@ -9012,20 +5643,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["search"],
             members: &[
-                (
-                    "archived",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "entityType",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("archived", of(&[Kind::Boolean])),
+                ("entityType", of(&[Kind::String])),
                 (
                     "limit",
                     Shape {
@@ -9043,13 +5662,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "search",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("search", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -9088,10 +5701,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "resources",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("ResourceDescriptor"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("ResourceDescriptor")),
                         ..NONE
                     },
                 ),
@@ -9112,13 +5722,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["response"],
-            members: &[(
-                "response",
-                Shape {
-                    reference: Some("MatchResourcesResponse"),
-                    ..NONE
-                },
-            )],
+            members: &[("response", reference("MatchResourcesResponse"))],
             ..NONE
         },
     ),
@@ -9127,20 +5731,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("CommandError"),
-                    ..NONE
-                },
+                reference("CommandError"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["referenceId"],
-                    members: &[(
-                        "referenceId",
-                        Shape {
-                            reference: Some("AnnotationId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("referenceId", reference("AnnotationId"))],
                     ..NONE
                 },
             ],
@@ -9153,13 +5748,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "referenceId", "context"],
             members: &[
-                (
-                    "context",
-                    Shape {
-                        reference: Some("GatheredContext"),
-                        ..NONE
-                    },
-                ),
+                ("context", reference("GatheredContext")),
                 (
                     "limit",
                     Shape {
@@ -9169,27 +5758,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "referenceId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "useSemanticScoring",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("referenceId", reference("AnnotationId")),
+                ("resourceId", reference("ResourceId")),
+                ("useSemanticScoring", of(&[Kind::Boolean])),
             ],
             ..NONE
         },
@@ -9200,21 +5771,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["referenceId", "response"],
             members: &[
-                (
-                    "referenceId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("referenceId", reference("AnnotationId")),
                 (
                     "response",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("ScoredResource"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("ScoredResource")),
                         ..NONE
                     },
                 ),
@@ -9227,13 +5789,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
-            members: &[(
-                "resourceId",
-                Shape {
-                    reference: Some("ResourceId"),
-                    ..NONE
-                },
-            )],
+            members: &[("resourceId", reference("ResourceId"))],
             ..NONE
         },
     ),
@@ -9242,13 +5798,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["token"],
-            members: &[(
-                "token",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("token", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -9393,34 +5943,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["label", "endpoint", "did"],
             members: &[
-                (
-                    "did",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "endpoint",
-                    Shape {
-                        reference: Some("KbEndpoint"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "label",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "lastRead",
-                    Shape {
-                        reference: Some("KbRead"),
-                        ..NONE
-                    },
-                ),
+                ("did", of(&[Kind::String])),
+                ("endpoint", reference("KbEndpoint")),
+                ("label", of(&[Kind::String])),
+                ("lastRead", reference("KbRead")),
             ],
             ..NONE
         },
@@ -9474,20 +6000,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "height",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "page",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("height", of(&[Kind::Number])),
+                ("page", of(&[Kind::Integer])),
                 (
                     "start",
                     Shape {
@@ -9496,27 +6010,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "width",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "x",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "y",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
+                ("width", of(&[Kind::Number])),
+                ("x", of(&[Kind::Number])),
+                ("y", of(&[Kind::Number])),
             ],
             ..NONE
         },
@@ -9561,20 +6057,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["name"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("name", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -9584,13 +6068,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["name"],
-            members: &[(
-                "name",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("name", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -9600,20 +6078,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["name", "since"],
             members: &[
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "since",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("name", of(&[Kind::String])),
+                ("since", of(&[Kind::String])),
             ],
             closed: Some(&["name", "since"]),
             ..NONE
@@ -9628,10 +6094,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "profiles",
                 Shape {
                     kinds: Some(&[Kind::Object]),
-                    values: Some(&Shape {
-                        reference: Some("Profile"),
-                        ..NONE
-                    }),
+                    values: Some(&reference("Profile")),
                     ..NONE
                 },
             )],
@@ -9653,10 +6116,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "authorization_servers",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
@@ -9672,20 +6132,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "resource",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resource_name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("resource", of(&[Kind::String])),
+                ("resource_name", of(&[Kind::String])),
             ],
             closed: Some(&[
                 "authorization_servers",
@@ -9790,29 +6238,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["mediaType"],
             members: &[
-                (
-                    "@id",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("@id", of(&[Kind::String])),
                 (
                     "@type",
                     Shape {
                         kinds: Some(&[Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
+                            of(&[Kind::String]),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
                                 min_items: Some(1),
-                                items: Some(&Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                }),
+                                items: Some(&of(&[Kind::String])),
                                 ..NONE
                             },
                         ],
@@ -9827,41 +6263,23 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "checksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("checksum", of(&[Kind::String])),
                 (
                     "conformsTo",
                     Shape {
                         kinds: Some(&[Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
+                            of(&[Kind::String]),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                }),
+                                items: Some(&of(&[Kind::String])),
                                 ..NONE
                             },
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "created",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("created", of(&[Kind::String])),
                 (
                     "duration",
                     Shape {
@@ -9870,20 +6288,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "encoding",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "filename",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("encoding", of(&[Kind::String])),
+                ("filename", of(&[Kind::String])),
                 (
                     "height",
                     Shape {
@@ -9892,27 +6298,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "mediaType",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "modified",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("language", of(&[Kind::String])),
+                ("mediaType", of(&[Kind::String])),
+                ("modified", of(&[Kind::String])),
                 (
                     "rel",
                     Shape {
@@ -9928,21 +6316,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("storageUri", of(&[Kind::String])),
                 (
                     "tags",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
@@ -9963,13 +6342,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["representation"],
-            members: &[(
-                "representation",
-                Shape {
-                    reference: Some("Representation"),
-                    ..NONE
-                },
-            )],
+            members: &[("representation", reference("Representation"))],
             ..NONE
         },
     ),
@@ -9978,10 +6351,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("ErrorResponse"),
-                    ..NONE
-                },
+                reference("ErrorResponse"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["code"],
@@ -10007,13 +6377,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["checksum"],
-            members: &[(
-                "checksum",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("checksum", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -10027,27 +6391,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "annotations",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("Annotation"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("Annotation")),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "updatedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("updatedAt", of(&[Kind::String])),
                 (
                     "version",
                     Shape {
@@ -10065,13 +6414,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "ResourceArchivedPayload",
         Shape {
             kinds: Some(&[Kind::Object]),
-            members: &[(
-                "reason",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("reason", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -10081,88 +6424,31 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["name", "format", "contentChecksum", "parentResourceId"],
             members: &[
-                (
-                    "contentByteSize",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "creator",
-                    Shape {
-                        reference: Some("Agent"),
-                        ..NONE
-                    },
-                ),
+                ("contentByteSize", of(&[Kind::Integer])),
+                ("contentChecksum", of(&[Kind::String])),
+                ("creator", reference("Agent")),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "format",
-                    Shape {
-                        reference: Some("ContentFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "parentResourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("format", reference("ContentFormat")),
+                ("language", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("parentResourceId", reference("ResourceId")),
+                ("storageUri", of(&[Kind::String])),
                 (
                     "wasAttributedTo",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
@@ -10179,147 +6465,60 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["name", "format", "contentChecksum"],
             members: &[
-                (
-                    "contentByteSize",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "creator",
-                    Shape {
-                        reference: Some("Agent"),
-                        ..NONE
-                    },
-                ),
+                ("contentByteSize", of(&[Kind::Integer])),
+                ("contentChecksum", of(&[Kind::String])),
+                ("creator", reference("Agent")),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "format",
-                    Shape {
-                        reference: Some("ContentFormat"),
-                        ..NONE
-                    },
-                ),
+                ("format", reference("ContentFormat")),
                 (
                     "generatedFrom",
                     Shape {
                         kinds: Some(&[Kind::Object]),
                         required: &["resourceId"],
                         members: &[
-                            (
-                                "annotationId",
-                                Shape {
-                                    reference: Some("AnnotationId"),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "resourceId",
-                                Shape {
-                                    reference: Some("ResourceId"),
-                                    ..NONE
-                                },
-                            ),
+                            ("annotationId", reference("AnnotationId")),
+                            ("resourceId", reference("ResourceId")),
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "generationPrompt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("generationPrompt", of(&[Kind::String])),
                 (
                     "generator",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "isDraft",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("isDraft", of(&[Kind::Boolean])),
+                ("jobId", reference("JobId")),
+                ("language", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("storageUri", of(&[Kind::String])),
                 (
                     "wasAttributedTo",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
@@ -10341,28 +6540,13 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
-                            Shape {
-                                kinds: Some(&[Kind::Object]),
-                                ..NONE
-                            },
+                            of(&[Kind::String]),
+                            of(&[Kind::Object]),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
                                 items: Some(&Shape {
                                     kinds: Some(&[Kind::Object, Kind::String]),
-                                    one_of: &[
-                                        Shape {
-                                            kinds: Some(&[Kind::String]),
-                                            ..NONE
-                                        },
-                                        Shape {
-                                            kinds: Some(&[Kind::Object]),
-                                            ..NONE
-                                        },
-                                    ],
+                                    one_of: &[of(&[Kind::String]), of(&[Kind::Object])],
                                     ..NONE
                                 }),
                                 ..NONE
@@ -10371,29 +6555,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "@id",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("@id", reference("ResourceId")),
                 (
                     "@type",
                     Shape {
                         kinds: Some(&[Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
+                            of(&[Kind::String]),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
                                 min_items: Some(1),
-                                items: Some(&Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                }),
+                                items: Some(&of(&[Kind::String])),
                                 ..NONE
                             },
                         ],
@@ -10405,38 +6577,23 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
+                            of(&[Kind::String]),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
                                 min_items: Some(1),
-                                items: Some(&Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                }),
+                                items: Some(&of(&[Kind::String])),
                                 ..NONE
                             },
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "archived",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("archived", of(&[Kind::Boolean])),
                 (
                     "availableFormats",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
@@ -10445,51 +6602,24 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
+                            of(&[Kind::String]),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                }),
+                                items: Some(&of(&[Kind::String])),
                                 ..NONE
                             },
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "dateCreated",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "dateModified",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "description",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("dateCreated", of(&[Kind::String])),
+                ("dateModified", of(&[Kind::String])),
+                ("description", of(&[Kind::String])),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
@@ -10498,16 +6628,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
@@ -10518,10 +6642,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "hasPart",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
@@ -10530,43 +6651,19 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
+                            of(&[Kind::String]),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
                                 min_items: Some(1),
-                                items: Some(&Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                }),
+                                items: Some(&of(&[Kind::String])),
                                 ..NONE
                             },
                             Shape {
                                 kinds: Some(&[Kind::Object]),
                                 members: &[
-                                    (
-                                        "@id",
-                                        Shape {
-                                            kinds: Some(&[Kind::String]),
-                                            ..NONE
-                                        },
-                                    ),
-                                    (
-                                        "scheme",
-                                        Shape {
-                                            kinds: Some(&[Kind::String]),
-                                            ..NONE
-                                        },
-                                    ),
-                                    (
-                                        "value",
-                                        Shape {
-                                            kinds: Some(&[Kind::String]),
-                                            ..NONE
-                                        },
-                                    ),
+                                    ("@id", of(&[Kind::String])),
+                                    ("scheme", of(&[Kind::String])),
+                                    ("value", of(&[Kind::String])),
                                 ],
                                 ..NONE
                             },
@@ -10574,60 +6671,27 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "isDraft",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("isDraft", of(&[Kind::Boolean])),
                 (
                     "isPartOf",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "license",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "originatedFrom",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("license", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("originatedFrom", of(&[Kind::String])),
                 (
                     "representations",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Representation"),
-                                ..NONE
-                            },
+                            reference("Representation"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("Representation"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Representation")),
                                 ..NONE
                             },
                         ],
@@ -10638,49 +6702,22 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "sameAs",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "sourceAnnotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "sourceResourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "version",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("sourceAnnotationId", reference("AnnotationId")),
+                ("sourceResourceId", reference("ResourceId")),
+                ("version", of(&[Kind::String])),
                 (
                     "wasAttributedTo",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
@@ -10692,16 +6729,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array, Kind::String]),
                         one_of: &[
-                            Shape {
-                                reference: Some("ResourceId"),
-                                ..NONE
-                            },
+                            reference("ResourceId"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("ResourceId"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("ResourceId")),
                                 ..NONE
                             },
                         ],
@@ -10718,20 +6749,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "message"],
             members: &[
-                (
-                    "message",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("message", of(&[Kind::String])),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -10754,51 +6773,21 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["fromUri", "toUri"],
             members: &[
-                (
-                    "fromUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "toUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("fromUri", of(&[Kind::String])),
+                ("toUri", of(&[Kind::String])),
             ],
             ..NONE
         },
     ),
-    (
-        "ResourceUnarchivedPayload",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            ..NONE
-        },
-    ),
+    ("ResourceUnarchivedPayload", of(&[Kind::Object])),
     (
         "ResourceUpdatedPayload",
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["contentChecksum"],
             members: &[
-                (
-                    "contentByteSize",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("contentByteSize", of(&[Kind::Integer])),
+                ("contentChecksum", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -10809,104 +6798,20 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["name", "file", "format", "storageUri"],
             members: &[
-                (
-                    "archiveOriginal",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "cloneToken",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "entityTypes",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "file",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "format",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "generationPrompt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "generator",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "isDraft",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "sourceAnnotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "sourceResourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("archiveOriginal", of(&[Kind::String])),
+                ("cloneToken", of(&[Kind::String])),
+                ("entityTypes", of(&[Kind::String])),
+                ("file", of(&[Kind::String])),
+                ("format", of(&[Kind::String])),
+                ("generationPrompt", of(&[Kind::String])),
+                ("generator", of(&[Kind::String])),
+                ("isDraft", of(&[Kind::String])),
+                ("jobId", reference("JobId")),
+                ("language", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("sourceAnnotationId", reference("AnnotationId")),
+                ("sourceResourceId", reference("ResourceId")),
+                ("storageUri", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -10917,13 +6822,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resource", "annotations", "lastSequence"],
             members: &[
-                (
-                    "annotations",
-                    Shape {
-                        reference: Some("ResourceAnnotations"),
-                        ..NONE
-                    },
-                ),
+                ("annotations", reference("ResourceAnnotations")),
                 (
                     "lastSequence",
                     Shape {
@@ -10932,13 +6831,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "resource",
-                    Shape {
-                        reference: Some("ResourceDescriptor"),
-                        ..NONE
-                    },
-                ),
+                ("resource", reference("ResourceDescriptor")),
             ],
             closed: Some(&["annotations", "lastSequence", "resource"]),
             ..NONE
@@ -10949,27 +6842,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             all_of: &[
-                Shape {
-                    reference: Some("ResourceDescriptor"),
-                    ..NONE
-                },
+                reference("ResourceDescriptor"),
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     members: &[
-                        (
-                            "matchReason",
-                            Shape {
-                                kinds: Some(&[Kind::String]),
-                                ..NONE
-                            },
-                        ),
-                        (
-                            "score",
-                            Shape {
-                                kinds: Some(&[Kind::Number]),
-                                ..NONE
-                            },
-                        ),
+                        ("matchReason", of(&[Kind::String])),
+                        ("score", of(&[Kind::Number])),
                     ],
                     ..NONE
                 },
@@ -10982,22 +6860,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("TextPositionSelector"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("TextQuoteSelector"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("SvgSelector"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("FragmentSelector"),
-                    ..NONE
-                },
+                reference("TextPositionSelector"),
+                reference("TextQuoteSelector"),
+                reference("SvgSelector"),
+                reference("FragmentSelector"),
             ],
             discriminator: Some(Discriminator {
                 property: "type",
@@ -11017,59 +6883,20 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["text", "resourceId", "resourceName", "score"],
             members: &[
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
+                ("annotationId", reference("AnnotationId")),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "machineRead",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceName",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "score",
-                    Shape {
-                        kinds: Some(&[Kind::Number]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "text",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("machineRead", of(&[Kind::Boolean])),
+                ("resourceId", reference("ResourceId")),
+                ("resourceName", of(&[Kind::String])),
+                ("score", of(&[Kind::Number])),
+                ("text", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -11080,20 +6907,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["participant", "connectionId"],
             members: &[
-                (
-                    "connectionId",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "participant",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("connectionId", of(&[Kind::String])),
+                ("participant", reference("UserId")),
             ],
             ..NONE
         },
@@ -11104,20 +6919,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["participant", "connectionId"],
             members: &[
-                (
-                    "connectionId",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "participant",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("connectionId", of(&[Kind::String])),
+                ("participant", reference("UserId")),
             ],
             ..NONE
         },
@@ -11127,13 +6930,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["hoverDelayMs"],
-            members: &[(
-                "hoverDelayMs",
-                Shape {
-                    kinds: Some(&[Kind::Integer]),
-                    ..NONE
-                },
-            )],
+            members: &[("hoverDelayMs", of(&[Kind::Integer]))],
             ..NONE
         },
     ),
@@ -11142,13 +6939,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["locale"],
-            members: &[(
-                "locale",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("locale", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -11177,20 +6968,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -11201,13 +6980,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "contentChecksum", "outcome"],
             members: &[
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("contentChecksum", of(&[Kind::String])),
                 (
                     "outcome",
                     Shape {
@@ -11231,13 +7004,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -11316,20 +7083,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "cursorsPath",
-                    Shape {
-                        reference: Some("CursorsPath"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "embedding",
-                    Shape {
-                        reference: Some("EmbeddingConfig"),
-                        ..NONE
-                    },
-                ),
+                ("cursorsPath", reference("CursorsPath")),
+                ("embedding", reference("EmbeddingConfig")),
                 (
                     "gatewayUrl",
                     Shape {
@@ -11355,27 +7110,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "kb",
-                    Shape {
-                        reference: Some("KbIdentity"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logFormat",
-                    Shape {
-                        reference: Some("LogFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logLevel",
-                    Shape {
-                        reference: Some("LogLevel"),
-                        ..NONE
-                    },
-                ),
+                ("kb", reference("KbIdentity")),
+                ("logFormat", reference("LogFormat")),
+                ("logLevel", reference("LogLevel")),
                 (
                     "pdfsAtOnce",
                     Shape {
@@ -11393,13 +7130,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "vectors",
-                    Shape {
-                        reference: Some("VectorsConfig"),
-                        ..NONE
-                    },
-                ),
+                ("vectors", reference("VectorsConfig")),
             ],
             closed: Some(&[
                 "archivist",
@@ -11424,20 +7155,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["type", "source"],
             members: &[
-                (
-                    "purpose",
-                    Shape {
-                        reference: Some("BodyPurpose"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "source",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("purpose", reference("BodyPurpose")),
+                ("source", reference("ResourceId")),
                 (
                     "type",
                     Shape {
@@ -11456,58 +7175,22 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["status", "version", "features", "message"],
             members: &[
-                (
-                    "authenticatedAs",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("authenticatedAs", of(&[Kind::String])),
                 (
                     "features",
                     Shape {
                         kinds: Some(&[Kind::Object]),
                         required: &["semanticContent", "collaboration"],
                         members: &[
-                            (
-                                "collaboration",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "semanticContent",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
+                            ("collaboration", of(&[Kind::String])),
+                            ("semanticContent", of(&[Kind::String])),
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "message",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "status",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "version",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("message", of(&[Kind::String])),
+                ("status", of(&[Kind::String])),
+                ("version", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -11518,20 +7201,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["uri", "resourceId"],
             members: &[
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "uri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("uri", of(&[Kind::String])),
             ],
             closed: Some(&["resourceId", "uri"]),
             ..NONE
@@ -11551,62 +7222,14 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "metadata",
             ],
             members: &[
-                (
-                    "id",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "metadata",
-                    Shape {
-                        reference: Some("EventMetadata"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "payload",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "timestamp",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "type",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "version",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("id", of(&[Kind::String])),
+                ("metadata", reference("EventMetadata")),
+                ("payload", of(&[Kind::Object])),
+                ("resourceId", reference("ResourceId")),
+                ("timestamp", of(&[Kind::String])),
+                ("type", of(&[Kind::String])),
+                ("userId", reference("UserId")),
+                ("version", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -11701,13 +7324,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "value",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("value", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -11718,31 +7335,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["name", "description", "examples"],
             members: &[
-                (
-                    "description",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("description", of(&[Kind::String])),
                 (
                     "examples",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("name", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -11753,42 +7355,15 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["id", "name", "description", "domain", "tags"],
             members: &[
-                (
-                    "description",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "domain",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "id",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("description", of(&[Kind::String])),
+                ("domain", of(&[Kind::String])),
+                ("id", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
                 (
                     "tags",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            reference: Some("TagCategory"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("TagCategory")),
                         ..NONE
                     },
                 ),
@@ -11801,13 +7376,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["schema"],
-            members: &[(
-                "schema",
-                Shape {
-                    reference: Some("TagSchema"),
-                    ..NONE
-                },
-            )],
+            members: &[("schema", reference("TagSchema"))],
             ..NONE
         },
     ),
@@ -11820,10 +7389,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "tagSchemas",
                 Shape {
                     kinds: Some(&[Kind::Array]),
-                    items: Some(&Shape {
-                        reference: Some("TagSchema"),
-                        ..NONE
-                    }),
+                    items: Some(&reference("TagSchema")),
                     ..NONE
                 },
             )],
@@ -11842,20 +7408,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("language", of(&[Kind::String])),
                 (
                     "motivation",
                     Shape {
@@ -11872,13 +7429,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "sourceLanguage",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("sourceLanguage", of(&[Kind::String])),
             ],
             closed: Some(&[
                 "categories",
@@ -11930,27 +7481,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["type", "exact"],
             members: &[
-                (
-                    "exact",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "prefix",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "suffix",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("exact", of(&[Kind::String])),
+                ("prefix", of(&[Kind::String])),
+                ("suffix", of(&[Kind::String])),
                 (
                     "type",
                     Shape {
@@ -11969,27 +7502,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["type", "value"],
             members: &[
-                (
-                    "format",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "purpose",
-                    Shape {
-                        reference: Some("BodyPurpose"),
-                        ..NONE
-                    },
-                ),
+                ("format", of(&[Kind::String])),
+                ("language", of(&[Kind::String])),
+                ("purpose", reference("BodyPurpose")),
                 (
                     "type",
                     Shape {
@@ -11998,13 +7513,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "value",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("value", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -12073,31 +7582,16 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         items: Some(&Shape {
                             kinds: Some(&[Kind::Object]),
                             one_of: &[
-                                Shape {
-                                    reference: Some("BodyOperationAdd"),
-                                    ..NONE
-                                },
-                                Shape {
-                                    reference: Some("BodyOperationRemove"),
-                                    ..NONE
-                                },
-                                Shape {
-                                    reference: Some("BodyOperationReplace"),
-                                    ..NONE
-                                },
+                                reference("BodyOperationAdd"),
+                                reference("BodyOperationRemove"),
+                                reference("BodyOperationReplace"),
                             ],
                             ..NONE
                         }),
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -12154,41 +7648,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["did", "email", "name", "image", "domain"],
             members: &[
-                (
-                    "did",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "domain",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "email",
-                    Shape {
-                        kinds: Some(&[Kind::String, Kind::Null]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "image",
-                    Shape {
-                        kinds: Some(&[Kind::String, Kind::Null]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String, Kind::Null]),
-                        ..NONE
-                    },
-                ),
+                ("did", reference("UserId")),
+                ("domain", of(&[Kind::String])),
+                ("email", of(&[Kind::String, Kind::Null])),
+                ("image", of(&[Kind::String, Kind::Null])),
+                ("name", of(&[Kind::String, Kind::Null])),
             ],
             ..NONE
         },
@@ -12198,14 +7662,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             one_of: &[
-                Shape {
-                    reference: Some("QdrantVectorsConfig"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("MemoryVectorsConfig"),
-                    ..NONE
-                },
+                reference("QdrantVectorsConfig"),
+                reference("MemoryVectorsConfig"),
             ],
             discriminator: Some(Discriminator {
                 property: "type",
@@ -12263,20 +7721,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "sequenceNumber"],
             members: &[
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "sequenceNumber",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("sequenceNumber", of(&[Kind::Integer])),
             ],
             ..NONE
         },
@@ -12286,20 +7732,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("resourceId", reference("ResourceId")),
             ],
             ..NONE
         },
@@ -12348,13 +7782,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "cursorsPath",
-                    Shape {
-                        reference: Some("CursorsPath"),
-                        ..NONE
-                    },
-                ),
+                ("cursorsPath", reference("CursorsPath")),
                 (
                     "gatewayUrl",
                     Shape {
@@ -12363,13 +7791,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "graph",
-                    Shape {
-                        reference: Some("GraphConfig"),
-                        ..NONE
-                    },
-                ),
+                ("graph", reference("GraphConfig")),
                 (
                     "identity",
                     Shape {
@@ -12387,27 +7809,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "kb",
-                    Shape {
-                        reference: Some("KbIdentity"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logFormat",
-                    Shape {
-                        reference: Some("LogFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logLevel",
-                    Shape {
-                        reference: Some("LogLevel"),
-                        ..NONE
-                    },
-                ),
+                ("kb", reference("KbIdentity")),
+                ("logFormat", reference("LogFormat")),
+                ("logLevel", reference("LogLevel")),
                 (
                     "port",
                     Shape {
@@ -12449,27 +7853,12 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            reference: Some("WorkerKnowledgeBaseConfig"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("WorkerKnowledgeBaseConfig")),
                         ..NONE
                     },
                 ),
-                (
-                    "logFormat",
-                    Shape {
-                        reference: Some("LogFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "logLevel",
-                    Shape {
-                        reference: Some("LogLevel"),
-                        ..NONE
-                    },
-                ),
+                ("logFormat", reference("LogFormat")),
+                ("logLevel", reference("LogLevel")),
                 (
                     "modelCatalogue",
                     Shape {
@@ -12520,22 +7909,13 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "engine",
-                    Shape {
-                        reference: Some("Engine"),
-                        ..NONE
-                    },
-                ),
+                ("engine", reference("Engine")),
                 (
                     "jobs",
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            reference: Some("JobFilter"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("JobFilter")),
                         ..NONE
                     },
                 ),
@@ -12565,48 +7945,21 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         kinds: Some(&[Kind::Object, Kind::Null]),
                         required: &["jobId", "type", "since"],
                         members: &[
-                            (
-                                "jobId",
-                                Shape {
-                                    reference: Some("JobId"),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "since",
-                                Shape {
-                                    kinds: Some(&[Kind::String]),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "type",
-                                Shape {
-                                    reference: Some("JobType"),
-                                    ..NONE
-                                },
-                            ),
+                            ("jobId", reference("JobId")),
+                            ("since", of(&[Kind::String])),
+                            ("type", reference("JobType")),
                         ],
                         closed: Some(&["jobId", "since", "type"]),
                         ..NONE
                     },
                 ),
-                (
-                    "engine",
-                    Shape {
-                        reference: Some("Engine"),
-                        ..NONE
-                    },
-                ),
+                ("engine", reference("Engine")),
                 (
                     "jobs",
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            reference: Some("JobFilter"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("JobFilter")),
                         ..NONE
                     },
                 ),
@@ -12618,34 +7971,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "lastActivityAt",
-                    Shape {
-                        kinds: Some(&[Kind::String, Kind::Null]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "lastClaimAt",
-                    Shape {
-                        kinds: Some(&[Kind::String, Kind::Null]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "lastFinishedAt",
-                    Shape {
-                        kinds: Some(&[Kind::String, Kind::Null]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "lastQueuedEventAt",
-                    Shape {
-                        kinds: Some(&[Kind::String, Kind::Null]),
-                        ..NONE
-                    },
-                ),
+                ("lastActivityAt", of(&[Kind::String, Kind::Null])),
+                ("lastClaimAt", of(&[Kind::String, Kind::Null])),
+                ("lastFinishedAt", of(&[Kind::String, Kind::Null])),
+                ("lastQueuedEventAt", of(&[Kind::String, Kind::Null])),
             ],
             closed: Some(&[
                 "activeJob",
@@ -12671,10 +8000,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            reference: Some("WorkerKnowledgeBaseHealth"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("WorkerKnowledgeBaseHealth")),
                         ..NONE
                     },
                 ),
@@ -12710,10 +8036,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            reference: Some("WorkerEngineConfig"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("WorkerEngineConfig")),
                         ..NONE
                     },
                 ),
@@ -12784,10 +8107,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     Shape {
                         kinds: Some(&[Kind::Array]),
                         min_items: Some(1),
-                        items: Some(&Shape {
-                            reference: Some("WorkerEngineHealth"),
-                            ..NONE
-                        }),
+                        items: Some(&reference("WorkerEngineHealth")),
                         ..NONE
                     },
                 ),
@@ -12821,62 +8141,14 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "format",
             ],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "archiveOriginal",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "byteSize",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "format",
-                    Shape {
-                        reference: Some("ContentFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "token",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("archiveOriginal", of(&[Kind::Boolean])),
+                ("byteSize", of(&[Kind::Integer])),
+                ("contentChecksum", of(&[Kind::String])),
+                ("format", reference("ContentFormat")),
+                ("name", of(&[Kind::String])),
+                ("storageUri", of(&[Kind::String])),
+                ("token", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -12891,13 +8163,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["resourceId"],
-                    members: &[(
-                        "resourceId",
-                        Shape {
-                            reference: Some("ResourceId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("resourceId", reference("ResourceId"))],
                     ..NONE
                 },
             )],
@@ -12917,73 +8183,22 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "parentResourceId",
             ],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "byteSize",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("byteSize", of(&[Kind::Integer])),
+                ("contentChecksum", of(&[Kind::String])),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "format",
-                    Shape {
-                        reference: Some("ContentFormat"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "parentResourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("format", reference("ContentFormat")),
+                ("language", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("parentResourceId", reference("ResourceId")),
+                ("storageUri", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -12998,13 +8213,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["resourceId"],
-                    members: &[(
-                        "resourceId",
-                        Shape {
-                            reference: Some("ResourceId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("resourceId", reference("ResourceId"))],
                     ..NONE
                 },
             )],
@@ -13016,13 +8225,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["token"],
-            members: &[(
-                "token",
-                Shape {
-                    kinds: Some(&[Kind::String]),
-                    ..NONE
-                },
-            )],
+            members: &[("token", of(&[Kind::String]))],
             ..NONE
         },
     ),
@@ -13031,13 +8234,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["resourceId"],
-            members: &[(
-                "resourceId",
-                Shape {
-                    reference: Some("ResourceId"),
-                    ..NONE
-                },
-            )],
+            members: &[("resourceId", reference("ResourceId"))],
             ..NONE
         },
     ),
@@ -13057,138 +8254,54 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "_roles",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "byteSize",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("byteSize", of(&[Kind::Integer])),
+                ("contentChecksum", of(&[Kind::String])),
                 (
                     "entityTypes",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "format",
-                    Shape {
-                        reference: Some("ContentFormat"),
-                        ..NONE
-                    },
-                ),
+                ("format", reference("ContentFormat")),
                 (
                     "generatedFrom",
                     Shape {
                         kinds: Some(&[Kind::Object]),
                         members: &[
-                            (
-                                "annotationId",
-                                Shape {
-                                    reference: Some("AnnotationId"),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "resourceId",
-                                Shape {
-                                    reference: Some("ResourceId"),
-                                    ..NONE
-                                },
-                            ),
+                            ("annotationId", reference("AnnotationId")),
+                            ("resourceId", reference("ResourceId")),
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "generationPrompt",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("generationPrompt", of(&[Kind::String])),
                 (
                     "generator",
                     Shape {
                         kinds: Some(&[Kind::Object, Kind::Array]),
                         one_of: &[
-                            Shape {
-                                reference: Some("Agent"),
-                                ..NONE
-                            },
+                            reference("Agent"),
                             Shape {
                                 kinds: Some(&[Kind::Array]),
-                                items: Some(&Shape {
-                                    reference: Some("Agent"),
-                                    ..NONE
-                                }),
+                                items: Some(&reference("Agent")),
                                 ..NONE
                             },
                         ],
                         ..NONE
                     },
                 ),
-                (
-                    "isDraft",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "language",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "name",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("isDraft", of(&[Kind::Boolean])),
+                ("jobId", reference("JobId")),
+                ("language", of(&[Kind::String])),
+                ("name", of(&[Kind::String])),
+                ("storageUri", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -13203,13 +8316,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["resourceId"],
-                    members: &[(
-                        "resourceId",
-                        Shape {
-                            reference: Some("ResourceId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("resourceId", reference("ResourceId"))],
                     ..NONE
                 },
             )],
@@ -13222,41 +8329,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "jobId", "jobType"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "annotationId",
-                    Shape {
-                        reference: Some("AnnotationId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "attempt",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "durability",
-                    Shape {
-                        reference: Some("DurabilityEvidence"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("annotationId", reference("AnnotationId")),
+                ("attempt", of(&[Kind::Integer])),
+                ("durability", reference("DurabilityEvidence")),
+                ("jobId", reference("JobId")),
                 (
                     "jobType",
                     Shape {
@@ -13265,20 +8342,8 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "result",
-                    Shape {
-                        reference: Some("YieldJobResult"),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("result", reference("YieldJobResult")),
             ],
             ..NONE
         },
@@ -13293,20 +8358,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "_roles",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&Shape {
-                            kinds: Some(&[Kind::String]),
-                            ..NONE
-                        }),
+                        items: Some(&of(&[Kind::String])),
                         ..NONE
                     },
                 ),
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
                 (
                     "jobType",
                     Shape {
@@ -13315,13 +8371,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("GenerationJobParams"),
-                        ..NONE
-                    },
-                ),
+                ("params", reference("GenerationJobParams")),
             ],
             closed: Some(&["_roles", "_userId", "jobType", "params"]),
             ..NONE
@@ -13333,27 +8383,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "resourceName", "truncated"],
             members: &[
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceName",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "truncated",
-                    Shape {
-                        kinds: Some(&[Kind::Boolean]),
-                        ..NONE
-                    },
-                ),
+                ("resourceId", reference("ResourceId")),
+                ("resourceName", of(&[Kind::String])),
+                ("truncated", of(&[Kind::Boolean])),
             ],
             closed: Some(&["resourceId", "resourceName", "truncated"]),
             ..NONE
@@ -13382,13 +8414,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["jobId", "jobType", "resourceId", "userId", "params"],
             members: &[
-                (
-                    "jobId",
-                    Shape {
-                        reference: Some("JobId"),
-                        ..NONE
-                    },
-                ),
+                ("jobId", reference("JobId")),
                 (
                     "jobType",
                     Shape {
@@ -13397,27 +8423,9 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                         ..NONE
                     },
                 ),
-                (
-                    "params",
-                    Shape {
-                        reference: Some("GenerationJobRequest"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
+                ("params", reference("GenerationJobRequest")),
+                ("resourceId", reference("ResourceId")),
+                ("userId", reference("UserId")),
             ],
             ..NONE
         },
@@ -13426,16 +8434,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         "YieldJobResult",
         Shape {
             kinds: Some(&[Kind::Object]),
-            one_of: &[
-                Shape {
-                    reference: Some("YieldJobDone"),
-                    ..NONE
-                },
-                Shape {
-                    reference: Some("JobDeclined"),
-                    ..NONE
-                },
-            ],
+            one_of: &[reference("YieldJobDone"), reference("JobDeclined")],
             ..NONE
         },
     ),
@@ -13445,41 +8444,11 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             kinds: Some(&[Kind::Object]),
             required: &["resourceId", "storageUri", "contentChecksum", "byteSize"],
             members: &[
-                (
-                    "_userId",
-                    Shape {
-                        reference: Some("UserId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "byteSize",
-                    Shape {
-                        kinds: Some(&[Kind::Integer]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "contentChecksum",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
-                (
-                    "resourceId",
-                    Shape {
-                        reference: Some("ResourceId"),
-                        ..NONE
-                    },
-                ),
-                (
-                    "storageUri",
-                    Shape {
-                        kinds: Some(&[Kind::String]),
-                        ..NONE
-                    },
-                ),
+                ("_userId", reference("UserId")),
+                ("byteSize", of(&[Kind::Integer])),
+                ("contentChecksum", of(&[Kind::String])),
+                ("resourceId", reference("ResourceId")),
+                ("storageUri", of(&[Kind::String])),
             ],
             ..NONE
         },
@@ -13494,13 +8463,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 Shape {
                     kinds: Some(&[Kind::Object]),
                     required: &["resourceId"],
-                    members: &[(
-                        "resourceId",
-                        Shape {
-                            reference: Some("ResourceId"),
-                            ..NONE
-                        },
-                    )],
+                    members: &[("resourceId", reference("ResourceId"))],
                     ..NONE
                 },
             )],
