@@ -30,7 +30,7 @@ let file (o : Owner_only.t) =
       K.function_ ~about:(K.Block o.directory_access_list.docs)
         ~visibility:K.Internal
         ~params:[ ("owner", K.Type "String") ]
-        ~returns:(K.Type "String") "ownerOnlyAccessList"
+        ~returns:(K.Type "String") "ownerOnlyDirectoryAccessList"
         (K.Same_line
            (K.Binary
               ( K.Binary
