@@ -23,9 +23,9 @@ jobs:
   dco:
     uses: xynolog/.github/.github/workflows/dco.yml@b3dcbb9f9db37476c2bd259711ebaac6df777fbf
 
-  # On a push to main, the repository's labels become the org's seven.
+  # On a push to main, the repository's labels become the org's.
   labels:
-    uses: xynolog/.github/.github/workflows/labels.yml@b3dcbb9f9db37476c2bd259711ebaac6df777fbf
+    uses: xynolog/.github/.github/workflows/labels.yml@189966d08e740aa4e79460c9fce7a85769880193
     permissions:
       issues: write
 
