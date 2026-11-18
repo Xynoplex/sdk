@@ -175,7 +175,7 @@ jobs:
         run: make check-generated
 
   codegen:
-    name: The generator's model reads every file of the pinned Protocol
+    name: The generator's model reads every file of the pinned Protocol, and every sdk path it names is here
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 60

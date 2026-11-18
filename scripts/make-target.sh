@@ -149,7 +149,8 @@ case "${1:-}" in
     ;;
   test-codegen)
     # The generator's model reads every file of the pinned Protocol, and
-    # refuses a copy of it that has what the model does not know.
+    # refuses a copy of it that has what the model does not know. Every sdk
+    # path the pinned Protocol names is one this checkout has.
     ocaml_toolchain_image
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/codegen
@@ -158,7 +159,8 @@ case "${1:-}" in
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
       dune exec -- xynolog-codegen read ..
-      python3 check-boundary.py ..' --memory 4g
+      python3 check-boundary.py ..
+      python3 check-protocol-paths.py .. ../protocol' --memory 4g
     ;;
   generate|check-generated)
     # The OCaml generator writes each of its groups' files, a TypeScript one as
