@@ -31,7 +31,7 @@ import {
   SignInError,
   isObject,
   isSignIn,
-  ownerOnlyAccessList,
+  ownerOnlyDirectoryAccessList,
   type SignIn,
 } from '@xynolog/core';
 import type { SignInKept } from './sign-in-kept';
@@ -235,7 +235,7 @@ export class SignInStore {
       this.files.makeDirectory();
       const release = this.files.lock(SIGN_IN_STORE_LOCK, OWNER_ONLY_FILE_MODE, SIGN_IN_STORE_WINDOWS_OFFSET_HIGH);
       try {
-        this.files.keepToOwner(OWNER_ONLY_DIRECTORY_MODE, ownerOnlyAccessList);
+        this.files.keepToOwner(OWNER_ONLY_DIRECTORY_MODE, ownerOnlyDirectoryAccessList);
         const document = this.read();
         if (change(document)) {
           this.files.replace(SIGN_IN_STORE_FILE, `${JSON.stringify(Object.fromEntries(document), null, 2)}\n`, OWNER_ONLY_FILE_MODE);

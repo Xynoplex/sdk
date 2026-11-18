@@ -15,8 +15,8 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 
 /**
- * The sign-in store's access list (`ownerOnlyAccessList`), which the launcher
- * gives its state home too, on Windows. A mode keeps nobody out on Windows; the
+ * The sign-in store's directory's access list (`ownerOnlyDirectoryAccessList`),
+ * which the launcher gives its state home too, on Windows. A mode keeps nobody out on Windows; the
  * access list is what does. The JDK's own view of an access list names a principal by its
  * account name, which Windows writes in the system's language, and cannot keep
  * a list from inheriting, so the list is set through the JDK's foreign-function
@@ -109,7 +109,7 @@ internal object OwnerOnly {
         if (getTokenInformation.invoke(state, currentProcessToken, TOKEN_USER, user, size.get(JAVA_INT, 0L), size) as Int == 0) failed("GetTokenInformation", state)
         val named = arena.allocate(ADDRESS)
         if (convertSidToStringSid.invoke(state, user.get(ADDRESS, 0L), named) as Int == 0) failed("ConvertSidToStringSidW", state)
-        val list = ownerOnlyAccessList(taken(named.get(ADDRESS, 0L)))
+        val list = ownerOnlyDirectoryAccessList(taken(named.get(ADDRESS, 0L)))
         val made = arena.allocate(ADDRESS)
         if (convertStringSecurityDescriptor.invoke(state, arena.allocateFrom(list, StandardCharsets.UTF_16LE), SDDL_REVISION_1, made, MemorySegment.NULL) as Int == 0) {
             failed("ConvertStringSecurityDescriptorToSecurityDescriptorW", state)

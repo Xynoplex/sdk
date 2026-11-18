@@ -34,7 +34,7 @@ let file (o : Owner_only.t) =
             (R.fn_
                ~doc:[ o.directory_access_list.docs ]
                ~attrs:[ cfg "windows" ]
-               "owner_only_access_list"
+               "owner_only_directory_access_list"
                ~params:[ R.Param ("owner", R.str_ty) ]
                ~ret:(R.named "String")
                [
