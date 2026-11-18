@@ -19,7 +19,7 @@ internal sealed class LiveQueries : IDisposable
     private static readonly JsonDocument Table = JsonDocument.Parse(ProtocolTables.CacheRefresh);
     internal static readonly IReadOnlyList<string> PersistedQueries = Array.AsReadOnly(Table.RootElement.GetProperty("queries").EnumerateArray()
         .Where(row => row.TryGetProperty("persisted", out var persisted) && persisted.GetBoolean()).Select(row => Text(row, "name")).ToArray());
-    private static readonly string[] RowMembers = ["on", "when", "reach", "names", "carries", "refetches", "writes", "removes", "docs"];
+    private static readonly string[] RowMembers = ["on", "stream", "when", "reach", "names", "carries", "refetches", "writes", "removes", "docs"];
     private static readonly string[] NamedSlots = ["resource", "annotation"];
     private const string Reopened = "reopened";
     private const string Unreadable = "unreadable";
@@ -99,7 +99,7 @@ internal sealed class LiveQueries : IDisposable
             ["engines"] = new((_, _) => Engines.Refresh()),
         };
 
-        refresh = Table.RootElement.GetProperty("refresh").EnumerateArray().ToLookup(row => Text(row, "on"), StringComparer.Ordinal);
+        refresh = Table.RootElement.GetProperty("refresh").EnumerateArray().ToLookup(Trigger, StringComparer.Ordinal);
         CheckRefresh();
         var channels = refresh.Select(group => group.Key).Where(BusChannels.Readings.ContainsKey);
         if (persistence is not null) channels = channels.Concat(ProtocolFacts.Channels("scoped")).Distinct(StringComparer.Ordinal);
@@ -207,9 +207,12 @@ internal sealed class LiveQueries : IDisposable
     private void CheckRefresh()
     {
         var named = Table.RootElement.GetProperty("queries").EnumerateArray().Select(row => Text(row, "name"));
-        var unheard = refresh.Select(group => group.Key).Where(trigger => !BusChannels.Readings.ContainsKey(trigger));
+        var rows = refresh.SelectMany(group => group).ToArray();
+        var streams = rows.Where(row => row.TryGetProperty("stream", out _)).Select(row => Text(row, "stream"));
+        var channels = rows.Where(row => row.TryGetProperty("on", out _)).Select(row => Text(row, "on"));
         if (!queries.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(named) ||
-            !unheard.ToHashSet(StringComparer.Ordinal).SetEquals([Reopened, Unreadable]))
+            !streams.ToHashSet(StringComparer.Ordinal).SetEquals([Reopened, Unreadable]) ||
+            !channels.All(BusChannels.Readings.ContainsKey))
             throw new InvalidOperationException("The live cache does not cover the refresh table.");
         foreach (var group in refresh)
             foreach (var row in group)
@@ -326,6 +329,13 @@ internal sealed class LiveQueries : IDisposable
         }
     }
 
+    // A row is on a channel, or of what befalls the stream: one, and not both.
+    private static string Trigger(JsonElement row) => (row.TryGetProperty("on", out _), row.TryGetProperty("stream", out _)) switch
+    {
+        (true, false) => Text(row, "on"),
+        (false, true) => Text(row, "stream"),
+        _ => throw new InvalidOperationException("A refresh row is on a channel or of the stream, and not both."),
+    };
     private static string Text(JsonElement row, string name) =>
         row.GetProperty(name).GetString() ?? throw new InvalidOperationException("Missing refresh member " + name);
     private static string? OptionalText(JsonElement row, string name) => row.TryGetProperty(name, out var value) ? value.GetString() : null;

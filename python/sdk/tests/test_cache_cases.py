@@ -29,8 +29,12 @@ from xynolog.stored import KeptQuery, WholeKey
 from xynolog.timing import SAVE_DEBOUNCE_MS
 from xynolog.types import Annotation, GetAnnotationsResponse, ResourceDescriptor, TagSchema
 
-type Entry = tuple[JsonValue, JsonValue]
-"""An entry as the table states it: its key as the document writes it, and its value."""
+
+class Entry(BaseModel, frozen=True, extra="forbid"):
+    """An entry as the table states it: its key as the document writes it, and its value."""
+
+    key: JsonValue
+    value: JsonValue
 
 
 class Stored(BaseModel, frozen=True, extra="forbid"):
@@ -100,7 +104,7 @@ _WHOLE_KEY: Final = TypeAdapter[WholeKey](WholeKey)
 
 def by_key(entries: list[Entry]) -> dict[str, JsonValue]:
     """Entries by their key's JSON: the table's are compared as a map, as their order is no part of the rule."""
-    return {_JSON.dump_json(key).decode(): value for key, value in entries}
+    return {_JSON.dump_json(entry.key).decode(): entry.value for entry in entries}
 
 
 def persisters(storage: SessionStorage) -> KeptPersisters:
@@ -128,7 +132,7 @@ def written_under(storage: SessionStorage, query: KeptQuery) -> dict[str, JsonVa
 def entries_of(document: dict[str, JsonValue]) -> dict[str, JsonValue]:
     entries = document["entries"]
     assert isinstance(entries, list)
-    return by_key([(entry[0], entry[1]) for entry in entries if isinstance(entry, list)])
+    return by_key([Entry(key=entry[0], value=entry[1]) for entry in entries if isinstance(entry, list)])
 
 
 def read_back[K: Hashable, V](persister: StoragePersister[K, V], storage: MemoryStorage, query: KeptQuery) -> dict[str, JsonValue]:
@@ -172,8 +176,8 @@ def holding[K: Hashable, V](
 ) -> Cache[K, V]:
     """A cache that keeps its values with `persister`, holding `held`: it owes their save."""
     cache = Cache[K, V](nothing_fetched, tasks=NothingRuns(), persister=persister)
-    for each_key, each_value in held:
-        cache.set(key.validate_python(each_key), value.validate_python(each_value))
+    for entry in held:
+        cache.set(key.validate_python(entry.key), value.validate_python(entry.value))
     return cache
 
 

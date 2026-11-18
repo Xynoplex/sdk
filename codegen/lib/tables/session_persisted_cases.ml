@@ -143,26 +143,27 @@ let cross_tab_item =
         saved = Decode.required o "saved" Decode.bool;
       })
 
-type holder_item_stored = { person_key : string option }
+type in_process_item_stored = { person_key : string option }
 
-let holder_item_stored =
-  Decode.obj (fun o : holder_item_stored ->
+let in_process_item_stored =
+  Decode.obj (fun o : in_process_item_stored ->
       {
         person_key =
           Decode.required o "personKey" (Decode.nullable Decode.string);
       })
 
-type holder_item = {
+type in_process_item = {
   why : string;
-  stored : holder_item_stored option;
+  stored : in_process_item_stored option;
   saved : bool;
 }
 
-let holder_item =
-  Decode.obj (fun o : holder_item ->
+let in_process_item =
+  Decode.obj (fun o : in_process_item ->
       {
         why = Decode.required o "why" Decode.string;
-        stored = Decode.required o "stored" (Decode.nullable holder_item_stored);
+        stored =
+          Decode.required o "stored" (Decode.nullable in_process_item_stored);
         saved = Decode.required o "saved" Decode.bool;
       })
 
@@ -190,7 +191,7 @@ type t = {
   startup_storage : (string * string) list;
   startup : startup_item list;
   cross_tab : cross_tab_item list;
-  holder : holder_item list;
+  in_process : in_process_item list;
   resume_from : resume_from_item list;
 }
 
@@ -208,7 +209,7 @@ let decode =
           Decode.required o "startupStorage" (Decode.map Decode.string);
         startup = Decode.required o "startup" (Decode.list startup_item);
         cross_tab = Decode.required o "crossTab" (Decode.list cross_tab_item);
-        holder = Decode.required o "holder" (Decode.list holder_item);
+        in_process = Decode.required o "inProcess" (Decode.list in_process_item);
         resume_from =
           Decode.required o "resumeFrom" (Decode.list resume_from_item);
       })

@@ -386,7 +386,7 @@ holdsAsHeld why store key held = do
   kept <- lookup identity <$> Cache.load persister
   pure (fmap toJSON kept == Just (toJSON (held :: ResourceDescriptor)))
 
--- | The sign-in a crossTab or holder row changes the session's to: Nothing for the sign-in forgotten; otherwise the
+-- | The sign-in a crossTab or inProcess row changes the session's to: Nothing for the sign-in forgotten; otherwise the
 -- person the new sign-in names, nobody for Nothing.
 changedTo :: Text -> Value -> IO (Maybe (Maybe Text))
 changedTo why row = do
@@ -559,16 +559,16 @@ crossTabPart table jo = do
     noStrays why stage
   pure (length rows)
 
--- | The table's `holder`: a session made over a memory sign-in naming jo, keeping its caches in a storage of their
+-- | The table's `inProcess`: a session made over a memory sign-in naming jo, keeping its caches in a storage of their
 -- own, its client holding a value of res-1 it has not written, the save's debounce an hour; the sign-in is changed
 -- through the memory sign-in as the row says, and the session closes.
-holderPart :: Value -> Text -> IO Int
-holderPart table jo = do
-  rows <- field "the table" "holder" table :: IO [Value]
+inProcessPart :: Value -> Text -> IO Int
+inProcessPart table jo = do
+  rows <- field "the table" "inProcess" table :: IO [Value]
   whoAmI <- field "the table" "whoAmI" table :: IO Value
   resource <- cacheKeyOf table "kb-a" jo "resource"
   forM_ rows $ \row -> do
-    why <- field "a holder row" "why" row
+    why <- field "an inProcess row" "why" row
     change <- changedTo why row
     saved <- field why "saved" row :: IO Bool
     stage <- newStage
@@ -678,7 +678,7 @@ persistedCases root fixtures = do
             forgetPart fixtures table jo,
             startupPart table jo,
             crossTabPart table jo,
-            holderPart table jo,
+            inProcessPart table jo,
             resumeFromPart table jo
           ]
   ran <- maybe (ioError (userError "the persisted cases did not finish in a minute")) pure outcome

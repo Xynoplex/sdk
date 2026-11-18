@@ -27,7 +27,11 @@ import { validators } from '../openapi';
 
 const ROOT = fileURLToPath(new URL('../../../..', import.meta.url));
 
-type Entry = [unknown, unknown];
+/** An entry as the table states it: its key and its value. */
+interface Entry {
+  key: unknown;
+  value: unknown;
+}
 
 interface Stored {
   name: string;
@@ -142,7 +146,7 @@ function loaded(query: PersistedQuery, source: string): Entry[] {
   };
   return entries
     .filter(([key, value]) => keyHolds(query, key) && valueHolds(query, value))
-    .map(([key, value]) => [key, value]);
+    .map(([key, value]) => ({ key, value }));
 }
 
 /** What a load of places keeps, by the spec's rule. */
@@ -164,7 +168,7 @@ function placesLoaded(source: string): Record<string, string> {
 }
 
 const asMap = (entries: Entry[]): Map<string, unknown> =>
-  new Map(entries.map(([key, value]) => [JSON.stringify(key), value]));
+  new Map(entries.map(({ key, value }) => [JSON.stringify(key), value]));
 
 describe('the cache case table (protocol/specs/src/session/cache-cases.json)', () => {
   it('keeps every query refresh.json marks persisted, and no other', () => {
@@ -185,7 +189,7 @@ describe('the cache case table (protocol/specs/src/session/cache-cases.json)', (
     "$name: writes what it holds, each key and value the query's",
     (stated) => {
       const query = keptQuery(stated.query, stated.name);
-      for (const [key, value] of stated.held) {
+      for (const { key, value } of stated.held) {
         expect(
           keyHolds(query, key),
           `${stated.name}: key ${JSON.stringify(key)}`,
@@ -197,7 +201,11 @@ describe('the cache case table (protocol/specs/src/session/cache-cases.json)', (
       }
       const stamped = {
         ...stated.written,
-        entries: stated.written.entries.map(([key, value]) => [key, value, 0]),
+        entries: stated.written.entries.map(({ key, value }) => [
+          key,
+          value,
+          0,
+        ]),
       };
       expect(structureHolds(stamped)).toBe(true);
       expect(asMap(stated.written.entries)).toEqual(asMap(stated.held));

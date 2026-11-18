@@ -12,7 +12,7 @@ person, or cannot be reached, only once the test lets it answer; and a
 session that does not ask who its token is, over a stored sign-in that names
 the person. `crossTab`: a
 registry's session whose stored sign-in another context deletes or replaces
-before the client has written what it holds. `holder`: a script's session over
+before the client has written what it holds. `inProcess`: a script's session over
 a memory sign-in, keeping in a storage of its own, whose sign-in is forgotten,
 replaced or renewed through the memory sign-in before the client has written
 what it holds. `resumeFrom`: a registry's session whose stream is sent events
@@ -88,7 +88,7 @@ STARTUP = objects(TABLE["startup"], "startup")
 STARTUP_STORAGE = texts(TABLE["startupStorage"], "startupStorage")
 WHO_AM_I = object_of(TABLE["whoAmI"], "whoAmI")
 CROSS_TAB = objects(TABLE["crossTab"], "crossTab")
-HOLDER = objects(TABLE["holder"], "holder")
+IN_PROCESS = objects(TABLE["inProcess"], "inProcess")
 RESUME_FROM = objects(TABLE["resumeFrom"], "resumeFrom")
 PREFIXES: Final = tuple(text(object_of(STORED[member], member)["prefix"], member) for member in ("lastEventIdKeyPrefix", "cacheKeyPrefix"))
 """What every key a client keeps of a person begins with."""
@@ -521,7 +521,7 @@ def test_a_session_whose_stored_sign_in_another_context_changes_writes_what_the_
     assert run(scenario()) is row["saved"]
 
 
-# ── holder ──────────────────────────────────────────────────────────────
+# ── inProcess ───────────────────────────────────────────────────────────
 
 
 def held_by(gateway: GatewayServer, person: str | None, n: int) -> HeldSignIn:
@@ -535,7 +535,7 @@ def held_by(gateway: GatewayServer, person: str | None, n: int) -> HeldSignIn:
     )
 
 
-@pytest.mark.parametrize("row", HOLDER, ids=why)
+@pytest.mark.parametrize("row", IN_PROCESS, ids=why)
 def test_a_session_whose_sign_in_what_holds_it_changes_writes_what_the_table_says(row: JsonObject) -> None:
     async def scenario() -> bool:
         async with GatewayServer() as gateway:
@@ -610,5 +610,5 @@ def test_the_table_was_read() -> None:
     assert len(FORGET) >= 14
     assert len(STARTUP) >= 3
     assert len(CROSS_TAB) >= 4
-    assert len(HOLDER) >= 4
+    assert len(IN_PROCESS) >= 4
     assert len(RESUME_FROM) >= 4

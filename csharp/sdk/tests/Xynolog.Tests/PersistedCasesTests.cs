@@ -22,7 +22,7 @@ namespace Xynolog.Tests;
 // renewal makes, and every startup row runs again with the start's ask answered, where nothing is asked before.
 // For the same reason a token found `expired` is forgotten by the start's refused renewal, before the factory
 // makes the client; an `unexpired` one is refused once the client is open and holds a value it has not written.
-// C#'s keeping session over a memory sign-in is the one XynologSession.FromKeptAsync makes, so `holder` runs over
+// C#'s keeping session over a memory sign-in is the one XynologSession.FromKeptAsync makes, so `inProcess` runs over
 // one, its sign-in held apart from the storage its client keeps in.
 public sealed partial class TransportTests
 {
@@ -125,7 +125,7 @@ public sealed partial class TransportTests
         var root = table.RootElement;
         var jo = Text(root.GetProperty("people").GetProperty("jo"), "personKey");
         var joResource = Text(PersonKeysRow(root, CaseKb, jo).GetProperty("cacheKeys"), "resource");
-        var rows = root.GetProperty("holder").EnumerateArray().ToArray();
+        var rows = root.GetProperty("inProcess").EnumerateArray().ToArray();
         Assert.NotEmpty(rows);
         foreach (var row in rows)
         {

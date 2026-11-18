@@ -9,8 +9,9 @@ package xynolog_test
 // draw is the lowest it can give. A pass sleeps the bubble's clock
 // through each instant a timer falls due on the way, and lets what falls due
 // run there, so a wait ends at the instant it was set to end, or the case
-// fails. What the table may say is held by
-// .github/scripts/checks/specs/check-case-tables.mjs.
+// fails. What the table may say is held by its schema,
+// protocol/specs/src/client/ClientClockCases.json, which
+// protocol/scripts/checks/specs/check-tables.mjs holds it to.
 
 import (
 	"bytes"

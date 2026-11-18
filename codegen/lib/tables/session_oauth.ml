@@ -10,21 +10,21 @@ let client =
         docs = Decode.required o "docs" Decode.non_empty_string;
       })
 
-type scope = { value : string; docs : string }
+type scopes = { value : string; docs : string }
 
-let scope =
-  Decode.obj (fun o : scope ->
+let scopes =
+  Decode.obj (fun o : scopes ->
       {
         value = Decode.required o "value" Decode.non_empty_string;
         docs = Decode.required o "docs" Decode.non_empty_string;
       })
 
-type t = { comment : string; clients : client list; scope : scope }
+type t = { comment : string; clients : client list; scopes : scopes }
 
 let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
         clients = Decode.required o "clients" (Decode.non_empty_list client);
-        scope = Decode.required o "scope" scope;
+        scopes = Decode.required o "scopes" scopes;
       })

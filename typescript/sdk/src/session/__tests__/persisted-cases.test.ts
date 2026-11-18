@@ -10,11 +10,11 @@
  * kept for jo is stood in for by one whose closing writes under jo's
  * `resource` key, as the table allows; or by the registry's own session
  * expiring or being refused, over a gateway and an issuer that answer as the
- * row says. `startup`, `crossTab`, `holder` and `resumeFrom` run the
+ * row says. `startup`, `crossTab`, `inProcess` and `resumeFrom` run the
  * sessions the HTTP session factory makes — what a registry's sessions are —
  * over a gateway that is `fetch` and nothing else (fake-gateway.ts); the
  * frames `resumeFrom` delivers are res-1's scope's, and where it resumes is
- * read from the next connect, made for another resource's scope. `holder`
+ * read from the next connect, made for another resource's scope. `inProcess`
  * changes kb-a's sign-in through what holds it: for a registry's session,
  * `keptIn`; for the session `XynologSession.fromKept` makes over a storage,
  * the memory sign-in it is given. Either way the sign-in is forgotten, a new
@@ -118,7 +118,7 @@ interface PersistedCases {
   startupStorage: Kept;
   startup: StartupRow[];
   crossTab: CrossTabRow[];
-  holder: CrossTabRow[];
+  inProcess: CrossTabRow[];
   resumeFrom: ResumeFromRow[];
 }
 
@@ -559,7 +559,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
     });
   });
 
-  describe('holder', () => {
+  describe('inProcess', () => {
     /**
      * kb-a's sign-in changed in this process, through what holds it (`kept`):
      * forgotten; a new sign-in kept in its place, naming whom the row says;
@@ -588,7 +588,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
       );
     };
 
-    it.each(table.holder)('$why', async (row) => {
+    it.each(table.inProcess)('$why', async (row) => {
       const here = new SharedStorage();
       storeSignIn(here, KB_A.id, 'named', jo.personKey, freshJwt());
       const { gateway, release } = heldGateway('names');
@@ -607,7 +607,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
       expect(savedRes1(here)).toBe(row.saved);
     });
 
-    it.each(table.holder)(
+    it.each(table.inProcess)(
       'a session made from a memory sign-in over a storage: $why',
       async (row) => {
         const here = new SharedStorage();

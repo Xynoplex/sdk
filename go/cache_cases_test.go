@@ -45,21 +45,28 @@ func (c storedCase) text(t *testing.T) string {
 	return ""
 }
 
+// tableEntry is an entry as the table states it: its key as the document
+// writes it, and its value.
+type tableEntry struct {
+	Key   json.RawMessage `json:"key"`
+	Value json.RawMessage `json:"value"`
+}
+
 // cacheWrite is a save of a query's cache: held is what it holds once its
 // answers came, and written the document the save writes.
 type cacheWrite struct {
-	Name    string              `json:"name"`
-	Query   CacheQuery          `json:"query"`
-	Held    [][]json.RawMessage `json:"held"`
-	Written json.RawMessage     `json:"written"`
+	Name    string          `json:"name"`
+	Query   CacheQuery      `json:"query"`
+	Held    []tableEntry    `json:"held"`
+	Written json.RawMessage `json:"written"`
 }
 
 type cacheCases struct {
 	Cases []struct {
 		storedCase
-		Name  string              `json:"name"`
-		Query CacheQuery          `json:"query"`
-		Kept  [][]json.RawMessage `json:"kept"`
+		Name  string       `json:"name"`
+		Query CacheQuery   `json:"query"`
+		Kept  []tableEntry `json:"kept"`
 	} `json:"cases"`
 	Writes        []cacheWrite `json:"writes"`
 	RefusedWrites []cacheWrite `json:"refusedWrites"`
@@ -155,10 +162,10 @@ func casesLive(storage SessionStorage) *live {
 }
 
 // entriesAs is entries, each a key and a value, by the key's JSON text.
-func entriesAs(entries [][]json.RawMessage) map[string]string {
+func entriesAs(entries []tableEntry) map[string]string {
 	read := map[string]string{}
 	for _, entry := range entries {
-		read[compact(entry[0])] = string(entry[1])
+		read[compact(entry.Key)] = string(entry.Value)
 	}
 	return read
 }
@@ -212,7 +219,7 @@ func writtenAsStated(t *testing.T, storage SessionStorage, key string, stated js
 	if !sameJSON(t, string(written["version"]), string(members["version"])) {
 		t.Fatalf("the document is of version %s, want %s", written["version"], members["version"])
 	}
-	var stamped [][]json.RawMessage
+	var stamped []tableEntry
 	for _, entry := range readJSON[[][]json.RawMessage](t, string(written["entries"])) {
 		if len(entry) != 3 {
 			t.Fatalf("an entry is written as %s, not a key, a value and a stamp", entry)
@@ -220,9 +227,9 @@ func writtenAsStated(t *testing.T, storage SessionStorage, key string, stated js
 		if at, err := strconv.ParseInt(string(entry[2]), 10, 64); err != nil || at < 0 {
 			t.Fatalf("an entry is stamped %s, not a whole number of at least 0", entry[2])
 		}
-		stamped = append(stamped, entry[:2])
+		stamped = append(stamped, tableEntry{Key: entry[0], Value: entry[1]})
 	}
-	if got, want := entriesAs(stamped), entriesAs(readJSON[[][]json.RawMessage](t, string(members["entries"]))); !sameEntries(t, got, want) {
+	if got, want := entriesAs(stamped), entriesAs(readJSON[[]tableEntry](t, string(members["entries"]))); !sameEntries(t, got, want) {
 		t.Fatalf("written %v, want %v", got, want)
 	}
 }
@@ -235,7 +242,7 @@ func TestASaveWritesWhatTheCaseTableSays(t *testing.T) {
 			v := casesLive(storage)
 			cache := cacheIn(v)
 			for _, entry := range c.Held {
-				cache.hold(t, entry[0], entry[1])
+				cache.hold(t, entry.Key, entry.Value)
 			}
 			// Disposing saves what is owed.
 			v.dispose()
@@ -282,7 +289,7 @@ func TestARefusedWriteStaysOwedAsTheCaseTableSays(t *testing.T) {
 			v := casesLive(storage)
 			cache := cacheIn(v)
 			for _, entry := range c.Held {
-				cache.hold(t, entry[0], entry[1])
+				cache.hold(t, entry.Key, entry.Value)
 			}
 			// The save owed once the values stop changing is made, and refused.
 			eventually(t, "the storage refused the save", storage.refused.Load)

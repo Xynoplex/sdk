@@ -20,8 +20,9 @@
 //! what falls due inside it runs at its end: no count of the table's network
 //! subjects is of a timer that falls due inside a pass.
 //!
-//! What the table may say is held by
-//! `.github/scripts/checks/specs/check-case-tables.mjs`.
+//! What the table may say is held by its schema,
+//! `protocol/specs/src/client/ClientClockCases.json`, which
+//! `protocol/scripts/checks/specs/check-tables.mjs` holds it to.
 
 use axum::Json;
 use axum::Router;

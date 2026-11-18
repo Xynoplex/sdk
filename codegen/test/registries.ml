@@ -210,7 +210,7 @@ let oauth names =
         List.map
           (fun name : O.client -> { name; id = "xynolog-" ^ name; docs = "D." })
           names;
-      scope = { value = "openid"; docs = "D." };
+      scopes = { value = "openid"; docs = "D." };
     }
 
 let oauth_clients =

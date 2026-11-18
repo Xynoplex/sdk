@@ -6,7 +6,9 @@
  * `Math.random` giving the lowest draw it can, 0. A `pass` moves the fake clock
  * to each instant a timer falls due, in turn, and runs what falls due there,
  * so a wait ends at the instant it was set to end, or the case fails. What the
- * table may say is held by .github/scripts/checks/specs/check-case-tables.mjs.
+ * table may say is held by its schema,
+ * protocol/specs/src/client/ClientClockCases.json, which
+ * protocol/scripts/checks/specs/check-tables.mjs holds it to.
  */
 
 import { readFileSync } from 'node:fs';
