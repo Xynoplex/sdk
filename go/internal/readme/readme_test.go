@@ -239,7 +239,7 @@ func (g *gateway) target(t *testing.T, id string) api.KbTarget {
 		t.Fatal(err)
 	}
 	var endpoint api.KbEndpoint
-	if err := endpoint.FromHttpEndpoint(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Protocol: api.HttpEndpointProtocol(at.Scheme), Host: at.Hostname(), Port: port}); err != nil {
+	if err := endpoint.From(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Protocol: api.HttpEndpointProtocol(at.Scheme), Host: at.Hostname(), Port: port}); err != nil {
 		t.Fatal(err)
 	}
 	return api.KbTarget{Id: id, Label: id, Endpoint: endpoint}

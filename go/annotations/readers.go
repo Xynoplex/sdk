@@ -41,14 +41,14 @@ func items(body *api.AnnotationBodies) []api.AnnotationBody {
 		return nil
 	}
 	if listed(raw) {
-		list, err := body.AsAnnotationBodies1()
-		if err != nil {
+		var list api.AnnotationBodiesList
+		if body.As(&list) != nil {
 			return nil
 		}
 		return list
 	}
-	one, err := body.AsAnnotationBody()
-	if err != nil {
+	var one api.AnnotationBody
+	if body.As(&one) != nil {
 		return nil
 	}
 	return []api.AnnotationBody{one}
@@ -62,14 +62,14 @@ func selectors(selector api.AnnotationSelector) []api.Selector {
 		return nil
 	}
 	if listed(raw) {
-		list, err := selector.AsAnnotationSelector1()
-		if err != nil {
+		var list api.AnnotationSelectorList
+		if selector.As(&list) != nil {
 			return nil
 		}
 		return list
 	}
-	one, err := selector.AsSelector()
-	if err != nil {
+	var one api.Selector
+	if selector.As(&one) != nil {
 		return nil
 	}
 	return []api.Selector{one}
@@ -94,17 +94,20 @@ func IsBodyResolved(body *api.AnnotationBodies) bool {
 
 // TargetSource is the resource a target names, whether the target is that
 // resource's id or an object that states it.
-func TargetSource(target api.Annotation_Target) api.ResourceId {
+func TargetSource(target api.AnnotationTargetValue) api.ResourceId {
 	if object, ok := targetObject(target); ok {
 		return object.Source
 	}
-	id, _ := target.AsResourceId()
+	var id api.ResourceId
+	if target.As(&id) != nil {
+		return api.ResourceId{}
+	}
 	return id
 }
 
 // TargetSelector is a target's selector: one, or a list. Nil for a target
 // that is only a resource's id, and for one that states no selector.
-func TargetSelector(target api.Annotation_Target) *api.AnnotationSelector {
+func TargetSelector(target api.AnnotationTargetValue) *api.AnnotationSelector {
 	if object, ok := targetObject(target); ok {
 		return object.Selector
 	}
@@ -112,13 +115,16 @@ func TargetSelector(target api.Annotation_Target) *api.AnnotationSelector {
 }
 
 // targetObject is a target that is an object, not a resource's id.
-func targetObject(target api.Annotation_Target) (api.AnnotationTarget, bool) {
+func targetObject(target api.AnnotationTargetValue) (api.AnnotationTarget, bool) {
 	raw, err := target.MarshalJSON()
 	if err != nil || !bytes.HasPrefix(bytes.TrimLeft(raw, " \t\r\n"), []byte("{")) {
 		return api.AnnotationTarget{}, false
 	}
-	object, err := target.AsAnnotationTarget()
-	return object, err == nil
+	var object api.AnnotationTarget
+	if target.As(&object) != nil {
+		return api.AnnotationTarget{}, false
+	}
+	return object, true
 }
 
 // IsHighlight is whether an annotation is a highlight.
@@ -179,8 +185,8 @@ func IsResolvedReference(annotation api.Annotation) bool {
 func TextQuoteSelector(selector api.AnnotationSelector) (api.TextQuoteSelector, bool) {
 	for _, item := range selectors(selector) {
 		if kind, err := item.Discriminator(); err == nil && kind == "TextQuoteSelector" {
-			quote, err := item.AsTextQuoteSelector()
-			if err == nil {
+			var quote api.TextQuoteSelector
+			if item.As(&quote) == nil {
 				return quote, true
 			}
 		}

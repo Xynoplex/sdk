@@ -7,12 +7,12 @@
 module R = Rust_syntax
 
 let path = "rust/sdk/src/generated/error_codes.rs"
-let variant (c : Table.code) = R.pascal (Table.segment c.code)
+let variant (c : Table.code) = Text.pascal (Table.segment c.code)
 let static_str = R.static_str
 let wire_type = R.named "crate::types::CommandErrorCode"
 
 let wire_variant wire =
-  R.Path [ "crate"; "types"; "CommandErrorCode"; R.pascal wire ]
+  R.Path [ "crate"; "types"; "CommandErrorCode"; Text.pascal wire ]
 
 let some e = R.call "Some" [ e ]
 

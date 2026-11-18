@@ -153,9 +153,9 @@ func knowledgeBaseOf(entry json.RawMessage) (api.KnowledgeBase, bool) {
 	}
 	switch kind {
 	case string(api.HttpEndpointKindHttp):
-		_, err = kb.Endpoint.AsHttpEndpoint()
+		err = kb.Endpoint.As(&api.HttpEndpoint{})
 	case string(api.LocalEndpointKindLocal):
-		_, err = kb.Endpoint.AsLocalEndpoint()
+		err = kb.Endpoint.As(&api.LocalEndpoint{})
 	default:
 		return api.KnowledgeBase{}, false
 	}

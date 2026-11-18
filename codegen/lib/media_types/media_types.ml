@@ -561,7 +561,7 @@ let rust (t : T.t) =
             ];
           vis = Pub;
           name;
-          variants = List.map (fun w -> R.variant (R.pascal w)) words;
+          variants = List.map (fun w -> R.variant (Text.pascal w)) words;
         };
       R.Blank;
       R.Impl
@@ -581,7 +581,8 @@ let rust (t : T.t) =
                        (R.Match
                           ( R.p "self",
                             List.map
-                              (fun w -> (R.Path [ name; R.pascal w ], R.Str w))
+                              (fun w ->
+                                (R.Path [ name; Text.pascal w ], R.Str w))
                               words ));
                    ]);
             ];
@@ -596,9 +597,9 @@ let rust (t : T.t) =
           ("media_type", R.Str m.media_type);
           ("extension", R.Str m.extension);
           ("label", R.Str m.label);
-          ("render", R.Path [ "RenderMode"; R.pascal m.render ]);
-          ("anchoring", R.Path [ "AnchoringModel"; R.pascal m.anchoring ]);
-          ("text_source", R.Path [ "TextSource"; R.pascal m.text_source ]);
+          ("render", R.Path [ "RenderMode"; Text.pascal m.render ]);
+          ("anchoring", R.Path [ "AnchoringModel"; Text.pascal m.anchoring ]);
+          ("text_source", R.Path [ "TextSource"; Text.pascal m.text_source ]);
           ("authorable", R.Bool m.authorable);
           ("uploadable", R.Bool m.uploadable);
           ("generatable", R.Bool m.generatable);

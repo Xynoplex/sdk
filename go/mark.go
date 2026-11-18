@@ -55,7 +55,7 @@ func (n *MarkNamespace) UpdateEntityTypes(ctx context.Context, resourceID api.Re
 // says which.
 func (n *MarkNamespace) Delegate(resourceID api.ResourceId, params api.MarkJobParams) *Delegation[api.MarkJobCompleteCommand] {
 	var create api.JobCreateCommand
-	if err := create.FromMarkJobCreateCommand(api.MarkJobCreateCommand{JobType: api.MarkJobCreateCommandJobTypeMark, ResourceId: resourceID, Params: params}); err != nil {
+	if err := create.From(api.MarkJobCreateCommand{JobType: api.MarkJobCreateCommandJobTypeMark, ResourceId: resourceID, Params: params}); err != nil {
 		return refused[api.MarkJobCompleteCommand](n.links, err)
 	}
 	return follow[api.MarkJobCompleteCommand](n.links, create, api.JobTypeMark, resourceID, nil)

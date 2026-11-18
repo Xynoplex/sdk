@@ -234,7 +234,7 @@ let cases =
           "names"
           [ "JobCreate"; "subject_claim"; "id"; "BUS_REQUEST_TIMEOUT_MS" ]
           [
-            R.pascal "job:create";
+            Text.pascal "job:create";
             R.snake "subjectClaim";
             R.snake "@id";
             R.screaming "busRequestTimeoutMs";
