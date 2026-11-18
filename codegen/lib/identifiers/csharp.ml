@@ -244,7 +244,7 @@ let files kinds =
           C.text
             {
               header =
-                Banner.csharp_lines
+                Banner.lines
                   ~from_:
                     ("protocol/specs/src/components/schemas/" ^ kind.name
                    ^ ".json")

@@ -3,15 +3,13 @@
 
 Usage: distribution-manifest.py manifest <dump.json>
        distribution-manifest.py targets <dump.json>
-       distribution-manifest.py generated <dump.json>
 
 <dump.json> is what `swift package dump-package` prints for swift/sdk. The
 distribution holds the SDK's library products, the targets they need, and the
-package dependencies those targets name, and nothing else. The build plugin's
-output is committed in the distribution instead of generated, so its usage is
-dropped. `manifest` prints the distribution's Package.swift; `targets` prints
-the targets it holds, one per line; `generated` prints those of them whose
-models the build plugin generates, which the distribution commits.
+package dependencies those targets name, and nothing else; a target that uses
+a build plugin is refused, since the SDK commits what it generates.
+`manifest` prints the distribution's Package.swift; `targets` prints the
+targets it holds, one per line.
 
 Anything in the dump this script does not know is refused, never guessed at:
 a new setting, requirement or target property must be taught here first.
@@ -19,10 +17,6 @@ a new setting, requirement or target property must be taught here first.
 
 import json
 import sys
-
-# The build plugin whose output, the target's wire models, the distribution
-# commits.
-COMMITTED_PLUGIN = "GenerateXynologPlugin"
 
 PLATFORMS = {
     "macos": "macOS", "ios": "iOS", "tvos": "tvOS", "watchos": "watchOS",
@@ -111,9 +105,8 @@ def target(entry: dict) -> str:
         refuse(f"target {name} names a path; the distribution keeps each target at Sources/<name>")
     if entry["packageAccess"] is not True:
         refuse(f"target {name} turns package access off")
-    for usage in entry.get("pluginUsages", []):
-        if usage != {"plugin": [COMMITTED_PLUGIN, None]}:
-            refuse(f"target {name} uses a plugin whose output the distribution does not commit: {usage}")
+    if entry.get("pluginUsages"):
+        refuse(f"target {name} uses a build plugin: {entry['pluginUsages']}")
     arguments = [f"name: {quoted(name)}"]
     dependencies = [target_dependency(dependency) for dependency in entry["dependencies"]]
     if dependencies:
@@ -195,17 +188,14 @@ def manifest(dump: dict) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) != 3 or sys.argv[1] not in ("manifest", "targets", "generated"):
+    if len(sys.argv) != 3 or sys.argv[1] not in ("manifest", "targets"):
         raise SystemExit(__doc__)
     with open(sys.argv[2]) as file:
         dump = json.load(file)
     if sys.argv[1] == "manifest":
         sys.stdout.write(manifest(dump))
-    elif sys.argv[1] == "targets":
-        sys.stdout.write("".join(f"{t['name']}\n" for t in needed_targets(dump)))
     else:
-        generated = [t for t in needed_targets(dump) if t.get("pluginUsages")]
-        sys.stdout.write("".join(f"{t['name']}\n" for t in generated))
+        sys.stdout.write("".join(f"{t['name']}\n" for t in needed_targets(dump)))
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ module Typescript = Typescript
 module Haskell = Haskell
 module Ocaml = Ocaml
 module Kotlin = Kotlin
+module Rust = Rust
 
 let ( let* ) = Result.bind
 
@@ -79,6 +80,7 @@ let context (spec : Spec.t) =
 let files ~root:_ (spec : Spec.t) =
   let* context = context spec in
   let* t = Table.derive context spec.tables.client_refresh in
+  let* rust = Rust.files spec.tables.client_refresh t in
   let* types = Kotlin_sdk.types_of spec in
   let* kotlin =
     Kotlin_sdk.written ~from_:Table.file (fun () -> Kotlin.file ~types t)
@@ -86,4 +88,5 @@ let files ~root:_ (spec : Spec.t) =
   Ok
     ([ Go.file t; Python.file t; Typescript.file t ]
     @ Haskell.files t
-    @ [ Ocaml.file spec.tables.client_refresh; kotlin ])
+    @ [ Ocaml.file spec.tables.client_refresh; kotlin ]
+    @ rust)

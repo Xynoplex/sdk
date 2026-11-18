@@ -8,6 +8,7 @@ module Go = Go
 module Python = Python
 module Kotlin = Kotlin
 module Csharp = Csharp
+module Rust = Rust
 
 let errors = function Ok _ -> [] | Error errors -> errors
 
@@ -20,8 +21,13 @@ let files ~root:_ spec =
             Kotlin.files ~component ~types ~log_cases:spec.tables.bus_log_cases
               bus)
       in
-      match (Go.files bus, Python.files bus, kotlin) with
-      | Ok go, Ok python, Ok kotlin ->
-          Ok (Typescript.files bus @ go @ python @ kotlin @ [ Csharp.file bus ])
-      | go, python, kotlin -> Error (errors go @ errors python @ errors kotlin))
+      match
+        (Go.files bus, Python.files bus, Rust.files bus component, kotlin)
+      with
+      | Ok go, Ok python, Ok rust, Ok kotlin ->
+          Ok
+            (Typescript.files bus @ go @ python @ rust @ kotlin
+            @ [ Csharp.file bus ])
+      | go, python, rust, kotlin ->
+          Error (errors go @ errors python @ errors rust @ errors kotlin))
   | Error errors -> Error errors

@@ -60,7 +60,7 @@ let file (derivation : Shape.t) (reg : Tables.Bus_registry.t) =
           C.text
             {
               header =
-                Banner.csharp_lines
+                Banner.lines
                   ~from_:
                     "the component schemas of protocol/specs/src/openapi.json"
                   __FILE__;

@@ -129,7 +129,7 @@ final class ProbeTransport: Transport, GatewayOperations, Sendable {
       $0.calls.append(Call(via: "gateway", name: "getProtectedResourceMetadata", payload: [:]))
     }
     return ProtectedResourceMetadata(
-      authorization_servers: ["https://issuer.test"], bearer_methods_supported: [.header],
+      authorizationServers: ["https://issuer.test"], bearerMethodsSupported: [.header],
       resource: "http://kb.test")
   }
   func healthCheck() async throws -> HealthResponse {

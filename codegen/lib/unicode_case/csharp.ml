@@ -29,7 +29,7 @@ let text ~version ~notice ~cased ~case_ignorable =
   C.text
     {
       header =
-        Banner.csharp_lines
+        Banner.lines
           ~from_:
             (Printf.sprintf
                "Unicode %s's DerivedCoreProperties.txt (codegen/ucd)" version)

@@ -18,8 +18,7 @@ for your project, and add `.product(name: "Xynolog", package: "sdk")` to the
 target's dependencies. Add the `AsyncHTTPClient` product from
 [AsyncHTTPClient][http-client] to targets that create the HTTP client.
 
-Keep the full checkout. The SwiftPM build plugin generates wire models and
-tables from `protocol/specs/src`. See [the pinned Swift toolchain][toolchain]
+See [the pinned Swift toolchain][toolchain]
 for the version used in CI. The SDK supports macOS 15 and iOS 18 or later,
 and CI also runs on Linux.
 
@@ -352,7 +351,7 @@ The HTTP transport uses the caller's AsyncHTTPClient `HTTPClient` for every requ
 
 ## Working on the SDK
 
-CI runs the SDK and generator tests in the pinned Swift container on Linux and
+CI runs the SDK tests in the pinned Swift container on Linux and
 natively on Apple silicon. Both jobs run the formatter, census, and
 compile-failure checks. On a provisioned macOS runner, use
 `swift test --jobs 4 --force-resolved-versions` from `swift/sdk`.
@@ -367,11 +366,11 @@ container run --rm --memory 8g -e HOME=/tmp/swift-home -v "$PWD":/w -w /w/swift/
 
 Swift 6 language mode and warnings as errors apply to every target. The canary must fail with the concurrency diagnostic. Each future `Refusals/*.swift` program begins `// refused: <text>` and must fail with that message. The census forbids unchecked concurrency escapes, environment reads beyond `XYNOLOG_BUS_LOG`, and a test wait bounded by anything but `testDeadlineMs`: every test starts at once, and on a small runner a second can pass before a test's tasks are scheduled. The formatter forbids force unwraps, force casts, force tries and implicitly unwrapped optionals throughout the package.
 
-The tests round-trip payloads from the three conformance corpora, run every identifier case, and verify nullable members, open objects, table generation and refused schema shapes.
+The tests round-trip payloads from the three conformance corpora, run every identifier case, and verify nullable members and open objects.
 
-The build-tool plugin runs the native Swift generator over `protocol/specs/src`, including files outside the SwiftPM package. Generated models and test dispatch live only in `.build`. Models keep timestamps and URIs as strings, use checked value types for identifiers, and preserve the three states of an optional nullable member with `Stated`. `JSONValue` carries values in open objects. Required nullable members must be present, even when null.
+The models, the tables and the tests' dispatch are generated from `protocol/specs/src` by `make generate` (codegen/lib/swift_sdk) and committed under `Sources/Xynolog/Generated` and `Tests/XynologTests/Generated`; the generator's own tests, refused schema shapes among them, are the codegen's. Models keep timestamps and URIs as strings, use checked value types for identifiers, and preserve the three states of an optional nullable member with `Stated`. `JSONValue` carries values in open objects. Required nullable members must be present, even when null.
 
-`Scripts/test.sh` builds instrumented tests and collects their LLVM profiles directly. `Scripts/coverage.sh` exports both compiled test libraries, avoiding SwiftPM's automatic JSON export of dependency coverage. Coverage includes the generator, which is also run over the complete spec by its tests.
+`Scripts/test.sh` builds instrumented tests and collects their LLVM profiles directly. `Scripts/coverage.sh` exports the compiled test libraries, leaving out the generated sources and avoiding SwiftPM's automatic JSON export of dependency coverage.
 
 `Scripts/install-driver.sh` builds the instrumented Linux wire driver and bundles its Swift runtime. The conformance application chooses OTLP/HTTP exporters when the harness supplies `OTEL_EXPORTER_OTLP_ENDPOINT`. Its runtime matches Ubuntu 26.04. `Scripts/conformance-coverage.sh` reports the library code the driver exercised, separately from Rust's LLVM profiles.
 

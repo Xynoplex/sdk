@@ -165,9 +165,8 @@ let text kinds =
             each kind's schema — DO NOT EDIT.\n\n\
             Regenerate: make generate (" ^ Banner.writer __FILE__
          ^ ")\n\
-            The TypeScript and Python kinds are generated from the same table, \
-            and Rust's\n\
-            by its SDK's build script.");
+            The TypeScript, Python and Rust kinds are generated from the same \
+            table.");
       package = "api";
       imports = [ [ "regexp" ] ];
       decls = List.concat_map kind kinds;

@@ -14,6 +14,7 @@ module Go = Go
 module Ocaml = Ocaml
 module Kotlin = Kotlin
 module Csharp = Csharp
+module Rust = Rust
 
 let refusal file pointer message = { Decode.file; pointer; message }
 
@@ -132,13 +133,14 @@ let files ~root (spec : Spec.t) =
         Kotlin_sdk.written ~from_:"openapi.json" (fun () -> Kotlin.file shapes)
       in
       Ok
-        (Table.files shapes
-        @ [
-            Typescript.file shapes;
-            Python.file shapes;
-            Haskell.file ~shapes ~channels ~http;
-            kotlin;
-            csharp;
-          ]
+        ([
+           Table.file shapes;
+           Typescript.file shapes;
+           Python.file shapes;
+           Haskell.file ~shapes ~channels ~http;
+           Rust.file shapes;
+           kotlin;
+           csharp;
+         ]
         @ Ocaml.files shapes)
   | refusals -> Error refusals

@@ -74,6 +74,7 @@ case "${1:-}" in
     in_container "rust:$(sh "$ROOT/rust/scripts/rust-toolchain.sh")-bookworm" '
       cd /tmp/sdk/rust
       cargo fmt --all --check
+      rustfmt --edition 2024 --check sdk/src/generated/*.rs
       cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
       cargo test --workspace --all-features --locked' --memory 4g
     ;;

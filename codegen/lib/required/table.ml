@@ -1,12 +1,6 @@
-(* The table as JSON, which the Rust and Swift SDKs read as they build and
-   Go's package embeds: one text, a copy in each SDK's tree. *)
+(* The table as JSON, which Go's package embeds. *)
 
-let paths =
-  [
-    "rust/sdk/src/required-schemas.json";
-    "swift/sdk/Sources/XynologCodegen/required-schemas.json";
-    "go/internal/required/schemas_gen.json";
-  ]
+let path = "go/internal/required/schemas_gen.json"
 
 let comment =
   "Generated from the component schemas of protocol/specs/src/openapi.json; do \
@@ -28,6 +22,4 @@ let text (shapes : (string * Shape.shape) list) =
   ^ String.concat ",\n" (List.map entry shapes)
   ^ "\n  }\n}\n"
 
-let files shapes =
-  let text = text shapes in
-  List.map (fun path -> { Output.path; text }) paths
+let file shapes = { Output.path; text = text shapes }

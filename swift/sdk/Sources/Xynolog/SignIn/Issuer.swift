@@ -152,7 +152,7 @@ func discoverIssuer(_ gateway: String, http: HTTPClient, clock: any Clock<Durati
     if Task.isCancelled { throw CancellationError() }
     throw SignInError(.discovery, "The gateway did not answer resource metadata")
   }
-  guard let issuer = metadata.authorization_servers.first else {
+  guard let issuer = metadata.authorizationServers.first else {
     throw SignInError(.noIssuer, "The knowledge base trusts no external issuer")
   }
   let document = try await oidcConfiguration(issuer, http: http, clock: clock)

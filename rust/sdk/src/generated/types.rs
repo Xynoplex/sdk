@@ -1,0 +1,10766 @@
+// Generated from the component schemas in protocol/specs/src; do not edit.
+// Regenerate: make generate (codegen/lib/rust_types/rust_types.ml)
+/// Web Annotation / W3C PROV Agent. Discriminated by @type — Person, Organization, or Software (named member schemas: AgentPerson, AgentOrganization, AgentSoftware). Software peers are first-class participants, not a sub-class of Person.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum Agent {
+    Person(AgentPerson),
+    Organization(AgentOrganization),
+    Software(AgentSoftware),
+}
+
+impl<'de> serde::Deserialize<'de> for Agent {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("@type").and_then(serde_json::Value::as_str) {
+            Some("Person") => serde_json::from_value(value).map(Agent::Person),
+            Some("Organization") => serde_json::from_value(value).map(Agent::Organization),
+            Some("Software") => serde_json::from_value(value).map(Agent::Software),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a Agent states a `@type` that is one of `Person`, `Organization`, `Software`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<AgentPerson> for Agent {
+    fn from(member: AgentPerson) -> Self {
+        Agent::Person(member)
+    }
+}
+
+impl From<AgentOrganization> for Agent {
+    fn from(member: AgentOrganization) -> Self {
+        Agent::Organization(member)
+    }
+}
+
+impl From<AgentSoftware> for Agent {
+    fn from(member: AgentSoftware) -> Self {
+        Agent::Software(member)
+    }
+}
+
+impl Schema for Agent {
+    const NAME: &'static str = "Agent";
+}
+
+/// An organization — the Organization branch of Agent.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AgentOrganization {
+    #[serde(rename = "@type")]
+    pub r#type: AgentOrganizationType,
+    #[serde(rename = "@id")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub homepage: Option<String>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+impl AgentOrganization {
+    /// The `AgentOrganization` that states these and nothing else.
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            r#type: AgentOrganizationType::Organization,
+            id: None,
+            name: name.into(),
+            homepage: None,
+            rest: serde_json::Map::new(),
+        }
+    }
+}
+
+impl Schema for AgentOrganization {
+    const NAME: &'static str = "AgentOrganization";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AgentOrganizationType {
+    #[serde(rename = "Organization")]
+    Organization,
+}
+
+impl AgentOrganizationType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AgentOrganizationType::Organization => "Organization",
+        }
+    }
+}
+
+/// A human participant — the Person branch of Agent.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AgentPerson {
+    #[serde(rename = "@type")]
+    pub r#type: AgentPersonType,
+    /// DID-shaped identifier (e.g. did:web:host:users:email%40host)
+    #[serde(rename = "@id")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Display name. ABSENT until resolved: a Person is identified by `@id` and nothing else, and what they are called is recorded once per change on the knowledge base's own log and filled in when a record is read. An artifact therefore never freezes a name, which is what lets a correction reach every artifact its subject ever wrote. Absent also means genuinely unknown — a DID this knowledge base has no profile for.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nickname: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub email_sha1: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub homepage: Option<String>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+impl Default for AgentPerson {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AgentPerson {
+    /// The `AgentPerson` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            r#type: AgentPersonType::Person,
+            id: None,
+            name: None,
+            nickname: None,
+            email: None,
+            email_sha1: None,
+            homepage: None,
+            rest: serde_json::Map::new(),
+        }
+    }
+}
+
+impl Schema for AgentPerson {
+    const NAME: &'static str = "AgentPerson";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AgentPersonType {
+    #[serde(rename = "Person")]
+    Person,
+}
+
+impl AgentPersonType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AgentPersonType::Person => "Person",
+        }
+    }
+}
+
+/// A software peer, the Software branch of Agent: an agent, which is an account as a person is. Its `provider` and `model` are what it says of itself, attributed to it and not checked; the knowledge base reads neither from its DID. Its `name` is no part of what it writes: what it last said it is called is its profile, and readers fill it in, as they do a person's. A generator the knowledge base supplies, for an agent that supplied none, carries `@type` and `@id` alone.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AgentSoftware {
+    #[serde(rename = "@type")]
+    pub r#type: AgentSoftwareType,
+    /// The agent's DID: did:web:<domain>:agents:<subject>, its account at the knowledge base's issuer
+    #[serde(rename = "@id")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// What the agent last said it is called. ABSENT until resolved: filled in from its profile when a record is read, as a Person's name is. Absent also where it has said nothing. Not parsed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// Inference provider (e.g. ollama, anthropic)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provider: Option<String>,
+    /// Model identifier (e.g. gemma2:27b, claude-3-5-sonnet)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    /// Inference parameters (temperature, maxTokens, systemPrompt, etc.). Runtime metadata, not part of identity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parameters: Option<serde_json::Map<String, serde_json::Value>>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+impl Default for AgentSoftware {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AgentSoftware {
+    /// The `AgentSoftware` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            r#type: AgentSoftwareType::Software,
+            id: None,
+            name: None,
+            provider: None,
+            model: None,
+            parameters: None,
+            rest: serde_json::Map::new(),
+        }
+    }
+}
+
+impl Schema for AgentSoftware {
+    const NAME: &'static str = "AgentSoftware";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AgentSoftwareType {
+    #[serde(rename = "Software")]
+    Software,
+}
+
+impl AgentSoftwareType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AgentSoftwareType::Software => "Software",
+        }
+    }
+}
+
+/// Text paired with the geometry that indexes it — the minimum needed to turn a range of the text, two offsets counted in Unicode code points, into a selection, or a rectangle into a quote. Whole-resource: a producer iterates page by page, but every consumer wants one map.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AnchoredText {
+    /// Reading-order text of the whole resource.
+    pub text: String,
+    /// Positioned runs indexing `text`, roughly one per word.
+    pub items: Vec<PdfTextItem>,
+}
+
+impl Schema for AnchoredText {
+    const NAME: &'static str = "AnchoredText";
+}
+
+/// There is no coordinate map to serve, and WHY — the distinction a bare null could not carry.
+///
+/// One member covers all three absences because none carries a payload; `kind` alone is the fact. Retryability is legible from the name, deliberately: a caller must not need a lookup table to decide whether to come back.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AnchoredTextAbsent {
+    /// Discriminant, sharing the `kind` field with the ExtractedText/ExtractionDeclined members so the whole answer is one flat union.
+    ///
+    /// `not-yet` — the resource's media type has text that is derived by reading its content, and the store holds no entry for this content: the Smelter has not read it yet, or the entry was lost (a loss the Smelter's reconcile pass re-derives). RETRY.
+    ///
+    /// `no-map` — the resource's media type has no derived text, so no entry exists and none will until the type is given a reader. Decided by the media type alone, and answered at once. TERMINAL.
+    ///
+    /// `unknown` — no content identity to look up: the resource is not in the view store, or its primary representation carries no checksum. TERMINAL.
+    pub kind: AnchoredTextAbsentKind,
+}
+
+impl Schema for AnchoredTextAbsent {
+    const NAME: &'static str = "AnchoredTextAbsent";
+}
+
+/// Discriminant, sharing the `kind` field with the ExtractedText/ExtractionDeclined members so the whole answer is one flat union.
+///
+/// `not-yet` — the resource's media type has text that is derived by reading its content, and the store holds no entry for this content: the Smelter has not read it yet, or the entry was lost (a loss the Smelter's reconcile pass re-derives). RETRY.
+///
+/// `no-map` — the resource's media type has no derived text, so no entry exists and none will until the type is given a reader. Decided by the media type alone, and answered at once. TERMINAL.
+///
+/// `unknown` — no content identity to look up: the resource is not in the view store, or its primary representation carries no checksum. TERMINAL.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AnchoredTextAbsentKind {
+    #[serde(rename = "not-yet")]
+    NotYet,
+    #[serde(rename = "no-map")]
+    NoMap,
+    #[serde(rename = "unknown")]
+    Unknown,
+}
+
+impl AnchoredTextAbsentKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AnchoredTextAbsentKind::NotYet => "not-yet",
+            AnchoredTextAbsentKind::NoMap => "no-map",
+            AnchoredTextAbsentKind::Unknown => "unknown",
+        }
+    }
+}
+
+/// What a reader gets when it asks for a resource's coordinate map: the map, a stored decline, or a named absence.
+///
+/// Distinct from `ExtractionOutcome` on purpose. That type is what the STORE holds and what an extractor RETURNS — neither of which can ever be 'not yet'. This is the read answer, which can, so widening ExtractionOutcome itself would have put an impossible state into the store's own type.
+///
+/// Flat, one discriminant: every member carries `kind`, rather than nesting an outcome inside a status envelope and giving the wire two `kind` fields at different depths.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnchoredTextAnswer {
+    ExtractedText(ExtractedText),
+    ExtractionDeclined(ExtractionDeclined),
+    AnchoredTextAbsent(AnchoredTextAbsent),
+}
+
+impl From<ExtractedText> for AnchoredTextAnswer {
+    fn from(member: ExtractedText) -> Self {
+        AnchoredTextAnswer::ExtractedText(member)
+    }
+}
+
+impl From<ExtractionDeclined> for AnchoredTextAnswer {
+    fn from(member: ExtractionDeclined) -> Self {
+        AnchoredTextAnswer::ExtractionDeclined(member)
+    }
+}
+
+impl From<AnchoredTextAbsent> for AnchoredTextAnswer {
+    fn from(member: AnchoredTextAbsent) -> Self {
+        AnchoredTextAnswer::AnchoredTextAbsent(member)
+    }
+}
+
+impl Schema for AnchoredTextAnswer {
+    const NAME: &'static str = "AnchoredTextAnswer";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct Annotation {
+    /// W3C Web Annotation JSON-LD context
+    #[serde(rename = "@context")]
+    pub context: AnnotationContext,
+    /// W3C Annotation type
+    pub r#type: AnnotationType,
+    pub id: AnnotationId,
+    pub motivation: Motivation,
+    /// W3C Web Annotation target: the id of the resource annotated, when the whole of it is, or an object with source and optional selector (fragment)
+    pub target: AnnotationTargetValue,
+    /// W3C Web Annotation body. Optional per the W3C spec — annotations whose motivation alone is meaningful (highlighting) legitimately omit it. Present values are either a single body or a non-empty array of bodies; there is no empty array.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub body: Option<AnnotationBodies>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creator: Option<Agent>,
+    /// When the annotation was MADE — the authoring moment, carried from the event that created it. Not when a projection happened to write it: a store that rebuilds from the log must preserve this value, never restamp it.
+    pub created: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub modified: Option<String>,
+    /// Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generator: Option<AnnotationGenerator>,
+    /// PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.
+    #[serde(rename = "wasAttributedTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub was_attributed_to: Option<AnnotationWasAttributedTo>,
+}
+
+impl Annotation {
+    /// The `Annotation` that states these and nothing else.
+    pub fn new(
+        id: AnnotationId,
+        motivation: Motivation,
+        target: AnnotationTargetValue,
+        created: impl Into<String>,
+    ) -> Self {
+        Self {
+            context: AnnotationContext::HttpWwwW3OrgNsAnnoJsonld,
+            r#type: AnnotationType::Annotation,
+            id,
+            motivation,
+            target,
+            body: None,
+            creator: None,
+            created: created.into(),
+            modified: None,
+            generator: None,
+            was_attributed_to: None,
+        }
+    }
+}
+
+impl Schema for Annotation {
+    const NAME: &'static str = "Annotation";
+}
+
+/// Payload for mark:added domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AnnotationAddedPayload {
+    pub annotation: Annotation,
+    /// SHA-256 of resource content at annotation time
+    #[serde(rename = "contentChecksum")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_checksum: Option<String>,
+}
+
+impl AnnotationAddedPayload {
+    /// The `AnnotationAddedPayload` that states these and nothing else.
+    pub fn new(annotation: Annotation) -> Self {
+        Self {
+            annotation,
+            content_checksum: None,
+        }
+    }
+}
+
+impl Schema for AnnotationAddedPayload {
+    const NAME: &'static str = "AnnotationAddedPayload";
+}
+
+/// What an annotation's `body` holds: one body, or a non-empty list of them. There is no empty list: an annotation with nothing to say has no `body`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnnotationBodies {
+    AnnotationBody(AnnotationBody),
+    List(Vec<AnnotationBody>),
+}
+
+impl From<AnnotationBody> for AnnotationBodies {
+    fn from(member: AnnotationBody) -> Self {
+        AnnotationBodies::AnnotationBody(member)
+    }
+}
+
+impl Schema for AnnotationBodies {
+    const NAME: &'static str = "AnnotationBodies";
+}
+
+/// An annotation's body: a TextualBody carries text the annotation states (entity tags, descriptions, comments), a SpecificResource points at what it links to. Tell them apart by `type`, which is required on both and single-valued — a consumer never has to probe for which fields happen to be present.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnnotationBody {
+    TextualBody(TextualBody),
+    SpecificResource(SpecificResource),
+}
+
+impl<'de> serde::Deserialize<'de> for AnnotationBody {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("type").and_then(serde_json::Value::as_str) {
+            Some("TextualBody") => serde_json::from_value(value).map(AnnotationBody::TextualBody),
+            Some("SpecificResource") => {
+                serde_json::from_value(value).map(AnnotationBody::SpecificResource)
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a AnnotationBody states a `type` that is one of `TextualBody`, `SpecificResource`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<TextualBody> for AnnotationBody {
+    fn from(member: TextualBody) -> Self {
+        AnnotationBody::TextualBody(member)
+    }
+}
+
+impl From<SpecificResource> for AnnotationBody {
+    fn from(member: SpecificResource) -> Self {
+        AnnotationBody::SpecificResource(member)
+    }
+}
+
+impl Schema for AnnotationBody {
+    const NAME: &'static str = "AnnotationBody";
+}
+
+/// Payload for mark:body-updated domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AnnotationBodyUpdatedPayload {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    pub operations: Vec<AnnotationBodyUpdatedPayloadOperationsItem>,
+}
+
+impl Schema for AnnotationBodyUpdatedPayload {
+    const NAME: &'static str = "AnnotationBodyUpdatedPayload";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnnotationBodyUpdatedPayloadOperationsItem {
+    Add(BodyOperationAdd),
+    Remove(BodyOperationRemove),
+    Replace(BodyOperationReplace),
+}
+
+impl From<BodyOperationAdd> for AnnotationBodyUpdatedPayloadOperationsItem {
+    fn from(member: BodyOperationAdd) -> Self {
+        AnnotationBodyUpdatedPayloadOperationsItem::Add(member)
+    }
+}
+
+impl From<BodyOperationRemove> for AnnotationBodyUpdatedPayloadOperationsItem {
+    fn from(member: BodyOperationRemove) -> Self {
+        AnnotationBodyUpdatedPayloadOperationsItem::Remove(member)
+    }
+}
+
+impl From<BodyOperationReplace> for AnnotationBodyUpdatedPayloadOperationsItem {
+    fn from(member: BodyOperationReplace) -> Self {
+        AnnotationBodyUpdatedPayloadOperationsItem::Replace(member)
+    }
+}
+
+/// W3C Web Annotation JSON-LD context
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AnnotationContext {
+    #[serde(rename = "http://www.w3.org/ns/anno.jsonld")]
+    HttpWwwW3OrgNsAnnoJsonld,
+}
+
+impl AnnotationContext {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AnnotationContext::HttpWwwW3OrgNsAnnoJsonld => "http://www.w3.org/ns/anno.jsonld",
+        }
+    }
+}
+
+/// Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnnotationGenerator {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for AnnotationGenerator {
+    fn from(member: Agent) -> Self {
+        AnnotationGenerator::Agent(member)
+    }
+}
+
+/// An annotation's id: a name, never the annotation's URI. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+#[serde(try_from = "String", into = "String")]
+pub struct AnnotationId(String);
+
+impl AnnotationId {
+    /// The rule a value is held to, as the spec writes it.
+    pub const PATTERN: &'static str = "^[A-Za-z0-9_-]{1,128}$";
+
+    /// The pattern as the rule `new` holds a value to.
+    const RULE: Rule = Rule {
+        prefix: "",
+        admitted: Admitted::Of(&[('A', 'Z'), ('a', 'z'), ('0', '9'), ('_', '_'), ('-', '-')]),
+        least: 1,
+        most: Some(128),
+    };
+
+    /// `value` as a `AnnotationId`, or that it is not one.
+    pub fn new(value: impl Into<String>) -> Result<AnnotationId, InvalidIdentifier> {
+        let value = value.into();
+        if AnnotationId::RULE.admits(&value) {
+            Ok(AnnotationId(value))
+        } else {
+            Err(InvalidIdentifier {
+                kind: "AnnotationId",
+                pattern: AnnotationId::PATTERN,
+                value,
+            })
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for AnnotationId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::ops::Deref for AnnotationId {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<str> for AnnotationId {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::str::FromStr for AnnotationId {
+    type Err = InvalidIdentifier;
+
+    fn from_str(value: &str) -> Result<AnnotationId, InvalidIdentifier> {
+        AnnotationId::new(value)
+    }
+}
+
+impl TryFrom<String> for AnnotationId {
+    type Error = InvalidIdentifier;
+
+    fn try_from(value: String) -> Result<AnnotationId, InvalidIdentifier> {
+        AnnotationId::new(value)
+    }
+}
+
+impl From<AnnotationId> for String {
+    fn from(id: AnnotationId) -> String {
+        id.0
+    }
+}
+
+impl PartialEq<str> for AnnotationId {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl PartialEq<&str> for AnnotationId {
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
+    }
+}
+
+impl Schema for AnnotationId {
+    const NAME: &'static str = "AnnotationId";
+}
+
+/// Payload for mark:removed domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AnnotationRemovedPayload {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+impl Schema for AnnotationRemovedPayload {
+    const NAME: &'static str = "AnnotationRemovedPayload";
+}
+
+/// What a target's `selector` holds: one W3C selector, or several of the same segment.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnnotationSelector {
+    Selector(Selector),
+    List(Vec<Selector>),
+}
+
+impl From<Selector> for AnnotationSelector {
+    fn from(member: Selector) -> Self {
+        AnnotationSelector::Selector(member)
+    }
+}
+
+impl Schema for AnnotationSelector {
+    const NAME: &'static str = "AnnotationSelector";
+}
+
+/// W3C Web Annotation target object - source is required, selector is optional
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AnnotationTarget {
+    /// Stated by the annotation of a span: the target is a part of its source, which the selector picks out. An annotation of a resource as a whole states none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<AnnotationTargetType>,
+    /// The id of the resource being annotated
+    pub source: ResourceId,
+    /// Optional selector to identify a specific segment of the source resource
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selector: Option<AnnotationSelector>,
+}
+
+impl AnnotationTarget {
+    /// The `AnnotationTarget` that states these and nothing else.
+    pub fn new(source: ResourceId) -> Self {
+        Self {
+            r#type: None,
+            source,
+            selector: None,
+        }
+    }
+}
+
+impl Schema for AnnotationTarget {
+    const NAME: &'static str = "AnnotationTarget";
+}
+
+/// Stated by the annotation of a span: the target is a part of its source, which the selector picks out. An annotation of a resource as a whole states none.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AnnotationTargetType {
+    #[serde(rename = "SpecificResource")]
+    SpecificResource,
+}
+
+impl AnnotationTargetType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AnnotationTargetType::SpecificResource => "SpecificResource",
+        }
+    }
+}
+
+/// W3C Web Annotation target: the id of the resource annotated, when the whole of it is, or an object with source and optional selector (fragment)
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnnotationTargetValue {
+    ResourceId(ResourceId),
+    AnnotationTarget(AnnotationTarget),
+}
+
+impl From<AnnotationTarget> for AnnotationTargetValue {
+    fn from(member: AnnotationTarget) -> Self {
+        AnnotationTargetValue::AnnotationTarget(member)
+    }
+}
+
+/// W3C Annotation type
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AnnotationType {
+    #[serde(rename = "Annotation")]
+    Annotation,
+}
+
+impl AnnotationType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AnnotationType::Annotation => "Annotation",
+        }
+    }
+}
+
+/// PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnnotationWasAttributedTo {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for AnnotationWasAttributedTo {
+    fn from(member: Agent) -> Self {
+        AnnotationWasAttributedTo::Agent(member)
+    }
+}
+
+/// What an assessing job takes: passages of the resource are marked, each with an assessment the model writes.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AssessingJobParams {
+    pub motivation: AssessingJobParamsMotivation,
+    /// What to look for, in the caller's words. Added to the prompt.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instructions: Option<String>,
+    /// The stance the assessments are written from.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tone: Option<AssessingJobParamsTone>,
+    /// How many annotations to aim for per 2000 words of the resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub density: Option<f64>,
+    /// The language the annotations' own text is written in. BCP 47.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// The language of the resource being read. BCP 47.
+    #[serde(rename = "sourceLanguage")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_language: Option<String>,
+}
+
+impl Default for AssessingJobParams {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AssessingJobParams {
+    /// The `AssessingJobParams` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            motivation: AssessingJobParamsMotivation::Assessing,
+            instructions: None,
+            tone: None,
+            density: None,
+            language: None,
+            source_language: None,
+        }
+    }
+}
+
+impl Schema for AssessingJobParams {
+    const NAME: &'static str = "AssessingJobParams";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AssessingJobParamsMotivation {
+    #[serde(rename = "assessing")]
+    Assessing,
+}
+
+impl AssessingJobParamsMotivation {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AssessingJobParamsMotivation::Assessing => "assessing",
+        }
+    }
+}
+
+/// The stance the assessments are written from.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AssessingJobParamsTone {
+    #[serde(rename = "analytical")]
+    Analytical,
+    #[serde(rename = "critical")]
+    Critical,
+    #[serde(rename = "balanced")]
+    Balanced,
+    #[serde(rename = "constructive")]
+    Constructive,
+}
+
+impl AssessingJobParamsTone {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AssessingJobParamsTone::Analytical => "analytical",
+            AssessingJobParamsTone::Critical => "critical",
+            AssessingJobParamsTone::Balanced => "balanced",
+            AssessingJobParamsTone::Constructive => "constructive",
+        }
+    }
+}
+
+/// A persisted event as a history reply carries it: the stored event, and the agent its `userId` identifies. The agent is derived when the reply is made — the DID read into a Person or a Software agent, and a Person's name filled in from the knowledge base's profiles — and is stored nowhere. A Person the record does not name carries no `name`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AttributedEvent {
+    /// Unique event ID (UUID)
+    pub id: String,
+    /// Event type (flow verb name, e.g. mark:added)
+    pub r#type: String,
+    /// When the event occurred
+    pub timestamp: String,
+    /// DID of the user who triggered the event
+    #[serde(rename = "userId")]
+    pub user_id: UserId,
+    /// Resource this event affects (absent for system events)
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+    /// Event schema version
+    pub version: i64,
+    /// Event-type-specific payload
+    pub payload: serde_json::Map<String, serde_json::Value>,
+    pub metadata: EventMetadata,
+    pub agent: Agent,
+}
+
+impl AttributedEvent {
+    /// The `AttributedEvent` that states these and nothing else.
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: impl Into<String>,
+        r#type: impl Into<String>,
+        timestamp: impl Into<String>,
+        user_id: UserId,
+        version: i64,
+        payload: serde_json::Map<String, serde_json::Value>,
+        metadata: EventMetadata,
+        agent: Agent,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            r#type: r#type.into(),
+            timestamp: timestamp.into(),
+            user_id,
+            resource_id: None,
+            version,
+            payload,
+            metadata,
+            agent,
+        }
+    }
+}
+
+impl Schema for AttributedEvent {
+    const NAME: &'static str = "AttributedEvent";
+}
+
+/// Emitted to draw attention to a resource: to one of its annotations, or, with no annotation, to the resource as a whole. The resource is always named. A focus on an annotation scrolls a viewer showing that resource to it, and a viewer showing a different resource ignores it — a deliberate ignore rather than a silent no-op. A focus on the resource as a whole brings that resource forward, opened if it is not open, at its top.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BeckonFocusEvent {
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    /// The resource this focus applies to, always named. With an annotation it is a guard: a viewer showing a different resource ignores the event. With none it is the resource the focus brings forward.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl BeckonFocusEvent {
+    /// The `BeckonFocusEvent` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            annotation_id: None,
+            resource_id,
+        }
+    }
+}
+
+impl Schema for BeckonFocusEvent {
+    const NAME: &'static str = "BeckonFocusEvent";
+}
+
+/// Emitted when an annotation is hovered over for beckoning
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BeckonHoverEvent {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: Option<AnnotationId>,
+}
+
+impl Schema for BeckonHoverEvent {
+    const NAME: &'static str = "BeckonHoverEvent";
+}
+
+/// Emitted when a sparkle effect is triggered on an annotation
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BeckonSparkleEvent {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+impl Schema for BeckonSparkleEvent {
+    const NAME: &'static str = "BeckonSparkleEvent";
+}
+
+/// One edit to a linking annotation's body list: add or remove a body item, or replace an existing one.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BindBodyOperation {
+    /// The type of body operation
+    pub op: BindBodyOperationOp,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item: Option<AnnotationBody>,
+    #[serde(rename = "oldItem")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub old_item: Option<AnnotationBody>,
+    #[serde(rename = "newItem")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub new_item: Option<AnnotationBody>,
+}
+
+impl BindBodyOperation {
+    /// The `BindBodyOperation` that states these and nothing else.
+    pub fn new(op: BindBodyOperationOp) -> Self {
+        Self {
+            op,
+            item: None,
+            old_item: None,
+            new_item: None,
+        }
+    }
+}
+
+impl Schema for BindBodyOperation {
+    const NAME: &'static str = "BindBodyOperation";
+}
+
+/// The type of body operation
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BindBodyOperationOp {
+    #[serde(rename = "add")]
+    Add,
+    #[serde(rename = "remove")]
+    Remove,
+    #[serde(rename = "replace")]
+    Replace,
+}
+
+impl BindBodyOperationOp {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BindBodyOperationOp::Add => "add",
+            BindBodyOperationOp::Remove => "remove",
+            BindBodyOperationOp::Replace => "replace",
+        }
+    }
+}
+
+/// Void success reply emitted on the bind:body-updated channel after bind:update-body has been applied, matched to the originating command by correlationId.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BindBodyUpdated {}
+
+impl Schema for BindBodyUpdated {
+    const NAME: &'static str = "BindBodyUpdated";
+}
+
+/// Command payload sent on the bind:initiate bus channel to start a bind flow.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BindInitiateCommand {
+    /// Branded AnnotationId of the annotation being bound
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    /// Branded ResourceId of the resource being bound to
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Default title for the bound annotation
+    #[serde(rename = "defaultTitle")]
+    pub default_title: String,
+    /// Entity types to associate with the annotation
+    #[serde(rename = "entityTypes")]
+    pub entity_types: Vec<String>,
+}
+
+impl Schema for BindInitiateCommand {
+    const NAME: &'static str = "BindInitiateCommand";
+}
+
+/// Command payload sent on the bind:update-body bus channel to modify annotation bodies.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BindUpdateBodyCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    /// Branded AnnotationId of the annotation whose body is being updated
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    /// Branded ResourceId of the resource the annotation belongs to
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Ordered body-list edits to apply.
+    pub operations: Vec<BindBodyOperation>,
+}
+
+impl BindUpdateBodyCommand {
+    /// The `BindUpdateBodyCommand` that states these and nothing else.
+    pub fn new(
+        annotation_id: AnnotationId,
+        resource_id: ResourceId,
+        operations: Vec<BindBodyOperation>,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            annotation_id,
+            resource_id,
+            operations,
+        }
+    }
+}
+
+impl Schema for BindUpdateBodyCommand {
+    const NAME: &'static str = "BindUpdateBodyCommand";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BodyOperationAdd {
+    pub op: BodyOperationAddOp,
+    pub item: BodyOperationAddItem,
+}
+
+impl BodyOperationAdd {
+    /// The `BodyOperationAdd` that states these and nothing else.
+    pub fn new(item: BodyOperationAddItem) -> Self {
+        Self {
+            op: BodyOperationAddOp::Add,
+            item,
+        }
+    }
+}
+
+impl Schema for BodyOperationAdd {
+    const NAME: &'static str = "BodyOperationAdd";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum BodyOperationAddItem {
+    TextualBody(TextualBody),
+    SpecificResource(SpecificResource),
+}
+
+impl From<TextualBody> for BodyOperationAddItem {
+    fn from(member: TextualBody) -> Self {
+        BodyOperationAddItem::TextualBody(member)
+    }
+}
+
+impl From<SpecificResource> for BodyOperationAddItem {
+    fn from(member: SpecificResource) -> Self {
+        BodyOperationAddItem::SpecificResource(member)
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BodyOperationAddOp {
+    #[serde(rename = "add")]
+    Add,
+}
+
+impl BodyOperationAddOp {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BodyOperationAddOp::Add => "add",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BodyOperationRemove {
+    pub op: BodyOperationRemoveOp,
+    pub item: BodyOperationRemoveItem,
+}
+
+impl BodyOperationRemove {
+    /// The `BodyOperationRemove` that states these and nothing else.
+    pub fn new(item: BodyOperationRemoveItem) -> Self {
+        Self {
+            op: BodyOperationRemoveOp::Remove,
+            item,
+        }
+    }
+}
+
+impl Schema for BodyOperationRemove {
+    const NAME: &'static str = "BodyOperationRemove";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum BodyOperationRemoveItem {
+    TextualBody(TextualBody),
+    SpecificResource(SpecificResource),
+}
+
+impl From<TextualBody> for BodyOperationRemoveItem {
+    fn from(member: TextualBody) -> Self {
+        BodyOperationRemoveItem::TextualBody(member)
+    }
+}
+
+impl From<SpecificResource> for BodyOperationRemoveItem {
+    fn from(member: SpecificResource) -> Self {
+        BodyOperationRemoveItem::SpecificResource(member)
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BodyOperationRemoveOp {
+    #[serde(rename = "remove")]
+    Remove,
+}
+
+impl BodyOperationRemoveOp {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BodyOperationRemoveOp::Remove => "remove",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BodyOperationReplace {
+    pub op: BodyOperationReplaceOp,
+    #[serde(rename = "oldItem")]
+    pub old_item: BodyOperationReplaceOldItem,
+    #[serde(rename = "newItem")]
+    pub new_item: BodyOperationReplaceNewItem,
+}
+
+impl BodyOperationReplace {
+    /// The `BodyOperationReplace` that states these and nothing else.
+    pub fn new(
+        old_item: BodyOperationReplaceOldItem,
+        new_item: BodyOperationReplaceNewItem,
+    ) -> Self {
+        Self {
+            op: BodyOperationReplaceOp::Replace,
+            old_item,
+            new_item,
+        }
+    }
+}
+
+impl Schema for BodyOperationReplace {
+    const NAME: &'static str = "BodyOperationReplace";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum BodyOperationReplaceNewItem {
+    TextualBody(TextualBody),
+    SpecificResource(SpecificResource),
+}
+
+impl From<TextualBody> for BodyOperationReplaceNewItem {
+    fn from(member: TextualBody) -> Self {
+        BodyOperationReplaceNewItem::TextualBody(member)
+    }
+}
+
+impl From<SpecificResource> for BodyOperationReplaceNewItem {
+    fn from(member: SpecificResource) -> Self {
+        BodyOperationReplaceNewItem::SpecificResource(member)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum BodyOperationReplaceOldItem {
+    TextualBody(TextualBody),
+    SpecificResource(SpecificResource),
+}
+
+impl From<TextualBody> for BodyOperationReplaceOldItem {
+    fn from(member: TextualBody) -> Self {
+        BodyOperationReplaceOldItem::TextualBody(member)
+    }
+}
+
+impl From<SpecificResource> for BodyOperationReplaceOldItem {
+    fn from(member: SpecificResource) -> Self {
+        BodyOperationReplaceOldItem::SpecificResource(member)
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BodyOperationReplaceOp {
+    #[serde(rename = "replace")]
+    Replace,
+}
+
+impl BodyOperationReplaceOp {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BodyOperationReplaceOp::Replace => "replace",
+        }
+    }
+}
+
+/// W3C Web Annotation body purpose vocabulary - https://www.w3.org/TR/annotation-vocab/#motivation
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BodyPurpose {
+    #[serde(rename = "assessing")]
+    Assessing,
+    #[serde(rename = "bookmarking")]
+    Bookmarking,
+    #[serde(rename = "classifying")]
+    Classifying,
+    #[serde(rename = "commenting")]
+    Commenting,
+    #[serde(rename = "describing")]
+    Describing,
+    #[serde(rename = "editing")]
+    Editing,
+    #[serde(rename = "highlighting")]
+    Highlighting,
+    #[serde(rename = "identifying")]
+    Identifying,
+    #[serde(rename = "linking")]
+    Linking,
+    #[serde(rename = "moderating")]
+    Moderating,
+    #[serde(rename = "questioning")]
+    Questioning,
+    #[serde(rename = "replying")]
+    Replying,
+    #[serde(rename = "tagging")]
+    Tagging,
+}
+
+impl BodyPurpose {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BodyPurpose::Assessing => "assessing",
+            BodyPurpose::Bookmarking => "bookmarking",
+            BodyPurpose::Classifying => "classifying",
+            BodyPurpose::Commenting => "commenting",
+            BodyPurpose::Describing => "describing",
+            BodyPurpose::Editing => "editing",
+            BodyPurpose::Highlighting => "highlighting",
+            BodyPurpose::Identifying => "identifying",
+            BodyPurpose::Linking => "linking",
+            BodyPurpose::Moderating => "moderating",
+            BodyPurpose::Questioning => "questioning",
+            BodyPurpose::Replying => "replying",
+            BodyPurpose::Tagging => "tagging",
+        }
+    }
+}
+
+impl Schema for BodyPurpose {
+    const NAME: &'static str = "BodyPurpose";
+}
+
+/// Request to browse the history of an annotation
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseAnnotationHistoryRequest {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+impl Schema for BrowseAnnotationHistoryRequest {
+    const NAME: &'static str = "BrowseAnnotationHistoryRequest";
+}
+
+/// Result of browsing annotation history
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseAnnotationHistoryResult {
+    pub response: GetAnnotationHistoryResponse,
+}
+
+impl Schema for BrowseAnnotationHistoryResult {
+    const NAME: &'static str = "BrowseAnnotationHistoryResult";
+}
+
+/// Request to browse a single annotation
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseAnnotationRequest {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+impl Schema for BrowseAnnotationRequest {
+    const NAME: &'static str = "BrowseAnnotationRequest";
+}
+
+/// Result of browsing a single annotation
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseAnnotationResult {
+    pub response: GetAnnotationResponse,
+}
+
+impl Schema for BrowseAnnotationResult {
+    const NAME: &'static str = "BrowseAnnotationResult";
+}
+
+/// An annotation was clicked — open it: the viewer selects its entry in the annotations panel and relays a focus signal to scroll to it. The annotation id is the whole address; it identifies exactly one annotation on exactly one resource, so no resource field is carried and none is needed to scope the event. Motivation is NOT on the wire either: the viewer derives it from the annotation the id names, so the wire states the fact once. A viewer that has not loaded that annotation finds nothing and does nothing. Emitted locally by every clickable annotation surface, and over the wire by a driver opening an annotation on another participant's screen.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseClickEvent {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+impl Schema for BrowseClickEvent {
+    const NAME: &'static str = "BrowseClickEvent";
+}
+
+/// The payload of `browse:directory-failed`: a CommandError that names the directory that could not be read.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseDirectoryFailed {
+    /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<BrowseDirectoryFailedCode>,
+    /// Human-readable error message
+    pub message: String,
+    /// Optional additional context (stack trace, field name, etc.)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+    /// The path the read was asked for.
+    pub path: String,
+}
+
+impl BrowseDirectoryFailed {
+    /// The `BrowseDirectoryFailed` that states these and nothing else.
+    pub fn new(message: impl Into<String>, path: impl Into<String>) -> Self {
+        Self {
+            code: None,
+            message: message.into(),
+            details: None,
+            path: path.into(),
+        }
+    }
+}
+
+impl Schema for BrowseDirectoryFailed {
+    const NAME: &'static str = "BrowseDirectoryFailed";
+}
+
+/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BrowseDirectoryFailedCode {
+    #[serde(rename = "peer-unavailable")]
+    PeerUnavailable,
+    #[serde(rename = "not-found")]
+    NotFound,
+    #[serde(rename = "unauthorized")]
+    Unauthorized,
+    #[serde(rename = "none-pending")]
+    NonePending,
+}
+
+impl BrowseDirectoryFailedCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BrowseDirectoryFailedCode::PeerUnavailable => "peer-unavailable",
+            BrowseDirectoryFailedCode::NotFound => "not-found",
+            BrowseDirectoryFailedCode::Unauthorized => "unauthorized",
+            BrowseDirectoryFailedCode::NonePending => "none-pending",
+        }
+    }
+}
+
+/// Request to browse a directory listing
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseDirectoryRequest {
+    pub path: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sort: Option<BrowseDirectoryRequestSort>,
+}
+
+impl BrowseDirectoryRequest {
+    /// The `BrowseDirectoryRequest` that states these and nothing else.
+    pub fn new(path: impl Into<String>) -> Self {
+        Self {
+            path: path.into(),
+            sort: None,
+        }
+    }
+}
+
+impl Schema for BrowseDirectoryRequest {
+    const NAME: &'static str = "BrowseDirectoryRequest";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BrowseDirectoryRequestSort {
+    #[serde(rename = "name")]
+    Name,
+    #[serde(rename = "mtime")]
+    Mtime,
+    #[serde(rename = "annotationCount")]
+    AnnotationCount,
+}
+
+impl BrowseDirectoryRequestSort {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BrowseDirectoryRequestSort::Name => "name",
+            BrowseDirectoryRequestSort::Mtime => "mtime",
+            BrowseDirectoryRequestSort::AnnotationCount => "annotationCount",
+        }
+    }
+}
+
+/// Result of browsing a directory listing
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseDirectoryResult {
+    pub response: BrowseDirectoryResultResponse,
+}
+
+impl Schema for BrowseDirectoryResult {
+    const NAME: &'static str = "BrowseDirectoryResult";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseDirectoryResultResponse {
+    pub path: String,
+    pub entries: Vec<DirectoryEntry>,
+}
+
+impl Schema for BrowseDirectoryResultResponse {
+    const NAME: &'static str = "BrowseDirectoryResultResponse";
+}
+
+/// Request for the knowledge base's engines: those its Inference document names
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEnginesRequest {}
+
+impl Schema for BrowseEnginesRequest {
+    const NAME: &'static str = "BrowseEnginesRequest";
+}
+
+/// The knowledge base's engines: those its Inference document names, and the jobs it has each used for
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEnginesResult {
+    pub response: BrowseEnginesResultResponse,
+}
+
+impl Schema for BrowseEnginesResult {
+    const NAME: &'static str = "BrowseEnginesResult";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEnginesResultResponse {
+    pub engines: Vec<EngineEntry>,
+}
+
+/// Emitted when an entity type is clicked in the browse panel
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEntityTypeClickedEvent {
+    #[serde(rename = "entityType")]
+    pub entity_type: String,
+}
+
+impl Schema for BrowseEntityTypeClickedEvent {
+    const NAME: &'static str = "BrowseEntityTypeClickedEvent";
+}
+
+/// Request to browse available entity types
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEntityTypesRequest {}
+
+impl Schema for BrowseEntityTypesRequest {
+    const NAME: &'static str = "BrowseEntityTypesRequest";
+}
+
+/// Result of browsing entity types
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEntityTypesResult {
+    pub response: GetEntityTypesResponse,
+}
+
+impl Schema for BrowseEntityTypesResult {
+    const NAME: &'static str = "BrowseEntityTypesResult";
+}
+
+/// Request to browse events for a resource
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEventsRequest {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<String>,
+    #[serde(rename = "userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user_id: Option<UserId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<i64>,
+}
+
+impl BrowseEventsRequest {
+    /// The `BrowseEventsRequest` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            resource_id,
+            r#type: None,
+            user_id: None,
+            limit: None,
+        }
+    }
+}
+
+impl Schema for BrowseEventsRequest {
+    const NAME: &'static str = "BrowseEventsRequest";
+}
+
+/// Result of browsing events for a resource
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseEventsResult {
+    pub response: GetEventsResponse,
+}
+
+impl Schema for BrowseEventsResult {
+    const NAME: &'static str = "BrowseEventsResult";
+}
+
+/// Emitted when navigation to an external URL is requested
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseExternalNavigateEvent {
+    pub url: String,
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+}
+
+impl BrowseExternalNavigateEvent {
+    /// The `BrowseExternalNavigateEvent` that states these and nothing else.
+    pub fn new(url: impl Into<String>) -> Self {
+        Self {
+            url: url.into(),
+            resource_id: None,
+        }
+    }
+}
+
+impl Schema for BrowseExternalNavigateEvent {
+    const NAME: &'static str = "BrowseExternalNavigateEvent";
+}
+
+/// Request for the knowledge base's description of itself
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseKbRequest {}
+
+impl Schema for BrowseKbRequest {
+    const NAME: &'static str = "BrowseKbRequest";
+}
+
+/// Result of browse:kb-requested
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseKbResult {
+    pub response: KbDescription,
+}
+
+impl Schema for BrowseKbResult {
+    const NAME: &'static str = "BrowseKbResult";
+}
+
+/// Emitted when a link is clicked in the browse panel
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseLinkClickedEvent {
+    pub href: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+}
+
+impl BrowseLinkClickedEvent {
+    /// The `BrowseLinkClickedEvent` that states these and nothing else.
+    pub fn new(href: impl Into<String>) -> Self {
+        Self {
+            href: href.into(),
+            label: None,
+        }
+    }
+}
+
+impl Schema for BrowseLinkClickedEvent {
+    const NAME: &'static str = "BrowseLinkClickedEvent";
+}
+
+/// Emitted when a browse panel is opened
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowsePanelOpenEvent {
+    pub panel: String,
+    #[serde(rename = "scrollToAnnotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scroll_to_annotation_id: Option<AnnotationId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motivation: Option<Motivation>,
+}
+
+impl BrowsePanelOpenEvent {
+    /// The `BrowsePanelOpenEvent` that states these and nothing else.
+    pub fn new(panel: impl Into<String>) -> Self {
+        Self {
+            panel: panel.into(),
+            scroll_to_annotation_id: None,
+            motivation: None,
+        }
+    }
+}
+
+impl Schema for BrowsePanelOpenEvent {
+    const NAME: &'static str = "BrowsePanelOpenEvent";
+}
+
+/// Emitted when a browse panel is toggled
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowsePanelToggleEvent {
+    pub panel: String,
+}
+
+impl Schema for BrowsePanelToggleEvent {
+    const NAME: &'static str = "BrowsePanelToggleEvent";
+}
+
+/// Request for the profiles of some principals: the DIDs a reply mentions. Bounded by the question: a reader that has more asks in parts.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BrowseProfilesRequest {
+    /// The principals asked after.
+    pub dids: Vec<UserId>,
+}
+
+impl Schema for BrowseProfilesRequest {
+    const NAME: &'static str = "BrowseProfilesRequest";
+}
+
+/// The profiles of the principals asked after: each that has one, keyed by DID. A DID with no profile is absent, and is named by no one.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseProfilesResult {
+    pub response: BrowseProfilesResultResponse,
+}
+
+impl Schema for BrowseProfilesResult {
+    const NAME: &'static str = "BrowseProfilesResult";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BrowseProfilesResultResponse {
+    /// Each profile, keyed by DID.
+    pub profiles: std::collections::BTreeMap<String, Profile>,
+}
+
+/// Emitted when a resource is closed in the browse panel
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourceCloseEvent {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for BrowseResourceCloseEvent {
+    const NAME: &'static str = "BrowseResourceCloseEvent";
+}
+
+/// Domain intent to open a resource in the viewer: emitted locally by in-app link handlers and remotely by the launcher's tour verbs; the viewer translates it to host routing (nav:push), which never crosses the wire. Deliberately not named 'navigate' — that word and the nav:* prefix belong to the host-local framework layer.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourceOpenEvent {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for BrowseResourceOpenEvent {
+    const NAME: &'static str = "BrowseResourceOpenEvent";
+}
+
+/// Emitted when resources are reordered in the browse panel
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourceReorderEvent {
+    #[serde(rename = "oldIndex")]
+    pub old_index: i64,
+    #[serde(rename = "newIndex")]
+    pub new_index: i64,
+}
+
+impl Schema for BrowseResourceReorderEvent {
+    const NAME: &'static str = "BrowseResourceReorderEvent";
+}
+
+/// Request to browse a single resource
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourceRequest {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for BrowseResourceRequest {
+    const NAME: &'static str = "BrowseResourceRequest";
+}
+
+/// A resource's descriptor, and the sequence number of the last of its events the descriptor reflects. Its annotations are not here: their number follows the document's, so they are read over HTTP (`GET /resources/{id}/annotations`).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourceResult {
+    pub response: BrowseResourceResultResponse,
+}
+
+impl Schema for BrowseResourceResult {
+    const NAME: &'static str = "BrowseResourceResult";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BrowseResourceResultResponse {
+    pub resource: ResourceDescriptor,
+    /// The sequence number of the resource's last event. A graph read that follows a write waits for the graph projection to reach it.
+    #[serde(rename = "lastSequence")]
+    pub last_sequence: u64,
+}
+
+/// REPORT that a resource has loaded in a viewer — emitted on arrival by ANY means: a followed cue, an in-app link, the back button, a typed URL. Deliberately distinct from the imperative browse:resource-open: drive and report never share a channel, or the driver hears its own commands and one viewer's arrival steers another's page.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourceViewedEvent {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for BrowseResourceViewedEvent {
+    const NAME: &'static str = "BrowseResourceViewedEvent";
+}
+
+/// Request to browse resources with optional filtering and pagination
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourcesRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archived: Option<bool>,
+    #[serde(rename = "entityType")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_type: Option<String>,
+    /// How many of the resources the filters admit are passed over before the page begins.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub offset: Option<u64>,
+    /// The most resources a page has.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u64>,
+}
+
+impl Schema for BrowseResourcesRequest {
+    const NAME: &'static str = "BrowseResourcesRequest";
+}
+
+/// Result of browsing resources
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseResourcesResult {
+    pub response: ListResourcesResponse,
+}
+
+impl Schema for BrowseResourcesResult {
+    const NAME: &'static str = "BrowseResourcesResult";
+}
+
+/// Emitted when the browse panel requests a router navigation
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseRouterPushEvent {
+    pub path: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+impl BrowseRouterPushEvent {
+    /// The `BrowseRouterPushEvent` that states these and nothing else.
+    pub fn new(path: impl Into<String>) -> Self {
+        Self {
+            path: path.into(),
+            reason: None,
+        }
+    }
+}
+
+impl Schema for BrowseRouterPushEvent {
+    const NAME: &'static str = "BrowseRouterPushEvent";
+}
+
+/// Request to browse registered tag schemas
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseTagSchemasRequest {}
+
+impl Schema for BrowseTagSchemasRequest {
+    const NAME: &'static str = "BrowseTagSchemasRequest";
+}
+
+/// Result of browsing tag schemas
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BrowseTagSchemasResult {
+    pub response: GetTagSchemasResponse,
+}
+
+impl Schema for BrowseTagSchemasResult {
+    const NAME: &'static str = "BrowseTagSchemasResult";
+}
+
+/// Result of publishing one event. `subscribers` is the number of observers attached to the target subject at dispatch — the GLOBAL subject for an unscoped emit, the scoped one when `scope` is set. Zero means the signal reached nobody: /bus/subscribe enforces no channel allowlist and the emit handler publishes unconditionally, so a client can emit a channel no participant subscribes to and otherwise receive a clean 202 with no way to tell. Deliberately NOT named `delivered`: this is the count at dispatch, and a subscriber may still drop the frame downstream, so the field is named after what the server can actually observe.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BusEmitAccepted {
+    /// Observers on the target subject when the event was dispatched. ABSENT means the gateway could not count: under a broker signal plane (the KnowledgeBase document's `spec.messaging.signal.type: nats`) the event is published to a fabric whose observers the gateway cannot see. The one zero a broker plane states is a registry operation's request with a `correlationId` that reached nobody, which the broker itself reports (no responders). Never defaulted: a zero here is the claim that nobody was listening, and a gateway that did not observe that never makes it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subscribers: Option<u64>,
+}
+
+impl Schema for BusEmitAccepted {
+    const NAME: &'static str = "BusEmitAccepted";
+}
+
+/// One event for the bus. `channel` names a channel of the bus registry (specs/src/bus/registry.json) and `payload` must match the schema the registry's `validate` names for it. `scope` publishes a resource-bound broadcast to that resource's subscribers only; everything else is unscoped. `clientId` and `correlationId` are routing facts beside the payload, never inside it.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct BusEmitRequest {
+    /// A channel of the bus registry.
+    pub channel: String,
+    /// The channel's payload, validated against the schema its registry entry names. `_userId` and `_roles` are the gateway's to write: whatever a caller puts there is replaced.
+    pub payload: serde_json::Map<String, serde_json::Value>,
+    /// The resource scope of a resource-bound broadcast. Publishers of those broadcasts only; a command or request never carries one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<ResourceId>,
+    /// The address this request's reply is delivered to: the emit claims `correlationId` for this clientId and the verified principal. Required when `channel` is a registry operation's request and a correlationId is present; ignored otherwise. An empty string counts as absent.
+    #[serde(rename = "clientId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<String>,
+    /// Pairs a reply with its request. On a registry operation's request it claims the id: a second claim of a live id is refused with 409. Replies carry it back on the frame, never in the payload.
+    #[serde(rename = "correlationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correlation_id: Option<String>,
+}
+
+impl BusEmitRequest {
+    /// The `BusEmitRequest` that states these and nothing else.
+    pub fn new(
+        channel: impl Into<String>,
+        payload: serde_json::Map<String, serde_json::Value>,
+    ) -> Self {
+        Self {
+            channel: channel.into(),
+            payload,
+            scope: None,
+            client_id: None,
+            correlation_id: None,
+        }
+    }
+}
+
+impl Schema for BusEmitRequest {
+    const NAME: &'static str = "BusEmitRequest";
+}
+
+/// A bus frame on the stream: `event: bus-event`, an `id:` line, and one `data:` line holding the JSON-serialised BusFrame. This schema describes the message with `data` already parsed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BusEventMessage {
+    pub event: BusEventMessageEvent,
+    pub id: String,
+    pub data: BusFrame,
+}
+
+impl BusEventMessage {
+    /// The `BusEventMessage` that states these and nothing else.
+    pub fn new(id: impl Into<String>, data: BusFrame) -> Self {
+        Self {
+            event: BusEventMessageEvent::BusEvent,
+            id: id.into(),
+            data,
+        }
+    }
+}
+
+impl Schema for BusEventMessage {
+    const NAME: &'static str = "BusEventMessage";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BusEventMessageEvent {
+    #[serde(rename = "bus-event")]
+    BusEvent,
+}
+
+impl BusEventMessageEvent {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BusEventMessageEvent::BusEvent => "bus-event",
+        }
+    }
+}
+
+/// One frame of the bus stream, as the `data` line of a `bus-event` message carries it (JSON-serialised on one line). `payload` is the channel's payload as its registry entry declares it. A frame on a scoped subscription carries the scope it was published on; a correlated reply carries the `correlationId` of the request it answers.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BusFrame {
+    /// A channel of the bus registry (specs/src/bus/registry.json).
+    pub channel: String,
+    /// The request this frame answers. Present on correlated replies; absent otherwise.
+    #[serde(rename = "correlationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correlation_id: Option<String>,
+    /// The channel's payload. A replayed persisted event is the stored event itself, whose `metadata.sequenceNumber` the message id carries.
+    pub payload: serde_json::Map<String, serde_json::Value>,
+    /// The resource scope the frame was published on. Present exactly when it arrived through a `scoped` entry of the subscription.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<ResourceId>,
+}
+
+impl BusFrame {
+    /// The `BusFrame` that states these and nothing else.
+    pub fn new(
+        channel: impl Into<String>,
+        payload: serde_json::Map<String, serde_json::Value>,
+    ) -> Self {
+        Self {
+            channel: channel.into(),
+            correlation_id: None,
+            payload,
+            scope: None,
+        }
+    }
+}
+
+impl Schema for BusFrame {
+    const NAME: &'static str = "BusFrame";
+}
+
+/// The heartbeat: `event: ping` with an empty `data:` line. The first is written once the stream has caught up (after any replay), then one every `x-xynolog-limits.heartbeatSeconds`. It carries no id, so it never disturbs a client's last-seen ids.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BusPingMessage {
+    pub event: BusPingMessageEvent,
+    pub data: String,
+}
+
+impl BusPingMessage {
+    /// The `BusPingMessage` that states these and nothing else.
+    pub fn new(data: impl Into<String>) -> Self {
+        Self {
+            event: BusPingMessageEvent::Ping,
+            data: data.into(),
+        }
+    }
+}
+
+impl Schema for BusPingMessage {
+    const NAME: &'static str = "BusPingMessage";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BusPingMessageEvent {
+    #[serde(rename = "ping")]
+    Ping,
+}
+
+impl BusPingMessageEvent {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BusPingMessageEvent::Ping => "ping",
+        }
+    }
+}
+
+/// The payload of `bus:resume-gap`: a scope's `lastEventId` could not be honoured, so the client cannot trust that it has every persisted event of that scope and must refetch what it caches for it. Written by the gateway, never by a participant.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BusResumeGap {
+    /// The scope of the subscription entry whose watermark failed.
+    pub scope: ResourceId,
+    /// The watermark the entry carried.
+    #[serde(rename = "lastSeenId")]
+    pub last_seen_id: String,
+    /// `unparseable-last-event-id`: the watermark is not a PersistedEventId. `scope-mismatch`: it names another scope. `retention-exceeded`: the record no longer holds the events after it (what it still holds is replayed first). `query-error`: the record could not be read.
+    pub reason: BusResumeGapReason,
+}
+
+impl Schema for BusResumeGap {
+    const NAME: &'static str = "BusResumeGap";
+}
+
+/// `unparseable-last-event-id`: the watermark is not a PersistedEventId. `scope-mismatch`: it names another scope. `retention-exceeded`: the record no longer holds the events after it (what it still holds is replayed first). `query-error`: the record could not be read.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum BusResumeGapReason {
+    #[serde(rename = "unparseable-last-event-id")]
+    UnparseableLastEventId,
+    #[serde(rename = "scope-mismatch")]
+    ScopeMismatch,
+    #[serde(rename = "retention-exceeded")]
+    RetentionExceeded,
+    #[serde(rename = "query-error")]
+    QueryError,
+}
+
+impl BusResumeGapReason {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            BusResumeGapReason::UnparseableLastEventId => "unparseable-last-event-id",
+            BusResumeGapReason::ScopeMismatch => "scope-mismatch",
+            BusResumeGapReason::RetentionExceeded => "retention-exceeded",
+            BusResumeGapReason::QueryError => "query-error",
+        }
+    }
+}
+
+/// Every message the bus stream carries. A client ignores an `event` it does not know; the gateway writes no other.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum BusStreamMessage {
+    EventMessage(BusEventMessage),
+    PingMessage(BusPingMessage),
+}
+
+impl From<BusEventMessage> for BusStreamMessage {
+    fn from(member: BusEventMessage) -> Self {
+        BusStreamMessage::EventMessage(member)
+    }
+}
+
+impl From<BusPingMessage> for BusStreamMessage {
+    fn from(member: BusPingMessage) -> Self {
+        BusStreamMessage::PingMessage(member)
+    }
+}
+
+impl Schema for BusStreamMessage {
+    const NAME: &'static str = "BusStreamMessage";
+}
+
+/// Subscription matrix for the bus stream. `global` channels are delivered unscoped; each `scoped` entry subscribes the connection to one resource scope's channels, optionally resuming from that scope's last-seen persisted event id. At least one global channel or one scoped entry is required, and no scope may appear in two entries.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BusSubscribeRequest {
+    /// Unscoped channels to subscribe to.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub global: Option<Vec<String>>,
+    /// Correlation ids of requests this client still awaits a reply to. The gateway writes every reply it still retains for them (for `x-xynolog-limits.replyRetentionSeconds` after it was published) as an ordinary frame with its ReplyEventId, so a reply that also arrived live dedups client-side. A client can have no more pending than it may have unanswered requests, so this bound is also the number of unanswered requests `POST /bus/emit` allows a client.
+    #[serde(rename = "pendingReplies")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pending_replies: Option<Vec<String>>,
+    /// Per-resource-scope subscriptions, at most 512 on one connection. Scopes must be unique across entries.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scoped: Option<Vec<BusSubscribeRequestScopedItem>>,
+    /// Routing address for correlated replies: a UUID minted once per bus-client lifetime — per actor, not per connection, so it survives a reconnect and two overlapping connections share it. A correlated reply is delivered to a connection only when its request was emitted under the same clientId by the same principal. Not authentication — the bearer token stays that — and never echoed into any payload or broadcast frame.
+    #[serde(rename = "clientId")]
+    pub client_id: String,
+}
+
+impl BusSubscribeRequest {
+    /// The `BusSubscribeRequest` that states these and nothing else.
+    pub fn new(client_id: impl Into<String>) -> Self {
+        Self {
+            global: None,
+            pending_replies: None,
+            scoped: None,
+            client_id: client_id.into(),
+        }
+    }
+}
+
+impl Schema for BusSubscribeRequest {
+    const NAME: &'static str = "BusSubscribeRequest";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BusSubscribeRequestScopedItem {
+    /// Resource scope (a resourceId).
+    pub scope: ResourceId,
+    /// Channels to subscribe within this scope.
+    pub channels: Vec<String>,
+    /// This scope's last-seen PersistedEventId. The gateway replays this scope's persisted events after it — those on the entry's channels — before the live tail, and writes a scoped `bus:resume-gap` (BusResumeGap) when it cannot cover the gap.
+    #[serde(rename = "lastEventId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_event_id: Option<String>,
+}
+
+impl BusSubscribeRequestScopedItem {
+    /// The `BusSubscribeRequestScopedItem` that states these and nothing else.
+    pub fn new(scope: ResourceId, channels: Vec<String>) -> Self {
+        Self {
+            scope,
+            channels,
+            last_event_id: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct CloneResourceWithTokenResponse {
+    /// Generated clone token
+    pub token: String,
+    /// ISO 8601 timestamp when token expires
+    #[serde(rename = "expiresAt")]
+    pub expires_at: String,
+    pub resource: ResourceDescriptor,
+}
+
+impl Schema for CloneResourceWithTokenResponse {
+    const NAME: &'static str = "CloneResourceWithTokenResponse";
+}
+
+/// Error response for failed bus commands. Replaces native Error objects on the EventBus so payloads are serializable and OpenAPI-typed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct CommandError {
+    /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<CommandErrorCode>,
+    /// Human-readable error message
+    pub message: String,
+    /// Optional additional context (stack trace, field name, etc.)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+}
+
+impl CommandError {
+    /// The `CommandError` that states these and nothing else.
+    pub fn new(message: impl Into<String>) -> Self {
+        Self {
+            code: None,
+            message: message.into(),
+            details: None,
+        }
+    }
+}
+
+impl Schema for CommandError {
+    const NAME: &'static str = "CommandError";
+}
+
+/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum CommandErrorCode {
+    #[serde(rename = "peer-unavailable")]
+    PeerUnavailable,
+    #[serde(rename = "not-found")]
+    NotFound,
+    #[serde(rename = "unauthorized")]
+    Unauthorized,
+    #[serde(rename = "none-pending")]
+    NonePending,
+}
+
+impl CommandErrorCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            CommandErrorCode::PeerUnavailable => "peer-unavailable",
+            CommandErrorCode::NotFound => "not-found",
+            CommandErrorCode::Unauthorized => "unauthorized",
+            CommandErrorCode::NonePending => "none-pending",
+        }
+    }
+}
+
+/// What a commenting job takes: passages of the resource are marked, each with a comment the model writes.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct CommentingJobParams {
+    pub motivation: CommentingJobParamsMotivation,
+    /// What to look for, in the caller's words. Added to the prompt.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instructions: Option<String>,
+    /// The voice the comments are written in.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tone: Option<CommentingJobParamsTone>,
+    /// How many annotations to aim for per 2000 words of the resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub density: Option<f64>,
+    /// The language the annotations' own text is written in. BCP 47.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// The language of the resource being read. BCP 47.
+    #[serde(rename = "sourceLanguage")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_language: Option<String>,
+}
+
+impl Default for CommentingJobParams {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl CommentingJobParams {
+    /// The `CommentingJobParams` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            motivation: CommentingJobParamsMotivation::Commenting,
+            instructions: None,
+            tone: None,
+            density: None,
+            language: None,
+            source_language: None,
+        }
+    }
+}
+
+impl Schema for CommentingJobParams {
+    const NAME: &'static str = "CommentingJobParams";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum CommentingJobParamsMotivation {
+    #[serde(rename = "commenting")]
+    Commenting,
+}
+
+impl CommentingJobParamsMotivation {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            CommentingJobParamsMotivation::Commenting => "commenting",
+        }
+    }
+}
+
+/// The voice the comments are written in.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum CommentingJobParamsTone {
+    #[serde(rename = "scholarly")]
+    Scholarly,
+    #[serde(rename = "explanatory")]
+    Explanatory,
+    #[serde(rename = "conversational")]
+    Conversational,
+    #[serde(rename = "technical")]
+    Technical,
+}
+
+impl CommentingJobParamsTone {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            CommentingJobParamsTone::Scholarly => "scholarly",
+            CommentingJobParamsTone::Explanatory => "explanatory",
+            CommentingJobParamsTone::Conversational => "conversational",
+            CommentingJobParamsTone::Technical => "technical",
+        }
+    }
+}
+
+/// Content format as a MIME type, optionally with parameters. The base type (everything before the first ';') MUST be a SupportedMediaType; parameters such as charset are preserved as metadata. Semantic validation happens in code at the create/yield boundary — there is deliberately no pattern here, the vocabulary lives in SupportedMediaType. Examples: text/plain, text/plain; charset=iso-8859-1, text/markdown; charset=windows-1252, image/png, application/pdf
+pub type ContentFormat = String;
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ContextualSummaryResponse {
+    pub summary: String,
+    /// What the summary is of: the resource the annotation is on, and the annotation's entity types.
+    #[serde(rename = "relevantFields")]
+    pub relevant_fields: ContextualSummaryResponseRelevantFields,
+    pub context: ContextualSummaryResponseContext,
+}
+
+impl Schema for ContextualSummaryResponse {
+    const NAME: &'static str = "ContextualSummaryResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ContextualSummaryResponseContext {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub before: Option<String>,
+    pub selected: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after: Option<String>,
+}
+
+impl ContextualSummaryResponseContext {
+    /// The `ContextualSummaryResponseContext` that states these and nothing else.
+    pub fn new(selected: impl Into<String>) -> Self {
+        Self {
+            before: None,
+            selected: selected.into(),
+            after: None,
+        }
+    }
+}
+
+/// What the summary is of: the resource the annotation is on, and the annotation's entity types.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ContextualSummaryResponseRelevantFields {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "resourceName")]
+    pub resource_name: String,
+    #[serde(rename = "entityTypes")]
+    pub entity_types: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct CreateAnnotationRequest {
+    pub motivation: Motivation,
+    pub target: AnnotationTarget,
+    /// Optional body. Omit for annotations whose motivation alone is meaningful (highlighting) or whose user-supplied content is empty. Shape matches Annotation.body.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub body: Option<AnnotationBodies>,
+}
+
+impl CreateAnnotationRequest {
+    /// The `CreateAnnotationRequest` that states these and nothing else.
+    pub fn new(motivation: Motivation, target: AnnotationTarget) -> Self {
+        Self {
+            motivation,
+            target,
+            body: None,
+        }
+    }
+}
+
+impl Schema for CreateAnnotationRequest {
+    const NAME: &'static str = "CreateAnnotationRequest";
+}
+
+/// The id of the resource an upload created. The Archivist answers it (200) once it has stored the bytes and recorded the resource, and the gateway forwards it (202), so the id is the one the record minted and its creation event is persisted. What remains asynchronous is downstream projection: graph, views and vectors settle afterwards.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct CreateResourceResponse {
+    /// The id of the newly created resource, as the record minted it.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for CreateResourceResponse {
+    const NAME: &'static str = "CreateResourceResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirEntry {
+    pub r#type: DirEntryType,
+    /// Entry name (basename)
+    pub name: String,
+    /// Path relative to project root
+    pub path: String,
+    /// Last modified time (ISO 8601)
+    pub mtime: String,
+}
+
+impl DirEntry {
+    /// The `DirEntry` that states these and nothing else.
+    pub fn new(name: impl Into<String>, path: impl Into<String>, mtime: impl Into<String>) -> Self {
+        Self {
+            r#type: DirEntryType::Dir,
+            name: name.into(),
+            path: path.into(),
+            mtime: mtime.into(),
+        }
+    }
+}
+
+impl Schema for DirEntry {
+    const NAME: &'static str = "DirEntry";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum DirEntryType {
+    #[serde(rename = "dir")]
+    Dir,
+}
+
+impl DirEntryType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            DirEntryType::Dir => "dir",
+        }
+    }
+}
+
+/// One entry in a directory listing: a file, which may carry the resource it was ingested as, or a subdirectory. Tell them apart by `type`, which is required on both and single-valued.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum DirectoryEntry {
+    FileEntry(FileEntry),
+    DirEntry(DirEntry),
+}
+
+impl<'de> serde::Deserialize<'de> for DirectoryEntry {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("type").and_then(serde_json::Value::as_str) {
+            Some("file") => serde_json::from_value(value).map(DirectoryEntry::FileEntry),
+            Some("dir") => serde_json::from_value(value).map(DirectoryEntry::DirEntry),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a DirectoryEntry states a `type` that is one of `file`, `dir`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<FileEntry> for DirectoryEntry {
+    fn from(member: FileEntry) -> Self {
+        DirectoryEntry::FileEntry(member)
+    }
+}
+
+impl From<DirEntry> for DirectoryEntry {
+    fn from(member: DirEntry) -> Self {
+        DirectoryEntry::DirEntry(member)
+    }
+}
+
+impl Schema for DirectoryEntry {
+    const NAME: &'static str = "DirectoryEntry";
+}
+
+/// One knowledge base the Xynolog launcher manages on this machine, as published in the discovery document (see DiscoveryDocument). Endpoints and identity only — never credentials; login remains the consumer's per-KB business.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct DiscoveredKB {
+    /// Hostname the KB is reachable on from this machine (always "localhost" — local stacks bind locally and codespace KBs arrive through a local port forward)
+    pub host: String,
+    /// Local TCP port of the KB's API (the gateway port for a local stack; the allocated forward port for a codespace stack)
+    pub port: i64,
+    /// Where the stack actually runs. "local": containers on this machine. "codespace": a GitHub-hosted VM whose KB is port-forwarded here.
+    pub placement: DiscoveredKBPlacement,
+    /// owner/name GitHub slug — present for codespace placements, where the repo is the stack's identity
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub repo: Option<String>,
+    /// The KB's did:web identifier, from its committed .xynolog/config.yaml — "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no domain has no identity to publish, and the launcher refuses to start it rather than inventing or defaulting one. NOT unique within a document: a did names the knowledge base, not a running copy of it, so a local clone and a codespace of the same repo legitimately share one and both are published. host:port is the unique field (at most one entry per address), so consumers look up by ADDRESS and use the did to VERIFY that the copy they reached is the KB they meant — an address alone cannot say which KB is which, and an identity alone cannot say which copy.
+    pub did: String,
+    /// Human-readable site name from the KB's .xynolog/config.yaml (site.siteName), for display
+    #[serde(rename = "siteName")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub site_name: Option<String>,
+    /// The agent that owns this entry's lifecycle (the launcher writes "xynolog-launcher"). Consumers treat managed entries as authoritative for themselves — upsert on appearance, remove on disappearance — and never touch entries they did not write.
+    #[serde(rename = "managedBy")]
+    pub managed_by: String,
+}
+
+impl DiscoveredKB {
+    /// The `DiscoveredKB` that states these and nothing else.
+    pub fn new(
+        host: impl Into<String>,
+        port: i64,
+        placement: DiscoveredKBPlacement,
+        did: impl Into<String>,
+        managed_by: impl Into<String>,
+    ) -> Self {
+        Self {
+            host: host.into(),
+            port,
+            placement,
+            repo: None,
+            did: did.into(),
+            site_name: None,
+            managed_by: managed_by.into(),
+        }
+    }
+}
+
+impl Schema for DiscoveredKB {
+    const NAME: &'static str = "DiscoveredKB";
+}
+
+/// Where the stack actually runs. "local": containers on this machine. "codespace": a GitHub-hosted VM whose KB is port-forwarded here.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum DiscoveredKBPlacement {
+    #[serde(rename = "local")]
+    Local,
+    #[serde(rename = "codespace")]
+    Codespace,
+}
+
+impl DiscoveredKBPlacement {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            DiscoveredKBPlacement::Local => "local",
+            DiscoveredKBPlacement::Codespace => "codespace",
+        }
+    }
+}
+
+/// The launcher's KB discovery document — the schema authority for <stateDir>/discovery/kbs.json, which the Xynolog CLI (xynolog/cli) regenerates on every stack mutation and the Browser container mounts read-only at /discovery. NOT an API endpoint: a static document fetched same-origin by browsers (via the Browser's static server). An empty kbs list is meaningful ("the launcher manages nothing right now") and distinct from an absent file.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct DiscoveryDocument {
+    /// Document schema version. Consumers MUST check it and ignore documents they do not understand.
+    pub version: i64,
+    /// Every KB the launcher currently manages, local and forwarded
+    pub kbs: Vec<DiscoveredKB>,
+}
+
+impl Schema for DiscoveryDocument {
+    const NAME: &'static str = "DiscoveryDocument";
+}
+
+/// How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum DurabilityEvidence {
+    #[serde(rename = "acknowledged")]
+    Acknowledged,
+    #[serde(rename = "probe-confirmed")]
+    ProbeConfirmed,
+    #[serde(rename = "probe-refused")]
+    ProbeRefused,
+    #[serde(rename = "probe-unreachable")]
+    ProbeUnreachable,
+}
+
+impl DurabilityEvidence {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            DurabilityEvidence::Acknowledged => "acknowledged",
+            DurabilityEvidence::ProbeConfirmed => "probe-confirmed",
+            DurabilityEvidence::ProbeRefused => "probe-refused",
+            DurabilityEvidence::ProbeUnreachable => "probe-unreachable",
+        }
+    }
+}
+
+impl Schema for DurabilityEvidence {
+    const NAME: &'static str = "DurabilityEvidence";
+}
+
+/// An object with no properties.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EmptyObject {}
+
+/// An engine: an inference provider and a model, which software does a job or an actor's step with. An engine is not a principal: the principal that used one names it on each write it produced with it (`generator`). A person who does a job uses none.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Engine {
+    /// The inference provider: who serves the model. `anthropic`, `google`, `openai` and `together` are those companies' own APIs. `llamacpp`, `ollama` and `vllm` are servers a deployment runs or reaches, each named for the server's software.
+    pub provider: EngineProvider,
+    /// The model identifier, as the provider names it.
+    pub model: String,
+}
+
+impl Schema for Engine {
+    const NAME: &'static str = "Engine";
+}
+
+/// One of the knowledge base's engines: a provider and a model its Inference document names, and the jobs the document has it used for. An engine is not a principal: whichever worker claims a job does it, under its own account, and names on each write the engine it used, if any. Carries no inference limits: the services that hold the inference credentials report those (InferenceLimitsResult).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EngineEntry {
+    pub engine: Engine,
+    /// The jobs the knowledge base's Inference document has this engine used for, as a claim names them. Absent for an engine only Librarian actors ask.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub jobs: Option<Vec<JobFilter>>,
+}
+
+impl EngineEntry {
+    /// The `EngineEntry` that states these and nothing else.
+    pub fn new(engine: Engine) -> Self {
+        Self { engine, jobs: None }
+    }
+}
+
+impl Schema for EngineEntry {
+    const NAME: &'static str = "EngineEntry";
+}
+
+/// The discovered limits of one engine.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EngineLimits {
+    pub engine: Engine,
+    pub limits: InferenceLimits,
+}
+
+impl Schema for EngineLimits {
+    const NAME: &'static str = "EngineLimits";
+}
+
+/// The inference provider: who serves the model. `anthropic`, `google`, `openai` and `together` are those companies' own APIs. `llamacpp`, `ollama` and `vllm` are servers a deployment runs or reaches, each named for the server's software.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum EngineProvider {
+    #[serde(rename = "anthropic")]
+    Anthropic,
+    #[serde(rename = "google")]
+    Google,
+    #[serde(rename = "llamacpp")]
+    Llamacpp,
+    #[serde(rename = "ollama")]
+    Ollama,
+    #[serde(rename = "openai")]
+    Openai,
+    #[serde(rename = "together")]
+    Together,
+    #[serde(rename = "vllm")]
+    Vllm,
+}
+
+impl EngineProvider {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            EngineProvider::Anthropic => "anthropic",
+            EngineProvider::Google => "google",
+            EngineProvider::Llamacpp => "llamacpp",
+            EngineProvider::Ollama => "ollama",
+            EngineProvider::Openai => "openai",
+            EngineProvider::Together => "together",
+            EngineProvider::Vllm => "vllm",
+        }
+    }
+}
+
+/// Wire format for persisted events delivered over the bus SSE stream (GET /bus/subscribe). Extends StoredEventResponse with optional enrichment fields the EventStore populates from the materialized view at publish time (persistence → view → enrich → notification). Subscribers read the enrichment fields directly to update local caches without an additional fetch.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct EnrichedResourceEvent {
+    /// Unique event ID (UUID)
+    pub id: String,
+    /// Event type (flow verb name, e.g. mark:added)
+    pub r#type: String,
+    /// When the event occurred
+    pub timestamp: String,
+    /// DID of the user who triggered the event
+    #[serde(rename = "userId")]
+    pub user_id: UserId,
+    /// Resource this event affects (absent for system events)
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+    /// Event schema version
+    pub version: i64,
+    /// Event-type-specific payload
+    pub payload: serde_json::Map<String, serde_json::Value>,
+    pub metadata: EventMetadata,
+    /// Populated for events that mutate an annotation (mark:added, mark:body-updated, mark:removed). Carries the post-materialization annotation as it exists in the view, so subscribers can update local caches in-place without refetching. Absent for events that don't touch annotations.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation: Option<Annotation>,
+}
+
+impl EnrichedResourceEvent {
+    /// The `EnrichedResourceEvent` that states these and nothing else.
+    pub fn new(
+        id: impl Into<String>,
+        r#type: impl Into<String>,
+        timestamp: impl Into<String>,
+        user_id: UserId,
+        version: i64,
+        payload: serde_json::Map<String, serde_json::Value>,
+        metadata: EventMetadata,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            r#type: r#type.into(),
+            timestamp: timestamp.into(),
+            user_id,
+            resource_id: None,
+            version,
+            payload,
+            metadata,
+            annotation: None,
+        }
+    }
+}
+
+impl Schema for EnrichedResourceEvent {
+    const NAME: &'static str = "EnrichedResourceEvent";
+}
+
+/// Payload for mark:entity-tag-added and mark:entity-tag-removed domain events
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct EntityTagChangedPayload {
+    #[serde(rename = "entityType")]
+    pub entity_type: String,
+}
+
+impl Schema for EntityTagChangedPayload {
+    const NAME: &'static str = "EntityTagChangedPayload";
+}
+
+/// Payload for frame:entity-type-added domain event (system-level, no resourceId — fan-out is global)
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct EntityTypeAddedPayload {
+    #[serde(rename = "entityType")]
+    pub entity_type: String,
+}
+
+impl Schema for EntityTypeAddedPayload {
+    const NAME: &'static str = "EntityTypeAddedPayload";
+}
+
+/// The body of every error the gateway answers, whatever the status and whatever the route — including a path it does not serve.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ErrorResponse {
+    /// What went wrong, in a sentence.
+    pub error: String,
+    /// A machine-readable class, when the route defines one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+    /// What the caller can do about it, when there is something to say.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hint: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<serde_json::Value>,
+}
+
+impl ErrorResponse {
+    /// The `ErrorResponse` that states these and nothing else.
+    pub fn new(error: impl Into<String>) -> Self {
+        Self {
+            error: error.into(),
+            code: None,
+            hint: None,
+            details: None,
+        }
+    }
+}
+
+impl Schema for ErrorResponse {
+    const NAME: &'static str = "ErrorResponse";
+}
+
+/// Metadata added at persistence time. Part of every StoredEvent. Integrity is provided by git at the commit level (when gitSync is enabled), not by in-event metadata fields.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct EventMetadata {
+    /// Monotonic position in the event log (ordering authority)
+    #[serde(rename = "sequenceNumber")]
+    pub sequence_number: i64,
+}
+
+impl Schema for EventMetadata {
+    const NAME: &'static str = "EventMetadata";
+}
+
+/// A successful extraction: the anchored text plus its provenance. The 'extracted' member of ExtractionOutcome, the record the anchored-text store holds.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ExtractedText {
+    /// Reading-order text of the whole resource.
+    pub text: String,
+    /// Positioned runs indexing `text`, roughly one per word.
+    pub items: Vec<PdfTextItem>,
+    /// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `method`.
+    pub kind: ExtractedTextKind,
+    /// How the text was extracted.
+    pub method: ExtractedTextMethod,
+    /// PDF classification, when the source was a PDF.
+    #[serde(rename = "pdfClass")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pdf_class: Option<ExtractedTextPdfClass>,
+    /// How well the engine read the pixels, when any of this text came from OCR.
+    #[serde(rename = "ocrConfidence")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ocr_confidence: Option<ExtractedTextOcrConfidence>,
+    /// 1-indexed pages this extraction could not read — present only for partially covered documents (class C).
+    #[serde(rename = "unreadPages")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unread_pages: Option<Vec<i64>>,
+}
+
+impl ExtractedText {
+    /// The `ExtractedText` that states these and nothing else.
+    pub fn new(
+        text: impl Into<String>,
+        items: Vec<PdfTextItem>,
+        method: ExtractedTextMethod,
+    ) -> Self {
+        Self {
+            text: text.into(),
+            items,
+            kind: ExtractedTextKind::Extracted,
+            method,
+            pdf_class: None,
+            ocr_confidence: None,
+            unread_pages: None,
+        }
+    }
+}
+
+impl Schema for ExtractedText {
+    const NAME: &'static str = "ExtractedText";
+}
+
+/// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `method`.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ExtractedTextKind {
+    #[serde(rename = "extracted")]
+    Extracted,
+}
+
+impl ExtractedTextKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ExtractedTextKind::Extracted => "extracted",
+        }
+    }
+}
+
+/// How the text was extracted.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ExtractedTextMethod {
+    #[serde(rename = "text-passthrough")]
+    TextPassthrough,
+    #[serde(rename = "pdf-text-layer")]
+    PdfTextLayer,
+    #[serde(rename = "table")]
+    Table,
+    #[serde(rename = "form")]
+    Form,
+    #[serde(rename = "ocr")]
+    Ocr,
+}
+
+impl ExtractedTextMethod {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ExtractedTextMethod::TextPassthrough => "text-passthrough",
+            ExtractedTextMethod::PdfTextLayer => "pdf-text-layer",
+            ExtractedTextMethod::Table => "table",
+            ExtractedTextMethod::Form => "form",
+            ExtractedTextMethod::Ocr => "ocr",
+        }
+    }
+}
+
+/// How well the engine read the pixels, when any of this text came from OCR.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ExtractedTextOcrConfidence {
+    /// Mean per-word confidence, 0-100.
+    pub mean: f64,
+    /// Words the engine was unsure of.
+    #[serde(rename = "lowConfidenceWords")]
+    pub low_confidence_words: i64,
+    #[serde(rename = "totalWords")]
+    pub total_words: i64,
+}
+
+/// PDF classification, when the source was a PDF.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ExtractedTextPdfClass {
+    #[serde(rename = "A")]
+    A,
+    #[serde(rename = "B")]
+    B,
+    #[serde(rename = "C")]
+    C,
+    #[serde(rename = "D")]
+    D,
+    #[serde(rename = "E")]
+    E,
+    #[serde(rename = "F")]
+    F,
+    #[serde(rename = "G")]
+    G,
+}
+
+impl ExtractedTextPdfClass {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ExtractedTextPdfClass::A => "A",
+            ExtractedTextPdfClass::B => "B",
+            ExtractedTextPdfClass::C => "C",
+            ExtractedTextPdfClass::D => "D",
+            ExtractedTextPdfClass::E => "E",
+            ExtractedTextPdfClass::F => "F",
+            ExtractedTextPdfClass::G => "G",
+        }
+    }
+}
+
+/// A named decline: extraction ran and yielded nothing, by class. A first-class, cacheable outcome — 'we ran and there was nothing' costs a full recognition pass to discover.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ExtractionDeclined {
+    /// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`.
+    pub kind: ExtractionDeclinedKind,
+    /// Why extraction yielded nothing, by class.
+    pub declined: ExtractionDeclinedDeclined,
+}
+
+impl ExtractionDeclined {
+    /// The `ExtractionDeclined` that states these and nothing else.
+    pub fn new(declined: ExtractionDeclinedDeclined) -> Self {
+        Self {
+            kind: ExtractionDeclinedKind::Declined,
+            declined,
+        }
+    }
+}
+
+impl Schema for ExtractionDeclined {
+    const NAME: &'static str = "ExtractionDeclined";
+}
+
+/// Why extraction yielded nothing, by class.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ExtractionDeclinedDeclined {
+    #[serde(rename = "no-text-layer")]
+    NoTextLayer,
+    #[serde(rename = "encrypted")]
+    Encrypted,
+    #[serde(rename = "corrupt")]
+    Corrupt,
+    #[serde(rename = "too-large")]
+    TooLarge,
+}
+
+impl ExtractionDeclinedDeclined {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ExtractionDeclinedDeclined::NoTextLayer => "no-text-layer",
+            ExtractionDeclinedDeclined::Encrypted => "encrypted",
+            ExtractionDeclinedDeclined::Corrupt => "corrupt",
+            ExtractionDeclinedDeclined::TooLarge => "too-large",
+        }
+    }
+}
+
+/// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ExtractionDeclinedKind {
+    #[serde(rename = "declined")]
+    Declined,
+}
+
+impl ExtractionDeclinedKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ExtractionDeclinedKind::Declined => "declined",
+        }
+    }
+}
+
+/// The class of a job's failure, stated by the worker, where the failure is still typed: at the gateway it is already text, and classing a failure by its text is what this exists to avoid. A job no worker concluded, because its worker stopped reporting, is classed by the dispatcher, as 'transient'. Each value is a claim. 'transient': nothing about the request was judged (the worker's own bound ran out, the provider said not now), so another attempt may succeed. 'deterministic': the same request cannot succeed on a second attempt. 'withheld': the model's provider had the request and withheld its answer, by a refusal or a content filter, and the same request is withheld again; nothing broke. A 'deterministic' or a 'withheld' failure is not retried, whatever retry budget is left. ABSENT means the failure was not classified, which is not the claim 'transient' makes; it is retried as a transient one is. Only a failure known to be deterministic or withheld is called so: calling a transient failure either one halves reliability, where the reverse costs one wasted attempt.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum FailureClass {
+    #[serde(rename = "transient")]
+    Transient,
+    #[serde(rename = "deterministic")]
+    Deterministic,
+    #[serde(rename = "withheld")]
+    Withheld,
+}
+
+impl FailureClass {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            FailureClass::Transient => "transient",
+            FailureClass::Deterministic => "deterministic",
+            FailureClass::Withheld => "withheld",
+        }
+    }
+}
+
+impl Schema for FailureClass {
+    const NAME: &'static str = "FailureClass";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct FileEntry {
+    pub r#type: FileEntryType,
+    /// Entry name (basename)
+    pub name: String,
+    /// Path relative to project root
+    pub path: String,
+    /// File size in bytes
+    pub size: i64,
+    /// Last modified time (ISO 8601)
+    pub mtime: String,
+    /// True if this file is a tracked resource in the Knowledge Base
+    pub tracked: bool,
+    /// Resource ID (only when tracked is true)
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+    /// Entity types assigned to this resource (only when tracked is true)
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// Number of annotations on this resource (only when tracked is true)
+    #[serde(rename = "annotationCount")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_count: Option<i64>,
+    /// DID of the resource's creator — the first of its derived `wasAttributedTo`, the requester as the knowledge base recorded it (only when tracked is true)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creator: Option<String>,
+}
+
+impl FileEntry {
+    /// The `FileEntry` that states these and nothing else.
+    pub fn new(
+        name: impl Into<String>,
+        path: impl Into<String>,
+        size: i64,
+        mtime: impl Into<String>,
+        tracked: bool,
+    ) -> Self {
+        Self {
+            r#type: FileEntryType::File,
+            name: name.into(),
+            path: path.into(),
+            size,
+            mtime: mtime.into(),
+            tracked,
+            resource_id: None,
+            entity_types: None,
+            annotation_count: None,
+            creator: None,
+        }
+    }
+}
+
+impl Schema for FileEntry {
+    const NAME: &'static str = "FileEntry";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum FileEntryType {
+    #[serde(rename = "file")]
+    File,
+}
+
+impl FileEntryType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            FileEntryType::File => "file",
+        }
+    }
+}
+
+/// W3C Web Annotation FragmentSelector for media fragment identifiers (RFC 3778 for PDFs)
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct FragmentSelector {
+    pub r#type: FragmentSelectorType,
+    /// Media fragment identifier (e.g., 'page=1&viewrect=100,200,50,30' for PDF)
+    pub value: String,
+    /// URI identifying the fragment syntax specification
+    #[serde(rename = "conformsTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conforms_to: Option<String>,
+}
+
+impl FragmentSelector {
+    /// The `FragmentSelector` that states these and nothing else.
+    pub fn new(value: impl Into<String>) -> Self {
+        Self {
+            r#type: FragmentSelectorType::FragmentSelector,
+            value: value.into(),
+            conforms_to: None,
+        }
+    }
+}
+
+impl Schema for FragmentSelector {
+    const NAME: &'static str = "FragmentSelector";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum FragmentSelectorType {
+    #[serde(rename = "FragmentSelector")]
+    FragmentSelector,
+}
+
+impl FragmentSelectorType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            FragmentSelectorType::FragmentSelector => "FragmentSelector",
+        }
+    }
+}
+
+/// Bus command to add a new entity type to the KB's vocabulary. Carried on the `frame:add-entity-type` channel — Frame is the schema-layer flow that owns vocabulary writes.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct FrameAddEntityTypeCommand {
+    pub tag: String,
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+}
+
+impl FrameAddEntityTypeCommand {
+    /// The `FrameAddEntityTypeCommand` that states these and nothing else.
+    pub fn new(tag: impl Into<String>) -> Self {
+        Self {
+            tag: tag.into(),
+            _user_id: None,
+        }
+    }
+}
+
+impl Schema for FrameAddEntityTypeCommand {
+    const NAME: &'static str = "FrameAddEntityTypeCommand";
+}
+
+/// Bus command to register a tag schema with the KB's runtime registry. Carried on the `frame:add-tag-schema` channel — Frame is the schema-layer flow that owns vocabulary writes. Most-recent registration of a given `schema.id` wins; the projection reflects the latest content. Identical re-registrations are silent; differing content overwrites and logs a warning.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct FrameAddTagSchemaCommand {
+    pub schema: TagSchema,
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+}
+
+impl FrameAddTagSchemaCommand {
+    /// The `FrameAddTagSchemaCommand` that states these and nothing else.
+    pub fn new(schema: TagSchema) -> Self {
+        Self {
+            schema,
+            _user_id: None,
+        }
+    }
+}
+
+impl Schema for FrameAddTagSchemaCommand {
+    const NAME: &'static str = "FrameAddTagSchemaCommand";
+}
+
+/// Completion payload emitted on the gather:annotation-complete bus channel when annotation context gathering finishes.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherAnnotationComplete {
+    /// Branded AnnotationId of the annotation whose context was gathered
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    /// The gathered annotation context (unified GatheredContext, focus.kind:'annotation')
+    pub response: GatheredContext,
+}
+
+impl Schema for GatherAnnotationComplete {
+    const NAME: &'static str = "GatherAnnotationComplete";
+}
+
+/// Optional configuration for an annotation-focus gather, which windows text around a mark. Distinct from the resource-focus options (depth / maxResources / includeContent / includeSummary), which traverse the resource graph.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherAnnotationOptions {
+    /// Whether to include source context in the gathered result
+    #[serde(rename = "includeSourceContext")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub include_source_context: Option<bool>,
+    /// Whether to include target context in the gathered result
+    #[serde(rename = "includeTargetContext")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub include_target_context: Option<bool>,
+    /// How much of the text on each side of the annotation to include, counted in Unicode code points
+    #[serde(rename = "contextWindow")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub context_window: Option<u16>,
+}
+
+impl Schema for GatherAnnotationOptions {
+    const NAME: &'static str = "GatherAnnotationOptions";
+}
+
+/// Request payload sent on the gather:requested bus channel to gather context for an annotation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherAnnotationRequest {
+    /// Branded AnnotationId of the annotation to gather context for
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    /// Branded ResourceId of the resource the annotation belongs to
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub options: Option<GatherAnnotationOptions>,
+}
+
+impl GatherAnnotationRequest {
+    /// The `GatherAnnotationRequest` that states these and nothing else.
+    pub fn new(annotation_id: AnnotationId, resource_id: ResourceId) -> Self {
+        Self {
+            annotation_id,
+            resource_id,
+            options: None,
+        }
+    }
+}
+
+impl Schema for GatherAnnotationRequest {
+    const NAME: &'static str = "GatherAnnotationRequest";
+}
+
+/// The payload of `gather:failed`: a CommandError that names the annotation whose context could not be gathered.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherFailed {
+    /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<GatherFailedCode>,
+    /// Human-readable error message
+    pub message: String,
+    /// Optional additional context (stack trace, field name, etc.)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+    /// The annotation the gather was asked for.
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+impl GatherFailed {
+    /// The `GatherFailed` that states these and nothing else.
+    pub fn new(message: impl Into<String>, annotation_id: AnnotationId) -> Self {
+        Self {
+            code: None,
+            message: message.into(),
+            details: None,
+            annotation_id,
+        }
+    }
+}
+
+impl Schema for GatherFailed {
+    const NAME: &'static str = "GatherFailed";
+}
+
+/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum GatherFailedCode {
+    #[serde(rename = "peer-unavailable")]
+    PeerUnavailable,
+    #[serde(rename = "not-found")]
+    NotFound,
+    #[serde(rename = "unauthorized")]
+    Unauthorized,
+    #[serde(rename = "none-pending")]
+    NonePending,
+}
+
+impl GatherFailedCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            GatherFailedCode::PeerUnavailable => "peer-unavailable",
+            GatherFailedCode::NotFound => "not-found",
+            GatherFailedCode::Unauthorized => "unauthorized",
+            GatherFailedCode::NonePending => "none-pending",
+        }
+    }
+}
+
+/// Request for the annotations elsewhere that refer to a resource. The Librarian answers from the graph.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherReferencedByRequest {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The one motivation the annotations answered have. Every annotation that refers to the resource is answered where none is stated.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motivation: Option<Motivation>,
+}
+
+impl GatherReferencedByRequest {
+    /// The `GatherReferencedByRequest` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            resource_id,
+            motivation: None,
+        }
+    }
+}
+
+impl Schema for GatherReferencedByRequest {
+    const NAME: &'static str = "GatherReferencedByRequest";
+}
+
+/// The annotations elsewhere that refer to a resource
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherReferencedByResult {
+    pub response: GetReferencedByResponse,
+}
+
+impl Schema for GatherReferencedByResult {
+    const NAME: &'static str = "GatherReferencedByResult";
+}
+
+/// Completion payload emitted on the gather:resource-complete bus channel when resource context gathering finishes.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherResourceComplete {
+    /// Branded ResourceId of the resource whose context was gathered
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The gathered resource context (unified GatheredContext, focus.kind:'resource')
+    pub response: GatheredContext,
+}
+
+impl Schema for GatherResourceComplete {
+    const NAME: &'static str = "GatherResourceComplete";
+}
+
+/// The payload of `gather:resource-failed`: a CommandError that names the resource whose context could not be gathered.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherResourceFailed {
+    /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<GatherResourceFailedCode>,
+    /// Human-readable error message
+    pub message: String,
+    /// Optional additional context (stack trace, field name, etc.)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+    /// The resource the gather was asked for.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl GatherResourceFailed {
+    /// The `GatherResourceFailed` that states these and nothing else.
+    pub fn new(message: impl Into<String>, resource_id: ResourceId) -> Self {
+        Self {
+            code: None,
+            message: message.into(),
+            details: None,
+            resource_id,
+        }
+    }
+}
+
+impl Schema for GatherResourceFailed {
+    const NAME: &'static str = "GatherResourceFailed";
+}
+
+/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum GatherResourceFailedCode {
+    #[serde(rename = "peer-unavailable")]
+    PeerUnavailable,
+    #[serde(rename = "not-found")]
+    NotFound,
+    #[serde(rename = "unauthorized")]
+    Unauthorized,
+    #[serde(rename = "none-pending")]
+    NonePending,
+}
+
+impl GatherResourceFailedCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            GatherResourceFailedCode::PeerUnavailable => "peer-unavailable",
+            GatherResourceFailedCode::NotFound => "not-found",
+            GatherResourceFailedCode::Unauthorized => "unauthorized",
+            GatherResourceFailedCode::NonePending => "none-pending",
+        }
+    }
+}
+
+/// Request payload sent on the gather:resource-requested bus channel to gather context for a resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherResourceRequest {
+    /// Branded ResourceId of the resource to gather context for
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    pub options: GatherResourceRequestOptions,
+}
+
+impl Schema for GatherResourceRequest {
+    const NAME: &'static str = "GatherResourceRequest";
+}
+
+/// Gathering configuration
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherResourceRequestOptions {
+    /// How many links out from the resource the knowledge graph reaches, nearest first: 1 is what the resource links to and what cites it, and each further link out adds what those link to and what cites them
+    pub depth: u16,
+    /// Maximum number of related resources to include
+    #[serde(rename = "maxResources")]
+    pub max_resources: u16,
+    /// Whether to include resource content in the gathered result
+    #[serde(rename = "includeContent")]
+    pub include_content: bool,
+    /// Whether to include resource summaries in the gathered result
+    #[serde(rename = "includeSummary")]
+    pub include_summary: bool,
+    /// Entity types to exclude from the semantic recall built into this context (caller-supplied; e.g. a chat consumer passes ['Question'] so prior questions never ground answer generation). Optional; default none.
+    #[serde(rename = "excludeEntityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exclude_entity_types: Option<Vec<String>>,
+}
+
+impl GatherResourceRequestOptions {
+    /// The `GatherResourceRequestOptions` that states these and nothing else.
+    pub fn new(
+        depth: u16,
+        max_resources: u16,
+        include_content: bool,
+        include_summary: bool,
+    ) -> Self {
+        Self {
+            depth,
+            max_resources,
+            include_content,
+            include_summary,
+            exclude_entity_types: None,
+        }
+    }
+}
+
+impl Schema for GatherResourceRequestOptions {
+    const NAME: &'static str = "GatherResourceRequestOptions";
+}
+
+/// Request to generate an AI summary of an annotation
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatherSummaryRequest {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for GatherSummaryRequest {
+    const NAME: &'static str = "GatherSummaryRequest";
+}
+
+/// Context gathered for a gather.* call — consumed by yield.* (generation) and the matcher. A shared base (graph, semanticContext, metadata, inferredRelationshipSummary) plus a discriminated `focus` that names the anchor: an annotation or a whole resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContext {
+    /// The gather anchor. Discriminated on `kind`.
+    pub focus: GatheredContextFocus,
+    /// Knowledge graph backbone — resources AND annotations as typed nodes. The flattened views (connections, citedBy, siblings) are derived from this.
+    pub graph: KnowledgeGraph,
+    /// Semantically similar passages from across the knowledge base, found via vector search
+    #[serde(rename = "semanticContext")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub semantic_context: Option<GatheredContextSemanticContext>,
+    /// Context metadata about the focal anchor and its source
+    pub metadata: GatheredContextMetadata,
+    /// LLM-generated summary of the focal anchor's relationships in the knowledge graph
+    #[serde(rename = "inferredRelationshipSummary")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inferred_relationship_summary: Option<String>,
+}
+
+impl GatheredContext {
+    /// The `GatheredContext` that states these and nothing else.
+    pub fn new(
+        focus: GatheredContextFocus,
+        graph: KnowledgeGraph,
+        metadata: GatheredContextMetadata,
+    ) -> Self {
+        Self {
+            focus,
+            graph,
+            semantic_context: None,
+            metadata,
+            inferred_relationship_summary: None,
+        }
+    }
+}
+
+impl Schema for GatheredContext {
+    const NAME: &'static str = "GatheredContext";
+}
+
+/// The gather anchor. Discriminated on `kind`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum GatheredContextFocus {
+    Annotation(GatheredContextFocusAnnotation),
+    Resource(GatheredContextFocusResource),
+}
+
+/// Annotation-anchored focus.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContextFocusAnnotation {
+    pub kind: GatheredContextFocusAnnotationKind,
+    /// The annotation this context was gathered for
+    pub annotation: Annotation,
+    /// The resource containing the annotation
+    #[serde(rename = "sourceResource")]
+    pub source_resource: ResourceDescriptor,
+    /// Text context around the annotation target
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selected: Option<GatheredContextFocusAnnotationSelected>,
+    /// User-provided hint to supplement or replace the selected text for search and generation
+    #[serde(rename = "userHint")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user_hint: Option<String>,
+    /// The resource the annotation links to, if it is a resolved reference. Dormant capability — produced/exposed but not yet consumed.
+    #[serde(rename = "targetResource")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target_resource: Option<ResourceDescriptor>,
+    /// Context about the annotation's link target. Dormant — produced/exposed but not yet consumed.
+    #[serde(rename = "targetContext")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target_context: Option<GatheredContextFocusAnnotationTargetContext>,
+}
+
+impl GatheredContextFocusAnnotation {
+    /// The `GatheredContextFocusAnnotation` that states these and nothing else.
+    pub fn new(annotation: Annotation, source_resource: ResourceDescriptor) -> Self {
+        Self {
+            kind: GatheredContextFocusAnnotationKind::Annotation,
+            annotation,
+            source_resource,
+            selected: None,
+            user_hint: None,
+            target_resource: None,
+            target_context: None,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum GatheredContextFocusAnnotationKind {
+    #[serde(rename = "annotation")]
+    Annotation,
+}
+
+impl GatheredContextFocusAnnotationKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            GatheredContextFocusAnnotationKind::Annotation => "annotation",
+        }
+    }
+}
+
+/// Text context around the annotation target
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContextFocusAnnotationSelected {
+    /// Text appearing before the selected passage
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub before: Option<String>,
+    /// The selected text passage (the annotation target)
+    pub text: String,
+    /// Text appearing after the selected passage
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after: Option<String>,
+}
+
+impl GatheredContextFocusAnnotationSelected {
+    /// The `GatheredContextFocusAnnotationSelected` that states these and nothing else.
+    pub fn new(text: impl Into<String>) -> Self {
+        Self {
+            before: None,
+            text: text.into(),
+            after: None,
+        }
+    }
+}
+
+/// Context about the annotation's link target. Dormant — produced/exposed but not yet consumed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContextFocusAnnotationTargetContext {
+    pub content: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub summary: Option<String>,
+}
+
+impl GatheredContextFocusAnnotationTargetContext {
+    /// The `GatheredContextFocusAnnotationTargetContext` that states these and nothing else.
+    pub fn new(content: impl Into<String>) -> Self {
+        Self {
+            content: content.into(),
+            summary: None,
+        }
+    }
+}
+
+/// Whole-resource focus.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContextFocusResource {
+    pub kind: GatheredContextFocusResourceKind,
+    /// The resource this context was gathered for
+    pub resource: ResourceDescriptor,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub summary: Option<String>,
+    #[serde(rename = "suggestedReferences")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suggested_references: Option<Vec<String>>,
+    /// Resource content (included when requested)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content: Option<GatheredContextFocusResourceContent>,
+}
+
+impl GatheredContextFocusResource {
+    /// The `GatheredContextFocusResource` that states these and nothing else.
+    pub fn new(resource: ResourceDescriptor) -> Self {
+        Self {
+            kind: GatheredContextFocusResourceKind::Resource,
+            resource,
+            summary: None,
+            suggested_references: None,
+            content: None,
+        }
+    }
+}
+
+/// Resource content (included when requested)
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContextFocusResourceContent {
+    /// Content of the focal resource
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub main: Option<String>,
+    /// Map of related resource IDs to their content
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub related: Option<std::collections::BTreeMap<String, String>>,
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum GatheredContextFocusResourceKind {
+    #[serde(rename = "resource")]
+    Resource,
+}
+
+impl GatheredContextFocusResourceKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            GatheredContextFocusResourceKind::Resource => "resource",
+        }
+    }
+}
+
+/// Context metadata about the focal anchor and its source
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContextMetadata {
+    /// Type of source resource (e.g., 'document', 'image', 'video')
+    #[serde(rename = "resourceType")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_type: Option<String>,
+    /// BCP 47 language tag of source content
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// Entity types associated with the focal anchor
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// Global frequency counts for entity types (for IDF-like weighting). A KB-wide statistic, not a neighborhood property — kept here rather than on the graph.
+    #[serde(rename = "entityTypeFrequencies")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_type_frequencies: Option<std::collections::BTreeMap<String, i64>>,
+}
+
+/// Semantically similar passages from across the knowledge base, found via vector search
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GatheredContextSemanticContext {
+    /// Passages ranked by cosine similarity to the focal text
+    pub similar: Vec<SemanticMatch>,
+    /// Entity types excluded from this recall — a record of how `similar` was filtered (e.g. ['Question'] so answer-generation never surfaces prior questions). Absent when no exclusion was applied.
+    #[serde(rename = "excludedEntityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub excluded_entity_types: Option<Vec<String>>,
+}
+
+impl GatheredContextSemanticContext {
+    /// The `GatheredContextSemanticContext` that states these and nothing else.
+    pub fn new(similar: Vec<SemanticMatch>) -> Self {
+        Self {
+            similar,
+            excluded_entity_types: None,
+        }
+    }
+}
+
+/// The parameters of a `yield` job: what it is asked to make (GenerationJobRequest) and the gathered context it is made from. The job's resource is derived from `context.focus` by the dispatcher (resource focus → focus.resource; annotation focus → focus.sourceResource, with the worker binding to focus.annotation), and the dispatcher refuses a parameter this schema does not name.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GenerationJobParams {
+    /// Title of the generated resource. Not empty: the gateway refuses a `job:create` whose title is.
+    pub title: String,
+    /// Storage URI for the generated resource's content — AUTHORITATIVE: the worker writes exactly here and never derives a location from the title. Not empty, and there is no fallback: the gateway refuses a `job:create` whose storageUri is.
+    #[serde(rename = "storageUri")]
+    pub storage_uri: String,
+    /// Refining instruction, composed with `task` (task = what, prompt = how).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prompt: Option<String>,
+    /// Entity-type tags to stamp on the synthesized resource. Used both as a prompt bias for the generation worker and as the `entityTypes` set on the resulting resource.
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// Annotation/resource body locale — language the generated resource is written in (typically the user's UI locale). BCP-47.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// Source-resource locale — language of the resource being referenced, used in the prompt so the LLM understands embedded source-context snippets when source ≠ target language. BCP-47.
+    #[serde(rename = "sourceLanguage")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_language: Option<String>,
+    /// Sampling temperature forwarded to the model.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f64>,
+    /// Output token budget forwarded to the model. Length never determines structure.
+    #[serde(rename = "maxTokens")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_tokens: Option<f64>,
+    /// Requested media type of the generated resource's content. Default `text/markdown` at the worker, which validates it against its supported output set and FAILS the job for anything it can't write — not a silent fallback.
+    #[serde(rename = "outputMediaType")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub output_media_type: Option<SupportedMediaType>,
+    /// What the model is asked to produce — the prompt's framing verb. Canonical values ('resource', 'answer', 'summary') map to the worker's tested framings; any other string is used VERBATIM as the framing instruction (loud degrade: the worker warns, never silently falls back). Unset ⇒ 'resource' (article framing).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub task: Option<String>,
+    /// How the output is internally segmented — shape for text-bearing media, subordinate to `outputMediaType` (never its peer). Canonical values: 'prose' (flowing paragraphs), 'sections' (titled sections + title), 'chat' (speaker-labeled turns); any other string becomes a freeform "organize as: …" directive (loud degrade). Unset ⇒ NO structure directive at all — the task framing and the model determine shape.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub structure: Option<String>,
+    /// Ask the model to cite its sources, by the ids the gathered context labels its passages with. The model wraps the words a source supports as `[[<id>: <claim>]]`, the ids of several sources separated by commas; a bare `[[<id>]]` is replaced by the source's name. The worker checks every id against the gathered context (an id it did not show is dropped, with a warning), takes every token out of the stored content, and mints a W3C linking annotation on the new resource over exactly the words each token cites.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cite: Option<bool>,
+    /// The gathered context that grounds the generation. Its `focus` names the anchor: the DISPATCHER derives the job's resourceId from it (resource focus → focus.resource; annotation focus → focus.sourceResource, with the worker auto-binding to focus.annotation) and REJECTS a caller-supplied id — the context is authoritative. Under `cite`, the ids its embedding carries are the only valid citation targets.
+    pub context: GatheredContext,
+}
+
+impl GenerationJobParams {
+    /// The `GenerationJobParams` that states these and nothing else.
+    pub fn new(
+        title: impl Into<String>,
+        storage_uri: impl Into<String>,
+        context: GatheredContext,
+    ) -> Self {
+        Self {
+            title: title.into(),
+            storage_uri: storage_uri.into(),
+            prompt: None,
+            entity_types: None,
+            language: None,
+            source_language: None,
+            temperature: None,
+            max_tokens: None,
+            output_media_type: None,
+            task: None,
+            structure: None,
+            cite: None,
+            context,
+        }
+    }
+}
+
+impl Schema for GenerationJobParams {
+    const NAME: &'static str = "GenerationJobParams";
+}
+
+/// What a `yield` job is asked to make: every parameter of GenerationJobParams but its `context`, the input the resource is made from. It is what an announcement of the job carries.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GenerationJobRequest {
+    /// Title of the generated resource. Not empty: the gateway refuses a `job:create` whose title is.
+    pub title: String,
+    /// Storage URI for the generated resource's content — AUTHORITATIVE: the worker writes exactly here and never derives a location from the title. Not empty, and there is no fallback: the gateway refuses a `job:create` whose storageUri is.
+    #[serde(rename = "storageUri")]
+    pub storage_uri: String,
+    /// Refining instruction, composed with `task` (task = what, prompt = how).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prompt: Option<String>,
+    /// Entity-type tags to stamp on the synthesized resource. Used both as a prompt bias for the generation worker and as the `entityTypes` set on the resulting resource.
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// Annotation/resource body locale — language the generated resource is written in (typically the user's UI locale). BCP-47.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// Source-resource locale — language of the resource being referenced, used in the prompt so the LLM understands embedded source-context snippets when source ≠ target language. BCP-47.
+    #[serde(rename = "sourceLanguage")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_language: Option<String>,
+    /// Sampling temperature forwarded to the model.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f64>,
+    /// Output token budget forwarded to the model. Length never determines structure.
+    #[serde(rename = "maxTokens")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_tokens: Option<f64>,
+    /// Requested media type of the generated resource's content. Default `text/markdown` at the worker, which validates it against its supported output set and FAILS the job for anything it can't write — not a silent fallback.
+    #[serde(rename = "outputMediaType")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub output_media_type: Option<SupportedMediaType>,
+    /// What the model is asked to produce — the prompt's framing verb. Canonical values ('resource', 'answer', 'summary') map to the worker's tested framings; any other string is used VERBATIM as the framing instruction (loud degrade: the worker warns, never silently falls back). Unset ⇒ 'resource' (article framing).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub task: Option<String>,
+    /// How the output is internally segmented — shape for text-bearing media, subordinate to `outputMediaType` (never its peer). Canonical values: 'prose' (flowing paragraphs), 'sections' (titled sections + title), 'chat' (speaker-labeled turns); any other string becomes a freeform "organize as: …" directive (loud degrade). Unset ⇒ NO structure directive at all — the task framing and the model determine shape.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub structure: Option<String>,
+    /// Ask the model to cite its sources, by the ids the gathered context labels its passages with. The model wraps the words a source supports as `[[<id>: <claim>]]`, the ids of several sources separated by commas; a bare `[[<id>]]` is replaced by the source's name. The worker checks every id against the gathered context (an id it did not show is dropped, with a warning), takes every token out of the stored content, and mints a W3C linking annotation on the new resource over exactly the words each token cites.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cite: Option<bool>,
+}
+
+impl GenerationJobRequest {
+    /// The `GenerationJobRequest` that states these and nothing else.
+    pub fn new(title: impl Into<String>, storage_uri: impl Into<String>) -> Self {
+        Self {
+            title: title.into(),
+            storage_uri: storage_uri.into(),
+            prompt: None,
+            entity_types: None,
+            language: None,
+            source_language: None,
+            temperature: None,
+            max_tokens: None,
+            output_media_type: None,
+            task: None,
+            structure: None,
+            cite: None,
+        }
+    }
+}
+
+impl Schema for GenerationJobRequest {
+    const NAME: &'static str = "GenerationJobRequest";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetAnnotationHistoryResponse {
+    pub events: Vec<AttributedEvent>,
+    pub total: f64,
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for GetAnnotationHistoryResponse {
+    const NAME: &'static str = "GetAnnotationHistoryResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetAnnotationResponse {
+    pub annotation: Annotation,
+    pub resource: Option<ResourceDescriptor>,
+    #[serde(rename = "resolvedResource")]
+    pub resolved_resource: Option<ResourceDescriptor>,
+}
+
+impl Schema for GetAnnotationResponse {
+    const NAME: &'static str = "GetAnnotationResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetAnnotationsResponse {
+    pub annotations: Vec<Annotation>,
+    /// Total number of annotations
+    pub total: f64,
+    #[serde(
+        default,
+        deserialize_with = "stated",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub motivation: Option<Option<Motivation>>,
+}
+
+impl GetAnnotationsResponse {
+    /// The `GetAnnotationsResponse` that states these and nothing else.
+    pub fn new(annotations: Vec<Annotation>, total: f64) -> Self {
+        Self {
+            annotations,
+            total,
+            motivation: None,
+        }
+    }
+}
+
+impl Schema for GetAnnotationsResponse {
+    const NAME: &'static str = "GetAnnotationsResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetEntityTypesResponse {
+    #[serde(rename = "entityTypes")]
+    pub entity_types: Vec<String>,
+}
+
+impl Schema for GetEntityTypesResponse {
+    const NAME: &'static str = "GetEntityTypesResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetEventsResponse {
+    pub events: Vec<AttributedEvent>,
+    pub total: f64,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for GetEventsResponse {
+    const NAME: &'static str = "GetEventsResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetReferencedByResponse {
+    #[serde(rename = "referencedBy")]
+    pub referenced_by: Vec<GetReferencedByResponseReferencedByItem>,
+}
+
+impl Schema for GetReferencedByResponse {
+    const NAME: &'static str = "GetReferencedByResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetReferencedByResponseReferencedByItem {
+    /// Reference annotation ID
+    pub id: AnnotationId,
+    /// Name of the resource containing the reference. Absent where no description of that resource is held, and where its name is empty.
+    #[serde(rename = "resourceName")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_name: Option<String>,
+    pub target: GetReferencedByResponseReferencedByItemTarget,
+}
+
+impl GetReferencedByResponseReferencedByItem {
+    /// The `GetReferencedByResponseReferencedByItem` that states these and nothing else.
+    pub fn new(id: AnnotationId, target: GetReferencedByResponseReferencedByItemTarget) -> Self {
+        Self {
+            id,
+            resource_name: None,
+            target,
+        }
+    }
+}
+
+impl Schema for GetReferencedByResponseReferencedByItem {
+    const NAME: &'static str = "GetReferencedByResponseReferencedByItem";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetReferencedByResponseReferencedByItemTarget {
+    /// ID of resource containing the reference
+    pub source: ResourceId,
+    pub selector: GetReferencedByResponseReferencedByItemTargetSelector,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetReferencedByResponseReferencedByItemTargetSelector {
+    /// The selected text that references this resource
+    pub exact: String,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetResourceByTokenResponse {
+    #[serde(rename = "sourceResource")]
+    pub source_resource: ResourceDescriptor,
+    /// ISO 8601 timestamp when token expires
+    #[serde(rename = "expiresAt")]
+    pub expires_at: String,
+}
+
+impl Schema for GetResourceByTokenResponse {
+    const NAME: &'static str = "GetResourceByTokenResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetResourceResponse {
+    pub resource: ResourceDescriptor,
+    /// All annotations for the resource (highlights, references, assessments, etc.)
+    pub annotations: Vec<Annotation>,
+}
+
+impl Schema for GetResourceResponse {
+    const NAME: &'static str = "GetResourceResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GetTagSchemasResponse {
+    #[serde(rename = "tagSchemas")]
+    pub tag_schemas: Vec<TagSchema>,
+}
+
+impl Schema for GetTagSchemasResponse {
+    const NAME: &'static str = "GetTagSchemasResponse";
+}
+
+/// An annotation's graph presence. The node IS the annotation, so the full W3C object is required — selectors and body included, which is what lets a client place context annotations without a second fetch. Citations ride here too: an inbound reference is its linking annotation, anchored by an `annotation-of` edge to the resource it lives on and a `cites` edge to the focal resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GraphAnnotationNode {
+    /// The AnnotationId — the same value as annotation.id
+    pub id: AnnotationId,
+    pub r#type: GraphAnnotationNodeType,
+    /// The annotation's motivation, as a display label
+    pub label: String,
+    /// Entity types carried by the annotation
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    pub annotation: Annotation,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<std::collections::BTreeMap<String, serde_json::Value>>,
+}
+
+impl GraphAnnotationNode {
+    /// The `GraphAnnotationNode` that states these and nothing else.
+    pub fn new(id: AnnotationId, label: impl Into<String>, annotation: Annotation) -> Self {
+        Self {
+            id,
+            r#type: GraphAnnotationNodeType::Annotation,
+            label: label.into(),
+            entity_types: None,
+            annotation,
+            metadata: None,
+        }
+    }
+}
+
+impl Schema for GraphAnnotationNode {
+    const NAME: &'static str = "GraphAnnotationNode";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum GraphAnnotationNodeType {
+    #[serde(rename = "annotation")]
+    Annotation,
+}
+
+impl GraphAnnotationNodeType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            GraphAnnotationNodeType::Annotation => "annotation",
+        }
+    }
+}
+
+/// A resource's presence in the gathered knowledge graph.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct GraphResourceNode {
+    /// The resource's ResourceId
+    pub id: ResourceId,
+    pub r#type: GraphResourceNodeType,
+    /// The resource's display name — its raw id when the resource's view was missing at build time
+    pub label: String,
+    /// Entity types on the resource
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<std::collections::BTreeMap<String, serde_json::Value>>,
+}
+
+impl GraphResourceNode {
+    /// The `GraphResourceNode` that states these and nothing else.
+    pub fn new(id: ResourceId, label: impl Into<String>) -> Self {
+        Self {
+            id,
+            r#type: GraphResourceNodeType::Resource,
+            label: label.into(),
+            entity_types: None,
+            metadata: None,
+        }
+    }
+}
+
+impl Schema for GraphResourceNode {
+    const NAME: &'static str = "GraphResourceNode";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum GraphResourceNodeType {
+    #[serde(rename = "resource")]
+    Resource,
+}
+
+impl GraphResourceNodeType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            GraphResourceNodeType::Resource => "resource",
+        }
+    }
+}
+
+/// Liveness: the process is up and serving. It asks nothing of the Archivist or the broker — a gateway that cannot reach them refuses to start, so one that answers here got past both at boot.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct HealthResponse {
+    pub status: String,
+    pub message: String,
+    pub version: String,
+    pub timestamp: String,
+}
+
+impl Schema for HealthResponse {
+    const NAME: &'static str = "HealthResponse";
+}
+
+/// What a highlighting job takes: passages of the resource worth a reader's attention are marked, with no text of the job's own.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct HighlightingJobParams {
+    pub motivation: HighlightingJobParamsMotivation,
+    /// What to look for, in the caller's words. Added to the prompt.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instructions: Option<String>,
+    /// How many annotations to aim for per 2000 words of the resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub density: Option<f64>,
+    /// The language of the resource being read. BCP 47.
+    #[serde(rename = "sourceLanguage")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_language: Option<String>,
+}
+
+impl Default for HighlightingJobParams {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl HighlightingJobParams {
+    /// The `HighlightingJobParams` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            motivation: HighlightingJobParamsMotivation::Highlighting,
+            instructions: None,
+            density: None,
+            source_language: None,
+        }
+    }
+}
+
+impl Schema for HighlightingJobParams {
+    const NAME: &'static str = "HighlightingJobParams";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum HighlightingJobParamsMotivation {
+    #[serde(rename = "highlighting")]
+    Highlighting,
+}
+
+impl HighlightingJobParamsMotivation {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            HighlightingJobParamsMotivation::Highlighting => "highlighting",
+        }
+    }
+}
+
+/// A knowledge base reached through its gateway, over HTTP. The gateway's origin is the protocol, the host in lowercase and the port; a host that is not a host's name is refused before it is put into a URL (specs/src/session/gateway-url-cases.json).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct HttpEndpoint {
+    /// Discriminant: the endpoint is a gateway reached over HTTP.
+    pub kind: HttpEndpointKind,
+    /// The gateway's host, as a person or a discovery document gave it.
+    pub host: String,
+    /// The gateway's port.
+    pub port: u16,
+    /// What the gateway is reached over.
+    pub protocol: HttpEndpointProtocol,
+}
+
+impl HttpEndpoint {
+    /// The `HttpEndpoint` that states these and nothing else.
+    pub fn new(host: impl Into<String>, port: u16, protocol: HttpEndpointProtocol) -> Self {
+        Self {
+            kind: HttpEndpointKind::Http,
+            host: host.into(),
+            port,
+            protocol,
+        }
+    }
+}
+
+impl Schema for HttpEndpoint {
+    const NAME: &'static str = "HttpEndpoint";
+}
+
+/// Discriminant: the endpoint is a gateway reached over HTTP.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum HttpEndpointKind {
+    #[serde(rename = "http")]
+    Http,
+}
+
+impl HttpEndpointKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            HttpEndpointKind::Http => "http",
+        }
+    }
+}
+
+/// What the gateway is reached over.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum HttpEndpointProtocol {
+    #[serde(rename = "http")]
+    Http,
+    #[serde(rename = "https")]
+    Https,
+}
+
+impl HttpEndpointProtocol {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            HttpEndpointProtocol::Http => "http",
+            HttpEndpointProtocol::Https => "https",
+        }
+    }
+}
+
+/// A provider's actual ceilings for a model, discovered from the provider itself (Anthropic Models API; Ollama /api/show) — never hand-maintained constants. Semantics differ by provider shape: Anthropic reports maximum input tokens in contextTokens with a separate output ceiling in maxOutputTokens; Ollama reports the shared input+output window and mirrors it into both fields (there is no separate output ceiling), so maxOutputTokens === contextTokens signals a shared window.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct InferenceLimits {
+    /// The context window in tokens. Anthropic: maximum input tokens (output has its own ceiling). Ollama: the shared input+output window.
+    #[serde(rename = "contextTokens")]
+    pub context_tokens: f64,
+    /// Maximum output tokens per generation. Equal to contextTokens when the provider has a single shared window.
+    #[serde(rename = "maxOutputTokens")]
+    pub max_output_tokens: f64,
+    /// Whether this engine accepts a caller-supplied sampling temperature, measured against the provider (Anthropic: an active probe at discovery, because some models reject the parameter outright and the Models API does not say; Ollama: always true). Consumers treat only an explicit false as 'hide temperature controls' — absence means no claim.
+    #[serde(rename = "acceptsTemperature")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accepts_temperature: Option<bool>,
+}
+
+impl InferenceLimits {
+    /// The `InferenceLimits` that states these and nothing else.
+    pub fn new(context_tokens: f64, max_output_tokens: f64) -> Self {
+        Self {
+            context_tokens,
+            max_output_tokens,
+            accepts_temperature: None,
+        }
+    }
+}
+
+impl Schema for InferenceLimits {
+    const NAME: &'static str = "InferenceLimits";
+}
+
+/// Request for the inference limits of the engines one service holds a client for. Answered on job:limits-requested by the worker, and on gather:limits-requested and match:limits-requested by the librarian: each service that holds an inference credential reports for its own engines, so no other service needs one.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct InferenceLimitsRequest {}
+
+impl Schema for InferenceLimitsRequest {
+    const NAME: &'static str = "InferenceLimitsRequest";
+}
+
+/// The inference limits one service discovered for the engines it holds a client for. An engine whose discovery is currently unavailable is absent.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct InferenceLimitsResult {
+    pub response: InferenceLimitsResultResponse,
+}
+
+impl Schema for InferenceLimitsResult {
+    const NAME: &'static str = "InferenceLimitsResult";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct InferenceLimitsResultResponse {
+    pub limits: Vec<EngineLimits>,
+}
+
+/// A job as the dispatcher holds it. Its `status` decides which timestamps and outcome fields it carries. It is what a claim returns (`job:claimed`, always `running`) and what the queue stores, inside a JobRecord.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum Job {
+    Pending(JobPending),
+    Running(JobRunning),
+    Complete(JobComplete),
+    Failed(JobFailed),
+    Cancelled(JobCancelled),
+}
+
+impl<'de> serde::Deserialize<'de> for Job {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("status").and_then(serde_json::Value::as_str) {
+            Some("pending") => serde_json::from_value(value).map(Job::Pending),
+            Some("running") => serde_json::from_value(value).map(Job::Running),
+            Some("complete") => serde_json::from_value(value).map(Job::Complete),
+            Some("failed") => serde_json::from_value(value).map(Job::Failed),
+            Some("cancelled") => serde_json::from_value(value).map(Job::Cancelled),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a Job states a `status` that is one of `pending`, `running`, `complete`, `failed`, `cancelled`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<JobPending> for Job {
+    fn from(member: JobPending) -> Self {
+        Job::Pending(member)
+    }
+}
+
+impl From<JobRunning> for Job {
+    fn from(member: JobRunning) -> Self {
+        Job::Running(member)
+    }
+}
+
+impl From<JobComplete> for Job {
+    fn from(member: JobComplete) -> Self {
+        Job::Complete(member)
+    }
+}
+
+impl From<JobFailed> for Job {
+    fn from(member: JobFailed) -> Self {
+        Job::Failed(member)
+    }
+}
+
+impl From<JobCancelled> for Job {
+    fn from(member: JobCancelled) -> Self {
+        Job::Cancelled(member)
+    }
+}
+
+impl Schema for Job {
+    const NAME: &'static str = "Job";
+}
+
+/// Bus command the dispatcher emits, under its own service identity, immediately after it accepts a job:claim — the correlated job:claimed reply is unchanged. The Stower persists it as job:assigned. It is the one fact only the dispatcher can vouch for: which holder took which job, and who requested it. A later write citing `jobId` is checked against the holder and its `creator` derived from the requester by reading the resource's own log, with nothing outside the record.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobAssignCommand {
+    /// The dispatcher's service DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// The job's resource — for a generation, the source it generates from. The assignment is persisted on this resource's log.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// DID of the claimant whose claim was accepted — the `_userId` the gateway stamped on the job:claim, restated by the dispatcher.
+    pub holder: UserId,
+    /// DID of the emitter of the job:create that produced this job — the `_userId` the gateway stamped on that create, restated by the dispatcher.
+    pub requester: UserId,
+}
+
+impl JobAssignCommand {
+    /// The `JobAssignCommand` that states these and nothing else.
+    pub fn new(
+        job_id: JobId,
+        job_type: JobType,
+        resource_id: ResourceId,
+        holder: UserId,
+        requester: UserId,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            job_id,
+            job_type,
+            resource_id,
+            holder,
+            requester,
+        }
+    }
+}
+
+impl Schema for JobAssignCommand {
+    const NAME: &'static str = "JobAssignCommand";
+}
+
+/// Payload for job:assigned — the dispatcher's own record that it accepted a claim. Emitted by the dispatcher under its service identity after a successful job:claim (the correlated job:claimed reply is unchanged). This is the one fact only the dispatcher can vouch for: which holder took which job, and who requested it. The Stower persists it beside job:started so that a write citing `jobId` can be checked against the holder and its `creator` derived from the requester with no read outside the event log.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobAssignedPayload {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// The job's resource — for a generation, the source it generates from. Job events are scoped here.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// DID of the emitter whose claim the dispatcher accepted. The bus stamped it on the job:claim as `_userId`; the dispatcher restates it here under its own identity.
+    pub holder: UserId,
+    /// DID of the emitter of the job:create that produced this job. The dispatcher restates the `_userId` the gateway stamped on that create.
+    pub requester: UserId,
+}
+
+impl Schema for JobAssignedPayload {
+    const NAME: &'static str = "JobAssignedPayload";
+}
+
+/// A worker's settling of a running job it holds whose work it has stopped for a cancellation — the queue moves the job to cancelled/. Distinct from JobCancelRequest (the client→worker REQUEST to stop): this is the worker announcing it did, so the running job is never yanked to cancelled/ out from under a live worker (the roach-motel race).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobCancelCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// Annotation this job is attached to, when applicable. Lets the UI route cancellation feedback to a specific annotation.
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    /// The units the worker had finished when it stopped. Recorded on the cancelled job's metadata so the work already done stays visible.
+    #[serde(rename = "completedUnits")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub completed_units: Option<Vec<String>>,
+    /// The furthest each unit begun got, keyed by unit, with what it had counted there — the grain `completedUnits` cannot express. A unit named in `completedUnits` is stated here too, by the cursor it ended at: a later attempt skips it whole and counts it by that cursor. A cursor never says a unit is finished; only `completedUnits` does. Merged monotonically per unit, finished or not: a stale snapshot must never move a cursor backward.
+    #[serde(rename = "unitCursors")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unit_cursors: Option<std::collections::BTreeMap<String, UnitCursor>>,
+}
+
+impl JobCancelCommand {
+    /// The `JobCancelCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId, job_id: JobId, job_type: JobType) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            job_id,
+            job_type,
+            annotation_id: None,
+            completed_units: None,
+            unit_cursors: None,
+        }
+    }
+}
+
+impl Schema for JobCancelCommand {
+    const NAME: &'static str = "JobCancelCommand";
+}
+
+/// Request to cancel one job, named by its id. A pending job is cancelled immediately by the dispatcher. A running job is cancelled only by the worker that holds it: the worker stops its work and settles the job with `job:cancel` (JobCancelCommand). The queue is never made to yank a running job out from under a live worker.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobCancelRequest {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+}
+
+impl Schema for JobCancelRequest {
+    const NAME: &'static str = "JobCancelRequest";
+}
+
+/// What a cancel did, in the `response` of `job:cancel-ok`: whether the queue acted on the job it named. A pending job is cancelled outright; a running one is left to its worker, so for it true means accepted, not stopped.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobCancelResult {
+    /// True when the queue acted on the job; false when the job is unknown or already over.
+    pub cancelled: bool,
+}
+
+impl Schema for JobCancelResult {
+    const NAME: &'static str = "JobCancelResult";
+}
+
+/// A job cancelled before it concluded.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobCancelled {
+    pub status: JobCancelledStatus,
+    pub metadata: JobMetadata,
+    pub params: JobParams,
+    /// When its claim was made; absent when it was cancelled while pending.
+    #[serde(rename = "startedAt")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub started_at: Option<String>,
+    /// When it was cancelled.
+    #[serde(rename = "completedAt")]
+    pub completed_at: String,
+}
+
+impl JobCancelled {
+    /// The `JobCancelled` that states these and nothing else.
+    pub fn new(metadata: JobMetadata, params: JobParams, completed_at: impl Into<String>) -> Self {
+        Self {
+            status: JobCancelledStatus::Cancelled,
+            metadata,
+            params,
+            started_at: None,
+            completed_at: completed_at.into(),
+        }
+    }
+}
+
+impl Schema for JobCancelled {
+    const NAME: &'static str = "JobCancelled";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobCancelledStatus {
+    #[serde(rename = "cancelled")]
+    Cancelled,
+}
+
+impl JobCancelledStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobCancelledStatus::Cancelled => "cancelled",
+        }
+    }
+}
+
+/// Command to persist a running job's completed-unit checkpoint AT unit completion. Distinct from JobFailCommand's checkpoint, which lands only on a clean failure: a worker that dies (crash/OOM/kill) never emits job:fail, so this durable, unthrottled write is what lets the janitor's stale-running recovery resume a dead worker's job rather than redo its finished units.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobCheckpointCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    /// Entity-type units whose annotations have been fully emitted so far. Unioned into the running job's metadata checkpoint; a retry after recovery skips them.
+    #[serde(rename = "completedUnits")]
+    pub completed_units: Vec<String>,
+    /// The furthest each unit begun got, keyed by unit, with what it had counted there — the grain `completedUnits` cannot express. A unit named in `completedUnits` is stated here too, by the cursor it ended at: a later attempt skips it whole and counts it by that cursor. A cursor never says a unit is finished; only `completedUnits` does. Merged monotonically per unit, finished or not: a stale snapshot must never move a cursor backward.
+    #[serde(rename = "unitCursors")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unit_cursors: Option<std::collections::BTreeMap<String, UnitCursor>>,
+}
+
+impl JobCheckpointCommand {
+    /// The `JobCheckpointCommand` that states these and nothing else.
+    pub fn new(job_id: JobId, completed_units: Vec<String>) -> Self {
+        Self {
+            _user_id: None,
+            job_id,
+            completed_units,
+            unit_cursors: None,
+        }
+    }
+}
+
+impl Schema for JobCheckpointCommand {
+    const NAME: &'static str = "JobCheckpointCommand";
+}
+
+/// Claim the NEXT pending job that matches one of `accepts` (atomic: pending → running). A job:queued announcement is a WAKE-UP, not a reservation: the claimed job may differ from the announced one, and two claims after one announcement both succeed on different jobs instead of racing for one. job:claimed carries the claimed job; job:claim-failed reports that nothing matching is pending.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobClaimCommand {
+    /// The jobs this claim takes. A job is handed over when it matches any one of them.
+    pub accepts: Vec<JobFilter>,
+    /// Authenticated claimant's DID, injected by the /bus/emit gateway. Clients do not set this. The dispatcher records it as the holder on job:assigned.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    /// The claimant's capabilities (the token's `roles`), injected by the /bus/emit gateway. Clients do not set this. The dispatcher authorizes the claim by capability — it admits the claim only when this carries the worker role — so a claimant that is not a worker for this knowledge base is refused before the queue is consulted.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _roles: Option<Vec<String>>,
+}
+
+impl JobClaimCommand {
+    /// The `JobClaimCommand` that states these and nothing else.
+    pub fn new(accepts: Vec<JobFilter>) -> Self {
+        Self {
+            accepts,
+            _user_id: None,
+            _roles: None,
+        }
+    }
+}
+
+impl Schema for JobClaimCommand {
+    const NAME: &'static str = "JobClaimCommand";
+}
+
+/// The reply to a successful `job:claim`: the claimed job, now running under the claimant.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobClaimedResult {
+    pub response: JobRunning,
+}
+
+impl Schema for JobClaimedResult {
+    const NAME: &'static str = "JobClaimedResult";
+}
+
+/// A job its worker completed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobComplete {
+    pub status: JobCompleteStatus,
+    pub metadata: JobMetadata,
+    pub params: JobParams,
+    /// When the claim that completed it was made.
+    #[serde(rename = "startedAt")]
+    pub started_at: String,
+    /// When it completed.
+    #[serde(rename = "completedAt")]
+    pub completed_at: String,
+    pub result: JobStoredResult,
+}
+
+impl JobComplete {
+    /// The `JobComplete` that states these and nothing else.
+    pub fn new(
+        metadata: JobMetadata,
+        params: JobParams,
+        started_at: impl Into<String>,
+        completed_at: impl Into<String>,
+        result: JobStoredResult,
+    ) -> Self {
+        Self {
+            status: JobCompleteStatus::Complete,
+            metadata,
+            params,
+            started_at: started_at.into(),
+            completed_at: completed_at.into(),
+            result,
+        }
+    }
+}
+
+impl Schema for JobComplete {
+    const NAME: &'static str = "JobComplete";
+}
+
+/// A job's worker says the job is complete. The result it carries is its verb's: a `mark` job's counts or the resource a `yield` job made, or a decline from either. A completion whose result is the other verb's is refused where the command is admitted.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobCompleteCommand {
+    MarkJobCompleteCommand(MarkJobCompleteCommand),
+    YieldJobCompleteCommand(YieldJobCompleteCommand),
+}
+
+impl<'de> serde::Deserialize<'de> for JobCompleteCommand {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("jobType").and_then(serde_json::Value::as_str) {
+            Some("mark") => {
+                serde_json::from_value(value).map(JobCompleteCommand::MarkJobCompleteCommand)
+            }
+            Some("yield") => {
+                serde_json::from_value(value).map(JobCompleteCommand::YieldJobCompleteCommand)
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a JobCompleteCommand states a `jobType` that is one of `mark`, `yield`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<MarkJobCompleteCommand> for JobCompleteCommand {
+    fn from(member: MarkJobCompleteCommand) -> Self {
+        JobCompleteCommand::MarkJobCompleteCommand(member)
+    }
+}
+
+impl From<YieldJobCompleteCommand> for JobCompleteCommand {
+    fn from(member: YieldJobCompleteCommand) -> Self {
+        JobCompleteCommand::YieldJobCompleteCommand(member)
+    }
+}
+
+impl Schema for JobCompleteCommand {
+    const NAME: &'static str = "JobCompleteCommand";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobCompleteStatus {
+    #[serde(rename = "complete")]
+    Complete,
+}
+
+impl JobCompleteStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobCompleteStatus::Complete => "complete",
+        }
+    }
+}
+
+/// Payload for job:completed domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobCompletedPayload {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt: Option<i64>,
+    /// Annotation this job was attached to, when applicable
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    #[serde(rename = "totalSteps")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_steps: Option<i64>,
+    /// For detection: total entities found
+    #[serde(rename = "foundCount")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub found_count: Option<i64>,
+    /// For generation: ID of generated resource
+    #[serde(rename = "resultResourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result_resource_id: Option<ResourceId>,
+    /// For generation: URI of annotation that triggered generation
+    #[serde(rename = "annotationUri")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_uri: Option<String>,
+    /// Full result object for extensibility
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result: Option<serde_json::Map<String, serde_json::Value>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub durability: Option<DurabilityEvidence>,
+}
+
+impl JobCompletedPayload {
+    /// The `JobCompletedPayload` that states these and nothing else.
+    pub fn new(job_id: JobId, job_type: JobType) -> Self {
+        Self {
+            job_id,
+            job_type,
+            attempt: None,
+            annotation_id: None,
+            total_steps: None,
+            found_count: None,
+            result_resource_id: None,
+            annotation_uri: None,
+            result: None,
+            durability: None,
+        }
+    }
+}
+
+impl Schema for JobCompletedPayload {
+    const NAME: &'static str = "JobCompletedPayload";
+}
+
+/// Create a job. A job description is its `jobType` and enough parameters to be well formed: a `mark` job names its resource and, in its parameters, its motivation; a `yield` job names its context.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobCreateCommand {
+    MarkJobCreateCommand(MarkJobCreateCommand),
+    YieldJobCreateCommand(YieldJobCreateCommand),
+}
+
+impl<'de> serde::Deserialize<'de> for JobCreateCommand {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("jobType").and_then(serde_json::Value::as_str) {
+            Some("mark") => {
+                serde_json::from_value(value).map(JobCreateCommand::MarkJobCreateCommand)
+            }
+            Some("yield") => {
+                serde_json::from_value(value).map(JobCreateCommand::YieldJobCreateCommand)
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a JobCreateCommand states a `jobType` that is one of `mark`, `yield`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<MarkJobCreateCommand> for JobCreateCommand {
+    fn from(member: MarkJobCreateCommand) -> Self {
+        JobCreateCommand::MarkJobCreateCommand(member)
+    }
+}
+
+impl From<YieldJobCreateCommand> for JobCreateCommand {
+    fn from(member: YieldJobCreateCommand) -> Self {
+        JobCreateCommand::YieldJobCreateCommand(member)
+    }
+}
+
+impl Schema for JobCreateCommand {
+    const NAME: &'static str = "JobCreateCommand";
+}
+
+/// Result of a job:create command
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobCreatedResult {
+    pub response: JobCreatedResultResponse,
+}
+
+impl Schema for JobCreatedResult {
+    const NAME: &'static str = "JobCreatedResult";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobCreatedResultResponse {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+}
+
+impl Schema for JobCreatedResultResponse {
+    const NAME: &'static str = "JobCreatedResultResponse";
+}
+
+/// Result of a job that completed without doing its work because the resource could not be read. Distinct from a failure: nothing went wrong, there was simply no text to work with — an encrypted or damaged PDF, a scan whose text could not be recognized, or a document that yielded nothing. The reasons are the extraction vocabulary the Smelter reports on `smelt:settled`, MINUS `no-extractor`: a media type that can never yield text (a zip, an image) is a bad request rather than a decline, so a worker asked to detect over one throws and the job reports `job:fail`. Everything here is a resource-specific outcome — the same media type would have succeeded on a different document.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobDeclined {
+    /// Always true. It is what tells a decline from the result of a job that did its work, which never carries it.
+    pub declined: bool,
+    /// Why the resource could not be read. A CODE, not a sentence: the client owns the wording, so a browser renders it in the user's language and the CLI renders English terminal copy from the same value. A prose `message` composed server-side would be English everywhere.
+    pub reason: JobDeclinedReason,
+}
+
+impl Schema for JobDeclined {
+    const NAME: &'static str = "JobDeclined";
+}
+
+/// Why the resource could not be read. A CODE, not a sentence: the client owns the wording, so a browser renders it in the user's language and the CLI renders English terminal copy from the same value. A prose `message` composed server-side would be English everywhere.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobDeclinedReason {
+    #[serde(rename = "no-text-layer")]
+    NoTextLayer,
+    #[serde(rename = "encrypted")]
+    Encrypted,
+    #[serde(rename = "corrupt")]
+    Corrupt,
+    #[serde(rename = "too-large")]
+    TooLarge,
+    #[serde(rename = "empty")]
+    Empty,
+}
+
+impl JobDeclinedReason {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobDeclinedReason::NoTextLayer => "no-text-layer",
+            JobDeclinedReason::Encrypted => "encrypted",
+            JobDeclinedReason::Corrupt => "corrupt",
+            JobDeclinedReason::TooLarge => "too-large",
+            JobDeclinedReason::Empty => "empty",
+        }
+    }
+}
+
+/// Command to mark a job as failed
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobFailCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt: Option<i64>,
+    /// Annotation this job is attached to, when applicable. Lets the UI route failure feedback (error toast, revert state) to a specific annotation.
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    pub error: String,
+    /// Entity-type units whose annotations were fully emitted before this failure (checkpointed resume). The queue records them on the retried job's metadata; a retried claim skips them so completed work is neither redone nor duplicated.
+    #[serde(rename = "completedUnits")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub completed_units: Option<Vec<String>>,
+    /// The furthest each unit begun got, keyed by unit, with what it had counted there — the grain `completedUnits` cannot express. A unit named in `completedUnits` is stated here too, by the cursor it ended at: a later attempt skips it whole and counts it by that cursor. A cursor never says a unit is finished; only `completedUnits` does. Merged monotonically per unit, finished or not: a stale snapshot must never move a cursor backward.
+    #[serde(rename = "unitCursors")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unit_cursors: Option<std::collections::BTreeMap<String, UnitCursor>>,
+    #[serde(rename = "failureClass")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failure_class: Option<FailureClass>,
+    /// Whether the queue will re-queue this job for another attempt. Computed by the worker from the SAME rule the queue applies when it takes the failure (specs/src/jobs/retry-cases.json, which every SDK and the dispatcher run) using the retry budget carried on the claimed record. FALSE (or absent) means this failure is TERMINAL: a client's job-watch stream ends here. TRUE means the work continues on a fresh attempt — the failure is an event, not the end, and a stream that terminated on it would report a recovering run as a failed one.
+    #[serde(rename = "willRetry")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub will_retry: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub durability: Option<DurabilityEvidence>,
+}
+
+impl JobFailCommand {
+    /// The `JobFailCommand` that states these and nothing else.
+    pub fn new(
+        resource_id: ResourceId,
+        job_id: JobId,
+        job_type: JobType,
+        error: impl Into<String>,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            job_id,
+            job_type,
+            attempt: None,
+            annotation_id: None,
+            error: error.into(),
+            completed_units: None,
+            unit_cursors: None,
+            failure_class: None,
+            will_retry: None,
+            durability: None,
+        }
+    }
+}
+
+impl Schema for JobFailCommand {
+    const NAME: &'static str = "JobFailCommand";
+}
+
+/// A job that failed and will not be retried.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobFailed {
+    pub status: JobFailedStatus,
+    pub metadata: JobMetadata,
+    pub params: JobParams,
+    /// When the last claim was made; absent when it failed without one.
+    #[serde(rename = "startedAt")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub started_at: Option<String>,
+    /// When it failed.
+    #[serde(rename = "completedAt")]
+    pub completed_at: String,
+    /// The failure's message.
+    pub error: String,
+    #[serde(rename = "failureClass")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failure_class: Option<FailureClass>,
+}
+
+impl JobFailed {
+    /// The `JobFailed` that states these and nothing else.
+    pub fn new(
+        metadata: JobMetadata,
+        params: JobParams,
+        completed_at: impl Into<String>,
+        error: impl Into<String>,
+    ) -> Self {
+        Self {
+            status: JobFailedStatus::Failed,
+            metadata,
+            params,
+            started_at: None,
+            completed_at: completed_at.into(),
+            error: error.into(),
+            failure_class: None,
+        }
+    }
+}
+
+impl Schema for JobFailed {
+    const NAME: &'static str = "JobFailed";
+}
+
+/// Payload for the job:failed domain event — a permanent fact of the resource, not operational state. It carries the judgments the worker COMPUTED, not just its message: at the log they are otherwise unrecoverable, the only remaining witness being a flattened English string.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobFailedPayload {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt: Option<i64>,
+    /// Annotation this job was attached to, when applicable
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    pub error: String,
+    #[serde(rename = "failureClass")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failure_class: Option<FailureClass>,
+    /// Whether the worker computed that the queue would re-queue this job (same predicate the queue applies, `willRetryAfter`). Absent means the worker stated nothing. Without it a reader of the log cannot tell a run recovering across several job:failed events from that many dead jobs.
+    #[serde(rename = "willRetry")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub will_retry: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub durability: Option<DurabilityEvidence>,
+}
+
+impl JobFailedPayload {
+    /// The `JobFailedPayload` that states these and nothing else.
+    pub fn new(job_id: JobId, job_type: JobType, error: impl Into<String>) -> Self {
+        Self {
+            job_id,
+            job_type,
+            attempt: None,
+            annotation_id: None,
+            error: error.into(),
+            failure_class: None,
+            will_retry: None,
+            durability: None,
+        }
+    }
+}
+
+impl Schema for JobFailedPayload {
+    const NAME: &'static str = "JobFailedPayload";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobFailedStatus {
+    #[serde(rename = "failed")]
+    Failed,
+}
+
+impl JobFailedStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobFailedStatus::Failed => "failed",
+        }
+    }
+}
+
+/// Some jobs, named by fields of the job description: a partial description, at the description's own paths. A job matches when every field stated here equals the job's. A `mark` filter always states its motivation.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobFilter {
+    MarkJobFilter(MarkJobFilter),
+    YieldJobFilter(YieldJobFilter),
+}
+
+impl<'de> serde::Deserialize<'de> for JobFilter {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("jobType").and_then(serde_json::Value::as_str) {
+            Some("mark") => serde_json::from_value(value).map(JobFilter::MarkJobFilter),
+            Some("yield") => serde_json::from_value(value).map(JobFilter::YieldJobFilter),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a JobFilter states a `jobType` that is one of `mark`, `yield`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<MarkJobFilter> for JobFilter {
+    fn from(member: MarkJobFilter) -> Self {
+        JobFilter::MarkJobFilter(member)
+    }
+}
+
+impl From<YieldJobFilter> for JobFilter {
+    fn from(member: YieldJobFilter) -> Self {
+        JobFilter::YieldJobFilter(member)
+    }
+}
+
+impl Schema for JobFilter {
+    const NAME: &'static str = "JobFilter";
+}
+
+/// A job's id. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+#[serde(try_from = "String", into = "String")]
+pub struct JobId(String);
+
+impl JobId {
+    /// The rule a value is held to, as the spec writes it.
+    pub const PATTERN: &'static str = "^[A-Za-z0-9_-]{1,128}$";
+
+    /// The pattern as the rule `new` holds a value to.
+    const RULE: Rule = Rule {
+        prefix: "",
+        admitted: Admitted::Of(&[('A', 'Z'), ('a', 'z'), ('0', '9'), ('_', '_'), ('-', '-')]),
+        least: 1,
+        most: Some(128),
+    };
+
+    /// `value` as a `JobId`, or that it is not one.
+    pub fn new(value: impl Into<String>) -> Result<JobId, InvalidIdentifier> {
+        let value = value.into();
+        if JobId::RULE.admits(&value) {
+            Ok(JobId(value))
+        } else {
+            Err(InvalidIdentifier {
+                kind: "JobId",
+                pattern: JobId::PATTERN,
+                value,
+            })
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for JobId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::ops::Deref for JobId {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<str> for JobId {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::str::FromStr for JobId {
+    type Err = InvalidIdentifier;
+
+    fn from_str(value: &str) -> Result<JobId, InvalidIdentifier> {
+        JobId::new(value)
+    }
+}
+
+impl TryFrom<String> for JobId {
+    type Error = InvalidIdentifier;
+
+    fn try_from(value: String) -> Result<JobId, InvalidIdentifier> {
+        JobId::new(value)
+    }
+}
+
+impl From<JobId> for String {
+    fn from(id: JobId) -> String {
+        id.0
+    }
+}
+
+impl PartialEq<str> for JobId {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl PartialEq<&str> for JobId {
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
+    }
+}
+
+impl Schema for JobId {
+    const NAME: &'static str = "JobId";
+}
+
+/// What the dispatcher records about a job beside its parameters. `completedUnits` and `unitCursors` appear once a worker has checkpointed. `retryCount` counts the times the queue has put the job back to pending after a failure it classes as transient.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobMetadata {
+    /// The job's id: `job-` followed by a version 4 UUID written as 32 lowercase hex digits, without dashes.
+    pub id: JobId,
+    pub r#type: JobType,
+    /// The DID of the principal whose `job:create` created the job.
+    #[serde(rename = "userId")]
+    pub user_id: UserId,
+    /// When the job was created, as an ISO 8601 timestamp.
+    pub created: String,
+    #[serde(rename = "retryCount")]
+    pub retry_count: u64,
+    /// How many transient failures the queue retries: 0 for generation, whose re-run produces different content; 1 for every other type.
+    #[serde(rename = "maxRetries")]
+    pub max_retries: u64,
+    /// The units a worker has finished, merged across checkpoints and failures as a set.
+    #[serde(rename = "completedUnits")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub completed_units: Option<Vec<String>>,
+    /// The furthest each unit begun got, keyed by unit, with what it had counted there. A finished unit keeps its cursor: where it ended, and its final counts.
+    #[serde(rename = "unitCursors")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unit_cursors: Option<std::collections::BTreeMap<String, UnitCursor>>,
+}
+
+impl JobMetadata {
+    /// The `JobMetadata` that states these and nothing else.
+    pub fn new(
+        id: JobId,
+        r#type: JobType,
+        user_id: UserId,
+        created: impl Into<String>,
+        retry_count: u64,
+        max_retries: u64,
+    ) -> Self {
+        Self {
+            id,
+            r#type,
+            user_id,
+            created: created.into(),
+            retry_count,
+            max_retries,
+            completed_units: None,
+            unit_cursors: None,
+        }
+    }
+}
+
+impl Schema for JobMetadata {
+    const NAME: &'static str = "JobMetadata";
+}
+
+/// A job's parameters as the Dispatcher holds them: the `params` of its `job:create`, and what the Dispatcher adds. It adds `resourceId`, the resource the job is about: a `mark` job's own, and for a `yield` job the one its context focuses on. For a tagging job it adds `schema`, the tag schema its `schemaId` names, so that whoever holds the job needs no registry. Nothing the caller sent is changed or removed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobParams {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The tag schema a tagging job's `schemaId` names, as the knowledge base registered it when the job was created. On a tagging job, and on no other.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema: Option<TagSchema>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+impl JobParams {
+    /// The `JobParams` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            resource_id,
+            schema: None,
+            rest: serde_json::Map::new(),
+        }
+    }
+}
+
+impl Schema for JobParams {
+    const NAME: &'static str = "JobParams";
+}
+
+/// A job waiting for a worker to claim it.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobPending {
+    pub status: JobPendingStatus,
+    pub metadata: JobMetadata,
+    pub params: JobParams,
+}
+
+impl JobPending {
+    /// The `JobPending` that states these and nothing else.
+    pub fn new(metadata: JobMetadata, params: JobParams) -> Self {
+        Self {
+            status: JobPendingStatus::Pending,
+            metadata,
+            params,
+        }
+    }
+}
+
+impl Schema for JobPending {
+    const NAME: &'static str = "JobPending";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobPendingStatus {
+    #[serde(rename = "pending")]
+    Pending,
+}
+
+impl JobPendingStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobPendingStatus::Pending => "pending",
+        }
+    }
+}
+
+/// Progress report from a running job. The required field is `percentage`; `message` carries the coded phase and the rest are optional job-shape fields. This is the single progress shape for every job type — annotation workers and generation alike. Terminality is signalled on `job:complete` / `job:fail`, not here. A flow that iterates a user-chosen list (entity types for references, categories for tags) reports its position as one `current`/`processed`/`total` triple, the same shape for both, so a client never needs to know which flow it is drawing.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgress {
+    /// Completion percentage (0-100)
+    pub percentage: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<JobProgressMessage>,
+    /// Annotation this job is attached to, when applicable. Echoed inside JobProgress (in addition to the outer command envelope) so consumers that only see the inner progress object (e.g. what `yield.delegate` returns) can still route visual feedback to a specific annotation.
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    /// What the run is working on right now. `kind` is a CODE the client renders a localized name for; `value` is KB data (an entity type, a tag category) shown verbatim — the same split as `requestParams`. Absent on flows that iterate nothing, such as generation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub current: Option<JobProgressCurrent>,
+    /// Items completed so far, zero-based — the item in `current` is the one after these. Paired with `total`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub processed: Option<i64>,
+    /// Items this run will process in all.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total: Option<i64>,
+    /// Entities found so far (a linking job)
+    #[serde(rename = "entitiesFound")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entities_found: Option<i64>,
+    /// Cumulative mentions the count-verifier priced across the pieces accepted so far — the denominator for a real progress bar (found of ~expected). Approximate by nature (the count saturates on very large pieces) and monotonically growing within a run. ABSENT when the provider does not verify detection yield, or before any piece has been priced: no claim, never zero.
+    #[serde(rename = "entitiesExpected")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entities_expected: Option<i64>,
+    /// Annotations emitted so far (a linking job)
+    #[serde(rename = "entitiesEmitted")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entities_emitted: Option<i64>,
+    /// Per-item results for the items already finished, for the UI's completed log. Generic across flows for the same reason `current` is.
+    #[serde(rename = "completedItems")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub completed_items: Option<Vec<JobProgressCompletedItemsItem>>,
+    /// Echoed job parameters for display in the progress UI. `label` is a CODE, not a sentence — the client owns the wording, same rule as the progress message. `value` is the user's own input (an entity-type list, their instructions) and is deliberately NOT translated: it is their words, not ours.
+    #[serde(rename = "requestParams")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub request_params: Option<Vec<JobProgressRequestParamsItem>>,
+}
+
+impl JobProgress {
+    /// The `JobProgress` that states these and nothing else.
+    pub fn new(percentage: f64) -> Self {
+        Self {
+            percentage,
+            message: None,
+            annotation_id: None,
+            current: None,
+            processed: None,
+            total: None,
+            entities_found: None,
+            entities_expected: None,
+            entities_emitted: None,
+            completed_items: None,
+            request_params: None,
+        }
+    }
+}
+
+impl Schema for JobProgress {
+    const NAME: &'static str = "JobProgress";
+}
+
+/// Analyzing the content.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressAnalyzing {
+    pub code: JobProgressAnalyzingCode,
+}
+
+impl Default for JobProgressAnalyzing {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl JobProgressAnalyzing {
+    /// The `JobProgressAnalyzing` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            code: JobProgressAnalyzingCode::Analyzing,
+        }
+    }
+}
+
+impl Schema for JobProgressAnalyzing {
+    const NAME: &'static str = "JobProgressAnalyzing";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressAnalyzingCode {
+    #[serde(rename = "analyzing")]
+    Analyzing,
+}
+
+impl JobProgressAnalyzingCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressAnalyzingCode::Analyzing => "analyzing",
+        }
+    }
+}
+
+/// Analyzing the content against the tag schema.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressAnalyzingTags {
+    pub code: JobProgressAnalyzingTagsCode,
+}
+
+impl Default for JobProgressAnalyzingTags {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl JobProgressAnalyzingTags {
+    /// The `JobProgressAnalyzingTags` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            code: JobProgressAnalyzingTagsCode::AnalyzingTags,
+        }
+    }
+}
+
+impl Schema for JobProgressAnalyzingTags {
+    const NAME: &'static str = "JobProgressAnalyzingTags";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressAnalyzingTagsCode {
+    #[serde(rename = "analyzing-tags")]
+    AnalyzingTags,
+}
+
+impl JobProgressAnalyzingTagsCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressAnalyzingTagsCode::AnalyzingTags => "analyzing-tags",
+        }
+    }
+}
+
+/// Terminal success summary.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCompleteCreated {
+    pub code: JobProgressCompleteCreatedCode,
+    /// How many annotations were created
+    pub count: i64,
+    /// The motivation of the job, and so of what it created. A client words it in its own language.
+    pub motivation: Motivation,
+}
+
+impl JobProgressCompleteCreated {
+    /// The `JobProgressCompleteCreated` that states these and nothing else.
+    pub fn new(count: i64, motivation: Motivation) -> Self {
+        Self {
+            code: JobProgressCompleteCreatedCode::CompleteCreated,
+            count,
+            motivation,
+        }
+    }
+}
+
+impl Schema for JobProgressCompleteCreated {
+    const NAME: &'static str = "JobProgressCompleteCreated";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressCompleteCreatedCode {
+    #[serde(rename = "complete-created")]
+    CompleteCreated,
+}
+
+impl JobProgressCompleteCreatedCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressCompleteCreatedCode::CompleteCreated => "complete-created",
+        }
+    }
+}
+
+/// Generation's terminal success. Deliberately generic — the client already holds the title it typed, and the outcome (name + resource link) travels on job:complete, not on progress. `truncated` qualifies the completion: the same bit `YieldJobDone.truncated` carries, so the two surfaces cannot drift.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCompleteGenerated {
+    pub code: JobProgressCompleteGeneratedCode,
+    /// True when the model stopped at the maxTokens ceiling — the artifact is cut off, not complete.
+    pub truncated: bool,
+}
+
+impl JobProgressCompleteGenerated {
+    /// The `JobProgressCompleteGenerated` that states these and nothing else.
+    pub fn new(truncated: bool) -> Self {
+        Self {
+            code: JobProgressCompleteGeneratedCode::CompleteGenerated,
+            truncated,
+        }
+    }
+}
+
+impl Schema for JobProgressCompleteGenerated {
+    const NAME: &'static str = "JobProgressCompleteGenerated";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressCompleteGeneratedCode {
+    #[serde(rename = "complete-generated")]
+    CompleteGenerated,
+}
+
+impl JobProgressCompleteGeneratedCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressCompleteGeneratedCode::CompleteGenerated => "complete-generated",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCompletedItemsItem {
+    /// The item, shown verbatim.
+    pub value: String,
+    /// Annotations found for it.
+    #[serde(rename = "foundCount")]
+    pub found_count: i64,
+    /// Annotations actually persisted for it — post-dedupe and post-durability-acknowledgement, so it counts what the event log holds, not what the model proposed. Beside foundCount this is the per-unit yield the sizing work is judged by. Present on flows whose units persist as they complete (a linking job); the tagging flow reports the same fact as byCategory on its result, because its annotations are built after the per-category loop.
+    #[serde(rename = "persistedCount")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub persisted_count: Option<i64>,
+    /// Present only when pieces of this unit were accepted at the subdivision floor while a count call said more was present. The unit completed, but incompletely — this carries the EVIDENCE (found vs counted, over how many pieces), never a judgment against any expected yield. Absent means complete: genuinely absent, not defaulted.
+    #[serde(rename = "underReported")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub under_reported: Option<JobProgressCompletedItemsItemUnderReported>,
+}
+
+impl JobProgressCompletedItemsItem {
+    /// The `JobProgressCompletedItemsItem` that states these and nothing else.
+    pub fn new(value: impl Into<String>, found_count: i64) -> Self {
+        Self {
+            value: value.into(),
+            found_count,
+            persisted_count: None,
+            under_reported: None,
+        }
+    }
+}
+
+/// Present only when pieces of this unit were accepted at the subdivision floor while a count call said more was present. The unit completed, but incompletely — this carries the EVIDENCE (found vs counted, over how many pieces), never a judgment against any expected yield. Absent means complete: genuinely absent, not defaulted.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCompletedItemsItemUnderReported {
+    /// Floor-accepted pieces in this unit.
+    pub pieces: i64,
+    /// Annotations extraction did find on those pieces — every span write-time-verified.
+    pub found: i64,
+    /// Mentions the count calls reported across those pieces (approximate by nature).
+    pub counted: i64,
+}
+
+/// Writing detected annotations back to the resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCreatingAnnotations {
+    pub code: JobProgressCreatingAnnotationsCode,
+    /// How many annotations are being created
+    pub count: i64,
+}
+
+impl JobProgressCreatingAnnotations {
+    /// The `JobProgressCreatingAnnotations` that states these and nothing else.
+    pub fn new(count: i64) -> Self {
+        Self {
+            code: JobProgressCreatingAnnotationsCode::CreatingAnnotations,
+            count,
+        }
+    }
+}
+
+impl Schema for JobProgressCreatingAnnotations {
+    const NAME: &'static str = "JobProgressCreatingAnnotations";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressCreatingAnnotationsCode {
+    #[serde(rename = "creating-annotations")]
+    CreatingAnnotations,
+}
+
+impl JobProgressCreatingAnnotationsCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressCreatingAnnotationsCode::CreatingAnnotations => "creating-annotations",
+        }
+    }
+}
+
+/// Writing the generated resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCreatingResource {
+    pub code: JobProgressCreatingResourceCode,
+}
+
+impl Default for JobProgressCreatingResource {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl JobProgressCreatingResource {
+    /// The `JobProgressCreatingResource` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            code: JobProgressCreatingResourceCode::CreatingResource,
+        }
+    }
+}
+
+impl Schema for JobProgressCreatingResource {
+    const NAME: &'static str = "JobProgressCreatingResource";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressCreatingResourceCode {
+    #[serde(rename = "creating-resource")]
+    CreatingResource,
+}
+
+impl JobProgressCreatingResourceCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressCreatingResourceCode::CreatingResource => "creating-resource",
+        }
+    }
+}
+
+/// Writing detected tag annotations back to the resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCreatingTagAnnotations {
+    pub code: JobProgressCreatingTagAnnotationsCode,
+    /// How many annotations are being created
+    pub count: i64,
+}
+
+impl JobProgressCreatingTagAnnotations {
+    /// The `JobProgressCreatingTagAnnotations` that states these and nothing else.
+    pub fn new(count: i64) -> Self {
+        Self {
+            code: JobProgressCreatingTagAnnotationsCode::CreatingTagAnnotations,
+            count,
+        }
+    }
+}
+
+impl Schema for JobProgressCreatingTagAnnotations {
+    const NAME: &'static str = "JobProgressCreatingTagAnnotations";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressCreatingTagAnnotationsCode {
+    #[serde(rename = "creating-tag-annotations")]
+    CreatingTagAnnotations,
+}
+
+impl JobProgressCreatingTagAnnotationsCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressCreatingTagAnnotationsCode::CreatingTagAnnotations => {
+                "creating-tag-annotations"
+            }
+        }
+    }
+}
+
+/// What the run is working on right now. `kind` is a CODE the client renders a localized name for; `value` is KB data (an entity type, a tag category) shown verbatim — the same split as `requestParams`. Absent on flows that iterate nothing, such as generation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressCurrent {
+    /// What sort of thing `value` is. Adding a variant means adding client copy for it in every locale.
+    pub kind: JobProgressCurrentKind,
+    /// The item itself, shown verbatim and never translated.
+    pub value: String,
+}
+
+/// What sort of thing `value` is. Adding a variant means adding client copy for it in every locale.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressCurrentKind {
+    #[serde(rename = "entity-type")]
+    EntityType,
+    #[serde(rename = "category")]
+    Category,
+}
+
+impl JobProgressCurrentKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressCurrentKind::EntityType => "entity-type",
+            JobProgressCurrentKind::Category => "category",
+        }
+    }
+}
+
+/// Entity detection, one entity type at a time.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressDetectingEntities {
+    pub code: JobProgressDetectingEntitiesCode,
+    /// Entity type currently being detected
+    #[serde(rename = "entityType")]
+    pub entity_type: String,
+}
+
+impl JobProgressDetectingEntities {
+    /// The `JobProgressDetectingEntities` that states these and nothing else.
+    pub fn new(entity_type: impl Into<String>) -> Self {
+        Self {
+            code: JobProgressDetectingEntitiesCode::DetectingEntities,
+            entity_type: entity_type.into(),
+        }
+    }
+}
+
+impl Schema for JobProgressDetectingEntities {
+    const NAME: &'static str = "JobProgressDetectingEntities";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressDetectingEntitiesCode {
+    #[serde(rename = "detecting-entities")]
+    DetectingEntities,
+}
+
+impl JobProgressDetectingEntitiesCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressDetectingEntitiesCode::DetectingEntities => "detecting-entities",
+        }
+    }
+}
+
+/// The model is generating the resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressGeneratingResource {
+    pub code: JobProgressGeneratingResourceCode,
+}
+
+impl Default for JobProgressGeneratingResource {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl JobProgressGeneratingResource {
+    /// The `JobProgressGeneratingResource` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            code: JobProgressGeneratingResourceCode::GeneratingResource,
+        }
+    }
+}
+
+impl Schema for JobProgressGeneratingResource {
+    const NAME: &'static str = "JobProgressGeneratingResource";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressGeneratingResourceCode {
+    #[serde(rename = "generating-resource")]
+    GeneratingResource,
+}
+
+impl JobProgressGeneratingResourceCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressGeneratingResourceCode::GeneratingResource => "generating-resource",
+        }
+    }
+}
+
+/// Loading the resource content.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressLoading {
+    pub code: JobProgressLoadingCode,
+}
+
+impl Default for JobProgressLoading {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl JobProgressLoading {
+    /// The `JobProgressLoading` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            code: JobProgressLoadingCode::Loading,
+        }
+    }
+}
+
+impl Schema for JobProgressLoading {
+    const NAME: &'static str = "JobProgressLoading";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressLoadingCode {
+    #[serde(rename = "loading")]
+    Loading,
+}
+
+impl JobProgressLoadingCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressLoadingCode::Loading => "loading",
+        }
+    }
+}
+
+/// What a running job is doing right now, as a code plus typed params — never a prose sentence. The producer reports what happened; each client renders it in the user's language (react-ui from its translations, the Go launcher from its English map). One named schema per code, discriminated on `code`, so generated clients get typed variants and copy-map completeness is statically checkable. The vocabulary is every report Xynolog's worker makes (contract/WORKER-SERVICE.md, D16 to D19 and Y8); extending it means adding a named variant here and copy in every client, gated by the locale-completeness check.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobProgressMessage {
+    Loading(JobProgressLoading),
+    Analyzing(JobProgressAnalyzing),
+    AnalyzingTags(JobProgressAnalyzingTags),
+    GeneratingResource(JobProgressGeneratingResource),
+    CreatingResource(JobProgressCreatingResource),
+    CompleteGenerated(JobProgressCompleteGenerated),
+    DetectingEntities(JobProgressDetectingEntities),
+    CreatingAnnotations(JobProgressCreatingAnnotations),
+    CreatingTagAnnotations(JobProgressCreatingTagAnnotations),
+    CompleteCreated(JobProgressCompleteCreated),
+}
+
+impl<'de> serde::Deserialize<'de> for JobProgressMessage {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("code").and_then(serde_json::Value::as_str) {
+            Some("loading") => serde_json::from_value(value).map(JobProgressMessage::Loading),
+            Some("analyzing") => serde_json::from_value(value).map(JobProgressMessage::Analyzing),
+            Some("analyzing-tags") => {
+                serde_json::from_value(value).map(JobProgressMessage::AnalyzingTags)
+            }
+            Some("generating-resource") => {
+                serde_json::from_value(value).map(JobProgressMessage::GeneratingResource)
+            }
+            Some("creating-resource") => {
+                serde_json::from_value(value).map(JobProgressMessage::CreatingResource)
+            }
+            Some("complete-generated") => {
+                serde_json::from_value(value).map(JobProgressMessage::CompleteGenerated)
+            }
+            Some("detecting-entities") => {
+                serde_json::from_value(value).map(JobProgressMessage::DetectingEntities)
+            }
+            Some("creating-annotations") => {
+                serde_json::from_value(value).map(JobProgressMessage::CreatingAnnotations)
+            }
+            Some("creating-tag-annotations") => {
+                serde_json::from_value(value).map(JobProgressMessage::CreatingTagAnnotations)
+            }
+            Some("complete-created") => {
+                serde_json::from_value(value).map(JobProgressMessage::CompleteCreated)
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a JobProgressMessage states a `code` that is one of `loading`, `analyzing`, `analyzing-tags`, `generating-resource`, `creating-resource`, `complete-generated`, `detecting-entities`, `creating-annotations`, `creating-tag-annotations`, `complete-created`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<JobProgressLoading> for JobProgressMessage {
+    fn from(member: JobProgressLoading) -> Self {
+        JobProgressMessage::Loading(member)
+    }
+}
+
+impl From<JobProgressAnalyzing> for JobProgressMessage {
+    fn from(member: JobProgressAnalyzing) -> Self {
+        JobProgressMessage::Analyzing(member)
+    }
+}
+
+impl From<JobProgressAnalyzingTags> for JobProgressMessage {
+    fn from(member: JobProgressAnalyzingTags) -> Self {
+        JobProgressMessage::AnalyzingTags(member)
+    }
+}
+
+impl From<JobProgressGeneratingResource> for JobProgressMessage {
+    fn from(member: JobProgressGeneratingResource) -> Self {
+        JobProgressMessage::GeneratingResource(member)
+    }
+}
+
+impl From<JobProgressCreatingResource> for JobProgressMessage {
+    fn from(member: JobProgressCreatingResource) -> Self {
+        JobProgressMessage::CreatingResource(member)
+    }
+}
+
+impl From<JobProgressCompleteGenerated> for JobProgressMessage {
+    fn from(member: JobProgressCompleteGenerated) -> Self {
+        JobProgressMessage::CompleteGenerated(member)
+    }
+}
+
+impl From<JobProgressDetectingEntities> for JobProgressMessage {
+    fn from(member: JobProgressDetectingEntities) -> Self {
+        JobProgressMessage::DetectingEntities(member)
+    }
+}
+
+impl From<JobProgressCreatingAnnotations> for JobProgressMessage {
+    fn from(member: JobProgressCreatingAnnotations) -> Self {
+        JobProgressMessage::CreatingAnnotations(member)
+    }
+}
+
+impl From<JobProgressCreatingTagAnnotations> for JobProgressMessage {
+    fn from(member: JobProgressCreatingTagAnnotations) -> Self {
+        JobProgressMessage::CreatingTagAnnotations(member)
+    }
+}
+
+impl From<JobProgressCompleteCreated> for JobProgressMessage {
+    fn from(member: JobProgressCompleteCreated) -> Self {
+        JobProgressMessage::CompleteCreated(member)
+    }
+}
+
+impl Schema for JobProgressMessage {
+    const NAME: &'static str = "JobProgressMessage";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobProgressRequestParamsItem {
+    /// Which parameter this is. The client renders a localized name for it.
+    pub label: JobProgressRequestParamsItemLabel,
+    /// The user's own input, shown verbatim.
+    pub value: String,
+}
+
+/// Which parameter this is. The client renders a localized name for it.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobProgressRequestParamsItemLabel {
+    #[serde(rename = "entity-types")]
+    EntityTypes,
+    #[serde(rename = "instructions")]
+    Instructions,
+    #[serde(rename = "tone")]
+    Tone,
+    #[serde(rename = "density")]
+    Density,
+}
+
+impl JobProgressRequestParamsItemLabel {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobProgressRequestParamsItemLabel::EntityTypes => "entity-types",
+            JobProgressRequestParamsItemLabel::Instructions => "instructions",
+            JobProgressRequestParamsItemLabel::Tone => "tone",
+            JobProgressRequestParamsItemLabel::Density => "density",
+        }
+    }
+}
+
+/// A pending job, announced when it is created and again at each tick while it waits. It carries the job description less the job's input, so that a party deciding whether to claim reads here what its claim would be matched against. It is a wake-up and not an offer of this job: a claim is answered with the next pending job it matches.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobQueuedEvent {
+    MarkJobQueuedEvent(MarkJobQueuedEvent),
+    YieldJobQueuedEvent(YieldJobQueuedEvent),
+}
+
+impl<'de> serde::Deserialize<'de> for JobQueuedEvent {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("jobType").and_then(serde_json::Value::as_str) {
+            Some("mark") => serde_json::from_value(value).map(JobQueuedEvent::MarkJobQueuedEvent),
+            Some("yield") => serde_json::from_value(value).map(JobQueuedEvent::YieldJobQueuedEvent),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a JobQueuedEvent states a `jobType` that is one of `mark`, `yield`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<MarkJobQueuedEvent> for JobQueuedEvent {
+    fn from(member: MarkJobQueuedEvent) -> Self {
+        JobQueuedEvent::MarkJobQueuedEvent(member)
+    }
+}
+
+impl From<YieldJobQueuedEvent> for JobQueuedEvent {
+    fn from(member: YieldJobQueuedEvent) -> Self {
+        JobQueuedEvent::YieldJobQueuedEvent(member)
+    }
+}
+
+impl Schema for JobQueuedEvent {
+    const NAME: &'static str = "JobQueuedEvent";
+}
+
+/// Command to report progress on a job
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobReportProgressCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt: Option<i64>,
+    /// Annotation this job is attached to, when applicable. Lets the UI attach progress visuals to a specific annotation (e.g. a reference whose generation is running).
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    pub percentage: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub progress: Option<JobProgress>,
+}
+
+impl JobReportProgressCommand {
+    /// The `JobReportProgressCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId, job_id: JobId, job_type: JobType, percentage: f64) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            job_id,
+            job_type,
+            attempt: None,
+            annotation_id: None,
+            percentage,
+            progress: None,
+        }
+    }
+}
+
+impl Schema for JobReportProgressCommand {
+    const NAME: &'static str = "JobReportProgressCommand";
+}
+
+/// What a job reports when it concludes without failing: a `mark` job's counts, the resource a `yield` job made, or a decline from either. A result has no discriminant of its own: the job description beside it says which job it answers, and the three share no member, so each is told from the others by what it alone carries.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobResult {
+    MarkJobDone(MarkJobDone),
+    YieldJobDone(YieldJobDone),
+    JobDeclined(JobDeclined),
+}
+
+impl From<MarkJobDone> for JobResult {
+    fn from(member: MarkJobDone) -> Self {
+        JobResult::MarkJobDone(member)
+    }
+}
+
+impl From<YieldJobDone> for JobResult {
+    fn from(member: YieldJobDone) -> Self {
+        JobResult::YieldJobDone(member)
+    }
+}
+
+impl From<JobDeclined> for JobResult {
+    fn from(member: JobDeclined) -> Self {
+        JobResult::JobDeclined(member)
+    }
+}
+
+impl Schema for JobResult {
+    const NAME: &'static str = "JobResult";
+}
+
+/// A job a worker has claimed and not yet concluded.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobRunning {
+    pub status: JobRunningStatus,
+    pub metadata: JobMetadata,
+    pub params: JobParams,
+    /// When the claim that holds it was made, as an ISO 8601 timestamp.
+    #[serde(rename = "startedAt")]
+    pub started_at: String,
+    pub progress: JobStoredProgress,
+}
+
+impl JobRunning {
+    /// The `JobRunning` that states these and nothing else.
+    pub fn new(
+        metadata: JobMetadata,
+        params: JobParams,
+        started_at: impl Into<String>,
+        progress: JobStoredProgress,
+    ) -> Self {
+        Self {
+            status: JobRunningStatus::Running,
+            metadata,
+            params,
+            started_at: started_at.into(),
+            progress,
+        }
+    }
+}
+
+impl Schema for JobRunning {
+    const NAME: &'static str = "JobRunning";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobRunningStatus {
+    #[serde(rename = "running")]
+    Running,
+}
+
+impl JobRunningStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobRunningStatus::Running => "running",
+        }
+    }
+}
+
+/// Command to start a job
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobStartCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// Annotation this job is attached to, when applicable. Set for annotation-scoped jobs like generation (from a specific reference). Unset for resource-scoped jobs like bulk reference/tag/highlight detection.
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    /// Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt: Option<i64>,
+}
+
+impl JobStartCommand {
+    /// The `JobStartCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId, job_id: JobId, job_type: JobType) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            job_id,
+            job_type,
+            annotation_id: None,
+            attempt: None,
+        }
+    }
+}
+
+impl Schema for JobStartCommand {
+    const NAME: &'static str = "JobStartCommand";
+}
+
+/// Payload for job:started domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobStartedPayload {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: JobType,
+    /// Annotation this job is attached to, when applicable
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    #[serde(rename = "totalSteps")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_steps: Option<i64>,
+}
+
+impl JobStartedPayload {
+    /// The `JobStartedPayload` that states these and nothing else.
+    pub fn new(job_id: JobId, job_type: JobType) -> Self {
+        Self {
+            job_id,
+            job_type,
+            annotation_id: None,
+            total_steps: None,
+        }
+    }
+}
+
+impl Schema for JobStartedPayload {
+    const NAME: &'static str = "JobStartedPayload";
+}
+
+/// Request to check the status of a job
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobStatusRequest {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+}
+
+impl Schema for JobStatusRequest {
+    const NAME: &'static str = "JobStatusRequest";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobStatusResponse {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    pub r#type: JobType,
+    pub status: JobStatusResponseStatus,
+    #[serde(rename = "userId")]
+    pub user_id: UserId,
+    pub created: String,
+    #[serde(rename = "startedAt")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub started_at: Option<String>,
+    #[serde(rename = "completedAt")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub completed_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    #[serde(rename = "failureClass")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failure_class: Option<FailureClass>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub progress: Option<JobStoredProgress>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result: Option<JobStoredResult>,
+}
+
+impl JobStatusResponse {
+    /// The `JobStatusResponse` that states these and nothing else.
+    pub fn new(
+        job_id: JobId,
+        r#type: JobType,
+        status: JobStatusResponseStatus,
+        user_id: UserId,
+        created: impl Into<String>,
+    ) -> Self {
+        Self {
+            job_id,
+            r#type,
+            status,
+            user_id,
+            created: created.into(),
+            started_at: None,
+            completed_at: None,
+            error: None,
+            failure_class: None,
+            progress: None,
+            result: None,
+        }
+    }
+}
+
+impl Schema for JobStatusResponse {
+    const NAME: &'static str = "JobStatusResponse";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobStatusResponseStatus {
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "running")]
+    Running,
+    #[serde(rename = "complete")]
+    Complete,
+    #[serde(rename = "failed")]
+    Failed,
+    #[serde(rename = "cancelled")]
+    Cancelled,
+}
+
+impl JobStatusResponseStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobStatusResponseStatus::Pending => "pending",
+            JobStatusResponseStatus::Running => "running",
+            JobStatusResponseStatus::Complete => "complete",
+            JobStatusResponseStatus::Failed => "failed",
+            JobStatusResponseStatus::Cancelled => "cancelled",
+        }
+    }
+}
+
+/// Result of a job status request
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct JobStatusResult {
+    pub response: JobStatusResponse,
+}
+
+impl Schema for JobStatusResult {
+    const NAME: &'static str = "JobStatusResult";
+}
+
+/// A running job's progress as the dispatcher stores it: the last JobProgress its worker reported with `job:report-progress`, or an empty object before the first report.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobStoredProgress {
+    JobProgress(JobProgress),
+    Empty(EmptyObject),
+}
+
+impl From<JobProgress> for JobStoredProgress {
+    fn from(member: JobProgress) -> Self {
+        JobStoredProgress::JobProgress(member)
+    }
+}
+
+impl Schema for JobStoredProgress {
+    const NAME: &'static str = "JobStoredProgress";
+}
+
+/// A completed job's result as the dispatcher stores it: the result its worker reported with `job:complete`, or an empty object when it reported none.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum JobStoredResult {
+    JobResult(JobResult),
+    Empty(EmptyObject),
+}
+
+impl From<JobResult> for JobStoredResult {
+    fn from(member: JobResult) -> Self {
+        JobStoredResult::JobResult(member)
+    }
+}
+
+impl Schema for JobStoredResult {
+    const NAME: &'static str = "JobStoredResult";
+}
+
+/// What a job does, as the verb that asks for it: `mark` annotates a resource, `yield` makes one. A job description is its `jobType` and the parameters that verb takes; a `mark` job's parameters state its motivation.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JobType {
+    #[serde(rename = "mark")]
+    Mark,
+    #[serde(rename = "yield")]
+    Yield,
+}
+
+impl JobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JobType::Mark => "mark",
+            JobType::Yield => "yield",
+        }
+    }
+}
+
+impl Schema for JobType {
+    const NAME: &'static str = "JobType";
+}
+
+/// What a knowledge base says about itself, answered by the Archivist from the committed .xynolog/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct KbDescription {
+    /// The committed project.name, or the knowledge base directory's name when it commits no .xynolog/config.yaml.
+    pub name: String,
+    /// The committed site.domain: the knowledge base's permanent identity. Its did is 'did:web:' + this domain (kbDid in @xynolog/core). It names WHICH knowledge base this is, not which running copy: a local clone and a codespace of one repo report the same domain, so use it to verify what you connected to, never to select among copies. A knowledge base that commits no .xynolog/config.yaml declares none, and is refused with browse:kb-failed.
+    pub domain: String,
+    /// The working tree's current git branch. Absent when the knowledge base does not sync git (`git.sync` in its committed .xynolog/config.yaml), and when its tree is not a git checkout.
+    #[serde(rename = "gitBranch")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub git_branch: Option<String>,
+}
+
+impl KbDescription {
+    /// The `KbDescription` that states these and nothing else.
+    pub fn new(name: impl Into<String>, domain: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            domain: domain.into(),
+            git_branch: None,
+        }
+    }
+}
+
+impl Schema for KbDescription {
+    const NAME: &'static str = "KbDescription";
+}
+
+/// How a knowledge base is reached: a gateway over HTTP, or a knowledge base the host process has loaded. Told apart by `kind`. Only what builds a transport, or signs in at an issuer, reads it.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum KbEndpoint {
+    HttpEndpoint(HttpEndpoint),
+    LocalEndpoint(LocalEndpoint),
+}
+
+impl<'de> serde::Deserialize<'de> for KbEndpoint {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("kind").and_then(serde_json::Value::as_str) {
+            Some("http") => serde_json::from_value(value).map(KbEndpoint::HttpEndpoint),
+            Some("local") => serde_json::from_value(value).map(KbEndpoint::LocalEndpoint),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a KbEndpoint states a `kind` that is one of `http`, `local`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<HttpEndpoint> for KbEndpoint {
+    fn from(member: HttpEndpoint) -> Self {
+        KbEndpoint::HttpEndpoint(member)
+    }
+}
+
+impl From<LocalEndpoint> for KbEndpoint {
+    fn from(member: LocalEndpoint) -> Self {
+        KbEndpoint::LocalEndpoint(member)
+    }
+}
+
+impl Schema for KbEndpoint {
+    const NAME: &'static str = "KbEndpoint";
+}
+
+/// When a knowledge base last described itself, and what it said beyond its name. A client shows it as current only while a session to the knowledge base is live, and as of `at` otherwise.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct KbRead {
+    /// When the description arrived.
+    pub at: String,
+    /// The branch of the knowledge base's working tree then. Absent when the working tree was not a git checkout.
+    #[serde(rename = "gitBranch")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub git_branch: Option<String>,
+}
+
+impl KbRead {
+    /// The `KbRead` that states these and nothing else.
+    pub fn new(at: impl Into<String>) -> Self {
+        Self {
+            at: at.into(),
+            git_branch: None,
+        }
+    }
+}
+
+impl Schema for KbRead {
+    const NAME: &'static str = "KbRead";
+}
+
+/// Where to connect to a knowledge base: an endpoint, and the labels a client keeps of it. It carries no identity: which knowledge base answers at an address is known only once it has been reached with a token and asked, so a target is what every caller can build before then, and a session's whole input. A client keeps it locally; it is never sent.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct KbTarget {
+    /// The key the client stores a session's credentials under. Two sessions that share one storage have two ids, or each overwrites the other's tokens. Whoever builds the target chooses it; none is made up.
+    pub id: String,
+    /// What a person reads the knowledge base as. Once the knowledge base has described itself, its own name.
+    pub label: String,
+    pub endpoint: KbEndpoint,
+}
+
+impl Schema for KbTarget {
+    const NAME: &'static str = "KbTarget";
+}
+
+/// A registered knowledge base: a target, and what registering it took, the identity the knowledge base reported of itself when it was reached (`did`) among it. What a client's list of knowledge bases holds. A did says which knowledge base, not which running copy: a clone and a codespace of one repository are one knowledge base at two addresses and report one did. So an entry is looked up by its endpoint, and its did is what an answer is verified against; nothing selects by did. Its `label` and `lastRead` are written only from an answer that carried its did.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct KnowledgeBase {
+    /// The key the client stores a session's credentials under. Two sessions that share one storage have two ids, or each overwrites the other's tokens. Whoever builds the target chooses it; none is made up.
+    pub id: String,
+    /// What a person reads the knowledge base as. Once the knowledge base has described itself, its own name.
+    pub label: String,
+    pub endpoint: KbEndpoint,
+    /// The did the knowledge base reported of itself.
+    pub did: String,
+    /// The last time the knowledge base described itself. Absent until it has, in an answer that carried this entry's did.
+    #[serde(rename = "lastRead")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_read: Option<KbRead>,
+}
+
+impl KnowledgeBase {
+    /// The `KnowledgeBase` that states these and nothing else.
+    pub fn new(
+        id: impl Into<String>,
+        label: impl Into<String>,
+        endpoint: KbEndpoint,
+        did: impl Into<String>,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            label: label.into(),
+            endpoint,
+            did: did.into(),
+            last_read: None,
+        }
+    }
+}
+
+impl Schema for KnowledgeBase {
+    const NAME: &'static str = "KnowledgeBase";
+}
+
+/// Knowledge graph gathered for an LLM context — a shared backbone in which resources AND annotations are typed nodes, connected by typed (optionally bidirectional) edges. Flattened views the matcher/generation read (connections, citedBy, siblings) are derived from these nodes/edges.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct KnowledgeGraph {
+    pub nodes: Vec<KnowledgeGraphNodesItem>,
+    pub edges: Vec<KnowledgeGraphEdgesItem>,
+    /// Whether the graph stopped taking resources at its ceiling of 200 resource nodes, so that a resource within the depth asked for is not in it. Present, and true, only then
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub truncated: Option<bool>,
+}
+
+impl KnowledgeGraph {
+    /// The `KnowledgeGraph` that states these and nothing else.
+    pub fn new(nodes: Vec<KnowledgeGraphNodesItem>, edges: Vec<KnowledgeGraphEdgesItem>) -> Self {
+        Self {
+            nodes,
+            edges,
+            truncated: None,
+        }
+    }
+}
+
+impl Schema for KnowledgeGraph {
+    const NAME: &'static str = "KnowledgeGraph";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct KnowledgeGraphEdgesItem {
+    pub source: String,
+    pub target: String,
+    /// Edge kind: `annotation-of` (an annotation → the resource it lives on), `cites` (a citing linking annotation → the focal resource), or `link` (a resource → a resource it links to)
+    pub r#type: String,
+    /// Whether the connection goes both ways. Absent on a `link` edge found through what cites a resource, which says nothing of the way back
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bidirectional: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<std::collections::BTreeMap<String, serde_json::Value>>,
+}
+
+impl KnowledgeGraphEdgesItem {
+    /// The `KnowledgeGraphEdgesItem` that states these and nothing else.
+    pub fn new(
+        source: impl Into<String>,
+        target: impl Into<String>,
+        r#type: impl Into<String>,
+    ) -> Self {
+        Self {
+            source: source.into(),
+            target: target.into(),
+            r#type: r#type.into(),
+            bidirectional: None,
+            metadata: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum KnowledgeGraphNodesItem {
+    ResourceNode(GraphResourceNode),
+    AnnotationNode(GraphAnnotationNode),
+}
+
+impl<'de> serde::Deserialize<'de> for KnowledgeGraphNodesItem {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("type").and_then(serde_json::Value::as_str) {
+            Some("resource") => {
+                serde_json::from_value(value).map(KnowledgeGraphNodesItem::ResourceNode)
+            }
+            Some("annotation") => {
+                serde_json::from_value(value).map(KnowledgeGraphNodesItem::AnnotationNode)
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a KnowledgeGraphNodesItem states a `type` that is one of `resource`, `annotation`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<GraphResourceNode> for KnowledgeGraphNodesItem {
+    fn from(member: GraphResourceNode) -> Self {
+        KnowledgeGraphNodesItem::ResourceNode(member)
+    }
+}
+
+impl From<GraphAnnotationNode> for KnowledgeGraphNodesItem {
+    fn from(member: GraphAnnotationNode) -> Self {
+        KnowledgeGraphNodesItem::AnnotationNode(member)
+    }
+}
+
+/// An ErrorResponse that names, in `code`, the limit the request met.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct LimitRefusal {
+    /// What went wrong, in a sentence.
+    pub error: String,
+    /// `streams`: the principal already holds as many streams as its coefficient of `x-xynolog-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynolog-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (contract/TRANSPORT-CONTRACT.md § A refused credential).
+    pub code: LimitRefusalCode,
+    /// What the caller can do about it, when there is something to say.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hint: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<serde_json::Value>,
+}
+
+impl LimitRefusal {
+    /// The `LimitRefusal` that states these and nothing else.
+    pub fn new(error: impl Into<String>, code: LimitRefusalCode) -> Self {
+        Self {
+            error: error.into(),
+            code,
+            hint: None,
+            details: None,
+        }
+    }
+}
+
+impl Schema for LimitRefusal {
+    const NAME: &'static str = "LimitRefusal";
+}
+
+/// `streams`: the principal already holds as many streams as its coefficient of `x-xynolog-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynolog-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (contract/TRANSPORT-CONTRACT.md § A refused credential).
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum LimitRefusalCode {
+    #[serde(rename = "streams")]
+    Streams,
+    #[serde(rename = "emit-rate")]
+    EmitRate,
+    #[serde(rename = "unanswered-requests")]
+    UnansweredRequests,
+    #[serde(rename = "capacity")]
+    Capacity,
+    #[serde(rename = "refusal-rate")]
+    RefusalRate,
+}
+
+impl LimitRefusalCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            LimitRefusalCode::Streams => "streams",
+            LimitRefusalCode::EmitRate => "emit-rate",
+            LimitRefusalCode::UnansweredRequests => "unanswered-requests",
+            LimitRefusalCode::Capacity => "capacity",
+            LimitRefusalCode::RefusalRate => "refusal-rate",
+        }
+    }
+}
+
+/// What a linking job takes: mentions of the named entity types are marked as references, each unresolved until it is bound to a resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LinkingJobParams {
+    pub motivation: LinkingJobParamsMotivation,
+    /// The entity types to find mentions of. Each is one the knowledge base registers.
+    #[serde(rename = "entityTypes")]
+    pub entity_types: Vec<String>,
+    /// Whether a description that stands for an entity ("the wily hero") counts as a mention of it, beside its name.
+    #[serde(rename = "includeDescriptiveReferences")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub include_descriptive_references: Option<bool>,
+    /// The language the annotations' own text is written in. BCP 47.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// The language of the resource being read. BCP 47.
+    #[serde(rename = "sourceLanguage")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_language: Option<String>,
+}
+
+impl LinkingJobParams {
+    /// The `LinkingJobParams` that states these and nothing else.
+    pub fn new(entity_types: Vec<String>) -> Self {
+        Self {
+            motivation: LinkingJobParamsMotivation::Linking,
+            entity_types,
+            include_descriptive_references: None,
+            language: None,
+            source_language: None,
+        }
+    }
+}
+
+impl Schema for LinkingJobParams {
+    const NAME: &'static str = "LinkingJobParams";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum LinkingJobParamsMotivation {
+    #[serde(rename = "linking")]
+    Linking,
+}
+
+impl LinkingJobParamsMotivation {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            LinkingJobParamsMotivation::Linking => "linking",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ListResourcesResponse {
+    pub resources: Vec<ResourceDescriptor>,
+    pub total: f64,
+    pub offset: f64,
+    pub limit: f64,
+}
+
+impl Schema for ListResourcesResponse {
+    const NAME: &'static str = "ListResourcesResponse";
+}
+
+/// A knowledge base the host process has loaded and reaches through a transport with no wire.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct LocalEndpoint {
+    /// Discriminant: the endpoint is in the host process.
+    pub kind: LocalEndpointKind,
+    /// Which loaded knowledge base, named by an id that means something to the host process alone.
+    #[serde(rename = "kbId")]
+    pub kb_id: String,
+}
+
+impl LocalEndpoint {
+    /// The `LocalEndpoint` that states these and nothing else.
+    pub fn new(kb_id: impl Into<String>) -> Self {
+        Self {
+            kind: LocalEndpointKind::Local,
+            kb_id: kb_id.into(),
+        }
+    }
+}
+
+impl Schema for LocalEndpoint {
+    const NAME: &'static str = "LocalEndpoint";
+}
+
+/// Discriminant: the endpoint is in the host process.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum LocalEndpointKind {
+    #[serde(rename = "local")]
+    Local,
+}
+
+impl LocalEndpointKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            LocalEndpointKind::Local => "local",
+        }
+    }
+}
+
+/// How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum LogFormat {
+    #[serde(rename = "json")]
+    Json,
+    #[serde(rename = "simple")]
+    Simple,
+}
+
+impl LogFormat {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            LogFormat::Json => "json",
+            LogFormat::Simple => "simple",
+        }
+    }
+}
+
+impl Schema for LogFormat {
+    const NAME: &'static str = "LogFormat";
+}
+
+/// How much a service logs: the least severe level it writes, from error, the most severe, to debug.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum LogLevel {
+    #[serde(rename = "error")]
+    Error,
+    #[serde(rename = "warn")]
+    Warn,
+    #[serde(rename = "info")]
+    Info,
+    #[serde(rename = "http")]
+    Http,
+    #[serde(rename = "debug")]
+    Debug,
+}
+
+impl LogLevel {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            LogLevel::Error => "error",
+            LogLevel::Warn => "warn",
+            LogLevel::Info => "info",
+            LogLevel::Http => "http",
+            LogLevel::Debug => "debug",
+        }
+    }
+}
+
+impl Schema for LogLevel {
+    const NAME: &'static str = "LogLevel";
+}
+
+/// Bus command to archive a resource and optionally remove its file.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkArchiveCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Optional: where the resource's bytes live, so the archive can act on the file. An instruction to this handler, not a copy of the stored fact (that lives on the primary Representation). Working-tree URI, only file:// is supported.
+    #[serde(rename = "storageUri")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub storage_uri: Option<String>,
+    #[serde(rename = "keepFile")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub keep_file: Option<bool>,
+}
+
+impl MarkArchiveCommand {
+    /// The `MarkArchiveCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            storage_uri: None,
+            keep_file: None,
+        }
+    }
+}
+
+impl Schema for MarkArchiveCommand {
+    const NAME: &'static str = "MarkArchiveCommand";
+}
+
+/// Bus command to persist a detection unit's annotations as one acknowledged batch. It is answered only after every annotation is in the event log, so a worker can gate unit completion on durability rather than on emission. The batch is the unit: a partial commit is reported as a failure, and the worker retries the whole unit, which is safe because annotation ids are deterministic: content-addressed, so re-emitting one is a no-op.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkCommitCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    /// The emitter's capabilities (the token's `roles`), injected by the /bus/emit gateway. Clients do not set this. An emitter carrying the worker role must cite the job this batch fulfils in `jobId`; the Stower refuses the batch otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _roles: Option<Vec<String>>,
+    /// The job this batch fulfils. Required when the emitter carries the worker role; absent for self-initiated work (a person, or an agent acting on its own). The knowledge base derives who requested these annotations from the cited job's own events — the emitter never says who the work was for.
+    #[serde(rename = "jobId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub job_id: Option<JobId>,
+    /// Resource every annotation in this batch targets.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The unit's annotations, already built with deterministic ids. Re-committing an identical batch is a no-op rather than a duplicate.
+    pub annotations: Vec<Annotation>,
+}
+
+impl MarkCommitCommand {
+    /// The `MarkCommitCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId, annotations: Vec<Annotation>) -> Self {
+        Self {
+            _user_id: None,
+            _roles: None,
+            job_id: None,
+            resource_id,
+            annotations,
+        }
+    }
+}
+
+impl Schema for MarkCommitCommand {
+    const NAME: &'static str = "MarkCommitCommand";
+}
+
+/// Durability acknowledgement for a mark:commit batch: every annotation named by the command is in the event log at the moment this is emitted.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkCommitOk {
+    /// What the commit persisted.
+    pub response: MarkCommitOkResponse,
+}
+
+impl Schema for MarkCommitOk {
+    const NAME: &'static str = "MarkCommitOk";
+}
+
+/// What the commit persisted.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkCommitOkResponse {
+    /// Annotations the command named that are durable in the event log. Equals the batch size on success, on a first commit and on a retry alike — the commit appends only what the resource does not already hold, so a wholly-redundant retry has still succeeded and says so. Not an append tally: a caller must never have to read a 0 as 'all good'.
+    pub persisted: i64,
+    /// Ids the batch covers, whether appended now or already present.
+    #[serde(rename = "annotationIds")]
+    pub annotation_ids: Vec<AnnotationId>,
+}
+
+/// Success reply after creating an annotation, matched to the originating command by correlationId.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkCreateOk {
+    pub response: MarkCreateOkResponse,
+}
+
+impl Schema for MarkCreateOk {
+    const NAME: &'static str = "MarkCreateOk";
+}
+
+/// The created annotation's identity.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkCreateOkResponse {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+impl Schema for MarkCreateOkResponse {
+    const NAME: &'static str = "MarkCreateOkResponse";
+}
+
+/// Raw annotation creation intent — bus handler assembles the W3C annotation
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkCreateRequest {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    pub request: CreateAnnotationRequest,
+}
+
+impl Schema for MarkCreateRequest {
+    const NAME: &'static str = "MarkCreateRequest";
+}
+
+/// The payload of `mark:delegate-timeout`, a client-local signal: a delegated job went silent past its deadline, with no progress, no completion and no `job:fail`. A real job failure arrives as `job:fail` and never produces this.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkDelegateTimeoutEvent {
+    /// The resource the job was delegated for.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    pub motivation: Motivation,
+}
+
+impl Schema for MarkDelegateTimeoutEvent {
+    const NAME: &'static str = "MarkDelegateTimeoutEvent";
+}
+
+/// Bus command to delete an annotation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkDeleteCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+}
+
+impl MarkDeleteCommand {
+    /// The `MarkDeleteCommand` that states these and nothing else.
+    pub fn new(annotation_id: AnnotationId) -> Self {
+        Self {
+            _user_id: None,
+            annotation_id,
+            resource_id: None,
+        }
+    }
+}
+
+impl Schema for MarkDeleteCommand {
+    const NAME: &'static str = "MarkDeleteCommand";
+}
+
+/// Success reply after deleting an annotation, matched to the originating command by correlationId.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkDeleteOk {
+    /// The deleted annotation's identity.
+    pub response: MarkDeleteOkResponse,
+}
+
+impl Schema for MarkDeleteOk {
+    const NAME: &'static str = "MarkDeleteOk";
+}
+
+/// The deleted annotation's identity.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkDeleteOkResponse {
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+}
+
+/// A `mark` job's worker says the job is complete, with what a `mark` job reports.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkJobCompleteCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: MarkJobCompleteCommandJobType,
+    /// Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result: Option<MarkJobResult>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub durability: Option<DurabilityEvidence>,
+}
+
+impl MarkJobCompleteCommand {
+    /// The `MarkJobCompleteCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId, job_id: JobId) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            job_id,
+            job_type: MarkJobCompleteCommandJobType::Mark,
+            attempt: None,
+            result: None,
+            durability: None,
+        }
+    }
+}
+
+impl Schema for MarkJobCompleteCommand {
+    const NAME: &'static str = "MarkJobCompleteCommand";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MarkJobCompleteCommandJobType {
+    #[serde(rename = "mark")]
+    Mark,
+}
+
+impl MarkJobCompleteCommandJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MarkJobCompleteCommandJobType::Mark => "mark",
+        }
+    }
+}
+
+/// Create a `mark` job: annotate one resource for one motivation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MarkJobCreateCommand {
+    /// The emitter's verified DID, injected by the gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    /// The emitter's roles, injected by the gateway when it has any. Clients do not set this.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _roles: Option<Vec<String>>,
+    #[serde(rename = "jobType")]
+    pub job_type: MarkJobCreateCommandJobType,
+    /// The resource to annotate.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    pub params: MarkJobParams,
+}
+
+impl MarkJobCreateCommand {
+    /// The `MarkJobCreateCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId, params: MarkJobParams) -> Self {
+        Self {
+            _user_id: None,
+            _roles: None,
+            job_type: MarkJobCreateCommandJobType::Mark,
+            resource_id,
+            params,
+        }
+    }
+}
+
+impl Schema for MarkJobCreateCommand {
+    const NAME: &'static str = "MarkJobCreateCommand";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MarkJobCreateCommandJobType {
+    #[serde(rename = "mark")]
+    Mark,
+}
+
+impl MarkJobCreateCommandJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MarkJobCreateCommandJobType::Mark => "mark",
+        }
+    }
+}
+
+/// What a `mark` job reports when it has done its work, whatever its motivation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MarkJobDone {
+    /// What the model proposed, before anything was checked against the text.
+    pub found: u64,
+    /// What the log holds: the annotations committed, after the ones that could not be anchored were dropped and repeats were collapsed.
+    pub persisted: u64,
+    /// How many of the proposed could not be anchored in the text. Absent means none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub errors: Option<u64>,
+    /// The annotations persisted per category. A tagging job's; absent from every other.
+    #[serde(rename = "byCategory")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub by_category: Option<std::collections::BTreeMap<String, i64>>,
+    /// Total floor-accepted under-reported pieces across the job's units. Absent means none — the per-unit evidence rides the terminal progress frame's completedItems; this keeps the result self-describing without the progress stream.
+    #[serde(rename = "underReportedPieces")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub under_reported_pieces: Option<i64>,
+    /// Pieces whose yield was to be checked against a count and was not: the count failed, was cut off, or answered no count. What they found was kept unchecked. Absent means none: every piece that was to be checked was. A job whose provider checks no yield has none.
+    #[serde(rename = "uncheckedPieces")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unchecked_pieces: Option<u64>,
+}
+
+impl MarkJobDone {
+    /// The `MarkJobDone` that states these and nothing else.
+    pub fn new(found: u64, persisted: u64) -> Self {
+        Self {
+            found,
+            persisted,
+            errors: None,
+            by_category: None,
+            under_reported_pieces: None,
+            unchecked_pieces: None,
+        }
+    }
+}
+
+impl Schema for MarkJobDone {
+    const NAME: &'static str = "MarkJobDone";
+}
+
+/// `mark` jobs of one motivation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MarkJobFilter {
+    #[serde(rename = "jobType")]
+    pub job_type: MarkJobFilterJobType,
+    pub params: MarkJobFilterParams,
+}
+
+impl MarkJobFilter {
+    /// The `MarkJobFilter` that states these and nothing else.
+    pub fn new(params: MarkJobFilterParams) -> Self {
+        Self {
+            job_type: MarkJobFilterJobType::Mark,
+            params,
+        }
+    }
+}
+
+impl Schema for MarkJobFilter {
+    const NAME: &'static str = "MarkJobFilter";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MarkJobFilterJobType {
+    #[serde(rename = "mark")]
+    Mark,
+}
+
+impl MarkJobFilterJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MarkJobFilterJobType::Mark => "mark",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MarkJobFilterParams {
+    pub motivation: Motivation,
+}
+
+/// The parameters of a `mark` job, told apart by `motivation`. Each motivation takes its own parameters and no others: a parameter a job does not take is refused where the job is created.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum MarkJobParams {
+    HighlightingJobParams(HighlightingJobParams),
+    CommentingJobParams(CommentingJobParams),
+    AssessingJobParams(AssessingJobParams),
+    LinkingJobParams(LinkingJobParams),
+    TaggingJobParams(TaggingJobParams),
+}
+
+impl<'de> serde::Deserialize<'de> for MarkJobParams {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("motivation").and_then(serde_json::Value::as_str) {
+            Some("highlighting") => {
+                serde_json::from_value(value).map(MarkJobParams::HighlightingJobParams)
+            }
+            Some("commenting") => {
+                serde_json::from_value(value).map(MarkJobParams::CommentingJobParams)
+            }
+            Some("assessing") => {
+                serde_json::from_value(value).map(MarkJobParams::AssessingJobParams)
+            }
+            Some("linking") => serde_json::from_value(value).map(MarkJobParams::LinkingJobParams),
+            Some("tagging") => serde_json::from_value(value).map(MarkJobParams::TaggingJobParams),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a MarkJobParams states a `motivation` that is one of `highlighting`, `commenting`, `assessing`, `linking`, `tagging`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl MarkJobParams {
+    /// The `motivation` this value states: the one its member is told apart by.
+    pub(crate) const fn motivation(&self) -> Motivation {
+        match self {
+            MarkJobParams::HighlightingJobParams(_) => Motivation::Highlighting,
+            MarkJobParams::CommentingJobParams(_) => Motivation::Commenting,
+            MarkJobParams::AssessingJobParams(_) => Motivation::Assessing,
+            MarkJobParams::LinkingJobParams(_) => Motivation::Linking,
+            MarkJobParams::TaggingJobParams(_) => Motivation::Tagging,
+        }
+    }
+}
+
+impl From<HighlightingJobParams> for MarkJobParams {
+    fn from(member: HighlightingJobParams) -> Self {
+        MarkJobParams::HighlightingJobParams(member)
+    }
+}
+
+impl From<CommentingJobParams> for MarkJobParams {
+    fn from(member: CommentingJobParams) -> Self {
+        MarkJobParams::CommentingJobParams(member)
+    }
+}
+
+impl From<AssessingJobParams> for MarkJobParams {
+    fn from(member: AssessingJobParams) -> Self {
+        MarkJobParams::AssessingJobParams(member)
+    }
+}
+
+impl From<LinkingJobParams> for MarkJobParams {
+    fn from(member: LinkingJobParams) -> Self {
+        MarkJobParams::LinkingJobParams(member)
+    }
+}
+
+impl From<TaggingJobParams> for MarkJobParams {
+    fn from(member: TaggingJobParams) -> Self {
+        MarkJobParams::TaggingJobParams(member)
+    }
+}
+
+impl Schema for MarkJobParams {
+    const NAME: &'static str = "MarkJobParams";
+}
+
+/// A pending `mark` job, announced with its parameters as it was created.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkJobQueuedEvent {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: MarkJobQueuedEventJobType,
+    /// The resource the job is about.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The DID of the principal whose `job:create` created the job.
+    #[serde(rename = "userId")]
+    pub user_id: UserId,
+    pub params: MarkJobParams,
+}
+
+impl MarkJobQueuedEvent {
+    /// The `MarkJobQueuedEvent` that states these and nothing else.
+    pub fn new(
+        job_id: JobId,
+        resource_id: ResourceId,
+        user_id: UserId,
+        params: MarkJobParams,
+    ) -> Self {
+        Self {
+            job_id,
+            job_type: MarkJobQueuedEventJobType::Mark,
+            resource_id,
+            user_id,
+            params,
+        }
+    }
+}
+
+impl Schema for MarkJobQueuedEvent {
+    const NAME: &'static str = "MarkJobQueuedEvent";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MarkJobQueuedEventJobType {
+    #[serde(rename = "mark")]
+    Mark,
+}
+
+impl MarkJobQueuedEventJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MarkJobQueuedEventJobType::Mark => "mark",
+        }
+    }
+}
+
+/// What a `mark` job reports when it concludes without failing: its counts, or a decline. Neither names its kind: a decline is the one with `declined`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum MarkJobResult {
+    MarkJobDone(MarkJobDone),
+    JobDeclined(JobDeclined),
+}
+
+impl From<MarkJobDone> for MarkJobResult {
+    fn from(member: MarkJobDone) -> Self {
+        MarkJobResult::MarkJobDone(member)
+    }
+}
+
+impl From<JobDeclined> for MarkJobResult {
+    fn from(member: JobDeclined) -> Self {
+        MarkJobResult::JobDeclined(member)
+    }
+}
+
+impl Schema for MarkJobResult {
+    const NAME: &'static str = "MarkJobResult";
+}
+
+/// Emitted when the user requests a new mark (annotation) on a resource
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkRequestedEvent {
+    /// The '@id' of the resource the mark belongs to (W3C target.source). Routes the event to the right viewer/state unit when a host mounts many viewers on one session.
+    pub source: ResourceId,
+    /// One or more W3C selectors
+    pub selector: AnnotationSelector,
+    pub motivation: Motivation,
+}
+
+impl Schema for MarkRequestedEvent {
+    const NAME: &'static str = "MarkRequestedEvent";
+}
+
+/// Emitted when a mark is submitted with its annotation body
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkSubmitEvent {
+    /// The '@id' of the resource the mark belongs to (W3C target.source). Routes the submit to the state unit bound to that resource — without it, N mounted units each create the annotation (N copies on N resources).
+    pub source: ResourceId,
+    pub motivation: Motivation,
+    /// One or more W3C selectors
+    pub selector: AnnotationSelector,
+    /// Optional body. Omit for annotations whose motivation alone is meaningful (e.g. highlighting) or whose user-supplied content is empty (e.g. an assessing annotation saved without comment text). Shape matches Annotation.body.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub body: Option<AnnotationBodies>,
+}
+
+impl MarkSubmitEvent {
+    /// The `MarkSubmitEvent` that states these and nothing else.
+    pub fn new(source: ResourceId, motivation: Motivation, selector: AnnotationSelector) -> Self {
+        Self {
+            source,
+            motivation,
+            selector,
+            body: None,
+        }
+    }
+}
+
+impl Schema for MarkSubmitEvent {
+    const NAME: &'static str = "MarkSubmitEvent";
+}
+
+/// Bus command to unarchive a previously archived resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkUnarchiveCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Optional: where the resource's bytes are expected to be. When present the handler VERIFIES the file exists and fails loudly if it does not, rather than succeeding as a no-op. An instruction, not a copy of the stored fact (that lives on the primary Representation). Working-tree URI, only file:// is supported.
+    #[serde(rename = "storageUri")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub storage_uri: Option<String>,
+}
+
+impl MarkUnarchiveCommand {
+    /// The `MarkUnarchiveCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            storage_uri: None,
+        }
+    }
+}
+
+impl Schema for MarkUnarchiveCommand {
+    const NAME: &'static str = "MarkUnarchiveCommand";
+}
+
+/// Bus command to update an annotation's body with patch operations.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkUpdateBodyCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "annotationId")]
+    pub annotation_id: AnnotationId,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    pub operations: Vec<MarkUpdateBodyCommandOperationsItem>,
+}
+
+impl MarkUpdateBodyCommand {
+    /// The `MarkUpdateBodyCommand` that states these and nothing else.
+    pub fn new(
+        annotation_id: AnnotationId,
+        resource_id: ResourceId,
+        operations: Vec<MarkUpdateBodyCommandOperationsItem>,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            annotation_id,
+            resource_id,
+            operations,
+        }
+    }
+}
+
+impl Schema for MarkUpdateBodyCommand {
+    const NAME: &'static str = "MarkUpdateBodyCommand";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum MarkUpdateBodyCommandOperationsItem {
+    Add(BodyOperationAdd),
+    Remove(BodyOperationRemove),
+    Replace(BodyOperationReplace),
+}
+
+impl From<BodyOperationAdd> for MarkUpdateBodyCommandOperationsItem {
+    fn from(member: BodyOperationAdd) -> Self {
+        MarkUpdateBodyCommandOperationsItem::Add(member)
+    }
+}
+
+impl From<BodyOperationRemove> for MarkUpdateBodyCommandOperationsItem {
+    fn from(member: BodyOperationRemove) -> Self {
+        MarkUpdateBodyCommandOperationsItem::Remove(member)
+    }
+}
+
+impl From<BodyOperationReplace> for MarkUpdateBodyCommandOperationsItem {
+    fn from(member: BodyOperationReplace) -> Self {
+        MarkUpdateBodyCommandOperationsItem::Replace(member)
+    }
+}
+
+/// Bus command to replace the entity types on a resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MarkUpdateEntityTypesCommand {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "currentEntityTypes")]
+    pub current_entity_types: Vec<String>,
+    #[serde(rename = "updatedEntityTypes")]
+    pub updated_entity_types: Vec<String>,
+}
+
+impl MarkUpdateEntityTypesCommand {
+    /// The `MarkUpdateEntityTypesCommand` that states these and nothing else.
+    pub fn new(
+        resource_id: ResourceId,
+        current_entity_types: Vec<String>,
+        updated_entity_types: Vec<String>,
+    ) -> Self {
+        Self {
+            resource_id,
+            _user_id: None,
+            current_entity_types,
+            updated_entity_types,
+        }
+    }
+}
+
+impl Schema for MarkUpdateEntityTypesCommand {
+    const NAME: &'static str = "MarkUpdateEntityTypesCommand";
+}
+
+/// Request to search the knowledge base's resources by text. The Librarian answers: it matches the text lexically, and when nothing matches, by meaning.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MatchResourcesRequest {
+    /// The text to search for.
+    pub search: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archived: Option<bool>,
+    #[serde(rename = "entityType")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_type: Option<String>,
+    /// How many of the resources the search finds are passed over before the page begins.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub offset: Option<u64>,
+    /// The most resources a page has.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u16>,
+}
+
+impl MatchResourcesRequest {
+    /// The `MatchResourcesRequest` that states these and nothing else.
+    pub fn new(search: impl Into<String>) -> Self {
+        Self {
+            search: search.into(),
+            archived: None,
+            entity_type: None,
+            offset: None,
+            limit: None,
+        }
+    }
+}
+
+impl Schema for MatchResourcesRequest {
+    const NAME: &'static str = "MatchResourcesRequest";
+}
+
+/// One page of the resources a text search found, and which kind of answer it is.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MatchResourcesResponse {
+    pub resources: Vec<ResourceDescriptor>,
+    /// How many resources the search found in all, and not only on this page.
+    pub total: u64,
+    /// How many of the resources the search found were passed over before this page, as the request stated.
+    pub offset: u64,
+    /// The limit the search was made with.
+    pub limit: u64,
+    /// What kind of answer this is: 'lexical' — the resources matched the query text; 'semantic' — no lexical match existed, and these resources discuss the query per the vector index. Required so every producer labels its answer; a UI can render semantic results as a different kind of page ('no title matches, but these documents discuss it').
+    #[serde(rename = "matchKind")]
+    pub match_kind: MatchResourcesResponseMatchKind,
+}
+
+impl Schema for MatchResourcesResponse {
+    const NAME: &'static str = "MatchResourcesResponse";
+}
+
+/// What kind of answer this is: 'lexical' — the resources matched the query text; 'semantic' — no lexical match existed, and these resources discuss the query per the vector index. Required so every producer labels its answer; a UI can render semantic results as a different kind of page ('no title matches, but these documents discuss it').
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MatchResourcesResponseMatchKind {
+    #[serde(rename = "lexical")]
+    Lexical,
+    #[serde(rename = "semantic")]
+    Semantic,
+}
+
+impl MatchResourcesResponseMatchKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MatchResourcesResponseMatchKind::Lexical => "lexical",
+            MatchResourcesResponseMatchKind::Semantic => "semantic",
+        }
+    }
+}
+
+/// Result of searching resources by text
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MatchResourcesResult {
+    pub response: MatchResourcesResponse,
+}
+
+impl Schema for MatchResourcesResult {
+    const NAME: &'static str = "MatchResourcesResult";
+}
+
+/// The payload of `match:search-failed`: a CommandError that names the reference whose candidates could not be searched for.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MatchSearchFailed {
+    /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<MatchSearchFailedCode>,
+    /// Human-readable error message
+    pub message: String,
+    /// Optional additional context (stack trace, field name, etc.)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+    /// The reference the search was asked for.
+    #[serde(rename = "referenceId")]
+    pub reference_id: AnnotationId,
+}
+
+impl MatchSearchFailed {
+    /// The `MatchSearchFailed` that states these and nothing else.
+    pub fn new(message: impl Into<String>, reference_id: AnnotationId) -> Self {
+        Self {
+            code: None,
+            message: message.into(),
+            details: None,
+            reference_id,
+        }
+    }
+}
+
+impl Schema for MatchSearchFailed {
+    const NAME: &'static str = "MatchSearchFailed";
+}
+
+/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MatchSearchFailedCode {
+    #[serde(rename = "peer-unavailable")]
+    PeerUnavailable,
+    #[serde(rename = "not-found")]
+    NotFound,
+    #[serde(rename = "unauthorized")]
+    Unauthorized,
+    #[serde(rename = "none-pending")]
+    NonePending,
+}
+
+impl MatchSearchFailedCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MatchSearchFailedCode::PeerUnavailable => "peer-unavailable",
+            MatchSearchFailedCode::NotFound => "not-found",
+            MatchSearchFailedCode::Unauthorized => "unauthorized",
+            MatchSearchFailedCode::NonePending => "none-pending",
+        }
+    }
+}
+
+/// Request payload sent on the match:search-request bus channel to find candidate matches.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MatchSearchRequest {
+    /// Resource ID the reference annotation belongs to. Used to scope result events on the EventBus so the events-stream delivers them to participants viewing this resource.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Annotation ID of the reference to search candidates for
+    #[serde(rename = "referenceId")]
+    pub reference_id: AnnotationId,
+    /// Gathered context for the reference annotation
+    pub context: GatheredContext,
+    /// Maximum number of candidate results to return
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u16>,
+    /// Enable semantic similarity scoring in addition to keyword matching
+    #[serde(rename = "useSemanticScoring")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub use_semantic_scoring: Option<bool>,
+}
+
+impl MatchSearchRequest {
+    /// The `MatchSearchRequest` that states these and nothing else.
+    pub fn new(
+        resource_id: ResourceId,
+        reference_id: AnnotationId,
+        context: GatheredContext,
+    ) -> Self {
+        Self {
+            resource_id,
+            reference_id,
+            context,
+            limit: None,
+            use_semantic_scoring: None,
+        }
+    }
+}
+
+impl Schema for MatchSearchRequest {
+    const NAME: &'static str = "MatchSearchRequest";
+}
+
+/// Search results payload emitted on match:search-results SSE channel.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MatchSearchResult {
+    #[serde(rename = "referenceId")]
+    pub reference_id: AnnotationId,
+    /// The scored candidates, best first.
+    pub response: Vec<ScoredResource>,
+}
+
+impl Schema for MatchSearchResult {
+    const NAME: &'static str = "MatchSearchResult";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MediaTokenRequest {
+    /// The resource ID to generate a media token for
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for MediaTokenRequest {
+    const NAME: &'static str = "MediaTokenRequest";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct MediaTokenResponse {
+    /// Short-lived media token for use as ?token= query parameter on resource URLs
+    pub token: String,
+}
+
+impl Schema for MediaTokenResponse {
+    const NAME: &'static str = "MediaTokenResponse";
+}
+
+/// Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum Motivation {
+    #[serde(rename = "assessing")]
+    Assessing,
+    #[serde(rename = "commenting")]
+    Commenting,
+    #[serde(rename = "highlighting")]
+    Highlighting,
+    #[serde(rename = "linking")]
+    Linking,
+    #[serde(rename = "tagging")]
+    Tagging,
+}
+
+impl Motivation {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            Motivation::Assessing => "assessing",
+            Motivation::Commenting => "commenting",
+            Motivation::Highlighting => "highlighting",
+            Motivation::Linking => "linking",
+            Motivation::Tagging => "tagging",
+        }
+    }
+}
+
+impl Schema for Motivation {
+    const NAME: &'static str = "Motivation";
+}
+
+/// What registering a knowledge base takes: everything a registered one holds but its id, which the client's list makes. It has a did, because registering follows a sign-in: the knowledge base has already said what it is.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct NewKnowledgeBase {
+    /// What a person reads the knowledge base as. Once the knowledge base has described itself, its own name.
+    pub label: String,
+    pub endpoint: KbEndpoint,
+    /// The did the knowledge base reported of itself.
+    pub did: String,
+    /// The last time the knowledge base described itself. Absent until it has, in an answer that carried this entry's did.
+    #[serde(rename = "lastRead")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_read: Option<KbRead>,
+}
+
+impl NewKnowledgeBase {
+    /// The `NewKnowledgeBase` that states these and nothing else.
+    pub fn new(label: impl Into<String>, endpoint: KbEndpoint, did: impl Into<String>) -> Self {
+        Self {
+            label: label.into(),
+            endpoint,
+            did: did.into(),
+            last_read: None,
+        }
+    }
+}
+
+impl Schema for NewKnowledgeBase {
+    const NAME: &'static str = "NewKnowledgeBase";
+}
+
+/// One positioned text run. Coordinates are PDF points with the origin at the bottom-left of the page, Y increasing upward; the flip to canvas pixels happens in the browser.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct PdfTextItem {
+    /// Offset into AnchoredText.text, in Unicode code points from its start, inclusive.
+    pub start: u64,
+    /// Offset into AnchoredText.text, in Unicode code points from its start, exclusive.
+    pub end: u64,
+    /// 1-indexed page number.
+    pub page: i64,
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+}
+
+impl Schema for PdfTextItem {
+    const NAME: &'static str = "PdfTextItem";
+}
+
+/// Bus command saying what a principal is called. The gateway emits it when a principal ACTS, carrying the display name it just verified on its token; a principal may also emit it itself, for itself, which is how an agent, whose token carries no name, says what it is called. Either way the gateway stamps `_userId` with the sender's verified DID, so a principal names only itself. The Stower persists it as principal:profiled, and only when the name differs from the latest one recorded for that DID — so the log holds one line per name a principal has had, not one per act. A name is a fact ABOUT an identity, never part of the record of an act: no artifact carries it, and readers resolve it from the profiles projection. Emitted for a person and for an agent alike; never for a request that merely reads.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct PrincipalProfileCommand {
+    /// The principal's DID, injected by the /bus/emit gateway from the verified token. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    /// The display name: from the issuer's `name` claim, as verified on the token that carried an act, or what the principal said of itself. A token with no name produces no command from the gateway — the issuer is where a person's name is set, and absence is recorded as absence.
+    pub name: String,
+}
+
+impl PrincipalProfileCommand {
+    /// The `PrincipalProfileCommand` that states these and nothing else.
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            _user_id: None,
+            name: name.into(),
+        }
+    }
+}
+
+impl Schema for PrincipalProfileCommand {
+    const NAME: &'static str = "PrincipalProfileCommand";
+}
+
+/// Payload for principal:profiled — what this principal is called, as the issuer's verified `name` claim said or as the principal said of itself, recorded once per change (system-level, no resourceId). The event's `userId` is the principal's DID; this payload is the fact about it. Provenance never reads it: every artifact joins on the DID alone, and this is projected into profiles.json for readers to resolve against. Two lines for one DID mean the name changed, and the timestamps say when — which is why no artifact ever had to freeze a copy.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct PrincipalProfiledPayload {
+    /// The display name as of this event: from the issuer's verified `name` claim, or what the principal said of itself.
+    pub name: String,
+}
+
+impl Schema for PrincipalProfiledPayload {
+    const NAME: &'static str = "PrincipalProfiledPayload";
+}
+
+/// What a principal last said it is called, and when: the profile a `principal:profiled` event gives.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Profile {
+    /// The name the principal last gave.
+    pub name: String,
+    /// The timestamp of the event that gave it.
+    pub since: String,
+}
+
+impl Schema for Profile {
+    const NAME: &'static str = "Profile";
+}
+
+/// OAuth 2.0 Protected Resource Metadata (RFC 9728): which authorization server this knowledge base trusts, served at /.well-known/oauth-protected-resource so a client — the Browser, an MCP client — learns where to send a user to sign in without configuration. A 401 from any protected route points here in its WWW-Authenticate challenge.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProtectedResourceMetadata {
+    /// This knowledge base's resource identifier: its did:web identity resolved to an https URL (did:web:example.github.io:my-kb identifies https://example.github.io/my-kb). This is the exact value a token's aud claim must carry. It is an identifier, not an address — nothing dereferences it, and a knowledge base reached over http in local development still names itself by the https form, which is what makes the value stable across every host, port and proxy it is reached through.
+    pub resource: String,
+    /// Issuer identifiers whose tokens this resource accepts — the configured identity issuer.
+    pub authorization_servers: Vec<String>,
+    /// How a bearer token reaches this resource: the Authorization header only.
+    pub bearer_methods_supported: Vec<ProtectedResourceMetadataBearerMethodsSupportedItem>,
+    /// The knowledge base's name, for a client's sign-in prompt.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_name: Option<String>,
+}
+
+impl ProtectedResourceMetadata {
+    /// The `ProtectedResourceMetadata` that states these and nothing else.
+    pub fn new(
+        resource: impl Into<String>,
+        authorization_servers: Vec<String>,
+        bearer_methods_supported: Vec<ProtectedResourceMetadataBearerMethodsSupportedItem>,
+    ) -> Self {
+        Self {
+            resource: resource.into(),
+            authorization_servers,
+            bearer_methods_supported,
+            resource_name: None,
+        }
+    }
+}
+
+impl Schema for ProtectedResourceMetadata {
+    const NAME: &'static str = "ProtectedResourceMetadata";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ProtectedResourceMetadataBearerMethodsSupportedItem {
+    #[serde(rename = "header")]
+    Header,
+}
+
+impl ProtectedResourceMetadataBearerMethodsSupportedItem {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ProtectedResourceMetadataBearerMethodsSupportedItem::Header => "header",
+        }
+    }
+}
+
+/// A specific, byte-addressable rendition of a resource (file/asset/variant).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct Representation {
+    /// Stable ID for this representation.
+    #[serde(rename = "@id")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Type(s), e.g., schema:MediaObject.
+    #[serde(rename = "@type")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<RepresentationType>,
+    /// MIME/media type (e.g., text/markdown, image/png).
+    #[serde(rename = "mediaType")]
+    pub media_type: String,
+    /// Working-tree URI identifying where this rendition's bytes live. Only file:// is supported (e.g. file://docs/overview.md). The single home of the storage location: maintained across moves (yield:moved relocates it), absent when the resource has no stored bytes.
+    #[serde(rename = "storageUri")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub storage_uri: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+    /// Size of the payload in bytes.
+    #[serde(rename = "byteSize")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub byte_size: Option<u64>,
+    /// The SHA-256 of the bytes, as 64 lower-case hexadecimal digits with nothing before them. Whatever compares the checksums of two representations compares this text.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub checksum: Option<String>,
+    /// Compression/transfer encoding if applicable.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub encoding: Option<String>,
+    /// IETF BCP 47 language tag (e.g., en, es-ES).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// Pixels (images/video).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub width: Option<u64>,
+    /// Pixels (images/video).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub height: Option<u64>,
+    /// Seconds (audio/video).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub modified: Option<String>,
+    /// Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
+    #[serde(rename = "conformsTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conforms_to: Option<RepresentationConformsTo>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>,
+    /// Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rel: Option<RepresentationRel>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+impl Representation {
+    /// The `Representation` that states these and nothing else.
+    pub fn new(media_type: impl Into<String>) -> Self {
+        Self {
+            id: None,
+            r#type: None,
+            media_type: media_type.into(),
+            storage_uri: None,
+            filename: None,
+            byte_size: None,
+            checksum: None,
+            encoding: None,
+            language: None,
+            width: None,
+            height: None,
+            duration: None,
+            created: None,
+            modified: None,
+            conforms_to: None,
+            tags: None,
+            rel: None,
+            rest: serde_json::Map::new(),
+        }
+    }
+}
+
+impl Schema for Representation {
+    const NAME: &'static str = "Representation";
+}
+
+/// Payload for yield:representation-added domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct RepresentationAddedPayload {
+    pub representation: Representation,
+}
+
+impl Schema for RepresentationAddedPayload {
+    const NAME: &'static str = "RepresentationAddedPayload";
+}
+
+/// Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum RepresentationConformsTo {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived).
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum RepresentationRel {
+    #[serde(rename = "original")]
+    Original,
+    #[serde(rename = "thumbnail")]
+    Thumbnail,
+    #[serde(rename = "preview")]
+    Preview,
+    #[serde(rename = "optimized")]
+    Optimized,
+    #[serde(rename = "derived")]
+    Derived,
+    #[serde(rename = "other")]
+    Other,
+}
+
+impl RepresentationRel {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            RepresentationRel::Original => "original",
+            RepresentationRel::Thumbnail => "thumbnail",
+            RepresentationRel::Preview => "preview",
+            RepresentationRel::Optimized => "optimized",
+            RepresentationRel::Derived => "derived",
+            RepresentationRel::Other => "other",
+        }
+    }
+}
+
+/// Payload for yield:representation-removed domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct RepresentationRemovedPayload {
+    /// Checksum of the representation to remove
+    pub checksum: String,
+}
+
+impl Schema for RepresentationRemovedPayload {
+    const NAME: &'static str = "RepresentationRemovedPayload";
+}
+
+/// Type(s), e.g., schema:MediaObject.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum RepresentationType {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// Payload for mark:archived domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceArchivedPayload {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+impl Schema for ResourceArchivedPayload {
+    const NAME: &'static str = "ResourceArchivedPayload";
+}
+
+/// Payload for yield:cloned domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceClonedPayload {
+    pub name: String,
+    pub format: ContentFormat,
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    #[serde(rename = "contentByteSize")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_byte_size: Option<i64>,
+    /// Where the clone's bytes are, on the resource's primary Representation — the same single home `yield:created` writes to.
+    #[serde(rename = "storageUri")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub storage_uri: Option<String>,
+    #[serde(rename = "parentResourceId")]
+    pub parent_resource_id: ResourceId,
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creator: Option<Agent>,
+    /// PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
+    #[serde(rename = "wasAttributedTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub was_attributed_to: Option<ResourceClonedPayloadWasAttributedTo>,
+}
+
+impl ResourceClonedPayload {
+    /// The `ResourceClonedPayload` that states these and nothing else.
+    pub fn new(
+        name: impl Into<String>,
+        format: ContentFormat,
+        content_checksum: impl Into<String>,
+        parent_resource_id: ResourceId,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            format,
+            content_checksum: content_checksum.into(),
+            content_byte_size: None,
+            storage_uri: None,
+            parent_resource_id,
+            entity_types: None,
+            language: None,
+            creator: None,
+            was_attributed_to: None,
+        }
+    }
+}
+
+impl Schema for ResourceClonedPayload {
+    const NAME: &'static str = "ResourceClonedPayload";
+}
+
+/// PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceClonedPayloadWasAttributedTo {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for ResourceClonedPayloadWasAttributedTo {
+    fn from(member: Agent) -> Self {
+        ResourceClonedPayloadWasAttributedTo::Agent(member)
+    }
+}
+
+/// Payload for yield:created domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceCreatedPayload {
+    pub name: String,
+    pub format: ContentFormat,
+    /// SHA-256 of content
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    #[serde(rename = "contentByteSize")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_byte_size: Option<i64>,
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// The creating instruction's URI, recorded on the event. Append-only, so this value never changes — the LOCATION the projection serves is maintained across moves and lives on the resource's primary Representation, relocated by yield:moved. Optional: a resource may have no bytes. Working-tree URI, only file:// is supported (e.g. file://docs/overview.md).
+    #[serde(rename = "storageUri")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub storage_uri: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    #[serde(rename = "isDraft")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_draft: Option<bool>,
+    /// The job this resource was made in fulfilment of, when its create cited one. A write that cites the same job on this resource, by the one who made it, is attributed to that job's requester: the `creator` here.
+    #[serde(rename = "jobId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub job_id: Option<JobId>,
+    /// What this resource was generated from: the resource, and the annotation on it when the generation was for one. The resource's descriptor names the resource as `wasDerivedFrom`.
+    #[serde(rename = "generatedFrom")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generated_from: Option<ResourceCreatedPayloadGeneratedFrom>,
+    #[serde(rename = "generationPrompt")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generation_prompt: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generator: Option<ResourceCreatedPayloadGenerator>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creator: Option<Agent>,
+    /// PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
+    #[serde(rename = "wasAttributedTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub was_attributed_to: Option<ResourceCreatedPayloadWasAttributedTo>,
+}
+
+impl ResourceCreatedPayload {
+    /// The `ResourceCreatedPayload` that states these and nothing else.
+    pub fn new(
+        name: impl Into<String>,
+        format: ContentFormat,
+        content_checksum: impl Into<String>,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            format,
+            content_checksum: content_checksum.into(),
+            content_byte_size: None,
+            entity_types: None,
+            storage_uri: None,
+            language: None,
+            is_draft: None,
+            job_id: None,
+            generated_from: None,
+            generation_prompt: None,
+            generator: None,
+            creator: None,
+            was_attributed_to: None,
+        }
+    }
+}
+
+impl Schema for ResourceCreatedPayload {
+    const NAME: &'static str = "ResourceCreatedPayload";
+}
+
+/// What this resource was generated from: the resource, and the annotation on it when the generation was for one. The resource's descriptor names the resource as `wasDerivedFrom`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceCreatedPayloadGeneratedFrom {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+}
+
+impl ResourceCreatedPayloadGeneratedFrom {
+    /// The `ResourceCreatedPayloadGeneratedFrom` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            resource_id,
+            annotation_id: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceCreatedPayloadGenerator {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for ResourceCreatedPayloadGenerator {
+    fn from(member: Agent) -> Self {
+        ResourceCreatedPayloadGenerator::Agent(member)
+    }
+}
+
+/// PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceCreatedPayloadWasAttributedTo {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for ResourceCreatedPayloadWasAttributedTo {
+    fn from(member: Agent) -> Self {
+        ResourceCreatedPayloadWasAttributedTo::Agent(member)
+    }
+}
+
+/// Metadata about a resource (1:1 with its URI). JSON-LD subject is @id. Link to concrete bytes via representations.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceDescriptor {
+    /// JSON-LD context; URI, object, or array of these.
+    #[serde(rename = "@context")]
+    pub context: ResourceDescriptorContext,
+    /// The id of the resource being described.
+    #[serde(rename = "@id")]
+    pub id: ResourceId,
+    /// Type(s) of the resource (IRIs/CURIEs via @context).
+    #[serde(rename = "@type")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<ResourceDescriptorType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    /// Persistent identifiers (e.g., DOI, URN).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub identifier: Option<ResourceDescriptorIdentifier>,
+    /// Topics (IRIs or strings).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub about: Option<ResourceDescriptorAbout>,
+    /// Equivalent/authoritative references.
+    #[serde(rename = "sameAs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub same_as: Option<Vec<String>>,
+    #[serde(rename = "isPartOf")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_part_of: Option<Vec<String>>,
+    #[serde(rename = "hasPart")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub has_part: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub license: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+    #[serde(rename = "dateCreated")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date_created: Option<String>,
+    #[serde(rename = "dateModified")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date_modified: Option<String>,
+    /// W3C PROV: the resource, or resources, this one was derived from, each by its id
+    #[serde(rename = "wasDerivedFrom")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub was_derived_from: Option<ResourceDescriptorWasDerivedFrom>,
+    /// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
+    #[serde(rename = "wasAttributedTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub was_attributed_to: Option<ResourceDescriptorWasAttributedTo>,
+    /// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generator: Option<ResourceDescriptorGenerator>,
+    /// Profile/shape URI this resource description conforms to.
+    #[serde(rename = "conformsTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conforms_to: Option<ResourceDescriptorConformsTo>,
+    /// Convenience set summarizing media types across representations.
+    #[serde(rename = "availableFormats")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub available_formats: Option<Vec<String>>,
+    /// Managed or referenced byte-level renditions of this resource.
+    pub representations: ResourceDescriptorRepresentations,
+    /// Application-specific: Whether this resource is archived
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archived: Option<bool>,
+    /// Application-specific: Entity types for this resource
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// Application-specific: Whether this resource is a draft
+    #[serde(rename = "isDraft")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_draft: Option<bool>,
+    /// Application-specific: ID of annotation that triggered generation
+    #[serde(rename = "sourceAnnotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_annotation_id: Option<AnnotationId>,
+    /// Application-specific: ID of source resource for clones/derivatives
+    #[serde(rename = "sourceResourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_resource_id: Option<ResourceId>,
+    /// Original URI from a source knowledge base when this resource was imported
+    #[serde(rename = "originatedFrom")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub originated_from: Option<String>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+impl ResourceDescriptor {
+    /// The `ResourceDescriptor` that states these and nothing else.
+    pub fn new(
+        context: ResourceDescriptorContext,
+        id: ResourceId,
+        name: impl Into<String>,
+        representations: ResourceDescriptorRepresentations,
+    ) -> Self {
+        Self {
+            context,
+            id,
+            r#type: None,
+            name: name.into(),
+            description: None,
+            identifier: None,
+            about: None,
+            same_as: None,
+            is_part_of: None,
+            has_part: None,
+            license: None,
+            version: None,
+            date_created: None,
+            date_modified: None,
+            was_derived_from: None,
+            was_attributed_to: None,
+            generator: None,
+            conforms_to: None,
+            available_formats: None,
+            representations,
+            archived: None,
+            entity_types: None,
+            is_draft: None,
+            source_annotation_id: None,
+            source_resource_id: None,
+            originated_from: None,
+            rest: serde_json::Map::new(),
+        }
+    }
+}
+
+impl Schema for ResourceDescriptor {
+    const NAME: &'static str = "ResourceDescriptor";
+}
+
+/// Topics (IRIs or strings).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorAbout {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// Profile/shape URI this resource description conforms to.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorConformsTo {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// JSON-LD context; URI, object, or array of these.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorContext {
+    Text(String),
+    Object(serde_json::Map<String, serde_json::Value>),
+    List(Vec<ResourceDescriptorContextItem>),
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorContextItem {
+    Text(String),
+    Object(serde_json::Map<String, serde_json::Value>),
+}
+
+/// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorGenerator {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for ResourceDescriptorGenerator {
+    fn from(member: Agent) -> Self {
+        ResourceDescriptorGenerator::Agent(member)
+    }
+}
+
+/// Persistent identifiers (e.g., DOI, URN).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorIdentifier {
+    Text(String),
+    List(Vec<String>),
+    Object(ResourceDescriptorIdentifierObject),
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceDescriptorIdentifierObject {
+    #[serde(rename = "@id")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scheme: Option<String>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+/// Managed or referenced byte-level renditions of this resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorRepresentations {
+    Representation(Representation),
+    List(Vec<Representation>),
+}
+
+impl From<Representation> for ResourceDescriptorRepresentations {
+    fn from(member: Representation) -> Self {
+        ResourceDescriptorRepresentations::Representation(member)
+    }
+}
+
+/// Type(s) of the resource (IRIs/CURIEs via @context).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorType {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorWasAttributedTo {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for ResourceDescriptorWasAttributedTo {
+    fn from(member: Agent) -> Self {
+        ResourceDescriptorWasAttributedTo::Agent(member)
+    }
+}
+
+/// W3C PROV: the resource, or resources, this one was derived from, each by its id
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ResourceDescriptorWasDerivedFrom {
+    ResourceId(ResourceId),
+    List(Vec<ResourceId>),
+}
+
+/// A client-local notice that a command on a resource failed, for a UI to show: the payload of `mark:create-error`, `mark:delete-error` and `bind:body-error`. Emitted by the caller that awaited the command, which knows whose command failed on which resource. The `*-failed` wire replies are correlation plumbing and are not for this.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceErrorEvent {
+    /// The resource the command addressed.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Human-readable error message.
+    pub message: String,
+}
+
+impl Schema for ResourceErrorEvent {
+    const NAME: &'static str = "ResourceErrorEvent";
+}
+
+/// A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+#[serde(try_from = "String", into = "String")]
+pub struct ResourceId(String);
+
+impl ResourceId {
+    /// The rule a value is held to, as the spec writes it.
+    pub const PATTERN: &'static str = "^[A-Za-z0-9_-]{1,128}$";
+
+    /// The pattern as the rule `new` holds a value to.
+    const RULE: Rule = Rule {
+        prefix: "",
+        admitted: Admitted::Of(&[('A', 'Z'), ('a', 'z'), ('0', '9'), ('_', '_'), ('-', '-')]),
+        least: 1,
+        most: Some(128),
+    };
+
+    /// `value` as a `ResourceId`, or that it is not one.
+    pub fn new(value: impl Into<String>) -> Result<ResourceId, InvalidIdentifier> {
+        let value = value.into();
+        if ResourceId::RULE.admits(&value) {
+            Ok(ResourceId(value))
+        } else {
+            Err(InvalidIdentifier {
+                kind: "ResourceId",
+                pattern: ResourceId::PATTERN,
+                value,
+            })
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for ResourceId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::ops::Deref for ResourceId {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<str> for ResourceId {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::str::FromStr for ResourceId {
+    type Err = InvalidIdentifier;
+
+    fn from_str(value: &str) -> Result<ResourceId, InvalidIdentifier> {
+        ResourceId::new(value)
+    }
+}
+
+impl TryFrom<String> for ResourceId {
+    type Error = InvalidIdentifier;
+
+    fn try_from(value: String) -> Result<ResourceId, InvalidIdentifier> {
+        ResourceId::new(value)
+    }
+}
+
+impl From<ResourceId> for String {
+    fn from(id: ResourceId) -> String {
+        id.0
+    }
+}
+
+impl PartialEq<str> for ResourceId {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl PartialEq<&str> for ResourceId {
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
+    }
+}
+
+impl Schema for ResourceId {
+    const NAME: &'static str = "ResourceId";
+}
+
+/// Payload for yield:moved domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceMovedPayload {
+    /// Previous file:// URI
+    #[serde(rename = "fromUri")]
+    pub from_uri: String,
+    /// New file:// URI
+    #[serde(rename = "toUri")]
+    pub to_uri: String,
+}
+
+impl Schema for ResourceMovedPayload {
+    const NAME: &'static str = "ResourceMovedPayload";
+}
+
+/// Payload for mark:unarchived domain event (empty payload)
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceUnarchivedPayload {}
+
+impl Schema for ResourceUnarchivedPayload {
+    const NAME: &'static str = "ResourceUnarchivedPayload";
+}
+
+/// Payload for yield:updated domain event
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ResourceUpdatedPayload {
+    /// SHA-256 of new content
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    #[serde(rename = "contentByteSize")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_byte_size: Option<i64>,
+}
+
+impl ResourceUpdatedPayload {
+    /// The `ResourceUpdatedPayload` that states these and nothing else.
+    pub fn new(content_checksum: impl Into<String>) -> Self {
+        Self {
+            content_checksum: content_checksum.into(),
+            content_byte_size: None,
+        }
+    }
+}
+
+impl Schema for ResourceUpdatedPayload {
+    const NAME: &'static str = "ResourceUpdatedPayload";
+}
+
+/// A resource returned by a search, carrying its relevance score and the reason it matched.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ScoredResource {
+    /// JSON-LD context; URI, object, or array of these.
+    #[serde(rename = "@context")]
+    pub context: ScoredResourceContext,
+    /// The id of the resource being described.
+    #[serde(rename = "@id")]
+    pub id: ResourceId,
+    /// Type(s) of the resource (IRIs/CURIEs via @context).
+    #[serde(rename = "@type")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<ScoredResourceType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    /// Persistent identifiers (e.g., DOI, URN).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub identifier: Option<ScoredResourceIdentifier>,
+    /// Topics (IRIs or strings).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub about: Option<ScoredResourceAbout>,
+    /// Equivalent/authoritative references.
+    #[serde(rename = "sameAs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub same_as: Option<Vec<String>>,
+    #[serde(rename = "isPartOf")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_part_of: Option<Vec<String>>,
+    #[serde(rename = "hasPart")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub has_part: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub license: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+    #[serde(rename = "dateCreated")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date_created: Option<String>,
+    #[serde(rename = "dateModified")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date_modified: Option<String>,
+    /// W3C PROV: the resource, or resources, this one was derived from, each by its id
+    #[serde(rename = "wasDerivedFrom")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub was_derived_from: Option<ScoredResourceWasDerivedFrom>,
+    /// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
+    #[serde(rename = "wasAttributedTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub was_attributed_to: Option<ScoredResourceWasAttributedTo>,
+    /// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generator: Option<ScoredResourceGenerator>,
+    /// Profile/shape URI this resource description conforms to.
+    #[serde(rename = "conformsTo")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conforms_to: Option<ScoredResourceConformsTo>,
+    /// Convenience set summarizing media types across representations.
+    #[serde(rename = "availableFormats")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub available_formats: Option<Vec<String>>,
+    /// Managed or referenced byte-level renditions of this resource.
+    pub representations: ScoredResourceRepresentations,
+    /// Application-specific: Whether this resource is archived
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archived: Option<bool>,
+    /// Application-specific: Entity types for this resource
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// Application-specific: Whether this resource is a draft
+    #[serde(rename = "isDraft")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_draft: Option<bool>,
+    /// Application-specific: ID of annotation that triggered generation
+    #[serde(rename = "sourceAnnotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_annotation_id: Option<AnnotationId>,
+    /// Application-specific: ID of source resource for clones/derivatives
+    #[serde(rename = "sourceResourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_resource_id: Option<ResourceId>,
+    /// Original URI from a source knowledge base when this resource was imported
+    #[serde(rename = "originatedFrom")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub originated_from: Option<String>,
+    /// Relevance score assigned by the matcher; higher is a better candidate.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub score: Option<f64>,
+    /// Human-readable reason for the match.
+    #[serde(rename = "matchReason")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub match_reason: Option<String>,
+}
+
+impl ScoredResource {
+    /// The `ScoredResource` that states these and nothing else.
+    pub fn new(
+        context: ScoredResourceContext,
+        id: ResourceId,
+        name: impl Into<String>,
+        representations: ScoredResourceRepresentations,
+    ) -> Self {
+        Self {
+            context,
+            id,
+            r#type: None,
+            name: name.into(),
+            description: None,
+            identifier: None,
+            about: None,
+            same_as: None,
+            is_part_of: None,
+            has_part: None,
+            license: None,
+            version: None,
+            date_created: None,
+            date_modified: None,
+            was_derived_from: None,
+            was_attributed_to: None,
+            generator: None,
+            conforms_to: None,
+            available_formats: None,
+            representations,
+            archived: None,
+            entity_types: None,
+            is_draft: None,
+            source_annotation_id: None,
+            source_resource_id: None,
+            originated_from: None,
+            score: None,
+            match_reason: None,
+        }
+    }
+}
+
+impl Schema for ScoredResource {
+    const NAME: &'static str = "ScoredResource";
+}
+
+/// Topics (IRIs or strings).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceAbout {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// Profile/shape URI this resource description conforms to.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceConformsTo {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// JSON-LD context; URI, object, or array of these.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceContext {
+    Text(String),
+    Object(serde_json::Map<String, serde_json::Value>),
+    List(Vec<ScoredResourceContextItem>),
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceContextItem {
+    Text(String),
+    Object(serde_json::Map<String, serde_json::Value>),
+}
+
+/// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceGenerator {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for ScoredResourceGenerator {
+    fn from(member: Agent) -> Self {
+        ScoredResourceGenerator::Agent(member)
+    }
+}
+
+/// Persistent identifiers (e.g., DOI, URN).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceIdentifier {
+    Text(String),
+    List(Vec<String>),
+    Object(ScoredResourceIdentifierObject),
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ScoredResourceIdentifierObject {
+    #[serde(rename = "@id")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scheme: Option<String>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
+}
+
+/// Managed or referenced byte-level renditions of this resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceRepresentations {
+    Representation(Representation),
+    List(Vec<Representation>),
+}
+
+impl From<Representation> for ScoredResourceRepresentations {
+    fn from(member: Representation) -> Self {
+        ScoredResourceRepresentations::Representation(member)
+    }
+}
+
+/// Type(s) of the resource (IRIs/CURIEs via @context).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceType {
+    Text(String),
+    List(Vec<String>),
+}
+
+/// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceWasAttributedTo {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for ScoredResourceWasAttributedTo {
+    fn from(member: Agent) -> Self {
+        ScoredResourceWasAttributedTo::Agent(member)
+    }
+}
+
+/// W3C PROV: the resource, or resources, this one was derived from, each by its id
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum ScoredResourceWasDerivedFrom {
+    ResourceId(ResourceId),
+    List(Vec<ResourceId>),
+}
+
+/// One W3C selector: a way of finding a segment of a resource. Tell them apart by `type`, which is required on each and single-valued.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum Selector {
+    TextPositionSelector(TextPositionSelector),
+    TextQuoteSelector(TextQuoteSelector),
+    SvgSelector(SvgSelector),
+    FragmentSelector(FragmentSelector),
+}
+
+impl<'de> serde::Deserialize<'de> for Selector {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("type").and_then(serde_json::Value::as_str) {
+            Some("TextPositionSelector") => {
+                serde_json::from_value(value).map(Selector::TextPositionSelector)
+            }
+            Some("TextQuoteSelector") => {
+                serde_json::from_value(value).map(Selector::TextQuoteSelector)
+            }
+            Some("SvgSelector") => serde_json::from_value(value).map(Selector::SvgSelector),
+            Some("FragmentSelector") => {
+                serde_json::from_value(value).map(Selector::FragmentSelector)
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a Selector states a `type` that is one of `TextPositionSelector`, `TextQuoteSelector`, `SvgSelector`, `FragmentSelector`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<TextPositionSelector> for Selector {
+    fn from(member: TextPositionSelector) -> Self {
+        Selector::TextPositionSelector(member)
+    }
+}
+
+impl From<TextQuoteSelector> for Selector {
+    fn from(member: TextQuoteSelector) -> Self {
+        Selector::TextQuoteSelector(member)
+    }
+}
+
+impl From<SvgSelector> for Selector {
+    fn from(member: SvgSelector) -> Self {
+        Selector::SvgSelector(member)
+    }
+}
+
+impl From<FragmentSelector> for Selector {
+    fn from(member: FragmentSelector) -> Self {
+        Selector::FragmentSelector(member)
+    }
+}
+
+impl Schema for Selector {
+    const NAME: &'static str = "Selector";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SemanticMatch {
+    /// The chunk text that matched
+    pub text: String,
+    /// Source resource ID
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The source resource's display name, resolved from its view at gather time. Required: a match card must name its source, and corpus matches routinely come from outside the graph neighborhood, so there is no node to borrow a name from. A match whose source no longer resolves to a view is dropped by the producer rather than served nameless.
+    #[serde(rename = "resourceName")]
+    pub resource_name: String,
+    /// Source annotation ID, if the match is from an annotation
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    /// Cosine similarity score (0-1)
+    pub score: f64,
+    /// Entity types on the matched passage
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// True when this passage's text was recognized from pixels (OCR of a scanned page) rather than read from the document. Absent means read directly — the common case — so the flag is only present where it changes how the text should be trusted. It travels with the passage because a consumer receives the chunk with no document attached and cannot recompute how the text was obtained.
+    #[serde(rename = "machineRead")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub machine_read: Option<bool>,
+}
+
+impl SemanticMatch {
+    /// The `SemanticMatch` that states these and nothing else.
+    pub fn new(
+        text: impl Into<String>,
+        resource_id: ResourceId,
+        resource_name: impl Into<String>,
+        score: f64,
+    ) -> Self {
+        Self {
+            text: text.into(),
+            resource_id,
+            resource_name: resource_name.into(),
+            annotation_id: None,
+            score,
+            entity_types: None,
+            machine_read: None,
+        }
+    }
+}
+
+impl Schema for SemanticMatch {
+    const NAME: &'static str = "SemanticMatch";
+}
+
+/// A participant opened a live connection to this KB — an SSE stream on /bus/subscribe. Presence is CONNECTION lifecycle, not login: a token can be minted and sit unused, so what this reports is that someone is WATCHING. One person with two tabs produces two of these, which is why connectionId is required — the DID alone cannot tell two connections apart, and a consumer that counts DIDs will undercount viewers.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SessionJoinedEvent {
+    /// DID of the authenticated principal on that connection. A person or a software agent — the bus does not distinguish.
+    pub participant: UserId,
+    /// Identifies this connection for its lifetime. The matching session:left carries the same value.
+    #[serde(rename = "connectionId")]
+    pub connection_id: String,
+}
+
+impl Schema for SessionJoinedEvent {
+    const NAME: &'static str = "SessionJoinedEvent";
+}
+
+/// A participant's live connection to this KB ended — the SSE stream aborted. Carries the same connectionId as the session:joined that opened it, so a consumer tracking who is present can retire the right connection rather than assuming one per participant.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SessionLeftEvent {
+    /// DID of the authenticated principal on that connection.
+    pub participant: UserId,
+    /// The connectionId announced by the matching session:joined.
+    #[serde(rename = "connectionId")]
+    pub connection_id: String,
+}
+
+impl Schema for SessionLeftEvent {
+    const NAME: &'static str = "SessionLeftEvent";
+}
+
+/// Emitted when the hover delay setting changes
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SettingsHoverDelayChangedEvent {
+    #[serde(rename = "hoverDelayMs")]
+    pub hover_delay_ms: i64,
+}
+
+impl Schema for SettingsHoverDelayChangedEvent {
+    const NAME: &'static str = "SettingsHoverDelayChangedEvent";
+}
+
+/// Emitted when the UI locale setting changes
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SettingsLocaleChangedEvent {
+    pub locale: String,
+}
+
+impl Schema for SettingsLocaleChangedEvent {
+    const NAME: &'static str = "SettingsLocaleChangedEvent";
+}
+
+/// Emitted when the UI theme setting changes
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SettingsThemeChangedEvent {
+    pub theme: SettingsThemeChangedEventTheme,
+}
+
+impl Schema for SettingsThemeChangedEvent {
+    const NAME: &'static str = "SettingsThemeChangedEvent";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SettingsThemeChangedEventTheme {
+    #[serde(rename = "light")]
+    Light,
+    #[serde(rename = "dark")]
+    Dark,
+    #[serde(rename = "system")]
+    System,
+}
+
+impl SettingsThemeChangedEventTheme {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SettingsThemeChangedEventTheme::Light => "light",
+            SettingsThemeChangedEventTheme::Dark => "dark",
+            SettingsThemeChangedEventTheme::System => "system",
+        }
+    }
+}
+
+/// Bus command to rebuild anchored-text artifacts by re-running extraction — every geometry-capable resource when resourceId is absent, one resource when present. Served by the Smelter, serialized (each unit can be a multi-second OCR pass), and never destructive: nothing is deleted first, stale entries are simply overwritten. Re-anchoring makes zero embedding calls — the vectors are already correct; only the derived map is re-made. Partial completion replies failed, with counts: a rebuild that quietly skipped resources would present exactly like a document with no text.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SmeltRebuildAnchorsCommand {
+    /// When present, re-anchor only this resource; otherwise every geometry-capable resource in the catalog.
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+}
+
+impl Schema for SmeltRebuildAnchorsCommand {
+    const NAME: &'static str = "SmeltRebuildAnchorsCommand";
+}
+
+/// The payload of `smelt:settled`: the Smelter's decision for one resource's content, keyed by the checksum of the bytes it inspected. `indexed`: the content is in the vector index. `skipped`: it declined, and `reason` says why.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SmeltSettled {
+    /// The resource whose content was inspected.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The checksum of the bytes inspected.
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    pub outcome: SmeltSettledOutcome,
+    /// Why the content was skipped.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<SmeltSettledReason>,
+}
+
+impl SmeltSettled {
+    /// The `SmeltSettled` that states these and nothing else.
+    pub fn new(
+        resource_id: ResourceId,
+        content_checksum: impl Into<String>,
+        outcome: SmeltSettledOutcome,
+    ) -> Self {
+        Self {
+            resource_id,
+            content_checksum: content_checksum.into(),
+            outcome,
+            reason: None,
+        }
+    }
+}
+
+impl Schema for SmeltSettled {
+    const NAME: &'static str = "SmeltSettled";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SmeltSettledOutcome {
+    #[serde(rename = "indexed")]
+    Indexed,
+    #[serde(rename = "skipped")]
+    Skipped,
+}
+
+impl SmeltSettledOutcome {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SmeltSettledOutcome::Indexed => "indexed",
+            SmeltSettledOutcome::Skipped => "skipped",
+        }
+    }
+}
+
+/// Why the content was skipped.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SmeltSettledReason {
+    #[serde(rename = "no-extractor")]
+    NoExtractor,
+    #[serde(rename = "empty")]
+    Empty,
+    #[serde(rename = "no-text-layer")]
+    NoTextLayer,
+    #[serde(rename = "encrypted")]
+    Encrypted,
+    #[serde(rename = "corrupt")]
+    Corrupt,
+    #[serde(rename = "too-large")]
+    TooLarge,
+}
+
+impl SmeltSettledReason {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SmeltSettledReason::NoExtractor => "no-extractor",
+            SmeltSettledReason::Empty => "empty",
+            SmeltSettledReason::NoTextLayer => "no-text-layer",
+            SmeltSettledReason::Encrypted => "encrypted",
+            SmeltSettledReason::Corrupt => "corrupt",
+            SmeltSettledReason::TooLarge => "too-large",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SpecificResource {
+    pub r#type: SpecificResourceType,
+    /// The id of the resource this body leads to
+    pub source: ResourceId,
+    /// Why this body is included
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<BodyPurpose>,
+}
+
+impl SpecificResource {
+    /// The `SpecificResource` that states these and nothing else.
+    pub fn new(source: ResourceId) -> Self {
+        Self {
+            r#type: SpecificResourceType::SpecificResource,
+            source,
+            purpose: None,
+        }
+    }
+}
+
+impl Schema for SpecificResource {
+    const NAME: &'static str = "SpecificResource";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SpecificResourceType {
+    #[serde(rename = "SpecificResource")]
+    SpecificResource,
+}
+
+impl SpecificResourceType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SpecificResourceType::SpecificResource => "SpecificResource",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct StatusResponse {
+    pub status: String,
+    pub version: String,
+    pub features: StatusResponseFeatures,
+    pub message: String,
+    #[serde(rename = "authenticatedAs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub authenticated_as: Option<String>,
+}
+
+impl StatusResponse {
+    /// The `StatusResponse` that states these and nothing else.
+    pub fn new(
+        status: impl Into<String>,
+        version: impl Into<String>,
+        features: StatusResponseFeatures,
+        message: impl Into<String>,
+    ) -> Self {
+        Self {
+            status: status.into(),
+            version: version.into(),
+            features,
+            message: message.into(),
+            authenticated_as: None,
+        }
+    }
+}
+
+impl Schema for StatusResponse {
+    const NAME: &'static str = "StatusResponse";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct StatusResponseFeatures {
+    #[serde(rename = "semanticContent")]
+    pub semantic_content: String,
+    pub collaboration: String,
+}
+
+/// A persisted domain event with metadata. Flat shape — event fields and metadata are peers.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct StoredEventResponse {
+    /// Unique event ID (UUID)
+    pub id: String,
+    /// Event type (flow verb name, e.g. mark:added)
+    pub r#type: String,
+    /// When the event occurred
+    pub timestamp: String,
+    /// DID of the user who triggered the event
+    #[serde(rename = "userId")]
+    pub user_id: UserId,
+    /// Resource this event affects (absent for system events)
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+    /// Event schema version
+    pub version: i64,
+    /// Event-type-specific payload
+    pub payload: serde_json::Map<String, serde_json::Value>,
+    pub metadata: EventMetadata,
+}
+
+impl StoredEventResponse {
+    /// The `StoredEventResponse` that states these and nothing else.
+    pub fn new(
+        id: impl Into<String>,
+        r#type: impl Into<String>,
+        timestamp: impl Into<String>,
+        user_id: UserId,
+        version: i64,
+        payload: serde_json::Map<String, serde_json::Value>,
+        metadata: EventMetadata,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            r#type: r#type.into(),
+            timestamp: timestamp.into(),
+            user_id,
+            resource_id: None,
+            version,
+            payload,
+            metadata,
+        }
+    }
+}
+
+impl Schema for StoredEventResponse {
+    const NAME: &'static str = "StoredEventResponse";
+}
+
+/// Base MIME types (no parameters) admitted by Xynolog. Membership is the create/yield gate — every member is storable, nameable, and uploadable. What more the system can do with a type (render, annotate, extract text, author) is curated per type in @xynolog/core's media-type registry, which is keyed by this enum.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SupportedMediaType {
+    #[serde(rename = "text/plain")]
+    TextPlain,
+    #[serde(rename = "text/markdown")]
+    TextMarkdown,
+    #[serde(rename = "text/html")]
+    TextHtml,
+    #[serde(rename = "text/css")]
+    TextCss,
+    #[serde(rename = "text/csv")]
+    TextCsv,
+    #[serde(rename = "text/xml")]
+    TextXml,
+    #[serde(rename = "application/json")]
+    ApplicationJson,
+    #[serde(rename = "application/xml")]
+    ApplicationXml,
+    #[serde(rename = "application/yaml")]
+    ApplicationYaml,
+    #[serde(rename = "application/x-yaml")]
+    ApplicationXYaml,
+    #[serde(rename = "application/pdf")]
+    ApplicationPdf,
+    #[serde(rename = "application/msword")]
+    ApplicationMsword,
+    #[serde(rename = "application/vnd.openxmlformats-officedocument.wordprocessingml.document")]
+    ApplicationVndOpenxmlformatsOfficedocumentWordprocessingmlDocument,
+    #[serde(rename = "application/vnd.ms-excel")]
+    ApplicationVndMsExcel,
+    #[serde(rename = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    ApplicationVndOpenxmlformatsOfficedocumentSpreadsheetmlSheet,
+    #[serde(rename = "application/vnd.ms-powerpoint")]
+    ApplicationVndMsPowerpoint,
+    #[serde(rename = "application/vnd.openxmlformats-officedocument.presentationml.presentation")]
+    ApplicationVndOpenxmlformatsOfficedocumentPresentationmlPresentation,
+    #[serde(rename = "application/zip")]
+    ApplicationZip,
+    #[serde(rename = "application/gzip")]
+    ApplicationGzip,
+    #[serde(rename = "application/x-tar")]
+    ApplicationXTar,
+    #[serde(rename = "application/x-7z-compressed")]
+    ApplicationX7zCompressed,
+    #[serde(rename = "application/octet-stream")]
+    ApplicationOctetStream,
+    #[serde(rename = "application/wasm")]
+    ApplicationWasm,
+    #[serde(rename = "image/png")]
+    ImagePng,
+    #[serde(rename = "image/jpeg")]
+    ImageJpeg,
+    #[serde(rename = "image/gif")]
+    ImageGif,
+    #[serde(rename = "image/webp")]
+    ImageWebp,
+    #[serde(rename = "image/svg+xml")]
+    ImageSvgPlusXml,
+    #[serde(rename = "image/bmp")]
+    ImageBmp,
+    #[serde(rename = "image/tiff")]
+    ImageTiff,
+    #[serde(rename = "image/x-icon")]
+    ImageXIcon,
+    #[serde(rename = "video/mp4")]
+    VideoMp4,
+    #[serde(rename = "video/mpeg")]
+    VideoMpeg,
+    #[serde(rename = "video/webm")]
+    VideoWebm,
+    #[serde(rename = "video/ogg")]
+    VideoOgg,
+    #[serde(rename = "video/quicktime")]
+    VideoQuicktime,
+    #[serde(rename = "video/x-msvideo")]
+    VideoXMsvideo,
+    #[serde(rename = "audio/mpeg")]
+    AudioMpeg,
+    #[serde(rename = "audio/wav")]
+    AudioWav,
+    #[serde(rename = "audio/ogg")]
+    AudioOgg,
+    #[serde(rename = "audio/webm")]
+    AudioWebm,
+    #[serde(rename = "audio/aac")]
+    AudioAac,
+    #[serde(rename = "audio/flac")]
+    AudioFlac,
+    #[serde(rename = "text/javascript")]
+    TextJavascript,
+    #[serde(rename = "application/javascript")]
+    ApplicationJavascript,
+    #[serde(rename = "text/x-typescript")]
+    TextXTypescript,
+    #[serde(rename = "application/typescript")]
+    ApplicationTypescript,
+    #[serde(rename = "text/x-python")]
+    TextXPython,
+    #[serde(rename = "text/x-java")]
+    TextXJava,
+    #[serde(rename = "text/x-c")]
+    TextXC,
+    #[serde(rename = "text/x-c++")]
+    TextXCPlusPlus,
+    #[serde(rename = "text/x-csharp")]
+    TextXCsharp,
+    #[serde(rename = "text/x-go")]
+    TextXGo,
+    #[serde(rename = "text/x-rust")]
+    TextXRust,
+    #[serde(rename = "text/x-ruby")]
+    TextXRuby,
+    #[serde(rename = "text/x-php")]
+    TextXPhp,
+    #[serde(rename = "text/x-swift")]
+    TextXSwift,
+    #[serde(rename = "text/x-kotlin")]
+    TextXKotlin,
+    #[serde(rename = "text/x-shell")]
+    TextXShell,
+    #[serde(rename = "font/woff")]
+    FontWoff,
+    #[serde(rename = "font/woff2")]
+    FontWoff2,
+    #[serde(rename = "font/ttf")]
+    FontTtf,
+    #[serde(rename = "font/otf")]
+    FontOtf,
+}
+
+impl SupportedMediaType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SupportedMediaType::TextPlain => "text/plain",
+            SupportedMediaType::TextMarkdown => "text/markdown",
+            SupportedMediaType::TextHtml => "text/html",
+            SupportedMediaType::TextCss => "text/css",
+            SupportedMediaType::TextCsv => "text/csv",
+            SupportedMediaType::TextXml => "text/xml",
+            SupportedMediaType::ApplicationJson => "application/json",
+            SupportedMediaType::ApplicationXml => "application/xml",
+            SupportedMediaType::ApplicationYaml => "application/yaml",
+            SupportedMediaType::ApplicationXYaml => "application/x-yaml",
+            SupportedMediaType::ApplicationPdf => "application/pdf",
+            SupportedMediaType::ApplicationMsword => "application/msword",
+            SupportedMediaType::ApplicationVndOpenxmlformatsOfficedocumentWordprocessingmlDocument => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            SupportedMediaType::ApplicationVndMsExcel => "application/vnd.ms-excel",
+            SupportedMediaType::ApplicationVndOpenxmlformatsOfficedocumentSpreadsheetmlSheet => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            SupportedMediaType::ApplicationVndMsPowerpoint => "application/vnd.ms-powerpoint",
+            SupportedMediaType::ApplicationVndOpenxmlformatsOfficedocumentPresentationmlPresentation => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            SupportedMediaType::ApplicationZip => "application/zip",
+            SupportedMediaType::ApplicationGzip => "application/gzip",
+            SupportedMediaType::ApplicationXTar => "application/x-tar",
+            SupportedMediaType::ApplicationX7zCompressed => "application/x-7z-compressed",
+            SupportedMediaType::ApplicationOctetStream => "application/octet-stream",
+            SupportedMediaType::ApplicationWasm => "application/wasm",
+            SupportedMediaType::ImagePng => "image/png",
+            SupportedMediaType::ImageJpeg => "image/jpeg",
+            SupportedMediaType::ImageGif => "image/gif",
+            SupportedMediaType::ImageWebp => "image/webp",
+            SupportedMediaType::ImageSvgPlusXml => "image/svg+xml",
+            SupportedMediaType::ImageBmp => "image/bmp",
+            SupportedMediaType::ImageTiff => "image/tiff",
+            SupportedMediaType::ImageXIcon => "image/x-icon",
+            SupportedMediaType::VideoMp4 => "video/mp4",
+            SupportedMediaType::VideoMpeg => "video/mpeg",
+            SupportedMediaType::VideoWebm => "video/webm",
+            SupportedMediaType::VideoOgg => "video/ogg",
+            SupportedMediaType::VideoQuicktime => "video/quicktime",
+            SupportedMediaType::VideoXMsvideo => "video/x-msvideo",
+            SupportedMediaType::AudioMpeg => "audio/mpeg",
+            SupportedMediaType::AudioWav => "audio/wav",
+            SupportedMediaType::AudioOgg => "audio/ogg",
+            SupportedMediaType::AudioWebm => "audio/webm",
+            SupportedMediaType::AudioAac => "audio/aac",
+            SupportedMediaType::AudioFlac => "audio/flac",
+            SupportedMediaType::TextJavascript => "text/javascript",
+            SupportedMediaType::ApplicationJavascript => "application/javascript",
+            SupportedMediaType::TextXTypescript => "text/x-typescript",
+            SupportedMediaType::ApplicationTypescript => "application/typescript",
+            SupportedMediaType::TextXPython => "text/x-python",
+            SupportedMediaType::TextXJava => "text/x-java",
+            SupportedMediaType::TextXC => "text/x-c",
+            SupportedMediaType::TextXCPlusPlus => "text/x-c++",
+            SupportedMediaType::TextXCsharp => "text/x-csharp",
+            SupportedMediaType::TextXGo => "text/x-go",
+            SupportedMediaType::TextXRust => "text/x-rust",
+            SupportedMediaType::TextXRuby => "text/x-ruby",
+            SupportedMediaType::TextXPhp => "text/x-php",
+            SupportedMediaType::TextXSwift => "text/x-swift",
+            SupportedMediaType::TextXKotlin => "text/x-kotlin",
+            SupportedMediaType::TextXShell => "text/x-shell",
+            SupportedMediaType::FontWoff => "font/woff",
+            SupportedMediaType::FontWoff2 => "font/woff2",
+            SupportedMediaType::FontTtf => "font/ttf",
+            SupportedMediaType::FontOtf => "font/otf",
+        }
+    }
+}
+
+impl Schema for SupportedMediaType {
+    const NAME: &'static str = "SupportedMediaType";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct SvgSelector {
+    pub r#type: SvgSelectorType,
+    /// SVG markup defining the region (must include xmlns attribute)
+    pub value: String,
+}
+
+impl SvgSelector {
+    /// The `SvgSelector` that states these and nothing else.
+    pub fn new(value: impl Into<String>) -> Self {
+        Self {
+            r#type: SvgSelectorType::SvgSelector,
+            value: value.into(),
+        }
+    }
+}
+
+impl Schema for SvgSelector {
+    const NAME: &'static str = "SvgSelector";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SvgSelectorType {
+    #[serde(rename = "SvgSelector")]
+    SvgSelector,
+}
+
+impl SvgSelectorType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SvgSelectorType::SvgSelector => "SvgSelector",
+        }
+    }
+}
+
+/// A single category within a tag schema (e.g. 'Issue' in IRAC, 'distinguished' in legal-citation-treatment). Each category carries methodology-bound semantics: a name, a description, and examples used in the LLM prompt.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct TagCategory {
+    pub name: String,
+    pub description: String,
+    pub examples: Vec<String>,
+}
+
+impl Schema for TagCategory {
+    const NAME: &'static str = "TagCategory";
+}
+
+/// A structural-analysis schema (e.g. legal-irac, scientific-imrad, argument-toulmin). Defines a methodology framework as an id, name, description, domain hint, and an ordered list of categories. KBs and their skills register schemas with the runtime registry via `frame.addTagSchema(...)` at session start.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct TagSchema {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    /// Free-form domain hint (e.g. 'legal', 'scientific', 'general'). Used in the LLM prompt to tune the model's analysis voice. KB authors choose.
+    pub domain: String,
+    pub tags: Vec<TagCategory>,
+}
+
+impl Schema for TagSchema {
+    const NAME: &'static str = "TagSchema";
+}
+
+/// Payload for frame:tag-schema-added domain event (system-level, no resourceId — fan-out is global to the KB).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct TagSchemaAddedPayload {
+    pub schema: TagSchema,
+}
+
+impl Schema for TagSchemaAddedPayload {
+    const NAME: &'static str = "TagSchemaAddedPayload";
+}
+
+/// What a tagging job takes: passages of the resource are marked with categories of one tag schema.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TaggingJobParams {
+    pub motivation: TaggingJobParamsMotivation,
+    /// The tag schema to tag by. It is one the knowledge base registers.
+    #[serde(rename = "schemaId")]
+    pub schema_id: String,
+    /// The categories of that schema to tag with.
+    pub categories: Vec<String>,
+    /// The language the annotations' own text is written in. BCP 47.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// The language of the resource being read. BCP 47.
+    #[serde(rename = "sourceLanguage")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_language: Option<String>,
+}
+
+impl TaggingJobParams {
+    /// The `TaggingJobParams` that states these and nothing else.
+    pub fn new(schema_id: impl Into<String>, categories: Vec<String>) -> Self {
+        Self {
+            motivation: TaggingJobParamsMotivation::Tagging,
+            schema_id: schema_id.into(),
+            categories,
+            language: None,
+            source_language: None,
+        }
+    }
+}
+
+impl Schema for TaggingJobParams {
+    const NAME: &'static str = "TaggingJobParams";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TaggingJobParamsMotivation {
+    #[serde(rename = "tagging")]
+    Tagging,
+}
+
+impl TaggingJobParamsMotivation {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TaggingJobParamsMotivation::Tagging => "tagging",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct TextPositionSelector {
+    pub r#type: TextPositionSelectorType,
+    /// Offset into the resource's decoded text, exactly as decoded, in Unicode code points from its start: where the selected text starts.
+    pub start: u64,
+    /// Offset into the resource's decoded text, exactly as decoded, in Unicode code points from its start: just past where the selected text ends.
+    pub end: u64,
+}
+
+impl TextPositionSelector {
+    /// The `TextPositionSelector` that states these and nothing else.
+    pub fn new(start: u64, end: u64) -> Self {
+        Self {
+            r#type: TextPositionSelectorType::TextPositionSelector,
+            start,
+            end,
+        }
+    }
+}
+
+impl Schema for TextPositionSelector {
+    const NAME: &'static str = "TextPositionSelector";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TextPositionSelectorType {
+    #[serde(rename = "TextPositionSelector")]
+    TextPositionSelector,
+}
+
+impl TextPositionSelectorType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TextPositionSelectorType::TextPositionSelector => "TextPositionSelector",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct TextQuoteSelector {
+    pub r#type: TextQuoteSelectorType,
+    pub exact: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
+}
+
+impl TextQuoteSelector {
+    /// The `TextQuoteSelector` that states these and nothing else.
+    pub fn new(exact: impl Into<String>) -> Self {
+        Self {
+            r#type: TextQuoteSelectorType::TextQuoteSelector,
+            exact: exact.into(),
+            prefix: None,
+            suffix: None,
+        }
+    }
+}
+
+impl Schema for TextQuoteSelector {
+    const NAME: &'static str = "TextQuoteSelector";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TextQuoteSelectorType {
+    #[serde(rename = "TextQuoteSelector")]
+    TextQuoteSelector,
+}
+
+impl TextQuoteSelectorType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TextQuoteSelectorType::TextQuoteSelector => "TextQuoteSelector",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct TextualBody {
+    pub r#type: TextualBodyType,
+    /// The text content (e.g., entity type name)
+    pub value: String,
+    /// Why this body is included
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<BodyPurpose>,
+    /// MIME type (defaults to text/plain)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
+    /// BCP 47 language tag
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+}
+
+impl TextualBody {
+    /// The `TextualBody` that states these and nothing else.
+    pub fn new(value: impl Into<String>) -> Self {
+        Self {
+            r#type: TextualBodyType::TextualBody,
+            value: value.into(),
+            purpose: None,
+            format: None,
+            language: None,
+        }
+    }
+}
+
+impl Schema for TextualBody {
+    const NAME: &'static str = "TextualBody";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TextualBodyType {
+    #[serde(rename = "TextualBody")]
+    TextualBody,
+}
+
+impl TextualBodyType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TextualBodyType::TextualBody => "TextualBody",
+        }
+    }
+}
+
+/// The furthest a single unit got, and what it had counted when it got there. A unit left partway is resumed from its cursor rather than redone. A finished unit keeps its cursor: `next` at the length of the text, `size` the size its last piece was cut at, and its final `found`, `emitted` and `errors`, so that an attempt that skips the unit still counts it. A cursor never says a unit is finished, wherever it stands: `completedUnits` does. A unit is an entity type for a linking job, a category for a tagging job, and the job's own motivation for every other — which is why a unit-grain checkpoint alone is too coarse: those three have exactly one unit, so nothing could be recorded until the whole document was done.
+///
+/// MERGE IS MONOTONE PER UNIT, not a union. `completedUnits` is a set and converges under concurrent snapshots because a set only grows; a cursor converges only if a stale snapshot can never move it backward.
+///
+/// IT CARRIES THE UNIT'S RUNNING TALLIES TOO, and they are required. A resumed unit counts only the chunks it actually runs, so without them a retry's terminal record reports the remainder of the document as if it were the whole — measured at a `found` of 19 where the document yielded 25. The position and the tallies are ONE observation of the same committed chunk; splitting them would let a resume take the saving and still report a number nobody can trust.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct UnitCursor {
+    /// Unicode code points of the text consumed once the last COMMITTED chunk completed — the resume position, and the length of the text for a unit whose last chunk it was. Deliberately the chunk's `next`, never its `at`: the checkpoint must not lead the log, so it records where a chunk that is already durable ended, not where the in-flight one began. Recording `at` would make a resume re-run the chunk it already paid for.
+    pub next: u64,
+    /// The token size that last committed chunk was cut at — the calibration the attempt paid for over the chunks before it. A resume seeds from this and then takes ONE adaptive step, as if the last outcome were a failure, which it was: the job died. Seeding alone would re-cut the failing piece identically; opening at the default would discard the calibration.
+    pub size: u64,
+    /// Items detection has returned for this unit through the last committed chunk — the numerator a resumed attempt continues from rather than restarting at zero. Counts what the model reported, before dedupe.
+    pub found: u64,
+    /// Annotations actually committed for this unit through the last committed chunk, after dedupe. With `found` and `errors` it is what the job's terminal result reports, so a resumed unit seeds all three and its record describes the whole document rather than one attempt's share.
+    pub emitted: u64,
+    /// Items detection returned for this unit through the last committed chunk that could not be anchored in the text. Carried with the other two tallies so that a resumed job reports the whole document's, and not only its last attempt's.
+    pub errors: u64,
+}
+
+impl Schema for UnitCursor {
+    const NAME: &'static str = "UnitCursor";
+}
+
+/// The identity of whoever did something, a person or a software agent alike: a DID (`did:web:<domain>:users:<subject>`, `did:web:<domain>:agents:<subject>`), with no whitespace in it. Never a name, an address, or a row in a table. What follows `did:` is not constrained further: a subject is the issuer's, percent-encoded, and that encoding leaves some punctuation as it is.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+#[serde(try_from = "String", into = "String")]
+pub struct UserId(String);
+
+impl UserId {
+    /// The rule a value is held to, as the spec writes it.
+    pub const PATTERN: &'static str = "^did:\\S+$";
+
+    /// The pattern as the rule `new` holds a value to.
+    const RULE: Rule = Rule {
+        prefix: "did:",
+        admitted: Admitted::NotWhitespace,
+        least: 1,
+        most: None,
+    };
+
+    /// `value` as a `UserId`, or that it is not one.
+    pub fn new(value: impl Into<String>) -> Result<UserId, InvalidIdentifier> {
+        let value = value.into();
+        if UserId::RULE.admits(&value) {
+            Ok(UserId(value))
+        } else {
+            Err(InvalidIdentifier {
+                kind: "UserId",
+                pattern: UserId::PATTERN,
+                value,
+            })
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for UserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::ops::Deref for UserId {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<str> for UserId {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::str::FromStr for UserId {
+    type Err = InvalidIdentifier;
+
+    fn from_str(value: &str) -> Result<UserId, InvalidIdentifier> {
+        UserId::new(value)
+    }
+}
+
+impl TryFrom<String> for UserId {
+    type Error = InvalidIdentifier;
+
+    fn try_from(value: String) -> Result<UserId, InvalidIdentifier> {
+        UserId::new(value)
+    }
+}
+
+impl From<UserId> for String {
+    fn from(id: UserId) -> String {
+        id.0
+    }
+}
+
+impl PartialEq<str> for UserId {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl PartialEq<&str> for UserId {
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
+    }
+}
+
+impl Schema for UserId {
+    const NAME: &'static str = "UserId";
+}
+
+/// The authenticated principal, as this knowledge base names it.
+///
+/// The `did` is the identity: it is what the bus stamps on every event, what resource creation is attributed to, and what a client must compare against to recognise its own work in the data. It is the only identifier: a row id would appear nowhere else in the system and correlate with nothing.
+///
+/// The remaining fields exist to be displayed, and all of them come from the token's own claims.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct UserResponse {
+    /// The authenticated principal's DID: `did:web:<domain>:agents:<subject>` for an agent, whose token's `kind` claim is `agent`, and `did:web:<domain>:users:<subject>` for a person, where the subject is the issuer claim the knowledge base names its principals by (`identity.subjectClaim`).
+    pub did: UserId,
+    /// The address the token carries, when it carries one: an agent's account need not have one.
+    pub email: Option<String>,
+    pub name: Option<String>,
+    pub image: Option<String>,
+    /// The knowledge base's domain: the authority the principal is named under.
+    pub domain: String,
+}
+
+impl Schema for UserResponse {
+    const NAME: &'static str = "UserResponse";
+}
+
+/// The payload of `weave:applied`: the Weaver has applied a resource's events to the graph up to this sequence number. Emitted after applying an event, or a batch's last event.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct WeaveApplied {
+    /// The resource whose events were applied.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The resource-stream sequence of the last applied event.
+    #[serde(rename = "sequenceNumber")]
+    pub sequence_number: i64,
+}
+
+impl Schema for WeaveApplied {
+    const NAME: &'static str = "WeaveApplied";
+}
+
+/// Bus command to rebuild the graph projection from the event log — the whole graph when resourceId is absent, one resource when present. Served by the Weaver; replaces direct rebuild access, which does not survive the Weaver's container split.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct WeaveRebuildCommand {
+    /// When present, rebuild only this resource; otherwise clear and rebuild the entire graph.
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+}
+
+impl Schema for WeaveRebuildCommand {
+    const NAME: &'static str = "WeaveRebuildCommand";
+}
+
+/// Bus command to create a cloned resource from a clone token. Bytes are stored by the upload path BEFORE this command is emitted, because bytes travel over HTTP and never over the bus — the command carries the storage coordinates, never content.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCloneCreateCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    pub token: String,
+    pub name: String,
+    /// Where the caller already wrote the clone's bytes — an instruction, not a copy of the stored fact (that lives on the primary Representation). Bytes are stored through the byte door BEFORE this command is sent, so this names an existing file. Working-tree URI, only file:// is supported.
+    #[serde(rename = "storageUri")]
+    pub storage_uri: String,
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    #[serde(rename = "byteSize")]
+    pub byte_size: i64,
+    pub format: ContentFormat,
+    #[serde(rename = "archiveOriginal")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archive_original: Option<bool>,
+}
+
+impl YieldCloneCreateCommand {
+    /// The `YieldCloneCreateCommand` that states these and nothing else.
+    pub fn new(
+        token: impl Into<String>,
+        name: impl Into<String>,
+        storage_uri: impl Into<String>,
+        content_checksum: impl Into<String>,
+        byte_size: i64,
+        format: ContentFormat,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            token: token.into(),
+            name: name.into(),
+            storage_uri: storage_uri.into(),
+            content_checksum: content_checksum.into(),
+            byte_size,
+            format,
+            archive_original: None,
+        }
+    }
+}
+
+impl Schema for YieldCloneCreateCommand {
+    const NAME: &'static str = "YieldCloneCreateCommand";
+}
+
+/// Success response after creating a cloned resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCloneCreated {
+    pub response: YieldCloneCreatedResponse,
+}
+
+impl Schema for YieldCloneCreated {
+    const NAME: &'static str = "YieldCloneCreated";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCloneCreatedResponse {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+/// Command: stow an already-uploaded clone's bytes and append `yield:cloned`.
+///
+/// The INNER half of the clone flow. `yield:clone-create` reaches the CloneTokenManager, which alone can validate the token and read the source's entity types; it then emits this so the Stower — the only appendEvent caller — writes the domain event.
+///
+/// Distinct from `yield:create` because a clone is a distinct operation, not a creation with an extra field. It REQUIRES a parent, and that requirement is what a separate command expresses: an optional `parentResourceId` on the create command could not say that a clone without a parent is not a clone. `ResourceClonedPayload` requires it for the same reason.
+///
+/// Generated resources are NOT clones: they carry provenance in `generatedFrom` and stay on `yield:create`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldClonePersistCommand {
+    /// Injected by the gateway from the authenticated principal; never supplied by a wire caller.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    pub name: String,
+    /// The caller's instruction for WHERE the bytes are — the uploader wrote them before emitting this. The stored location lives on the clone's primary Representation, the one home of a storage URI.
+    #[serde(rename = "storageUri")]
+    pub storage_uri: String,
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    #[serde(rename = "byteSize")]
+    pub byte_size: i64,
+    pub format: ContentFormat,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    /// Inherited from the source resource by the CloneTokenManager, which is the only party that knows the token is valid.
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    /// The resource this one is cloned FROM. Required: it is what makes this a clone rather than a creation.
+    #[serde(rename = "parentResourceId")]
+    pub parent_resource_id: ResourceId,
+}
+
+impl YieldClonePersistCommand {
+    /// The `YieldClonePersistCommand` that states these and nothing else.
+    pub fn new(
+        name: impl Into<String>,
+        storage_uri: impl Into<String>,
+        content_checksum: impl Into<String>,
+        byte_size: i64,
+        format: ContentFormat,
+        parent_resource_id: ResourceId,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            name: name.into(),
+            storage_uri: storage_uri.into(),
+            content_checksum: content_checksum.into(),
+            byte_size,
+            format,
+            language: None,
+            entity_types: None,
+            parent_resource_id,
+        }
+    }
+}
+
+impl Schema for YieldClonePersistCommand {
+    const NAME: &'static str = "YieldClonePersistCommand";
+}
+
+/// Success reply after cloning a resource, matched to the originating command by correlationId.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldClonePersistOk {
+    /// The clone's identity — a new resource, distinct from its parent.
+    pub response: YieldClonePersistOkResponse,
+}
+
+impl Schema for YieldClonePersistOk {
+    const NAME: &'static str = "YieldClonePersistOk";
+}
+
+/// The clone's identity — a new resource, distinct from its parent.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldClonePersistOkResponse {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+/// Bus command to request cloning a resource using a clone token.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCloneResourceRequest {
+    pub token: String,
+}
+
+impl Schema for YieldCloneResourceRequest {
+    const NAME: &'static str = "YieldCloneResourceRequest";
+}
+
+/// Bus command to request a clone token for a resource.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCloneTokenRequest {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl Schema for YieldCloneTokenRequest {
+    const NAME: &'static str = "YieldCloneTokenRequest";
+}
+
+/// Bus command to create a yielded resource in the knowledge base.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCreateCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    /// The emitter's capabilities (the token's `roles`), injected by the /bus/emit gateway. Clients do not set this. An emitter carrying the worker role must cite the job this resource fulfils in `jobId`; the Stower refuses the create otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _roles: Option<Vec<String>>,
+    /// The job this resource fulfils. Required when the emitter carries the worker role; absent for self-initiated work (a person, or an agent acting on its own). The knowledge base derives who requested this resource from the cited job's own events — the emitter never says who the work was for.
+    #[serde(rename = "jobId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub job_id: Option<JobId>,
+    pub name: String,
+    /// The caller's instruction for WHERE the bytes are — not a copy of the stored fact. The stored location lives on the resource's primary Representation (`Representation.storageUri`), which is its single home; this field is the message that puts it there. Working-tree URI, only file:// is supported (e.g. file://docs/overview.md).
+    #[serde(rename = "storageUri")]
+    pub storage_uri: String,
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    #[serde(rename = "byteSize")]
+    pub byte_size: i64,
+    pub format: ContentFormat,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    #[serde(rename = "entityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_types: Option<Vec<String>>,
+    #[serde(rename = "isDraft")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_draft: Option<bool>,
+    #[serde(rename = "generatedFrom")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generated_from: Option<YieldCreateCommandGeneratedFrom>,
+    #[serde(rename = "generationPrompt")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generation_prompt: Option<String>,
+    /// The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generator: Option<YieldCreateCommandGenerator>,
+}
+
+impl YieldCreateCommand {
+    /// The `YieldCreateCommand` that states these and nothing else.
+    pub fn new(
+        name: impl Into<String>,
+        storage_uri: impl Into<String>,
+        content_checksum: impl Into<String>,
+        byte_size: i64,
+        format: ContentFormat,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            _roles: None,
+            job_id: None,
+            name: name.into(),
+            storage_uri: storage_uri.into(),
+            content_checksum: content_checksum.into(),
+            byte_size,
+            format,
+            language: None,
+            entity_types: None,
+            is_draft: None,
+            generated_from: None,
+            generation_prompt: None,
+            generator: None,
+        }
+    }
+}
+
+impl Schema for YieldCreateCommand {
+    const NAME: &'static str = "YieldCreateCommand";
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCreateCommandGeneratedFrom {
+    #[serde(rename = "resourceId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<ResourceId>,
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+}
+
+/// The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum YieldCreateCommandGenerator {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+impl From<Agent> for YieldCreateCommandGenerator {
+    fn from(member: Agent) -> Self {
+        YieldCreateCommandGenerator::Agent(member)
+    }
+}
+
+/// Success reply after creating a yielded resource, matched to the originating command by correlationId.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCreateOk {
+    /// The created resource's identity.
+    pub response: YieldCreateOkResponse,
+}
+
+impl Schema for YieldCreateOk {
+    const NAME: &'static str = "YieldCreateOk";
+}
+
+/// The created resource's identity.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldCreateOkResponse {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+/// A `yield` job's worker says the job is complete, with what a `yield` job reports.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldJobCompleteCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: YieldJobCompleteCommandJobType,
+    /// Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt: Option<i64>,
+    /// The annotation the job's context was focused on, when it was focused on one. Lets a client route the completion to that annotation.
+    #[serde(rename = "annotationId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub annotation_id: Option<AnnotationId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result: Option<YieldJobResult>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub durability: Option<DurabilityEvidence>,
+}
+
+impl YieldJobCompleteCommand {
+    /// The `YieldJobCompleteCommand` that states these and nothing else.
+    pub fn new(resource_id: ResourceId, job_id: JobId) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            job_id,
+            job_type: YieldJobCompleteCommandJobType::Yield,
+            attempt: None,
+            annotation_id: None,
+            result: None,
+            durability: None,
+        }
+    }
+}
+
+impl Schema for YieldJobCompleteCommand {
+    const NAME: &'static str = "YieldJobCompleteCommand";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum YieldJobCompleteCommandJobType {
+    #[serde(rename = "yield")]
+    Yield,
+}
+
+impl YieldJobCompleteCommandJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            YieldJobCompleteCommandJobType::Yield => "yield",
+        }
+    }
+}
+
+/// Create a `yield` job: make a resource from a gathered context. It names no resource of its own: the job is about the resource its context focuses on, which the Dispatcher reads from `params.context.focus`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct YieldJobCreateCommand {
+    /// The emitter's verified DID, injected by the gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    /// The emitter's roles, injected by the gateway when it has any. Clients do not set this.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _roles: Option<Vec<String>>,
+    #[serde(rename = "jobType")]
+    pub job_type: YieldJobCreateCommandJobType,
+    pub params: GenerationJobParams,
+}
+
+impl YieldJobCreateCommand {
+    /// The `YieldJobCreateCommand` that states these and nothing else.
+    pub fn new(params: GenerationJobParams) -> Self {
+        Self {
+            _user_id: None,
+            _roles: None,
+            job_type: YieldJobCreateCommandJobType::Yield,
+            params,
+        }
+    }
+}
+
+impl Schema for YieldJobCreateCommand {
+    const NAME: &'static str = "YieldJobCreateCommand";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum YieldJobCreateCommandJobType {
+    #[serde(rename = "yield")]
+    Yield,
+}
+
+impl YieldJobCreateCommandJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            YieldJobCreateCommandJobType::Yield => "yield",
+        }
+    }
+}
+
+/// What a `yield` job reports when it has made its resource. The worker creates the resource first (the create round trip returns its id), then emits job:complete carrying it, so resourceId is always present on the wire.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct YieldJobDone {
+    /// ID of the generated resource, obtained by the worker from the create round-trip before job:complete is emitted
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// Name of the generated resource
+    #[serde(rename = "resourceName")]
+    pub resource_name: String,
+    /// True when the model stopped at the maxTokens ceiling — the artifact is cut off, not complete. Derived at the producer from the provider's stopReason ('max_tokens' → true); required because the worker always knows.
+    pub truncated: bool,
+}
+
+impl Schema for YieldJobDone {
+    const NAME: &'static str = "YieldJobDone";
+}
+
+/// `yield` jobs.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct YieldJobFilter {
+    #[serde(rename = "jobType")]
+    pub job_type: YieldJobFilterJobType,
+}
+
+impl Default for YieldJobFilter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl YieldJobFilter {
+    /// The `YieldJobFilter` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            job_type: YieldJobFilterJobType::Yield,
+        }
+    }
+}
+
+impl Schema for YieldJobFilter {
+    const NAME: &'static str = "YieldJobFilter";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum YieldJobFilterJobType {
+    #[serde(rename = "yield")]
+    Yield,
+}
+
+impl YieldJobFilterJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            YieldJobFilterJobType::Yield => "yield",
+        }
+    }
+}
+
+/// A pending `yield` job, announced with what it is asked to make and without its `context`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldJobQueuedEvent {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    #[serde(rename = "jobType")]
+    pub job_type: YieldJobQueuedEventJobType,
+    /// The resource the job is about.
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The DID of the principal whose `job:create` created the job.
+    #[serde(rename = "userId")]
+    pub user_id: UserId,
+    pub params: GenerationJobRequest,
+}
+
+impl YieldJobQueuedEvent {
+    /// The `YieldJobQueuedEvent` that states these and nothing else.
+    pub fn new(
+        job_id: JobId,
+        resource_id: ResourceId,
+        user_id: UserId,
+        params: GenerationJobRequest,
+    ) -> Self {
+        Self {
+            job_id,
+            job_type: YieldJobQueuedEventJobType::Yield,
+            resource_id,
+            user_id,
+            params,
+        }
+    }
+}
+
+impl Schema for YieldJobQueuedEvent {
+    const NAME: &'static str = "YieldJobQueuedEvent";
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum YieldJobQueuedEventJobType {
+    #[serde(rename = "yield")]
+    Yield,
+}
+
+impl YieldJobQueuedEventJobType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            YieldJobQueuedEventJobType::Yield => "yield",
+        }
+    }
+}
+
+/// What a `yield` job reports when it concludes without failing: the resource it made, or a decline. Neither names its kind: a decline is the one with `declined`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum YieldJobResult {
+    YieldJobDone(YieldJobDone),
+    JobDeclined(JobDeclined),
+}
+
+impl From<YieldJobDone> for YieldJobResult {
+    fn from(member: YieldJobDone) -> Self {
+        YieldJobResult::YieldJobDone(member)
+    }
+}
+
+impl From<JobDeclined> for YieldJobResult {
+    fn from(member: JobDeclined) -> Self {
+        YieldJobResult::JobDeclined(member)
+    }
+}
+
+impl Schema for YieldJobResult {
+    const NAME: &'static str = "YieldJobResult";
+}
+
+/// Bus command to update a yielded resource's storage content.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldUpdateCommand {
+    /// Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
+    #[serde(rename = "_userId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub _user_id: Option<UserId>,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The caller's instruction for WHERE the bytes are — not a copy of the stored fact. The stored location lives on the resource's primary Representation (`Representation.storageUri`), which is its single home; this field is the message that puts it there. Working-tree URI, only file:// is supported (e.g. file://docs/overview.md).
+    #[serde(rename = "storageUri")]
+    pub storage_uri: String,
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    #[serde(rename = "byteSize")]
+    pub byte_size: i64,
+}
+
+impl YieldUpdateCommand {
+    /// The `YieldUpdateCommand` that states these and nothing else.
+    pub fn new(
+        resource_id: ResourceId,
+        storage_uri: impl Into<String>,
+        content_checksum: impl Into<String>,
+        byte_size: i64,
+    ) -> Self {
+        Self {
+            _user_id: None,
+            resource_id,
+            storage_uri: storage_uri.into(),
+            content_checksum: content_checksum.into(),
+            byte_size,
+        }
+    }
+}
+
+impl Schema for YieldUpdateCommand {
+    const NAME: &'static str = "YieldUpdateCommand";
+}
+
+/// Success reply after updating a yielded resource, matched to the originating command by correlationId.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldUpdateOk {
+    /// The updated resource's identity.
+    pub response: YieldUpdateOkResponse,
+}
+
+impl Schema for YieldUpdateOk {
+    const NAME: &'static str = "YieldUpdateOk";
+}
+
+/// The updated resource's identity.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct YieldUpdateOkResponse {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}

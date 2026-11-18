@@ -27,7 +27,7 @@ let arrays name ranges =
 let file ~version ~notice ~cased ~case_ignorable =
   Kotlin_sdk.data_file
     ~banner:
-      (Banner.kotlin_lines
+      (Banner.lines
          ~from_:
            ("Unicode " ^ version ^ "'s DerivedCoreProperties.txt (codegen/ucd)")
          __FILE__

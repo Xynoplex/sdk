@@ -12,7 +12,7 @@ use serde_json::{Map, Value};
 use std::fmt;
 use std::time::Duration;
 
-include!(concat!(env!("OUT_DIR"), "/error_codes.rs"));
+include!("generated/error_codes.rs");
 
 /// A transport's failure. A server that answered states a status, and the
 /// status decides the code; an exchange that ended with no answer has none,

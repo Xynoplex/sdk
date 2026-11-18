@@ -19,7 +19,7 @@ let file ~from_ ?(nullable = false) ~namespace path decls =
     text =
       C.text
         {
-          header = Banner.csharp_lines ~from_ __FILE__;
+          header = Banner.lines ~from_ __FILE__;
           nullable;
           usings = [];
           namespace;

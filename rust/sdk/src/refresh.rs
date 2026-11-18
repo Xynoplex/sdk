@@ -51,4 +51,4 @@ pub struct CacheRefresh {
     pub removes: &'static [CacheQuery],
 }
 
-include!(concat!(env!("OUT_DIR"), "/cache_refresh.rs"));
+include!("generated/cache_refresh.rs");

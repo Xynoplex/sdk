@@ -10,6 +10,7 @@ module Go = Go
 module Python = Python
 module Typescript = Typescript
 module Ocaml = Ocaml
+module Rust = Rust
 module Haskell = Haskell
 module Kotlin = Kotlin
 
@@ -24,5 +25,12 @@ let files ~root:_ (spec : Spec.t) =
         Kotlin.file ~types ~wire_codes t)
   in
   Ok
-    ([ Go.file t; Python.file t; Typescript.file t; ocaml; kotlin ]
+    ([
+       Go.file t;
+       Python.file t;
+       Typescript.file t;
+       ocaml;
+       Rust.file ~wire_codes t;
+       kotlin;
+     ]
     @ Haskell.files t)

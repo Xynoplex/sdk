@@ -2,8 +2,8 @@
 //
 // Regenerate: make generate (codegen/lib/oauth_clients/oauth_clients.ml)
 // The TypeScript (typescript/core/src/oauth-clients.ts), Rust
-// (rust/sdk/build.rs) and Python (xynolog.oauth_clients) SDKs generate
-// from the same file.
+// (rust/sdk/src/generated/oauth_clients.rs) and Python
+// (xynolog.oauth_clients) SDKs are generated from the same file.
 
 package xynolog
 

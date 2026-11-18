@@ -207,8 +207,7 @@ let file (bus : Registry.t) =
       C.text
         {
           header =
-            Banner.csharp_lines ~from_:"protocol/specs/src/bus/registry.json"
-              __FILE__;
+            Banner.lines ~from_:"protocol/specs/src/bus/registry.json" __FILE__;
           nullable = false;
           usings = [ "Xynolog.Types" ];
           namespace = "Xynolog";

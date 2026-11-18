@@ -73,7 +73,7 @@ let file ~package ~imports decls =
   K.text
     {
       banner =
-        Banner.kotlin_lines ~from_:"the component schemas in protocol/specs/src"
+        Banner.lines ~from_:"the component schemas in protocol/specs/src"
           __FILE__;
       file_annotations = [ opt_in ];
       package;
@@ -97,8 +97,7 @@ let data_file ~banner ~package ~name ~imports decls =
 (* A table's file, which [writer] (its [__FILE__]) writes from Protocol's
    [from_]. *)
 let table ~from_ writer =
-  data_file
-    ~banner:(Banner.kotlin_lines ~from_:("protocol/specs/src/" ^ from_) writer)
+  data_file ~banner:(Banner.lines ~from_:("protocol/specs/src/" ^ from_) writer)
 
 (* What [write] writes, or the refusal it raises, made one of Protocol's
    [from_]. *)
