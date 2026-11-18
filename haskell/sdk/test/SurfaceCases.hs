@@ -166,21 +166,21 @@ surfaceCases root fixtures = do
     namespaces <- field "namespaces" table :: IO [Value]
     forM_ namespaces $ \namespace -> do
       name <- field "namespace" namespace
-      whenReached reached name $ do
-        methods <- field "methods" namespace :: IO [Value]
-        forM_ methods $ \method -> do
-          member <- field "method" method
-          via <- field "via" method
-          cases <- field "cases" method :: IO [Value]
-          forM_ cases $ \row ->
-            runCase fixtures name member via row
-              `catch` ( \(problem :: IOException) ->
-                          ioError (userError (T.unpack name ++ "." ++ T.unpack member ++ ": " ++ displayException problem ++ "; " ++ show row))
-                      )
+      requireReached reached name
+      methods <- field "methods" namespace :: IO [Value]
+      forM_ methods $ \method -> do
+        member <- field "method" method
+        via <- field "via" method
+        cases <- field "cases" method :: IO [Value]
+        forM_ cases $ \row ->
+          runCase fixtures name member via row
+            `catch` ( \(problem :: IOException) ->
+                        ioError (userError (T.unpack name ++ "." ++ T.unpack member ++ ": " ++ displayException problem ++ "; " ++ show row))
+                    )
   require "client surface liveness deadline expired" (result == Just ())
   putStrLn "PASS every shared behavior case of each compiled client namespace"
   where
-    whenReached reached name run = if Set.member name reached then run else pure ()
+    requireReached reached name = unless (Set.member name reached) (ioError (userError (T.unpack name ++ " is a namespace of client/surface.json that Xynolog.Client does not give")))
 
 runCase :: Map.Map Text Value -> Text -> Text -> Value -> Value -> IO ()
 runCase fixtures namespace member via row = do
