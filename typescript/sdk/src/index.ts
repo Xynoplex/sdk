@@ -135,7 +135,7 @@ export type {
   IContentTransport,
   ITransport,
   // The state-unit contract — the pattern every layer's factories implement
-  // (docs/builder/STATE-UNITS.md); it lives in core so layers below the sdk share it.
+  // (https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md); it lives in core so layers below the sdk share it.
   // A unit's state is a `Watched`.
   StateUnit,
   Watched,
@@ -322,7 +322,7 @@ export {
 
 // State units — flow state machines and their RxJS substrate.
 // None presume a UI: they're consumed by browser apps, terminals,
-// daemons, and AI agents alike. See docs/builder/STATE-UNITS.md.
+// daemons, and AI agents alike. See https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md.
 export * from './state';
 
 // RxJS bridges — re-exported so consumers can unwrap our Observables to

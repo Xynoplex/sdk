@@ -12,7 +12,7 @@
  * Lives in `@xynolog/core` (not sdk) so every layer can share one definition
  * without dependency cycles — `http-transport`'s `ActorStateUnit` sits below
  * sdk and would otherwise have to re-declare it. See
- * `docs/builder/STATE-UNITS.md` for the full pattern and rationale.
+ * https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md for the full pattern and rationale.
  */
 export interface StateUnit {
   /**

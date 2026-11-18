@@ -55,6 +55,13 @@
  (modules census)
  (libraries xynolog_codegen yojson))
 
+; Run with the checkout's root, which is outside this project:
+; dune exec test/coverage_census.exe -- ..
+(executable
+ (name coverage_census)
+ (modules coverage_sdk case_coverage surface_coverage coverage_census)
+ (libraries xynolog_codegen))
+
 (test
  (name typescript_syntax)
  (modules typescript_syntax)

@@ -1,5 +1,5 @@
 // Package state is a client's state units: its long-running flows, held as
-// state a consumer reads and watches (docs/builder/STATE-UNITS.md). None
+// state a consumer reads and watches (https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md). None
 // presumes a screen: a terminal, a daemon and an agent watching what a person
 // does read them alike.
 //

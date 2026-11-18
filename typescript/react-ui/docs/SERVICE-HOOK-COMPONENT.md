@@ -469,7 +469,7 @@ event library.
 
 ## Related Documentation
 
-- [EVENTS.md](../../../../docs/builder/react-ui/EVENTS.md) - Event bus usage and event types
+- [EVENTS.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/EVENTS.md) - Event bus usage and event types
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Overall architecture principles
 - [TESTING.md](TESTING.md) - Testing strategies
 

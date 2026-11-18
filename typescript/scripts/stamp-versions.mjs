@@ -7,7 +7,7 @@
  *
  * Internal `@xynolog/*` / `xynolog-*` deps are declared `"*"` in source and
  * rewritten to the exact version here via the shared stampInternalDeps — the
- * single publish-time pin normalization (see docs/contributor/RELEASE.md).
+ * single publish-time pin normalization (see https://github.com/xynolog/docs/blob/main/contributor/DEPENDENCIES.md#how-the-sdks-packages-depend-on-each-other).
  *
  * Usage: node typescript/scripts/stamp-versions.mjs <version>
  */

@@ -410,7 +410,7 @@ The issuer sends a person back only to an address its registration of the
 client lists. The realm a Xynolog launcher sets up lists the loopback
 address for the browser client, at any port. What an issuer of your own has
 to provide is in
-[Authentication](../../../docs/operator/administration/AUTHENTICATION.md).
+[Authentication](https://github.com/xynolog/docs/blob/main/operator/administration/AUTHENTICATION.md).
 
 ## What it implements
 

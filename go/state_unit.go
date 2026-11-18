@@ -1,7 +1,7 @@
 package xynolog
 
 // StateUnit is a long-running flow, held as state a consumer reads and
-// watches (docs/builder/STATE-UNITS.md), the pattern every Xynolog SDK keeps.
+// watches (https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md), the pattern every Xynolog SDK keeps.
 // A unit's consumers read it and never write it: what it holds it hands out
 // as Watched values. It is moved by its methods and by what it hears on the
 // client's own bus, and it ends by Close.

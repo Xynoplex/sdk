@@ -99,15 +99,6 @@ let impl e =
            @ [ O.case O.Pattern.any O.none ]));
     ]
 
-let api e =
-  O.module_spec e.module_
-    [
-      O.type_spec (t e);
-      O.val_ "to_string" (O.arrow (O.type_ "t") (O.type_ "string"));
-      O.val_ "of_string"
-        (O.arrow (O.type_ "string") (O.type_ "option" ~args:[ O.type_ "t" ]));
-    ]
-
 (* Each enum's members, encoded and decoded, and an unknown value refused,
    with [rest] after. *)
 let test e rest =
@@ -143,7 +134,6 @@ let files enums =
   [
     O.implementation ~path:"ocaml/sdk/lib/enums.ml" ~banner
       (List.map impl enums);
-    O.interface ~path:"ocaml/sdk/lib/enums.mli" ~banner (List.map api enums);
     O.implementation ~path:"ocaml/sdk/test/enums_cases.ml" ~banner
       [ O.let_unit (List.fold_right test enums O.unit) ];
   ]

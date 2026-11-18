@@ -1,7 +1,7 @@
 # Xynolog React UI - Styles Documentation
 
 Using the styles in an app, the design tokens and the class reference are in
-the builder docs: [STYLES.md](../../../../docs/builder/react-ui/STYLES.md). This
+the builder docs: [STYLES.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/STYLES.md). This
 page is how the styles are written, named and linted inside the package.
 
 ## Overview

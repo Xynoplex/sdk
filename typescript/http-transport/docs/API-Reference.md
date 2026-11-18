@@ -2,7 +2,7 @@
 
 `@xynolog/http-transport` ships the HTTP-specific implementations of the transport contracts in `@xynolog/core`. The developer-facing surface (`XynologClient`, the verb namespaces, sessions, state units) lives in `@xynolog/sdk`. This doc covers the HTTP adapters only.
 
-For the namespace-level API tour, see [`docs/builder/Usage.md`](../../../../docs/builder/Usage.md).
+For the namespace-level API tour, see [docs' `builder/Usage.md`](https://github.com/xynolog/docs/blob/main/builder/Usage.md).
 
 ## `HttpTransport`
 

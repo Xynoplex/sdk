@@ -14,7 +14,7 @@ dune build @install
 dune install --pkg=disabled --prefix "$PWD/_installed"
 ```
 
-Add `xynolog` to your application's Dune `libraries` stanza and make the installed library available on its OCaml package path. The [builder guide](../../../docs/builder/OCAML.md) shows how the client fits into an application.
+Add `xynolog` to your application's Dune `libraries` stanza and make the installed library available on its OCaml package path. The [builder guide](https://github.com/xynolog/docs/blob/main/builder/OCAML.md) shows how the client fits into an application.
 
 ## Sign in and connect
 
@@ -22,7 +22,7 @@ Add `xynolog` to your application's Dune `libraries` stanza and make the install
 - **Interactive application.** Use `Registry.begin_sign_in` to store the pending PKCE exchange and get the authorization URL. After the redirect, use `Registry.complete_sign_in` to consume the callback and verify the knowledge base. Supply a `Storage.t` with an atomic update when multiple application contexts share the store.
 - **Agent.** Use `Agent.sign_in` with a client secret or RSA key. For RSA assertions, initialize Mirage's secure random generator and supply a fresh assertion ID. Use `Service_token` when you need the issuer bearer or authorization header independently of a client.
 
-Pass the credential session, Eio switch, clock, and gateway HTTP adapter to `Client.connect`, with the channels its bus subscribes to as `~global`: `Bus_registry.bridged_channels` for a full client. The application owns the HTTP adapter, the client, and the lifetime of its Eio switch. The [sign-in guide](../../../docs/builder/SIGN-IN.md) describes the grants.
+Pass the credential session, Eio switch, clock, and gateway HTTP adapter to `Client.connect`, with the channels its bus subscribes to as `~global`: `Bus_registry.bridged_channels` for a full client. The application owns the HTTP adapter, the client, and the lifetime of its Eio switch. The [sign-in guide](https://github.com/xynolog/docs/blob/main/builder/SIGN-IN.md) describes the grants.
 
 `Client.errors` says each failure of the client's transport, from its first request on. `State_units.Session.errors` says the session's own errors and what its client says, in the order met. The first reader of each is first given the latest said before it came. A registry's factory builds each knowledge base's session and reads none of its errors. `Registry.activate` reads them from the first thing the session said: `Registry.errors` says the session's own errors, and a refusal for lack of permission goes to the signals the factory was handed. A session the factory cannot build is said on `Registry.errors` as `session.construct-failed`. `Registry.close` closes the active session's client and then ends the session and `Registry.errors`, so what the client's closing flush meets is said first; an activation after it builds nothing. `Error_codes` names each code of the bus request, transport, job and session vocabularies of `protocol/specs/src/errors/codes.json`, from which it is generated.
 
