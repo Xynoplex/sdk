@@ -39,7 +39,7 @@ let stating_all_of : Schema.t -> string list -> (string list * Schema.t) list =
 
 let comment =
   String.concat " "
-    (Banner.haskell_lines ~from_:"protocol/specs/src" __FILE__
+    (Banner.lines ~from_:"protocol/specs/src" __FILE__
     @ [
         "Each node that states an allOf in a schema the Haskell SDK validates \
          against, by the schema's name and the node's path in it, with the \

@@ -33,18 +33,9 @@ let package = Package(
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "AsyncHTTPClient", package: "async-http-client"),
         .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core"),
-      ], swiftSettings: [.treatAllWarnings(as: .error)],
-      plugins: ["GenerateXynologPlugin"]),
-    .executableTarget(
-      name: "GenerateXynolog", dependencies: ["XynologCodegen"],
-      swiftSettings: [.treatAllWarnings(as: .error)]),
-    .plugin(
-      name: "GenerateXynologPlugin", capability: .buildTool(), dependencies: ["GenerateXynolog"]),
+      ], swiftSettings: [.treatAllWarnings(as: .error)]),
     .target(
       name: "XynologTesting", dependencies: ["Xynolog"],
-      swiftSettings: [.treatAllWarnings(as: .error)]),
-    .target(
-      name: "XynologCodegen", exclude: ["required-schemas.json"],
       swiftSettings: [.treatAllWarnings(as: .error)]),
     .testTarget(
       name: "XynologTests",
@@ -57,9 +48,6 @@ let package = Package(
         .product(name: "NIOHTTP1", package: "swift-nio"),
         .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift-core"),
       ],
-      swiftSettings: [.treatAllWarnings(as: .error)], plugins: ["GenerateXynologPlugin"]),
-    .testTarget(
-      name: "XynologCodegenTests", dependencies: ["XynologCodegen"],
       swiftSettings: [.treatAllWarnings(as: .error)]),
   ],
   swiftLanguageModes: [.v6]

@@ -8,10 +8,7 @@ module H = Haskell_syntax
 let path = "haskell/sdk/generated/Xynolog/Internal/Generated/CacheRefresh.hs"
 let live_queries_path = "haskell/sdk/conformance/LiveQueries.hs"
 let identifier = String.capitalize_ascii
-
-let banner =
-  Banner.haskell_lines ~from_:("protocol/specs/src/" ^ Table.file) __FILE__
-
+let banner = Banner.lines ~from_:("protocol/specs/src/" ^ Table.file) __FILE__
 let queries (t : Table.t) = List.map (fun (q : Table.query) -> q.name) t.queries
 let names = List.map (fun n -> H.Name (identifier n))
 

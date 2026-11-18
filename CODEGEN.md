@@ -17,7 +17,7 @@ Generation runs as part of building the SDK artifact, with language-native tools
 | TypeScript | OpenAPI types, validators, registries, limits, and client tables | Package build; emitted npm packages carry built output |
 | Python | OpenAPI models | Drift check and package build; wheel carries generated models |
 | Go | REST client and registry tables | SDK-owned generators; module artifact carries generated Go source |
-| Rust | Wire types, bus operations, and protocol tables | Cargo build script; the crate carries the pinned inputs and generator dependency |
+| Rust | Wire types, bus operations, and protocol tables | codegen/ writes committed source (`make check-generated`); the crate carries it |
 | C# | API and protocol types | .NET package build from the pinned submodule |
 | Kotlin | API types and tables | Gradle generation task before compilation; Maven artifact carries compiled output |
 | Swift | Wire models and protocol tables | SwiftPM plugin; source archive carries the same pinned Protocol tree at the package's expected relative path |

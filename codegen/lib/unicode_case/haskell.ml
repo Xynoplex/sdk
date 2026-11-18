@@ -31,7 +31,7 @@ let text ~version ~notice ~cased ~case_ignorable ~white_space ~lowercase
   H.text
     {
       banner =
-        Banner.haskell_lines
+        Banner.lines
           ~from_:
             (Printf.sprintf
                "Unicode %s's UnicodeData.txt, SpecialCasing.txt, \

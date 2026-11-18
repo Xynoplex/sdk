@@ -23,7 +23,7 @@ pub struct MediaTypeCapabilities {
     pub generatable: bool,
 }
 
-include!(concat!(env!("OUT_DIR"), "/media_types.rs"));
+include!("generated/media_types.rs");
 
 /// A format without its parameters (`; charset=…`), in lower case.
 pub fn base_media_type(format: &str) -> String {

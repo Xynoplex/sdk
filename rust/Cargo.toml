@@ -2,7 +2,6 @@
 [workspace]
 resolver = "3"
 members = [
-    "codegen",
     "http-transport",
     "sdk",
     "telemetry",
@@ -10,7 +9,7 @@ members = [
 
 # What the crates published to crates.io share. `version` is the coming
 # release's Rust version, derived from version.json (scripts/sdk_version.py
-# write), beside the three paths below that name it, and in Cargo.lock;
+# write), beside the two paths below that name it, and in Cargo.lock;
 # CI's `sdk_version.py check` fails any of them that carries another. A
 # build packages its copy at that build's version.
 [workspace.package]
@@ -21,7 +20,6 @@ repository = "https://github.com/xynolog/sdk"
 # with `.workspace = true` and adds the features it needs.
 [workspace.dependencies]
 xynolog = { path = "sdk", version = "1.2611.0" }
-xynolog-codegen = { path = "codegen", version = "1.2611.0" }
 xynolog-http-transport = { path = "http-transport" }
 xynolog-telemetry = { path = "telemetry", version = "1.2611.0" }
 async-nats = { version = "0.50.0", default-features = false }

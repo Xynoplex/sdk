@@ -496,7 +496,6 @@ credential goes by (`token`, `password`, `apiKey` and the rest of the list in
 |---|---|
 | [`xynolog`](../sdk/README.md) | The client this crate carries, and the contracts it implements. |
 | [`xynolog-telemetry`](../telemetry/README.md) | The spans and counts this crate reports, and how an application turns tracing on. |
-| [`xynolog-codegen`](../codegen/README.md) | The build-time generator of the SDK's types. Cargo builds it for you. |
 
 ## Contributing
 

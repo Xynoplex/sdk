@@ -28,7 +28,7 @@ let path ~under name =
 let file ~under (m : H.module_) =
   { Output.path = path ~under m.name; text = H.text m }
 
-let banner from_ = Banner.haskell_lines ~from_ __FILE__
+let banner from_ = Banner.lines ~from_ __FILE__
 
 (* The client types the SDK models, as their group states them. *)
 let adapters (spec : Spec.t) =

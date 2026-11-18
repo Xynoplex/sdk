@@ -238,8 +238,7 @@ let go =
   {|// Code generated from protocol/specs/src/client/timing.json; DO NOT EDIT.
 //
 // Regenerate: make generate (codegen/lib/timing/go.ml)
-// The TypeScript and Python constants are generated from the same table, and
-// Rust's by its SDK's build script.
+// The TypeScript, Python and Rust constants are generated from the same table.
 
 package xynolog
 

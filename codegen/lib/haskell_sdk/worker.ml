@@ -109,7 +109,7 @@ let channels text =
   Ok
     {
       H.banner =
-        Banner.haskell_lines ~from_:(source ^ " and bus/registry.json") __FILE__;
+        Banner.lines ~from_:(source ^ " and bus/registry.json") __FILE__;
       extensions = [];
       name = "Xynolog.Internal.Generated.WorkerChannels";
       imports =
@@ -343,7 +343,7 @@ let types text =
   in
   Ok
     {
-      H.banner = Banner.haskell_lines ~from_:source __FILE__;
+      H.banner = Banner.lines ~from_:source __FILE__;
       extensions = [ "OverloadedStrings" ];
       name = "Xynolog.Worker.Types";
       imports =

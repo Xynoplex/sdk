@@ -35,6 +35,7 @@ use crate::locked;
 use crate::rfc3339;
 use crate::session::{SCRIPT_CLIENT_ID, SignInKept, StoredSession, text_claim, token_expiry};
 use crate::transport::BoxFuture;
+use crate::types::Schema;
 use serde_json::{Map, Value};
 use std::error::Error;
 use std::fs::{self, OpenOptions};
@@ -43,8 +44,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
-include!(concat!(env!("OUT_DIR"), "/sign_in.rs"));
-include!(concat!(env!("OUT_DIR"), "/owner_only.rs"));
+include!("generated/sign_in.rs");
+include!("generated/owner_only.rs");
 
 /// The file's name in the launcher's state home.
 pub const FILE_NAME: &str = "tokens.json";

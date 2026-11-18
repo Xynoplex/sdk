@@ -26,7 +26,7 @@ let text ~shapes ~channels ~http =
   H.text
     {
       banner =
-        Banner.haskell_lines
+        Banner.lines
           ~from_:
             "protocol/specs/src's component schemas, bus registry and \
              operations"

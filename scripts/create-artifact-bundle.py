@@ -61,7 +61,7 @@ def files(language: str) -> list[tuple[Path, str, str]]:
     if language == "python":
         return [(p, "python", "xynolog") for p in sorted((STATE / "python/packages").glob(f"xynolog-{version}*"))]
     if language == "rust":
-        names = ["xynolog-codegen", "xynolog", "xynolog-telemetry", "xynolog-http-transport"]
+        names = ["xynolog", "xynolog-telemetry", "xynolog-http-transport"]
         return [(STATE / "rust/packages" / f"{name}-{version}.crate", "cargo", name) for name in names]
     if language == "go":
         root = STATE / "go-proxy/github.com/xynolog/sdk/go/@v"

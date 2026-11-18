@@ -86,4 +86,4 @@ pub struct Response<T> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, Serialize)]
 pub struct Empty {}
 
-include!(concat!(env!("OUT_DIR"), "/channels.rs"));
+include!("generated/channels.rs");

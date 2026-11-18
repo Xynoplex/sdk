@@ -10,7 +10,7 @@ module H = Haskell_syntax
 let module_ ~from_ name
     ?(imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ]) body =
   {
-    H.banner = Banner.haskell_lines ~from_ __FILE__;
+    H.banner = Banner.lines ~from_ __FILE__;
     extensions = [ "OverloadedStrings" ];
     name = "Xynolog.Internal.Generated." ^ name;
     imports;
