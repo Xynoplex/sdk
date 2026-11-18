@@ -36,6 +36,27 @@ let cases =
           "class S(WireModel, frozen=True):\n\
           \    a: str\n\
           \    b: int | None = None\n");
+    case "a description beside a reference is what is said of the member"
+      (fun () ->
+        let code =
+          written
+            [
+              ("T", {|{"type": "object", "properties": {}}|});
+              ( "S",
+                {|{"type": "object", "required": ["t"], "properties": {"t": {"$ref": "./T.json", "description": "The t."}}}|}
+              );
+            ]
+        in
+        has code {|t: Annotated[T, Field(description="The t.")]|});
+    case "a constraint beside a reference is refused: it is an allOf"
+      (refused "has enum beside it" (fun () ->
+           written
+             [
+               ("T", {|{"type": "string"}|});
+               ( "S",
+                 {|{"type": "object", "properties": {"t": {"$ref": "./T.json", "enum": ["x"]}}}|}
+               );
+             ]));
     case "a member no Python name spells is held under its alias" (fun () ->
         let code =
           one

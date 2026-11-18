@@ -155,7 +155,7 @@ let rec placed st owner held_as (s : D.t) : P.expr =
   | Some inner -> union [ placed st owner held_as inner; none ]
   | None -> (
       match s with
-      | D.Ref n -> name n
+      | D.Ref { name = n; _ } -> name n
       | D.Null -> none
       | D.Bool true -> json
       | D.Bool false ->
@@ -355,7 +355,9 @@ and inherited st name (n : D.node) parts ~doc =
     | _ -> []
   in
   let inherited_properties =
-    List.concat_map (fun b -> stated (D.Ref b)) bases
+    List.concat_map
+      (fun b -> stated (D.Ref { name = b; description = None }))
+      bases
   in
   let restated =
     List.exists

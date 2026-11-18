@@ -50,7 +50,7 @@ let literal (l : Schema.literal) : T.type_ =
 
 let rec type_of (s : D.t) : T.type_ =
   match s with
-  | D.Ref name -> T.schema name
+  | D.Ref { name; _ } -> T.schema name
   | D.Null -> T_name "null"
   | D.Bool true -> unknown
   | D.Bool false -> T_name "never"

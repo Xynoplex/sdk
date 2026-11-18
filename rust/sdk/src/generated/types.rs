@@ -301,6 +301,7 @@ pub struct Annotation {
     /// W3C Web Annotation body. Optional per the W3C spec — annotations whose motivation alone is meaningful (highlighting) legitimately omit it. Present values are either a single body or a non-empty array of bodies; there is no empty array.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub body: Option<AnnotationBodies>,
+    /// Web Annotation creator — who requested the annotation. DERIVED by the knowledge base at write time, never accepted from an emitter (a payload carrying it is refused): the verified emitter of the write, or, when the write cites a job, the verified emitter of the job:create that produced it. A Person for human-requested work; a Software peer for autonomous-agent work.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub creator: Option<Agent>,
     /// When the annotation was MADE — the authoring moment, carried from the event that created it. Not when a projection happened to write it: a store that rebuilds from the log must preserve this value, never restamp it.
@@ -729,6 +730,7 @@ pub struct AttributedEvent {
     /// Event-type-specific payload
     pub payload: serde_json::Map<String, serde_json::Value>,
     pub metadata: EventMetadata,
+    /// Who `userId` is.
     pub agent: Agent,
 }
 
@@ -807,11 +809,14 @@ schema!(BeckonSparkleEvent);
 pub struct BindBodyOperation {
     /// The type of body operation
     pub op: BindBodyOperationOp,
+    /// Body item for add operations
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item: Option<AnnotationBody>,
+    /// Previous body item for replace operations
     #[serde(rename = "oldItem")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub old_item: Option<AnnotationBody>,
+    /// Replacement body item for replace operations
     #[serde(rename = "newItem")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub new_item: Option<AnnotationBody>,
@@ -4708,6 +4713,7 @@ impl JobPendingStatus {
 pub struct JobProgress {
     /// Completion percentage (0-100)
     pub percentage: f64,
+    /// What the job is doing right now, as a code plus typed params; the client renders the sentence. Optional: pure percentage heartbeats carry none, and consumers render nothing message-shaped when it is absent.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub message: Option<JobProgressMessage>,
     /// Annotation this job is attached to, when applicable. Echoed inside JobProgress (in addition to the outer command envelope) so consumers that only see the inner progress object (e.g. what `yield.delegate` returns) can still route visual feedback to a specific annotation.
@@ -7326,6 +7332,7 @@ pub struct ResourceClonedPayload {
     pub entity_types: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
+    /// Who made the clone — the emitter, derived at write time. A clone is never job-fulfilling. Absent on events written before derivation existed, whose emitter was their only party.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub creator: Option<Agent>,
     /// PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
@@ -7395,6 +7402,7 @@ pub struct ResourceCreatedPayload {
     pub generation_prompt: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub generator: Option<OneOrMoreAgents>,
+    /// Who requested this resource — derived by the knowledge base at write time, never sent by the emitter. For a resource created in fulfilment of a job, the requester recorded on that job's job:assigned; otherwise the emitter itself. Absent on events written before derivation existed, whose emitter was their only party.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub creator: Option<Agent>,
     /// PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.

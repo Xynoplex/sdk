@@ -479,6 +479,12 @@ type Annotation struct {
 	// store that rebuilds from the log must preserve this value, never restamp
 	// it.
 	Created string `json:"created"`
+	// Creator Web Annotation creator — who requested the annotation. DERIVED by
+	// the knowledge base at write time, never accepted from an emitter (a
+	// payload carrying it is refused): the verified emitter of the write, or,
+	// when the write cites a job, the verified emitter of the job:create that
+	// produced it. A Person for human-requested work; a Software peer for
+	// autonomous-agent work.
 	Creator *Agent `json:"creator,omitempty"`
 	// Generator Web Annotation generator — the Software peer that produced the
 	// annotation, when software did. Absent for a person's own annotation. An
@@ -911,6 +917,7 @@ func (e AssessingJobParamsTone) Valid() bool {
 // Person's name filled in from the knowledge base's profiles — and is stored
 // nowhere. A Person the record does not name carries no `name`.
 type AttributedEvent struct {
+	// Agent Who `userId` is.
 	Agent Agent `json:"agent"`
 	// Id Unique event ID (UUID)
 	Id       string        `json:"id"`
@@ -957,8 +964,11 @@ type BeckonSparkleEvent struct {
 // BindBodyOperation One edit to a linking annotation's body list: add or
 // remove a body item, or replace an existing one.
 type BindBodyOperation struct {
-	Item    *AnnotationBody `json:"item,omitempty"`
+	// Item Body item for add operations
+	Item *AnnotationBody `json:"item,omitempty"`
+	// NewItem Replacement body item for replace operations
 	NewItem *AnnotationBody `json:"newItem,omitempty"`
+	// OldItem Previous body item for replace operations
 	OldItem *AnnotationBody `json:"oldItem,omitempty"`
 	// Op The type of body operation
 	Op BindBodyOperationOp `json:"op"`
@@ -4348,8 +4358,11 @@ type JobProgress struct {
 	// claim, never zero.
 	EntitiesExpected *int `json:"entitiesExpected,omitempty"`
 	// EntitiesFound Entities found so far (a linking job)
-	EntitiesFound *int                `json:"entitiesFound,omitempty"`
-	Message       *JobProgressMessage `json:"message,omitempty"`
+	EntitiesFound *int `json:"entitiesFound,omitempty"`
+	// Message What the job is doing right now, as a code plus typed params; the
+	// client renders the sentence. Optional: pure percentage heartbeats carry
+	// none, and consumers render nothing message-shaped when it is absent.
+	Message *JobProgressMessage `json:"message,omitempty"`
 	// Percentage Completion percentage (0-100)
 	Percentage float64 `json:"percentage"`
 	// Processed Items completed so far, zero-based — the item in `current` is
@@ -6644,8 +6657,11 @@ type ResourceArchivedPayload struct {
 
 // ResourceClonedPayload Payload for yield:cloned domain event
 type ResourceClonedPayload struct {
-	ContentByteSize  *int          `json:"contentByteSize,omitempty"`
-	ContentChecksum  string        `json:"contentChecksum"`
+	ContentByteSize *int   `json:"contentByteSize,omitempty"`
+	ContentChecksum string `json:"contentChecksum"`
+	// Creator Who made the clone — the emitter, derived at write time. A clone
+	// is never job-fulfilling. Absent on events written before derivation
+	// existed, whose emitter was their only party.
 	Creator          *Agent        `json:"creator,omitempty"`
 	EntityTypes      *[]string     `json:"entityTypes,omitempty"`
 	Format           ContentFormat `json:"format"`
@@ -6664,10 +6680,15 @@ type ResourceClonedPayload struct {
 type ResourceCreatedPayload struct {
 	ContentByteSize *int `json:"contentByteSize,omitempty"`
 	// ContentChecksum SHA-256 of content
-	ContentChecksum string        `json:"contentChecksum"`
-	Creator         *Agent        `json:"creator,omitempty"`
-	EntityTypes     *[]string     `json:"entityTypes,omitempty"`
-	Format          ContentFormat `json:"format"`
+	ContentChecksum string `json:"contentChecksum"`
+	// Creator Who requested this resource — derived by the knowledge base at
+	// write time, never sent by the emitter. For a resource created in
+	// fulfilment of a job, the requester recorded on that job's job:assigned;
+	// otherwise the emitter itself. Absent on events written before derivation
+	// existed, whose emitter was their only party.
+	Creator     *Agent        `json:"creator,omitempty"`
+	EntityTypes *[]string     `json:"entityTypes,omitempty"`
+	Format      ContentFormat `json:"format"`
 	// GeneratedFrom What this resource was generated from: the resource, and the
 	// annotation on it when the generation was for one. The resource's
 	// descriptor names the resource as `wasDerivedFrom`.

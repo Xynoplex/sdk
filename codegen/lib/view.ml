@@ -6,7 +6,9 @@
 module D = Definitions
 
 let refuse = D.refuse
-let reference (s : D.t) = match s with D.Ref name -> Some name | _ -> None
+
+let reference (s : D.t) =
+  match s with D.Ref { name; _ } -> Some name | _ -> None
 
 let union (s : D.t) =
   match s with
@@ -63,6 +65,7 @@ let description (s : D.t) =
     if List.mem "description" n.keys then n.description else None
   in
   match s with
+  | D.Ref { description; _ } -> description
   | D.Node n when own n <> None -> own n
   | D.Node { any_of = Some [ D.Null; D.Node inner ]; _ } -> own inner
   | _ -> None
