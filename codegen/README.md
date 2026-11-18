@@ -208,8 +208,8 @@ per language it writes:
   which `identifiers` writes. A union embeds the hand-written generic
   `union` (`go/api/union.go`); `Go_syntax` is the Go it is built of, laid out
   as gofmt leaves it. It reads the schemas as Rust's types do, through `View`
-  (a `$ref`'s schema, a union's members, an `allOf` as one object) and names
-  what it writes in place by `Naming`.
+  (a `$ref`'s schema, a union's members) and `Definitions.meant` (an `allOf`
+  as `Normalize` merges it), and names what it writes in place by `Naming`.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
