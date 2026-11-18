@@ -148,7 +148,7 @@ fn owner_only(directory: &Path) -> io::Result<()> {
         if ConvertSidToStringSidW((*user.as_ptr().cast::<TOKEN_USER>()).User.Sid, &mut named) == 0 {
             return Err(io::Error::last_os_error());
         }
-        let sddl = wide(OsStr::new(&owner_only_access_list(&taken(named))));
+        let sddl = wide(OsStr::new(&owner_only_directory_access_list(&taken(named))));
         let mut descriptor: PSECURITY_DESCRIPTOR = null_mut();
         if ConvertStringSecurityDescriptorToSecurityDescriptorW(
             sddl.as_ptr(),

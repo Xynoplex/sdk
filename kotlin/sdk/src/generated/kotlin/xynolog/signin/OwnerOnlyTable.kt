@@ -16,4 +16,4 @@ internal const val OWNER_ONLY_FILE_PERMISSIONS: String = "rw-------"
 /**
  * The directory's access list on Windows, where a mode keeps nobody out, in SDDL, with `owner` where the SID of the user the writer runs as goes (its process token's user): full access for that user, the system and the administrators, and nobody else. It is handed down to everything made in the directory, and protected, so nothing is inherited from above.
  */
-internal fun ownerOnlyAccessList(owner: String): String = "D:PAI(A;OICI;FA;;;" + owner + ")(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)"
+internal fun ownerOnlyDirectoryAccessList(owner: String): String = "D:PAI(A;OICI;FA;;;" + owner + ")(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)"
