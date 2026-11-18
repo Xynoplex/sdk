@@ -4,56 +4,17 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * The signal plane: `in-process`, one gateway on its own fabric; or `nats`, the fabric every replica on one broker shares, which requires `servers` and a broker with JetStream.
- */
+/** The signal plane: `in-process`, one gateway on its own fabric; or `nats`, the fabric every replica on one broker shares, which requires `servers` and a broker with JetStream. */
 @Serializable
 public data class GatewayConfigSignal(
-    @SerialName("type")
     public val type: GatewayConfigSignalType,
-    /**
-     * The broker's address (`host:port`, or several, comma-separated). Required for `nats`.
-     */
-    @SerialName("servers")
+    /** The broker's address (`host:port`, or several, comma-separated). Required for `nats`. */
     public val servers: String? = null,
-    /**
-     * The environment variable holding the broker user, when the broker requires one.
-     */
-    @SerialName("userEnv")
+    /** The environment variable holding the broker user, when the broker requires one. */
     public val userEnv: String? = null,
-    /**
-     * The environment variable holding the broker password, when the broker requires one.
-     */
-    @SerialName("passwordEnv")
+    /** The environment variable holding the broker password, when the broker requires one. */
     public val passwordEnv: String? = null,
 ) {
     /** How Java makes a `GatewayConfigSignal`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -64,20 +25,9 @@ public data class GatewayConfigSignal(
         private var userEnv: String? = null
         private var passwordEnv: String? = null
 
-        public fun servers(servers: String?): Builder {
-            this.servers = servers
-            return this
-        }
-
-        public fun userEnv(userEnv: String?): Builder {
-            this.userEnv = userEnv
-            return this
-        }
-
-        public fun passwordEnv(passwordEnv: String?): Builder {
-            this.passwordEnv = passwordEnv
-            return this
-        }
+        public fun servers(servers: String?): Builder = apply { this.servers = servers }
+        public fun userEnv(userEnv: String?): Builder = apply { this.userEnv = userEnv }
+        public fun passwordEnv(passwordEnv: String?): Builder = apply { this.passwordEnv = passwordEnv }
 
         public fun build(): GatewayConfigSignal = GatewayConfigSignal(type = type, servers = servers, userEnv = userEnv, passwordEnv = passwordEnv)
     }

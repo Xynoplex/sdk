@@ -4,55 +4,18 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * Text context around the annotation target
- */
+/** Text context around the annotation target */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class GatheredContextFocusAnnotationSelected(
-    /**
-     * Text appearing before the selected passage
-     */
-    @SerialName("before")
+    /** Text appearing before the selected passage */
     public val before: String? = null,
-    /**
-     * The selected text passage (the annotation target)
-     */
-    @SerialName("text")
+    /** The selected text passage (the annotation target) */
     public val text: String,
-    /**
-     * Text appearing after the selected passage
-     */
-    @SerialName("after")
+    /** Text appearing after the selected passage */
     public val after: String? = null,
 ) {
     /** How Java makes a `GatheredContextFocusAnnotationSelected`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -62,15 +25,8 @@ public data class GatheredContextFocusAnnotationSelected(
         private var before: String? = null
         private var after: String? = null
 
-        public fun before(before: String?): Builder {
-            this.before = before
-            return this
-        }
-
-        public fun after(after: String?): Builder {
-            this.after = after
-            return this
-        }
+        public fun before(before: String?): Builder = apply { this.before = before }
+        public fun after(after: String?): Builder = apply { this.after = after }
 
         public fun build(): GatheredContextFocusAnnotationSelected = GatheredContextFocusAnnotationSelected(before = before, text = text, after = after)
     }

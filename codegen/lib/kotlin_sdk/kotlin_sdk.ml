@@ -69,7 +69,10 @@ let opt_in =
       ]
     "OptIn"
 
+(* A file of [decls], importing those of [Types.imported] and [imports]
+   they name. *)
 let file ~package ~imports decls =
+  let named = K.referenced decls in
   K.text
     {
       banner =
@@ -77,7 +80,10 @@ let file ~package ~imports decls =
           __FILE__;
       file_annotations = [ opt_in ];
       package;
-      imports = Types.imported @ imports;
+      imports =
+        List.filter
+          (fun name -> List.mem (Types.after_last_dot name) named)
+          (Types.imported @ imports);
       decls;
     }
 

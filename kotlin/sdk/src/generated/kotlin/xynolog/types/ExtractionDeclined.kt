@@ -4,51 +4,18 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * A named decline: extraction ran and yielded nothing, by class. A first-class, cacheable outcome — 'we ran and there was nothing' costs a full recognition pass to discover.
- */
+/** A named decline: extraction ran and yielded nothing, by class. A first-class, cacheable outcome — 'we ran and there was nothing' costs a full recognition pass to discover. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class ExtractionDeclined(
-    /**
-     * Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`.
-     */
-    @SerialName("kind")
+    /** Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`. */
     @EncodeDefault
     public val kind: ExtractionDeclinedKind = ExtractionDeclinedKind.Declined,
-    /**
-     * Why extraction yielded nothing, by class.
-     */
-    @SerialName("declined")
+    /** Why extraction yielded nothing, by class. */
     public val declined: ExtractionDeclinedDeclined,
 ) : AnchoredTextAnswer,
     ExtractionOutcome {

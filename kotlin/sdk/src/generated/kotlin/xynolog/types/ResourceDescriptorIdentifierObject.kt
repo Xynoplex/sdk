@@ -4,42 +4,23 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
 @Serializable(with = ResourceDescriptorIdentifierObject.Serializer::class)
 public data class ResourceDescriptorIdentifierObject(
     @SerialName("@id")
     public val id: String? = null,
-    @SerialName("value")
     public val value: String? = null,
-    @SerialName("scheme")
     public val scheme: String? = null,
     /** Every property the schema does not name, as it came. */
     public val rest: JsonObject = JsonObject(emptyMap()),
@@ -51,25 +32,10 @@ public data class ResourceDescriptorIdentifierObject(
         private var scheme: String? = null
         private var rest: JsonObject = JsonObject(emptyMap())
 
-        public fun id(id: String?): Builder {
-            this.id = id
-            return this
-        }
-
-        public fun value(value: String?): Builder {
-            this.value = value
-            return this
-        }
-
-        public fun scheme(scheme: String?): Builder {
-            this.scheme = scheme
-            return this
-        }
-
-        public fun rest(rest: JsonObject): Builder {
-            this.rest = rest
-            return this
-        }
+        public fun id(id: String?): Builder = apply { this.id = id }
+        public fun value(value: String?): Builder = apply { this.value = value }
+        public fun scheme(scheme: String?): Builder = apply { this.scheme = scheme }
+        public fun rest(rest: JsonObject): Builder = apply { this.rest = rest }
 
         public fun build(): ResourceDescriptorIdentifierObject = ResourceDescriptorIdentifierObject(id = id, value = value, scheme = scheme, rest = rest)
     }
@@ -84,9 +50,7 @@ public data class ResourceDescriptorIdentifierObject(
     internal data class Known(
         @SerialName("@id")
         public val id: String? = null,
-        @SerialName("value")
         public val value: String? = null,
-        @SerialName("scheme")
         public val scheme: String? = null,
     )
 

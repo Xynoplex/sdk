@@ -4,44 +4,14 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * Request to browse a directory listing
- */
+/** Request to browse a directory listing */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class BrowseDirectoryRequest(
-    @SerialName("path")
     public val path: String,
-    @SerialName("sort")
     public val sort: BrowseDirectoryRequestSort? = null,
 ) {
     /** How Java makes a `BrowseDirectoryRequest`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -50,10 +20,7 @@ public data class BrowseDirectoryRequest(
     ) {
         private var sort: BrowseDirectoryRequestSort? = null
 
-        public fun sort(sort: BrowseDirectoryRequestSort?): Builder {
-            this.sort = sort
-            return this
-        }
+        public fun sort(sort: BrowseDirectoryRequestSort?): Builder = apply { this.sort = sort }
 
         public fun build(): BrowseDirectoryRequest = BrowseDirectoryRequest(path = path, sort = sort)
     }

@@ -4,47 +4,24 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * A job's parameters as the Dispatcher holds them: the `params` of its `job:create`, and what the Dispatcher adds. It adds `resourceId`, the resource the job is about: a `mark` job's own, and for a `yield` job the one its context focuses on. For a tagging job it adds `schema`, the tag schema its `schemaId` names, so that whoever holds the job needs no registry. Nothing the caller sent is changed or removed.
- */
+/** A job's parameters as the Dispatcher holds them: the `params` of its `job:create`, and what the Dispatcher adds. It adds `resourceId`, the resource the job is about: a `mark` job's own, and for a `yield` job the one its context focuses on. For a tagging job it adds `schema`, the tag schema its `schemaId` names, so that whoever holds the job needs no registry. Nothing the caller sent is changed or removed. */
 @Serializable(with = JobParams.Serializer::class)
 public data class JobParams(
-    @SerialName("resourceId")
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
-    /**
-     * The tag schema a tagging job's `schemaId` names, as the knowledge base registered it when the job was created. On a tagging job, and on no other.
-     */
-    @SerialName("schema")
+    /** The tag schema a tagging job's `schemaId` names, as the knowledge base registered it when the job was created. On a tagging job, and on no other. */
     public val schema: TagSchema? = null,
     /** Every property the schema does not name, as it came. */
     public val rest: JsonObject = JsonObject(emptyMap()),
@@ -56,15 +33,8 @@ public data class JobParams(
         private var schema: TagSchema? = null
         private var rest: JsonObject = JsonObject(emptyMap())
 
-        public fun schema(schema: TagSchema?): Builder {
-            this.schema = schema
-            return this
-        }
-
-        public fun rest(rest: JsonObject): Builder {
-            this.rest = rest
-            return this
-        }
+        public fun schema(schema: TagSchema?): Builder = apply { this.schema = schema }
+        public fun rest(rest: JsonObject): Builder = apply { this.rest = rest }
 
         public fun build(): JobParams = JobParams(resourceId = resourceId, schema = schema, rest = rest)
     }
@@ -78,12 +48,8 @@ public data class JobParams(
 
     @Serializable
     internal data class Known(
-        @SerialName("resourceId")
         public val resourceId: ResourceId,
-        /**
-         * The tag schema a tagging job's `schemaId` names, as the knowledge base registered it when the job was created. On a tagging job, and on no other.
-         */
-        @SerialName("schema")
+        /** The tag schema a tagging job's `schemaId` names, as the knowledge base registered it when the job was created. On a tagging job, and on no other. */
         public val schema: TagSchema? = null,
     )
 

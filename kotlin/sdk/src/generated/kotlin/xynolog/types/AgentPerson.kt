@@ -4,60 +4,34 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * A human participant — the Person branch of Agent.
- */
+/** A human participant — the Person branch of Agent. */
 @Serializable(with = AgentPerson.Serializer::class)
 public data class AgentPerson(
     @SerialName("@type")
     @EncodeDefault
     public val type: AgentPersonType = AgentPersonType.Person,
-    /**
-     * DID-shaped identifier (e.g. did:web:host:users:email%40host)
-     */
+    /** DID-shaped identifier (e.g. did:web:host:users:email%40host) */
     @SerialName("@id")
     public val id: String? = null,
-    /**
-     * Display name. ABSENT until resolved: a Person is identified by `@id` and nothing else, and what they are called is recorded once per change on the knowledge base's own log and filled in when a record is read. An artifact therefore never freezes a name, which is what lets a correction reach every artifact its subject ever wrote. Absent also means genuinely unknown — a DID this knowledge base has no profile for.
-     */
-    @SerialName("name")
+    /** Display name. ABSENT until resolved: a Person is identified by `@id` and nothing else, and what they are called is recorded once per change on the knowledge base's own log and filled in when a record is read. An artifact therefore never freezes a name, which is what lets a correction reach every artifact its subject ever wrote. Absent also means genuinely unknown — a DID this knowledge base has no profile for. */
     public val name: String? = null,
-    @SerialName("nickname")
     public val nickname: String? = null,
-    @SerialName("email")
     public val email: String? = null,
     @SerialName("email_sha1")
     public val emailSha1: String? = null,
-    @SerialName("homepage")
     public val homepage: String? = null,
     /** Every property the schema does not name, as it came. */
     public val rest: JsonObject = JsonObject(emptyMap()),
@@ -72,40 +46,13 @@ public data class AgentPerson(
         private var homepage: String? = null
         private var rest: JsonObject = JsonObject(emptyMap())
 
-        public fun id(id: String?): Builder {
-            this.id = id
-            return this
-        }
-
-        public fun name(name: String?): Builder {
-            this.name = name
-            return this
-        }
-
-        public fun nickname(nickname: String?): Builder {
-            this.nickname = nickname
-            return this
-        }
-
-        public fun email(email: String?): Builder {
-            this.email = email
-            return this
-        }
-
-        public fun emailSha1(emailSha1: String?): Builder {
-            this.emailSha1 = emailSha1
-            return this
-        }
-
-        public fun homepage(homepage: String?): Builder {
-            this.homepage = homepage
-            return this
-        }
-
-        public fun rest(rest: JsonObject): Builder {
-            this.rest = rest
-            return this
-        }
+        public fun id(id: String?): Builder = apply { this.id = id }
+        public fun name(name: String?): Builder = apply { this.name = name }
+        public fun nickname(nickname: String?): Builder = apply { this.nickname = nickname }
+        public fun email(email: String?): Builder = apply { this.email = email }
+        public fun emailSha1(emailSha1: String?): Builder = apply { this.emailSha1 = emailSha1 }
+        public fun homepage(homepage: String?): Builder = apply { this.homepage = homepage }
+        public fun rest(rest: JsonObject): Builder = apply { this.rest = rest }
 
         public fun build(): AgentPerson = AgentPerson(id = id, name = name, nickname = nickname, email = email, emailSha1 = emailSha1, homepage = homepage, rest = rest)
     }
@@ -121,23 +68,15 @@ public data class AgentPerson(
         @SerialName("@type")
         @EncodeDefault
         public val type: AgentPersonType = AgentPersonType.Person,
-        /**
-         * DID-shaped identifier (e.g. did:web:host:users:email%40host)
-         */
+        /** DID-shaped identifier (e.g. did:web:host:users:email%40host) */
         @SerialName("@id")
         public val id: String? = null,
-        /**
-         * Display name. ABSENT until resolved: a Person is identified by `@id` and nothing else, and what they are called is recorded once per change on the knowledge base's own log and filled in when a record is read. An artifact therefore never freezes a name, which is what lets a correction reach every artifact its subject ever wrote. Absent also means genuinely unknown — a DID this knowledge base has no profile for.
-         */
-        @SerialName("name")
+        /** Display name. ABSENT until resolved: a Person is identified by `@id` and nothing else, and what they are called is recorded once per change on the knowledge base's own log and filled in when a record is read. An artifact therefore never freezes a name, which is what lets a correction reach every artifact its subject ever wrote. Absent also means genuinely unknown — a DID this knowledge base has no profile for. */
         public val name: String? = null,
-        @SerialName("nickname")
         public val nickname: String? = null,
-        @SerialName("email")
         public val email: String? = null,
         @SerialName("email_sha1")
         public val emailSha1: String? = null,
-        @SerialName("homepage")
         public val homepage: String? = null,
     )
 

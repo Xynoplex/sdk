@@ -256,8 +256,13 @@ let t name = K.Type name
 let list_of item = K.Generic ("kotlin.collections.List", [ item ])
 let name_of = function K.Type name -> Some name | _ -> None
 
+(* A description as a doc: on one line when it is one. *)
 let doc = function
-  | Some text when String.trim text <> "" -> Some (K.Block text : K.doc)
+  | Some text when String.trim text <> "" ->
+      let text = String.trim text in
+      Some
+        (if String.contains text '\n' then (K.Block text : K.doc)
+         else K.Doc text)
   | _ -> None
 
 let public_val = K.Bound { visibility = K.Public; mutable_ = false }
@@ -268,7 +273,12 @@ let serializable_with target =
     ~args:[ K.arg ~label:"with" (K.Class_literal target) ]
     "Serializable"
 
-let serial_name wire = K.annotation ~args:[ K.arg (K.Str wire) ] "SerialName"
+(* What renames a declaration named [name] to [wire] on the wire: nothing
+   where the two are one. *)
+let serial_name ~name wire =
+  if wire = name then []
+  else [ K.annotation ~args:[ K.arg (K.Str wire) ] "SerialName" ]
+
 let supers unions = List.map (fun u -> K.super (t u)) unions
 let serializer_of type_ = K.call (K.Name (type_ ^ ".serializer")) []
 
@@ -451,7 +461,7 @@ and enum_declaration name values about =
         entries
         @ [
             K.entry
-              ~annotations:[ serial_name text ]
+              ~annotations:(serial_name ~name:variant text)
               ~args:[ K.Str text ] variant;
           ])
       [] values
@@ -576,13 +586,13 @@ and object_declaration st name { stated_properties; required_names; beside }
 (* As the data class declares it. *)
 and declared ~boxing p =
   let annotations =
-    serial_name p.wire
-    :: ((match p.form with
-          | Single _ -> [ K.annotation "EncodeDefault" ]
-          | _ -> [])
-       @
-       if boxing && p.boxed then [ K.annotation ~target:"get" "JvmExposeBoxed" ]
-       else [])
+    serial_name ~name:p.name p.wire
+    @ (match p.form with
+      | Single _ -> [ K.annotation "EncodeDefault" ]
+      | _ -> [])
+    @
+    if boxing && p.boxed then [ K.annotation ~target:"get" "JvmExposeBoxed" ]
+    else []
   in
   let type_, default =
     match p.form with
@@ -608,6 +618,18 @@ and taken p =
   | Single _ | Required -> p.type_
 
 (* What Java makes one with: the builder, and the companion's [builder]. *)
+(* [members] a line apart where none is annotated: each annotated one
+   stands apart, as the printer packs only bare members. *)
+and packed members =
+  let run = function [] -> [] | run -> [ K.Packed (List.rev run) ] in
+  let rec go acc = function
+    | [] -> run acc
+    | (K.Function { annotations = _ :: _; _ } as m) :: rest ->
+        run acc @ (m :: go [] rest)
+    | m :: rest -> go (m :: acc) rest
+  in
+  go [] members
+
 and builder name props open_ =
   let given =
     List.filter
@@ -646,7 +668,11 @@ and builder name props open_ =
     K.function_ ~annotations ~visibility:K.Public
       ~params:[ (field, type_) ]
       ~returns:(t "Builder") field
-      (K.Block [ K.Assign (K.Member (K.This, field), value); K.Return K.This ])
+      (K.Same_line
+         (K.call
+            ~lambda:
+              (K.Lambda ([], K.Assigning (K.Member (K.This, field), value)))
+            (K.Name "apply") []))
   in
   let setters =
     List.map
@@ -700,7 +726,7 @@ and builder name props open_ =
               given))
       ~members:
         ((match fields with [] -> [] | fields -> [ K.Packed fields ])
-        @ setters @ [ build ])
+        @ packed setters @ [ build ])
       K.Class "Builder";
     K.class_ ~visibility:K.Public
       ~members:

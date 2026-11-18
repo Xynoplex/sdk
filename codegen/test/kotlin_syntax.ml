@@ -231,6 +231,33 @@ let cases =
                imports = [ "kotlin.E"; "java.D"; "kotlinx.C"; "a.B" ];
                decls = [ K.property ~value:(K.Same_line (K.Int 1)) "x" ];
              }));
+    case "an assignment is written as a lambda's body"
+      (writes "x.apply { this.a = b }"
+         (expr
+            (K.call
+               ~lambda:
+                 (K.Lambda ([], K.Assigning (K.Member (K.This, "a"), K.Name "b")))
+               (K.Name "x.apply") [])));
+    case "an assignment anywhere else is refused"
+      (refuses (expr (K.Assigning (K.Name "a", K.Name "b"))));
+    case
+      "what declarations reference: a qualified name's first part, a member, \
+       an annotation, and the types they name" (fun () ->
+        Alcotest.(check (list string))
+          "names"
+          [ "A"; "B"; "C"; "Json"; "N"; "jsonObject" ]
+          (K.referenced
+             [
+               K.property
+                 ~annotations:[ K.annotation "N" ]
+                 ~type_:(K.Generic ("A", [ K.Nullable (K.Type "B") ]))
+                 ~value:
+                   (K.Same_line
+                      (K.Member
+                         ( K.call (K.Name "Json.parse") [ K.Name "C" ],
+                           "jsonObject" )))
+                 "x";
+             ]));
     case "a name imported twice is refused"
       (refuses (fun () -> String.concat "," (K.import_order [ "a.B"; "a.B" ])));
   ]

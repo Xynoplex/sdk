@@ -61,6 +61,8 @@ type expr =
   | Class_literal of string  (** [T::class] *)
   | Reference of string * string  (** [T::name] *)
   | Lambda of string list * expr  (** [{ a -> e }], or [{ e }] with none. *)
+  | Assigning of expr * expr
+      (** [a = b], which is no expression: a lambda's whole body alone. *)
   | When of { subject : expr option; branches : branch list }
       (** Its last branch's conditions are [[]] for [else]. *)
   | If of expr * expr * expr  (** On one line. *)
@@ -84,7 +86,6 @@ type stmt =
   | Return of expr
   | If_then of expr * stmt  (** On one line. *)
   | Do of expr
-  | Assign of expr * expr
 
 type visibility = Public | Internal | Private | Default
 
@@ -478,6 +479,9 @@ let rec expr ~depth e =
   | As_safe (e, t) -> bound ~depth ~least:10 e ^ " as? " ^ type_ t
   | Class_literal name -> checked name ^ "::class"
   | Reference (owner, name) -> checked owner ^ "::" ^ simple name
+  | Lambda ([], Assigning (target, e)) ->
+      "{ " ^ expr ~depth target ^ " = " ^ expr ~depth e ^ " }"
+  | Assigning _ -> fail "an assignment is written only as a lambda's body"
   | Lambda ([], body) -> "{ " ^ expr ~depth body ^ " }"
   | Lambda (params, body) ->
       "{ "
@@ -554,7 +558,6 @@ let rec stmt ~depth = function
   | Return e -> "return " ^ expr ~depth e
   | If_then (c, s) -> "if (" ^ expr ~depth c ^ ") " ^ stmt ~depth s
   | Do e -> expr ~depth e
-  | Assign (target, e) -> expr ~depth target ^ " = " ^ expr ~depth e
 
 let visibility = function
   | Public -> "public "
@@ -810,6 +813,100 @@ let import_order imports =
   in
   distinct sorted;
   sorted
+
+(* The names [decls] write unqualified, or begin a qualified name with, and
+   the members they reach: what an import could supply. *)
+let referenced decls =
+  let first name =
+    match String.index_opt name '.' with
+    | None -> name
+    | Some i -> String.sub name 0 i
+  in
+  let rec of_type = function
+    | Type name -> [ first name ]
+    | Generic (name, args) -> first name :: List.concat_map of_type args
+    | Nullable t -> of_type t
+    | Star -> []
+    | Function_type (params, result) ->
+        List.concat_map of_type (result :: params)
+  in
+  let rec of_expr = function
+    | Name name | Class_literal name -> [ first name ]
+    | Reference (owner, _) -> [ first owner ]
+    | This | Super | Null | Bool _ | Str _ | Ascii _ | Int _ | Char _ -> []
+    | Call { callee; types; args; lambda; layout = _ } ->
+        of_expr callee
+        @ List.concat_map of_type types
+        @ of_args args
+        @ Option.fold ~none:[] ~some:of_expr lambda
+    | Member (e, name) | Safe (e, name) -> name :: of_expr e
+    | Not e | Throw e -> of_expr e
+    | Binary (a, _, b) -> of_expr a @ of_expr b
+    | As_safe (e, t) -> of_expr e @ of_type t
+    | Lambda (_, e) -> of_expr e
+    | Assigning (a, b) -> of_expr a @ of_expr b
+    | When { subject; branches } ->
+        Option.fold ~none:[] ~some:of_expr subject
+        @ List.concat_map
+            (fun { conditions; result } ->
+              of_expr result
+              @ List.concat_map
+                  (function Equal e -> of_expr e | Is t -> of_type t)
+                  conditions)
+            branches
+    | If (a, b, c) -> of_expr a @ of_expr b @ of_expr c
+    | Try { body; caught = _, t; handler } ->
+        of_expr body @ of_type t @ of_expr handler
+  and of_args args =
+    List.concat_map (fun { value; label = _ } -> of_expr value) args
+  in
+  let rec of_stmt = function
+    | Val (_, e) | Return e | Do e -> of_expr e
+    | If_then (e, s) -> of_expr e @ of_stmt s
+  in
+  let of_annotations =
+    List.concat_map (fun { name; args; target = _ } ->
+        first name :: Option.fold ~none:[] ~some:of_args args)
+  in
+  let of_body = function
+    | Same_line e | Below e -> of_expr e
+    | Block stmts -> List.concat_map of_stmt stmts
+  in
+  let of_param { annotations; type_ = t; default; _ } =
+    of_annotations annotations @ of_type t
+    @ Option.fold ~none:[] ~some:of_expr default
+  in
+  let rec of_decl = function
+    | Property { annotations; type_ = t; value; _ } ->
+        of_annotations annotations
+        @ Option.fold ~none:[] ~some:of_type t
+        @ Option.fold ~none:[] ~some:of_body value
+    | Function { annotations; params; returns; body; _ } ->
+        of_annotations annotations
+        @ List.concat_map (fun (_, t) -> of_type t) params
+        @ Option.fold ~none:[] ~some:of_type returns
+        @ of_body body
+    | Class_decl { annotations; constructor; supers; entries; members; _ } ->
+        of_annotations annotations
+        @ Option.fold ~none:[]
+            ~some:(fun { constructor_annotations; params; _ } ->
+              of_annotations constructor_annotations
+              @ List.concat_map of_param params)
+            constructor
+        @ List.concat_map
+            (fun { super = t; super_args } ->
+              of_type t @ Option.fold ~none:[] ~some:of_args super_args)
+            supers
+        @ List.concat_map
+            (fun { entry_annotations; entry_args; _ } ->
+              of_annotations entry_annotations @ of_args entry_args)
+            entries
+        @ List.concat_map of_decl members
+    | Typealias { type_ = t; _ } -> of_type t
+    | Init stmts -> List.concat_map of_stmt stmts
+    | Packed decls -> List.concat_map of_decl decls
+  in
+  List.sort_uniq String.compare (List.concat_map of_decl decls)
 
 let text { banner; file_annotations; package; imports; decls } =
   lines_text (List.map (fun l -> if l = "" then "//" else "// " ^ l) banner)
