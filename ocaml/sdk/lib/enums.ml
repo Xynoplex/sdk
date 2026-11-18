@@ -1,10 +1,22 @@
 (* Generated from string enums in protocol/specs/src/components/schemas. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/enums.ml) *)
 
-[@@@ocamlformat "disable"]
-
 module Body_purpose = struct
-  type t = Assessing | Bookmarking | Classifying | Commenting | Describing | Editing | Highlighting | Identifying | Linking | Moderating | Questioning | Replying | Tagging
+  type t =
+    | Assessing
+    | Bookmarking
+    | Classifying
+    | Commenting
+    | Describing
+    | Editing
+    | Highlighting
+    | Identifying
+    | Linking
+    | Moderating
+    | Questioning
+    | Replying
+    | Tagging
+
   let to_string = function
     | Assessing -> "assessing"
     | Bookmarking -> "bookmarking"
@@ -19,6 +31,7 @@ module Body_purpose = struct
     | Questioning -> "questioning"
     | Replying -> "replying"
     | Tagging -> "tagging"
+
   let of_string = function
     | "assessing" -> Some Assessing
     | "bookmarking" -> Some Bookmarking
@@ -38,11 +51,13 @@ end
 
 module Durability_evidence = struct
   type t = Acknowledged | Probe_confirmed | Probe_refused | Probe_unreachable
+
   let to_string = function
     | Acknowledged -> "acknowledged"
     | Probe_confirmed -> "probe-confirmed"
     | Probe_refused -> "probe-refused"
     | Probe_unreachable -> "probe-unreachable"
+
   let of_string = function
     | "acknowledged" -> Some Acknowledged
     | "probe-confirmed" -> Some Probe_confirmed
@@ -53,11 +68,13 @@ end
 
 module Extraction_declined_reason = struct
   type t = No_text_layer | Encrypted | Corrupt | Too_large
+
   let to_string = function
     | No_text_layer -> "no-text-layer"
     | Encrypted -> "encrypted"
     | Corrupt -> "corrupt"
     | Too_large -> "too-large"
+
   let of_string = function
     | "no-text-layer" -> Some No_text_layer
     | "encrypted" -> Some Encrypted
@@ -68,12 +85,14 @@ end
 
 module Extraction_method = struct
   type t = Text_passthrough | Pdf_text_layer | Table | Form | Ocr
+
   let to_string = function
     | Text_passthrough -> "text-passthrough"
     | Pdf_text_layer -> "pdf-text-layer"
     | Table -> "table"
     | Form -> "form"
     | Ocr -> "ocr"
+
   let of_string = function
     | "text-passthrough" -> Some Text_passthrough
     | "pdf-text-layer" -> Some Pdf_text_layer
@@ -85,10 +104,12 @@ end
 
 module Failure_class = struct
   type t = Transient | Deterministic | Withheld
+
   let to_string = function
     | Transient -> "transient"
     | Deterministic -> "deterministic"
     | Withheld -> "withheld"
+
   let of_string = function
     | "transient" -> Some Transient
     | "deterministic" -> Some Deterministic
@@ -98,9 +119,9 @@ end
 
 module Job_type = struct
   type t = Mark | Yield
-  let to_string = function
-    | Mark -> "mark"
-    | Yield -> "yield"
+
+  let to_string = function Mark -> "mark" | Yield -> "yield"
+
   let of_string = function
     | "mark" -> Some Mark
     | "yield" -> Some Yield
@@ -109,9 +130,9 @@ end
 
 module Log_format = struct
   type t = Json | Simple
-  let to_string = function
-    | Json -> "json"
-    | Simple -> "simple"
+
+  let to_string = function Json -> "json" | Simple -> "simple"
+
   let of_string = function
     | "json" -> Some Json
     | "simple" -> Some Simple
@@ -120,12 +141,14 @@ end
 
 module Log_level = struct
   type t = Error | Warn | Info | Http | Debug
+
   let to_string = function
     | Error -> "error"
     | Warn -> "warn"
     | Info -> "info"
     | Http -> "http"
     | Debug -> "debug"
+
   let of_string = function
     | "error" -> Some Error
     | "warn" -> Some Warn
@@ -137,12 +160,14 @@ end
 
 module Motivation = struct
   type t = Assessing | Commenting | Highlighting | Linking | Tagging
+
   let to_string = function
     | Assessing -> "assessing"
     | Commenting -> "commenting"
     | Highlighting -> "highlighting"
     | Linking -> "linking"
     | Tagging -> "tagging"
+
   let of_string = function
     | "assessing" -> Some Assessing
     | "commenting" -> Some Commenting
@@ -154,6 +179,7 @@ end
 
 module Pdf_class = struct
   type t = A | B | C | D | E | F | G
+
   let to_string = function
     | A -> "A"
     | B -> "B"
@@ -162,6 +188,7 @@ module Pdf_class = struct
     | E -> "E"
     | F -> "F"
     | G -> "G"
+
   let of_string = function
     | "A" -> Some A
     | "B" -> Some B
@@ -174,7 +201,71 @@ module Pdf_class = struct
 end
 
 module Supported_media_type = struct
-  type t = Text_plain | Text_markdown | Text_html | Text_css | Text_csv | Text_xml | Application_json | Application_xml | Application_yaml | Application_x_yaml | Application_pdf | Application_msword | Application_vnd_openxmlformats_officedocument_wordprocessingml_document | Application_vnd_ms_excel | Application_vnd_openxmlformats_officedocument_spreadsheetml_sheet | Application_vnd_ms_powerpoint | Application_vnd_openxmlformats_officedocument_presentationml_presentation | Application_zip | Application_gzip | Application_x_tar | Application_x_7z_compressed | Application_octet_stream | Application_wasm | Image_png | Image_jpeg | Image_gif | Image_webp | Image_svg_plusxml | Image_bmp | Image_tiff | Image_x_icon | Video_mp4 | Video_mpeg | Video_webm | Video_ogg | Video_quicktime | Video_x_msvideo | Audio_mpeg | Audio_wav | Audio_ogg | Audio_webm | Audio_aac | Audio_flac | Text_javascript | Application_javascript | Text_x_typescript | Application_typescript | Text_x_python | Text_x_java | Text_x_c | Text_x_c_plus_plus | Text_x_csharp | Text_x_go | Text_x_rust | Text_x_ruby | Text_x_php | Text_x_swift | Text_x_kotlin | Text_x_shell | Font_woff | Font_woff2 | Font_ttf | Font_otf
+  type t =
+    | Text_plain
+    | Text_markdown
+    | Text_html
+    | Text_css
+    | Text_csv
+    | Text_xml
+    | Application_json
+    | Application_xml
+    | Application_yaml
+    | Application_x_yaml
+    | Application_pdf
+    | Application_msword
+    | Application_vnd_openxmlformats_officedocument_wordprocessingml_document
+    | Application_vnd_ms_excel
+    | Application_vnd_openxmlformats_officedocument_spreadsheetml_sheet
+    | Application_vnd_ms_powerpoint
+    | Application_vnd_openxmlformats_officedocument_presentationml_presentation
+    | Application_zip
+    | Application_gzip
+    | Application_x_tar
+    | Application_x_7z_compressed
+    | Application_octet_stream
+    | Application_wasm
+    | Image_png
+    | Image_jpeg
+    | Image_gif
+    | Image_webp
+    | Image_svg_plusxml
+    | Image_bmp
+    | Image_tiff
+    | Image_x_icon
+    | Video_mp4
+    | Video_mpeg
+    | Video_webm
+    | Video_ogg
+    | Video_quicktime
+    | Video_x_msvideo
+    | Audio_mpeg
+    | Audio_wav
+    | Audio_ogg
+    | Audio_webm
+    | Audio_aac
+    | Audio_flac
+    | Text_javascript
+    | Application_javascript
+    | Text_x_typescript
+    | Application_typescript
+    | Text_x_python
+    | Text_x_java
+    | Text_x_c
+    | Text_x_c_plus_plus
+    | Text_x_csharp
+    | Text_x_go
+    | Text_x_rust
+    | Text_x_ruby
+    | Text_x_php
+    | Text_x_swift
+    | Text_x_kotlin
+    | Text_x_shell
+    | Font_woff
+    | Font_woff2
+    | Font_ttf
+    | Font_otf
+
   let to_string = function
     | Text_plain -> "text/plain"
     | Text_markdown -> "text/markdown"
@@ -188,11 +279,15 @@ module Supported_media_type = struct
     | Application_x_yaml -> "application/x-yaml"
     | Application_pdf -> "application/pdf"
     | Application_msword -> "application/msword"
-    | Application_vnd_openxmlformats_officedocument_wordprocessingml_document -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    | Application_vnd_openxmlformats_officedocument_wordprocessingml_document ->
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     | Application_vnd_ms_excel -> "application/vnd.ms-excel"
-    | Application_vnd_openxmlformats_officedocument_spreadsheetml_sheet -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    | Application_vnd_openxmlformats_officedocument_spreadsheetml_sheet ->
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     | Application_vnd_ms_powerpoint -> "application/vnd.ms-powerpoint"
-    | Application_vnd_openxmlformats_officedocument_presentationml_presentation -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    | Application_vnd_openxmlformats_officedocument_presentationml_presentation
+      ->
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
     | Application_zip -> "application/zip"
     | Application_gzip -> "application/gzip"
     | Application_x_tar -> "application/x-tar"
@@ -239,6 +334,7 @@ module Supported_media_type = struct
     | Font_woff2 -> "font/woff2"
     | Font_ttf -> "font/ttf"
     | Font_otf -> "font/otf"
+
   let of_string = function
     | "text/plain" -> Some Text_plain
     | "text/markdown" -> Some Text_markdown
@@ -252,11 +348,18 @@ module Supported_media_type = struct
     | "application/x-yaml" -> Some Application_x_yaml
     | "application/pdf" -> Some Application_pdf
     | "application/msword" -> Some Application_msword
-    | "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> Some Application_vnd_openxmlformats_officedocument_wordprocessingml_document
+    | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ->
+        Some
+          Application_vnd_openxmlformats_officedocument_wordprocessingml_document
     | "application/vnd.ms-excel" -> Some Application_vnd_ms_excel
-    | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -> Some Application_vnd_openxmlformats_officedocument_spreadsheetml_sheet
+    | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ->
+        Some Application_vnd_openxmlformats_officedocument_spreadsheetml_sheet
     | "application/vnd.ms-powerpoint" -> Some Application_vnd_ms_powerpoint
-    | "application/vnd.openxmlformats-officedocument.presentationml.presentation" -> Some Application_vnd_openxmlformats_officedocument_presentationml_presentation
+    | "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      ->
+        Some
+          Application_vnd_openxmlformats_officedocument_presentationml_presentation
     | "application/zip" -> Some Application_zip
     | "application/gzip" -> Some Application_gzip
     | "application/x-tar" -> Some Application_x_tar

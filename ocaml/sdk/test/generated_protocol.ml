@@ -150,8 +150,9 @@ let record_views () =
   match outcome with
   | Some (R.Extraction_outcome.Extracted view) ->
       Alcotest.(check string) "composed record inherits text" "sample" view.text;
-      Alcotest.(check string)
-        "composed record keeps branch method" "text-passthrough" view.method_
+      Alcotest.(check bool)
+        "composed record keeps branch method" true
+        (view.method_ = `Stringlit {|"text-passthrough"|})
   | _ -> Alcotest.fail "expected extracted variant"
 
 let () =

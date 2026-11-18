@@ -8,8 +8,8 @@
 
 module R = Tables.Bus_registry
 module S = Tables.Client_surface
+module O = Ocaml_syntax
 
-let string = Text.ocaml_quoted
 let surface_file = "client/surface.json"
 
 (* The methods the SDK writes by hand: what each does is more than the one
@@ -17,13 +17,20 @@ let surface_file = "client/surface.json"
 let by_hand = [ "addEntityTypes"; "createFromToken"; "pollUntilComplete" ]
 let name_of = String.map (function ':' | '-' -> '_' | c -> c)
 let upper = String.capitalize_ascii
-let some = function None -> "None" | Some v -> "Some " ^ upper v
+let some = function None -> O.none | Some v -> O.some (O.construct (upper v))
+
+(* [f] applied to [args], with [~label:value] for each of [labeled] before
+   the unit that ends it. *)
+let labeled_call f labeled =
+  Ast_helper.Exp.apply (O.ident f)
+    (List.map (fun (label, value) -> (Asttypes.Labelled label, value)) labeled
+    @ [ (Asttypes.Nolabel, O.unit) ])
 
 type row = {
   channel : string;
   name : string;
-  type_ : string;
-  shape : string;
+  type_ : Parsetree.core_type;
+  shape : Parsetree.expression;
   emittable : bool;
 }
 
@@ -48,7 +55,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
     refuse ~file:"components/schemas/BusEventMessage.json"
       "/properties/event/enum" "is not one event name";
   let delivery = Bus.Registry.delivery_classes reg in
-  let index name = "[ `" ^ name ^ " ]" in
+  let index name = O.tags [ name ] in
   let rows =
     List.mapi
       (fun i (c : R.channel) ->
@@ -61,19 +68,27 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
           match c.payload with
           | Schema { schema; _ } ->
               named schema;
-              (index schema ^ " component", "Component " ^ string schema)
+              ( O.type_ "component" ~args:[ index schema ],
+                O.construct "Component" ~arg:(O.string schema) )
           | Envelope { schema } ->
               named schema;
-              (index schema ^ " envelope", "Envelope " ^ string schema)
+              ( O.type_ "envelope" ~args:[ index schema ],
+                O.construct "Envelope" ~arg:(O.string schema) )
           | Stored_event { enriched; payload; _ } ->
               let envelope = Bus.Registry.stored_event_component ~enriched in
               named envelope;
               named payload;
-              ( "(" ^ index envelope ^ " * " ^ index payload ^ ") recorded",
-                "Recorded { envelope = " ^ string envelope ^ "; payload = "
-                ^ string payload ^ " }" )
-          | Void -> ("void", "Void")
-          | Empty -> ("empty", "Empty")
+              ( O.type_ "recorded"
+                  ~args:[ O.type_tuple [ index envelope; index payload ] ],
+                O.construct "Recorded"
+                  ~arg:
+                    (O.record
+                       [
+                         ("envelope", O.string envelope);
+                         ("payload", O.string payload);
+                       ]) )
+          | Void -> (O.type_ "void", O.construct "Void")
+          | Empty -> (O.type_ "empty", O.construct "Empty")
         in
         {
           channel = c.channel;
@@ -96,12 +111,11 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
             (Printf.sprintf "/operations/%d/request" i)
             (Printf.sprintf "is %s, which cannot be emitted" o.request);
         ( o,
-          "("
-          ^ String.concat ", "
+          O.type_ "operation"
+            ~args:
               (List.map
                  (fun c -> (row c).type_)
-                 [ o.request; o.result; o.failure ])
-          ^ ") operation" ))
+                 [ o.request; o.result; o.failure ]) ))
       reg.operations
   in
   let bridged =
@@ -123,98 +137,228 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
     else if List.mem channel reg.effect_.reads then Some "reads"
     else None
   in
-  let header source = Banner.ocaml ~from_:source __FILE__ ^ "\n" in
-  let registry_header =
-    header (Bus.Registry.file ^ " and its OpenAPI components")
+  let banner source = Banner.ocaml ~from_:source __FILE__ in
+  let registry_banner =
+    banner (Bus.Registry.file ^ " and its OpenAPI components")
   in
+  let a = O.type_var "a" in
+  let channel_of_a = O.type_ "channel" ~args:[ a ] in
+  let triple = [ "request"; "result"; "failure" ] in
+  let operation_of_triple =
+    O.type_ "operation" ~args:(List.map O.type_var triple)
+  in
+  let string = O.type_ "string" in
+  let option t = O.type_ "option" ~args:[ O.type_ t ] in
+  let abstract ?params name = O.type_declaration ?params name Abstract in
   let types =
     [
-      "type 'schema component";
-      "type 'schema envelope";
-      "type 'schemas recorded";
-      "type empty";
-      "type void";
-      "type delivery = Positioned | Correlated | Passing";
-      "type audience = Everyone | Scoped | Declared";
-      "type operation_effect = Reads | Writes";
-      "type payload = Component of string | Envelope of string | Recorded of { \
-       envelope : string; payload : string } | Empty | Void";
+      abstract ~params:[ "schema" ] "component";
+      abstract ~params:[ "schema" ] "envelope";
+      abstract ~params:[ "schemas" ] "recorded";
+      abstract "empty";
+      abstract "void";
+      O.type_declaration "delivery"
+        (Variant
+           (List.map O.constructor [ "Positioned"; "Correlated"; "Passing" ]));
+      O.type_declaration "audience"
+        (Variant (List.map O.constructor [ "Everyone"; "Scoped"; "Declared" ]));
+      O.type_declaration "operation_effect"
+        (Variant (List.map O.constructor [ "Reads"; "Writes" ]));
+      O.type_declaration "payload"
+        (Variant
+           [
+             O.constructor "Component" ~args:[ string ];
+             O.constructor "Envelope" ~args:[ string ];
+             O.record_constructor "Recorded"
+               [ ("envelope", string); ("payload", string) ];
+             O.constructor "Empty";
+             O.constructor "Void";
+           ]);
     ]
   in
+  let packed =
+    [
+      O.type_declaration "packed_channel"
+        (Variant
+           [
+             O.constructor "Channel" ~args:[ channel_of_a ]
+               ~result:(O.type_ "packed_channel");
+           ]);
+      O.type_declaration "packed_operation"
+        (Variant
+           [
+             O.constructor "Operation" ~args:[ operation_of_triple ]
+               ~result:(O.type_ "packed_operation");
+           ]);
+    ]
+  in
+  let decoded = O.type_ "decoded" ~args:[ a ] in
+  let decode_type =
+    O.arrow channel_of_a
+      (O.arrow string
+         (O.type_ "result" ~args:[ decoded; O.type_ "decode_error" ]))
+  in
+  let of_channel t = O.arrow channel_of_a t in
+  let of_operation t = O.arrow operation_of_triple t in
   let api =
-    [
-      "type 'a decoded";
-      "type fault = { member : string; reason : [ `Lacks | `Malformed ] }";
-      "type decode_error = Invalid_json of string | Invalid_payload of fault";
-      "val encode : 'a decoded -> string";
-      "val json : 'a decoded -> Yojson.Raw.t";
-      "type 'a channel";
-      "type ('request, 'result, 'failure) operation";
-      "type packed_channel = Channel : 'a channel -> packed_channel";
-      "type packed_operation = Operation : ('request, 'result, 'failure) \
-       operation -> packed_operation";
-      "val decode : 'a channel -> string -> ('a decoded, decode_error) result";
-      "val decode_received : 'a channel -> string -> ('a decoded, \
-       decode_error) result";
-      "val name : 'a channel -> string";
-      "val payload : 'a channel -> payload";
-      "val delivery : 'a channel -> delivery option";
-      "val emittable : 'a channel -> bool";
-      "val audience : 'a channel -> audience option";
-      "val in_process : 'a channel -> bool";
-      "val operation_effect : ('request, 'result, 'failure) operation -> \
-       operation_effect option";
-      "val request : ('request, 'result, 'failure) operation -> 'request \
-       channel";
-      "val result : ('request, 'result, 'failure) operation -> 'result channel";
-      "val failure : ('request, 'result, 'failure) operation -> 'failure \
-       channel";
-      "val reply_names : ('request, 'result, 'failure) operation -> string list";
-      "val trace_field : string";
-      "val stream_event : string";
-      "val channels : packed_channel list";
-      "val operations : packed_operation list";
-      "val bridged_channels : packed_channel list";
-    ]
-  in
-  let impl =
-    [
-      "type 'a channel = { name : string; payload : payload; delivery : \
-       delivery option; emittable : bool; audience : audience option; \
-       in_process : bool }";
-      "type ('request, 'result, 'failure) operation = { request : 'request \
-       channel; result : 'result channel; failure : 'failure channel; \
-       reply_names : string list; operation_effect : operation_effect option }";
-      "type 'a decoded = Yojson.Raw.t";
-      "type fault = Schema_codec.fault = { member : string; reason : [ `Lacks \
-       | `Malformed ] }";
-      "type decode_error = Schema_codec.error = Invalid_json of string | \
-       Invalid_payload of fault";
-    ]
-    @ List.filter (String.starts_with ~prefix:"type packed_") api
+    List.map O.type_spec
+      [
+        abstract ~params:[ "a" ] "decoded";
+        O.type_declaration "fault" Required.Ocaml.fault;
+        O.type_declaration "decode_error" Required.Ocaml.decode_error;
+      ]
     @ [
-        "let json value = value";
-        "let encode value = Yojson.Raw.to_string value";
-        "let channel_shape channel =";
-        "  let open Schema_shape in";
-        "  match channel.payload with";
-        "    | Component name -> reference name";
-        "    | Recorded { envelope; payload } ->";
-        "        { any with all_of = [reference envelope; object_ \
-         ~members:[\"payload\", reference payload] ()] }";
-        "    | Envelope name -> object_ ~required:[\"response\"] \
-         ~members:[\"response\", reference name] ~closed:[\"response\"] ()";
-        "    | Empty | Void -> object_ ~closed:[] ()";
-        "let decode channel = Schema_codec.decode (channel_shape channel)";
-        "let decode_received channel =";
-        "  let shape = match channel.payload with";
-        "    | Recorded { envelope; _ } -> Schema_shape.reference envelope";
-        "    | _ -> channel_shape channel";
-        "  in";
-        "  Schema_codec.decode_received shape";
+        O.val_ "encode" (O.arrow decoded string);
+        O.val_ "json" (O.arrow decoded (O.type_ "Yojson.Raw.t"));
+      ]
+    @ List.map O.type_spec
+        ([
+           abstract ~params:[ "a" ] "channel";
+           abstract ~params:triple "operation";
+         ]
+        @ packed)
+    @ [
+        O.val_ "decode" decode_type;
+        O.val_ "decode_received" decode_type;
+        O.val_ "name" (of_channel string);
+        O.val_ "payload" (of_channel (O.type_ "payload"));
+        O.val_ "delivery" (of_channel (option "delivery"));
+        O.val_ "emittable" (of_channel (O.type_ "bool"));
+        O.val_ "audience" (of_channel (option "audience"));
+        O.val_ "in_process" (of_channel (O.type_ "bool"));
+        O.val_ "operation_effect" (of_operation (option "operation_effect"));
       ]
     @ List.map
-        (fun f -> "let " ^ f ^ " value = value." ^ f)
+        (fun field ->
+          O.val_ field
+            (of_operation (O.type_ "channel" ~args:[ O.type_var field ])))
+        triple
+    @ [
+        O.val_ "reply_names" (of_operation (O.type_ "list" ~args:[ string ]));
+        O.val_ "trace_field" string;
+        O.val_ "stream_event" string;
+      ]
+    @ [
+        O.val_ "channels" (O.type_ "list" ~args:[ O.type_ "packed_channel" ]);
+        O.val_ "operations"
+          (O.type_ "list" ~args:[ O.type_ "packed_operation" ]);
+        O.val_ "bridged_channels"
+          (O.type_ "list" ~args:[ O.type_ "packed_channel" ]);
+      ]
+  in
+  let payload_of channel = O.field (O.ident channel) "payload" in
+  let reference name = O.call "reference" [ O.ident name ] in
+  let channel_shape =
+    O.define "channel_shape" [ "channel" ]
+      (O.open_in "Schema_shape"
+         (O.match_ (payload_of "channel")
+            [
+              O.case
+                (O.Pattern.construct "Component" ~arg:(O.Pattern.var "name"))
+                (reference "name");
+              O.case
+                (O.Pattern.construct "Recorded"
+                   ~arg:
+                     (O.Pattern.record
+                        [
+                          ("envelope", O.Pattern.var "envelope");
+                          ("payload", O.Pattern.var "payload");
+                        ]))
+                (O.record ~with_:(O.ident "any")
+                   [
+                     ( "all_of",
+                       O.list
+                         [
+                           reference "envelope";
+                           labeled_call "object_"
+                             [
+                               ( "members",
+                                 O.list
+                                   [
+                                     O.tuple
+                                       [
+                                         O.string "payload"; reference "payload";
+                                       ];
+                                   ] );
+                             ];
+                         ] );
+                   ]);
+              O.case
+                (O.Pattern.construct "Envelope" ~arg:(O.Pattern.var "name"))
+                (labeled_call "object_"
+                   [
+                     ("required", O.list [ O.string "response" ]);
+                     ( "members",
+                       O.list
+                         [ O.tuple [ O.string "response"; reference "name" ] ]
+                     );
+                     ("closed", O.list [ O.string "response" ]);
+                   ]);
+              O.case
+                (O.Pattern.or_
+                   (O.Pattern.construct "Empty")
+                   (O.Pattern.construct "Void"))
+                (labeled_call "object_" [ ("closed", O.list []) ]);
+            ]))
+  in
+  let impl =
+    List.map O.type_item
+      ([
+         O.type_declaration "channel" ~params:[ "a" ]
+           (Record
+              [
+                ("name", string);
+                ("payload", O.type_ "payload");
+                ("delivery", option "delivery");
+                ("emittable", O.type_ "bool");
+                ("audience", option "audience");
+                ("in_process", O.type_ "bool");
+              ]);
+         O.type_declaration "operation" ~params:triple
+           (Record
+              (List.map
+                 (fun field ->
+                   (field, O.type_ "channel" ~args:[ O.type_var field ]))
+                 triple
+              @ [
+                  ("reply_names", O.type_ "list" ~args:[ string ]);
+                  ("operation_effect", option "operation_effect");
+                ]));
+         O.type_declaration "decoded" ~params:[ "a" ]
+           ~manifest:(O.type_ "Yojson.Raw.t") Abstract;
+         O.type_declaration "fault"
+           ~manifest:(O.type_ "Schema_codec.fault")
+           Required.Ocaml.fault;
+         O.type_declaration "decode_error"
+           ~manifest:(O.type_ "Schema_codec.error")
+           Required.Ocaml.decode_error;
+       ]
+      @ packed)
+    @ [
+        O.define "json" [ "value" ] (O.ident "value");
+        O.define "encode" [ "value" ]
+          (O.call "Yojson.Raw.to_string" [ O.ident "value" ]);
+        channel_shape;
+        O.define "decode" [ "channel" ]
+          (O.call "Schema_codec.decode"
+             [ O.call "channel_shape" [ O.ident "channel" ] ]);
+        O.define "decode_received" [ "channel" ]
+          (O.let_in "shape"
+             (O.match_ (payload_of "channel")
+                [
+                  O.case
+                    (O.Pattern.construct "Recorded"
+                       ~arg:
+                         (O.Pattern.record ~open_:true
+                            [ ("envelope", O.Pattern.var "envelope") ]))
+                    (O.call "Schema_shape.reference" [ O.ident "envelope" ]);
+                  O.case O.Pattern.any
+                    (O.call "channel_shape" [ O.ident "channel" ]);
+                ])
+             (O.call "Schema_codec.decode_received" [ O.ident "shape" ]));
+      ]
+    @ List.map
+        (fun f -> O.define f [ "value" ] (O.field (O.ident "value") f))
         [
           "name";
           "payload";
@@ -229,70 +373,83 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
           "reply_names";
         ]
     @ [
-        "let trace_field = " ^ string reg.trace.field;
-        "let stream_event = " ^ string event;
+        O.let_ "trace_field" (O.string reg.trace.field);
+        O.let_ "stream_event" (O.string event);
       ]
   in
   let delivery_of channel =
     match Hashtbl.find_opt delivery channel with
-    | None -> "None"
-    | Some Bus.Registry.Positioned -> "Some Positioned"
-    | Some Correlated -> "Some Correlated"
-    | Some Passing -> "Some Passing"
+    | None -> O.none
+    | Some Bus.Registry.Positioned -> O.some (O.construct "Positioned")
+    | Some Correlated -> O.some (O.construct "Correlated")
+    | Some Passing -> O.some (O.construct "Passing")
   in
   let channels =
     List.map
       (fun r ->
-        Printf.sprintf
-          "  let %s = { name = %s; payload = %s; delivery = %s; emittable = \
-           %b; audience = %s; in_process = %b }"
-          r.name (string r.channel) r.shape (delivery_of r.channel) r.emittable
-          (some (audience r.channel))
-          (List.mem r.channel reg.in_process.channels))
+        O.let_ r.name
+          (O.record
+             [
+               ("name", O.string r.channel);
+               ("payload", r.shape);
+               ("delivery", delivery_of r.channel);
+               ("emittable", O.bool r.emittable);
+               ("audience", some (audience r.channel));
+               ( "in_process",
+                 O.bool (List.mem r.channel reg.in_process.channels) );
+             ]))
       rows
   in
   let operation_values =
     List.map
       (fun ((o : R.operation), _) ->
-        Printf.sprintf
-          "  let %s = { request = Channels.%s; result = Channels.%s; failure = \
-           Channels.%s; reply_names = [%s]; operation_effect = %s }"
-          (name_of o.request) (name_of o.request) (name_of o.result)
-          (name_of o.failure)
-          (String.concat "; "
-             (List.map string (List.assoc o.request bus.reply_names)))
-          (some (effect_ o.request)))
+        let channel c = O.ident ("Channels." ^ name_of c) in
+        O.let_ (name_of o.request)
+          (O.record
+             [
+               ("request", channel o.request);
+               ("result", channel o.result);
+               ("failure", channel o.failure);
+               ( "reply_names",
+                 O.list
+                   (List.map O.string (List.assoc o.request bus.reply_names)) );
+               ("operation_effect", some (effect_ o.request));
+             ]))
       operations
   in
-  let packed f values = "[" ^ String.concat "; " (List.map f values) ^ "]" in
+  let packed constructor names =
+    O.list (List.map (fun n -> O.construct constructor ~arg:(O.ident n)) names)
+  in
   let registry_ml =
-    types @ impl
-    @ ("module Channels = struct" :: channels)
-    @ ("end" :: "module Operations = struct" :: operation_values)
+    List.map O.type_item types @ impl
     @ [
-        "end";
-        "let channels = " ^ packed (fun r -> "Channel Channels." ^ r.name) rows;
-        "let operations = "
-        ^ packed
-            (fun ((o : R.operation), _) ->
-              "Operation Operations." ^ name_of o.request)
-            operations;
-        "let bridged_channels = "
-        ^ packed (fun c -> "Channel Channels." ^ name_of c) bridged;
+        O.module_ "Channels" channels;
+        O.module_ "Operations" operation_values;
+        O.let_ "channels"
+          (packed "Channel" (List.map (fun r -> "Channels." ^ r.name) rows));
+        O.let_ "operations"
+          (packed "Operation"
+             (List.map
+                (fun ((o : R.operation), _) ->
+                  "Operations." ^ name_of o.request)
+                operations));
+        O.let_ "bridged_channels"
+          (packed "Channel"
+             (List.map (fun c -> "Channels." ^ name_of c) bridged));
       ]
   in
   let registry_mli =
-    types @ api
-    @ "module Channels : sig"
-      :: List.map
-           (fun r -> "  val " ^ r.name ^ " : " ^ r.type_ ^ " channel")
-           rows
-    @ "end" :: "module Operations : sig"
-      :: List.map
-           (fun ((o : R.operation), t) ->
-             "  val " ^ name_of o.request ^ " : " ^ t)
-           operations
-    @ [ "end" ]
+    List.map O.type_spec types @ api
+    @ [
+        O.module_spec "Channels"
+          (List.map
+             (fun r -> O.val_ r.name (O.type_ "channel" ~args:[ r.type_ ]))
+             rows);
+        O.module_spec "Operations"
+          (List.map
+             (fun ((o : R.operation), t) -> O.val_ (name_of o.request) t)
+             operations);
+      ]
   in
   (* Each method a channel or an operation is, by its namespace. *)
   let surface = spec.tables.client_surface in
@@ -310,66 +467,75 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
           (Printf.sprintf "names %s, which is no %s channel" channel kind);
         ""
   in
+  let optional label = (Asttypes.Optional label, O.ident label) in
+  let plain value = (Asttypes.Nolabel, value) in
   let wired =
-    List.concat
-      (List.mapi
-         (fun n (ns : S.namespace) ->
-           let functions =
-             List.concat
-               (List.mapi
-                  (fun i (m : S.method_) ->
-                    let at =
-                      Printf.sprintf "/namespaces/%d/methods/%d/via" n i
-                    in
-                    let name = Text.snake m.method_ in
-                    let correlation = correlated m in
-                    match (m.via.request, m.via.local, m.via.emit) with
-                    | Some request, _, _
-                      when m.shape = "promise"
-                           && not (List.mem m.method_ by_hand) -> (
-                        match operation_of request with
-                        | Some (o, _) ->
-                            [
-                              Printf.sprintf
-                                "  let %s client payload = Client_core.ask \
-                                 client Bus_registry.Operations.%s payload"
-                                name (name_of o.request);
-                            ]
-                        | None ->
-                            refuse ~file:surface_file (at ^ "/request")
-                              (Printf.sprintf
-                                 "names %s, which no operation asks" request);
-                            [])
-                    | _, Some local, _ when m.shape = "signal" ->
-                        let c = channel_of (at ^ "/local") "local" local in
-                        let opt =
-                          if correlation then " ?correlation_id" else ""
-                        in
-                        [
-                          Printf.sprintf
-                            "  let %s client%s payload = Client_core.publish \
-                             client%s Bus_registry.Channels.%s payload"
-                            name opt opt c;
-                        ]
-                    | _, _, Some emit ->
-                        let c = channel_of (at ^ "/emit") "emitted" emit in
-                        let how =
-                          if m.shape = "count" then "drive" else "signal"
-                        in
-                        [
-                          Printf.sprintf
-                            "  let %s client ?scope payload = Client_core.%s \
-                             client ?scope Bus_registry.Channels.%s payload"
-                            name how c;
-                        ]
-                    | _ -> [])
-                  ns.methods)
-           in
-           if functions = [] then []
-           else
-             (("module " ^ upper ns.namespace ^ " = struct") :: functions)
-             @ [ "end"; "" ])
-         surface.namespaces)
+    List.filter_map
+      (fun ((n, ns) : int * S.namespace) ->
+        let functions =
+          List.concat
+            (List.mapi
+               (fun i (m : S.method_) ->
+                 let at = Printf.sprintf "/namespaces/%d/methods/%d/via" n i in
+                 let name = Text.snake m.method_ in
+                 let correlation =
+                   if correlated m then [ "correlation_id" ] else []
+                 in
+                 let method_ options body =
+                   O.let_ name
+                     (O.fun_labeled
+                        ((Asttypes.Nolabel, O.Pattern.var "client")
+                         :: List.map
+                              (fun o -> (Asttypes.Optional o, O.Pattern.var o))
+                              options
+                        @ [ (Asttypes.Nolabel, O.Pattern.var "payload") ])
+                        body)
+                 in
+                 let client_core how options channel =
+                   Ast_helper.Exp.apply
+                     (O.ident ("Client_core." ^ how))
+                     ((plain (O.ident "client") :: List.map optional options)
+                     @ [ plain (O.ident channel); plain (O.ident "payload") ])
+                 in
+                 match (m.via.request, m.via.local, m.via.emit) with
+                 | Some request, _, _
+                   when m.shape = "promise" && not (List.mem m.method_ by_hand)
+                   -> (
+                     match operation_of request with
+                     | Some (o, _) ->
+                         [
+                           method_ []
+                             (client_core "ask" []
+                                ("Bus_registry.Operations." ^ name_of o.request));
+                         ]
+                     | None ->
+                         refuse ~file:surface_file (at ^ "/request")
+                           (Printf.sprintf "names %s, which no operation asks"
+                              request);
+                         [])
+                 | _, Some local, _ when m.shape = "signal" ->
+                     let c = channel_of (at ^ "/local") "local" local in
+                     [
+                       method_ correlation
+                         (client_core "publish" correlation
+                            ("Bus_registry.Channels." ^ c));
+                     ]
+                 | _, _, Some emit ->
+                     let c = channel_of (at ^ "/emit") "emitted" emit in
+                     let how =
+                       if m.shape = "count" then "drive" else "signal"
+                     in
+                     [
+                       method_ [ "scope" ]
+                         (client_core how [ "scope" ]
+                            ("Bus_registry.Channels." ^ c));
+                     ]
+                 | _ -> [])
+               ns.methods)
+        in
+        if functions = [] then None
+        else Some (O.module_ (upper ns.namespace) functions))
+      (List.mapi (fun n ns -> (n, ns)) surface.namespaces)
   in
   let behavior =
     List.concat_map
@@ -389,59 +555,89 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
             match target with
             | Some channel when not (List.mem m.method_ by_hand) ->
                 Some
-                  (Printf.sprintf
-                     "  | \"%s.%s\" -> ignore (C.%s.%s client%s (decode \
-                      B.Channels.%s payload)); true"
-                     ns.namespace m.method_ (upper ns.namespace)
-                     (Text.snake m.method_)
-                     (if correlated m then " ?correlation_id" else "")
-                     (name_of channel))
+                  (O.case
+                     (O.Pattern.string (ns.namespace ^ "." ^ m.method_))
+                     (O.sequence
+                        [
+                          O.call "ignore"
+                            [
+                              Ast_helper.Exp.apply
+                                (O.ident
+                                   ("C." ^ upper ns.namespace ^ "."
+                                  ^ Text.snake m.method_))
+                                (plain (O.ident "client")
+                                 ::
+                                 (if correlated m then
+                                    [ optional "correlation_id" ]
+                                  else [])
+                                @ [
+                                    plain
+                                      (O.call "decode"
+                                         [
+                                           O.ident
+                                             ("B.Channels." ^ name_of channel);
+                                           O.ident "payload";
+                                         ]);
+                                  ]);
+                            ];
+                          O.bool true;
+                        ]))
             | _ -> None)
           ns.methods)
       surface.namespaces
   in
-  let surface_header =
-    Banner.ocaml ~from_:("protocol/specs/src/" ^ surface_file) __FILE__ ^ "\n"
+  let dispatch =
+    [
+      O.module_alias "B" "Xynolog.Bus_registry";
+      O.module_alias "C" "Xynolog.Client";
+      O.define "decode" [ "channel"; "payload" ]
+        (O.match_
+           (O.call "B.decode"
+              [
+                O.ident "channel";
+                O.call "Yojson.Safe.to_string" [ O.ident "payload" ];
+              ])
+           [
+             O.case
+               (O.Pattern.construct "Ok" ~arg:(O.Pattern.var "decoded"))
+               (O.ident "decoded");
+             O.case
+               (O.Pattern.construct "Error" ~arg:O.Pattern.any)
+               (O.call "failwith"
+                  [
+                    O.infix "^"
+                      (O.string "invalid test payload for ")
+                      (O.call "B.name" [ O.ident "channel" ]);
+                  ]);
+           ]);
+      O.let_ "invoke"
+        (O.fun_labeled
+           [
+             (Asttypes.Nolabel, O.Pattern.var "client");
+             (Asttypes.Labelled "correlation_id", O.Pattern.var "correlation_id");
+             (Asttypes.Nolabel, O.Pattern.var "name");
+             (Asttypes.Nolabel, O.Pattern.var "payload");
+           ]
+           (O.match_ (O.ident "name")
+              (behavior @ [ O.case O.Pattern.any (O.bool false) ])));
+    ]
   in
   match List.rev !refusals with
   | [] ->
       Ok
         [
-          {
-            Output.path = "ocaml/sdk/lib/bus_registry.ml";
-            text = registry_header ^ String.concat "\n" registry_ml ^ "\n";
-          };
-          {
-            Output.path = "ocaml/sdk/lib/bus_registry.mli";
-            text = registry_header ^ String.concat "\n" registry_mli ^ "\n";
-          };
-          {
-            Output.path = "ocaml/sdk/lib/namespace_methods.ml";
-            text =
-              header
-                ("protocol/specs/src/" ^ surface_file
-               ^ " and protocol/specs/src/" ^ Bus.Registry.file)
-              ^ String.concat "\n" wired;
-          };
-          {
-            Output.path = "ocaml/sdk/test/surface_dispatch.ml";
-            text =
-              surface_header
-              ^ String.concat "\n"
-                  ([
-                     "module B = Xynolog.Bus_registry";
-                     "module C = Xynolog.Client";
-                     "";
-                     "let decode channel payload = match B.decode channel \
-                      (Yojson.Safe.to_string payload) with";
-                     "  | Ok decoded -> decoded";
-                     "  | Error _ -> failwith (\"invalid test payload for \" ^ \
-                      B.name channel)";
-                     "";
-                     "let invoke client ~correlation_id name payload = match \
-                      name with";
-                   ]
-                  @ behavior @ [ "  | _ -> false"; "" ]);
-          };
+          O.implementation ~path:"ocaml/sdk/lib/bus_registry.ml"
+            ~banner:registry_banner registry_ml;
+          O.interface ~path:"ocaml/sdk/lib/bus_registry.mli"
+            ~banner:registry_banner registry_mli;
+          O.implementation ~path:"ocaml/sdk/lib/namespace_methods.ml"
+            ~banner:
+              (banner
+                 ("protocol/specs/src/" ^ surface_file
+                ^ " and protocol/specs/src/" ^ Bus.Registry.file))
+            wired;
+          O.implementation ~path:"ocaml/sdk/test/surface_dispatch.ml"
+            ~banner:(banner ("protocol/specs/src/" ^ surface_file))
+            dispatch;
         ]
   | errors -> Error errors

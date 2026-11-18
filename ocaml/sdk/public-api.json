@@ -115,7 +115,7 @@
     "lib/annotation_id.ml": "5b737d261c35db2e649bc00f2ece7cda103e8c08d677be4483171ac9f8453951",
     "lib/annotations.ml": "2050f1e9724d70ba4ebd0954b2c84eb44e539a5026b92562de4222e4cf1064ab",
     "lib/annotations.mli": "e88dfe166745d06335cf7418a69984e190f399120a9c820c9846ff8a7dc9ebbc",
-    "lib/assertion_facts.ml": "88eee1c661de25a02386aca7ec2a01189aaacaff91a5b1583dd723240680dae4",
+    "lib/assertion_facts.ml": "6046b9175feb660a38619fe2b11f862e2ccad9e4beacb29a79fe479e94ddf0a5",
     "lib/auth.ml": "95cbd3eef3820adfbff02c0ace52d195c7fd35022c2a2a7c6a49d7402880e4f2",
     "lib/beckon_state.ml": "3b37bcacd3c2fc058e2040672ffa1e5e5a456d2bb7e061559df3107cfe180b2b",
     "lib/beckon_state.mli": "fa367fbd741509c89d05c49b9a8c45eb507ae5e4aaef46ba295e5045014b1820",
@@ -123,8 +123,8 @@
     "lib/browse.mli": "c57e5ff1c98e598cb6c438e781d135c0ff0c76498e1b93455f2c5e870f3b2858",
     "lib/bus.ml": "6515e162ee1e96208327aed95690c73fbf6b50626c39dfb6aa930e2b308f69ab",
     "lib/bus_log.ml": "c15d97946b9c39af6502fad1c14d0dbdd6397d5e73b3ca1796eda1aa53f9aaad",
-    "lib/bus_registry.ml": "7b12d82b044a96a4f2ec0126e39077fac6a2d8aa215d5224d4c9cd7b784e4666",
-    "lib/bus_registry.mli": "de172b59d55456741a67a6ead723213b3e052b4e3e30204c356dfcf81918a191",
+    "lib/bus_registry.ml": "3c6ca87743b701f53e7743717e2728847be9ac0074b56d651a5ba562648584fb",
+    "lib/bus_registry.mli": "4b842b6397cc3f80a57a0c0dc6ddbbd6886d78f6924f13abcef811ef7c3b3c89",
     "lib/cache_state.ml": "b270721df6ee9432f61bfa450fb280036a1c1a1f880de8eabed84aec0fab8c5a",
     "lib/cache_state.mli": "940957912e84b57a1404ea6adceeb35efbc6ecb7cdc3bd28f5c6e98b24ecb13f",
     "lib/claims.ml": "64824d0eb8fed25197fd648702278bc9864969c7778e1d7ca0f90933f8a7613f",
@@ -135,8 +135,8 @@
     "lib/client_core.mli": "332f7bb6fde85b3730a125d768d85be422629c6364f34cfc75c11433a086ee74",
     "lib/client_query.ml": "00e39b4ccb288c9520ba5325d91d857eee33a8d87e74288fc165f92c8c33ed79",
     "lib/client_record.ml": "4426f9cc4ab4e5d96403cb5c1e780d8f5cbcc593905964062219847f202bcead",
-    "lib/client_timing.ml": "d66cc8d7b2abd1b8cee69cf81d785bacba51cd4eb54cb469581a0ffd4932b90e",
-    "lib/client_timing.mli": "a1e55325a038cd5ec26cb3d7b49ca5dc8a1eaa0eb0a14741a23b52787cd73c30",
+    "lib/client_timing.ml": "6a7215850e59f60a4c5d92477c73b4ac04a47510acff3a39d931a38789fb4de0",
+    "lib/client_timing.mli": "39d78d21f3de0f064ce6fd62d9f5a68d8b90ce21d85c3cc10a7177af3428c533",
     "lib/clock.ml": "71063b036aa3069ad2ed649ba8a73505b4eb4a00631c48af43a01f732c6623ab",
     "lib/clock.mli": "5333b1d2447f81415c54bfc99d87ae98362a4ce249695d7783c35df41cdab364",
     "lib/delegation.ml": "9a6b1489cd1b15429d964747265ec0ca008c188d69b72eb4f706f4bd412c1641",
@@ -144,10 +144,10 @@
     "lib/discovery.ml": "3fbd431f7ed53eccc27c2c343e6a6556fab618976c42cab23a9b1288b903954d",
     "lib/discovery.mli": "c9924f5e42d374573dc62eb9aa405126a28769a0ce72b65a2187aae704c33747",
     "lib/dune": "f9f3c00c890991b5de2221f2698134302e986540dc89525f595fd819d91d9828",
-    "lib/encoding_facts.ml": "74afda66ea7f41d29b1a18a8711f025167e749c660a61ee580a1e8d09fd7553a",
-    "lib/enums.ml": "0ef18e2b24795ede9856f7255c34f3cb6e9e2804ae14df19e73f15b49a20addc",
-    "lib/enums.mli": "fb801081cafca4ecc7a60f22960b31392fa927af4655a70aea744d3ee49dba84",
-    "lib/error_codes.ml": "29f04d77339415e609ce018ac4aa54c3081295154530435df7536d1178a96265",
+    "lib/encoding_facts.ml": "dc9602d08894d9a3bd5334cb3254218f7a74dad0528d552acb00cec4061bb9bb",
+    "lib/enums.ml": "c6a59761d10dbc3d2db779ec9a9f808381c8c19362984c5eb2a8cd4a03e48bc5",
+    "lib/enums.mli": "172b5dd01940b392a71a8522fbe82cc3e4c05f391a6910fd56aa6b7718b68851",
+    "lib/error_codes.ml": "8b3cdc0715ef66280788464e79517d7a00147913e88e9c065ed13c396c84bb93",
     "lib/frame.ml": "6e0ba59a959758ccdc672cec1d8d802be2f882a5d1354ded4e5ab21398716d54",
     "lib/gather.ml": "c1b78c87f2e5c35a9636e61aa0ca9b1477a41341f38acda6ff396cb380b3d3b7",
     "lib/gather_state.ml": "a05e57b36c0b128cb30f94f70432582326b186f8cebb3e52de37de585f0f3954",
@@ -156,21 +156,21 @@
     "lib/host_name.mli": "ae48395a873d6cb0d60dc1fce328a283adb07c6e0bb9d7107260a1ae8d57bc69",
     "lib/hover_dwell.ml": "2a8e9fef90c75ce18569793c04f553523e3dc523d53d869ceef4dab6a7702122",
     "lib/hover_dwell.mli": "3bf63911f6482ad960a6e4d3881e4a637caa0d9929dc8d62dbf7b69421fa19af",
-    "lib/http_facts.ml": "76e63b640c0b13fa71c1a0707b39afd45919d875b5d8b6cd15e6e9a766236a55",
+    "lib/http_facts.ml": "af49e37e9c729737cdb696441fafdc65e3242a0759c996af2d3925152a78a0e2",
     "lib/http_wire.ml": "8734d744086790e7896014a65dbd60df1e24d2cc441cd803481505fe1357e65d",
     "lib/http_wire.mli": "dea21fe6dacbbb4f02f7b64fa87527890bd6219c8cae8fa32aab45544beb7bdc",
-    "lib/identifiers.ml": "a4efdf48377608e78a4adce50484cc5f64d0e59662c5ab45a2e6288460add1ca",
-    "lib/identifiers.mli": "1d7720e0f03dda554c37799b1397225f1d853fa1f8ed9e5c1c0ddf4997392217",
+    "lib/identifiers.ml": "bb2e5891eb6174b1655728c2aee5832b0bb959afc6776ad5d6623f193ba0ef02",
+    "lib/identifiers.mli": "d344831d9323c9ab0934e9027f4e8269b5d3554ef347c1d71b04cedc65d6a92b",
     "lib/identity.ml": "926a5ae2b89b08a294af2bbee6975347194bdaea78109f82a777b9fcff388e58",
     "lib/job.ml": "583809224cd23d98628e42793857f6877951d14ca1984bafd820aa56ec71b788",
     "lib/job_filter.ml": "d0b6bff412af0031c187c9f667c7d75cbff5d486f48c24d34d6441e4d13e4c01",
     "lib/job_filter.mli": "b6990830290c4a2b5d24abce0d0da6f5138eb7abd7799cd8674b97e2918d9b42",
     "lib/kept_for_first_reader.ml": "6f853f2a44415317489ea3e910cbab9aaf6df0ba1960bed261f3503332f341ae",
     "lib/kept_renewal.ml": "3c69043d8304fa35dcbe80e5322ea71bb0f39d7ee57e4d772cc789b1de36ddee",
-    "lib/live_facts.ml": "da923b9e29ba80c4dc4e8cee8308d0790090c7910a8a20a0f136132dd241815a",
+    "lib/live_facts.ml": "683f7f83d1f40bb7619cd1b22315d350acc3eb3fc3a361f64c8fb78ab38bc9d0",
     "lib/live_query.ml": "a7e7b275b7ae7f4c9fb22b2195efbd7ec2a519fdd048ffefae8d89688e2cab6f",
     "lib/live_query.mli": "f18de5f9c81f1c3a92b247ef50fd8df03bc558c1fea3878fbeba4e01d01f6c18",
-    "lib/log_facts.ml": "79293c4c78a7badadce6acc65040b5e4ed3bc2c9c1789a556e05bc05b238b0e3",
+    "lib/log_facts.ml": "1bf6dc1bb379d78ebf88e28eaad640364552b8f2f469926f7f62333313d04d97",
     "lib/mark.ml": "d539b4cea644c035198f7b22d9384e1e19c7815e806e240a2309e9e1e17a7072",
     "lib/mark.mli": "daa70a35284997cf8b5796bda5f3262c19e8690a40090dc415729c4e3dddbbb3",
     "lib/mark_state.ml": "b85e4cedb400d15ed8e4d4b31c18401ad5a416bc3fdb41b27b3b1f0b00d8304f",
@@ -179,23 +179,23 @@
     "lib/match.mli": "54ac094a6a9f8e8a09b7bc5f175ae198788c3d82b9b80a1f7efc9014fd135179",
     "lib/match_state.ml": "6667b713046ac9f3c41da077bdf1d6502b72aa51b188f6c86294fcdfa0eaf678",
     "lib/match_state.mli": "8d03f88a685f32af82e994b883611746f9775689e61a7a455009be21e03d6f54",
-    "lib/media_facts.ml": "dcedd163fb7ac88a8577db0c8ed47d1f78d23ccb7e0c4a043010de9d17091249",
+    "lib/media_facts.ml": "462bb526a754d71c947d838d618ffdc3ad255ab8b61307ac3aa05ddc498fcf2a",
     "lib/media_types.ml": "627feecc23b4f887709476ee12e6fe99099303c19e06be88240ac8bf1905413d",
     "lib/media_types.mli": "2d65a7872184f4fedba7fb88e5ab2069b0031e9ac924fb0a093978e31ad0c7cc",
-    "lib/models.ml": "b5016ae371bb99ba22e9e59a791a41a3ee06f6b3ed39bdcfa979a8ff13a6b23d",
-    "lib/models.mli": "ea7c1a34c53cb86f1d1dbc429ede766ef4787a7a6fa86d7933875b7c3150546b",
-    "lib/namespace_methods.ml": "7ba6c319a3b567c00f12e3cefa0d5e9a2578c05fff620ec3f2803a02f9fc7993",
+    "lib/models.ml": "9a6a7823329398ef10995f8758f95e42d0ce2bac3eff7cbc62fc597d4b3ddb8f",
+    "lib/models.mli": "b37e8935a0265559bee835a8d2fdee2aaecfbcfdb9a97b4f65a323aa3fe5e65e",
+    "lib/namespace_methods.ml": "37178853cd16d5975132820d07bf0ee703039b946557167dd39560f0b5025147",
     "lib/oauth.ml": "3e1c7f5ea7465ff24379a2ae1c3b548834657a1643e146f77c18731054ff9bb2",
     "lib/oauth.mli": "74dce2642014e9de8ed38f09367c76c97e83362763305eed04c0faddb951ba07",
-    "lib/oauth_facts.ml": "1df2dfe59ca89b84d957774fa10e3d54a103d18b276ad5fcdd91b37b23360d22",
+    "lib/oauth_facts.ml": "8d318f922bc93b766445f8e0f3f0fc2deb2e9a78244e7553f717d620d69127b2",
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
-    "lib/records.ml": "387ade2fc21d0c864507d29c91a6bd9f67a6dbb310a8297a592e6323b805fab4",
-    "lib/records.mli": "ad2cccdd32f55c33bdf9a86d2c84960bc55442c89aafcf4f09b57baafc095ff4",
+    "lib/records.ml": "90976097e1e6dd5c92cbc559b40319e0561227a9cb6aa1b2811760a34b799037",
+    "lib/records.mli": "680078e96d03c8790980cb4076754898b6fd8c3bee9c9384f9621d0f1a30263d",
     "lib/redirect_sign_in.ml": "0d4bab713f5a86ddd705b15dca1aa01919702bfc5484469d104c9a1776d723fd",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
     "lib/registry.ml": "c93ac089204cf0e3a42301c82df77ad129a39253735ad969483f5699bd88b23c",
     "lib/registry.mli": "387a4e570ce45abf0a381bdf6fcd88a5eb522859475707bf91d45e4dc2af825c",
-    "lib/registry_facts.ml": "d4041e885056995081e4126d04f4040c347e82cc9f1c8a14cfff89b64466ee65",
+    "lib/registry_facts.ml": "ad2d706c130785002585a0797b2ec8a070790257bd364a85b34f51f839dfcd63",
     "lib/resources.ml": "99f49caf9937bf6754e62b0011196873fdfbc1488ed90817a49fcd292d6a9fd4",
     "lib/resources.mli": "681c8d831db9af64fc28b7b91b6e913bf992f99529f2a3edb7f0d16121b10bf2",
     "lib/retry.ml": "0dfc63df473a609eba0ee7c4a87939632b3199038905c514a637cc93c1e6621b",
@@ -204,11 +204,11 @@
     "lib/running.mli": "74bef29c19b9b132888e875f77ea4fec64855a7bb7c6e119e0fb8346a47176f9",
     "lib/schema_codec.ml": "636e8eb313af9998b59c8c6a3adec349297ab949c456839a491a37cb18264b1f",
     "lib/schema_shape.ml": "fe4e72c044905dad381dff38a06ee4809e2411698b6c9096926b17f077eb3cc3",
-    "lib/schema_shapes.ml": "724c8868eded8b5fee4b133dd0afa01e32d89e5e27a8032720ad729c8dca763b",
+    "lib/schema_shapes.ml": "efb4ab8ba29987e48d283baac31903d05c8a5349ad6ff1e9b2e785ebabf0bc2c",
     "lib/search_pipeline.ml": "c686787cea18854164219082e02d586aa34f7a0801c876cb011648bd72222ba0",
     "lib/search_pipeline.mli": "8569d48ac54fb0e5b0165613f479fce0d4dcd897d89dae4699c8d25f6d5db0d3",
-    "lib/selector.ml": "eac242be1571685e5e647268d43ba4c0790384b610606249a48f23bf20a68265",
-    "lib/selector.mli": "8deaaf84f8535e053382a49e43e8e8334d4bb0dfc889b29d36d653124cd7b7f2",
+    "lib/selector.ml": "9281ca10562fa835a666b0a15637bb970785644c408c6537aa82f1223b14500c",
+    "lib/selector.mli": "505d1773ca57e72614906b106d009f2ac2e506dcc170bffbc3f0db2330f115c9",
     "lib/service_token.ml": "5869384fb25f8c9f9ca54fe5beb5dfa5da4b7546dc87930d9eb66d3247322ed2",
     "lib/service_token.mli": "0b0f3278aa4e36179de32dd07002737067901c3ac9d8c24a0b9888241979f8e8",
     "lib/session.ml": "9c113a57dca817eda4ef9e843ee120bf8aa489bd7c541d11cbb14ed0f85af0cf",
@@ -230,7 +230,7 @@
     "lib/storage_persister.ml": "6a7d361bf32a9d83357ac7500162e61c0e71d127798fbb5beb47d4a2b088a527",
     "lib/storage_persister.mli": "c12ba34f02a5aeaea05e24362bd5f944ad322a08512e6c6d3ca8490cd52ac91a",
     "lib/store_lock.c": "eabd8be0cddddbbc42d15612aca09cadae3faff4b1da1dcb2b78df1c47e6c88f",
-    "lib/store_policy.ml": "f7a39030b2d7c79a8e9ea6135cbdde10627403f5b9b95926f5cd64db602ac8fe",
+    "lib/store_policy.ml": "7bfd8187be45e4f0c13ed8ccfd0fb3de109e7437ad66d00f4e1de1cd4cbf68a6",
     "lib/strict_json.ml": "19a2f3c4c5a828e0fe55cd36eb25b685e965f0b79c21cd57cc4a17c53d0112d6",
     "lib/strict_json.mli": "818f38488855a5ce525bbf7fa483feb6aad993670115a63065029201999b50a7",
     "lib/subscription.ml": "777777ae8b122fb1e29cf913256894423498c5a84aedc4e53032050efd96e188",
@@ -238,10 +238,10 @@
     "lib/system.ml": "2b48cd685aa8882505bcdb8b75ba376730082ff377aeb67caeaabde6b4070459",
     "lib/telemetry.ml": "d3e6ba70a0b5a00eb4733a8fc973c1c3b98ea5d07661da3297f2d71ee77da306",
     "lib/telemetry.mli": "6968385e5ecbd2db1b9003eb403766c066975b0ff116e9d81da367ec87b4137f",
-    "lib/telemetry_facts.ml": "2f8663762d29c0979f2c229da24ab0ada04f877ac3f1e465d69c478645298707",
+    "lib/telemetry_facts.ml": "abd1ec8dd54a246db71223dcf1cb7b4085df79c48de53dca7a36f5a747ee0f83",
     "lib/testing.ml": "96bba4c454a6523f3601fc41de84b71567ab2b1f87401256b2a2f9ab8b081945",
     "lib/testing.mli": "237bd3501f8d626c1048c23e024e513f87203449d6e9ad3a98e9300aa7b3c73a",
-    "lib/testing_facts.ml": "87c71877cda97938775690a678cb0aee7f8b3c7d58ba67428c37920bb0c82f87",
+    "lib/testing_facts.ml": "55a4542fe69fbc0db4ad4e06618d64e4b0c426739d52cbe5c1d33a79462dbe28",
     "lib/text_encoding.ml": "905bc2c16c4fc1416236a3e2751e5d61627d6dddf431941e36e8f233f5589dad",
     "lib/text_encoding.mli": "60ca2f5b3a32d1c92e3ee786afb1ae8a38b893b3764052fb1b62897eb115da6e",
     "lib/tokens.ml": "a18316d4f94a7deffdaed3a99670163a86ca3ccf66f179628117c4e3a5e0410a",
@@ -632,6 +632,110 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Enums.Extraction_declined_reason",
+      "declaration": "module Extraction_declined_reason :\n  sig\n    type t = No_text_layer | Encrypted | Corrupt | Too_large\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Extraction_declined_reason.t",
+      "declaration": "type t = No_text_layer | Encrypted | Corrupt | Too_large",
+      "representation": "variant",
+      "constructors": [
+        "No_text_layer",
+        "Encrypted",
+        "Corrupt",
+        "Too_large"
+      ],
+      "variants": [
+        {
+          "name": "No_text_layer",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Encrypted",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Corrupt",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Too_large",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_declined_reason.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_declined_reason.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Extraction_method",
+      "declaration": "module Extraction_method :\n  sig\n    type t = Text_passthrough | Pdf_text_layer | Table | Form | Ocr\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Extraction_method.t",
+      "declaration": "type t = Text_passthrough | Pdf_text_layer | Table | Form | Ocr",
+      "representation": "variant",
+      "constructors": [
+        "Text_passthrough",
+        "Pdf_text_layer",
+        "Table",
+        "Form",
+        "Ocr"
+      ],
+      "variants": [
+        {
+          "name": "Text_passthrough",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Pdf_text_layer",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Table",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Form",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Ocr",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_method.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_method.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Enums.Failure_class",
       "declaration": "module Failure_class :\n  sig\n    type t = Transient | Deterministic | Withheld\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
     },
@@ -855,6 +959,73 @@
     {
       "kind": "value",
       "path": "Xynolog.Enums.Motivation.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Pdf_class",
+      "declaration": "module Pdf_class :\n  sig\n    type t = A | B | C | D | E | F | G\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Pdf_class.t",
+      "declaration": "type t = A | B | C | D | E | F | G",
+      "representation": "variant",
+      "constructors": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "variants": [
+        {
+          "name": "A",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "B",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "C",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "D",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "E",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "F",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "G",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Pdf_class.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Pdf_class.of_string",
       "declaration": "val of_string : string -> t option"
     },
     {
@@ -3116,6 +3287,11 @@
     },
     {
       "kind": "value",
+      "path": "Xynolog.Models.body_operation",
+      "declaration": "val body_operation : [ `BodyOperation ] descriptor"
+    },
+    {
+      "kind": "value",
       "path": "Xynolog.Models.body_operation_add",
       "declaration": "val body_operation_add : [ `BodyOperationAdd ] descriptor"
     },
@@ -3493,6 +3669,16 @@
       "kind": "value",
       "path": "Xynolog.Models.extraction_declined",
       "declaration": "val extraction_declined : [ `ExtractionDeclined ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.extraction_declined_reason",
+      "declaration": "val extraction_declined_reason : [ `ExtractionDeclinedReason ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.extraction_method",
+      "declaration": "val extraction_method : [ `ExtractionMethod ] descriptor"
     },
     {
       "kind": "value",
@@ -4201,8 +4387,33 @@
     },
     {
       "kind": "value",
+      "path": "Xynolog.Models.ocr_confidence",
+      "declaration": "val ocr_confidence : [ `OcrConfidence ] descriptor"
+    },
+    {
+      "kind": "value",
       "path": "Xynolog.Models.ollama_embedding_config",
       "declaration": "val ollama_embedding_config : [ `OllamaEmbeddingConfig ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.one_or_more_agents",
+      "declaration": "val one_or_more_agents : [ `OneOrMoreAgents ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.one_or_more_strings",
+      "declaration": "val one_or_more_strings : [ `OneOrMoreStrings ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.one_or_more_uris",
+      "declaration": "val one_or_more_uris : [ `OneOrMoreUris ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.pdf_class",
+      "declaration": "val pdf_class : [ `PdfClass ] descriptor"
     },
     {
       "kind": "value",
@@ -4343,6 +4554,16 @@
       "kind": "value",
       "path": "Xynolog.Models.semantic_match",
       "declaration": "val semantic_match : [ `SemanticMatch ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.service_address",
+      "declaration": "val service_address : [ `ServiceAddress ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.service_identity",
+      "declaration": "val service_identity : [ `ServiceIdentity ] descriptor"
     },
     {
       "kind": "value",
@@ -4608,6 +4829,11 @@
       "kind": "value",
       "path": "Xynolog.Models.yield_update_ok",
       "declaration": "val yield_update_ok : [ `YieldUpdateOk ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.yielded_resource",
+      "declaration": "val yielded_resource : [ `YieldedResource ] descriptor"
     },
     {
       "kind": "module",
@@ -6109,12 +6335,12 @@
     {
       "kind": "module",
       "path": "Xynolog.Records.Extracted_text",
-      "declaration": "module Extracted_text :\n  sig\n    type t = {\n      text : string;\n      items : Yojson.Raw.t;\n      kind : string;\n      method_ : string;\n      pdf_class : string Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractedText ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Extracted_text :\n  sig\n    type t = {\n      text : string;\n      items : Yojson.Raw.t;\n      kind : string;\n      method_ : Yojson.Raw.t;\n      pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractedText ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Extracted_text.t",
-      "declaration": "type t = {\n  text : string;\n  items : Yojson.Raw.t;\n  kind : string;\n  method_ : string;\n  pdf_class : string Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  text : string;\n  items : Yojson.Raw.t;\n  kind : string;\n  method_ : Yojson.Raw.t;\n  pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "text",
@@ -6134,13 +6360,35 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Ocr_confidence",
+      "declaration": "module Ocr_confidence :\n  sig\n    type t = {\n      mean : Yojson.Raw.t;\n      low_confidence_words : Yojson.Raw.t;\n      total_words : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `OcrConfidence ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Ocr_confidence.t",
+      "declaration": "type t = {\n  mean : Yojson.Raw.t;\n  low_confidence_words : Yojson.Raw.t;\n  total_words : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "mean",
+        "low_confidence_words",
+        "total_words",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Ocr_confidence.of_model",
+      "declaration": "val of_model : [ `OcrConfidence ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Extraction_declined",
-      "declaration": "module Extraction_declined :\n  sig\n    type t = {\n      kind : string;\n      declined : string;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractionDeclined ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Extraction_declined :\n  sig\n    type t = {\n      kind : string;\n      declined : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractionDeclined ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Extraction_declined.t",
-      "declaration": "type t = {\n  kind : string;\n  declined : string;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  kind : string;\n  declined : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "kind",
@@ -9277,6 +9525,26 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Yielded_resource",
+      "declaration": "module Yielded_resource :\n  sig\n    type t = {\n      resource_id : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `YieldedResource ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Yielded_resource.t",
+      "declaration": "type t = {\n  resource_id : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "resource_id",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Yielded_resource.of_model",
+      "declaration": "val of_model : [ `YieldedResource ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Bus_event_message",
       "declaration": "module Bus_event_message :\n  sig\n    type t = {\n      event : string;\n      id : Yojson.Raw.t;\n      data : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `BusEventMessage ] Xynolog__.Models.t -> t\n  end"
     },
@@ -10637,6 +10905,47 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Service_identity",
+      "declaration": "module Service_identity :\n  sig\n    type t = { issuer : string; extra : (string * Yojson.Raw.t) list; }\n    val of_model : [ `ServiceIdentity ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Service_identity.t",
+      "declaration": "type t = { issuer : string; extra : (string * Yojson.Raw.t) list; }",
+      "representation": "record",
+      "fields": [
+        "issuer",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Service_identity.of_model",
+      "declaration": "val of_model : [ `ServiceIdentity ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Service_address",
+      "declaration": "module Service_address :\n  sig\n    type t = {\n      host : string;\n      port : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ServiceAddress ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Service_address.t",
+      "declaration": "type t = {\n  host : string;\n  port : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "host",
+        "port",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Service_address.of_model",
+      "declaration": "val of_model : [ `ServiceAddress ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Resource_annotations",
       "declaration": "module Resource_annotations :\n  sig\n    type t = {\n      resource_id : Yojson.Raw.t;\n      annotations : Yojson.Raw.t;\n      version : Yojson.Raw.t;\n      updated_at : string;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ResourceAnnotations ] Xynolog__.Models.t -> t\n  end"
     },
@@ -10785,12 +11094,12 @@
     {
       "kind": "module",
       "path": "Xynolog.Records.Anchored_text_extracted_entry",
-      "declaration": "module Anchored_text_extracted_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      text : string;\n      lines : Yojson.Raw.t;\n      method_ : string;\n      pdf_class : string Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextExtractedEntry ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Anchored_text_extracted_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      text : string;\n      lines : Yojson.Raw.t;\n      method_ : Yojson.Raw.t;\n      pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextExtractedEntry ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Anchored_text_extracted_entry.t",
-      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  text : string;\n  lines : Yojson.Raw.t;\n  method_ : string;\n  pdf_class : string Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  text : string;\n  lines : Yojson.Raw.t;\n  method_ : Yojson.Raw.t;\n  pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "v",
@@ -10812,12 +11121,12 @@
     {
       "kind": "module",
       "path": "Xynolog.Records.Anchored_text_declined_entry",
-      "declaration": "module Anchored_text_declined_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      declined : string;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextDeclinedEntry ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Anchored_text_declined_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      declined : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextDeclinedEntry ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Anchored_text_declined_entry.t",
-      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  declined : string;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  declined : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "v",

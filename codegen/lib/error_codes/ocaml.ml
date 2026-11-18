@@ -45,29 +45,28 @@ let file (t : Table.t) =
             []
         | Some v ->
             let named = Hashtbl.create 16 in
-            ("module " ^ module_ ^ " = struct")
-            :: List.map
-                 (fun (c : Table.code) ->
-                   let n = value_name c.code in
-                   if not (is_value n) then
-                     refuse (Printf.sprintf "%s names no OCaml value" c.code);
-                   if Hashtbl.mem named n then
-                     refuse
-                       (Printf.sprintf "two of %s's codes are both named %s"
-                          module_ n);
-                   Hashtbl.replace named n ();
-                   "  let " ^ n ^ " = " ^ Text.ocaml_quoted c.code)
-                 v.codes
-            @ [ "end" ])
+            [
+              Ocaml_syntax.module_ module_
+                (List.map
+                   (fun (c : Table.code) ->
+                     let n = value_name c.code in
+                     if not (is_value n) then
+                       refuse (Printf.sprintf "%s names no OCaml value" c.code);
+                     if Hashtbl.mem named n then
+                       refuse
+                         (Printf.sprintf "two of %s's codes are both named %s"
+                            module_ n);
+                     Hashtbl.replace named n ();
+                     Ocaml_syntax.let_ n (Ocaml_syntax.string c.code))
+                   v.codes);
+            ])
       said
   in
   match List.rev !refusals with
   | [] ->
       Ok
-        {
-          Output.path = "ocaml/sdk/lib/error_codes.ml";
-          text =
-            Banner.ocaml ~from_:("protocol/specs/src/" ^ Table.file) __FILE__
-            ^ "\n" ^ String.concat "\n" modules ^ "\n";
-        }
+        (Ocaml_syntax.implementation ~path:"ocaml/sdk/lib/error_codes.ml"
+           ~banner:
+             (Banner.ocaml ~from_:("protocol/specs/src/" ^ Table.file) __FILE__)
+           modules)
   | errors -> Error errors

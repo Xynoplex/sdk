@@ -5,38 +5,34 @@
    rules first. *)
 
 module T = Tables.Text_encoding_cases
-
-let string = Text.ocaml_quoted
-let list values = "[" ^ String.concat "; " values ^ "]"
+module O = Ocaml_syntax
 
 let file (table : T.t) =
-  let pair (a, b) = "(" ^ string a ^ ", " ^ string b ^ ")" in
-  {
-    Output.path = "ocaml/sdk/lib/encoding_facts.ml";
-    text =
-      Banner.ocaml ~from_:"text/encoding-cases.json" __FILE__
-      ^ "let labels = "
-      ^ list
-          (List.concat_map
-             (fun (c : T.case) ->
-               List.map (fun label -> pair (label, c.encoding)) c.labels)
-             table.cases)
-      ^ "\nlet single_byte = "
-      ^ list
-          (List.filter_map
-             (fun (c : T.case) ->
-               match c.kind with
-               | Single_byte { every_byte } ->
-                   Some (pair (c.encoding, every_byte))
-               | _ -> None)
-             table.cases)
-      ^ "\nlet refused = "
-      ^ list
-          (List.filter_map
-             (fun (c : T.case) ->
-               match c.kind with
-               | Refused -> Some (string c.encoding)
-               | _ -> None)
-             table.cases)
-      ^ "\n";
-  }
+  let pair (a, b) = O.tuple [ O.string a; O.string b ] in
+  O.implementation ~path:"ocaml/sdk/lib/encoding_facts.ml"
+    ~banner:(Banner.ocaml ~from_:"text/encoding-cases.json" __FILE__)
+    [
+      O.let_ "labels"
+        (O.list
+           (List.concat_map
+              (fun (c : T.case) ->
+                List.map (fun label -> pair (label, c.encoding)) c.labels)
+              table.cases));
+      O.let_ "single_byte"
+        (O.list
+           (List.filter_map
+              (fun (c : T.case) ->
+                match c.kind with
+                | Single_byte { every_byte } ->
+                    Some (pair (c.encoding, every_byte))
+                | _ -> None)
+              table.cases));
+      O.let_ "refused"
+        (O.list
+           (List.filter_map
+              (fun (c : T.case) ->
+                match c.kind with
+                | Refused -> Some (O.string c.encoding)
+                | _ -> None)
+              table.cases));
+    ]
