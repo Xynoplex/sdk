@@ -140,7 +140,7 @@ case "${1:-}" in
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/ocaml/sdk
       dune build @all @opam
-      python3 test/check-format.py
+      dune build @fmt
       python3 test/check-installed-api.py
       python3 probes/check-interface.py
       python3 api.py
@@ -154,9 +154,7 @@ case "${1:-}" in
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/codegen
       dune build @all @opam
-      # ocamlformat --check names no file it fails, so each is checked alone.
-      unformatted="$(dune exec -- sh -c "for file; do ocamlformat --check \"\$file\" || echo \"\$file\"; done" sh $(find bin lib test -name "*.ml*" | sort))"
-      if [ -n "$unformatted" ]; then echo "not as ocamlformat lays them out:"; echo "$unformatted"; exit 1; fi
+      dune build @fmt
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
       dune exec -- xynolog-codegen read ..
