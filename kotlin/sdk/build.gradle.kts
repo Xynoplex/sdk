@@ -349,6 +349,10 @@ dependencies {
             attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
         }
     }
+    constraints {
+        ktlint(libs.logback.classic)
+        ktlint(libs.logback.core)
+    }
 }
 val kotlinSources = listOf("src/**/*.kt", "*.kts")
 val ktlintCheck = tasks.register<JavaExec>("ktlintCheck") {
