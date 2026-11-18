@@ -9,7 +9,7 @@ public sealed record MarkUpdateBodyCommand
 {
     public global::Xynolog.Identifiers.UserId? UserId { get; init; }
     public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.MarkUpdateBodyCommandOperationsItem> Operations { get; init; }
+    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation> Operations { get; init; }
     public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }
 
@@ -24,7 +24,7 @@ internal sealed class MarkUpdateBodyCommandJsonConverter : global::System.Text.J
         {
             UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
             AnnotationId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "annotationId", options),
-            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.MarkUpdateBodyCommandOperationsItem>>(root, "operations", options),
+            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation>>(root, "operations", options),
             ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
         };
     }

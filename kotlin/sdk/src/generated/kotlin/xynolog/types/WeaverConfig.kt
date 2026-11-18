@@ -49,12 +49,12 @@ public data class WeaverConfig(
      * The issuer the Weaver's service account signs in at.
      */
     @SerialName("identity")
-    public val identity: WeaverConfigIdentity,
+    public val identity: ServiceIdentity,
     /**
      * Where the Archivist listens. The Weaver reads the record by position from it, and a resource's annotations, as its service account.
      */
     @SerialName("archivist")
-    public val archivist: WeaverConfigArchivist,
+    public val archivist: ServiceAddress,
     @SerialName("graph")
     public val graph: GraphConfig,
     @SerialName("cursorsPath")
@@ -73,8 +73,8 @@ public data class WeaverConfig(
     public class Builder internal constructor(
         private val kb: KbIdentity,
         private val gatewayUrl: String,
-        private val identity: WeaverConfigIdentity,
-        private val archivist: WeaverConfigArchivist,
+        private val identity: ServiceIdentity,
+        private val archivist: ServiceAddress,
         private val graph: GraphConfig,
         private val cursorsPath: CursorsPath,
         private val port: Long,
@@ -87,6 +87,6 @@ public data class WeaverConfig(
     public companion object {
         /** A builder of a `WeaverConfig` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: WeaverConfigIdentity, archivist: WeaverConfigArchivist, graph: GraphConfig, cursorsPath: CursorsPath, port: Long, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, archivist, graph, cursorsPath, port, logLevel, logFormat)
+        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: ServiceIdentity, archivist: ServiceAddress, graph: GraphConfig, cursorsPath: CursorsPath, port: Long, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, archivist, graph, cursorsPath, port, logLevel, logFormat)
     }
 }

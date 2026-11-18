@@ -19,16 +19,12 @@ __all__ = [
     "AnchoredTextAbsentKind",
     "AnchoredTextAnswer",
     "AnchoredTextDeclinedEntry",
-    "AnchoredTextDeclinedEntryDeclined",
     "AnchoredTextEntries",
     "AnchoredTextEntriesChecksumsItem",
     "AnchoredTextEntry",
     "AnchoredTextExtractedEntry",
     "AnchoredTextExtractedEntryLinesItem",
     "AnchoredTextExtractedEntryLinesItemWordsItem",
-    "AnchoredTextExtractedEntryMethod",
-    "AnchoredTextExtractedEntryOcrConfidence",
-    "AnchoredTextExtractedEntryPdfClass",
     "AnchoredTextStamp",
     "AnchoredTextWrite",
     "Annotation",
@@ -37,14 +33,10 @@ __all__ = [
     "AnnotationBodiesList",
     "AnnotationBody",
     "AnnotationBodyUpdatedPayload",
-    "AnnotationBodyUpdatedPayloadOperationsItem",
-    "AnnotationGeneratorList",
     "AnnotationRemovedPayload",
     "AnnotationSelector",
     "AnnotationTarget",
-    "AnnotationWasAttributedToList",
     "ArchivistConfig",
-    "ArchivistConfigIdentity",
     "ArchivistConfigStaging",
     "ArchivistEngines",
     "ArchivistEnginesActors",
@@ -65,6 +57,7 @@ __all__ = [
     "BindBodyUpdated",
     "BindInitiateCommand",
     "BindUpdateBodyCommand",
+    "BodyOperation",
     "BodyOperationAdd",
     "BodyOperationRemove",
     "BodyOperationReplace",
@@ -140,7 +133,6 @@ __all__ = [
     "DiscoveredKBPlacement",
     "DiscoveryDocument",
     "DispatcherConfig",
-    "DispatcherConfigIdentity",
     "DispatcherConfigQueue",
     "DispatcherConfigTiming",
     "DispatcherHealth",
@@ -158,11 +150,9 @@ __all__ = [
     "ErrorResponse",
     "EventMetadata",
     "ExtractedText",
-    "ExtractedTextMethod",
-    "ExtractedTextOcrConfidence",
-    "ExtractedTextPdfClass",
     "ExtractionDeclined",
-    "ExtractionDeclinedDeclined",
+    "ExtractionDeclinedReason",
+    "ExtractionMethod",
     "ExtractionOutcome",
     "FailureClass",
     "FileEntry",
@@ -170,7 +160,6 @@ __all__ = [
     "FrameAddEntityTypeCommand",
     "FrameAddTagSchemaCommand",
     "GatewayConfig",
-    "GatewayConfigArchivist",
     "GatewayConfigCapacity",
     "GatewayConfigIdentity",
     "GatewayConfigSignal",
@@ -289,9 +278,7 @@ __all__ = [
     "KnowledgeGraphEdgesItem",
     "KnowledgeGraphNodesItem",
     "LibrarianConfig",
-    "LibrarianConfigArchivist",
     "LibrarianConfigGather",
-    "LibrarianConfigIdentity",
     "LibrarianConfigSearch",
     "LibrarianEngineConfig",
     "LimitRefusal",
@@ -324,7 +311,6 @@ __all__ = [
     "MarkSubmitEvent",
     "MarkUnarchiveCommand",
     "MarkUpdateBodyCommand",
-    "MarkUpdateBodyCommandOperationsItem",
     "MarkUpdateEntityTypesCommand",
     "MatchResourcesRequest",
     "MatchResourcesResponse",
@@ -341,7 +327,15 @@ __all__ = [
     "Neo4jGraphConfig",
     "NeptuneGraphConfig",
     "NewKnowledgeBase",
+    "OcrConfidence",
     "OllamaEmbeddingConfig",
+    "OneOrMoreAgents",
+    "OneOrMoreAgentsList",
+    "OneOrMoreStrings",
+    "OneOrMoreStringsList",
+    "OneOrMoreUris",
+    "OneOrMoreUrisList",
+    "PdfClass",
     "PdfTextItem",
     "PersistedEventId",
     "PrincipalProfileCommand",
@@ -357,18 +351,15 @@ __all__ = [
     "RepresentationNotFoundCode",
     "RepresentationRel",
     "RepresentationRemovedPayload",
-    "RepresentationTypeList",
     "ResourceAnnotations",
     "ResourceArchivedPayload",
     "ResourceClonedPayload",
     "ResourceCreatedPayload",
     "ResourceCreatedPayloadGeneratedFrom",
     "ResourceDescriptor",
-    "ResourceDescriptorAboutList",
     "ResourceDescriptorContextItem",
     "ResourceDescriptorIdentifierList",
     "ResourceDescriptorIdentifierObject",
-    "ResourceDescriptorTypeList",
     "ResourceErrorEvent",
     "ResourceMovedPayload",
     "ResourceUnarchivedPayload",
@@ -378,6 +369,8 @@ __all__ = [
     "ScoredResource",
     "Selector",
     "SemanticMatch",
+    "ServiceAddress",
+    "ServiceIdentity",
     "SessionJoinedEvent",
     "SessionLeftEvent",
     "SettingsHoverDelayChangedEvent",
@@ -389,9 +382,7 @@ __all__ = [
     "SmeltSettledOutcome",
     "SmeltSettledReason",
     "SmelterConfig",
-    "SmelterConfigArchivist",
     "SmelterConfigChunking",
-    "SmelterConfigIdentity",
     "SpecificResource",
     "StatusResponse",
     "StatusResponseFeatures",
@@ -409,15 +400,12 @@ __all__ = [
     "TextualBody",
     "UnitCursor",
     "UpdateAnnotationBodyRequest",
-    "UpdateAnnotationBodyRequestOperationsItem",
     "UserResponse",
     "VectorsConfig",
     "VoyageEmbeddingConfig",
     "WeaveApplied",
     "WeaveRebuildCommand",
     "WeaverConfig",
-    "WeaverConfigArchivist",
-    "WeaverConfigIdentity",
     "WorkerConfig",
     "WorkerEngineConfig",
     "WorkerEngineHealth",
@@ -429,16 +417,13 @@ __all__ = [
     "WorkerKnowledgeBaseHealthState",
     "YieldCloneCreateCommand",
     "YieldCloneCreated",
-    "YieldCloneCreatedResponse",
     "YieldClonePersistCommand",
     "YieldClonePersistOk",
-    "YieldClonePersistOkResponse",
     "YieldCloneResourceRequest",
     "YieldCloneTokenRequest",
     "YieldCreateCommand",
     "YieldCreateCommandGeneratedFrom",
     "YieldCreateOk",
-    "YieldCreateOkResponse",
     "YieldJobCompleteCommand",
     "YieldJobCreateCommand",
     "YieldJobDone",
@@ -447,7 +432,7 @@ __all__ = [
     "YieldJobResult",
     "YieldUpdateCommand",
     "YieldUpdateOk",
-    "YieldUpdateOkResponse",
+    "YieldedResource",
 ]
 
 
@@ -937,6 +922,41 @@ class EventMetadata(WireModel, frozen=True):
             description="Monotonic position in the event log (ordering authority)",
         ),
     ]
+
+
+type PdfClass = Annotated[
+    Literal["A", "B", "C", "D", "E", "F", "G"],
+    Field(
+        description="The class a PDF is sorted into, which decides how its text is read. smelter/extraction-cases.json states what each class is."
+    ),
+]
+
+
+type ExtractionMethod = Annotated[
+    Literal["text-passthrough", "pdf-text-layer", "table", "form", "ocr"],
+    Field(
+        description="How a text was extracted: a plain text taken as it is, a PDF's text layer read, a grid written as rows, a filled form's values read, or pixels read by OCR."
+    ),
+]
+
+
+class OcrConfidence(WireModel, frozen=True):
+    """
+    How well an OCR engine read the pixels.
+    """
+
+    mean: Annotated[float, Field(description="Mean per-word confidence, 0-100.")]
+    low_confidence_words: Annotated[
+        int,
+        Field(alias="lowConfidenceWords", description="Words the engine was unsure of."),
+    ]
+    total_words: Annotated[int, Field(alias="totalWords")]
+
+
+type ExtractionDeclinedReason = Annotated[
+    Literal["no-text-layer", "encrypted", "corrupt", "too-large"],
+    Field(description="Why extraction yielded nothing, by class."),
+]
 
 
 class FileEntry(WireModel, frozen=True, extra="forbid"):
@@ -2156,6 +2176,14 @@ class YieldUpdateCommand(WireModel, frozen=True):
     byte_size: Annotated[int, Field(alias="byteSize")]
 
 
+class YieldedResource(WireModel, frozen=True):
+    """
+    The resource a yield command wrote, by its id.
+    """
+
+    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
+
+
 class BusFrame(WireModel, frozen=True, extra="forbid"):
     """
     One frame of the bus stream, as the `data` line of a `bus-event` message carries it (JSON-serialised on one line). `payload` is the channel's payload as its registry entry declares it. A frame on a scoped subscription carries the scope it was published on; a correlated reply carries the `correlationId` of the request it answers.
@@ -2852,6 +2880,29 @@ class DispatcherHealth(WireModel, frozen=True, extra="forbid"):
     queue: Annotated[Literal["jetstream"], Field(description="The queue it holds.")]
 
 
+class ServiceIdentity(WireModel, frozen=True, extra="forbid"):
+    """
+    The identity provider a service's account signs in at, by its issuer.
+    """
+
+    issuer: Annotated[
+        str,
+        Field(
+            description="The issuer URL, exactly as tokens carry it in `iss`.",
+            min_length=1,
+        ),
+    ]
+
+
+class ServiceAddress(WireModel, frozen=True, extra="forbid"):
+    """
+    The host and port a service listens at.
+    """
+
+    host: Annotated[str, Field(min_length=1)]
+    port: Annotated[int, Field(ge=1, le=65535)]
+
+
 class EntityTypesProjection(WireModel, frozen=True, extra="forbid"):
     """
     The knowledge base's entity-type vocabulary: the file `projections/__system__/entitytypes.json` under the state directory, the sum of the `frame:entity-type-added` events. Written as JSON indented by two spaces.
@@ -2899,6 +2950,25 @@ class StorageUriEntry(WireModel, frozen=True, extra="forbid"):
         Field(description="The `file://` URI of a place in the working tree, relative to the knowledge base's root."),
     ]
     resource_id: Annotated[ResourceId, Field(alias="resourceId")]
+
+
+class AnchoredTextDeclinedEntry(WireModel, frozen=True, extra="forbid"):
+    """
+    The bytes were declined: no text is extracted from them.
+    """
+
+    v: Annotated[Literal[3], Field(description="The entry format.")]
+    stamp: Annotated[
+        str,
+        Field(
+            description="The stamp the entry was derived under: the PDF reader's and the OCR engine's. A reader takes the entry only when it equals the stamp the Smelter last stated.",
+            min_length=1,
+        ),
+    ]
+    declined: Annotated[
+        ExtractionDeclinedReason,
+        Field(description="Why extraction yielded nothing, by class."),
+    ]
 
 
 class AnchoredTextStamp(WireModel, frozen=True, extra="forbid"):
@@ -3025,37 +3095,6 @@ type DiscoveredKBPlacement = Annotated[
     Field(
         description='Where the stack actually runs. "local": containers on this machine. "codespace": a GitHub-hosted VM whose KB is port-forwarded here.'
     ),
-]
-
-
-type ExtractedTextMethod = Annotated[
-    Literal["text-passthrough", "pdf-text-layer", "table", "form", "ocr"],
-    Field(description="How the text was extracted."),
-]
-
-
-type ExtractedTextPdfClass = Annotated[
-    Literal["A", "B", "C", "D", "E", "F", "G"],
-    Field(description="PDF classification, when the source was a PDF."),
-]
-
-
-class ExtractedTextOcrConfidence(WireModel, frozen=True):
-    """
-    How well the engine read the pixels, when any of this text came from OCR.
-    """
-
-    mean: Annotated[float, Field(description="Mean per-word confidence, 0-100.")]
-    low_confidence_words: Annotated[
-        int,
-        Field(alias="lowConfidenceWords", description="Words the engine was unsure of."),
-    ]
-    total_words: Annotated[int, Field(alias="totalWords")]
-
-
-type ExtractionDeclinedDeclined = Annotated[
-    Literal["no-text-layer", "encrypted", "corrupt", "too-large"],
-    Field(description="Why extraction yielded nothing, by class."),
 ]
 
 
@@ -3237,13 +3276,16 @@ type MatchResourcesResponseMatchKind = Annotated[
 ]
 
 
-type RepresentationTypeList = Annotated[list[str], Field(min_length=1)]
-
-
 type RepresentationRel = Annotated[
     Literal["original", "thumbnail", "preview", "optimized", "derived", "other"],
     Field(description="Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived)."),
 ]
+
+
+type OneOrMoreStringsList = Annotated[list[str], Field(min_length=1)]
+
+
+type OneOrMoreUrisList = Annotated[list[str], Field(min_length=1)]
 
 
 class ResourceCreatedPayloadGeneratedFrom(WireModel, frozen=True):
@@ -3258,9 +3300,6 @@ class ResourceCreatedPayloadGeneratedFrom(WireModel, frozen=True):
 type ResourceDescriptorContextItem = str | dict[str, JsonValue]
 
 
-type ResourceDescriptorTypeList = Annotated[list[str], Field(min_length=1)]
-
-
 type ResourceDescriptorIdentifierList = Annotated[list[str], Field(min_length=1)]
 
 
@@ -3268,9 +3307,6 @@ class ResourceDescriptorIdentifierObject(WireModel, frozen=True, extra="allow"):
     id: Annotated[str | None, Field(alias="@id")] = None
     value: str | None = None
     scheme: str | None = None
-
-
-type ResourceDescriptorAboutList = Annotated[list[str], Field(min_length=1)]
 
 
 type SettingsThemeChangedEventTheme = Literal["light", "dark", "system"]
@@ -3281,37 +3317,9 @@ class StatusResponseFeatures(WireModel, frozen=True):
     collaboration: str
 
 
-class YieldCloneCreatedResponse(WireModel, frozen=True):
-    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
-
-
 class YieldCreateCommandGeneratedFrom(WireModel, frozen=True):
     resource_id: Annotated[ResourceId | None, Field(alias="resourceId")] = None
     annotation_id: Annotated[AnnotationId | None, Field(alias="annotationId")] = None
-
-
-class YieldCreateOkResponse(WireModel, frozen=True):
-    """
-    The created resource's identity.
-    """
-
-    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
-
-
-class YieldClonePersistOkResponse(WireModel, frozen=True):
-    """
-    The clone's identity — a new resource, distinct from its parent.
-    """
-
-    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
-
-
-class YieldUpdateOkResponse(WireModel, frozen=True):
-    """
-    The updated resource's identity.
-    """
-
-    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
 
 
 type BusResumeGapReason = Annotated[
@@ -3347,15 +3355,6 @@ class GatewayConfigIdentity(WireModel, frozen=True, extra="forbid"):
             min_length=1,
         ),
     ]
-
-
-class GatewayConfigArchivist(WireModel, frozen=True, extra="forbid"):
-    """
-    Where the Archivist listens.
-    """
-
-    host: Annotated[str, Field(min_length=1)]
-    port: Annotated[int, Field(ge=1, le=65535)]
 
 
 type GatewayConfigSignalType = Literal["in-process", "nats"]
@@ -3401,20 +3400,6 @@ type JobStoredProgressEmpty = Annotated[dict[str, JsonValue], Field(max_length=0
 
 
 type JobStoredResultEmpty = Annotated[dict[str, JsonValue], Field(max_length=0)]
-
-
-class DispatcherConfigIdentity(WireModel, frozen=True, extra="forbid"):
-    """
-    The issuer the dispatcher's service account signs in at.
-    """
-
-    issuer: Annotated[
-        str,
-        Field(
-            description="The issuer URL, exactly as tokens carry it in `iss`.",
-            min_length=1,
-        ),
-    ]
 
 
 class DispatcherConfigQueue(WireModel, frozen=True, extra="forbid"):
@@ -3550,52 +3535,6 @@ class WorkerEngineHealthActiveJob(WireModel, frozen=True, extra="forbid"):
     since: Annotated[str, Field(description="When it was handed the job.")]
 
 
-class WeaverConfigIdentity(WireModel, frozen=True, extra="forbid"):
-    """
-    The issuer the Weaver's service account signs in at.
-    """
-
-    issuer: Annotated[
-        str,
-        Field(
-            description="The issuer URL, exactly as tokens carry it in `iss`.",
-            min_length=1,
-        ),
-    ]
-
-
-class WeaverConfigArchivist(WireModel, frozen=True, extra="forbid"):
-    """
-    Where the Archivist listens. The Weaver reads the record by position from it, and a resource's annotations, as its service account.
-    """
-
-    host: Annotated[str, Field(min_length=1)]
-    port: Annotated[int, Field(ge=1, le=65535)]
-
-
-class SmelterConfigIdentity(WireModel, frozen=True, extra="forbid"):
-    """
-    The issuer the Smelter's service account signs in at.
-    """
-
-    issuer: Annotated[
-        str,
-        Field(
-            description="The issuer URL, exactly as tokens carry it in `iss`.",
-            min_length=1,
-        ),
-    ]
-
-
-class SmelterConfigArchivist(WireModel, frozen=True, extra="forbid"):
-    """
-    Where the Archivist listens. The Smelter reads a resource's bytes from it, and keeps the anchored-text store there, as its service account.
-    """
-
-    host: Annotated[str, Field(min_length=1)]
-    port: Annotated[int, Field(ge=1, le=65535)]
-
-
 class SmelterConfigChunking(WireModel, frozen=True, extra="forbid"):
     """
     The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
@@ -3603,29 +3542,6 @@ class SmelterConfigChunking(WireModel, frozen=True, extra="forbid"):
 
     chunk_size: Annotated[int, Field(alias="chunkSize", description="The size of a chunk.", ge=1)]
     overlap: Annotated[int, Field(description="How much of a chunk the next one repeats.", ge=0)]
-
-
-class LibrarianConfigIdentity(WireModel, frozen=True, extra="forbid"):
-    """
-    The issuer the Librarian's service account signs in at.
-    """
-
-    issuer: Annotated[
-        str,
-        Field(
-            description="The issuer URL, exactly as tokens carry it in `iss`.",
-            min_length=1,
-        ),
-    ]
-
-
-class LibrarianConfigArchivist(WireModel, frozen=True, extra="forbid"):
-    """
-    Where the Archivist listens. The Librarian reads a resource's bytes from it, as its service account.
-    """
-
-    host: Annotated[str, Field(min_length=1)]
-    port: Annotated[int, Field(ge=1, le=65535)]
 
 
 class LibrarianConfigGather(WireModel, frozen=True, extra="forbid"):
@@ -3659,20 +3575,6 @@ class LibrarianConfigSearch(WireModel, frozen=True, extra="forbid"):
     ]
 
 
-class ArchivistConfigIdentity(WireModel, frozen=True, extra="forbid"):
-    """
-    The issuer the Archivist's service account signs in at, and whose tokens it admits callers of its HTTP surface by.
-    """
-
-    issuer: Annotated[
-        str,
-        Field(
-            description="The issuer URL, exactly as tokens carry it in `iss`.",
-            min_length=1,
-        ),
-    ]
-
-
 class ArchivistConfigStaging(WireModel, frozen=True, extra="forbid"):
     """
     The bounds on how far the staging driver may run behind the working tree, in milliseconds. A knowledge base that does not sync git stages nothing, and reads neither.
@@ -3697,37 +3599,6 @@ class ArchivistConfigStaging(WireModel, frozen=True, extra="forbid"):
 
 
 type AnchoredTextExtractedEntryLinesItemWordsItem = Annotated[list[float], Field(max_length=4, min_length=4)]
-
-
-type AnchoredTextExtractedEntryMethod = Annotated[
-    Literal["text-passthrough", "pdf-text-layer", "table", "form", "ocr"],
-    Field(description="How the text was extracted."),
-]
-
-
-type AnchoredTextExtractedEntryPdfClass = Annotated[
-    Literal["A", "B", "C", "D", "E", "F", "G"],
-    Field(description="PDF classification, when the source was a PDF."),
-]
-
-
-class AnchoredTextExtractedEntryOcrConfidence(WireModel, frozen=True):
-    """
-    How well the engine read the pixels, when any of this text came from OCR.
-    """
-
-    mean: Annotated[float, Field(description="Mean per-word confidence, 0-100.")]
-    low_confidence_words: Annotated[
-        int,
-        Field(alias="lowConfidenceWords", description="Words the engine was unsure of."),
-    ]
-    total_words: Annotated[int, Field(alias="totalWords")]
-
-
-type AnchoredTextDeclinedEntryDeclined = Annotated[
-    Literal["no-text-layer", "encrypted", "corrupt", "too-large"],
-    Field(description="Why extraction yielded nothing, by class."),
-]
 
 
 type AnchoredTextEntriesChecksumsItem = Annotated[
@@ -3830,18 +3701,24 @@ class BindUpdateBodyCommand(WireModel, frozen=True):
 
 class BodyOperationAdd(WireModel, frozen=True):
     op: Literal["add"]
-    item: TextualBody | SpecificResource
+    item: AnnotationBody
 
 
 class BodyOperationRemove(WireModel, frozen=True):
     op: Literal["remove"]
-    item: TextualBody | SpecificResource
+    item: AnnotationBody
 
 
 class BodyOperationReplace(WireModel, frozen=True):
     op: Literal["replace"]
-    old_item: Annotated[TextualBody | SpecificResource, Field(alias="oldItem")]
-    new_item: Annotated[TextualBody | SpecificResource, Field(alias="newItem")]
+    old_item: Annotated[AnnotationBody, Field(alias="oldItem")]
+    new_item: Annotated[AnnotationBody, Field(alias="newItem")]
+
+
+type BodyOperation = Annotated[
+    BodyOperationAdd | BodyOperationRemove | BodyOperationReplace,
+    Field(description="One change to an annotation's bodies: a body added, a body removed, or one body replaced by another."),
+]
 
 
 class BrowseProfilesResult(WireModel, frozen=True):
@@ -4007,9 +3884,21 @@ class ExtractedText(AnchoredText, frozen=True):
             description="Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `method`."
         ),
     ]
-    method: ExtractedTextMethod
-    pdf_class: Annotated[ExtractedTextPdfClass | None, Field(alias="pdfClass")] = None
-    ocr_confidence: Annotated[ExtractedTextOcrConfidence | None, Field(alias="ocrConfidence")] = None
+    method: Annotated[ExtractionMethod, Field(description="How the text was extracted.")]
+    pdf_class: Annotated[
+        PdfClass | None,
+        Field(
+            alias="pdfClass",
+            description="PDF classification, when the source was a PDF.",
+        ),
+    ] = None
+    ocr_confidence: Annotated[
+        OcrConfidence | None,
+        Field(
+            alias="ocrConfidence",
+            description="How well the engine read the pixels, when any of this text came from OCR.",
+        ),
+    ] = None
     unread_pages: Annotated[
         list[int] | None,
         Field(
@@ -4030,7 +3919,10 @@ class ExtractionDeclined(WireModel, frozen=True):
             description="Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`."
         ),
     ]
-    declined: ExtractionDeclinedDeclined
+    declined: Annotated[
+        ExtractionDeclinedReason,
+        Field(description="Why extraction yielded nothing, by class."),
+    ]
 
 
 type ExtractionOutcome = Annotated[
@@ -4538,6 +4430,23 @@ class MarkDeleteOk(WireModel, frozen=True):
     response: MarkDeleteOkResponse
 
 
+class MarkUpdateBodyCommand(WireModel, frozen=True):
+    """
+    Bus command to update an annotation's body with patch operations.
+    """
+
+    user_id: Annotated[
+        UserId | None,
+        Field(
+            alias="_userId",
+            description="Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.",
+        ),
+    ] = None
+    annotation_id: Annotated[AnnotationId, Field(alias="annotationId")]
+    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
+    operations: list[BodyOperation]
+
+
 class MatchSearchFailed(CommandError, frozen=True):
     """
     The payload of `match:search-failed`: a CommandError that names the reference whose candidates could not be searched for.
@@ -4549,280 +4458,16 @@ class MatchSearchFailed(CommandError, frozen=True):
     ]
 
 
-class Representation(WireModel, frozen=True, extra="allow"):
-    """
-    A specific, byte-addressable rendition of a resource (file/asset/variant).
-    """
-
-    id: Annotated[str | None, Field(alias="@id", description="Stable ID for this representation.")] = None
-    type: Annotated[
-        str | RepresentationTypeList | None,
-        Field(alias="@type", description="Type(s), e.g., schema:MediaObject."),
-    ] = None
-    media_type: Annotated[
-        str,
-        Field(
-            alias="mediaType",
-            description="MIME/media type (e.g., text/markdown, image/png).",
-        ),
-    ]
-    storage_uri: Annotated[
-        str | None,
-        Field(
-            alias="storageUri",
-            description="Working-tree URI identifying where this rendition's bytes live. Only file:// is supported (e.g. file://docs/overview.md). The single home of the storage location: maintained across moves (yield:moved relocates it), absent when the resource has no stored bytes.",
-        ),
-    ] = None
-    filename: str | None = None
-    byte_size: Annotated[
-        int | None,
-        Field(alias="byteSize", description="Size of the payload in bytes.", ge=0),
-    ] = None
-    checksum: Annotated[
-        str | None,
-        Field(
-            description="The SHA-256 of the bytes, as 64 lower-case hexadecimal digits with nothing before them. Whatever compares the checksums of two representations compares this text."
-        ),
-    ] = None
-    encoding: Annotated[str | None, Field(description="Compression/transfer encoding if applicable.")] = None
-    language: Annotated[str | None, Field(description="IETF BCP 47 language tag (e.g., en, es-ES).")] = None
-    width: Annotated[int | None, Field(description="Pixels (images/video).", ge=0)] = None
-    height: Annotated[int | None, Field(description="Pixels (images/video).", ge=0)] = None
-    duration: Annotated[float | None, Field(description="Seconds (audio/video).", ge=0.0)] = None
-    created: str | None = None
-    modified: str | None = None
-    conforms_to: Annotated[
-        str | list[str] | None,
-        Field(
-            alias="conformsTo",
-            description="Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).",
-        ),
-    ] = None
-    tags: list[str] | None = None
-    rel: RepresentationRel | None = None
+type OneOrMoreStrings = Annotated[
+    str | OneOrMoreStringsList,
+    Field(description="One string, or a non-empty list of them: a JSON-LD term that may take one value or several."),
+]
 
 
-class RepresentationAddedPayload(WireModel, frozen=True):
-    """
-    Payload for yield:representation-added domain event
-    """
-
-    representation: Representation
-
-
-class ResourceClonedPayload(WireModel, frozen=True):
-    """
-    Payload for yield:cloned domain event
-    """
-
-    name: str
-    format: ContentFormat
-    content_checksum: Annotated[str, Field(alias="contentChecksum")]
-    content_byte_size: Annotated[int | None, Field(alias="contentByteSize")] = None
-    storage_uri: Annotated[
-        str | None,
-        Field(
-            alias="storageUri",
-            description="Where the clone's bytes are, on the resource's primary Representation — the same single home `yield:created` writes to.",
-        ),
-    ] = None
-    parent_resource_id: Annotated[ResourceId, Field(alias="parentResourceId")]
-    entity_types: Annotated[list[str] | None, Field(alias="entityTypes")] = None
-    language: str | None = None
-    creator: Annotated[
-        Agent | None,
-        Field(
-            description="Who made the clone — the emitter, derived at write time. A clone is never job-fulfilling. Absent on events written before derivation existed, whose emitter was their only party."
-        ),
-    ] = None
-    was_attributed_to: Annotated[
-        Agent | list[Agent] | None,
-        Field(
-            alias="wasAttributedTo",
-            description="PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.",
-        ),
-    ] = None
-
-
-class ResourceCreatedPayload(WireModel, frozen=True):
-    """
-    Payload for yield:created domain event
-    """
-
-    name: str
-    format: ContentFormat
-    content_checksum: Annotated[str, Field(alias="contentChecksum", description="SHA-256 of content")]
-    content_byte_size: Annotated[int | None, Field(alias="contentByteSize")] = None
-    entity_types: Annotated[list[str] | None, Field(alias="entityTypes")] = None
-    storage_uri: Annotated[
-        str | None,
-        Field(
-            alias="storageUri",
-            description="The creating instruction's URI, recorded on the event. Append-only, so this value never changes — the LOCATION the projection serves is maintained across moves and lives on the resource's primary Representation, relocated by yield:moved. Optional: a resource may have no bytes. Working-tree URI, only file:// is supported (e.g. file://docs/overview.md).",
-        ),
-    ] = None
-    language: str | None = None
-    is_draft: Annotated[bool | None, Field(alias="isDraft")] = None
-    job_id: Annotated[
-        JobId | None,
-        Field(
-            alias="jobId",
-            description="The job this resource was made in fulfilment of, when its create cited one. A write that cites the same job on this resource, by the one who made it, is attributed to that job's requester: the `creator` here.",
-        ),
-    ] = None
-    generated_from: Annotated[ResourceCreatedPayloadGeneratedFrom | None, Field(alias="generatedFrom")] = None
-    generation_prompt: Annotated[str | None, Field(alias="generationPrompt")] = None
-    generator: Agent | list[Agent] | None = None
-    creator: Annotated[
-        Agent | None,
-        Field(
-            description="Who requested this resource — derived by the knowledge base at write time, never sent by the emitter. For a resource created in fulfilment of a job, the requester recorded on that job's job:assigned; otherwise the emitter itself. Absent on events written before derivation existed, whose emitter was their only party."
-        ),
-    ] = None
-    was_attributed_to: Annotated[
-        Agent | list[Agent] | None,
-        Field(
-            alias="wasAttributedTo",
-            description="PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.",
-        ),
-    ] = None
-
-
-class ResourceDescriptor(WireModel, frozen=True, extra="allow"):
-    """
-    Metadata about a resource (1:1 with its URI). JSON-LD subject is @id. Link to concrete bytes via representations.
-    """
-
-    context: Annotated[
-        str | dict[str, JsonValue] | list[ResourceDescriptorContextItem],
-        Field(
-            alias="@context",
-            description="JSON-LD context; URI, object, or array of these.",
-        ),
-    ]
-    id: Annotated[
-        ResourceId,
-        Field(alias="@id", description="The id of the resource being described."),
-    ]
-    type: Annotated[
-        str | ResourceDescriptorTypeList | None,
-        Field(
-            alias="@type",
-            description="Type(s) of the resource (IRIs/CURIEs via @context).",
-        ),
-    ] = None
-    name: str
-    description: str | None = None
-    identifier: Annotated[
-        str | ResourceDescriptorIdentifierList | ResourceDescriptorIdentifierObject | None,
-        Field(description="Persistent identifiers (e.g., DOI, URN)."),
-    ] = None
-    about: Annotated[
-        str | ResourceDescriptorAboutList | None,
-        Field(description="Topics (IRIs or strings)."),
-    ] = None
-    same_as: Annotated[
-        list[str] | None,
-        Field(alias="sameAs", description="Equivalent/authoritative references."),
-    ] = None
-    is_part_of: Annotated[list[str] | None, Field(alias="isPartOf")] = None
-    has_part: Annotated[list[str] | None, Field(alias="hasPart")] = None
-    license: str | None = None
-    version: str | None = None
-    date_created: Annotated[str | None, Field(alias="dateCreated")] = None
-    date_modified: Annotated[str | None, Field(alias="dateModified")] = None
-    was_derived_from: Annotated[
-        ResourceId | list[ResourceId] | None,
-        Field(
-            alias="wasDerivedFrom",
-            description="W3C PROV: the resource, or resources, this one was derived from, each by its id",
-        ),
-    ] = None
-    was_attributed_to: Annotated[
-        Agent | list[Agent] | None,
-        Field(
-            alias="wasAttributedTo",
-            description="W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.",
-        ),
-    ] = None
-    generator: Annotated[
-        Agent | list[Agent] | None,
-        Field(
-            description="Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state."
-        ),
-    ] = None
-    conforms_to: Annotated[
-        str | list[str] | None,
-        Field(
-            alias="conformsTo",
-            description="Profile/shape URI this resource description conforms to.",
-        ),
-    ] = None
-    available_formats: Annotated[
-        list[str] | None,
-        Field(
-            alias="availableFormats",
-            description="Convenience set summarizing media types across representations.",
-        ),
-    ] = None
-    representations: Annotated[
-        Representation | list[Representation],
-        Field(description="Managed or referenced byte-level renditions of this resource."),
-    ]
-    archived: Annotated[
-        bool | None,
-        Field(description="Application-specific: Whether this resource is archived"),
-    ] = None
-    entity_types: Annotated[
-        list[str] | None,
-        Field(
-            alias="entityTypes",
-            description="Application-specific: Entity types for this resource",
-        ),
-    ] = None
-    is_draft: Annotated[
-        bool | None,
-        Field(
-            alias="isDraft",
-            description="Application-specific: Whether this resource is a draft",
-        ),
-    ] = None
-    source_annotation_id: Annotated[
-        AnnotationId | None,
-        Field(
-            alias="sourceAnnotationId",
-            description="Application-specific: ID of annotation that triggered generation",
-        ),
-    ] = None
-    source_resource_id: Annotated[
-        ResourceId | None,
-        Field(
-            alias="sourceResourceId",
-            description="Application-specific: ID of source resource for clones/derivatives",
-        ),
-    ] = None
-    originated_from: Annotated[
-        str | None,
-        Field(
-            alias="originatedFrom",
-            description="Original URI from a source knowledge base when this resource was imported",
-        ),
-    ] = None
-
-
-class ScoredResource(ResourceDescriptor, frozen=True):
-    """
-    A resource returned by a search, carrying its relevance score and the reason it matched.
-    """
-
-    score: Annotated[
-        float | None,
-        Field(description="Relevance score assigned by the matcher; higher is a better candidate."),
-    ] = None
-    match_reason: Annotated[
-        str | None,
-        Field(alias="matchReason", description="Human-readable reason for the match."),
-    ] = None
+type OneOrMoreUris = Annotated[
+    str | OneOrMoreUrisList,
+    Field(description="One URI, or a non-empty list of them: a JSON-LD term that may name one resource or several."),
+]
 
 
 class SettingsThemeChangedEvent(WireModel, frozen=True):
@@ -4850,62 +4495,26 @@ type Selector = Annotated[
 ]
 
 
+class UpdateAnnotationBodyRequest(WireModel, frozen=True):
+    resource_id: Annotated[
+        ResourceId,
+        Field(
+            alias="resourceId",
+            description="Resource ID containing the annotation (required for O(1) Layer 3 lookup)",
+        ),
+    ]
+    operations: Annotated[
+        list[BodyOperation],
+        Field(description="Array of body modification operations to apply", min_length=1),
+    ]
+
+
 class YieldCloneCreated(WireModel, frozen=True):
     """
     Success response after creating a cloned resource.
     """
 
-    response: YieldCloneCreatedResponse
-
-
-class YieldCreateCommand(WireModel, frozen=True):
-    """
-    Bus command to create a yielded resource in the knowledge base.
-    """
-
-    user_id: Annotated[
-        UserId | None,
-        Field(
-            alias="_userId",
-            description="Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.",
-        ),
-    ] = None
-    roles: Annotated[
-        list[str] | None,
-        Field(
-            alias="_roles",
-            description="The emitter's capabilities (the token's `roles`), injected by the /bus/emit gateway. Clients do not set this. An emitter carrying the worker role must cite the job this resource fulfils in `jobId`; the Stower refuses the create otherwise.",
-        ),
-    ] = None
-    job_id: Annotated[
-        JobId | None,
-        Field(
-            alias="jobId",
-            description="The job this resource fulfils. Required when the emitter carries the worker role; absent for self-initiated work (a person, or an agent acting on its own). The knowledge base derives who requested this resource from the cited job's own events — the emitter never says who the work was for.",
-        ),
-    ] = None
-    name: str
-    storage_uri: Annotated[
-        str,
-        Field(
-            alias="storageUri",
-            description="The caller's instruction for WHERE the bytes are — not a copy of the stored fact. The stored location lives on the resource's primary Representation (`Representation.storageUri`), which is its single home; this field is the message that puts it there. Working-tree URI, only file:// is supported (e.g. file://docs/overview.md).",
-        ),
-    ]
-    content_checksum: Annotated[str, Field(alias="contentChecksum")]
-    byte_size: Annotated[int, Field(alias="byteSize")]
-    format: ContentFormat
-    language: str | None = None
-    entity_types: Annotated[list[str] | None, Field(alias="entityTypes")] = None
-    is_draft: Annotated[bool | None, Field(alias="isDraft")] = None
-    generated_from: Annotated[YieldCreateCommandGeneratedFrom | None, Field(alias="generatedFrom")] = None
-    generation_prompt: Annotated[str | None, Field(alias="generationPrompt")] = None
-    generator: Annotated[
-        Agent | list[Agent] | None,
-        Field(
-            description="The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job."
-        ),
-    ] = None
+    response: YieldedResource
 
 
 class YieldCreateOk(WireModel, frozen=True):
@@ -4913,7 +4522,7 @@ class YieldCreateOk(WireModel, frozen=True):
     Success reply after creating a yielded resource, matched to the originating command by correlationId.
     """
 
-    response: YieldCreateOkResponse
+    response: Annotated[YieldedResource, Field(description="The created resource's identity.")]
 
 
 class YieldClonePersistOk(WireModel, frozen=True):
@@ -4921,7 +4530,10 @@ class YieldClonePersistOk(WireModel, frozen=True):
     Success reply after cloning a resource, matched to the originating command by correlationId.
     """
 
-    response: YieldClonePersistOkResponse
+    response: Annotated[
+        YieldedResource,
+        Field(description="The clone's identity — a new resource, distinct from its parent."),
+    ]
 
 
 class YieldUpdateOk(WireModel, frozen=True):
@@ -4929,7 +4541,7 @@ class YieldUpdateOk(WireModel, frozen=True):
     Success reply after updating a yielded resource, matched to the originating command by correlationId.
     """
 
-    response: YieldUpdateOkResponse
+    response: Annotated[YieldedResource, Field(description="The updated resource's identity.")]
 
 
 class BusEventMessage(WireModel, frozen=True, extra="forbid"):
@@ -5165,7 +4777,10 @@ class DispatcherConfig(WireModel, frozen=True, extra="forbid"):
             min_length=1,
         ),
     ]
-    identity: DispatcherConfigIdentity
+    identity: Annotated[
+        ServiceIdentity,
+        Field(description="The issuer the dispatcher's service account signs in at."),
+    ]
     queue: DispatcherConfigQueue
     port: Annotated[
         int,
@@ -5212,22 +4827,6 @@ class ProfilesProjection(WireModel, frozen=True, extra="forbid"):
         dict[str, Profile],
         Field(description="Each principal's current profile, keyed by its DID."),
     ]
-
-
-class AnchoredTextDeclinedEntry(WireModel, frozen=True, extra="forbid"):
-    """
-    The bytes were declined: no text is extracted from them.
-    """
-
-    v: Annotated[Literal[3], Field(description="The entry format.")]
-    stamp: Annotated[
-        str,
-        Field(
-            description="The stamp the entry was derived under: the PDF reader's and the OCR engine's. A reader takes the entry only when it equals the stamp the Smelter last stated.",
-            min_length=1,
-        ),
-    ]
-    declined: AnchoredTextDeclinedEntryDeclined
 
 
 class AnchoredTextEntries(WireModel, frozen=True, extra="forbid"):
@@ -5297,10 +4896,7 @@ class SmeltSettled(WireModel, frozen=True):
     reason: SmeltSettledReason | None = None
 
 
-type AnnotationGeneratorList = Annotated[list[Agent], Field(min_length=1)]
-
-
-type AnnotationWasAttributedToList = Annotated[list[Agent], Field(min_length=1)]
+type OneOrMoreAgentsList = Annotated[list[Agent], Field(min_length=1)]
 
 
 type AnnotationBodiesList = Annotated[
@@ -5313,21 +4909,6 @@ type AnnotationBodiesList = Annotated[
 """
 Non-empty array of mixed TextualBody (tagging) and SpecificResource (linking) bodies
 """
-
-
-type AnnotationBodyUpdatedPayloadOperationsItem = BodyOperationAdd | BodyOperationRemove | BodyOperationReplace
-
-
-class BrowseResourceResultResponse(WireModel, frozen=True, extra="forbid"):
-    resource: ResourceDescriptor
-    last_sequence: Annotated[
-        int,
-        Field(
-            alias="lastSequence",
-            description="The sequence number of the resource's last event. A graph read that follows a write waits for the graph projection to reach it.",
-            ge=1,
-        ),
-    ]
 
 
 class BusSubscribeRequestScopedItem(WireModel, frozen=True, extra="forbid"):
@@ -5343,21 +4924,6 @@ class BusSubscribeRequestScopedItem(WireModel, frozen=True, extra="forbid"):
             description="This scope's last-seen PersistedEventId. The gateway replays this scope's persisted events after it — those on the entry's channels — before the live tail, and writes a scoped `bus:resume-gap` (BusResumeGap) when it cannot cover the gap.",
         ),
     ] = None
-
-
-class GatheredContextFocusResource(WireModel, frozen=True):
-    """
-    Whole-resource focus.
-    """
-
-    kind: Literal["resource"]
-    resource: Annotated[
-        ResourceDescriptor,
-        Field(description="The resource this context was gathered for"),
-    ]
-    summary: str | None = None
-    suggested_references: Annotated[list[str] | None, Field(alias="suggestedReferences")] = None
-    content: GatheredContextFocusResourceContent | None = None
 
 
 class GetReferencedByResponseReferencedByItemTarget(WireModel, frozen=True):
@@ -5390,12 +4956,6 @@ class JobProgressCompletedItemsItem(WireModel, frozen=True):
 class JobProgressRequestParamsItem(WireModel, frozen=True):
     label: JobProgressRequestParamsItemLabel
     value: Annotated[str, Field(description="The user's own input, shown verbatim.")]
-
-
-type MarkUpdateBodyCommandOperationsItem = BodyOperationAdd | BodyOperationRemove | BodyOperationReplace
-
-
-type UpdateAnnotationBodyRequestOperationsItem = BodyOperationAdd | BodyOperationRemove | BodyOperationReplace
 
 
 class GatewayConfigSignal(WireModel, frozen=True, extra="forbid"):
@@ -5469,6 +5029,14 @@ class ArchivistEnginesActors(WireModel, frozen=True, extra="forbid"):
     matcher: Engine | None = None
 
 
+type OneOrMoreAgents = Annotated[
+    Agent | OneOrMoreAgentsList,
+    Field(
+        description="One Agent, or a non-empty list of them: the parties PROV-O and the Web Annotation model let a resource or an annotation name in one place, as one agent or several."
+    ),
+]
+
+
 type AnnotationBodies = Annotated[
     AnnotationBody | AnnotationBodiesList,
     Field(
@@ -5483,7 +5051,7 @@ class AnnotationBodyUpdatedPayload(WireModel, frozen=True):
     """
 
     annotation_id: Annotated[AnnotationId, Field(alias="annotationId")]
-    operations: list[AnnotationBodyUpdatedPayloadOperationsItem]
+    operations: list[BodyOperation]
 
 
 type AnnotationSelector = Annotated[
@@ -5548,14 +5116,6 @@ type AnchoredTextAnswer = Annotated[
 ]
 
 
-class BrowseResourceResult(WireModel, frozen=True):
-    """
-    A resource's descriptor, and the sequence number of the last of its events the descriptor reflects. Its annotations are not here: their number follows the document's, so they are read over HTTP (`GET /resources/{id}/annotations`).
-    """
-
-    response: BrowseResourceResultResponse
-
-
 class BrowseTagSchemasResult(WireModel, frozen=True):
     """
     Result of browsing tag schemas
@@ -5598,15 +5158,6 @@ class BusSubscribeRequest(WireModel, frozen=True, extra="forbid"):
     ]
 
 
-class CloneResourceWithTokenResponse(WireModel, frozen=True):
-    token: Annotated[str, Field(description="Generated clone token")]
-    expires_at: Annotated[
-        str,
-        Field(alias="expiresAt", description="ISO 8601 timestamp when token expires"),
-    ]
-    resource: ResourceDescriptor
-
-
 class CreateAnnotationRequest(WireModel, frozen=True):
     motivation: Motivation
     target: AnnotationTarget
@@ -5629,14 +5180,6 @@ class GetReferencedByResponseReferencedByItem(WireModel, frozen=True):
         ),
     ] = None
     target: GetReferencedByResponseReferencedByItemTarget
-
-
-class GetResourceByTokenResponse(WireModel, frozen=True):
-    source_resource: Annotated[ResourceDescriptor, Field(alias="sourceResource")]
-    expires_at: Annotated[
-        str,
-        Field(alias="expiresAt", description="ISO 8601 timestamp when token expires"),
-    ]
 
 
 class EngineLimits(WireModel, frozen=True, extra="forbid"):
@@ -5679,13 +5222,6 @@ class KnowledgeBase(KbTarget, NewKnowledgeBase, frozen=True):
     """
     A registered knowledge base: a target, and what registering it took, the identity the knowledge base reported of itself when it was reached (`did`) among it. What a client's list of knowledge bases holds. A did says which knowledge base, not which running copy: a clone and a codespace of one repository are one knowledge base at two addresses and report one did. So an entry is looked up by its endpoint, and its did is what an answer is verified against; nothing selects by did. Its `label` and `lastRead` are written only from an answer that carried its did.
     """
-
-
-class ListResourcesResponse(WireModel, frozen=True):
-    resources: list[ResourceDescriptor]
-    total: float
-    offset: float
-    limit: float
 
 
 class MarkCreateRequest(WireModel, frozen=True):
@@ -5733,9 +5269,282 @@ class MarkSubmitEvent(WireModel, frozen=True):
     ] = None
 
 
-class MarkUpdateBodyCommand(WireModel, frozen=True):
+class Representation(WireModel, frozen=True, extra="allow"):
     """
-    Bus command to update an annotation's body with patch operations.
+    A specific, byte-addressable rendition of a resource (file/asset/variant).
+    """
+
+    id: Annotated[str | None, Field(alias="@id", description="Stable ID for this representation.")] = None
+    type: Annotated[
+        OneOrMoreStrings | None,
+        Field(alias="@type", description="Type(s), e.g., schema:MediaObject."),
+    ] = None
+    media_type: Annotated[
+        str,
+        Field(
+            alias="mediaType",
+            description="MIME/media type (e.g., text/markdown, image/png).",
+        ),
+    ]
+    storage_uri: Annotated[
+        str | None,
+        Field(
+            alias="storageUri",
+            description="Working-tree URI identifying where this rendition's bytes live. Only file:// is supported (e.g. file://docs/overview.md). The single home of the storage location: maintained across moves (yield:moved relocates it), absent when the resource has no stored bytes.",
+        ),
+    ] = None
+    filename: str | None = None
+    byte_size: Annotated[
+        int | None,
+        Field(alias="byteSize", description="Size of the payload in bytes.", ge=0),
+    ] = None
+    checksum: Annotated[
+        str | None,
+        Field(
+            description="The SHA-256 of the bytes, as 64 lower-case hexadecimal digits with nothing before them. Whatever compares the checksums of two representations compares this text."
+        ),
+    ] = None
+    encoding: Annotated[str | None, Field(description="Compression/transfer encoding if applicable.")] = None
+    language: Annotated[str | None, Field(description="IETF BCP 47 language tag (e.g., en, es-ES).")] = None
+    width: Annotated[int | None, Field(description="Pixels (images/video).", ge=0)] = None
+    height: Annotated[int | None, Field(description="Pixels (images/video).", ge=0)] = None
+    duration: Annotated[float | None, Field(description="Seconds (audio/video).", ge=0.0)] = None
+    created: str | None = None
+    modified: str | None = None
+    conforms_to: Annotated[
+        OneOrMoreUris | None,
+        Field(
+            alias="conformsTo",
+            description="Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).",
+        ),
+    ] = None
+    tags: list[str] | None = None
+    rel: RepresentationRel | None = None
+
+
+class RepresentationAddedPayload(WireModel, frozen=True):
+    """
+    Payload for yield:representation-added domain event
+    """
+
+    representation: Representation
+
+
+class ResourceClonedPayload(WireModel, frozen=True):
+    """
+    Payload for yield:cloned domain event
+    """
+
+    name: str
+    format: ContentFormat
+    content_checksum: Annotated[str, Field(alias="contentChecksum")]
+    content_byte_size: Annotated[int | None, Field(alias="contentByteSize")] = None
+    storage_uri: Annotated[
+        str | None,
+        Field(
+            alias="storageUri",
+            description="Where the clone's bytes are, on the resource's primary Representation — the same single home `yield:created` writes to.",
+        ),
+    ] = None
+    parent_resource_id: Annotated[ResourceId, Field(alias="parentResourceId")]
+    entity_types: Annotated[list[str] | None, Field(alias="entityTypes")] = None
+    language: str | None = None
+    creator: Annotated[
+        Agent | None,
+        Field(
+            description="Who made the clone — the emitter, derived at write time. A clone is never job-fulfilling. Absent on events written before derivation existed, whose emitter was their only party."
+        ),
+    ] = None
+    was_attributed_to: Annotated[
+        OneOrMoreAgents | None,
+        Field(
+            alias="wasAttributedTo",
+            description="PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.",
+        ),
+    ] = None
+
+
+class ResourceCreatedPayload(WireModel, frozen=True):
+    """
+    Payload for yield:created domain event
+    """
+
+    name: str
+    format: ContentFormat
+    content_checksum: Annotated[str, Field(alias="contentChecksum", description="SHA-256 of content")]
+    content_byte_size: Annotated[int | None, Field(alias="contentByteSize")] = None
+    entity_types: Annotated[list[str] | None, Field(alias="entityTypes")] = None
+    storage_uri: Annotated[
+        str | None,
+        Field(
+            alias="storageUri",
+            description="The creating instruction's URI, recorded on the event. Append-only, so this value never changes — the LOCATION the projection serves is maintained across moves and lives on the resource's primary Representation, relocated by yield:moved. Optional: a resource may have no bytes. Working-tree URI, only file:// is supported (e.g. file://docs/overview.md).",
+        ),
+    ] = None
+    language: str | None = None
+    is_draft: Annotated[bool | None, Field(alias="isDraft")] = None
+    job_id: Annotated[
+        JobId | None,
+        Field(
+            alias="jobId",
+            description="The job this resource was made in fulfilment of, when its create cited one. A write that cites the same job on this resource, by the one who made it, is attributed to that job's requester: the `creator` here.",
+        ),
+    ] = None
+    generated_from: Annotated[ResourceCreatedPayloadGeneratedFrom | None, Field(alias="generatedFrom")] = None
+    generation_prompt: Annotated[str | None, Field(alias="generationPrompt")] = None
+    generator: OneOrMoreAgents | None = None
+    creator: Annotated[
+        Agent | None,
+        Field(
+            description="Who requested this resource — derived by the knowledge base at write time, never sent by the emitter. For a resource created in fulfilment of a job, the requester recorded on that job's job:assigned; otherwise the emitter itself. Absent on events written before derivation existed, whose emitter was their only party."
+        ),
+    ] = None
+    was_attributed_to: Annotated[
+        OneOrMoreAgents | None,
+        Field(
+            alias="wasAttributedTo",
+            description="PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.",
+        ),
+    ] = None
+
+
+class ResourceDescriptor(WireModel, frozen=True, extra="allow"):
+    """
+    Metadata about a resource (1:1 with its URI). JSON-LD subject is @id. Link to concrete bytes via representations.
+    """
+
+    context: Annotated[
+        str | dict[str, JsonValue] | list[ResourceDescriptorContextItem],
+        Field(
+            alias="@context",
+            description="JSON-LD context; URI, object, or array of these.",
+        ),
+    ]
+    id: Annotated[
+        ResourceId,
+        Field(alias="@id", description="The id of the resource being described."),
+    ]
+    type: Annotated[
+        OneOrMoreStrings | None,
+        Field(
+            alias="@type",
+            description="Type(s) of the resource (IRIs/CURIEs via @context).",
+        ),
+    ] = None
+    name: str
+    description: str | None = None
+    identifier: Annotated[
+        str | ResourceDescriptorIdentifierList | ResourceDescriptorIdentifierObject | None,
+        Field(description="Persistent identifiers (e.g., DOI, URN)."),
+    ] = None
+    about: Annotated[OneOrMoreStrings | None, Field(description="Topics (IRIs or strings).")] = None
+    same_as: Annotated[
+        list[str] | None,
+        Field(alias="sameAs", description="Equivalent/authoritative references."),
+    ] = None
+    is_part_of: Annotated[list[str] | None, Field(alias="isPartOf")] = None
+    has_part: Annotated[list[str] | None, Field(alias="hasPart")] = None
+    license: str | None = None
+    version: str | None = None
+    date_created: Annotated[str | None, Field(alias="dateCreated")] = None
+    date_modified: Annotated[str | None, Field(alias="dateModified")] = None
+    was_derived_from: Annotated[
+        ResourceId | list[ResourceId] | None,
+        Field(
+            alias="wasDerivedFrom",
+            description="W3C PROV: the resource, or resources, this one was derived from, each by its id",
+        ),
+    ] = None
+    was_attributed_to: Annotated[
+        OneOrMoreAgents | None,
+        Field(
+            alias="wasAttributedTo",
+            description="W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.",
+        ),
+    ] = None
+    generator: Annotated[
+        OneOrMoreAgents | None,
+        Field(
+            description="Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state."
+        ),
+    ] = None
+    conforms_to: Annotated[
+        OneOrMoreUris | None,
+        Field(
+            alias="conformsTo",
+            description="Profile/shape URI this resource description conforms to.",
+        ),
+    ] = None
+    available_formats: Annotated[
+        list[str] | None,
+        Field(
+            alias="availableFormats",
+            description="Convenience set summarizing media types across representations.",
+        ),
+    ] = None
+    representations: Annotated[
+        Representation | list[Representation],
+        Field(description="Managed or referenced byte-level renditions of this resource."),
+    ]
+    archived: Annotated[
+        bool | None,
+        Field(description="Application-specific: Whether this resource is archived"),
+    ] = None
+    entity_types: Annotated[
+        list[str] | None,
+        Field(
+            alias="entityTypes",
+            description="Application-specific: Entity types for this resource",
+        ),
+    ] = None
+    is_draft: Annotated[
+        bool | None,
+        Field(
+            alias="isDraft",
+            description="Application-specific: Whether this resource is a draft",
+        ),
+    ] = None
+    source_annotation_id: Annotated[
+        AnnotationId | None,
+        Field(
+            alias="sourceAnnotationId",
+            description="Application-specific: ID of annotation that triggered generation",
+        ),
+    ] = None
+    source_resource_id: Annotated[
+        ResourceId | None,
+        Field(
+            alias="sourceResourceId",
+            description="Application-specific: ID of source resource for clones/derivatives",
+        ),
+    ] = None
+    originated_from: Annotated[
+        str | None,
+        Field(
+            alias="originatedFrom",
+            description="Original URI from a source knowledge base when this resource was imported",
+        ),
+    ] = None
+
+
+class ScoredResource(ResourceDescriptor, frozen=True):
+    """
+    A resource returned by a search, carrying its relevance score and the reason it matched.
+    """
+
+    score: Annotated[
+        float | None,
+        Field(description="Relevance score assigned by the matcher; higher is a better candidate."),
+    ] = None
+    match_reason: Annotated[
+        str | None,
+        Field(alias="matchReason", description="Human-readable reason for the match."),
+    ] = None
+
+
+class YieldCreateCommand(WireModel, frozen=True):
+    """
+    Bus command to create a yielded resource in the knowledge base.
     """
 
     user_id: Annotated[
@@ -5745,64 +5554,42 @@ class MarkUpdateBodyCommand(WireModel, frozen=True):
             description="Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.",
         ),
     ] = None
-    annotation_id: Annotated[AnnotationId, Field(alias="annotationId")]
-    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
-    operations: list[MarkUpdateBodyCommandOperationsItem]
-
-
-class MatchSearchResult(WireModel, frozen=True):
-    """
-    Search results payload emitted on match:search-results SSE channel.
-    """
-
-    reference_id: Annotated[AnnotationId, Field(alias="referenceId")]
-    response: Annotated[list[ScoredResource], Field(description="The scored candidates, best first.")]
-
-
-class MatchResourcesResponse(WireModel, frozen=True):
-    """
-    One page of the resources a text search found, and which kind of answer it is.
-    """
-
-    resources: list[ResourceDescriptor]
-    total: Annotated[
-        int,
+    roles: Annotated[
+        list[str] | None,
         Field(
-            description="How many resources the search found in all, and not only on this page.",
-            ge=0,
+            alias="_roles",
+            description="The emitter's capabilities (the token's `roles`), injected by the /bus/emit gateway. Clients do not set this. An emitter carrying the worker role must cite the job this resource fulfils in `jobId`; the Stower refuses the create otherwise.",
+        ),
+    ] = None
+    job_id: Annotated[
+        JobId | None,
+        Field(
+            alias="jobId",
+            description="The job this resource fulfils. Required when the emitter carries the worker role; absent for self-initiated work (a person, or an agent acting on its own). The knowledge base derives who requested this resource from the cited job's own events — the emitter never says who the work was for.",
+        ),
+    ] = None
+    name: str
+    storage_uri: Annotated[
+        str,
+        Field(
+            alias="storageUri",
+            description="The caller's instruction for WHERE the bytes are — not a copy of the stored fact. The stored location lives on the resource's primary Representation (`Representation.storageUri`), which is its single home; this field is the message that puts it there. Working-tree URI, only file:// is supported (e.g. file://docs/overview.md).",
         ),
     ]
-    offset: Annotated[
-        int,
+    content_checksum: Annotated[str, Field(alias="contentChecksum")]
+    byte_size: Annotated[int, Field(alias="byteSize")]
+    format: ContentFormat
+    language: str | None = None
+    entity_types: Annotated[list[str] | None, Field(alias="entityTypes")] = None
+    is_draft: Annotated[bool | None, Field(alias="isDraft")] = None
+    generated_from: Annotated[YieldCreateCommandGeneratedFrom | None, Field(alias="generatedFrom")] = None
+    generation_prompt: Annotated[str | None, Field(alias="generationPrompt")] = None
+    generator: Annotated[
+        OneOrMoreAgents | None,
         Field(
-            description="How many of the resources the search found were passed over before this page, as the request stated.",
-            ge=0,
+            description="The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job."
         ),
-    ]
-    limit: Annotated[int, Field(description="The limit the search was made with.", ge=1)]
-    match_kind: Annotated[MatchResourcesResponseMatchKind, Field(alias="matchKind")]
-
-
-class MatchResourcesResult(WireModel, frozen=True):
-    """
-    Result of searching resources by text
-    """
-
-    response: MatchResourcesResponse
-
-
-class UpdateAnnotationBodyRequest(WireModel, frozen=True):
-    resource_id: Annotated[
-        ResourceId,
-        Field(
-            alias="resourceId",
-            description="Resource ID containing the annotation (required for O(1) Layer 3 lookup)",
-        ),
-    ]
-    operations: Annotated[
-        list[UpdateAnnotationBodyRequestOperationsItem],
-        Field(description="Array of body modification operations to apply", min_length=1),
-    ]
+    ] = None
 
 
 class GatewayConfig(WireModel, frozen=True, extra="forbid"):
@@ -5828,7 +5615,7 @@ class GatewayConfig(WireModel, frozen=True, extra="forbid"):
         ),
     ]
     identity: GatewayConfigIdentity
-    archivist: GatewayConfigArchivist
+    archivist: Annotated[ServiceAddress, Field(description="Where the Archivist listens.")]
     signal: GatewayConfigSignal
     log_level: Annotated[LogLevel, Field(alias="logLevel")]
     log_format: Annotated[LogFormat, Field(alias="logFormat")]
@@ -6019,8 +5806,16 @@ class WeaverConfig(WireModel, frozen=True, extra="forbid"):
             min_length=1,
         ),
     ]
-    identity: WeaverConfigIdentity
-    archivist: WeaverConfigArchivist
+    identity: Annotated[
+        ServiceIdentity,
+        Field(description="The issuer the Weaver's service account signs in at."),
+    ]
+    archivist: Annotated[
+        ServiceAddress,
+        Field(
+            description="Where the Archivist listens. The Weaver reads the record by position from it, and a resource's annotations, as its service account."
+        ),
+    ]
     graph: GraphConfig
     cursors_path: Annotated[CursorsPath, Field(alias="cursorsPath")]
     port: Annotated[
@@ -6045,8 +5840,16 @@ class SmelterConfig(WireModel, frozen=True, extra="forbid"):
             min_length=1,
         ),
     ]
-    identity: SmelterConfigIdentity
-    archivist: SmelterConfigArchivist
+    identity: Annotated[
+        ServiceIdentity,
+        Field(description="The issuer the Smelter's service account signs in at."),
+    ]
+    archivist: Annotated[
+        ServiceAddress,
+        Field(
+            description="Where the Archivist listens. The Smelter reads a resource's bytes from it, and keeps the anchored-text store there, as its service account."
+        ),
+    ]
     embedding: EmbeddingConfig
     vectors: VectorsConfig
     chunking: SmelterConfigChunking
@@ -6109,9 +5912,21 @@ class AnchoredTextExtractedEntry(WireModel, frozen=True, extra="forbid"):
         list[AnchoredTextExtractedEntryLinesItem],
         Field(description="Where each word of `text` is, line by line, in reading order."),
     ]
-    method: AnchoredTextExtractedEntryMethod
-    pdf_class: Annotated[AnchoredTextExtractedEntryPdfClass | None, Field(alias="pdfClass")] = None
-    ocr_confidence: Annotated[AnchoredTextExtractedEntryOcrConfidence | None, Field(alias="ocrConfidence")] = None
+    method: Annotated[ExtractionMethod, Field(description="How the text was extracted.")]
+    pdf_class: Annotated[
+        PdfClass | None,
+        Field(
+            alias="pdfClass",
+            description="PDF classification, when the source was a PDF.",
+        ),
+    ] = None
+    ocr_confidence: Annotated[
+        OcrConfidence | None,
+        Field(
+            alias="ocrConfidence",
+            description="How well the engine read the pixels, when any of this text came from OCR.",
+        ),
+    ] = None
     unread_pages: Annotated[
         list[int] | None,
         Field(
@@ -6119,6 +5934,33 @@ class AnchoredTextExtractedEntry(WireModel, frozen=True, extra="forbid"):
             description="1-indexed pages this extraction could not read — present only for partially covered documents (class C).",
         ),
     ] = None
+
+
+class BrowseResourceResultResponse(WireModel, frozen=True, extra="forbid"):
+    resource: ResourceDescriptor
+    last_sequence: Annotated[
+        int,
+        Field(
+            alias="lastSequence",
+            description="The sequence number of the resource's last event. A graph read that follows a write waits for the graph projection to reach it.",
+            ge=1,
+        ),
+    ]
+
+
+class GatheredContextFocusResource(WireModel, frozen=True):
+    """
+    Whole-resource focus.
+    """
+
+    kind: Literal["resource"]
+    resource: Annotated[
+        ResourceDescriptor,
+        Field(description="The resource this context was gathered for"),
+    ]
+    summary: str | None = None
+    suggested_references: Annotated[list[str] | None, Field(alias="suggestedReferences")] = None
+    content: GatheredContextFocusResourceContent | None = None
 
 
 class InferenceLimitsResultResponse(WireModel, frozen=True):
@@ -6168,13 +6010,13 @@ class Annotation(WireModel, frozen=True):
     ]
     modified: str | None = None
     generator: Annotated[
-        Agent | AnnotationGeneratorList | None,
+        OneOrMoreAgents | None,
         Field(
             description="Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused."
         ),
     ] = None
     was_attributed_to: Annotated[
-        Agent | AnnotationWasAttributedToList | None,
+        OneOrMoreAgents | None,
         Field(
             alias="wasAttributedTo",
             description="PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.",
@@ -6205,12 +6047,21 @@ class BrowseDirectoryResult(WireModel, frozen=True):
     response: BrowseDirectoryResultResponse
 
 
-class BrowseResourcesResult(WireModel, frozen=True):
+class BrowseResourceResult(WireModel, frozen=True):
     """
-    Result of browsing resources
+    A resource's descriptor, and the sequence number of the last of its events the descriptor reflects. Its annotations are not here: their number follows the document's, so they are read over HTTP (`GET /resources/{id}/annotations`).
     """
 
-    response: ListResourcesResponse
+    response: BrowseResourceResultResponse
+
+
+class CloneResourceWithTokenResponse(WireModel, frozen=True):
+    token: Annotated[str, Field(description="Generated clone token")]
+    expires_at: Annotated[
+        str,
+        Field(alias="expiresAt", description="ISO 8601 timestamp when token expires"),
+    ]
+    resource: ResourceDescriptor
 
 
 class EngineEntry(WireModel, frozen=True, extra="forbid"):
@@ -6254,6 +6105,14 @@ class GetAnnotationsResponse(WireModel, frozen=True):
 
 class GetReferencedByResponse(WireModel, frozen=True):
     referenced_by: Annotated[list[GetReferencedByResponseReferencedByItem], Field(alias="referencedBy")]
+
+
+class GetResourceByTokenResponse(WireModel, frozen=True):
+    source_resource: Annotated[ResourceDescriptor, Field(alias="sourceResource")]
+    expires_at: Annotated[
+        str,
+        Field(alias="expiresAt", description="ISO 8601 timestamp when token expires"),
+    ]
 
 
 class GetResourceResponse(WireModel, frozen=True):
@@ -6419,6 +6278,13 @@ class JobReportProgressCommand(WireModel, frozen=True):
     progress: JobProgress | None = None
 
 
+class ListResourcesResponse(WireModel, frozen=True):
+    resources: list[ResourceDescriptor]
+    total: float
+    offset: float
+    limit: float
+
+
 class MarkCommitCommand(WireModel, frozen=True):
     """
     Bus command to persist a detection unit's annotations as one acknowledged batch. It is answered only after every annotation is in the event log, so a worker can gate unit completion on durability rather than on emission. The batch is the unit: a partial commit is reported as a failure, and the worker retries the whole unit, which is safe because annotation ids are deterministic: content-addressed, so re-emitting one is a no-op.
@@ -6458,6 +6324,47 @@ class MarkCommitCommand(WireModel, frozen=True):
             description="The unit's annotations, already built with deterministic ids. Re-committing an identical batch is a no-op rather than a duplicate."
         ),
     ]
+
+
+class MatchSearchResult(WireModel, frozen=True):
+    """
+    Search results payload emitted on match:search-results SSE channel.
+    """
+
+    reference_id: Annotated[AnnotationId, Field(alias="referenceId")]
+    response: Annotated[list[ScoredResource], Field(description="The scored candidates, best first.")]
+
+
+class MatchResourcesResponse(WireModel, frozen=True):
+    """
+    One page of the resources a text search found, and which kind of answer it is.
+    """
+
+    resources: list[ResourceDescriptor]
+    total: Annotated[
+        int,
+        Field(
+            description="How many resources the search found in all, and not only on this page.",
+            ge=0,
+        ),
+    ]
+    offset: Annotated[
+        int,
+        Field(
+            description="How many of the resources the search found were passed over before this page, as the request stated.",
+            ge=0,
+        ),
+    ]
+    limit: Annotated[int, Field(description="The limit the search was made with.", ge=1)]
+    match_kind: Annotated[MatchResourcesResponseMatchKind, Field(alias="matchKind")]
+
+
+class MatchResourcesResult(WireModel, frozen=True):
+    """
+    Result of searching resources by text
+    """
+
+    response: MatchResourcesResponse
 
 
 type JobStoredProgress = Annotated[
@@ -6584,8 +6491,14 @@ class LibrarianConfig(WireModel, frozen=True, extra="forbid"):
             min_length=1,
         ),
     ]
-    identity: LibrarianConfigIdentity
-    archivist: LibrarianConfigArchivist
+    identity: Annotated[
+        ServiceIdentity,
+        Field(description="The issuer the Librarian's service account signs in at."),
+    ]
+    archivist: Annotated[
+        ServiceAddress,
+        Field(description="Where the Archivist listens. The Librarian reads a resource's bytes from it, as its service account."),
+    ]
     graph: GraphConfig
     vectors: VectorsConfig
     embedding: EmbeddingConfig
@@ -6736,6 +6649,14 @@ class BrowseAnnotationResult(WireModel, frozen=True):
     response: GetAnnotationResponse
 
 
+class BrowseResourcesResult(WireModel, frozen=True):
+    """
+    Result of browsing resources
+    """
+
+    response: ListResourcesResponse
+
+
 class GatherReferencedByResult(WireModel, frozen=True):
     """
     The annotations elsewhere that refer to a resource
@@ -6810,7 +6731,12 @@ class ArchivistConfig(WireModel, frozen=True, extra="forbid"):
             min_length=1,
         ),
     ]
-    identity: ArchivistConfigIdentity
+    identity: Annotated[
+        ServiceIdentity,
+        Field(
+            description="The issuer the Archivist's service account signs in at, and whose tokens it admits callers of its HTTP surface by."
+        ),
+    ]
     root: Annotated[
         str,
         Field(

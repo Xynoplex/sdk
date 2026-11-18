@@ -8,7 +8,7 @@ namespace Xynolog.Types;
 public sealed record DispatcherConfig
 {
     public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.DispatcherConfigIdentity Identity { get; init; }
+    public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
     public required global::Xynolog.Types.KbIdentity Kb { get; init; }
     public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
     public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
@@ -27,7 +27,7 @@ internal sealed class DispatcherConfigJsonConverter : global::System.Text.Json.S
         return new DispatcherConfig
         {
             GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.DispatcherConfigIdentity>(root, "identity", options),
+            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceIdentity>(root, "identity", options),
             Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
             LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
             LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),

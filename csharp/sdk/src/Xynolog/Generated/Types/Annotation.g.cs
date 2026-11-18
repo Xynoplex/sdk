@@ -11,13 +11,13 @@ public sealed record Annotation
     public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
     public required string Created { get; init; }
     public global::Xynolog.Types.Agent? Creator { get; init; }
-    public global::Xynolog.Types.AnnotationGenerator? Generator { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
     public required global::Xynolog.Identifiers.AnnotationId Id { get; init; }
     public string? Modified { get; init; }
     public required global::Xynolog.Types.Motivation Motivation { get; init; }
     public required global::Xynolog.Types.AnnotationTargetValue Target { get; init; }
     public string Type => "Annotation";
-    public global::Xynolog.Types.AnnotationWasAttributedTo? WasAttributedTo { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
 }
 
 internal sealed class AnnotationJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Annotation>
@@ -32,12 +32,12 @@ internal sealed class AnnotationJsonConverter : global::System.Text.Json.Seriali
             Body = root.TryGetProperty("body", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationBodies>(p0, options) : null,
             Created = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "created", options),
             Creator = root.TryGetProperty("creator", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Agent>(p2, options) : null,
-            Generator = root.TryGetProperty("generator", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationGenerator>(p3, options) : null,
+            Generator = root.TryGetProperty("generator", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p3, options) : null,
             Id = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "id", options),
             Modified = root.TryGetProperty("modified", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
             Motivation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Motivation>(root, "motivation", options),
             Target = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationTargetValue>(root, "target", options),
-            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p8) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationWasAttributedTo>(p8, options) : null,
+            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p8) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p8, options) : null,
         };
     }
 

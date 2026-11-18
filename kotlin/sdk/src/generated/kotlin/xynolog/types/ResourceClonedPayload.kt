@@ -65,7 +65,7 @@ public data class ResourceClonedPayload(
      * PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
      */
     @SerialName("wasAttributedTo")
-    public val wasAttributedTo: ResourceClonedPayloadWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
 ) {
     /** How Java makes a `ResourceClonedPayload`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -79,7 +79,7 @@ public data class ResourceClonedPayload(
         private var entityTypes: kotlin.collections.List<String>? = null
         private var language: String? = null
         private var creator: Agent? = null
-        private var wasAttributedTo: ResourceClonedPayloadWasAttributedTo? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
 
         public fun contentByteSize(contentByteSize: Long?): Builder {
             this.contentByteSize = contentByteSize
@@ -106,7 +106,7 @@ public data class ResourceClonedPayload(
             return this
         }
 
-        public fun wasAttributedTo(wasAttributedTo: ResourceClonedPayloadWasAttributedTo?): Builder {
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder {
             this.wasAttributedTo = wasAttributedTo
             return this
         }

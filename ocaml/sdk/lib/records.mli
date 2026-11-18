@@ -672,8 +672,8 @@ module Extracted_text : sig
     text : string;
     items : Yojson.Raw.t;
     kind : string;
-    method_ : string;
-    pdf_class : string Types.presence;
+    method_ : Yojson.Raw.t;
+    pdf_class : Yojson.Raw.t Types.presence;
     ocr_confidence : Yojson.Raw.t Types.presence;
     unread_pages : Yojson.Raw.t Types.presence;
     extra : (string * Yojson.Raw.t) list;
@@ -682,10 +682,21 @@ module Extracted_text : sig
   val of_model : [ `ExtractedText ] Models.t -> t
 end
 
+module Ocr_confidence : sig
+  type t = {
+    mean : Yojson.Raw.t;
+    low_confidence_words : Yojson.Raw.t;
+    total_words : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  val of_model : [ `OcrConfidence ] Models.t -> t
+end
+
 module Extraction_declined : sig
   type t = {
     kind : string;
-    declined : string;
+    declined : Yojson.Raw.t;
     extra : (string * Yojson.Raw.t) list;
   }
 
@@ -2225,6 +2236,12 @@ module Yield_update_ok : sig
   val of_model : [ `YieldUpdateOk ] Models.t -> t
 end
 
+module Yielded_resource : sig
+  type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+
+  val of_model : [ `YieldedResource ] Models.t -> t
+end
+
 module Bus_event_message : sig
   type t = {
     event : string;
@@ -2943,6 +2960,22 @@ module Archivist_config : sig
   val of_model : [ `ArchivistConfig ] Models.t -> t
 end
 
+module Service_identity : sig
+  type t = { issuer : string; extra : (string * Yojson.Raw.t) list }
+
+  val of_model : [ `ServiceIdentity ] Models.t -> t
+end
+
+module Service_address : sig
+  type t = {
+    host : string;
+    port : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  val of_model : [ `ServiceAddress ] Models.t -> t
+end
+
 module Resource_annotations : sig
   type t = {
     resource_id : Yojson.Raw.t;
@@ -3010,8 +3043,8 @@ module Anchored_text_extracted_entry : sig
     stamp : string;
     text : string;
     lines : Yojson.Raw.t;
-    method_ : string;
-    pdf_class : string Types.presence;
+    method_ : Yojson.Raw.t;
+    pdf_class : Yojson.Raw.t Types.presence;
     ocr_confidence : Yojson.Raw.t Types.presence;
     unread_pages : Yojson.Raw.t Types.presence;
     extra : (string * Yojson.Raw.t) list;
@@ -3024,7 +3057,7 @@ module Anchored_text_declined_entry : sig
   type t = {
     v : Yojson.Raw.t;
     stamp : string;
-    declined : string;
+    declined : Yojson.Raw.t;
     extra : (string * Yojson.Raw.t) list;
   }
 

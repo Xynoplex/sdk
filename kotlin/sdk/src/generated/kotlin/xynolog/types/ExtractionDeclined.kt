@@ -49,12 +49,12 @@ public data class ExtractionDeclined(
      * Why extraction yielded nothing, by class.
      */
     @SerialName("declined")
-    public val declined: ExtractionDeclinedDeclined,
+    public val declined: ExtractionDeclinedReason,
 ) : AnchoredTextAnswer,
     ExtractionOutcome {
     /** How Java makes a `ExtractionDeclined`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val declined: ExtractionDeclinedDeclined,
+        private val declined: ExtractionDeclinedReason,
     ) {
         public fun build(): ExtractionDeclined = ExtractionDeclined(declined = declined)
     }
@@ -62,6 +62,6 @@ public data class ExtractionDeclined(
     public companion object {
         /** A builder of a `ExtractionDeclined` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(declined: ExtractionDeclinedDeclined): Builder = Builder(declined)
+        public fun builder(declined: ExtractionDeclinedReason): Builder = Builder(declined)
     }
 }

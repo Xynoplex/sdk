@@ -2,7 +2,7 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.GatewayConfig (GatewayConfig (..), GatewayConfigArchivist (..), GatewayConfigCapacity (..), GatewayConfigIdentity (..), GatewayConfigSignal (..), GatewayConfigSignalType (..)) where
+module Xynolog.Internal.Generated.Models.GatewayConfig (GatewayConfig (..), GatewayConfigCapacity (..), GatewayConfigIdentity (..), GatewayConfigSignal (..), GatewayConfigSignalType (..)) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
@@ -11,9 +11,10 @@ import Xynolog.Internal.Codec
 import Xynolog.Internal.Generated.Models.KbIdentity
 import Xynolog.Internal.Generated.Models.LogFormat
 import Xynolog.Internal.Generated.Models.LogLevel
+import Xynolog.Internal.Generated.Models.ServiceAddress
 
 data GatewayConfig = GatewayConfig
-  { gatewayConfigArchivist :: GatewayConfigArchivist,
+  { gatewayConfigArchivist :: ServiceAddress,
     gatewayConfigCapacity :: GatewayConfigCapacity,
     gatewayConfigIdentity :: GatewayConfigIdentity,
     gatewayConfigKb :: KbIdentity,
@@ -28,16 +29,6 @@ data GatewayConfig = GatewayConfig
 instance FromJSON GatewayConfig where parseJSON = checked "GatewayConfig" $ withObject "GatewayConfig" (\fields -> GatewayConfig <$> (fields .: "archivist") <*> (fields .: "capacity") <*> (fields .: "identity") <*> (fields .: "kb") <*> (fields .: "logFormat") <*> (fields .: "logLevel") <*> (fields .: "port") <*> (fields .: "publicUrl") <*> (fields .: "signal"))
 
 instance ToJSON GatewayConfig where toJSON value = Object (KM.fromList (concat [[("archivist", toJSON (gatewayConfigArchivist value))], [("capacity", toJSON (gatewayConfigCapacity value))], [("identity", toJSON (gatewayConfigIdentity value))], [("kb", toJSON (gatewayConfigKb value))], [("logFormat", toJSON (gatewayConfigLogFormat value))], [("logLevel", toJSON (gatewayConfigLogLevel value))], [("port", toJSON (gatewayConfigPort value))], [("publicUrl", toJSON (gatewayConfigPublicUrl value))], [("signal", toJSON (gatewayConfigSignal value))]]))
-
-data GatewayConfigArchivist = GatewayConfigArchivist
-  { gatewayConfigArchivistHost :: Text,
-    gatewayConfigArchivistPort :: Integer
-  }
-  deriving (Eq, Show)
-
-instance FromJSON GatewayConfigArchivist where parseJSON = checked "GatewayConfigArchivist" $ withObject "GatewayConfigArchivist" (\fields -> GatewayConfigArchivist <$> (fields .: "host") <*> (fields .: "port"))
-
-instance ToJSON GatewayConfigArchivist where toJSON value = Object (KM.fromList (concat [[("host", toJSON (gatewayConfigArchivistHost value))], [("port", toJSON (gatewayConfigArchivistPort value))]]))
 
 data GatewayConfigCapacity = GatewayConfigCapacity
   { gatewayConfigCapacityConnections :: Integer,

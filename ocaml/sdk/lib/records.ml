@@ -1277,8 +1277,8 @@ module Extracted_text = struct
     text : string;
     items : Yojson.Raw.t;
     kind : string;
-    method_ : string;
-    pdf_class : string Types.presence;
+    method_ : Yojson.Raw.t;
+    pdf_class : Yojson.Raw.t Types.presence;
     ocr_confidence : Yojson.Raw.t Types.presence;
     unread_pages : Yojson.Raw.t Types.presence;
     extra : (string * Yojson.Raw.t) list;
@@ -1289,8 +1289,8 @@ module Extracted_text = struct
       text = required string "text" fields;
       items = required identity "items" fields;
       kind = required string "kind" fields;
-      method_ = required string "method" fields;
-      pdf_class = optional string "pdfClass" fields;
+      method_ = required identity "method" fields;
+      pdf_class = optional identity "pdfClass" fields;
       ocr_confidence = optional identity "ocrConfidence" fields;
       unread_pages = optional identity "unreadPages" fields;
       extra =
@@ -1310,17 +1310,36 @@ module Extracted_text = struct
   let of_model model = project (object_fields (Models.json model))
 end
 
+module Ocr_confidence = struct
+  type t = {
+    mean : Yojson.Raw.t;
+    low_confidence_words : Yojson.Raw.t;
+    total_words : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    {
+      mean = required identity "mean" fields;
+      low_confidence_words = required identity "lowConfidenceWords" fields;
+      total_words = required identity "totalWords" fields;
+      extra = extra [ "mean"; "lowConfidenceWords"; "totalWords" ] fields;
+    }
+
+  let of_model model = project (object_fields (Models.json model))
+end
+
 module Extraction_declined = struct
   type t = {
     kind : string;
-    declined : string;
+    declined : Yojson.Raw.t;
     extra : (string * Yojson.Raw.t) list;
   }
 
   let project fields =
     {
       kind = required string "kind" fields;
-      declined = required string "declined" fields;
+      declined = required identity "declined" fields;
       extra = extra [ "kind"; "declined" ] fields;
     }
 
@@ -4448,6 +4467,18 @@ module Yield_update_ok = struct
   let of_model model = project (object_fields (Models.json model))
 end
 
+module Yielded_resource = struct
+  type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+
+  let project fields =
+    {
+      resource_id = required identity "resourceId" fields;
+      extra = extra [ "resourceId" ] fields;
+    }
+
+  let of_model model = project (object_fields (Models.json model))
+end
+
 module Bus_event_message = struct
   type t = {
     event : string;
@@ -5958,6 +5989,35 @@ module Archivist_config = struct
   let of_model model = project (object_fields (Models.json model))
 end
 
+module Service_identity = struct
+  type t = { issuer : string; extra : (string * Yojson.Raw.t) list }
+
+  let project fields =
+    {
+      issuer = required string "issuer" fields;
+      extra = extra [ "issuer" ] fields;
+    }
+
+  let of_model model = project (object_fields (Models.json model))
+end
+
+module Service_address = struct
+  type t = {
+    host : string;
+    port : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    {
+      host = required string "host" fields;
+      port = required identity "port" fields;
+      extra = extra [ "host"; "port" ] fields;
+    }
+
+  let of_model model = project (object_fields (Models.json model))
+end
+
 module Resource_annotations = struct
   type t = {
     resource_id : Yojson.Raw.t;
@@ -6075,8 +6135,8 @@ module Anchored_text_extracted_entry = struct
     stamp : string;
     text : string;
     lines : Yojson.Raw.t;
-    method_ : string;
-    pdf_class : string Types.presence;
+    method_ : Yojson.Raw.t;
+    pdf_class : Yojson.Raw.t Types.presence;
     ocr_confidence : Yojson.Raw.t Types.presence;
     unread_pages : Yojson.Raw.t Types.presence;
     extra : (string * Yojson.Raw.t) list;
@@ -6088,8 +6148,8 @@ module Anchored_text_extracted_entry = struct
       stamp = required string "stamp" fields;
       text = required string "text" fields;
       lines = required identity "lines" fields;
-      method_ = required string "method" fields;
-      pdf_class = optional string "pdfClass" fields;
+      method_ = required identity "method" fields;
+      pdf_class = optional identity "pdfClass" fields;
       ocr_confidence = optional identity "ocrConfidence" fields;
       unread_pages = optional identity "unreadPages" fields;
       extra =
@@ -6114,7 +6174,7 @@ module Anchored_text_declined_entry = struct
   type t = {
     v : Yojson.Raw.t;
     stamp : string;
-    declined : string;
+    declined : Yojson.Raw.t;
     extra : (string * Yojson.Raw.t) list;
   }
 
@@ -6122,7 +6182,7 @@ module Anchored_text_declined_entry = struct
     {
       v = required identity "v" fields;
       stamp = required string "stamp" fields;
-      declined = required string "declined" fields;
+      declined = required identity "declined" fields;
       extra = extra [ "v"; "stamp"; "declined" ] fields;
     }
 

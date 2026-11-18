@@ -9,16 +9,16 @@ public sealed record ScoredResource
 {
     public required global::Xynolog.Types.ScoredResourceContext Context { get; init; }
     public required global::Xynolog.Identifiers.ResourceId Id { get; init; }
-    public global::Xynolog.Types.ScoredResourceType? Type { get; init; }
-    public global::Xynolog.Types.ScoredResourceAbout? About { get; init; }
+    public global::Xynolog.Types.OneOrMoreStrings? Type { get; init; }
+    public global::Xynolog.Types.OneOrMoreStrings? About { get; init; }
     public bool? Archived { get; init; }
     public global::System.Collections.Generic.IReadOnlyList<string>? AvailableFormats { get; init; }
-    public global::Xynolog.Types.ScoredResourceConformsTo? ConformsTo { get; init; }
+    public global::Xynolog.Types.OneOrMoreUris? ConformsTo { get; init; }
     public string? DateCreated { get; init; }
     public string? DateModified { get; init; }
     public string? Description { get; init; }
     public global::System.Collections.Generic.IReadOnlyList<string>? EntityTypes { get; init; }
-    public global::Xynolog.Types.ScoredResourceGenerator? Generator { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
     public global::System.Collections.Generic.IReadOnlyList<string>? HasPart { get; init; }
     public global::Xynolog.Types.ScoredResourceIdentifier? Identifier { get; init; }
     public bool? IsDraft { get; init; }
@@ -33,7 +33,7 @@ public sealed record ScoredResource
     public global::Xynolog.Identifiers.AnnotationId? SourceAnnotationId { get; init; }
     public global::Xynolog.Identifiers.ResourceId? SourceResourceId { get; init; }
     public string? Version { get; init; }
-    public global::Xynolog.Types.ScoredResourceWasAttributedTo? WasAttributedTo { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
     public global::Xynolog.Types.ScoredResourceWasDerivedFrom? WasDerivedFrom { get; init; }
     public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
 }
@@ -49,16 +49,16 @@ internal sealed class ScoredResourceJsonConverter : global::System.Text.Json.Ser
         {
             Context = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ScoredResourceContext>(root, "@context", options),
             Id = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "@id", options),
-            Type = root.TryGetProperty("@type", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ScoredResourceType>(p2, options) : null,
-            About = root.TryGetProperty("about", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ScoredResourceAbout>(p3, options) : null,
+            Type = root.TryGetProperty("@type", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreStrings>(p2, options) : null,
+            About = root.TryGetProperty("about", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreStrings>(p3, options) : null,
             Archived = root.TryGetProperty("archived", out var p4) ? global::Xynolog.Serialization.WireJson.Read<bool>(p4, options) : null,
             AvailableFormats = root.TryGetProperty("availableFormats", out var p5) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p5, options) : null,
-            ConformsTo = root.TryGetProperty("conformsTo", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ScoredResourceConformsTo>(p6, options) : null,
+            ConformsTo = root.TryGetProperty("conformsTo", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreUris>(p6, options) : null,
             DateCreated = root.TryGetProperty("dateCreated", out var p7) ? global::Xynolog.Serialization.WireJson.Read<string>(p7, options) : null,
             DateModified = root.TryGetProperty("dateModified", out var p8) ? global::Xynolog.Serialization.WireJson.Read<string>(p8, options) : null,
             Description = root.TryGetProperty("description", out var p9) ? global::Xynolog.Serialization.WireJson.Read<string>(p9, options) : null,
             EntityTypes = root.TryGetProperty("entityTypes", out var p10) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p10, options) : null,
-            Generator = root.TryGetProperty("generator", out var p11) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ScoredResourceGenerator>(p11, options) : null,
+            Generator = root.TryGetProperty("generator", out var p11) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p11, options) : null,
             HasPart = root.TryGetProperty("hasPart", out var p12) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p12, options) : null,
             Identifier = root.TryGetProperty("identifier", out var p13) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ScoredResourceIdentifier>(p13, options) : null,
             IsDraft = root.TryGetProperty("isDraft", out var p14) ? global::Xynolog.Serialization.WireJson.Read<bool>(p14, options) : null,
@@ -73,7 +73,7 @@ internal sealed class ScoredResourceJsonConverter : global::System.Text.Json.Ser
             SourceAnnotationId = root.TryGetProperty("sourceAnnotationId", out var p23) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.AnnotationId>(p23, options) : null,
             SourceResourceId = root.TryGetProperty("sourceResourceId", out var p24) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.ResourceId>(p24, options) : null,
             Version = root.TryGetProperty("version", out var p25) ? global::Xynolog.Serialization.WireJson.Read<string>(p25, options) : null,
-            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p26) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ScoredResourceWasAttributedTo>(p26, options) : null,
+            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p26) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p26, options) : null,
             WasDerivedFrom = root.TryGetProperty("wasDerivedFrom", out var p27) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ScoredResourceWasDerivedFrom>(p27, options) : null,
             AdditionalProperties = global::Xynolog.Serialization.WireJson.Extra(root, new string[] { "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo", "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart", "identifier", "isDraft", "isPartOf", "license", "matchReason", "name", "originatedFrom", "representations", "sameAs", "score", "sourceAnnotationId", "sourceResourceId", "version", "wasAttributedTo", "wasDerivedFrom" }),
         };

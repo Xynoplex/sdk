@@ -7,13 +7,13 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(LibrarianConfigJsonConverter))]
 public sealed record LibrarianConfig
 {
-    public required global::Xynolog.Types.LibrarianConfigArchivist Archivist { get; init; }
+    public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
     public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
     public required string GatewayUrl { get; init; }
     public required global::Xynolog.Types.LibrarianConfigGather Gather { get; init; }
     public required global::Xynolog.Types.LibrarianEngineConfig Gatherer { get; init; }
     public required global::Xynolog.Types.GraphConfig Graph { get; init; }
-    public required global::Xynolog.Types.LibrarianConfigIdentity Identity { get; init; }
+    public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
     public required global::Xynolog.Types.KbIdentity Kb { get; init; }
     public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
     public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
@@ -33,13 +33,13 @@ internal sealed class LibrarianConfigJsonConverter : global::System.Text.Json.Se
         global::Xynolog.Serialization.WireJson.Validate("LibrarianConfig", root);
         return new LibrarianConfig
         {
-            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianConfigArchivist>(root, "archivist", options),
+            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceAddress>(root, "archivist", options),
             Embedding = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.EmbeddingConfig>(root, "embedding", options),
             GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
             Gather = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianConfigGather>(root, "gather", options),
             Gatherer = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianEngineConfig>(root, "gatherer", options),
             Graph = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GraphConfig>(root, "graph", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianConfigIdentity>(root, "identity", options),
+            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceIdentity>(root, "identity", options),
             Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
             LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
             LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),

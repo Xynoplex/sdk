@@ -189,7 +189,7 @@ func built(target api.AnnotationTarget, motivation api.Motivation, anchor string
 		return api.Annotation{}, err
 	}
 	if generator != nil {
-		annotation.Generator = &api.Annotation_Generator{}
+		annotation.Generator = &api.OneOrMoreAgents{}
 		if err := annotation.Generator.FromAgent(*generator); err != nil {
 			return api.Annotation{}, err
 		}

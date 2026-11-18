@@ -7,8 +7,8 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(BodyOperationReplaceJsonConverter))]
 public sealed record BodyOperationReplace
 {
-    public required global::Xynolog.Types.BodyOperationReplaceNewItem NewItem { get; init; }
-    public required global::Xynolog.Types.BodyOperationReplaceOldItem OldItem { get; init; }
+    public required global::Xynolog.Types.AnnotationBody NewItem { get; init; }
+    public required global::Xynolog.Types.AnnotationBody OldItem { get; init; }
     public string Op => "replace";
 }
 
@@ -21,8 +21,8 @@ internal sealed class BodyOperationReplaceJsonConverter : global::System.Text.Js
         global::Xynolog.Serialization.WireJson.Validate("BodyOperationReplace", root);
         return new BodyOperationReplace
         {
-            NewItem = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.BodyOperationReplaceNewItem>(root, "newItem", options),
-            OldItem = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.BodyOperationReplaceOldItem>(root, "oldItem", options),
+            NewItem = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationBody>(root, "newItem", options),
+            OldItem = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationBody>(root, "oldItem", options),
         };
     }
 

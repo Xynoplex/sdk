@@ -92,7 +92,7 @@ public static partial class AnnotationTools
             Created = (timeProvider ?? TimeProvider.System).GetUtcNow().ToString("O", CultureInfo.InvariantCulture),
             Target = new AnnotationTargetValue.AnnotationTargetCase(target),
             Motivation = motivation,
-            Generator = generator is null ? null : new AnnotationGenerator.AgentCase(generator),
+            Generator = generator is null ? null : new OneOrMoreAgents.AgentCase(generator),
             Body = body,
         };
 

@@ -49,12 +49,12 @@ public data class LibrarianConfig(
      * The issuer the Librarian's service account signs in at.
      */
     @SerialName("identity")
-    public val identity: LibrarianConfigIdentity,
+    public val identity: ServiceIdentity,
     /**
      * Where the Archivist listens. The Librarian reads a resource's bytes from it, as its service account.
      */
     @SerialName("archivist")
-    public val archivist: LibrarianConfigArchivist,
+    public val archivist: ServiceAddress,
     @SerialName("graph")
     public val graph: GraphConfig,
     @SerialName("vectors")
@@ -94,8 +94,8 @@ public data class LibrarianConfig(
     public class Builder internal constructor(
         private val kb: KbIdentity,
         private val gatewayUrl: String,
-        private val identity: LibrarianConfigIdentity,
-        private val archivist: LibrarianConfigArchivist,
+        private val identity: ServiceIdentity,
+        private val archivist: ServiceAddress,
         private val graph: GraphConfig,
         private val vectors: VectorsConfig,
         private val embedding: EmbeddingConfig,
@@ -114,6 +114,6 @@ public data class LibrarianConfig(
     public companion object {
         /** A builder of a `LibrarianConfig` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: LibrarianConfigIdentity, archivist: LibrarianConfigArchivist, graph: GraphConfig, vectors: VectorsConfig, embedding: EmbeddingConfig, matcher: LibrarianEngineConfig, gatherer: LibrarianEngineConfig, modelCatalogue: String, gather: LibrarianConfigGather, search: LibrarianConfigSearch, port: Long, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, archivist, graph, vectors, embedding, matcher, gatherer, modelCatalogue, gather, search, port, logLevel, logFormat)
+        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: ServiceIdentity, archivist: ServiceAddress, graph: GraphConfig, vectors: VectorsConfig, embedding: EmbeddingConfig, matcher: LibrarianEngineConfig, gatherer: LibrarianEngineConfig, modelCatalogue: String, gather: LibrarianConfigGather, search: LibrarianConfigSearch, port: Long, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, archivist, graph, vectors, embedding, matcher, gatherer, modelCatalogue, gather, search, port, logLevel, logFormat)
     }
 }

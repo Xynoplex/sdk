@@ -47,7 +47,7 @@ public data class ArchivistConfig(
      * The issuer the Archivist's service account signs in at, and whose tokens it admits callers of its HTTP surface by.
      */
     @SerialName("identity")
-    public val identity: ArchivistConfigIdentity,
+    public val identity: ServiceIdentity,
     /**
      * The knowledge base's working tree: the directory holding `.xynolog/`. The event log, the content and the committed config are under it.
      */
@@ -88,7 +88,7 @@ public data class ArchivistConfig(
     /** How Java makes a `ArchivistConfig`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val gatewayUrl: String,
-        private val identity: ArchivistConfigIdentity,
+        private val identity: ServiceIdentity,
         private val root: String,
         private val stateHome: String,
         private val anchoredTextDir: String,
@@ -105,6 +105,6 @@ public data class ArchivistConfig(
     public companion object {
         /** A builder of a `ArchivistConfig` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(gatewayUrl: String, identity: ArchivistConfigIdentity, root: String, stateHome: String, anchoredTextDir: String, engines: ArchivistEngines, port: Long, skipRebuild: Boolean, staging: ArchivistConfigStaging, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(gatewayUrl, identity, root, stateHome, anchoredTextDir, engines, port, skipRebuild, staging, logLevel, logFormat)
+        public fun builder(gatewayUrl: String, identity: ServiceIdentity, root: String, stateHome: String, anchoredTextDir: String, engines: ArchivistEngines, port: Long, skipRebuild: Boolean, staging: ArchivistConfigStaging, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(gatewayUrl, identity, root, stateHome, anchoredTextDir, engines, port, skipRebuild, staging, logLevel, logFormat)
     }
 }

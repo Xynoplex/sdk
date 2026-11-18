@@ -37,17 +37,7 @@ import xynolog.identifiers.UserId
  * Web Annotation / W3C PROV Agent. Discriminated by @type — Person, Organization, or Software (named member schemas: AgentPerson, AgentOrganization, AgentSoftware). Software peers are first-class participants, not a sub-class of Person.
  */
 @Serializable(with = AgentSerializer::class)
-public sealed interface Agent :
-    AnnotationGenerator,
-    AnnotationWasAttributedTo,
-    ResourceClonedPayloadWasAttributedTo,
-    ResourceCreatedPayloadGenerator,
-    ResourceCreatedPayloadWasAttributedTo,
-    ResourceDescriptorGenerator,
-    ResourceDescriptorWasAttributedTo,
-    ScoredResourceGenerator,
-    ScoredResourceWasAttributedTo,
-    YieldCreateCommandGenerator
+public sealed interface Agent : OneOrMoreAgents
 
 internal object AgentSerializer : JsonContentPolymorphicSerializer<Agent>(Agent::class) {
     override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.Agent", super.descriptor)

@@ -76,12 +76,12 @@ public data class Annotation(
      * Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused.
      */
     @SerialName("generator")
-    public val generator: AnnotationGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
     /**
      * PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.
      */
     @SerialName("wasAttributedTo")
-    public val wasAttributedTo: AnnotationWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
 ) {
     /** How Java makes a `Annotation`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -93,8 +93,8 @@ public data class Annotation(
         private var body: AnnotationBodies? = null
         private var creator: Agent? = null
         private var modified: String? = null
-        private var generator: AnnotationGenerator? = null
-        private var wasAttributedTo: AnnotationWasAttributedTo? = null
+        private var generator: OneOrMoreAgents? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
 
         public fun body(body: AnnotationBodies?): Builder {
             this.body = body
@@ -111,12 +111,12 @@ public data class Annotation(
             return this
         }
 
-        public fun generator(generator: AnnotationGenerator?): Builder {
+        public fun generator(generator: OneOrMoreAgents?): Builder {
             this.generator = generator
             return this
         }
 
-        public fun wasAttributedTo(wasAttributedTo: AnnotationWasAttributedTo?): Builder {
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder {
             this.wasAttributedTo = wasAttributedTo
             return this
         }

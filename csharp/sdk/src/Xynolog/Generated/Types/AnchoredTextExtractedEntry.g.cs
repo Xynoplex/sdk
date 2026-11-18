@@ -8,9 +8,9 @@ namespace Xynolog.Types;
 public sealed record AnchoredTextExtractedEntry
 {
     public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnchoredTextExtractedEntryLinesItem> Lines { get; init; }
-    public required global::Xynolog.Types.AnchoredTextExtractedEntryMethod Method { get; init; }
-    public global::Xynolog.Types.AnchoredTextExtractedEntryOcrConfidence? OcrConfidence { get; init; }
-    public global::Xynolog.Types.AnchoredTextExtractedEntryPdfClass? PdfClass { get; init; }
+    public required global::Xynolog.Types.ExtractionMethod Method { get; init; }
+    public global::Xynolog.Types.OcrConfidence? OcrConfidence { get; init; }
+    public global::Xynolog.Types.PdfClass? PdfClass { get; init; }
     public required string Stamp { get; init; }
     public required string Text { get; init; }
     public global::System.Collections.Generic.IReadOnlyList<long>? UnreadPages { get; init; }
@@ -27,9 +27,9 @@ internal sealed class AnchoredTextExtractedEntryJsonConverter : global::System.T
         return new AnchoredTextExtractedEntry
         {
             Lines = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnchoredTextExtractedEntryLinesItem>>(root, "lines", options),
-            Method = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnchoredTextExtractedEntryMethod>(root, "method", options),
-            OcrConfidence = root.TryGetProperty("ocrConfidence", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnchoredTextExtractedEntryOcrConfidence>(p2, options) : null,
-            PdfClass = root.TryGetProperty("pdfClass", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnchoredTextExtractedEntryPdfClass>(p3, options) : null,
+            Method = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ExtractionMethod>(root, "method", options),
+            OcrConfidence = root.TryGetProperty("ocrConfidence", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OcrConfidence>(p2, options) : null,
+            PdfClass = root.TryGetProperty("pdfClass", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.PdfClass>(p3, options) : null,
             Stamp = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "stamp", options),
             Text = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "text", options),
             UnreadPages = root.TryGetProperty("unreadPages", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<long>>(p6, options) : null,

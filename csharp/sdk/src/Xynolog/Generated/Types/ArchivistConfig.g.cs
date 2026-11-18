@@ -10,7 +10,7 @@ public sealed record ArchivistConfig
     public required string AnchoredTextDir { get; init; }
     public required global::Xynolog.Types.ArchivistEngines Engines { get; init; }
     public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.ArchivistConfigIdentity Identity { get; init; }
+    public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
     public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
     public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
     public required long Port { get; init; }
@@ -32,7 +32,7 @@ internal sealed class ArchivistConfigJsonConverter : global::System.Text.Json.Se
             AnchoredTextDir = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "anchoredTextDir", options),
             Engines = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ArchivistEngines>(root, "engines", options),
             GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ArchivistConfigIdentity>(root, "identity", options),
+            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceIdentity>(root, "identity", options),
             LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
             LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),
             Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),

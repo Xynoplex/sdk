@@ -46,12 +46,12 @@ public data class UpdateAnnotationBodyRequest(
      * Array of body modification operations to apply
      */
     @SerialName("operations")
-    public val operations: kotlin.collections.List<UpdateAnnotationBodyRequestOperationsItem>,
+    public val operations: kotlin.collections.List<BodyOperation>,
 ) {
     /** How Java makes a `UpdateAnnotationBodyRequest`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val resourceId: ResourceId,
-        private val operations: kotlin.collections.List<UpdateAnnotationBodyRequestOperationsItem>,
+        private val operations: kotlin.collections.List<BodyOperation>,
     ) {
         public fun build(): UpdateAnnotationBodyRequest = UpdateAnnotationBodyRequest(resourceId = resourceId, operations = operations)
     }
@@ -60,6 +60,6 @@ public data class UpdateAnnotationBodyRequest(
         /** A builder of a `UpdateAnnotationBodyRequest` that states these, and what its setters add. */
         @JvmStatic
         @JvmExposeBoxed
-        public fun builder(resourceId: ResourceId, operations: kotlin.collections.List<UpdateAnnotationBodyRequestOperationsItem>): Builder = Builder(resourceId, operations)
+        public fun builder(resourceId: ResourceId, operations: kotlin.collections.List<BodyOperation>): Builder = Builder(resourceId, operations)
     }
 }
