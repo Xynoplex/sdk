@@ -172,7 +172,10 @@ case "${1:-}" in
     bash "$ROOT/scripts/bundle-protocol.sh"
     ocaml_toolchain_image
     work=$(mktemp -d)
-    trap 'rm -rf "$work"' EXIT
+    # The containers write into it as their own users, root among them, so a
+    # container empties it.
+    trap '"$RUNTIME" run --rm --volume "$work:/work" node:26-bookworm find /work -mindepth 1 -delete
+      rmdir "$work"' EXIT
     if [[ "$1" == generate ]]; then
       target=$ROOT
       suffix=""
