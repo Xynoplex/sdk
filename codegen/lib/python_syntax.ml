@@ -203,18 +203,21 @@ let rec doc = function
         invalid_arg
           (Printf.sprintf "Python_syntax: %S is no octal number" digits)
   | Ellipsis -> L.Text "..."
-  | Binary (a, op, b) ->
-      let left =
-        match a with
-        | Binary (_, inner, _) when inner = op && op <> Ge -> doc a
-        | _ -> operand a
+  | Binary (_, op, _) as e ->
+      (* A chain of one operator is one group: ruff breaks before each of its
+         operators, or before none. *)
+      let rec chain = function
+        | Binary (a, inner, b) when inner = op && op <> Ge -> chain a @ [ b ]
+        | Binary (a, _, b) -> [ a; b ]
+        | e -> [ e ]
       in
+      let sign = match op with Add -> "+ " | Or -> "| " | Ge -> ">= " in
       L.group
-        [
-          left;
-          L.Text (match op with Add -> " + " | Or -> " | " | Ge -> " >= ");
-          operand b;
-        ]
+        (List.concat
+           (List.mapi
+              (fun i e ->
+                (if i > 0 then [ L.Space; L.Text sign ] else []) @ [ operand e ])
+              (chain e)))
   | Call (f, items) -> bracket (flat f ^ "(") ")" items ~sole:`Bare
   | Subscript (e, items) -> bracket (flat e ^ "[") "]" items ~sole:`Bare
   | Tuple { elements = [ one ]; _ } ->
@@ -240,6 +243,20 @@ let rec doc = function
           L.Break;
           L.Text ")";
         ]
+
+(* What follows an [=], as ruff writes it: an operation, or a name or number,
+   too long for its line goes in parentheses of its own; a bracket breaks
+   itself, and a text can only overflow. *)
+and assigned = function
+  | (Binary _ | Name _ | Int _ | Octal _ | Ellipsis) as e ->
+      L.group
+        [
+          L.Broken_text "(";
+          L.Indent [ L.Break; doc e ];
+          L.Break;
+          L.Broken_text ")";
+        ]
+  | e -> doc e
 
 and operand = function
   | Binary _ ->
@@ -304,7 +321,7 @@ let docstring ~indent = function
 
 (* [prefix] then [value], laid out from [indent]. *)
 let statement ~indent prefix value =
-  L.render ~indent [ L.group [ L.Text prefix; doc value ] ]
+  L.render ~indent [ L.group [ L.Text prefix; assigned value ] ]
 
 let is_definition = function Class _ | Def _ -> true | _ -> false
 
@@ -314,15 +331,21 @@ let rec stmt ~indent s =
   match s with
   | Comment about -> comment ~indent about
   | Assign { about; target; annotation; value; doc = d } ->
-      let head =
-        checked target
-        ^ Option.fold ~none:"" ~some:(fun a -> ": " ^ flat a) annotation
-      in
+      (* An annotation is laid out as a value is: a subscript too long for
+         its line breaks, and what follows it stays after its bracket. *)
       comment ~indent about
       @ [
-          (match value with
-          | Some v -> statement ~indent (head ^ " = ") v
-          | None -> at ^ head);
+          L.render ~indent
+            [
+              L.group
+                ([ L.Text (checked target) ]
+                @ Option.fold ~none:[]
+                    ~some:(fun a -> [ L.Text ": "; doc a ])
+                    annotation
+                @ Option.fold ~none:[]
+                    ~some:(fun v -> [ L.Text " = "; assigned v ])
+                    value);
+            ];
         ]
       @ Option.fold ~none:[] ~some:(docstring ~indent) d
   | Alias { about; name; value; doc = d } ->
