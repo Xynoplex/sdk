@@ -13,8 +13,8 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import xynolog.ClientTiming
 import xynolog.Recording
-import xynolog.XynologClient
 import xynolog.StateUnit
+import xynolog.XynologClient
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 import kotlin.time.TimeSource
@@ -28,7 +28,9 @@ internal fun interface Given {
 }
 
 /** A stand-in for a dependency a unit is given: pass one to the unit and to `Fresh.given`, and the axioms check the unit never ended it. */
-internal class DisposeProbe : StateUnit, Given {
+internal class DisposeProbe :
+    StateUnit,
+    Given {
     var disposals = 0
 
     override fun close() {

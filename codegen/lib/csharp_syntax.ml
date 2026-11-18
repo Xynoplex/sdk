@@ -1,0 +1,677 @@
+(* C# as the generator writes it: the declarations, members, statements and
+   expressions its writers build, and a printer that lays them out as
+   dotnet format leaves them. A writer builds a file of these and never a
+   line of C#, so what it writes parses: a name is checked to be one and no
+   keyword, a string is quoted by the printer, every bracket the printer
+   opens it closes, and an operand is bare only where its precedence binds
+   it, and refused otherwise.
+
+   Layout is the printer's: four spaces a level, a brace on a line of its
+   own, and a switch expression's or an initializer's braces at the level of
+   the line it begins on. A string literal holds printable ASCII and escapes
+   the rest, so no character a reader cannot see, and no line terminator, is
+   written in one. *)
+
+type type_ =
+  | T of string  (** A keyword type, or a name, [global::] qualified or not. *)
+  | Generic of string * type_ list
+  | Nullable of type_
+  | Array of type_
+  | Member_type of type_ * string  (** A type declared within another. *)
+
+type unary = Complement
+type binary = And | Eq | Lt | Le | Ge
+
+type expr =
+  | Name of string  (** A name, or one qualified by what it is within. *)
+  | This
+  | Null
+  | Default
+  | Bool of bool
+  | Str of string
+  | Char of int  (** A UTF-16 code unit. *)
+  | Int of int
+  | Uint_hex of string  (** Hex digits, written [0x…U]. *)
+  | Member of expr * string
+  | Call of expr * type_ list * arg list
+  | Index of expr * expr
+  | New of { type_ : type_ option; args : arg list option; init : init option }
+      (** [new T(args) { … }]; no type is the type the target is, and no
+          arguments is no parentheses, beside an initializer. *)
+  | Array_new of type_ * expr list  (** [new T[] { … }], on one line. *)
+  | Collection of expr list  (** [[a, b]]. *)
+  | Typeof of type_
+  | Nameof of string
+  | Cast of type_ * expr
+  | Unary of unary * expr
+  | Binary of expr * binary * expr  (** [a && b && c] is [(a && b) && c]. *)
+  | Coalesce of expr * expr  (** [a ?? b], whose [b] may be a throw. *)
+  | Is of expr * type_
+  | Is_not_null of expr
+  | Conditional of expr * expr * expr  (** On one line. *)
+  | Conditional_lines of expr * expr * expr
+      (** Each branch on a line of its own, a level in. *)
+  | Switch of expr * (pattern * expr) list  (** An arm a line. *)
+  | Lambda of string * expr
+  | Throw of expr
+  | Assign of expr * expr
+
+and arg = Arg of expr | Ref of expr | Out_var of string
+
+and init =
+  | Assigns of (string * expr) list  (** [Name = value], a line each. *)
+  | Keyed of (expr * expr) list  (** [[key] = value], a line each. *)
+
+and pattern = Value of expr | Discard
+
+type stmt =
+  | Using_var of string * expr
+  | Var of string * expr
+  | Do of expr
+  | Set of expr * expr
+  | Return of expr
+  | Throw_stmt of expr
+  | If of expr * stmt list
+  | Foreach of { name : string; over : expr; body : stmt }
+      (** On one line, its body braced. *)
+  | Switch_stmt of {
+      on : expr;
+      cases : (type_ * string * stmt) list;
+          (** A case a line: its type, the name it binds, then [break]. *)
+      default : stmt;
+    }
+  | Try of stmt list * (type_ * string * stmt list)
+
+type modifier =
+  | Public
+  | Internal
+  | Private
+  | Static
+  | Sealed
+  | Closed
+  | Readonly
+  | Partial
+  | Override
+  | Required
+  | Const
+
+type param = { by : [ `Value | `Ref | `Out ]; type_ : type_; name : string }
+type body = Block of stmt list | Arrow of expr
+type accessor = Get | Init
+type attribute = { name : string; args : expr list }
+
+type member =
+  | Field of {
+      modifiers : modifier list;
+      type_ : type_;
+      name : string;
+      value : expr option;
+    }
+  | Property of {
+      modifiers : modifier list;
+      type_ : type_;
+      name : string;
+      accessors : accessor list;
+      value : expr option;
+    }  (** [{ get; init; }], with an initial value or none. *)
+  | Expression_property of {
+      modifiers : modifier list;
+      type_ : type_;
+      name : string;
+      value : expr;
+    }  (** [=> value;]. *)
+  | Method of {
+      modifiers : modifier list;
+      returns : type_;
+      name : string;
+      params : param list;
+      body : body;
+    }
+  | Constructor of {
+      modifiers : modifier list;
+      name : string;
+      params : param list;
+      body : body;
+    }
+  | Nested of decl
+
+(* Members a line each, or a blank line between. *)
+and spacing = Packed | Spaced
+and kind = Class | Record | Record_struct
+
+and decl =
+  | Type of {
+      attributes : attribute list;
+      modifiers : modifier list;
+      kind : kind;
+      name : string;
+      params : param list option;  (** A record's primary constructor. *)
+      base : type_ option;
+      body : (spacing * member list) option;  (** None is [;]. *)
+    }
+  | Enum of {
+      attributes : attribute list;
+      modifiers : modifier list;
+      name : string;
+      members : string list;
+    }
+
+type file = {
+  header : string list;  (** Comment lines, after [// <auto-generated/>]. *)
+  nullable : bool;  (** [#nullable enable]. *)
+  usings : string list;
+  namespace : string;
+  decls : decl list;
+}
+
+let keywords =
+  [
+    "abstract";
+    "as";
+    "base";
+    "bool";
+    "break";
+    "byte";
+    "case";
+    "catch";
+    "char";
+    "checked";
+    "class";
+    "const";
+    "continue";
+    "decimal";
+    "default";
+    "delegate";
+    "do";
+    "double";
+    "else";
+    "enum";
+    "event";
+    "explicit";
+    "extern";
+    "false";
+    "finally";
+    "fixed";
+    "float";
+    "for";
+    "foreach";
+    "goto";
+    "if";
+    "implicit";
+    "in";
+    "int";
+    "interface";
+    "internal";
+    "is";
+    "lock";
+    "long";
+    "namespace";
+    "new";
+    "null";
+    "object";
+    "operator";
+    "out";
+    "override";
+    "params";
+    "private";
+    "protected";
+    "public";
+    "readonly";
+    "ref";
+    "return";
+    "sbyte";
+    "sealed";
+    "short";
+    "sizeof";
+    "stackalloc";
+    "static";
+    "string";
+    "struct";
+    "switch";
+    "this";
+    "throw";
+    "true";
+    "try";
+    "typeof";
+    "uint";
+    "ulong";
+    "unchecked";
+    "unsafe";
+    "ushort";
+    "using";
+    "virtual";
+    "void";
+    "volatile";
+    "while";
+  ]
+
+let builtin_types =
+  [ "string"; "int"; "long"; "double"; "bool"; "uint"; "byte"; "void" ]
+
+let is_word = function
+  | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' -> true
+  | _ -> false
+
+let identifier name =
+  name <> ""
+  && (match name.[0] with '0' .. '9' -> false | _ -> true)
+  && String.for_all is_word name
+  && not (List.mem name keywords)
+
+let refuse fmt =
+  Printf.ksprintf (fun m -> invalid_arg ("Csharp_syntax: " ^ m)) fmt
+
+let checked name =
+  if identifier name then name else refuse "%S is no C# name" name
+
+(* A name, qualified or not, and [global::] qualified or not. *)
+let qualified name =
+  let global = "global::" in
+  let rest =
+    if String.starts_with ~prefix:global name then
+      String.sub name (String.length global)
+        (String.length name - String.length global)
+    else name
+  in
+  if List.for_all identifier (String.split_on_char '.' rest) then name
+  else refuse "%S is no C# name" name
+
+let listed f items = String.concat ", " (List.map f items)
+
+let rec type_text = function
+  | T name -> if List.mem name builtin_types then name else qualified name
+  | Generic (name, args) -> qualified name ^ "<" ^ listed type_text args ^ ">"
+  | Nullable t -> type_text t ^ "?"
+  | Array t -> type_text t ^ "[]"
+  | Member_type (t, name) -> type_text t ^ "." ^ checked name
+
+(* A string literal: printable ASCII as itself, but for the quote and the
+   backslash, and every other UTF-16 code unit escaped. *)
+let quoted text =
+  let b = Buffer.create (String.length text + 2) in
+  let unit u = Buffer.add_string b (Printf.sprintf "\\u%04X" u) in
+  Buffer.add_char b '"';
+  let rec go i =
+    if i < String.length text then begin
+      let d = String.get_utf_8_uchar text i in
+      if not (Uchar.utf_decode_is_valid d) then
+        refuse "a string that is no UTF-8: %S" text;
+      let u = Uchar.to_int (Uchar.utf_decode_uchar d) in
+      (match u with
+      | 0x22 -> Buffer.add_string b "\\\""
+      | 0x5c -> Buffer.add_string b "\\\\"
+      | 0x0a -> Buffer.add_string b "\\n"
+      | 0x0d -> Buffer.add_string b "\\r"
+      | 0x09 -> Buffer.add_string b "\\t"
+      | u when u >= 0x20 && u < 0x7f -> Buffer.add_char b (Char.chr u)
+      | u when u < 0x10000 -> unit u
+      | u ->
+          let v = u - 0x10000 in
+          unit (0xd800 lor (v lsr 10));
+          unit (0xdc00 lor (v land 0x3ff)));
+      go (i + Uchar.utf_decode_length d)
+    end
+  in
+  go 0;
+  Buffer.add_char b '"';
+  Buffer.contents b
+
+let char_text u =
+  if u < 0 || u > 0xffff then refuse "%d is no UTF-16 code unit" u
+  else if u = 0x27 then "'\\''"
+  else if u = 0x5c then "'\\\\'"
+  else if u >= 0x20 && u < 0x7f then Printf.sprintf "'%c'" (Char.chr u)
+  else Printf.sprintf "'\\u%04X'" u
+
+let modifier_text = function
+  | Public -> "public"
+  | Internal -> "internal"
+  | Private -> "private"
+  | Static -> "static"
+  | Sealed -> "sealed"
+  | Closed -> "closed"
+  | Readonly -> "readonly"
+  | Partial -> "partial"
+  | Override -> "override"
+  | Required -> "required"
+  | Const -> "const"
+
+let modifiers_text = function
+  | [] -> ""
+  | ms -> String.concat " " (List.map modifier_text ms) ^ " "
+
+let indent depth = String.make (4 * depth) ' '
+
+(* Precedence: an operand binds at least as tightly as its place asks. *)
+let primary = 10
+let unary_level = 9
+let switch_level = 8
+let binary_level = function And -> 4 | Eq -> 6 | Lt | Le | Ge -> 7
+
+let binary_text = function
+  | And -> "&&"
+  | Eq -> "=="
+  | Lt -> "<"
+  | Le -> "<="
+  | Ge -> ">="
+
+let level = function
+  | Name _ | This | Null | Default | Bool _ | Str _ | Char _ | Int _
+  | Uint_hex _ | Member _ | Call _ | Index _ | New _ | Array_new _
+  | Collection _ | Typeof _ | Nameof _ ->
+      primary
+  | Cast _ | Unary _ -> unary_level
+  | Switch _ -> switch_level
+  | Is _ | Is_not_null _ -> 7
+  | Binary (_, op, _) -> binary_level op
+  | Coalesce _ -> 3
+  | Conditional _ | Conditional_lines _ -> 2
+  | Throw _ -> 1
+  | Lambda _ | Assign _ -> 0
+
+(* An expression's text: its first line continues the line it is written on,
+   and each line after it is whole. [depth] is that line's level. *)
+let ( ^^ ) a b =
+  match (List.rev a, b) with
+  | last :: before, first :: after -> List.rev before @ ((last ^ first) :: after)
+  | _ -> a @ b
+
+let rec joined ~depth sep = function
+  | [] -> [ "" ]
+  | [ e ] -> e ~depth
+  | e :: rest -> e ~depth ^^ [ sep ] ^^ joined ~depth sep rest
+
+let rec expr ~depth e = lines ~depth e
+
+and at_least ~depth n e =
+  if level e >= n then lines ~depth e
+  else refuse "an operand that binds too loosely for its place"
+
+and arg_lines ~depth = function
+  | Arg e -> at_least ~depth 0 e
+  | Ref e -> [ "ref " ] ^^ at_least ~depth primary e
+  | Out_var name -> [ "out var " ^ checked name ]
+
+and args_lines ~depth args =
+  [ "(" ]
+  ^^ joined ~depth ", " (List.map (fun a ~depth -> arg_lines ~depth a) args)
+  ^^ [ ")" ]
+
+(* Items a line each within braces at [depth], on the lines after the one
+   the braces belong to. *)
+and block_lines ~depth items =
+  [ indent depth ^ "{" ] @ List.concat items @ [ indent depth ^ "}" ]
+
+and item_lines ~depth first value =
+  [ indent (depth + 1) ^ first ] ^^ value ^^ [ "," ]
+
+and init_lines ~depth = function
+  | Assigns members ->
+      block_lines ~depth
+        (List.map
+           (fun (name, value) ->
+             item_lines ~depth
+               (checked name ^ " = ")
+               (at_least ~depth:(depth + 1) 1 value))
+           members)
+  | Keyed pairs ->
+      block_lines ~depth
+        (List.map
+           (fun (key, value) ->
+             item_lines ~depth ""
+               ([ "[" ]
+               ^^ at_least ~depth:(depth + 1) 1 key
+               ^^ [ "] = " ]
+               ^^ at_least ~depth:(depth + 1) 0 value))
+           pairs)
+
+and lines ~depth = function
+  | Name name -> [ qualified name ]
+  | This -> [ "this" ]
+  | Null -> [ "null" ]
+  | Default -> [ "default" ]
+  | Bool b -> [ string_of_bool b ]
+  | Str s -> [ quoted s ]
+  | Char u -> [ char_text u ]
+  | Int n -> [ string_of_int n ]
+  | Uint_hex digits ->
+      if
+        digits <> ""
+        && String.for_all
+             (function
+               | '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' -> true | _ -> false)
+             digits
+      then [ "0x" ^ digits ^ "U" ]
+      else refuse "%S is no hex digits" digits
+  | Member (e, name) -> at_least ~depth primary e ^^ [ "." ^ checked name ]
+  | Call (f, types, args) ->
+      at_least ~depth primary f
+      ^^ (match types with
+        | [] -> [ "" ]
+        | ts -> [ "<" ^ listed type_text ts ^ ">" ])
+      ^^ args_lines ~depth args
+  | Index (e, i) ->
+      at_least ~depth primary e ^^ [ "[" ] ^^ expr ~depth i ^^ [ "]" ]
+  | New { type_; args; init } -> (
+      let head =
+        match (type_, args) with
+        | Some t, Some args ->
+            [ "new " ^ type_text t ] ^^ args_lines ~depth args
+        | None, Some args -> [ "new" ] ^^ args_lines ~depth args
+        | Some t, None when init <> None -> [ "new " ^ type_text t ]
+        | _ -> refuse "a new with neither arguments nor an initializer"
+      in
+      match init with
+      | None -> head
+      | Some init -> head @ init_lines ~depth init)
+  | Array_new (t, items) ->
+      [ "new " ^ type_text t ^ "[] { " ]
+      ^^ joined ~depth ", "
+           (List.map (fun e ~depth -> at_least ~depth 1 e) items)
+      ^^ [ " }" ]
+  | Collection items ->
+      [ "[" ]
+      ^^ joined ~depth ", "
+           (List.map (fun e ~depth -> at_least ~depth 1 e) items)
+      ^^ [ "]" ]
+  | Typeof t -> [ "typeof(" ^ type_text t ^ ")" ]
+  | Nameof name -> [ "nameof(" ^ checked name ^ ")" ]
+  | Cast (t, e) -> [ "(" ^ type_text t ^ ")" ] ^^ at_least ~depth unary_level e
+  | Unary (Complement, e) -> [ "~" ] ^^ at_least ~depth unary_level e
+  | Binary (a, op, b) ->
+      let n = binary_level op in
+      at_least ~depth n a
+      ^^ [ " " ^ binary_text op ^ " " ]
+      ^^ at_least ~depth (n + 1) b
+  | Coalesce (a, b) -> at_least ~depth 4 a ^^ [ " ?? " ] ^^ at_least ~depth 1 b
+  | Is (e, t) -> at_least ~depth 7 e ^^ [ " is " ^ type_text t ]
+  | Is_not_null e -> at_least ~depth 7 e ^^ [ " is not null" ]
+  | Conditional (c, a, b) ->
+      at_least ~depth 3 c ^^ [ " ? " ] ^^ at_least ~depth 1 a ^^ [ " : " ]
+      ^^ at_least ~depth 1 b
+  | Conditional_lines (c, a, b) ->
+      let branch mark e =
+        [ indent (depth + 1) ^ mark ] ^^ at_least ~depth:(depth + 1) 1 e
+      in
+      at_least ~depth 3 c @ branch "? " a @ branch ": " b
+  | Switch (on, arms) ->
+      if arms = [] then refuse "a switch expression with no arm";
+      at_least ~depth primary on ^^ [ " switch" ]
+      @ block_lines ~depth
+          (List.map
+             (fun (pattern, value) ->
+               let first =
+                 match pattern with
+                 | Discard -> [ "_" ]
+                 | Value p -> at_least ~depth:(depth + 1) primary p
+               in
+               item_lines ~depth ""
+                 (first ^^ [ " => " ] ^^ at_least ~depth:(depth + 1) 1 value))
+             arms)
+  | Lambda (name, body) -> [ checked name ^ " => " ] ^^ at_least ~depth 0 body
+  | Throw e -> [ "throw " ] ^^ at_least ~depth primary e
+  | Assign (target, value) ->
+      at_least ~depth primary target ^^ [ " = " ] ^^ at_least ~depth 0 value
+
+let line ~depth text = [ indent depth ] ^^ text
+
+let rec stmt ~depth s =
+  let ended e = line ~depth (e ^^ [ ";" ]) in
+  match s with
+  | Using_var (name, e) ->
+      ended ([ "using var " ^ checked name ^ " = " ] ^^ expr ~depth e)
+  | Var (name, e) -> ended ([ "var " ^ checked name ^ " = " ] ^^ expr ~depth e)
+  | Do e -> (
+      match e with
+      | Call _ | Assign _ -> ended (expr ~depth e)
+      | _ -> refuse "a statement of an expression that is no call")
+  | Set (target, value) -> ended (expr ~depth (Assign (target, value)))
+  | Return e -> ended ([ "return " ] ^^ at_least ~depth 0 e)
+  | Throw_stmt e -> ended ([ "throw " ] ^^ at_least ~depth primary e)
+  | If (c, body) ->
+      line ~depth ([ "if (" ] ^^ at_least ~depth 0 c ^^ [ ")" ])
+      @ braced ~depth body
+  | Foreach { name; over; body } ->
+      line ~depth
+        ([ "foreach (var " ^ checked name ^ " in " ]
+        ^^ at_least ~depth 0 over ^^ [ ") { " ] ^^ one_line body ^^ [ " }" ])
+  | Switch_stmt { on; cases; default } ->
+      line ~depth ([ "switch (" ] ^^ at_least ~depth 0 on ^^ [ ")" ])
+      @ [ indent depth ^ "{" ]
+      @ List.concat_map
+          (fun (t, name, body) ->
+            line ~depth:(depth + 1)
+              ([ "case " ^ type_text t ^ " " ^ checked name ^ ": " ]
+              ^^ one_line body ^^ [ " break;" ]))
+          cases
+      @ line ~depth:(depth + 1) ([ "default: " ] ^^ one_line default)
+      @ [ indent depth ^ "}" ]
+  | Try (body, (t, name, handler)) ->
+      [ indent depth ^ "try" ]
+      @ braced ~depth body
+      @ [ indent depth ^ "catch (" ^ type_text t ^ " " ^ checked name ^ ")" ]
+      @ braced ~depth handler
+
+(* A statement on the line it is given, which must fit one. *)
+and one_line s =
+  match stmt ~depth:0 s with
+  | [ text ] -> [ text ]
+  | _ -> refuse "a statement over several lines where one line is asked"
+
+and braced ~depth body =
+  [ indent depth ^ "{" ]
+  @ List.concat_map (stmt ~depth:(depth + 1)) body
+  @ [ indent depth ^ "}" ]
+
+let param_text { by; type_; name } =
+  (match by with `Value -> "" | `Ref -> "ref " | `Out -> "out ")
+  ^ type_text type_ ^ " " ^ checked name
+
+let params_text params = "(" ^ listed param_text params ^ ")"
+
+let attribute_line ~depth { name; args } =
+  line ~depth
+    ([ "[" ^ qualified name ]
+    ^^ (match args with
+      | [] -> [ "" ]
+      | args -> args_lines ~depth (List.map (fun a -> Arg a) args))
+    ^^ [ "]" ])
+
+let body_lines ~depth head = function
+  | Arrow e -> line ~depth (head ^^ [ " => " ] ^^ at_least ~depth 0 e ^^ [ ";" ])
+  | Block stmts -> line ~depth head @ braced ~depth stmts
+
+let kind_text = function
+  | Class -> "class"
+  | Record -> "record"
+  | Record_struct -> "record struct"
+
+let rec member ~depth = function
+  | Field { modifiers; type_; name; value } ->
+      line ~depth
+        ([ modifiers_text modifiers ^ type_text type_ ^ " " ^ checked name ]
+        ^^ (match value with
+          | None -> [ "" ]
+          | Some v -> [ " = " ] ^^ at_least ~depth 1 v)
+        ^^ [ ";" ])
+  | Property { modifiers; type_; name; accessors; value } ->
+      let accessor = function Get -> "get;" | Init -> "init;" in
+      if accessors = [] then refuse "a property with no accessor";
+      line ~depth
+        ([
+           modifiers_text modifiers ^ type_text type_ ^ " " ^ checked name
+           ^ " { "
+           ^ String.concat " " (List.map accessor accessors)
+           ^ " }";
+         ]
+        ^^
+        match value with
+        | None -> [ "" ]
+        | Some v -> [ " = " ] ^^ at_least ~depth 1 v ^^ [ ";" ])
+  | Expression_property { modifiers; type_; name; value } ->
+      line ~depth
+        ([
+           modifiers_text modifiers ^ type_text type_ ^ " " ^ checked name
+           ^ " => ";
+         ]
+        ^^ at_least ~depth 1 value ^^ [ ";" ])
+  | Method { modifiers; returns; name; params; body } ->
+      body_lines ~depth
+        [
+          modifiers_text modifiers ^ type_text returns ^ " " ^ checked name
+          ^ params_text params;
+        ]
+        body
+  | Constructor { modifiers; name; params; body } ->
+      body_lines ~depth
+        [ modifiers_text modifiers ^ checked name ^ params_text params ]
+        body
+  | Nested d -> decl ~depth d
+
+and decl ~depth = function
+  | Type { attributes; modifiers; kind; name; params; base; body } -> (
+      let head =
+        modifiers_text modifiers ^ kind_text kind ^ " " ^ checked name
+        ^ Option.fold ~none:"" ~some:params_text params
+        ^ Option.fold ~none:"" ~some:(fun t -> " : " ^ type_text t) base
+      in
+      List.concat_map (attribute_line ~depth) attributes
+      @
+      match body with
+      | None -> [ indent depth ^ head ^ ";" ]
+      | Some (spacing, members) ->
+          let each = List.map (member ~depth:(depth + 1)) members in
+          [ indent depth ^ head; indent depth ^ "{" ]
+          @ (match spacing with
+            | Packed -> List.concat each
+            | Spaced ->
+                List.concat
+                  (List.mapi (fun i m -> if i = 0 then m else "" :: m) each))
+          @ [ indent depth ^ "}" ])
+  | Enum { attributes; modifiers; name; members } ->
+      if members = [] then refuse "an enum with no member";
+      List.concat_map (attribute_line ~depth) attributes
+      @ [
+          indent depth ^ modifiers_text modifiers ^ "enum " ^ checked name;
+          indent depth ^ "{";
+        ]
+      @ List.map (fun m -> indent (depth + 1) ^ checked m ^ ",") members
+      @ [ indent depth ^ "}" ]
+
+let comment_line text =
+  if String.contains text '\n' then refuse "comment line %S is two" text
+  else if text = "" then "//"
+  else "// " ^ text
+
+let text { header; nullable; usings; namespace; decls } =
+  String.concat "\n"
+    ([ "// <auto-generated/>" ]
+    @ List.map comment_line header
+    @ (if nullable then [ "#nullable enable" ] else [])
+    @ List.map (fun u -> "using " ^ qualified u ^ ";") usings
+    @ [ "namespace " ^ qualified namespace ^ ";"; "" ]
+    @ [
+        String.concat "\n\n"
+          (List.map (fun d -> String.concat "\n" (decl ~depth:0 d)) decls);
+      ])
+  ^ "\n"

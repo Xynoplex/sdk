@@ -2,8 +2,8 @@
 
 package xynolog.state
 
-import xynolog.XynologClient
 import xynolog.StateUnit
+import xynolog.XynologClient
 import xynolog.errors.XynologError
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.ResourceId

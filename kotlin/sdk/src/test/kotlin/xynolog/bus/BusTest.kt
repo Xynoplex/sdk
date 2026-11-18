@@ -23,9 +23,9 @@ import xynolog.channels.ScopedChannel
 import xynolog.channels.TRACE_FIELD
 import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
 import xynolog.identifiers.UserId
 import xynolog.transport.Broadcast

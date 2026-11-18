@@ -128,8 +128,11 @@ class RoundTripTest {
                     { back ->
                         val stamps = leftOut(read, back).toSet()
                         val unstamped = stamps.filterNot { it.substringAfterLast('.').startsWith("_") }
-                        if (unstamped.isNotEmpty()) failed += "${file.fileName} $channel: $read lost $unstamped, written back as $back"
-                        else if (!sameJson(without(read, stamps), back)) failed += "${file.fileName} $channel: $read was written back as $back"
+                        if (unstamped.isNotEmpty()) {
+                            failed += "${file.fileName} $channel: $read lost $unstamped, written back as $back"
+                        } else if (!sameJson(without(read, stamps), back)) {
+                            failed += "${file.fileName} $channel: $read was written back as $back"
+                        }
                     },
                     { failed += "${file.fileName} $channel: $read was not read as a $schema: ${it.message?.lineSequence()?.first()}" },
                 )

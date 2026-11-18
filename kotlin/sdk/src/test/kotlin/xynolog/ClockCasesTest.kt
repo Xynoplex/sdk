@@ -39,8 +39,8 @@ import xynolog.bus.Operations
 import xynolog.bus.request
 import xynolog.cache.Cache
 import xynolog.cache.CachePersister
-import xynolog.channels.BRIDGED_CHANNELS
 import xynolog.cache.CacheRefreshTrigger
+import xynolog.channels.BRIDGED_CHANNELS
 import xynolog.discovery.DiscoveryRead
 import xynolog.discovery.DiscoveryTransport
 import xynolog.discovery.Managed
@@ -58,8 +58,8 @@ import xynolog.live.KbWorld
 import xynolog.live.RESOURCE
 import xynolog.live.event
 import xynolog.retry.RetryPolicy
-import xynolog.session.XynologSession
 import xynolog.session.TARGET
+import xynolog.session.XynologSession
 import xynolog.session.alice
 import xynolog.session.token
 import xynolog.signin.HeldSignIn
@@ -432,24 +432,33 @@ private class Issuer(private val intervalSeconds: Long?, private val answers: Li
     fun answer(request: HttpRequest): Reply {
         val uri = request.uri()
         return when (val where = "${uri.scheme}://${uri.authority}${uri.path}") {
-            "$GATEWAY/.well-known/oauth-protected-resource" -> json(200, buildJsonObject {
-                put("resource", GATEWAY)
-                put("authorization_servers", JsonArray(listOf(JsonPrimitive(ISSUER))))
-                put("bearer_methods_supported", JsonArray(listOf(JsonPrimitive("header"))))
-            })
-            "$ISSUER/.well-known/openid-configuration" -> json(200, buildJsonObject {
-                put("issuer", ISSUER)
-                put("authorization_endpoint", "$ISSUER/auth")
-                put("token_endpoint", "$ISSUER/token")
-                put("device_authorization_endpoint", "$ISSUER/device")
-            })
-            "$ISSUER/device" -> json(200, buildJsonObject {
-                put("device_code", "the-device-code")
-                put("user_code", "WDJB-MJHT")
-                put("verification_uri", "http://issuer.test/device")
-                put("expires_in", 900)
-                if (intervalSeconds != null) put("interval", intervalSeconds)
-            })
+            "$GATEWAY/.well-known/oauth-protected-resource" -> json(
+                200,
+                buildJsonObject {
+                    put("resource", GATEWAY)
+                    put("authorization_servers", JsonArray(listOf(JsonPrimitive(ISSUER))))
+                    put("bearer_methods_supported", JsonArray(listOf(JsonPrimitive("header"))))
+                },
+            )
+            "$ISSUER/.well-known/openid-configuration" -> json(
+                200,
+                buildJsonObject {
+                    put("issuer", ISSUER)
+                    put("authorization_endpoint", "$ISSUER/auth")
+                    put("token_endpoint", "$ISSUER/token")
+                    put("device_authorization_endpoint", "$ISSUER/device")
+                },
+            )
+            "$ISSUER/device" -> json(
+                200,
+                buildJsonObject {
+                    put("device_code", "the-device-code")
+                    put("user_code", "WDJB-MJHT")
+                    put("verification_uri", "http://issuer.test/device")
+                    put("expires_in", 900)
+                    if (intervalSeconds != null) put("interval", intervalSeconds)
+                },
+            )
             "$ISSUER/token" -> {
                 val said = answers[minOf(tokenAsks, answers.lastIndex)]
                 tokenAsks += 1

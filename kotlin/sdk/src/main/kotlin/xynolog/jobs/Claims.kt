@@ -20,8 +20,8 @@ import xynolog.bus.resultOf
 import xynolog.channels.Channels
 import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
+import xynolog.errors.XynologError
 import xynolog.telemetry.futureOf
 import xynolog.transport.Broadcast
 import xynolog.transport.Carried

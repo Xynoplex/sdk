@@ -10,7 +10,7 @@ let files ~root:_ (spec : Spec.t) =
   Result.bind (Model.derive spec) (fun t ->
       let shape = Model.shape t in
       Result.map List.concat
-        (Haskell.all
+        (Spec.all
            [
              Result.map
                (fun file -> [ file ])

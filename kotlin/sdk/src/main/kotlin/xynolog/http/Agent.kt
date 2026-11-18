@@ -19,11 +19,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 import xynolog.Timings
 import xynolog.bus.UNDECODED
 import xynolog.bus.faultIn
-import xynolog.errors.XynologError
 import xynolog.errors.SignInError
 import xynolog.errors.SignInErrorCode
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.identifiers.UserId
 import xynolog.retry.REFRESH
 import xynolog.retry.RetryFacts
@@ -226,7 +226,8 @@ public class AgentToken @JvmOverloads constructor(
     private val http: HttpClient = ownHttp,
     context: CoroutineContext = Dispatchers.Default,
     private val random: Random = Random.Default,
-) : TokenRefresher, AutoCloseable {
+) : TokenRefresher,
+    AutoCloseable {
     /** The gateway the agent signs in at. */
     public val gateway: String = gateway.trimEnd('/')
     private val current = MutableStateFlow<String?>(null)

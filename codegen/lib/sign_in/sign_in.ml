@@ -3,11 +3,13 @@
    (sign-in-store/owner-only.json), and, for TypeScript, the names the
    contract gives the store's files (sign-in-store/README.md). Programs in
    several languages read and write <stateDir>/tokens.json, so each of these
-   is the contract's to state, for the Go, Python and TypeScript SDKs. *)
+   is the contract's to state, for the Go, Python, TypeScript and Kotlin
+   SDKs. *)
 
 module Flat = Flat
 module Owner_only = Owner_only
 module Contract = Contract
+module Kotlin = Kotlin
 module Rust = Rust
 
 let schema_file = "sign-in-store/SignIn.json"
@@ -466,6 +468,7 @@ let files ~root (spec : Spec.t) =
             python_owner_only o;
             typescript entry o names;
             Rust.file o;
+            Kotlin.file o;
           ]
           @ ocaml_owner_only o @ haskell_files)
         (haskell o names)

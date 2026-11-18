@@ -2,12 +2,6 @@
 
 package xynolog.http
 
-import xynolog.bus.Logged
-import xynolog.bus.BusLog
-import xynolog.bus.Fault
-import xynolog.bus.UNDECODED
-import xynolog.bus.faultOf
-import xynolog.telemetry.Telemetry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -25,15 +19,21 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import xynolog.Timings
+import xynolog.bus.BusLog
+import xynolog.bus.Fault
+import xynolog.bus.Logged
+import xynolog.bus.UNDECODED
+import xynolog.bus.faultOf
 import xynolog.channels.RESOURCE_SCOPED_CHANNELS
 import xynolog.channels.TRACE_FIELD
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
 import xynolog.registry.isPersistedEventId
 import xynolog.retry.equalJitter
 import xynolog.retry.retryAfterMs
+import xynolog.telemetry.Telemetry
 import xynolog.transport.Broadcast
 import xynolog.transport.Carried
 import xynolog.transport.ConnectionState
@@ -91,9 +91,13 @@ internal class FrameHub {
 }
 
 /** `carried`, on no scope: a frame with `place`, where the stream was in the scope it came on. */
-private fun unscoped(carried: Carried, place: Place?): Carried = if (carried.scope == null) carried else when (carried) {
-    is Frame -> carried.unscoped(place)
-    is FrameRefusal -> carried.copy(scope = null)
+private fun unscoped(carried: Carried, place: Place?): Carried = if (carried.scope == null) {
+    carried
+} else {
+    when (carried) {
+        is Frame -> carried.unscoped(place)
+        is FrameRefusal -> carried.copy(scope = null)
+    }
 }
 
 /** The ids of the frames delivered last. */
@@ -175,6 +179,7 @@ internal class Stream(
     private var running = false
 
     private val scoped = sortedMapOf<String, Pair<ResourceId, List<String>>>()
+
     /** Each scope's position: where the client's last life left it, when it kept that, and what has been delivered since. */
     private val watermarks = bookmarks?.load().orEmpty().mapKeys { it.key.value }.toMutableMap()
     private val seen = SeenIds(timing.seenEventIdsCount)
