@@ -7,6 +7,7 @@ module Typescript = Typescript
 module Go = Go
 module Python = Python
 module Kotlin = Kotlin
+module Csharp = Csharp
 
 let errors = function Ok _ -> [] | Error errors -> errors
 
@@ -21,6 +22,6 @@ let files ~root:_ spec =
       in
       match (Go.files bus, Python.files bus, kotlin) with
       | Ok go, Ok python, Ok kotlin ->
-          Ok (Typescript.files bus @ go @ python @ kotlin)
+          Ok (Typescript.files bus @ go @ python @ kotlin @ [ Csharp.file bus ])
       | go, python, kotlin -> Error (errors go @ errors python @ errors kotlin))
   | Error errors -> Error errors

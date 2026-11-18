@@ -13,6 +13,7 @@ module Haskell = Haskell
 module Go = Go
 module Ocaml = Ocaml
 module Kotlin = Kotlin
+module Csharp = Csharp
 
 let refusal file pointer message = { Decode.file; pointer; message }
 
@@ -124,6 +125,7 @@ let files ~root (spec : Spec.t) =
          spec.tables.bus_registry.channels)
   in
   let* http = collect (replies spec derivation) in
+  let* csharp = Csharp.file derivation spec.tables.bus_registry in
   match Go.check ~declared:(declared ~root) shapes with
   | [] ->
       let* kotlin =
@@ -136,6 +138,7 @@ let files ~root (spec : Spec.t) =
             Python.file shapes;
             Haskell.file ~shapes ~channels ~http;
             kotlin;
+            csharp;
           ]
         @ Ocaml.files shapes)
   | refusals -> Error refusals

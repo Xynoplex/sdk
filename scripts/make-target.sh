@@ -96,7 +96,8 @@ case "${1:-}" in
       test "$(dotnet --version)" = "$(sh ../scripts/dotnet-version.sh)"
       dotnet build -p:RestoreLockedMode=true
       dotnet test --no-build --settings test.runsettings
-      dotnet format --no-restore --verify-no-changes'
+      # The generated files too, but not those a package compiles in.
+      dotnet format --no-restore --verify-no-changes --include-generated --exclude "$HOME/.nuget/packages"'
     ;;
   test-kotlin)
     bash "$ROOT/scripts/bundle-protocol.sh"
