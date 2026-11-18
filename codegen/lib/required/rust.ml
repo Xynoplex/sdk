@@ -111,7 +111,7 @@ let file (shapes : (string * Shape.shape) list) =
     text =
       R.text
         ~header:
-          (Banner.rust_lines
+          (Banner.lines
              ~from_:"the component schemas of protocol/specs/src/openapi.json"
              __FILE__)
         [

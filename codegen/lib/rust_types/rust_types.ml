@@ -35,7 +35,7 @@ let passed_through = [ "ResourceUpload" ]
 (* The mark unit holds the motivation a job's parameters state. *)
 let accessors = [ "MarkJobParams" ]
 let sign_in_file = "sign-in-store/SignIn.json"
-let regenerate from_ = Banner.rust_lines ~from_ __FILE__
+let regenerate from_ = Banner.lines ~from_ __FILE__
 
 let payloads (spec : Spec.t) =
   List.filter_map

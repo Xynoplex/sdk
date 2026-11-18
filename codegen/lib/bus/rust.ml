@@ -9,7 +9,7 @@ module Reg = Tables.Bus_registry
 
 let operations_path = "rust/sdk/src/generated/operations.rs"
 let channels_path = "rust/sdk/src/generated/channels.rs"
-let header = Banner.rust_lines ~from_:"protocol/specs/src/bus/registry.json"
+let header = Banner.lines ~from_:"protocol/specs/src/bus/registry.json"
 let strings names = R.Ref_of (R.Array (List.map (fun n -> R.Str n) names))
 let str_slice = R.Ref (None, R.Slice R.str_ty)
 let static_strs = R.Ref (Some "'static", R.Slice R.static_str)

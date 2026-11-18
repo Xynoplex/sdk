@@ -43,7 +43,6 @@ let file (t : Table.t) =
     text =
       R.text
         ~header:
-          (Banner.rust_lines ~from_:"protocol/specs/src/client/timing.json"
-             __FILE__)
+          (Banner.lines ~from_:"protocol/specs/src/client/timing.json" __FILE__)
         (List.map constant t);
   }

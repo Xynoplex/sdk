@@ -13,7 +13,7 @@ let constant ~path ~doc name values =
     Output.path;
     text =
       R.text
-        ~header:(Banner.rust_lines ~from_ __FILE__)
+        ~header:(Banner.lines ~from_ __FILE__)
         [
           R.Const
             {

@@ -105,7 +105,7 @@ let cache_refresh (table : T.t) (t : Table.t) =
     Output.path = "rust/sdk/src/generated/cache_refresh.rs";
     text =
       R.text
-        ~header:(Banner.rust_lines ~from_ __FILE__)
+        ~header:(Banner.lines ~from_ __FILE__)
         [
           R.Enum
             {
@@ -225,7 +225,7 @@ let live_kept (t : Table.t) =
     Output.path = "rust/sdk/src/generated/live_kept.rs";
     text =
       R.text
-        ~header:(Banner.rust_lines ~from_ __FILE__)
+        ~header:(Banner.lines ~from_ __FILE__)
         [
           R.Impl
             {

@@ -72,8 +72,7 @@ let file ~wire_codes (t : Table.t) =
     text =
       R.text
         ~header:
-          (Banner.rust_lines ~from_:"protocol/specs/src/errors/codes.json"
-             __FILE__)
+          (Banner.lines ~from_:"protocol/specs/src/errors/codes.json" __FILE__)
         (vocabulary ~name:"BusRequestErrorCode" t.bus
         @ [
             R.Impl

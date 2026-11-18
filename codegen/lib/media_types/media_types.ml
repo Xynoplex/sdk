@@ -626,7 +626,7 @@ let rust (t : T.t) =
           text =
             R.text
               ~header:
-                (Banner.rust_lines
+                (Banner.lines
                    ~from_:"protocol/specs/src/media-types/registry.json"
                    __FILE__)
               (List.concat_map vocabulary vocabularies

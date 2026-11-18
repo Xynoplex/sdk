@@ -25,7 +25,7 @@ let file (o : Owner_only.t) =
     text =
       R.text
         ~header:
-          (Banner.rust_lines
+          (Banner.lines
              ~from_:"protocol/specs/src/sign-in-store/owner-only.json" __FILE__)
         [
           mode "OWNER_ONLY_DIRECTORY_MODE" o.directory;

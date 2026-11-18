@@ -14,7 +14,7 @@ module D = Definitions
 let models_path = "swift/sdk/Sources/Xynolog/Generated/Models.swift"
 let bridge_path = "swift/sdk/Tests/XynologTests/Generated/TestBridge.swift"
 let sign_in_file = "sign-in-store/SignIn.json"
-let banner = Banner.swift_lines ~from_:"protocol/specs/src" __FILE__
+let banner = Banner.lines ~from_:"protocol/specs/src" __FILE__
 let import module_ = { S.module_; testable = false }
 
 (* The two files, as Swift. *)

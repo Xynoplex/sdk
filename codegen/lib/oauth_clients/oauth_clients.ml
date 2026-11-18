@@ -172,8 +172,7 @@ let rust (t : T.t) =
     text =
       R.text
         ~header:
-          (Banner.rust_lines ~from_:"protocol/specs/src/session/oauth.json"
-             __FILE__)
+          (Banner.lines ~from_:"protocol/specs/src/session/oauth.json" __FILE__)
         (List.map
            (fun (c : T.client) ->
              constant (String.uppercase_ascii c.name ^ "_CLIENT_ID") c.docs c.id)

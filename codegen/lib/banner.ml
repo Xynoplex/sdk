@@ -4,6 +4,14 @@
 
 let writer file = "codegen/" ^ file
 
+(* A generated Rust or Swift file's opening comment lines, without their
+   [//]. *)
+let lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+  ]
+
 (* The lint rules a generated Python module is exempt from: a long line and an
    ambiguous character are Protocol's prose and data restated, and an order
    of imports or of __all__ is the spec's or the writer's, not isort's; and
@@ -45,17 +53,3 @@ let ocaml ~from_ file =
   "(* Generated from " ^ from_
   ^ ". Do not edit.\n   Regenerate: make generate (" ^ writer file
   ^ ") *)\n\n[@@@ocamlformat \"disable\"]\n"
-
-(* A generated Swift file's opening comment lines, without their [//]. *)
-let swift_lines ~from_ file =
-  [
-    "Generated from " ^ from_ ^ "; do not edit.";
-    "Regenerate: make generate (" ^ writer file ^ ")";
-  ]
-
-(* A generated Rust file's opening comment lines, without their [//]. *)
-let rust_lines ~from_ file =
-  [
-    "Generated from " ^ from_ ^ "; do not edit.";
-    "Regenerate: make generate (" ^ writer file ^ ")";
-  ]
