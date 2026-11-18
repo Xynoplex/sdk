@@ -5,7 +5,6 @@
    operations, with each operation's failure. Each group that owns a table
    writes the Haskell SDK's module of it itself. *)
 
-module Normalize = Normalize
 module Models = Models
 module Companions = Companions
 module Definitions = Definitions
