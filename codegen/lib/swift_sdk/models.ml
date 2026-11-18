@@ -238,60 +238,6 @@ and type_ t owner part raw =
               | _ -> inline t ~modifiers:[ "public" ] owner part s)))
   | D.Null | D.Bool _ -> refuse "%s.%s: no schema" owner part
 
-(* An allOf as the one object its members make. *)
-and merged t s =
-  match s with
-  | D.Node { all_of = Some members; _ } ->
-      let parts =
-        List.map
-          (fun member ->
-            let member =
-              merged t (match member with D.Ref r -> schema t r | m -> m)
-            in
-            match member with
-            | D.Node
-                ({
-                   type_ = Some (D.One Schema.Object | D.Or_null Schema.Object);
-                   _;
-                 } as n) ->
-                n
-            | _ -> refuse "allOf member is not an object")
-          members
-      in
-      let properties =
-        List.fold_left
-          (fun merged (part : D.node) ->
-            List.fold_left
-              (fun merged (key, value) ->
-                List.remove_assoc key merged @ [ (key, value) ])
-              merged
-              (Option.value part.properties ~default:[]))
-          [] parts
-      in
-      let required =
-        List.sort_uniq String.compare
-          (List.concat_map
-             (fun (n : D.node) -> Option.value n.required ~default:[])
-             parts)
-      in
-      let closed =
-        List.exists
-          (fun (n : D.node) -> n.additional_properties = Some (D.Bool false))
-          parts
-      in
-      D.Node
-        {
-          (D.node
-             ([ "type"; "properties"; "required" ]
-             @ if closed then [ "additionalProperties" ] else []))
-          with
-          type_ = Some (D.One Schema.Object);
-          properties = Some properties;
-          required = Some required;
-          additional_properties = (if closed then Some (D.Bool false) else None);
-        }
-  | _ -> s
-
 and declaration t n raw = declaration_with t ~modifiers:[ "public" ] n raw
 
 and declaration_with t ~modifiers n raw =
@@ -301,35 +247,41 @@ and declaration_with t ~modifiers n raw =
   if List.mem n t.identifiers then identifier n s
   else
     match s with
-    | D.Ref r -> alias (named t r)
     | _ when single_ref s <> None -> alias (named t (Option.get (single_ref s)))
-    | D.Node { all_of = Some _; _ } ->
-        object_ t ~modifiers ~owner:(D.owners t.definitions n s) n (merged t s)
-    | D.Node { one_of = Some members; _ } | D.Node { any_of = Some members; _ }
-      ->
-        union t ~modifiers n members s
-    | D.Node { enum = Some values; _ } -> enumeration ~modifiers n values s
-    | D.Node node -> (
-        match node.type_ with
-        | None -> refuse "%s: schema without a type" n
-        | Some (D.Or_null _) -> refuse "%s: a type and null" n
-        | Some (D.One kind) -> (
-            match kind with
-            | Schema.Object -> (
-                match (node.properties, node.additional_properties) with
-                | None, Some (D.Bool true) -> alias (dictionary_of json_value)
-                | None, Some ((D.Ref _ | D.Node _) as value) ->
-                    alias (dictionary_of (type_ t n "Value" value))
-                | _ -> object_ t ~modifiers ~owner:(fun _ -> n) n s)
-            | Schema.String -> alias string_type
-            | Schema.Integer -> alias (S.Named "Int")
-            | Schema.Number -> alias (S.Named "Double")
-            | Schema.Boolean -> alias (S.Named "Bool")
-            | Schema.Array -> (
-                match node.items with
-                | None -> refuse "%s: array without items" n
-                | Some item -> alias (S.Array_of (type_ t n "Item" item)))))
-    | D.Null | D.Bool _ -> refuse "%s: no schema" n
+    | D.Node { merged = Some m; _ } ->
+        plain_declaration t ~modifiers ~owner:(D.owners t.definitions n s) n m
+    | s -> plain_declaration t ~modifiers ~owner:(fun _ -> n) n s
+
+(* The declaration of [n], whose schema [s] states no [allOf], each of its
+   properties named for the schema [owner] says states it. *)
+and plain_declaration t ~modifiers ~owner n s =
+  let alias type_ = decl modifiers (S.Typealias { name = n; type_ }) in
+  match s with
+  | D.Ref r -> alias (named t r)
+  | D.Node { one_of = Some members; _ } | D.Node { any_of = Some members; _ } ->
+      union t ~modifiers n members s
+  | D.Node { enum = Some values; _ } -> enumeration ~modifiers n values s
+  | D.Node node -> (
+      match node.type_ with
+      | None -> refuse "%s: schema without a type" n
+      | Some (D.Or_null _) -> refuse "%s: a type and null" n
+      | Some (D.One kind) -> (
+          match kind with
+          | Schema.Object -> (
+              match (node.properties, node.additional_properties) with
+              | None, Some (D.Bool true) -> alias (dictionary_of json_value)
+              | None, Some ((D.Ref _ | D.Node _) as value) ->
+                  alias (dictionary_of (type_ t n "Value" value))
+              | _ -> object_ t ~modifiers ~owner n s)
+          | Schema.String -> alias string_type
+          | Schema.Integer -> alias (S.Named "Int")
+          | Schema.Number -> alias (S.Named "Double")
+          | Schema.Boolean -> alias (S.Named "Bool")
+          | Schema.Array -> (
+              match node.items with
+              | None -> refuse "%s: array without items" n
+              | Some item -> alias (S.Array_of (type_ t n "Item" item)))))
+  | D.Null | D.Bool _ -> refuse "%s: no schema" n
 
 and object_ t ~modifiers ~owner n s =
   let node = node_of s in
@@ -644,7 +596,7 @@ and union t ~modifiers n members s =
     List.mapi
       (fun index raw ->
         let resolved =
-          merged t (match raw with D.Ref r -> schema t r | m -> m)
+          D.meant (match raw with D.Ref r -> schema t r | m -> m)
         in
         let tag =
           match discriminator with

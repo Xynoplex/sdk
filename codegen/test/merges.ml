@@ -104,6 +104,17 @@ let keywords () =
     (stating [ ("b", text); ("a", text) ])
     (stating [ ("c", text); ("b", long) ])
     (stating [ ("b", all_of [ text; long ]); ("a", text); ("c", text) ]);
+  let written_in file target =
+    layer
+      {
+        Schema.empty with
+        ref_ = Some { Decode.target; file; pointer = "/properties/a" };
+      }
+  in
+  merged "a property two files refer to one schema for is the first's reference"
+    (stating [ ("a", written_in "one/Left.json" "../Text.json") ])
+    (stating [ ("a", written_in "Right.json" "./Text.json") ])
+    (stating [ ("a", written_in "one/Left.json" "../Text.json") ]);
   refused "types that differ" text_layer
     { Schema.empty with type_ = Some [ Boolean ] };
   let agreeing =

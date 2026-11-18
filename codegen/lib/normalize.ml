@@ -11,8 +11,29 @@ type 'a outcome = ('a, string) result
 
 let ( let* ) = Result.bind
 
-let agree what left right =
-  if left = right then Ok right
+(* A schema as two compare it: each reference as the place it names, not
+   where it is written, so two files that refer to one schema state it
+   alike. *)
+let placed : Schema.t -> Schema.t =
+  Schema.cata
+    ~boolean:(fun b -> Schema.Boolean_schema b)
+    ~schema:(fun s ->
+      Schema.Schema
+        {
+          s with
+          ref_ =
+            Option.map
+              (fun r ->
+                let file, pointer = Decode.resolve r in
+                { Decode.target = file; file = ""; pointer })
+              s.ref_;
+        })
+
+let alike left right = placed left = placed right
+let same_place left right = Decode.resolve left = Decode.resolve right
+
+let agree what same left right =
+  if same left right then Ok right
   else Error ("unsupported intersection of " ^ what)
 
 let merge_option combine old next =
@@ -23,7 +44,7 @@ let merge_option combine old next =
 
 let union_properties old next =
   let intersection left right =
-    if left = right then left
+    if alike left right then left
     else Schema.Schema { Schema.empty with all_of = Some [ left; right ] }
   in
   let keys =
@@ -79,11 +100,17 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
     | Some true -> Ok old.unique_items
     | _ -> last old.unique_items next.unique_items
   in
-  let* pattern = merge_option (agree "\"pattern\"") old.pattern next.pattern in
-  let* one_of = merge_option (agree "\"oneOf\"") old.one_of next.one_of in
-  let* any_of = merge_option (agree "\"anyOf\"") old.any_of next.any_of in
-  let* items = merge_option (agree "\"items\"") old.items next.items in
-  let* ref_ = merge_option (agree "\"$ref\"") old.ref_ next.ref_ in
+  let* pattern =
+    merge_option (agree "\"pattern\"" String.equal) old.pattern next.pattern
+  in
+  let* one_of =
+    merge_option (agree "\"oneOf\"" (List.equal alike)) old.one_of next.one_of
+  in
+  let* any_of =
+    merge_option (agree "\"anyOf\"" (List.equal alike)) old.any_of next.any_of
+  in
+  let* items = merge_option (agree "\"items\"" alike) old.items next.items in
+  let* ref_ = merge_option (agree "\"$ref\"" same_place) old.ref_ next.ref_ in
   let* minimum = bound Float.max old.minimum next.minimum in
   let* maximum = bound Float.min old.maximum next.maximum in
   let* min_length = bound Int.max old.min_length next.min_length in

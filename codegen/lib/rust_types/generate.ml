@@ -483,11 +483,7 @@ and declaration st name (s : D.t) =
       union_declaration st name members told_apart doc
   | None ->
       let owner = D.owners st.definitions name s in
-      let s =
-        match s with
-        | D.Node { all_of = Some members; _ } -> merged st name members
-        | _ -> s
-      in
+      let s = D.meant s in
       refuse_const name s;
       let n =
         match s with
@@ -767,52 +763,6 @@ and identifier name (n : D.node) doc =
       eq (R.Ref (None, ty "str")) (R.Deref (R.p "other"));
     ]
 
-(* An [allOf]'s members as one object: the properties of each, a later
-   member's refining an earlier's in its place, and every member's
-   requirements. *)
-and merged st name members =
-  let properties = ref [] in
-  let required = ref [] in
-  let closed = ref false in
-  List.iter
-    (fun member ->
-      let member =
-        match reference member with
-        | Some target -> schema st target
-        | None -> member
-      in
-      match member with
-      | D.Node ({ type_ = Some (D.One Object); _ } as m) ->
-          List.iter
-            (fun (k, v) ->
-              if List.mem_assoc k !properties then
-                properties :=
-                  List.map
-                    (fun (k', v') -> if k' = k then (k, v) else (k', v'))
-                    !properties
-              else properties := !properties @ [ (k, v) ])
-            (Option.value m.properties ~default:[]);
-          let before = !required in
-          required :=
-            before
-            @ List.filter
-                (fun r -> not (List.mem r before))
-                (Option.value m.required ~default:[]);
-          if m.additional_properties = Some (D.Bool false) then closed := true
-      | _ -> refuse "%s: an allOf member that is not an object" name)
-    members;
-  D.Node
-    {
-      (D.node
-         ([ "type"; "properties"; "required" ]
-         @ if !closed then [ "additionalProperties" ] else []))
-      with
-      type_ = Some (D.One Object);
-      properties = Some !properties;
-      required = Some !required;
-      additional_properties = (if !closed then Some (D.Bool false) else None);
-    }
-
 (* The value of [property] each member of a union states, when every member
    is an object that must state it, each admits one value, and no two admit
    the same: the property then says which member a value is. *)
@@ -873,6 +823,7 @@ and structure st name ~owner (n : D.node) doc =
           else []
         in
         let nullable = Option.is_some (without_null ps) in
+        let only_value = only_value (D.meant ps) in
         let is_required = List.mem property required in
         let make attrs t =
           R.field ~doc:(describe ps) ~attrs:(renamed @ attrs) field t
@@ -881,7 +832,7 @@ and structure st name ~owner (n : D.node) doc =
           add_param (R.Param (field, option rust_type));
           add_set (field, R.p field);
           make [] (option rust_type))
-        else if is_required && Option.is_some (only_value ps) then (
+        else if is_required && Option.is_some only_value then (
           (* A property that admits one value says which member of a union
              this is. It is the type's to state, not its maker's. *)
           incr single_valued;
@@ -890,8 +841,7 @@ and structure st name ~owner (n : D.node) doc =
             | R.Named ([ t ], []) -> t
             | _ -> refuse "%s.%s: one value of no enumeration" name property
           in
-          add_set
-            (field, path [ type_name; variant_of (Option.get (only_value ps)) ]);
+          add_set (field, path [ type_name; variant_of (Option.get only_value) ]);
           make [] rust_type)
         else if is_required && rust_type = string_ty then (
           add_param (R.Param (field, R.Impl_of (generic "Into" [ string_ty ])));
