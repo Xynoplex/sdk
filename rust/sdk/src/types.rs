@@ -37,6 +37,28 @@
 
 #![allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 
+/// `$name` is the type of the component schema of its name.
+macro_rules! schema {
+    ($name:ident) => {
+        impl $crate::types::Schema for $name {
+            const NAME: &'static str = stringify!($name);
+        }
+    };
+}
+pub(crate) use schema;
+
+/// `$member` is the union `$union` wherever the union is wanted: its
+/// variant `$variant`.
+macro_rules! member {
+    ($union:ident :: $variant:ident ($member:ident $(,)?)) => {
+        impl From<$member> for $union {
+            fn from(member: $member) -> Self {
+                $union::$variant(member)
+            }
+        }
+    };
+}
+
 include!("generated/types.rs");
 
 /// A type generated from a component schema, which it names.
