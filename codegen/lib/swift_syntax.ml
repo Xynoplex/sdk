@@ -87,7 +87,12 @@ and stmt =
 and if_ = { conditions : condition list; body : block; else_ : else_ option }
 and else_ = Else of block | Else_if of if_
 and condition = Is of expr | Let_bound of string * expr
-and case = { patterns : expr list;  (** None: [default]. *) body : stmt list }
+
+and case = {
+  patterns : expr list;  (** Empty for [default]. *)
+  body : stmt list;
+}
+
 and block = { layout : layout; stmts : stmt list }
 
 type param = {
