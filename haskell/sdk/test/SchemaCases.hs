@@ -3,9 +3,9 @@
 module SchemaCases (schemaCases) where
 
 import Control.Monad (forM_, unless)
-import Data.Aeson (Value(..), object, toJSON, (.=))
+import Data.Aeson (Value (..), object, toJSON, (.=))
 import Data.Either (isLeft)
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict qualified as Map
 import Data.Text (Text)
 import Xynolog.Internal.Schema
 

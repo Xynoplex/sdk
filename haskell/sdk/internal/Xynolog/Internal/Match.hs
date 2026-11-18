@@ -1,43 +1,76 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Xynolog.Internal.Match (MatchNamespace, newMatch, search, requestSearch, resources, controls, dispose) where
 
 import Control.Concurrent.STM (STM)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
-import qualified Xynolog.Bus as Bus
+import Xynolog.Bus qualified as Bus
 import Xynolog.Channels
-import qualified Xynolog.Internal.Cache as Cache
-import qualified Xynolog.Internal.Generated.CacheRefresh as Fact
-import qualified Xynolog.Internal.Local as Local
+import Xynolog.Internal.Cache qualified as Cache
+import Xynolog.Internal.Generated.CacheRefresh qualified as Fact
+import Xynolog.Internal.Local qualified as Local
 import Xynolog.Internal.Queries (cacheOptions, oneReport)
-import qualified Xynolog.Internal.Refresh as Refresh
-import qualified Xynolog.Internal.Running as Running
-import qualified Xynolog.Internal.Transport as LocalBus
-import qualified Xynolog.Timing.Settings as Timing
+import Xynolog.Internal.Refresh qualified as Refresh
+import Xynolog.Internal.Running qualified as Running
+import Xynolog.Internal.Transport qualified as LocalBus
+import Xynolog.Timing.Settings qualified as Timing
 import Xynolog.Types
 
 data MatchNamespace = MatchNamespace Bus.Bus LocalBus.EventBus Timing.Settings (Cache.Cache MatchResourcesRequest Fact.MatchedResourcesValue)
+
 newMatch :: Bus.Bus -> LocalBus.EventBus -> Bus.BusOptions -> Timing.Settings -> IO MatchNamespace
-newMatch wire local clock timing = MatchNamespace wire local timing <$> Cache.newCache
-  (\input -> matchResourcesResultResponse <$> Bus.request wire MatchResourcesRequestedOperation input (Timing.busRequestTimeoutMs timing))
-  (cacheOptions clock timing (const (pure (pure ()))))
+newMatch wire local clock timing =
+  MatchNamespace wire local timing
+    <$> Cache.newCache
+      (\input -> matchResourcesResultResponse <$> Bus.request wire MatchResourcesRequestedOperation input (Timing.busRequestTimeoutMs timing))
+      (cacheOptions clock timing (const (pure (pure ()))))
+
 search :: MatchNamespace -> ResourceId -> AnnotationId -> GatheredContext -> Maybe MatchSearchOptions -> IO (Running.Running MatchSearchResult MatchSearchResult)
-search (MatchNamespace wire _ timing _) identity reference context options = oneReport $
-  Bus.request wire MatchSearchRequestedOperation
-    (MatchSearchRequest context (Just (fromMaybe 10 (matchSearchOptionsLimit chosen))) reference identity
-      (Just (fromMaybe True (matchSearchOptionsUseSemanticScoring chosen))) (matchSearchOptionsAdditionalProperties chosen))
-    (Timing.busRequestTimeoutMs timing)
-  where chosen = fromMaybe (MatchSearchOptions Nothing Nothing mempty) options
+search (MatchNamespace wire _ timing _) identity reference context options =
+  oneReport $
+    Bus.request
+      wire
+      MatchSearchRequestedOperation
+      ( MatchSearchRequest
+          context
+          (Just (fromMaybe 10 (matchSearchOptionsLimit chosen)))
+          reference
+          identity
+          (Just (fromMaybe True (matchSearchOptionsUseSemanticScoring chosen)))
+          (matchSearchOptionsAdditionalProperties chosen)
+      )
+      (Timing.busRequestTimeoutMs timing)
+  where
+    chosen = fromMaybe (MatchSearchOptions Nothing Nothing mempty) options
+
 requestSearch :: MatchNamespace -> MatchSearchRequest -> Text -> STM ()
 requestSearch (MatchNamespace _ local _ _) input correlation = Local.signalWithCorrelation local MatchSearchRequested input NoScope (Just correlation)
+
 resources :: MatchNamespace -> Text -> Maybe BrowseResourcesRequest -> Cache.Query MatchResourcesResponse
-resources (MatchNamespace _ _ _ cache) text filters = Cache.query cache
-  (MatchResourcesRequest (browseResourcesRequestArchived selected) (browseResourcesRequestEntityType selected)
-    (Just (fromMaybe 100 (browseResourcesRequestLimit selected))) (Just (fromMaybe 0 (browseResourcesRequestOffset selected))) text
-    (browseResourcesRequestAdditionalProperties selected))
-  where selected = fromMaybe (BrowseResourcesRequest Nothing Nothing Nothing Nothing mempty) filters
-controls :: MatchNamespace -> [(Fact.Query,Refresh.Acts)]
-controls (MatchNamespace _ _ _ cache) = [(Fact.MatchedResources,Refresh.Acts
-  (Refresh.cacheTargets cache (\_ _ -> True)) Nothing Nothing)]
+resources (MatchNamespace _ _ _ cache) text filters =
+  Cache.query
+    cache
+    ( MatchResourcesRequest
+        (browseResourcesRequestArchived selected)
+        (browseResourcesRequestEntityType selected)
+        (Just (fromMaybe 100 (browseResourcesRequestLimit selected)))
+        (Just (fromMaybe 0 (browseResourcesRequestOffset selected)))
+        text
+        (browseResourcesRequestAdditionalProperties selected)
+    )
+  where
+    selected = fromMaybe (BrowseResourcesRequest Nothing Nothing Nothing Nothing mempty) filters
+
+controls :: MatchNamespace -> [(Fact.Query, Refresh.Acts)]
+controls (MatchNamespace _ _ _ cache) =
+  [ ( Fact.MatchedResources,
+      Refresh.Acts
+        (Refresh.cacheTargets cache (\_ _ -> True))
+        Nothing
+        Nothing
+    )
+  ]
+
 dispose :: MatchNamespace -> IO ()
 dispose (MatchNamespace _ _ _ cache) = Cache.dispose cache

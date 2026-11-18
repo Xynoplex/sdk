@@ -1,7 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.RetryPolicy (RetryRule(..), ruleName, retryable, repeatableMethod) where
+
+module Xynolog.Internal.RetryPolicy (RetryRule (..), ruleName, retryable, repeatableMethod) where
+
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 
 data RetryRule = Boot | Job | Transport | Refresh deriving (Eq, Ord, Show, Enum, Bounded)
 

@@ -4,16 +4,21 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Channels (Scope(..), ScopeArg(..), Channel(..), channelName, channelNames, globalChannels, scopedChannels, channelSchema, persistedEventTypes, channelIsScoped, encodePayload, decodePayload, Operation(..), SomeOperation(..), allOperations, limitsOperations, operationChannels) where
-import Data.Aeson (Value, toJSON, parseJSON)
+
+module Xynolog.Channels (Scope (..), ScopeArg (..), Channel (..), channelName, channelNames, globalChannels, scopedChannels, channelSchema, persistedEventTypes, channelIsScoped, encodePayload, decodePayload, Operation (..), SomeOperation (..), allOperations, limitsOperations, operationChannels) where
+
+import Data.Aeson (Value, parseJSON, toJSON)
 import Data.Aeson.Types (parseEither)
 import Data.Text (Text)
-import qualified Xynolog.Internal.Required as Required
-import qualified Xynolog.Types as Types
+import Xynolog.Internal.Required qualified as Required
+import Xynolog.Types qualified as Types
+
 data Scope = Global | Scoped
+
 data ScopeArg (scope :: Scope) where
   NoScope :: ScopeArg 'Global
   InScope :: Types.ResourceId -> ScopeArg 'Scoped
+
 data Channel (scope :: Scope) payload where
   YieldCreated :: Channel 'Global Types.StoredEventResponse
   YieldCloned :: Channel 'Global Types.StoredEventResponse
@@ -202,6 +207,7 @@ data Channel (scope :: Scope) payload where
   BusResumeGap :: Channel 'Global Types.BusResumeGap
   SessionJoined :: Channel 'Global Types.SessionJoinedEvent
   SessionLeft :: Channel 'Global Types.SessionLeftEvent
+
 channelName :: Channel scope payload -> Text
 channelName YieldCreated = "yield:created"
 channelName YieldCloned = "yield:cloned"
@@ -390,12 +396,16 @@ channelName SettingsHoverDelayChanged = "settings:hover-delay-changed"
 channelName BusResumeGap = "bus:resume-gap"
 channelName SessionJoined = "session:joined"
 channelName SessionLeft = "session:left"
+
 channelNames :: [Text]
 channelNames = ["yield:created", "yield:cloned", "yield:updated", "yield:moved", "yield:representation-added", "yield:representation-removed", "yield:create", "yield:clone-persist", "yield:update", "yield:clone", "yield:clone-token-requested", "yield:clone-resource-requested", "yield:clone-create", "yield:create-ok", "yield:create-failed", "yield:clone-persist-ok", "yield:clone-persist-failed", "yield:update-ok", "yield:update-failed", "yield:clone-token-generated", "yield:clone-token-failed", "yield:clone-resource-result", "yield:clone-resource-failed", "yield:clone-created", "yield:clone-create-failed", "mark:added", "mark:removed", "mark:body-updated", "mark:entity-tag-added", "mark:entity-tag-removed", "mark:archived", "mark:unarchived", "mark:create-request", "mark:delete", "mark:update-body", "mark:archive", "mark:unarchive", "mark:update-entity-types", "mark:create-ok", "mark:create-failed", "mark:commit", "mark:commit-ok", "mark:commit-failed", "mark:delete-ok", "mark:delete-failed", "mark:archive-ok", "mark:archive-failed", "mark:unarchive-ok", "mark:unarchive-failed", "mark:update-entity-types-ok", "mark:update-entity-types-failed", "mark:body-update-failed", "mark:requested", "mark:submit", "mark:delegate-timeout", "mark:create-error", "mark:delete-error", "bind:body-error", "frame:entity-type-added", "frame:tag-schema-added", "frame:add-entity-type", "frame:add-tag-schema", "frame:entity-type-add-ok", "frame:entity-type-add-failed", "frame:tag-schema-add-ok", "frame:tag-schema-add-failed", "principal:profiled", "principal:profile", "bind:initiate", "bind:update-body", "bind:body-updated", "bind:body-update-failed", "match:search-requested", "match:search-results", "match:search-failed", "match:resources-requested", "match:resources-result", "match:resources-failed", "match:limits-requested", "match:limits-result", "match:limits-failed", "gather:requested", "gather:complete", "gather:failed", "gather:resource-requested", "gather:resource-complete", "gather:resource-failed", "gather:summary-requested", "gather:summary-result", "gather:summary-failed", "gather:referenced-by-requested", "gather:referenced-by-result", "gather:referenced-by-failed", "gather:limits-requested", "gather:limits-result", "gather:limits-failed", "browse:resource-requested", "browse:resource-result", "browse:resource-failed", "browse:resources-requested", "browse:resources-result", "browse:resources-failed", "browse:annotation-requested", "browse:annotation-result", "browse:annotation-failed", "browse:events-requested", "browse:events-result", "browse:events-failed", "browse:annotation-history-requested", "browse:annotation-history-result", "browse:annotation-history-failed", "browse:entity-types-requested", "browse:entity-types-result", "browse:entity-types-failed", "browse:tag-schemas-requested", "browse:tag-schemas-result", "browse:tag-schemas-failed", "browse:engines-requested", "browse:engines-result", "browse:engines-failed", "browse:profiles-requested", "browse:profiles-result", "browse:profiles-failed", "browse:kb-requested", "browse:kb-result", "browse:kb-failed", "browse:directory-requested", "browse:directory-result", "browse:directory-failed", "browse:click", "browse:resource-open", "browse:resource-viewed", "browse:entity-type-clicked", "panel:toggle", "panel:open", "panel:close", "shell:sidebar-toggle", "tabs:close", "tabs:reorder", "nav:link-clicked", "nav:push", "nav:external", "beckon:hover", "beckon:focus", "beckon:sparkle", "job:started", "job:assigned", "job:completed", "job:failed", "job:start", "job:assign", "job:report-progress", "job:complete", "job:fail", "job:checkpoint", "job:queued", "job:cancel-requested", "job:cancel", "job:limits-requested", "job:limits-result", "job:limits-failed", "job:status-requested", "job:create", "job:claim", "job:status-result", "job:status-failed", "job:created", "job:create-failed", "job:claimed", "job:claim-failed", "job:cancel-ok", "job:cancel-failed", "weave:applied", "smelt:settled", "weave:rebuild", "weave:rebuild-ok", "weave:rebuild-failed", "smelt:rebuild-anchors", "smelt:rebuild-anchors-ok", "smelt:rebuild-anchors-failed", "settings:theme-changed", "settings:line-numbers-toggled", "settings:locale-changed", "settings:hover-delay-changed", "bus:resume-gap", "session:joined", "session:left"]
+
 globalChannels :: [Text]
 globalChannels = ["job:report-progress", "job:complete", "job:fail", "smelt:settled", "frame:entity-type-added", "frame:tag-schema-added", "yield:created", "yield:updated", "yield:cloned", "yield:moved", "beckon:focus", "beckon:sparkle", "bus:resume-gap", "browse:resource-open", "browse:resource-viewed", "session:joined", "session:left", "browse:click", "bind:body-updated", "bind:body-update-failed", "browse:resource-result", "browse:resource-failed", "browse:resources-result", "browse:resources-failed", "browse:annotation-result", "browse:annotation-failed", "browse:annotation-history-result", "browse:annotation-history-failed", "browse:events-result", "browse:events-failed", "browse:entity-types-result", "browse:entity-types-failed", "browse:tag-schemas-result", "browse:tag-schemas-failed", "browse:engines-result", "browse:engines-failed", "browse:profiles-result", "browse:profiles-failed", "browse:kb-result", "browse:kb-failed", "browse:directory-result", "browse:directory-failed", "frame:entity-type-add-ok", "frame:entity-type-add-failed", "frame:tag-schema-add-ok", "frame:tag-schema-add-failed", "gather:complete", "gather:failed", "gather:resource-complete", "gather:resource-failed", "gather:summary-result", "gather:summary-failed", "gather:referenced-by-result", "gather:referenced-by-failed", "gather:limits-result", "gather:limits-failed", "job:created", "job:create-failed", "job:status-result", "job:status-failed", "job:limits-result", "job:limits-failed", "job:cancel-ok", "job:cancel-failed", "job:claimed", "job:claim-failed", "mark:create-ok", "mark:create-failed", "mark:commit-ok", "mark:commit-failed", "mark:delete-ok", "mark:delete-failed", "mark:archive-ok", "mark:archive-failed", "mark:unarchive-ok", "mark:unarchive-failed", "mark:update-entity-types-ok", "mark:update-entity-types-failed", "match:search-results", "match:search-failed", "match:resources-result", "match:resources-failed", "match:limits-result", "match:limits-failed", "weave:rebuild-ok", "weave:rebuild-failed", "smelt:rebuild-anchors-ok", "smelt:rebuild-anchors-failed", "yield:create-ok", "yield:create-failed", "yield:clone-persist-ok", "yield:clone-persist-failed", "yield:update-ok", "yield:update-failed", "yield:clone-created", "yield:clone-create-failed", "yield:clone-resource-result", "yield:clone-resource-failed", "yield:clone-token-generated", "yield:clone-token-failed"]
+
 scopedChannels :: [Text]
 scopedChannels = ["mark:body-updated", "yield:representation-added", "yield:representation-removed", "mark:added", "mark:removed", "mark:entity-tag-added", "mark:entity-tag-removed", "mark:archived", "mark:unarchived", "job:started", "job:assigned", "job:completed", "job:failed"]
+
 channelSchema :: Channel scope payload -> Text
 channelSchema YieldCreated = "StoredEventResponse"
 channelSchema YieldCloned = "StoredEventResponse"
@@ -584,8 +594,10 @@ channelSchema SettingsHoverDelayChanged = "SettingsHoverDelayChangedEvent"
 channelSchema BusResumeGap = "BusResumeGap"
 channelSchema SessionJoined = "SessionJoinedEvent"
 channelSchema SessionLeft = "SessionLeftEvent"
+
 persistedEventTypes :: [Text]
 persistedEventTypes = ["yield:created", "yield:cloned", "yield:updated", "yield:moved", "yield:representation-added", "yield:representation-removed", "mark:added", "mark:removed", "mark:body-updated", "mark:entity-tag-added", "mark:entity-tag-removed", "mark:archived", "mark:unarchived", "frame:entity-type-added", "frame:tag-schema-added", "principal:profiled", "job:started", "job:assigned", "job:completed", "job:failed"]
+
 channelIsScoped :: Channel scope payload -> Bool
 channelIsScoped YieldCreated = False
 channelIsScoped YieldCloned = False
@@ -774,6 +786,7 @@ channelIsScoped SettingsHoverDelayChanged = False
 channelIsScoped BusResumeGap = False
 channelIsScoped SessionJoined = False
 channelIsScoped SessionLeft = False
+
 encodePayload :: Channel scope payload -> payload -> Value
 encodePayload YieldCreated = toJSON
 encodePayload YieldCloned = toJSON
@@ -962,6 +975,7 @@ encodePayload SettingsHoverDelayChanged = toJSON
 encodePayload BusResumeGap = toJSON
 encodePayload SessionJoined = toJSON
 encodePayload SessionLeft = toJSON
+
 decodePayload :: Channel scope payload -> Value -> Either String payload
 decodePayload YieldCreated = parseEither parseJSON . Required.channelValue (channelName YieldCreated)
 decodePayload YieldCloned = parseEither parseJSON . Required.channelValue (channelName YieldCloned)
@@ -1150,6 +1164,7 @@ decodePayload SettingsHoverDelayChanged = parseEither parseJSON . Required.chann
 decodePayload BusResumeGap = parseEither parseJSON . Required.channelValue (channelName BusResumeGap)
 decodePayload SessionJoined = parseEither parseJSON . Required.channelValue (channelName SessionJoined)
 decodePayload SessionLeft = parseEither parseJSON . Required.channelValue (channelName SessionLeft)
+
 data Operation input output failure where
   BindUpdateBodyOperation :: Operation Types.BindUpdateBodyCommand Types.BindBodyUpdated Types.CommandError
   BrowseResourceRequestedOperation :: Operation Types.BrowseResourceRequest Types.BrowseResourceResult Types.CommandError
@@ -1192,12 +1207,16 @@ data Operation input output failure where
   YieldCloneCreateOperation :: Operation Types.YieldCloneCreateCommand Types.YieldCloneCreated Types.CommandError
   YieldCloneResourceRequestedOperation :: Operation Types.YieldCloneResourceRequest Types.GetResourceByTokenResponseBusEnvelope Types.CommandError
   YieldCloneTokenRequestedOperation :: Operation Types.YieldCloneTokenRequest Types.CloneResourceWithTokenResponseBusEnvelope Types.CommandError
+
 data SomeOperation where
   SomeOperation :: Operation input output failure -> SomeOperation
+
 allOperations :: [SomeOperation]
 allOperations = [SomeOperation BindUpdateBodyOperation, SomeOperation BrowseResourceRequestedOperation, SomeOperation BrowseResourcesRequestedOperation, SomeOperation BrowseAnnotationRequestedOperation, SomeOperation BrowseAnnotationHistoryRequestedOperation, SomeOperation BrowseEventsRequestedOperation, SomeOperation BrowseEntityTypesRequestedOperation, SomeOperation BrowseTagSchemasRequestedOperation, SomeOperation BrowseEnginesRequestedOperation, SomeOperation BrowseProfilesRequestedOperation, SomeOperation BrowseKbRequestedOperation, SomeOperation BrowseDirectoryRequestedOperation, SomeOperation FrameAddEntityTypeOperation, SomeOperation FrameAddTagSchemaOperation, SomeOperation GatherRequestedOperation, SomeOperation GatherResourceRequestedOperation, SomeOperation GatherSummaryRequestedOperation, SomeOperation GatherReferencedByRequestedOperation, SomeOperation GatherLimitsRequestedOperation, SomeOperation JobCreateOperation, SomeOperation JobStatusRequestedOperation, SomeOperation JobLimitsRequestedOperation, SomeOperation JobCancelRequestedOperation, SomeOperation JobClaimOperation, SomeOperation MarkCreateRequestOperation, SomeOperation MarkCommitOperation, SomeOperation MarkDeleteOperation, SomeOperation MarkArchiveOperation, SomeOperation MarkUnarchiveOperation, SomeOperation MarkUpdateEntityTypesOperation, SomeOperation MatchSearchRequestedOperation, SomeOperation MatchResourcesRequestedOperation, SomeOperation MatchLimitsRequestedOperation, SomeOperation WeaveRebuildOperation, SomeOperation SmeltRebuildAnchorsOperation, SomeOperation YieldCreateOperation, SomeOperation YieldClonePersistOperation, SomeOperation YieldUpdateOperation, SomeOperation YieldCloneCreateOperation, SomeOperation YieldCloneResourceRequestedOperation, SomeOperation YieldCloneTokenRequestedOperation]
+
 limitsOperations :: [Operation Types.InferenceLimitsRequest Types.InferenceLimitsResult Types.CommandError]
 limitsOperations = [GatherLimitsRequestedOperation, JobLimitsRequestedOperation, MatchLimitsRequestedOperation]
+
 operationChannels :: Operation input output failure -> (Channel 'Global input, Channel 'Global output, Channel 'Global failure)
 operationChannels BindUpdateBodyOperation = (BindUpdateBody, BindBodyUpdated, BindBodyUpdateFailed)
 operationChannels BrowseResourceRequestedOperation = (BrowseResourceRequested, BrowseResourceResult, BrowseResourceFailed)

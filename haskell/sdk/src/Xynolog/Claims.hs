@@ -1,7 +1,7 @@
 module Xynolog.Claims (jobClaimChannels, jobCommitChannels, willRetryAfter) where
 
 import Xynolog.Internal.Generated.WorkerChannels (jobClaimChannels, jobCommitChannels)
-import Xynolog.Types (FailureClass(..), JobMetadata(..))
+import Xynolog.Types (FailureClass (..), JobMetadata (..))
 
 -- The budget is the record's before applying this failure.
 willRetryAfter :: JobMetadata -> Maybe FailureClass -> Bool

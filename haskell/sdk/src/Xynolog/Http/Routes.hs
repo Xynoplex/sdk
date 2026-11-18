@@ -2,11 +2,14 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Http.Routes (HttpRoute(..), routeName, routeMethod, routePath, routeStatus, routeMediaType, routeRequestMediaType, routeAuthenticated, routeRequiredHeaders, unauthorizedStatus, limitedStatus, refusalField, refusalCode, busEventName) where
+
+module Xynolog.Http.Routes (HttpRoute (..), routeName, routeMethod, routePath, routeStatus, routeMediaType, routeRequestMediaType, routeAuthenticated, routeRequiredHeaders, unauthorizedStatus, limitedStatus, refusalField, refusalCode, busEventName) where
+
 import Data.Aeson.Key (Key)
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Xynolog.Types
+
 data HttpRoute request answer where
   GetHealthAtRoot :: HttpRoute () HealthResponse
   GetProtectedResourceMetadata :: HttpRoute () ProtectedResourceMetadata
@@ -23,6 +26,7 @@ data HttpRoute request answer where
   GetResourceAnchoredText :: HttpRoute () AnchoredTextAnswer
   GetResourceAnnotations :: HttpRoute () GetAnnotationsResponse
   GetResourceJsonLd :: HttpRoute () GetResourceResponse
+
 routeName :: HttpRoute request answer -> Text
 routeName GetHealthAtRoot = "GetHealthAtRoot"
 routeName GetProtectedResourceMetadata = "GetProtectedResourceMetadata"
@@ -39,6 +43,7 @@ routeName GetResourceRepresentation = "GetResourceRepresentation"
 routeName GetResourceAnchoredText = "GetResourceAnchoredText"
 routeName GetResourceAnnotations = "GetResourceAnnotations"
 routeName GetResourceJsonLd = "GetResourceJsonLd"
+
 routeMethod :: HttpRoute request answer -> ByteString
 routeMethod GetHealthAtRoot = "GET"
 routeMethod GetProtectedResourceMetadata = "GET"
@@ -55,6 +60,7 @@ routeMethod GetResourceRepresentation = "GET"
 routeMethod GetResourceAnchoredText = "GET"
 routeMethod GetResourceAnnotations = "GET"
 routeMethod GetResourceJsonLd = "GET"
+
 routePath :: HttpRoute request answer -> Text
 routePath GetHealthAtRoot = "/"
 routePath GetProtectedResourceMetadata = "/.well-known/oauth-protected-resource"
@@ -71,6 +77,7 @@ routePath GetResourceRepresentation = "/resources/{id}"
 routePath GetResourceAnchoredText = "/resources/{id}/anchored-text"
 routePath GetResourceAnnotations = "/resources/{id}/annotations"
 routePath GetResourceJsonLd = "/resources/{id}/jsonld"
+
 routeStatus :: HttpRoute request answer -> Int
 routeStatus GetHealthAtRoot = 200
 routeStatus GetProtectedResourceMetadata = 200
@@ -87,6 +94,7 @@ routeStatus GetResourceRepresentation = 200
 routeStatus GetResourceAnchoredText = 200
 routeStatus GetResourceAnnotations = 200
 routeStatus GetResourceJsonLd = 200
+
 routeMediaType :: HttpRoute request answer -> ByteString
 routeMediaType GetHealthAtRoot = "application/json"
 routeMediaType GetProtectedResourceMetadata = "application/json"
@@ -103,6 +111,7 @@ routeMediaType GetResourceRepresentation = "*/*"
 routeMediaType GetResourceAnchoredText = "application/json"
 routeMediaType GetResourceAnnotations = "application/json"
 routeMediaType GetResourceJsonLd = "application/ld+json"
+
 routeRequestMediaType :: HttpRoute request answer -> Maybe ByteString
 routeRequestMediaType GetHealthAtRoot = Nothing
 routeRequestMediaType GetProtectedResourceMetadata = Nothing
@@ -119,6 +128,7 @@ routeRequestMediaType GetResourceRepresentation = Nothing
 routeRequestMediaType GetResourceAnchoredText = Nothing
 routeRequestMediaType GetResourceAnnotations = Nothing
 routeRequestMediaType GetResourceJsonLd = Nothing
+
 routeAuthenticated :: HttpRoute request answer -> Bool
 routeAuthenticated GetHealthAtRoot = False
 routeAuthenticated GetProtectedResourceMetadata = False
@@ -135,6 +145,7 @@ routeAuthenticated GetResourceRepresentation = True
 routeAuthenticated GetResourceAnchoredText = True
 routeAuthenticated GetResourceAnnotations = True
 routeAuthenticated GetResourceJsonLd = True
+
 routeRequiredHeaders :: HttpRoute request answer -> [(ByteString, Text)]
 routeRequiredHeaders GetHealthAtRoot = []
 routeRequiredHeaders GetProtectedResourceMetadata = []
@@ -151,13 +162,18 @@ routeRequiredHeaders GetResourceRepresentation = []
 routeRequiredHeaders GetResourceAnchoredText = []
 routeRequiredHeaders GetResourceAnnotations = []
 routeRequiredHeaders GetResourceJsonLd = []
+
 unauthorizedStatus :: Int
 unauthorizedStatus = 401
+
 limitedStatus :: Int
 limitedStatus = 429
+
 refusalField :: Key
 refusalField = "code"
+
 refusalCode :: Text
 refusalCode = "refusal-rate"
+
 busEventName :: Text
 busEventName = "bus-event"

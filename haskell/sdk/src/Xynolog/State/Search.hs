@@ -1,31 +1,42 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 -- | A shared, debounced search. A source publishes pending ('Nothing') and
 -- ready answers until its IO action ends; replacing it cancels and joins it.
-module Xynolog.State.Search (SearchPipeline, SearchState(..), newSearchPipeline, query, state, setQuery, dispose) where
+module Xynolog.State.Search (SearchPipeline, SearchState (..), newSearchPipeline, query, state, setQuery, dispose) where
 
 import Control.Concurrent.Async (cancel, race)
 import Control.Concurrent.STM
 import Control.Exception (finally, mask)
 import Control.Monad (unless, void, when)
 import Data.Text (Text)
-import qualified Data.Text as Text
-import qualified Xynolog.Internal.UnicodeCase as Unicode
-import Xynolog.Internal.Generated.SearchState (SearchState(..))
-import qualified Xynolog.Internal.StateTasks as Tasks
-import qualified Xynolog.Internal.StateValue as State
-import Xynolog.Retry (RetryOptions(..))
+import Data.Text qualified as Text
 import OpenTelemetry.Context.ThreadLocal.Propagation (propagateContext)
+import Xynolog.Internal.Generated.SearchState (SearchState (..))
+import Xynolog.Internal.StateTasks qualified as Tasks
+import Xynolog.Internal.StateValue qualified as State
+import Xynolog.Internal.UnicodeCase qualified as Unicode
+import Xynolog.Retry (RetryOptions (..))
 
-data SearchPipeline value = SearchPipeline Tasks.Tasks RetryOptions Integer
-  (State.StateValue Text) (State.StateValue (SearchState value))
-  (TQueue (Text, Integer, IO ())) (Text -> (Maybe [value] -> IO ()) -> IO ())
+data SearchPipeline value
+  = SearchPipeline
+      Tasks.Tasks
+      RetryOptions
+      Integer
+      (State.StateValue Text)
+      (State.StateValue (SearchState value))
+      (TQueue (Text, Integer, IO ()))
+      (Text -> (Maybe [value] -> IO ()) -> IO ())
 
 newSearchPipeline :: RetryOptions -> Integer -> Text -> (Text -> (Maybe [value] -> IO ()) -> IO ()) -> IO (SearchPipeline value)
 newSearchPipeline clock delay initial source = do
   when (delay < 0) (ioError (userError "search debounce must be nonnegative"))
   tasks <- Tasks.newTasks "search pipeline is closed"
-  unit <- SearchPipeline tasks clock delay <$> atomically (State.newStateValue initial)
-    <*> atomically (State.newStateValue (SearchState [] False)) <*> newTQueueIO <*> pure source
+  unit <-
+    SearchPipeline tasks clock delay
+      <$> atomically (State.newStateValue initial)
+      <*> atomically (State.newStateValue (SearchState [] False))
+      <*> newTQueueIO
+      <*> pure source
   following <- newTVarIO Nothing
   let stop = readTVarIO following >>= mapM_ cancel
       follow searched plan = do
@@ -48,10 +59,12 @@ newSearchPipeline clock delay initial source = do
                     restore stop
                     atomically (writeTVar following Nothing)
                     let trimmed = Text.dropAround Unicode.whiteSpace wanted
-                    if Text.null trimmed then atomically (State.update (state unit) (SearchState [] False)) else do
-                      atomically (State.update (state unit) (SearchState [] True))
-                      worker <- Tasks.start tasks action
-                      atomically (writeTVar following (Just worker))
+                    if Text.null trimmed
+                      then atomically (State.update (state unit) (SearchState [] False))
+                      else do
+                        atomically (State.update (state unit) (SearchState [] True))
+                        worker <- Tasks.start tasks action
+                        atomically (writeTVar following (Just worker))
                   follow (Just wanted) Nothing
   enqueue unit initial False
   void (Tasks.start tasks (follow Nothing Nothing `finally` stop))
@@ -59,8 +72,10 @@ newSearchPipeline clock delay initial source = do
 
 query :: SearchPipeline value -> State.StateValue Text
 query (SearchPipeline _ _ _ value _ _ _) = value
+
 state :: SearchPipeline value -> State.StateValue (SearchState value)
 state (SearchPipeline _ _ _ _ value _ _) = value
+
 changes :: SearchPipeline value -> TQueue (Text, Integer, IO ())
 changes (SearchPipeline _ _ _ _ _ queue _) = queue
 
@@ -73,13 +88,14 @@ enqueue unit@(SearchPipeline tasks clock delay _ _ queue source) value distinct 
   atomically $ do
     over <- Tasks.closed tasks
     current <- State.current (query unit)
-    unless (over || distinct && current==value) $ do
+    unless (over || distinct && current == value) $ do
       State.update (query unit) value
-      writeTQueue queue (value,now + delay * 1000000,action)
+      writeTQueue queue (value, now + delay * 1000000, action)
 
 setQuery :: SearchPipeline value -> Text -> IO ()
 setQuery unit value = enqueue unit value True
 
 dispose :: SearchPipeline value -> IO ()
-dispose unit@(SearchPipeline tasks _ _ _ _ _ _) = Tasks.dispose tasks `finally`
-  atomically (State.complete (query unit) >> State.complete (state unit))
+dispose unit@(SearchPipeline tasks _ _ _ _ _ _) =
+  Tasks.dispose tasks
+    `finally` atomically (State.complete (query unit) >> State.complete (state unit))

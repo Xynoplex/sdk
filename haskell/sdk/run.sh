@@ -4,6 +4,9 @@ cd "$(dirname "$0")"
 # One plan for the build and for --only-dependencies, so the dependencies
 # built alone are the ones the build uses.
 build=(cabal build all --enable-tests --enable-coverage)
+ormolu=/tmp/ormolu/ormolu
+(cd ../toolchain/ormolu && cabal install ormolu --installdir="$(dirname "$ormolu")" \
+  --install-method=copy --overwrite-policy=always)
 if [[ "${1:-}" == --only-dependencies ]]; then
   "${build[@]}" --only-dependencies
   exit
@@ -11,6 +14,7 @@ fi
 root=${1:?expected repository root or --only-dependencies}
 bash ../toolchain/toolchain.sh --check
 cabal check
+find src internal test conformance generated -name '*.hs' -exec "$ormolu" --mode check {} +
 "${build[@]}"
 mkdir -p conformance/bin
 for role in wire live; do
