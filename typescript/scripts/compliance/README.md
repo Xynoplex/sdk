@@ -289,8 +289,8 @@ jobs:
           ./scripts/generate-compliance-report.sh
 ```
 
-The repository runs them in the `compliance-check` job of
-[`ci.yml`](../../../../.github/workflows/ci.yml).
+The repository runs them in the `tests` job of
+[`ci.yml`](../../../.github/workflows/ci.yml), through `make test-typescript`.
 
 ## Performance
 

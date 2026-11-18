@@ -6,7 +6,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/@xynolog/core.svg)](https://www.npmjs.com/package/@xynolog/core)
 [![License](https://img.shields.io/npm/l/@xynolog/core.svg)](https://github.com/xynolog/sdk/blob/main/LICENSE)
 
-What every TypeScript package in Xynolog stands on: the protocol's types, generated from the [spec](../../../protocol/specs/README.md), and the logic that has to be the same wherever it runs. That is ids, the event bus and its channels, the transport contract, annotations and how they are anchored, and identities.
+What every TypeScript package in Xynolog stands on: the protocol's types, generated from the [spec](https://github.com/xynolog/protocol/blob/main/specs/README.md), and the logic that has to be the same wherever it runs. That is ids, the event bus and its channels, the transport contract, annotations and how they are anchored, and identities.
 
 ## Who uses it
 
@@ -57,7 +57,7 @@ const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https
 
 ## What a change must keep
 
-- **The spec is the source.** Each module that opens `GENERATED FILE`, `src/types.ts` among them, is generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. Those modules are committed, and `make generate` writes them. Change the spec, then run `make generate`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
+- **The spec is the source.** Each module that opens `GENERATED FILE`, `src/types.ts` among them, is generated from [`protocol/specs/src`](https://github.com/xynolog/protocol/tree/main/specs/src), and never edited. Those modules are committed, and `make generate` writes them. Change the spec, then run `make generate`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
 - **The main import runs in a browser.** It uses no Node builtin. The test issuer is reachable only by its subpath, because of the weight `jose` would add to every bundle, and `npm run lint:core-subpaths` fails a re-export of it from the root.
 - **It depends on no other Xynolog package.** Everything else depends on it.
 - **An id is made only by its constructor or its guard.** One kind is never assignable to another.
@@ -67,7 +67,7 @@ const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https
 
 - [API tour](docs/API.md): each area, with examples.
 - [Utilities](docs/Utilities.md): the small helpers.
-- [The spec](../../../protocol/specs/README.md), which this package is generated from.
+- [The spec](https://github.com/xynolog/protocol/blob/main/specs/README.md), which this package is generated from.
 
 ## License
 

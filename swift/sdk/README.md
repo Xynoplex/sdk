@@ -374,11 +374,11 @@ The models, the tables and the tests' dispatch are generated from `protocol/spec
 
 `Scripts/install-driver.sh` builds the instrumented Linux wire driver and bundles its Swift runtime. The conformance application chooses OTLP/HTTP exporters when the harness supplies `OTEL_EXPORTER_OTLP_ENDPOINT`. Its runtime matches Ubuntu 26.04. `Scripts/conformance-coverage.sh` reports the library code the driver exercised, separately from Rust's LLVM profiles.
 
-[protocol]: ../../protocol/contract/README.md
-[conformance]: ../../protocol/conformance/sdk/README.md
+[protocol]: https://github.com/xynolog/protocol/blob/main/contract/README.md
+[conformance]: https://github.com/xynolog/protocol/blob/main/conformance/sdk/README.md
 [guide]: https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md
 [http-client]: https://github.com/swift-server/async-http-client
 [toolchain]: .swift-version
 [quick-start]: https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md
-[flows]: ../../protocol/contract/flows
+[flows]: https://github.com/xynolog/protocol/tree/main/contract/flows
 [sign-in]: https://github.com/xynolog/docs/blob/main/builder/SIGN-IN.md
