@@ -1,7 +1,10 @@
 (* Every component that is a string enum (protocol/specs/src/components/
-   schemas), as a module of the OCaml SDK (ocaml/sdk/lib/enums.ml): a variant
-   per member, and its name both ways. A member is a letter and then letters,
-   digits and . / + -, so it names a constructor; no two name the same one. *)
+   schemas), and every record Protocol states in a table ([Table_records])
+   that is one but a union's tag, which is the union's constructors
+   ([Records]), as a module of the OCaml SDK (ocaml/sdk/lib/enums.ml): a
+   variant per member, and its name both ways. A member is a letter and then
+   letters, digits and . / + -, so it names a constructor; no two name the
+   same one, and no two enums name one module. *)
 
 let source = "protocol/specs/src/components/schemas"
 let prefix = "components/schemas/"
@@ -24,9 +27,89 @@ let constructor value =
        (function '.' | '/' | '-' -> '_' | c -> c)
        (Text.replace_all ~sub:"+" ~by:"_plus" value))
 
-let derive (spec : Spec.t) =
+let module_name name = String.capitalize_ascii (Text.snake name)
+
+(* The file and the pointer of a table record's [Table_records.key]. *)
+let place key =
+  match String.index_opt key '#' with
+  | Some i ->
+      (String.sub key 0 i, String.sub key (i + 1) (String.length key - i - 1))
+  | None -> (key, "")
+
+(* The table records a union's branch states its tag by, by key. *)
+let tags table =
+  List.concat_map
+    (fun (_, _, schema) ->
+      match schema with
+      | Schema.Schema
+          {
+            discriminator = Some { property_name; _ };
+            one_of = Some branches;
+            _;
+          } ->
+          List.filter_map
+            (function
+              | Schema.Schema { properties = Some properties; _ } -> (
+                  match List.assoc_opt property_name properties with
+                  | Some
+                      (Schema.Schema
+                         {
+                           all_of = Some [ Schema.Schema { ref_ = Some r; _ } ];
+                           _;
+                         }) ->
+                      Some (Table_records.key r)
+                  | _ -> None)
+              | _ -> None)
+            branches
+      | _ -> [])
+    table
+
+let is_enum = function
+  | Schema.Schema { type_ = Some [ String ]; enum = Some _; _ } -> true
+  | _ -> false
+
+(* Each table record that is a string enum but a union's tag: its key, its
+   module and its members. *)
+let tabled table =
+  let tags = tags table in
+  List.filter_map
+    (fun (key, title, schema) ->
+      match schema with
+      | Schema.Schema { enum = Some members; _ }
+        when is_enum schema && not (List.mem key tags) ->
+          Some (key, module_name title, members)
+      | _ -> None)
+    table
+
+let derive (spec : Spec.t) table =
   let refusals = ref [] in
-  let enums =
+  let enum ~file ~pointer module_ members =
+    let refuse at message =
+      refusals := { Decode.file; pointer = pointer ^ at; message } :: !refusals
+    in
+    let variants =
+      List.concat
+        (List.mapi
+           (fun i (member : Schema.literal) ->
+             match member with
+             | String_literal value when is_member value ->
+                 [ (constructor value, value) ]
+             | _ ->
+                 refuse
+                   (Printf.sprintf "/enum/%d" i)
+                   "is no member an OCaml constructor can name";
+                 [])
+           members)
+    in
+    let constructors = List.map fst variants in
+    if
+      variants = []
+      || List.length (List.sort_uniq compare constructors)
+         <> List.length constructors
+    then refuse "/enum" "is empty, or two members name one constructor";
+    { module_; variants }
+  in
+  let components =
     List.filter_map
       (fun (file, schema) ->
         match schema with
@@ -42,39 +125,35 @@ let derive (spec : Spec.t) =
                 (String.sub file (String.length prefix)
                    (String.length file - String.length prefix))
             in
-            let refuse pointer message =
-              refusals := { Decode.file; pointer; message } :: !refusals
-            in
-            let variants =
-              List.concat
-                (List.mapi
-                   (fun i (member : Schema.literal) ->
-                     match member with
-                     | String_literal value when is_member value ->
-                         [ (constructor value, value) ]
-                     | _ ->
-                         refuse
-                           (Printf.sprintf "/enum/%d" i)
-                           "is no member an OCaml constructor can name";
-                         [])
-                   members)
-            in
-            let constructors = List.map fst variants in
-            if
-              variants = []
-              || List.length (List.sort_uniq compare constructors)
-                 <> List.length constructors
-            then refuse "/enum" "is empty, or two members name one constructor";
-            Some
-              { module_ = String.capitalize_ascii (Text.snake stem); variants }
+            Some (enum ~file ~pointer:"" (module_name stem) members)
         | _ -> None)
       (List.sort (fun (a, _) (b, _) -> compare a b) spec.schemas)
   in
+  let tabled =
+    List.map
+      (fun (key, module_, members) ->
+        let file, pointer = place key in
+        enum ~file ~pointer module_ members)
+      (tabled table)
+  in
+  let enums = components @ tabled in
+  let modules = List.map (fun e -> e.module_) enums in
+  if List.length (List.sort_uniq compare modules) <> List.length modules then
+    refusals :=
+      {
+        Decode.file = source;
+        pointer = "";
+        message = "two enums name one module";
+      }
+      :: !refusals;
   match List.rev !refusals with [] -> Ok enums | errors -> Error errors
 
 module O = Ocaml_syntax
 
-let banner = Banner.ocaml ~from_:("string enums in " ^ source) __FILE__
+let banner =
+  Banner.ocaml
+    ~from_:("string enums in " ^ source ^ " and in Protocol's tables")
+    __FILE__
 
 let t e =
   O.type_declaration "t"
