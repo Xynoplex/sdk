@@ -29,6 +29,7 @@ public data class ResourceCreatedPayload(
     public val generatedFrom: ResourceCreatedPayloadGeneratedFrom? = null,
     public val generationPrompt: String? = null,
     public val generator: OneOrMoreAgents? = null,
+    /** Who requested this resource — derived by the knowledge base at write time, never sent by the emitter. For a resource created in fulfilment of a job, the requester recorded on that job's job:assigned; otherwise the emitter itself. Absent on events written before derivation existed, whose emitter was their only party. */
     public val creator: Agent? = null,
     /** PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it. */
     public val wasAttributedTo: OneOrMoreAgents? = null,

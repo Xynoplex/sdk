@@ -262,6 +262,14 @@ export interface components {
        * there is no empty array.
        */
       body?: components['schemas']['AnnotationBodies'];
+      /**
+       * Web Annotation creator — who requested the annotation. DERIVED by the
+       * knowledge base at write time, never accepted from an emitter (a payload
+       * carrying it is refused): the verified emitter of the write, or, when
+       * the write cites a job, the verified emitter of the job:create that
+       * produced it. A Person for human-requested work; a Software peer for
+       * autonomous-agent work.
+       */
       creator?: components['schemas']['Agent'];
       /**
        * When the annotation was MADE — the authoring moment, carried from the
@@ -518,6 +526,7 @@ export interface components {
      * nowhere. A Person the record does not name carries no `name`.
      */
     AttributedEvent: components['schemas']['StoredEventResponse'] & {
+      /** Who `userId` is. */
       agent: components['schemas']['Agent'];
     };
     /**
@@ -552,8 +561,11 @@ export interface components {
     BindBodyOperation: {
       /** The type of body operation */
       op: 'add' | 'remove' | 'replace';
+      /** Body item for add operations */
       item?: components['schemas']['AnnotationBody'];
+      /** Previous body item for replace operations */
       oldItem?: components['schemas']['AnnotationBody'];
+      /** Replacement body item for replace operations */
       newItem?: components['schemas']['AnnotationBody'];
     };
     /**
@@ -2723,6 +2735,11 @@ export interface components {
     JobProgress: {
       /** Completion percentage (0-100) */
       percentage: number;
+      /**
+       * What the job is doing right now, as a code plus typed params; the
+       * client renders the sentence. Optional: pure percentage heartbeats carry
+       * none, and consumers render nothing message-shaped when it is absent.
+       */
       message?: components['schemas']['JobProgressMessage'];
       /**
        * Annotation this job is attached to, when applicable. Echoed inside
@@ -4118,6 +4135,11 @@ export interface components {
       parentResourceId: components['schemas']['ResourceId'];
       entityTypes?: string[];
       language?: string;
+      /**
+       * Who made the clone — the emitter, derived at write time. A clone is
+       * never job-fulfilling. Absent on events written before derivation
+       * existed, whose emitter was their only party.
+       */
       creator?: components['schemas']['Agent'];
       /**
        * PROV-O wasAttributedTo, derived at write time: the cloner alone. The
@@ -4161,6 +4183,13 @@ export interface components {
       };
       generationPrompt?: string;
       generator?: components['schemas']['OneOrMoreAgents'];
+      /**
+       * Who requested this resource — derived by the knowledge base at write
+       * time, never sent by the emitter. For a resource created in fulfilment
+       * of a job, the requester recorded on that job's job:assigned; otherwise
+       * the emitter itself. Absent on events written before derivation existed,
+       * whose emitter was their only party.
+       */
       creator?: components['schemas']['Agent'];
       /**
        * PROV-O wasAttributedTo, derived at write time from `creator` and the

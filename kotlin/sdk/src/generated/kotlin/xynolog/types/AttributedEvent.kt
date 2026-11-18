@@ -31,6 +31,7 @@ public data class AttributedEvent(
     /** Event-type-specific payload */
     public val payload: JsonObject,
     public val metadata: EventMetadata,
+    /** Who `userId` is. */
     public val agent: Agent,
 ) {
     /** How Java makes a `AttributedEvent`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */

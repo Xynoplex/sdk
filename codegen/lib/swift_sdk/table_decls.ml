@@ -529,7 +529,7 @@ let shape_table n entries =
 let rec stamps models ?(seen = []) raw =
   let s, _ = M.nonnull raw in
   match s with
-  | D.Ref r ->
+  | D.Ref { name = r; _ } ->
       if List.mem r seen then []
       else stamps models ~seen:(r :: seen) (M.schema models r)
   | D.Node { one_of = Some members; _ } | D.Node { any_of = Some members; _ }

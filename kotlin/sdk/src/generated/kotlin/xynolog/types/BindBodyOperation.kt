@@ -13,8 +13,11 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 public data class BindBodyOperation(
     /** The type of body operation */
     public val op: BindBodyOperationOp,
+    /** Body item for add operations */
     public val item: AnnotationBody? = null,
+    /** Previous body item for replace operations */
     public val oldItem: AnnotationBody? = null,
+    /** Replacement body item for replace operations */
     public val newItem: AnnotationBody? = null,
 ) {
     /** How Java makes a `BindBodyOperation`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */

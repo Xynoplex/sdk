@@ -1,7 +1,8 @@
 (* The gateway's component schemas as the Rust and Swift types are generated
    from them: the document bundled (each file it names as a component, or that
    a directory of schemas holds, is a schema by its name, and any other file a
-   [$ref] names is written in its place, the [$ref]'s siblings with it gone),
+   [$ref] names is written in its place; a [$ref] has only a description
+   beside it, which is what is said of it there),
    and OpenAPI's [nullable] as JSON Schema draft 7 states it: beside one
    [type], [null] is a second type; beside anything else, the schema is a
    union of [null] and the rest. A schema that states an [allOf] holds its
@@ -17,7 +18,8 @@ type types =
   | Or_null of Schema.type_name  (** draft 7's [[T, "null"]] *)
 
 type t =
-  | Ref of string  (** A component schema, by its name. *)
+  | Ref of { name : string; description : string option }
+      (** A component schema, by its name, and what is said of it here. *)
   | Null  (** [{type: "null"}], a nullable union's other member. *)
   | Bool of bool
   | Node of node
@@ -86,6 +88,21 @@ let in_place ~trail file =
     refuse "%s reaches itself through the files written in its place" file;
   file :: trail
 
+(* What a schema that states a [$ref] says of the schema it names: a
+   description, or nothing. A constraint on a reference is an [allOf], so
+   any other keyword beside one is refused. *)
+let said_of_reference (s : _ Schema.layer) (r : Decode.reference) =
+  match
+    List.filter (fun k -> k <> "$ref" && k <> "description") (Schema.keywords s)
+  with
+  | [] -> Ok s.description
+  | k :: _ ->
+      Error
+        (Printf.sprintf
+           "$ref %s has %s beside it: only a description is said of a \
+            reference, and a constraint on one is an allOf"
+           r.target k)
+
 (* A schema a [$ref] names, as [named] names it or, when it names none, the
    schema written in its place from [schemas]. *)
 type referent = Named of string | In_place of string * Schema.t
@@ -117,9 +134,20 @@ let view ~named ~schemas =
     let s = Schema.map snd l in
     match s.ref_ with
     | Some r -> (
+        let description =
+          match said_of_reference s r with
+          | Ok d -> d
+          | Error message -> refuse "%s" message
+        in
         match referent ~named ~schemas r with
-        | Some (Named name) -> Ref name
-        | Some (In_place (file, target)) -> view target (in_place ~trail file)
+        | Some (Named name) -> Ref { name; description }
+        | Some (In_place (file, target)) ->
+            if Option.is_some description then
+              refuse
+                "$ref %s is written in its place, so nothing can be said of it \
+                 beside it"
+                r.target;
+            view target (in_place ~trail file)
         | None -> refuse "$ref %s names no schema" r.target)
     | None -> (
         let sub f = f trail in
@@ -382,7 +410,8 @@ let owners definitions name s =
   let parts = function
     | Node { all_of = Some members; _ } ->
         List.map
-          (function Ref n -> Inherited.Component n | m -> stated m)
+          (function
+            | Ref { name; _ } -> Inherited.Component name | m -> stated m)
           members
     | s -> [ stated s ]
   in

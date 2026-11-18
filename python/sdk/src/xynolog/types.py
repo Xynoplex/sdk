@@ -858,7 +858,12 @@ class Annotation(WireModel, frozen=True):
             description="W3C Web Annotation body. Optional per the W3C spec — annotations whose motivation alone is meaningful (highlighting) legitimately omit it. Present values are either a single body or a non-empty array of bodies; there is no empty array."
         ),
     ] = None
-    creator: Agent | None = None
+    creator: Annotated[
+        Agent | None,
+        Field(
+            description="Web Annotation creator — who requested the annotation. DERIVED by the knowledge base at write time, never accepted from an emitter (a payload carrying it is refused): the verified emitter of the write, or, when the write cites a job, the verified emitter of the job:create that produced it. A Person for human-requested work; a Software peer for autonomous-agent work."
+        ),
+    ] = None
     created: Annotated[
         str,
         Field(
@@ -1169,7 +1174,7 @@ class AttributedEvent(StoredEventResponse, frozen=True):
     A persisted event as a history reply carries it: the stored event, and the agent its `userId` identifies. The agent is derived when the reply is made — the DID read into a Person or a Software agent, and a Person's name filled in from the knowledge base's profiles — and is stored nowhere. A Person the record does not name carries no `name`.
     """
 
-    agent: Agent
+    agent: Annotated[Agent, Field(description="Who `userId` is.")]
 
 
 class BeckonFocusEvent(WireModel, frozen=True):
@@ -1212,9 +1217,9 @@ class BindBodyOperation(WireModel, frozen=True):
     """
 
     op: BindBodyOperationOp
-    item: AnnotationBody | None = None
-    old_item: Annotated[AnnotationBody | None, Field(alias="oldItem")] = None
-    new_item: Annotated[AnnotationBody | None, Field(alias="newItem")] = None
+    item: Annotated[AnnotationBody | None, Field(description="Body item for add operations")] = None
+    old_item: Annotated[AnnotationBody | None, Field(alias="oldItem", description="Previous body item for replace operations")] = None
+    new_item: Annotated[AnnotationBody | None, Field(alias="newItem", description="Replacement body item for replace operations")] = None
 
 
 class BindBodyUpdated(WireModel, frozen=True):
@@ -3466,7 +3471,12 @@ class JobProgress(WireModel, frozen=True):
     """
 
     percentage: Annotated[float, Field(description="Completion percentage (0-100)")]
-    message: JobProgressMessage | None = None
+    message: Annotated[
+        JobProgressMessage | None,
+        Field(
+            description="What the job is doing right now, as a code plus typed params; the client renders the sentence. Optional: pure percentage heartbeats carry none, and consumers render nothing message-shaped when it is absent."
+        ),
+    ] = None
     annotation_id: Annotated[
         AnnotationId | None,
         Field(
@@ -4934,7 +4944,12 @@ class ResourceClonedPayload(WireModel, frozen=True):
     parent_resource_id: Annotated[ResourceId, Field(alias="parentResourceId")]
     entity_types: Annotated[list[str] | None, Field(alias="entityTypes")] = None
     language: str | None = None
-    creator: Agent | None = None
+    creator: Annotated[
+        Agent | None,
+        Field(
+            description="Who made the clone — the emitter, derived at write time. A clone is never job-fulfilling. Absent on events written before derivation existed, whose emitter was their only party."
+        ),
+    ] = None
     was_attributed_to: Annotated[
         OneOrMoreAgents | None,
         Field(
@@ -4982,7 +4997,12 @@ class ResourceCreatedPayload(WireModel, frozen=True):
     generated_from: Annotated[ResourceCreatedPayloadGeneratedFrom | None, Field(alias="generatedFrom")] = None
     generation_prompt: Annotated[str | None, Field(alias="generationPrompt")] = None
     generator: OneOrMoreAgents | None = None
-    creator: Agent | None = None
+    creator: Annotated[
+        Agent | None,
+        Field(
+            description="Who requested this resource — derived by the knowledge base at write time, never sent by the emitter. For a resource created in fulfilment of a job, the requester recorded on that job's job:assigned; otherwise the emitter itself. Absent on events written before derivation existed, whose emitter was their only party."
+        ),
+    ] = None
     was_attributed_to: Annotated[
         OneOrMoreAgents | None,
         Field(
