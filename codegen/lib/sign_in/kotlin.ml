@@ -27,7 +27,9 @@ let access_list name (l : Owner_only.access_list) =
     ~returns:(K.Type "String") name
     (K.Same_line
        (K.Binary
-          (K.Binary (K.Str l.before, K.Plus, K.Name "owner"), K.Plus, K.Str l.after)))
+          ( K.Binary (K.Str l.before, K.Plus, K.Name "owner"),
+            K.Plus,
+            K.Str l.after )))
 
 let file (o : Owner_only.t) =
   Kotlin_sdk.table ~from_:Owner_only.file __FILE__ ~package:"xynolog.signin"

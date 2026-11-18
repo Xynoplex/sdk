@@ -413,51 +413,51 @@ let haskell (o : Owner_only.t) (names : Contract.t) =
   with
   | _ :: _ as refusals -> Error refusals
   | [] ->
-    Ok
-      [
-        {
-          Output.path = generated ^ "xynolog_store_policy.h";
-          text =
-            String.concat "\n"
-              [
-                "/* Generated from " ^ Contract.file ^ " and " ^ Owner_only.file
-                ^ "; do not edit.";
-                "   Regenerate: " ^ regenerate ^ " */";
-                "#define XYNOLOG_DIRECTORY_MODE 0" ^ o.directory.octal;
-                "#define XYNOLOG_FILE_MODE 0" ^ o.file.octal;
-                "#define XYNOLOG_DIRECTORY_ACCESS_LIST "
-                ^ c_string directory_access;
-                "#define XYNOLOG_FILE_ACCESS_LIST " ^ c_string file_access;
-                "#define XYNOLOG_LOCK_HIGH 0x" ^ names.offset_high;
-                "#define XYNOLOG_LOCK_BYTES 1";
-              ]
-            ^ "\n";
-        };
-        {
-          Output.path = generated ^ "SignInStore.hs";
-          text =
-            H.text
-              {
-                banner = Banner.lines ~from_:Contract.file __FILE__;
-                extensions = [];
-                name = "Xynolog.Internal.Generated.SignInStore";
-                imports = [];
-                body =
-                  [
-                    Values
-                      {
-                        about = [];
-                        type_ = T_name "FilePath";
-                        values =
-                          [
-                            ("signInFileName", Str names.document);
-                            ("signInLockName", Str names.lock);
-                          ];
-                      };
-                  ];
-              };
-        };
-      ]
+      Ok
+        [
+          {
+            Output.path = generated ^ "xynolog_store_policy.h";
+            text =
+              String.concat "\n"
+                [
+                  "/* Generated from " ^ Contract.file ^ " and "
+                  ^ Owner_only.file ^ "; do not edit.";
+                  "   Regenerate: " ^ regenerate ^ " */";
+                  "#define XYNOLOG_DIRECTORY_MODE 0" ^ o.directory.octal;
+                  "#define XYNOLOG_FILE_MODE 0" ^ o.file.octal;
+                  "#define XYNOLOG_DIRECTORY_ACCESS_LIST "
+                  ^ c_string directory_access;
+                  "#define XYNOLOG_FILE_ACCESS_LIST " ^ c_string file_access;
+                  "#define XYNOLOG_LOCK_HIGH 0x" ^ names.offset_high;
+                  "#define XYNOLOG_LOCK_BYTES 1";
+                ]
+              ^ "\n";
+          };
+          {
+            Output.path = generated ^ "SignInStore.hs";
+            text =
+              H.text
+                {
+                  banner = Banner.lines ~from_:Contract.file __FILE__;
+                  extensions = [];
+                  name = "Xynolog.Internal.Generated.SignInStore";
+                  imports = [];
+                  body =
+                    [
+                      Values
+                        {
+                          about = [];
+                          type_ = T_name "FilePath";
+                          values =
+                            [
+                              ("signInFileName", Str names.document);
+                              ("signInLockName", Str names.lock);
+                            ];
+                        };
+                    ];
+                };
+          };
+        ]
 
 let files ~root (spec : Spec.t) =
   let entry =

@@ -22,15 +22,15 @@ let mode name (m : Owner_only.mode) =
 
 let access_list ~attrs name (l : Owner_only.access_list) =
   R.Fn
-    (R.fn_ ~doc:[ l.docs ]
-       ~attrs:(cfg "windows" :: attrs)
-       name
+    (R.fn_ ~doc:[ l.docs ] ~attrs:(cfg "windows" :: attrs) name
        ~params:[ R.Param ("owner", R.str_ty) ]
        ~ret:(R.named "String")
        [
          R.Tail
            (R.Method
-              (R.Array [ R.Str l.before; R.p "owner"; R.Str l.after ], "concat", []));
+              ( R.Array [ R.Str l.before; R.p "owner"; R.Str l.after ],
+                "concat",
+                [] ));
        ])
 
 let file (o : Owner_only.t) =
