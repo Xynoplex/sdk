@@ -5,7 +5,6 @@
    operations, with each operation's failure. Each group that owns a table
    writes the Haskell SDK's module of it itself. *)
 
-module Normalize = Normalize
 module Models = Models
 module Companions = Companions
 module Definitions = Definitions
@@ -122,7 +121,7 @@ let files ~root (spec : Spec.t) =
       (match
          List.find_map
            (fun (name, schema) ->
-             match Companions.unread schema with
+             match Schema.unread_anywhere schema with
              | [] -> None
              | keyword :: _ ->
                  Some
@@ -157,7 +156,9 @@ let files ~root (spec : Spec.t) =
     | Some s -> Ok s
     | None -> Error ("missing schema: " ^ name)
   in
-  let normalize = Normalize.normalize ~find:definition in
+  let normalize =
+    Normalize.normalize ~find:(fun r -> definition (Definitions.referenced r))
+  in
   let* () = within "bus/registry.json" (Channels.check bus ~models:named) in
   let* limits = within "bus/registry.json" (Channels.limits bus) in
   let* readers =
@@ -202,7 +203,9 @@ let files ~root (spec : Spec.t) =
       | Some s -> Ok s
       | None -> Error ("unknown schema reference: " ^ name)
     in
-    let merged = Normalize.everywhere ~find in
+    let merged =
+      Normalize.everywhere ~referenced:Definitions.referenced ~find
+    in
     Spec.all
       (List.map
          (fun (name, _) ->

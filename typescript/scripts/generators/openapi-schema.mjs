@@ -7,8 +7,6 @@
 //
 //   - typescript/scripts/generators/generate-validators.mjs, TypeScript's validators (draft-07,
 //     through the bundled spec)
-//   - typescript/scripts/generators/required-shapes.mjs, what each component requires of a
-//     value, which every SDK's reply checks are generated from
 //
 // `discriminator` is left as it is written: a dispatch hint beside the `oneOf`
 // that decides, which is OpenAPI's own meaning for it, and a keyword a JSON

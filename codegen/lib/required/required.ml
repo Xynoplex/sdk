@@ -97,15 +97,6 @@ let collect results =
       | Error error, Error errors -> Error (error :: errors))
     results (Ok [])
 
-let declared ~root =
-  List.concat_map
-    (fun file ->
-      Go.declared
-        (In_channel.with_open_bin
-           (Filename.concat root file)
-           In_channel.input_all))
-    Go.declaring
-
 (* What each component requires, by the component's name. *)
 let derive (spec : Spec.t) =
   Result.bind
@@ -127,7 +118,7 @@ let files ~root (spec : Spec.t) =
   in
   let* http = collect (replies spec derivation) in
   let* csharp = Csharp.file derivation spec.tables.bus_registry in
-  match Go.check ~declared:(declared ~root) shapes with
+  match Go.check ~declared:(Go_types.declared spec) shapes with
   | [] ->
       let* kotlin =
         Kotlin_sdk.written ~from_:"openapi.json" (fun () -> Kotlin.file shapes)

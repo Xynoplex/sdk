@@ -1,9 +1,0 @@
-{
-  "name": "xynolog-codegen-node",
-  "private": true,
-  "description": "The Node generators, until codegen/'s OCaml generator replaces each (plans: codegen.md). Each group is a generate:<group> script and its generate:<group>:check.",
-  "scripts": {
-    "generate:go": "node schemas/generate-required-lists-go.mjs",
-    "generate:go:check": "node schemas/generate-required-lists-go.mjs --check && node ../../go/scripts/check-go-schema-coverage.mjs"
-  }
-}

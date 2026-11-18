@@ -164,13 +164,11 @@ case "${1:-}" in
     ;;
   generate|check-generated)
     # The OCaml generator writes each of its groups' files, a TypeScript one as
-    # it prints it. The Node step lays those out with Prettier, then runs the
-    # Node groups, codegen/node/package.json's generate:<group>, in the order
-    # it lists them. generate writes into the checkout and builds
-    # xynolog-codegen in a copy of codegen/, never in the checkout;
-    # check-generated runs the same into a copy of the checkout, the Node
-    # groups as generate:<group>:check, and fails when a file the generator
-    # names differs from the committed one.
+    # it prints it, and the Node step lays those out with Prettier. generate
+    # writes into the checkout and builds xynolog-codegen in a copy of
+    # codegen/, never in the checkout; check-generated runs the same into a
+    # copy of the checkout, and fails when a file the generator names differs
+    # from the committed one.
     bash "$ROOT/scripts/bundle-protocol.sh"
     ocaml_toolchain_image
     work=$(mktemp -d)
@@ -180,10 +178,8 @@ case "${1:-}" in
       rmdir "$work"' EXIT
     if [[ "$1" == generate ]]; then
       target=$ROOT
-      suffix=""
     else
       target=$work/sdk
-      suffix=:check
       mkdir "$target"
       tar -C "$ROOT" --exclude=.git --exclude=node_modules --exclude=dist --exclude=dist-newstyle \
         --exclude=target --exclude=.gradle --exclude=build --exclude=obj --exclude=.build \
@@ -201,12 +197,7 @@ case "${1:-}" in
       npm install --no-package-lock --ignore-scripts
       cd ..
       sed -n "s/^format //p" /work/written > /work/laid-out
-      xargs -r -a /work/laid-out typescript/node_modules/.bin/prettier --write --log-level warn
-      ln -sfn ../../typescript/node_modules codegen/node/node_modules
-      cd codegen/node
-      for script in $(node -p "Object.keys(require(\"./package.json\").scripts).filter((s) => /^generate:[a-z-]+$/.test(s)).join(\" \")"); do
-        npm run --silent "$script'"$suffix"'"
-      done'
+      xargs -r -a /work/laid-out typescript/node_modules/.bin/prettier --write --log-level warn'
     if [[ "$1" == check-generated ]]; then
       [[ -s "$work/written" ]]
       drifted=0

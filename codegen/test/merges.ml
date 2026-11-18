@@ -3,7 +3,6 @@
    against with no allOf left in them. *)
 
 open Xynolog_codegen
-module Normalize = Haskell_sdk.Normalize
 
 let reference name =
   { Decode.target = "./" ^ name ^ ".json"; file = ""; pointer = "" }
@@ -14,20 +13,27 @@ let text = layer text_layer
 let named name = layer { Schema.empty with ref_ = Some (reference name) }
 let all_of parts = layer { Schema.empty with all_of = Some parts }
 
+let named_by (r : Decode.reference) =
+  Filename.remove_extension (Filename.basename r.target)
+
 let find definitions name =
   match List.assoc_opt name definitions with
   | Some s -> Ok s
   | None -> Error ("unknown schema reference: " ^ name)
 
+let find_referenced definitions r = find definitions (named_by r)
+
 let merge ?(definitions = [ ("Text", text) ]) left right =
-  Normalize.normalize ~find:(find definitions) (all_of [ left; right ])
+  Normalize.normalize
+    ~find:(find_referenced definitions)
+    (all_of [ left; right ])
 
 let outcome =
   Alcotest.result
     (Alcotest.testable
        (fun f s ->
          Format.pp_print_string f
-           (Yojson.Safe.to_string (Haskell_sdk.Companions.runtime (Schema s))))
+           (Yojson.Safe.to_string (Schema.runtime (Schema s))))
        ( = ))
     Alcotest.string
 
@@ -90,6 +96,25 @@ let keywords () =
   merged "required is each part's, once" (required [ "a" ])
     (required [ "b"; "a" ])
     (required [ "a"; "b" ]);
+  let stating properties = { Schema.empty with properties = Some properties } in
+  let long = layer { Schema.empty with min_length = Some 2 } in
+  merged
+    "properties keep the order the parts state them in, one two parts state \
+     differently the allOf of both in the first's place"
+    (stating [ ("b", text); ("a", text) ])
+    (stating [ ("c", text); ("b", long) ])
+    (stating [ ("b", all_of [ text; long ]); ("a", text); ("c", text) ]);
+  let written_in file target =
+    layer
+      {
+        Schema.empty with
+        ref_ = Some { Decode.target; file; pointer = "/properties/a" };
+      }
+  in
+  merged "a property two files refer to one schema for is the first's reference"
+    (stating [ ("a", written_in "one/Left.json" "../Text.json") ])
+    (stating [ ("a", written_in "Right.json" "./Text.json") ])
+    (stating [ ("a", written_in "one/Left.json" "../Text.json") ]);
   refused "types that differ" text_layer
     { Schema.empty with type_ = Some [ Boolean ] };
   let agreeing =
@@ -109,12 +134,12 @@ let keywords () =
     "a schema that is a part of itself" true
     (Result.is_error
        (Normalize.normalize
-          ~find:(find [ ("Cycle", all_of [ named "Cycle" ]) ])
+          ~find:(find_referenced [ ("Cycle", all_of [ named "Cycle" ]) ])
           (all_of [ named "Cycle" ])))
 
 (* [schema], named among [definitions], as [Normalize.everywhere] writes it. *)
 let everywhere ?(definitions = [ ("Text", text) ]) schema =
-  Normalize.everywhere
+  Normalize.everywhere ~referenced:named_by
     ~find:(find (("Subject", schema) :: definitions))
     "Subject"
 
@@ -125,8 +150,7 @@ let object_ properties =
 let schema =
   Alcotest.testable
     (fun f s ->
-      Format.pp_print_string f
-        (Yojson.Safe.to_string (Haskell_sdk.Companions.runtime s)))
+      Format.pp_print_string f (Yojson.Safe.to_string (Schema.runtime s)))
     ( = )
 
 let written = Alcotest.result schema Alcotest.string
@@ -162,7 +186,7 @@ let everywhere_cases () =
   Alcotest.check written "each schema an allOf expands is merged as well"
     (Ok
        (object_
-          [ ("a", layer { text_layer with min_length = Some 2 }); ("b", text) ]))
+          [ ("b", text); ("a", layer { text_layer with min_length = Some 2 }) ]))
     (everywhere
        ~definitions:
          [

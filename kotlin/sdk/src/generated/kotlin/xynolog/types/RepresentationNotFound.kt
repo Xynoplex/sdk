@@ -14,6 +14,7 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 public data class RepresentationNotFound(
     /** What went wrong, in a sentence. */
     public val error: String,
+    /** A machine-readable class, when the route defines one. */
     public val code: RepresentationNotFoundCode,
     /** What the caller can do about it, when there is something to say. */
     public val hint: String? = null,

@@ -696,7 +696,7 @@ func (j *HeldMarkJob) Complete(ctx context.Context, result api.MarkJobResult) er
 	}
 	defer j.released(true)
 	var completed api.JobCompleteCommand
-	if err := completed.FromMarkJobCompleteCommand(api.MarkJobCompleteCommand{
+	if err := completed.From(api.MarkJobCompleteCommand{
 		ResourceId: j.resourceID, JobId: j.jobID, JobType: api.MarkJobCompleteCommandJobTypeMark, Attempt: j.attempt(),
 		Result: &result, Durability: j.observed(),
 	}); err != nil {
@@ -721,7 +721,7 @@ func (j *HeldYieldJob) Complete(ctx context.Context, result api.YieldJobResult) 
 	}
 	defer j.released(true)
 	var completed api.JobCompleteCommand
-	if err := completed.FromYieldJobCompleteCommand(api.YieldJobCompleteCommand{
+	if err := completed.From(api.YieldJobCompleteCommand{
 		ResourceId: j.resourceID, JobId: j.jobID, JobType: api.YieldJobCompleteCommandJobTypeYield, Attempt: j.attempt(),
 		AnnotationId: j.anchor(), Result: &result, Durability: j.observed(),
 	}); err != nil {

@@ -184,7 +184,7 @@ func endpoint(host string, port int) api.KbEndpoint {
 		protocol = api.HttpEndpointProtocolHttp
 	}
 	var at api.KbEndpoint
-	if err := at.FromHttpEndpoint(api.HttpEndpoint{Host: host, Kind: api.HttpEndpointKindHttp, Port: port, Protocol: protocol}); err != nil {
+	if err := at.From(api.HttpEndpoint{Host: host, Kind: api.HttpEndpointKindHttp, Port: port, Protocol: protocol}); err != nil {
 		panic(err)
 	}
 	return at

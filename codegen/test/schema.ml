@@ -164,5 +164,22 @@ let () =
                 "unread"
                 [ "const"; "propertyNames"; "minProperties"; "not" ]
                 (Schema.unread every));
+          case "unread anywhere is each held schema's too" (fun () ->
+              let below : Schema.t =
+                Schema { Schema.empty with min_properties = Some 1 }
+              in
+              let holding : Schema.t =
+                Schema
+                  {
+                    Schema.empty with
+                    const = Some (Bool_literal true);
+                    properties = Some [ ("a", below) ];
+                    all_of = Some [ below ];
+                  }
+              in
+              Alcotest.(check (list string))
+                "unread anywhere"
+                [ "const"; "minProperties"; "minProperties" ]
+                (Schema.unread_anywhere holding));
         ] );
     ]
