@@ -27,8 +27,6 @@ public sealed record PendingAuthorization(
 public sealed record BeginAuthorizationOptions(HttpEndpoint Target, string RedirectUri, string? KbId = null,
     string? ExpectedDid = null, string? ExpectedName = null);
 
-public sealed record ConnectionIdentity(UserId Did, KbDescription Description);
-
 public sealed class IdentityUnverifiableError : XynologError
 {
     internal IdentityUnverifiableError(string reason, string message, Exception? cause = null)
@@ -130,7 +128,7 @@ public static class RedirectSignIn
             var reason = error is BusRequestError rejected && rejected.Code == ProtocolFacts.BusError("rejected") ? "not-reported" : "unreachable";
             throw new IdentityUnverifiableError(reason, error.Message, error);
         }
-        try { return new ConnectionIdentity(Identity.KbDid(description.Domain), description); }
+        try { return new ConnectionIdentity { Did = Identity.KbDid(description.Domain), Description = description }; }
         catch (FormatException error) { throw new IdentityUnverifiableError("not-reported", error.Message, error); }
     }
 

@@ -13,13 +13,6 @@ using static Xynolog.Resources.ResourceReaders;
 
 namespace Xynolog.Registry;
 
-public sealed record SignedIn(KbEndpoint Endpoint, KbDescription Description, StoredSession Session,
-    string? KbId = null, string? ExpectedDid = null, string? ExpectedName = null);
-public sealed record Expected(string Did, string? Name);
-public sealed record SignInOutcome(KnowledgeBase Kb, Expected? Expected);
-public enum KbReadKind { NoVerdict, Recorded, Conflict }
-public sealed record KbReadVerdict(KbReadKind Kind, string? ObservedDid = null, string? ObservedName = null);
-
 public sealed record BrowserState(IReadOnlyList<KnowledgeBase> Kbs, string? ActiveKbId, OpenedSession? ActiveSession,
     SessionSignals? ActiveSignals, bool SessionActivating, IReadOnlyList<OpenResource> OpenResources,
     ResourceId? LastViewedResource, string? IdentityToken);
@@ -27,7 +20,7 @@ public sealed record BrowserState(IReadOnlyList<KnowledgeBase> Kbs, string? Acti
 /// <summary>The application's registered knowledge bases and its active session.</summary>
 public sealed class XynologBrowser : IAsyncDisposable
 {
-    private static readonly KbReadVerdict Unavailable = new(KbReadKind.NoVerdict);
+    private static readonly KbReadVerdict Unavailable = new KbReadVerdict.NoVerdictCase(new KbReadVerdictNoVerdict());
     private static readonly int ChecksAtOnce = ProtocolFacts.Timing("checksAtOnceCount").GetInt32();
     private readonly SessionFactory factory;
     private readonly TimeProvider clock;
@@ -95,9 +88,9 @@ public sealed class XynologBrowser : IAsyncDisposable
     public KbSessionStatus KbSessionStatus(string kbId)
     {
         var stored = StoredSession(Storage, kbId);
-        return stored is null ? Registry.KbSessionStatus.SignedOut :
+        return stored is null ? Types.KbSessionStatus.SignedOut :
             Tokens.IsTokenExpired(stored.Access, clock.GetUtcNow().ToUnixTimeMilliseconds() / 1000d)
-                ? Registry.KbSessionStatus.Expired : Registry.KbSessionStatus.Authenticated;
+                ? Types.KbSessionStatus.Expired : Types.KbSessionStatus.Authenticated;
     }
 
     public Task SetActiveKbAsync(string? kbId, CancellationToken cancellation = default)
@@ -172,12 +165,12 @@ public sealed class XynologBrowser : IAsyncDisposable
                 var atAddress = items.Where(kb => SamePlace(kb.Endpoint, signedIn.Endpoint)).ToArray();
                 var believed = signedIn.KbId is { } id ? items.FirstOrDefault(kb => kb.Id == id) :
                     atAddress.Length == 1 ? atAddress[0] : null;
-                var expected = signedIn.ExpectedDid is { } expectedDid ? new Expected(expectedDid, signedIn.ExpectedName) :
-                    believed is not null ? new Expected(believed.Did, believed.Label) : null;
+                var expected = signedIn.ExpectedDid is { } expectedDid ? new Expected { Did = expectedDid, Name = signedIn.ExpectedName } :
+                    believed is not null ? new Expected { Did = believed.Did, Name = believed.Label } : null;
                 var existing = atAddress.FirstOrDefault(kb => kb.Did == did);
                 var landed = existing is null ? MakeKb(signedIn.Description.Name, signedIn.Endpoint, did, read) :
                     existing with { Label = signedIn.Description.Name, LastRead = read };
-                result = new SignInOutcome(landed, expected);
+                result = new SignInOutcome { Kb = landed, Expected = expected };
                 return existing is null ? [.. items, landed] : items.Select(kb => kb.Id == landed.Id ? landed : kb).ToArray();
             });
             var outcome = result ?? throw new InvalidOperationException("Storage did not apply the knowledge-base update.");
@@ -399,12 +392,13 @@ public sealed class XynologBrowser : IAsyncDisposable
         lock (gate)
         {
             if (live != current || closing) return;
-            if (verdict is { Kind: KbReadKind.Conflict, ObservedDid: { } observed })
+            if (verdict is KbReadVerdict.ConflictCase(var conflict))
             {
                 var expected = state.Kbs.FirstOrDefault(kb => kb.Id == current.KbId);
                 ForgetTabs(current.KbId);
                 Project();
-                if (expected is not null) current.Signals.NotifyKbIdentityConflict(new KbIdentityConflict(expected.Did, observed));
+                if (expected is not null)
+                    current.Signals.NotifyKbIdentityConflict(new KbIdentityConflict { ExpectedDid = expected.Did, ObservedDid = conflict.ObservedDid });
                 return;
             }
             waiting = ReadTabs(current.KbId).Select(tab => tab.Id).Distinct().ToArray();
@@ -417,11 +411,11 @@ public sealed class XynologBrowser : IAsyncDisposable
                 try
                 {
                     var descriptor = await current.Opened.Client.Browse.Resource(resource).FreshAsync(token).ConfigureAwait(Spawning.Captures);
-                    checks[resource] = new TabCheck(TabVerdict.Ready, descriptor.Name, PrimaryMediaType(descriptor));
+                    checks[resource] = new TabCheck.ReadyCase(new TabCheckReady { Name = descriptor.Name, MediaType = PrimaryMediaType(descriptor) });
                 }
                 catch (BusRequestError error) when (error.Code == ProtocolFacts.BusError("not-found"))
-                { checks[resource] = new TabCheck(TabVerdict.Gone); }
-                catch (XynologError) { checks[resource] = new TabCheck(TabVerdict.Unknown); }
+                { checks[resource] = new TabCheck.GoneCase(new TabCheckGone()); }
+                catch (XynologError) { checks[resource] = new TabCheck.UnknownCase(new TabCheckUnknown()); }
             }).ConfigureAwait(Spawning.Captures);
         lock (gate)
         {
@@ -444,14 +438,15 @@ public sealed class XynologBrowser : IAsyncDisposable
             did = Identity.KbDid(description.Domain).Value;
         }
         catch (Exception error) when (error is XynologError or FormatException) { return Unavailable; }
-        if (did != entry.Did) return new KbReadVerdict(KbReadKind.Conflict, did, description.Name);
+        if (did != entry.Did)
+            return new KbReadVerdict.ConflictCase(new KbReadVerdictConflict { ObservedDid = did, ObservedName = description.Name });
         lock (gate)
         {
             if (closing || live != current) return Unavailable;
             ChangeKbs(items => items.Select(kb => kb.Id == entry.Id && kb.Did == did
                 ? kb with { Label = description.Name, LastRead = ReadNow(description) } : kb).ToArray());
         }
-        return new KbReadVerdict(KbReadKind.Recorded);
+        return new KbReadVerdict.RecordedCase(new KbReadVerdictRecorded());
     }
 
     private void ChangeActiveTabs(Func<IReadOnlyList<OpenResource>, IReadOnlyList<OpenResource>> change)
@@ -703,7 +698,14 @@ public static class BrowserSignIn
             browser.Clock, browser.Random, cancellation).ConfigureAwait(Spawning.Captures);
         var identity = await RedirectSignIn.DescribeConnectionAsync(pending.Target, session.Access, httpClient,
             browser.Clock, browser.Random, cancellation).ConfigureAwait(Spawning.Captures);
-        return await browser.SignedInAsync(new SignedIn(new KbEndpoint.HttpEndpointCase(pending.Target), identity.Description, session,
-            pending.KbId, pending.ExpectedDid, pending.ExpectedName), cancellation).ConfigureAwait(Spawning.Captures);
+        return await browser.SignedInAsync(new SignedIn
+        {
+            Endpoint = new KbEndpoint.HttpEndpointCase(pending.Target),
+            Description = identity.Description,
+            Session = session,
+            KbId = pending.KbId,
+            ExpectedDid = pending.ExpectedDid,
+            ExpectedName = pending.ExpectedName,
+        }, cancellation).ConfigureAwait(Spawning.Captures);
     }
 }

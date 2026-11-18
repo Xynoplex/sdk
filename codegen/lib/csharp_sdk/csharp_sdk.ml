@@ -51,11 +51,25 @@ let constant type_ name value =
 let json ~root path =
   Result.map_error (fun e -> [ e ]) (Decode.parse_file ~root (specs ^ path))
 
-let member key path = function
-  | `Assoc members when List.mem_assoc key members ->
-      Ok (List.assoc key members)
-  | _ ->
-      Error [ { Decode.file = path; pointer = ""; message = "has no " ^ key } ]
+(* [json], a schema read from [file], each [$ref] into a table naming the
+   record there by its title: WireJson finds the schema a reference names by
+   the name of the file it names. *)
+let rec titled ~file records = function
+  | `Assoc members ->
+      `Assoc
+        (List.map
+           (function
+             | ("$ref", `String target) as reference -> (
+                 let key =
+                   Table_records.key { Decode.target; file; pointer = "" }
+                 in
+                 match List.find_opt (fun (k, _, _) -> k = key) records with
+                 | Some (_, title, _) -> ("$ref", `String (title ^ ".json"))
+                 | None -> reference)
+             | key, value -> (key, titled ~file records value))
+           members)
+  | `List items -> `List (List.map (titled ~file records) items)
+  | json -> json
 
 let schema_of (spec : Spec.t) path =
   match List.assoc_opt path spec.schemas with
@@ -71,22 +85,36 @@ let schema_of (spec : Spec.t) path =
         ]
 
 (* The schemas the models are made from: every component schema, the
-   sign-in store's entry, the discovery document and what it names, a
-   stored session and why a session ends; each with the file it is read
-   from. *)
+   sign-in store's entry, the discovery document and what it names, and the
+   records Protocol states in its tables ([Table_records]); each with the
+   file, or the place in a file, it is read from. *)
 let roots ~root (spec : Spec.t) =
-  let read name path schema json =
-    ((name, path, { Models.schema; json }) : _)
+  let* records =
+    Result.map_error
+      (fun message -> [ { Decode.file = specs; pointer = ""; message } ])
+      (Table_records.all spec)
+  in
+  let read ~file name path schema json =
+    ((name, path, { Models.schema; json = titled ~file records json }) : _)
   in
   let whole name path =
     let* schema = schema_of spec path in
     let* json = json ~root path in
-    Ok (read name path schema json)
+    Ok (read ~file:path name path schema json)
   in
-  let within name path key schema =
-    let* table = json ~root path in
-    let* json = member key path table in
-    Ok (read name path schema json)
+  let record (key, name, schema) =
+    let file, pointer =
+      match String.index_opt key '#' with
+      | Some i ->
+          ( String.sub key 0 i,
+            String.sub key (i + 1) (String.length key - i - 1) )
+      | None -> (key, "")
+    in
+    let* table = json ~root file in
+    match Decode.at_pointer pointer table with
+    | Some json -> Ok (read ~file name key schema json)
+    | None ->
+        Error [ { Decode.file; pointer; message = "states no record there" } ]
   in
   let components =
     List.filter_map
@@ -102,11 +130,8 @@ let roots ~root (spec : Spec.t) =
         whole "SignIn" Sign_in.schema_file;
         whole "DiscoveryDocument" "discovery/DiscoveryDocument.json";
         whole "DiscoveredKB" "discovery/DiscoveredKB.json";
-        within "StoredSession" "session/stored.json" "storedSession"
-          spec.tables.session_stored.stored_session;
-        within "SessionEndReason" "session/cases.json" "told"
-          spec.tables.session_cases.told;
-      ])
+      ]
+    @ List.map record records)
 
 let refused message =
   [ { Decode.file = "components/schemas"; pointer = ""; message } ]

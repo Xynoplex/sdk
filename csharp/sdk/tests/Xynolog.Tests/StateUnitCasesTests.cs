@@ -49,7 +49,7 @@ public sealed partial class TransportTests
         for (var occurrence = 0; occurrence < 2; occurrence++)
         {
             Assert.True(await reader.MoveNextAsync());
-            Assert.Equal(new PermissionDenied(null), reader.Current);
+            Assert.Equal(new PermissionDenied { Detail = null }, reader.Current);
         }
         signals.Dispose();
         Assert.False(await reader.MoveNextAsync());

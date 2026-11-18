@@ -186,8 +186,9 @@ per language it writes:
   `cache-refresh`, `oauth-clients`, `sign-in`, `media-types`, `stored`,
   `client-types`, `testing`, `required` and `unicode-case` groups each write
   the Haskell SDK's module of their own table.
-- `csharp-sdk`: the C# SDK's models of the component schemas and of the
-  schemas it reads beside them, each with its converter
+- `csharp-sdk`: the C# SDK's models of the component schemas, of the
+  schemas it reads beside them and of the records Protocol states in its
+  tables (`Table_records`), each with its converter
   (`Csharp_sdk.Models`), every schema they are made from as the SDK
   validates a value against it, the code each of the wire's failure codes
   becomes, and the tables the SDK reads as Protocol writes them. The `bus`,

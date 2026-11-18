@@ -171,9 +171,6 @@ public sealed record OpenResource(
     [property: JsonRequired] int Order,
     string? MediaType = null, string? StorageUri = null);
 
-public enum TabVerdict { Gone, Ready, Unknown }
-public sealed record TabCheck(TabVerdict Verdict, string? Name = null, string? MediaType = null);
-
 public static class OpenResources
 {
     public static IReadOnlyList<OpenResource> SortOpenResources(IReadOnlyList<OpenResource> resources) =>
@@ -185,9 +182,9 @@ public static class OpenResources
         foreach (var tab in opened)
         {
             var check = checks.GetValueOrDefault(tab.Id);
-            if (check?.Verdict == TabVerdict.Gone) continue;
-            tabs.Add(check is { Verdict: TabVerdict.Ready, Name: { } name }
-                ? tab with { Name = name, MediaType = check.MediaType ?? tab.MediaType } : tab);
+            if (check is TabCheck.GoneCase) continue;
+            tabs.Add(check is TabCheck.ReadyCase(var ready)
+                ? tab with { Name = ready.Name, MediaType = ready.MediaType ?? tab.MediaType } : tab);
         }
         return tabs.AsReadOnly();
     }

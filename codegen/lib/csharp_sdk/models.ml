@@ -22,7 +22,9 @@ module C = Csharp_syntax
 
 type definition = {
   schema : Schema.t;
-  json : Yojson.Safe.t;  (** As Protocol writes it, for WireSchemas. *)
+  json : Yojson.Safe.t;
+      (** As Protocol writes it, a [$ref] into a table naming the record there
+          by its title, for WireSchemas. *)
 }
 
 exception Refused of string
@@ -50,13 +52,6 @@ let enum_constant value = identifier (Naming.variant value)
 let field_name owner property =
   let field = identifier (Text.pascal property) in
   if field = owner then field ^ "Value" else field
-
-(* The schema a reference names, by its file's name. *)
-let referenced (r : Decode.reference) =
-  let file, fragment = Decode.resolve r in
-  if fragment <> "" || not (Filename.check_suffix file ".json") then
-    refuse "%s names a place within a file, which names no model" r.target
-  else Filename.remove_extension (Filename.basename file)
 
 let layer what = function
   | Schema.Schema s -> s
@@ -118,6 +113,9 @@ let validate path ((schema : Schema.t), json) =
 type state = {
   definitions : (string, definition) Hashtbl.t;
   mutable order : string list;  (** The definitions' names, last first. *)
+  read_from : (string, string) Hashtbl.t;
+      (** A root's name, by the file, or the place in a file, it is read from.
+      *)
   identifiers : string list;
   written : (string, C.decl list) Hashtbl.t;
   inlined : (string, string) Hashtbl.t;  (** [owner.property] → model. *)
@@ -134,10 +132,16 @@ let definition state name =
   | Some d -> d
   | None -> refuse "No component schema names %s." name
 
+(* The schema a reference names: the root read from where it points. *)
+let referenced state (r : Decode.reference) =
+  match Hashtbl.find_opt state.read_from (Table_records.key r) with
+  | Some name -> name
+  | None -> refuse "%s names no schema the models are made from" r.target
+
 let rec plain_text state (s : Schema.schema) =
   match s.ref_ with
   | Some r ->
-      let name = referenced r in
+      let name = referenced state r in
       plain_text state (layer name (definition state name).schema)
   | None -> s.type_ = Some [ String ] && s.enum = None
 
@@ -191,7 +195,7 @@ and type_of state owner property ((schema, json) as node) =
   let s = layer (owner ^ "." ^ property) schema in
   let inline () = inline state owner property node in
   match s with
-  | { ref_ = Some r; _ } -> named state (referenced r)
+  | { ref_ = Some r; _ } -> named state (referenced state r)
   | { all_of = Some [ part ]; _ } ->
       type_of state owner property (part, nth 0 (child "allOf" json))
   | { all_of = Some _; _ } | { one_of = Some _; _ } | { any_of = Some _; _ } ->
@@ -257,7 +261,7 @@ and meant state name d =
 and merged state name schema =
   match
     Normalize.normalize
-      ~find:(fun r -> Ok (definition state (referenced r)).schema)
+      ~find:(fun r -> Ok (definition state (referenced state r)).schema)
       schema
   with
   | Ok s -> s
@@ -312,7 +316,7 @@ and object_ state name ~attribute ~original d =
   let owner =
     Inherited.of_schemas
       ~find:(fun n -> (definition state n).schema)
-      ~referenced name original.schema
+      ~referenced:(referenced state) name original.schema
   in
   (* A property another schema states is that schema's, and so are the
      models made in place of it: that schema is modelled first, from what
@@ -416,7 +420,7 @@ and object_ state name ~attribute ~original d =
 and union state name (members, written) =
   let variant (s : Schema.schema) =
     match s with
-    | { ref_ = Some r; _ } -> referenced r
+    | { ref_ = Some r; _ } -> referenced state r
     | { type_ = Some [ Array ]; _ } -> "Array"
     | { type_ = Some [ String ]; _ } -> "Text"
     | { properties = Some properties; _ } -> (
@@ -488,12 +492,14 @@ type t = {
 }
 
 (* [roots] are the schemas the models are made from, in order, each
-   validated; [made] are the bus's payload types beside them. *)
+   validated, and each what a [$ref] to where it is read from names; [made]
+   are the bus's payload types beside them. *)
 let make ~identifiers ~roots ~made =
   let state =
     {
       definitions = Hashtbl.create 1024;
       order = [];
+      read_from = Hashtbl.create 1024;
       identifiers;
       written = Hashtbl.create 1024;
       inlined = Hashtbl.create 256;
@@ -503,6 +509,7 @@ let make ~identifiers ~roots ~made =
     List.iter
       (fun (name, path, d) ->
         validate path (d.schema, d.json);
+        Hashtbl.replace state.read_from path name;
         define state name d)
       roots;
     List.iter (fun (name, d) -> define state name d) made;

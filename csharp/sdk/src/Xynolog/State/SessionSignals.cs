@@ -2,10 +2,6 @@ using Xynolog.Types;
 
 namespace Xynolog.State;
 
-public sealed record KbIdentityConflict(string ExpectedDid, string ObservedDid);
-public sealed record PermissionDenied(string? Detail);
-public sealed record SessionEnded(SessionEndReason Reason);
-
 /// <summary>Notices for the host. Raising the same notice twice is observable twice.</summary>
 public sealed class SessionSignals : IStateUnit
 {
@@ -13,8 +9,8 @@ public sealed class SessionSignals : IStateUnit
     public StateValue<PermissionDenied?> PermissionDenied { get; } = new(null);
     public StateValue<KbIdentityConflict?> KbIdentityConflict { get; } = new(null);
 
-    public void NotifySessionEnded(SessionEndReason reason) => SessionEnded.Set(new SessionEnded(reason), repeat: true);
-    public void NotifyPermissionDenied(string? detail) => PermissionDenied.Set(new PermissionDenied(detail), repeat: true);
+    public void NotifySessionEnded(SessionEndReason reason) => SessionEnded.Set(new SessionEnded { Reason = reason }, repeat: true);
+    public void NotifyPermissionDenied(string? detail) => PermissionDenied.Set(new PermissionDenied { Detail = detail }, repeat: true);
     public void NotifyKbIdentityConflict(KbIdentityConflict conflict) => KbIdentityConflict.Set(conflict, repeat: true);
     public void AcknowledgeSessionEnded() => SessionEnded.Set(null, repeat: true);
     public void AcknowledgePermissionDenied() => PermissionDenied.Set(null, repeat: true);

@@ -101,5 +101,3 @@ public sealed class HttpSessionFactory(HttpClient? httpClient = null, TimeProvid
         await issuer.SignOutAsync(new MemorySignIn(stored), cancellation).ConfigureAwait(Spawning.Captures);
     }
 }
-
-public enum KbSessionStatus { Authenticated, Expired, SignedOut }
