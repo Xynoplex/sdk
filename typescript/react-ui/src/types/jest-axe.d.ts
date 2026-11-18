@@ -13,12 +13,15 @@ declare module 'jest-axe' {
 
   export function axe(
     html: Element | Document | DocumentFragment | string,
-    options?: Record<string, unknown>
+    options?: Record<string, unknown>,
   ): Promise<AxeResults>;
 
   export function configureAxe(options?: Record<string, unknown>): typeof axe;
 
   export const toHaveNoViolations: {
-    toHaveNoViolations(results: AxeResults): { pass: boolean; message(): string };
+    toHaveNoViolations(results: AxeResults): {
+      pass: boolean;
+      message(): string;
+    };
   };
 }

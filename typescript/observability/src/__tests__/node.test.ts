@@ -60,7 +60,9 @@ afterEach(async () => {
   }
   // Drain every listener this test added.
   for (const event of REGISTERED_EVENTS) {
-    for (const handler of process.listeners(event).slice(preExistingCounts[event])) {
+    for (const handler of process
+      .listeners(event)
+      .slice(preExistingCounts[event])) {
       process.off(event, handler);
     }
   }
@@ -77,7 +79,9 @@ afterEach(async () => {
 describe('initObservabilityNode', () => {
   it('returns false when no exporter is configured', async () => {
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(false);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(false);
     // No signal handlers were registered.
     expect(process.listenerCount('SIGTERM')).toBe(preExistingCounts.SIGTERM);
     expect(process.listenerCount('SIGINT')).toBe(preExistingCounts.SIGINT);
@@ -87,28 +91,40 @@ describe('initObservabilityNode', () => {
     process.env['OTEL_SDK_DISABLED'] = 'true';
     process.env['OTEL_EXPORTER_OTLP_ENDPOINT'] = 'http://collector.test';
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(false);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(false);
   });
 
   it('returns true when OTEL_CONSOLE_EXPORTER=true and registers signal handlers', async () => {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
-    expect(process.listenerCount('SIGTERM')).toBe(preExistingCounts.SIGTERM + 1);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(true);
+    expect(process.listenerCount('SIGTERM')).toBe(
+      preExistingCounts.SIGTERM + 1,
+    );
     expect(process.listenerCount('SIGINT')).toBe(preExistingCounts.SIGINT + 1);
   });
 
   it('returns true when OTEL_EXPORTER_OTLP_ENDPOINT is set', async () => {
     process.env['OTEL_EXPORTER_OTLP_ENDPOINT'] = 'http://collector.test';
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(true);
   });
 
   it('is idempotent — second call returns false', async () => {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(false);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(true);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(false);
   });
 
   it('uses OTEL_SERVICE_NAME when set, falling back to config.serviceName', async () => {
@@ -118,34 +134,48 @@ describe('initObservabilityNode', () => {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     process.env['OTEL_SERVICE_NAME'] = 'env-named-service';
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'config-named', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      initObservabilityNode({
+        serviceName: 'config-named',
+        serviceVersion: '1.2.3',
+      }),
+    ).toBe(true);
   });
 
   it('accepts OTEL_METRIC_EXPORT_INTERVAL and falls back when malformed', async () => {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     process.env['OTEL_METRIC_EXPORT_INTERVAL'] = '5000';
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(true);
   });
 
   it('falls back to the default interval when OTEL_METRIC_EXPORT_INTERVAL is non-numeric', async () => {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     process.env['OTEL_METRIC_EXPORT_INTERVAL'] = 'not-a-number';
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(true);
   });
 });
 
 describe('initObservabilityNode — OTEL_TRACES_SAMPLER', () => {
   /** Whether a span started with no parent, under the sampler the variables name, records. */
-  async function records(sampler: string | undefined, arg?: string): Promise<boolean> {
+  async function records(
+    sampler: string | undefined,
+    arg?: string,
+  ): Promise<boolean> {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     if (sampler !== undefined) process.env['OTEL_TRACES_SAMPLER'] = sampler;
     if (arg !== undefined) process.env['OTEL_TRACES_SAMPLER_ARG'] = arg;
     // The global tracer provider is set once per process; each case installs its own.
     trace.disable();
     const { initObservabilityNode } = await loadFresh();
-    expect(initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' }),
+    ).toBe(true);
     const span = trace.getTracer('probe').startSpan('probe');
     const recording = span.isRecording();
     span.end();
@@ -161,9 +191,19 @@ describe('initObservabilityNode — OTEL_TRACES_SAMPLER', () => {
     ['traceidratio at 0', 'traceidratio', '0', false],
     ['traceidratio at 1', 'traceidratio', '1', true],
     ['parentbased_traceidratio at 0', 'parentbased_traceidratio', '0', false],
-    ['traceidratio with a ratio out of range, read as 1', 'traceidratio', '2', true],
+    [
+      'traceidratio with a ratio out of range, read as 1',
+      'traceidratio',
+      '2',
+      true,
+    ],
     ['traceidratio with no ratio, read as 1', 'traceidratio', undefined, true],
-    ['an unknown sampler, read as parentbased_always_on', 'xray', undefined, true],
+    [
+      'an unknown sampler, read as parentbased_always_on',
+      'xray',
+      undefined,
+      true,
+    ],
   ])('%s', async (_case, sampler, arg, recording) => {
     expect(await records(sampler, arg)).toBe(recording);
   });
@@ -178,10 +218,20 @@ describe('shutdownObservabilityNode', () => {
   it('resets internal state so a subsequent init succeeds again', async () => {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     const mod = await loadFresh();
-    expect(mod.initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      mod.initObservabilityNode({
+        serviceName: 'svc',
+        serviceVersion: '1.2.3',
+      }),
+    ).toBe(true);
     await mod.shutdownObservabilityNode();
     // After shutdown, init should once again return true.
-    expect(mod.initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      mod.initObservabilityNode({
+        serviceName: 'svc',
+        serviceVersion: '1.2.3',
+      }),
+    ).toBe(true);
   });
 });
 
@@ -191,7 +241,9 @@ describe('shutdownObservabilityNode', () => {
 describe('metricsExporterKind', () => {
   it('is otlp when an endpoint is set and nothing overrides it', async () => {
     const { metricsExporterKind } = await loadFresh();
-    expect(metricsExporterKind('http://collector.test', undefined)).toBe('otlp');
+    expect(metricsExporterKind('http://collector.test', undefined)).toBe(
+      'otlp',
+    );
   });
 
   it('is console when there is no endpoint — the fallback', async () => {
@@ -201,7 +253,9 @@ describe('metricsExporterKind', () => {
 
   it('is console when OTEL_METRICS_EXPORTER says so, EVEN with an endpoint set', async () => {
     const { metricsExporterKind } = await loadFresh();
-    expect(metricsExporterKind('http://collector.test', 'console')).toBe('console');
+    expect(metricsExporterKind('http://collector.test', 'console')).toBe(
+      'console',
+    );
   });
 
   it('ignores values it does not implement rather than silently exporting nowhere', async () => {
@@ -217,7 +271,12 @@ describe('initObservabilityNode — shutdown on signal', () => {
   it('the registered SIGTERM handler tears both providers down', async () => {
     process.env['OTEL_CONSOLE_EXPORTER'] = 'true';
     const mod = await loadFresh();
-    expect(mod.initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      mod.initObservabilityNode({
+        serviceName: 'svc',
+        serviceVersion: '1.2.3',
+      }),
+    ).toBe(true);
 
     // Invoke the handler this init added rather than raising a real signal,
     // which would take the test runner down with it.
@@ -230,6 +289,11 @@ describe('initObservabilityNode — shutdown on signal', () => {
 
     // State was cleared, so a fresh init is accepted again — the observable
     // consequence of the teardown having run.
-    expect(mod.initObservabilityNode({ serviceName: 'svc', serviceVersion: '1.2.3' })).toBe(true);
+    expect(
+      mod.initObservabilityNode({
+        serviceName: 'svc',
+        serviceVersion: '1.2.3',
+      }),
+    ).toBe(true);
   });
 });

@@ -12,7 +12,10 @@
 import { annotationId, resourceId } from '@xynolog/core';
 import type { Annotation } from '@xynolog/core';
 
-export function mockAnnotation(id: string, overrides: Partial<Annotation> = {}): Annotation {
+export function mockAnnotation(
+  id: string,
+  overrides: Partial<Annotation> = {},
+): Annotation {
   return {
     '@context': 'http://www.w3.org/ns/anno.jsonld',
     type: 'Annotation',
@@ -20,7 +23,9 @@ export function mockAnnotation(id: string, overrides: Partial<Annotation> = {}):
     motivation: 'commenting',
     created: '2026-01-01T00:00:00Z',
     target: { source: resourceId('res-1') },
-    body: [{ type: 'TextualBody', value: 'test comment', purpose: 'commenting' }],
+    body: [
+      { type: 'TextualBody', value: 'test comment', purpose: 'commenting' },
+    ],
     ...overrides,
   };
 }

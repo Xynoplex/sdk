@@ -38,10 +38,16 @@ const notice = () => document.querySelector('.xynolog-anchored-text-notice');
 
 /** The canvas with a tool chosen, over a session whose anchored-text read is
  *  `ask`. `request` is where a drawn shape arrives. */
-function mount(ask: XynologSession['client']['browse']['resourceAnchoredText']) {
+function mount(
+  ask: XynologSession['client']['browse']['resourceAnchoredText'],
+) {
   const request = vi.fn();
   const session = {
-    client: { browse: { resourceAnchoredText: ask, click: vi.fn() }, mark: { request }, beckon: { hover: vi.fn() } },
+    client: {
+      browse: { resourceAnchoredText: ask, click: vi.fn() },
+      mark: { request },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
   renderInEnglish(
     <SvgDrawingCanvas
@@ -58,9 +64,14 @@ function mount(ask: XynologSession['client']['browse']['resourceAnchoredText']) 
 /** jsdom lays nothing out: show the image at 200×200, twice its own size, and
  *  let the canvas read that. */
 function layOutImage() {
-  const img = document.querySelector('.xynolog-svg-drawing-canvas__image') as HTMLImageElement;
+  const img = document.querySelector(
+    '.xynolog-svg-drawing-canvas__image',
+  ) as HTMLImageElement;
   Object.defineProperty(img, 'clientWidth', { value: 200, configurable: true });
-  Object.defineProperty(img, 'clientHeight', { value: 200, configurable: true });
+  Object.defineProperty(img, 'clientHeight', {
+    value: 200,
+    configurable: true,
+  });
   fireEvent(window, new Event('resize'));
 }
 
@@ -83,11 +94,20 @@ describe('SvgDrawingCanvas — annotating waits for the text', () => {
 
   it('an image is not annotatable until its answer arrives, and is once `no-map` does: a rectangle with no quote', async () => {
     let give: (answer: AnchoredTextAnswer) => void = () => {};
-    const ask = vi.fn(() => new Promise<AnchoredTextAnswer>((resolve) => { give = resolve; }));
+    const ask = vi.fn(
+      () =>
+        new Promise<AnchoredTextAnswer>((resolve) => {
+          give = resolve;
+        }),
+    );
     const { request } = mount(ask);
 
     await waitFor(() => {
-      expect(document.querySelector('.xynolog-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
+      expect(
+        document.querySelector(
+          '.xynolog-svg-drawing-canvas__overlay-container',
+        ),
+      ).toBeInTheDocument();
     });
     layOutImage();
 
@@ -101,9 +121,13 @@ describe('SvgDrawingCanvas — annotating waits for the text', () => {
     dragRectangle();
     expect(request).not.toHaveBeenCalled();
 
-    await act(async () => { give({ kind: 'no-map' }); });
+    await act(async () => {
+      give({ kind: 'no-map' });
+    });
 
-    await waitFor(() => expect(canvas()).toHaveAttribute('data-annotate-deferred', 'false'));
+    await waitFor(() =>
+      expect(canvas()).toHaveAttribute('data-annotate-deferred', 'false'),
+    );
     expect(canvas()).toHaveAttribute('data-drawing-mode', 'rectangle');
     expect(notice()).not.toBeInTheDocument();
 
@@ -111,14 +135,19 @@ describe('SvgDrawingCanvas — annotating waits for the text', () => {
     expect(request).toHaveBeenCalledTimes(1);
     expect(request).toHaveBeenCalledWith(
       IMAGE,
-      { type: 'SvgSelector', value: '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="50" height="35"/></svg>' },
+      {
+        type: 'SvgSelector',
+        value:
+          '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="50" height="35"/></svg>',
+      },
       'highlighting',
     );
   });
 
   it('an ask that fails is asked again after the wait, and the image opens when the answer comes', async () => {
     vi.useFakeTimers();
-    const ask = vi.fn()
+    const ask = vi
+      .fn()
       .mockRejectedValueOnce(new Error('no answer'))
       .mockResolvedValue({ kind: 'no-map' });
     mount(ask);
@@ -137,25 +166,31 @@ describe('SvgDrawingCanvas — annotating waits for the text', () => {
   it.each<[string, AnchoredTextAnswer]>([
     ['`declined`', { kind: 'declined', declined: 'corrupt' }],
     ['`unknown`', { kind: 'unknown' }],
-  ])('%s leaves annotating off, says the text could not be read, and is not asked again', async (_name, answer) => {
-    vi.useFakeTimers();
-    const ask = vi.fn().mockResolvedValue(answer);
-    mount(ask);
-    await act(() => vi.advanceTimersByTimeAsync(0));
+  ])(
+    '%s leaves annotating off, says the text could not be read, and is not asked again',
+    async (_name, answer) => {
+      vi.useFakeTimers();
+      const ask = vi.fn().mockResolvedValue(answer);
+      mount(ask);
+      await act(() => vi.advanceTimersByTimeAsync(0));
 
-    expect(canvas()).toHaveAttribute('data-annotate-deferred', 'true');
-    expect(canvas()).toHaveAttribute('data-drawing-mode', 'none');
-    expect(notice()).toHaveAttribute('data-anchored-text', 'never');
-    expect(notice()).toHaveTextContent(/could not be read/i);
+      expect(canvas()).toHaveAttribute('data-annotate-deferred', 'true');
+      expect(canvas()).toHaveAttribute('data-drawing-mode', 'none');
+      expect(notice()).toHaveAttribute('data-anchored-text', 'never');
+      expect(notice()).toHaveTextContent(/could not be read/i);
 
-    await act(() => vi.advanceTimersByTimeAsync(ANCHORED_TEXT_REASK_MS * 10));
-    expect(ask).toHaveBeenCalledTimes(1);
-  });
+      await act(() => vi.advanceTimersByTimeAsync(ANCHORED_TEXT_REASK_MS * 10));
+      expect(ask).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('given no drawing mode, as a read-only view gives none, it still asks and takes no drawing', async () => {
     const ask = vi.fn().mockResolvedValue({ kind: 'no-map' });
     const session = {
-      client: { browse: { resourceAnchoredText: ask, click: vi.fn() }, beckon: { hover: vi.fn() } },
+      client: {
+        browse: { resourceAnchoredText: ask, click: vi.fn() },
+        beckon: { hover: vi.fn() },
+      },
     } as unknown as XynologSession;
     renderInEnglish(
       <SvgDrawingCanvas
@@ -167,7 +202,9 @@ describe('SvgDrawingCanvas — annotating waits for the text', () => {
       />,
     );
 
-    await waitFor(() => expect(canvas()).toHaveAttribute('data-annotate-deferred', 'false'));
+    await waitFor(() =>
+      expect(canvas()).toHaveAttribute('data-annotate-deferred', 'false'),
+    );
     expect(ask).toHaveBeenCalledTimes(1);
     expect(canvas()).toHaveAttribute('data-drawing-mode', 'none');
   });

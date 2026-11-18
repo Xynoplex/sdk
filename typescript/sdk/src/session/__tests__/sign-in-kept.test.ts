@@ -24,7 +24,9 @@ const signIn = (access: string, refresh: string): StoredSession => ({
 describe('MemorySignIn', () => {
   it('holds nothing when made with nothing, and what it was made with otherwise', () => {
     expect(new MemorySignIn().held()).toBeNull();
-    expect(new MemorySignIn(signIn('a1', 'r1')).held()).toEqual(signIn('a1', 'r1'));
+    expect(new MemorySignIn(signIn('a1', 'r1')).held()).toEqual(
+      signIn('a1', 'r1'),
+    );
   });
 
   it('keeps a new sign-in in place of what it held, and forgets', () => {
@@ -91,28 +93,45 @@ describe('signOut', () => {
   const REVOCATION = 'https://issuer.test/revoke';
 
   /** An issuer that answers each revocation with `status`, and records what each asked. */
-  const issuer = (status: number): { fetch: typeof globalThis.fetch; asked: Record<string, string>[] } => {
+  const issuer = (
+    status: number,
+  ): { fetch: typeof globalThis.fetch; asked: Record<string, string>[] } => {
     const asked: Record<string, string>[] = [];
     const fetch: typeof globalThis.fetch = async (input, init) => {
-      if (input !== REVOCATION || !(init?.body instanceof URLSearchParams)) return new Response(null, { status: 404 });
+      if (input !== REVOCATION || !(init?.body instanceof URLSearchParams))
+        return new Response(null, { status: 404 });
       asked.push(Object.fromEntries(init.body.entries()));
-      return Response.json(status === 200 ? {} : { error: 'invalid_request' }, { status });
+      return Response.json(status === 200 ? {} : { error: 'invalid_request' }, {
+        status,
+      });
     };
     return { fetch, asked };
   };
 
   it('revokes the refresh token at the issuer the sign-in names, as the client it was issued to, and forgets it', async () => {
-    const kept = new MemorySignIn({ ...signIn('a1', 'r1'), revocationEndpoint: REVOCATION });
+    const kept = new MemorySignIn({
+      ...signIn('a1', 'r1'),
+      revocationEndpoint: REVOCATION,
+    });
     const { fetch, asked } = issuer(200);
 
     await signOut(kept, fetch);
 
-    expect(asked).toEqual([{ token: 'r1', token_type_hint: 'refresh_token', client_id: 'xynolog-browser' }]);
+    expect(asked).toEqual([
+      {
+        token: 'r1',
+        token_type_hint: 'refresh_token',
+        client_id: 'xynolog-browser',
+      },
+    ]);
     expect(kept.held()).toBeNull();
   });
 
   it('forgets the sign-in when the issuer refuses the revocation', async () => {
-    const kept = new MemorySignIn({ ...signIn('a1', 'r1'), revocationEndpoint: REVOCATION });
+    const kept = new MemorySignIn({
+      ...signIn('a1', 'r1'),
+      revocationEndpoint: REVOCATION,
+    });
     const { fetch, asked } = issuer(400);
 
     await signOut(kept, fetch);

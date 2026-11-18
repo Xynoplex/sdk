@@ -2,7 +2,11 @@
 
 import { useState, useEffect, type ReactNode } from 'react';
 import type { components } from '@xynolog/core';
-import { DelegateProgress, type DelegateProgressProps, type DelegateDataType } from '../../DelegateProgress';
+import {
+  DelegateProgress,
+  type DelegateProgressProps,
+  type DelegateDataType,
+} from '../../DelegateProgress';
 import type { DelegatedJobControls } from '../../../lib/delegated-job-controls';
 
 type JobProgress = components['schemas']['JobProgress'];
@@ -39,7 +43,10 @@ export interface DelegateShellProps {
    * itself, so a caller that omitted this would render untranslated chrome —
    * the failure the widget's required translations exist to make impossible.
    */
-  progressProps: Omit<DelegateProgressProps, 'progress' | 'dataType' | 'ended' | 'onCancel' | 'onDismiss'>;
+  progressProps: Omit<
+    DelegateProgressProps,
+    'progress' | 'dataType' | 'ended' | 'onCancel' | 'onDismiss'
+  >;
 }
 
 /**
@@ -49,16 +56,30 @@ export interface DelegateShellProps {
  * differ per motivation by design (instructions/tone/density vs entity chips
  * vs schema+categories), so the shell owns only what is genuinely shared.
  */
-export function DelegateShell({ delegateType, title, isDelegating, cancelled, progress, form, controls, progressProps }: DelegateShellProps) {
+export function DelegateShell({
+  delegateType,
+  title,
+  isDelegating,
+  cancelled,
+  progress,
+  form,
+  controls,
+  progressProps,
+}: DelegateShellProps) {
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === 'undefined') return true;
-    const stored = localStorage.getItem(`delegate-section-expanded-${delegateType}`);
+    const stored = localStorage.getItem(
+      `delegate-section-expanded-${delegateType}`,
+    );
     return stored ? stored === 'true' : true;
   });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(`delegate-section-expanded-${delegateType}`, String(isExpanded));
+    localStorage.setItem(
+      `delegate-section-expanded-${delegateType}`,
+      String(isExpanded),
+    );
   }, [isExpanded, delegateType]);
 
   return (
@@ -70,7 +91,10 @@ export function DelegateShell({ delegateType, title, isDelegating, cancelled, pr
         type="button"
       >
         <span>{title}</span>
-        <span className="xynolog-panel__section-chevron" data-expanded={isExpanded}>
+        <span
+          className="xynolog-panel__section-chevron"
+          data-expanded={isExpanded}
+        >
           ›
         </span>
       </button>
@@ -95,7 +119,9 @@ export function DelegateShell({ delegateType, title, isDelegating, cancelled, pr
               // job lifecycle (job:complete / job:fail); the widget must never
               // infer "done" from a progress payload, which cannot tell it
               // about a cancel or a crash after the last tick.
-              ended={isDelegating ? false : cancelled ? 'cancelled' : 'completed'}
+              ended={
+                isDelegating ? false : cancelled ? 'cancelled' : 'completed'
+              }
               {...progressProps}
               onCancel={controls.onCancel}
               onDismiss={isDelegating ? undefined : controls.onDismiss}

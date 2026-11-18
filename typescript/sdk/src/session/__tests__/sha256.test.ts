@@ -12,13 +12,22 @@ import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { sha256 } from '../sha256';
 
-const hex = (bytes: Uint8Array): string => Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+const hex = (bytes: Uint8Array): string =>
+  Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 const ascii = (text: string): Uint8Array => new TextEncoder().encode(text);
 
 describe('sha256', () => {
   it.each([
-    ['the empty message', '', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'],
-    ['"abc"', 'abc', 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'],
+    [
+      'the empty message',
+      '',
+      'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    ],
+    [
+      '"abc"',
+      'abc',
+      'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+    ],
     [
       'the 448-bit message',
       'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq',
@@ -34,7 +43,9 @@ describe('sha256', () => {
   });
 
   it('hashes one million "a"s as FIPS 180-4 states', () => {
-    expect(hex(sha256(ascii('a'.repeat(1_000_000))))).toBe('cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0');
+    expect(hex(sha256(ascii('a'.repeat(1_000_000))))).toBe(
+      'cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0',
+    );
   });
 
   it('agrees with the platform at every length across three blocks, the padding boundaries included', () => {
@@ -42,14 +53,18 @@ describe('sha256', () => {
     // the length into another; 64 is a whole block, and the length production hashes.
     for (let length = 0; length <= 192; length++) {
       const message = randomBytes(length);
-      expect(hex(sha256(message)), `${length} bytes`).toBe(createHash('sha256').update(message).digest('hex'));
+      expect(hex(sha256(message)), `${length} bytes`).toBe(
+        createHash('sha256').update(message).digest('hex'),
+      );
     }
   });
 
   it('agrees with the platform on random messages of random lengths', () => {
     for (let run = 0; run < 200; run++) {
       const message = randomBytes(randomInt(5000));
-      expect(hex(sha256(message)), `${message.length} bytes`).toBe(createHash('sha256').update(message).digest('hex'));
+      expect(hex(sha256(message)), `${message.length} bytes`).toBe(
+        createHash('sha256').update(message).digest('hex'),
+      );
     }
   });
 

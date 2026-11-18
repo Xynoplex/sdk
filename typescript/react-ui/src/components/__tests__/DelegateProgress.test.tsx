@@ -18,7 +18,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import type { components } from '@xynolog/core';
-import { DelegateProgress, type DelegateProgressTranslations } from '../DelegateProgress';
+import {
+  DelegateProgress,
+  type DelegateProgressTranslations,
+} from '../DelegateProgress';
 
 type JobProgress = components['schemas']['JobProgress'];
 type JobProgressMessage = components['schemas']['JobProgressMessage'];
@@ -28,15 +31,25 @@ describe('DelegateProgress', () => {
     // The embeddable contract: this must render standalone. If it ever reaches
     // for a provider, this throws rather than silently degrading.
     const { container } = render(
-      <DelegateProgress ended={false} progress={detecting()} dataType="reference" translations={T3()} />,
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="reference"
+        translations={T3()}
+      />,
     );
-    expect(container.querySelector('.xynolog-delegate-progress')).toBeInTheDocument();
-    expect(container.querySelector('[data-type="reference"]')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-delegate-progress'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-type="reference"]'),
+    ).toBeInTheDocument();
   });
 
   it('renders the completed entity-type log when data + formatter are present', () => {
     render(
-      <DelegateProgress ended={false}
+      <DelegateProgress
+        ended={false}
         progress={detecting({
           completedItems: [{ value: 'Person', foundCount: 3 }],
         })}
@@ -53,7 +66,9 @@ describe('DelegateProgress', () => {
     delete (tr as Partial<DelegateProgressTranslations>).found;
     render(
       <DelegateProgress
-        progress={detecting({ completedItems: [{ value: 'Person', foundCount: 3 }] })}
+        progress={detecting({
+          completedItems: [{ value: 'Person', foundCount: 3 }],
+        })}
         dataType="comment"
         ended={false}
         translations={tr}
@@ -64,32 +79,56 @@ describe('DelegateProgress', () => {
 
   it('the control takes its accessible name from translations, per lifecycle', () => {
     const { rerender } = render(
-      <DelegateProgress ended={false}
-        progress={detecting()} dataType="reference"
-        onCancel={vi.fn(async () => true)} onDismiss={vi.fn()} translations={T3()}
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="reference"
+        onCancel={vi.fn(async () => true)}
+        onDismiss={vi.fn()}
+        translations={T3()}
       />,
     );
     expect(screen.getByLabelText('tr.cancel')).toBeInTheDocument();
 
     rerender(
       <DelegateProgress
-        progress={detecting()} dataType="reference" ended="completed"
-        onCancel={vi.fn(async () => true)} onDismiss={vi.fn()} translations={T3()}
+        progress={detecting()}
+        dataType="reference"
+        ended="completed"
+        onCancel={vi.fn(async () => true)}
+        onDismiss={vi.fn()}
+        translations={T3()}
       />,
     );
     expect(screen.getByLabelText('tr.close')).toBeInTheDocument();
   });
 
   it('offers no control at all when the caller wires neither callback', () => {
-    render(<DelegateProgress ended={false} progress={detecting()} dataType="reference" translations={T3()} />);
+    render(
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="reference"
+        translations={T3()}
+      />,
+    );
     expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
   });
 
   it('falls back to the generic in-progress copy when no code has arrived', () => {
     // `JobProgress.message` is optional: a pure liveness heartbeat carries none.
     const noCode = { percentage: 5 } as JobProgress;
-    render(<DelegateProgress ended={false} progress={noCode} dataType="comment" translations={T3()} />);
-    expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('tr.inProgress');
+    render(
+      <DelegateProgress
+        ended={false}
+        progress={noCode}
+        dataType="comment"
+        translations={T3()}
+      />,
+    );
+    expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe(
+      'tr.inProgress',
+    );
   });
 });
 
@@ -108,7 +147,9 @@ const BAR = 'xynolog-delegate-bar';
 const PARAMS = 'xynolog-delegate-params';
 
 /** The widget's translations: one function for the coded copy, plus structure keys. */
-const T3 = (over: Partial<DelegateProgressTranslations> = {}): DelegateProgressTranslations =>
+const T3 = (
+  over: Partial<DelegateProgressTranslations> = {},
+): DelegateProgressTranslations =>
   ({
     cancel: 'tr.cancel',
     cancelling: 'tr.cancelling',
@@ -116,7 +157,11 @@ const T3 = (over: Partial<DelegateProgressTranslations> = {}): DelegateProgressT
     close: 'tr.close',
     inProgress: 'tr.inProgress',
     message: (m: JobProgressMessage) => `tr.code(${m.code})`,
-    subject: (current: { kind: string; value: string }, done?: number, total?: number) =>
+    subject: (
+      current: { kind: string; value: string },
+      done?: number,
+      total?: number,
+    ) =>
       done === undefined
         ? `tr.subject(${current.kind}:${current.value})`
         : `tr.subject(${current.kind}:${current.value}|${done}/${total})`,
@@ -141,17 +186,33 @@ describe('DelegateProgress — the consolidated widget', () => {
     // `currentLabel(currentEntityType)` produce the IDENTICAL string, because
     // the wire carries a code and not prose. Singular `getByText` throws on
     // multiple matches — that IS the assertion.
-    render(<DelegateProgress progress={detecting()} dataType="reference" ended={false} translations={T3()} />);
+    render(
+      <DelegateProgress
+        progress={detecting()}
+        dataType="reference"
+        ended={false}
+        translations={T3()}
+      />,
+    );
 
-    expect(screen.getByText(/tr\.subject\(entity-type:Person/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/tr\.subject\(entity-type:Person/),
+    ).toBeInTheDocument();
     // And the status line is the CODE's copy, not a second copy of the subject.
-    expect(screen.getByTestId(STATUS).textContent).toContain('tr.code(detecting-entities)');
+    expect(screen.getByTestId(STATUS).textContent).toContain(
+      'tr.code(detecting-entities)',
+    );
     expect(screen.getByTestId(STATUS).textContent).not.toContain('tr.subject');
   });
 
   it('A2: renders no heading of its own — the section header is the title', () => {
     const { container } = render(
-      <DelegateProgress ended={false} progress={detecting()} dataType="reference" translations={T3()} />,
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="reference"
+        translations={T3()}
+      />,
     );
     expect(container.querySelector('h1,h2,h3,h4,h5,h6')).toBeNull();
   });
@@ -160,9 +221,13 @@ describe('DelegateProgress — the consolidated widget', () => {
     const onCancel = vi.fn(async () => true);
     const onDismiss = vi.fn();
     render(
-      <DelegateProgress ended={false}
-        progress={detecting()} dataType="reference"
-        onCancel={onCancel} onDismiss={onDismiss} translations={T3()}
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="reference"
+        onCancel={onCancel}
+        onDismiss={onDismiss}
+        translations={T3()}
       />,
     );
     const controls = screen.getAllByTestId(CONTROL);
@@ -180,9 +245,18 @@ describe('DelegateProgress — the consolidated widget', () => {
     const onDismiss = vi.fn();
     render(
       <DelegateProgress
-        progress={detecting({ message: { code: 'complete-created', count: 7, motivation: 'linking' } })}
-        dataType="reference" ended="completed"
-        onCancel={onCancel} onDismiss={onDismiss} translations={T3()}
+        progress={detecting({
+          message: {
+            code: 'complete-created',
+            count: 7,
+            motivation: 'linking',
+          },
+        })}
+        dataType="reference"
+        ended="completed"
+        onCancel={onCancel}
+        onDismiss={onDismiss}
+        translations={T3()}
       />,
     );
     const controls = screen.getAllByTestId(CONTROL);
@@ -194,9 +268,18 @@ describe('DelegateProgress — the consolidated widget', () => {
   });
 
   it('A4: the REFERENCE flow renders a fraction and a bar — data it already receives', () => {
-    render(<DelegateProgress ended={false} progress={detecting()} dataType="reference" translations={T3()} />);
+    render(
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="reference"
+        translations={T3()}
+      />,
+    );
 
-    expect(screen.getByTestId(SUBJECT).textContent).toBe('tr.subject(entity-type:Person|1/3)');
+    expect(screen.getByTestId(SUBJECT).textContent).toBe(
+      'tr.subject(entity-type:Person|1/3)',
+    );
     expect(screen.getByTestId(BAR)).toBeInTheDocument();
   });
 
@@ -206,12 +289,16 @@ describe('DelegateProgress — the consolidated widget', () => {
     // A bar gated on the fraction would drop the tag flow's bar on this
     // frame, so the fixture carries only what the producer sends.
     render(
-      <DelegateProgress ended={false}
-        progress={{
-          percentage: 60,
-          message: { code: 'creating-tag-annotations', count: 4 },
-        } as JobProgress}
-        dataType="tag" translations={T3()}
+      <DelegateProgress
+        ended={false}
+        progress={
+          {
+            percentage: 60,
+            message: { code: 'creating-tag-annotations', count: 4 },
+          } as JobProgress
+        }
+        dataType="tag"
+        translations={T3()}
       />,
     );
     expect(screen.getByTestId(BAR)).toBeInTheDocument();
@@ -224,9 +311,13 @@ describe('DelegateProgress — the consolidated widget', () => {
     // REQUIRED field on JobProgress, so there is always something to fill a
     // bar with.
     render(
-      <DelegateProgress ended={false}
-        progress={{ percentage: 10, message: { code: 'loading' } } as JobProgress}
-        dataType="comment" translations={T3()}
+      <DelegateProgress
+        ended={false}
+        progress={
+          { percentage: 10, message: { code: 'loading' } } as JobProgress
+        }
+        dataType="comment"
+        translations={T3()}
       />,
     );
     expect(screen.getByTestId(BAR)).toBeInTheDocument();
@@ -234,13 +325,23 @@ describe('DelegateProgress — the consolidated widget', () => {
 
   it('A5: every rendered string is traceable to translations', () => {
     const { container } = render(
-      <DelegateProgress ended={false} progress={detecting()} dataType="reference" translations={T3()} />,
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="reference"
+        translations={T3()}
+      />,
     );
     // Key-echo strings mean any text NOT starting `tr.` came from the component.
     const stray = Array.from(container.querySelectorAll('*'))
       .filter((el) => el.children.length === 0)
       .map((el) => el.textContent?.trim() ?? '')
-      .filter((t) => t.length > 0 && !t.startsWith('tr.') && !/^[\s✨✅✓×✕()0-9/of]+$/.test(t));
+      .filter(
+        (t) =>
+          t.length > 0 &&
+          !t.startsWith('tr.') &&
+          !/^[\s✨✅✓×✕()0-9/of]+$/.test(t),
+      );
     expect(stray).toEqual([]);
   });
 
@@ -251,16 +352,28 @@ describe('DelegateProgress — the consolidated widget', () => {
     const onOpen = vi.fn();
     const outcome = { label: 'Summary of PB', onOpen };
     const { rerender } = render(
-      <DelegateProgress ended={false} progress={detecting()} dataType="generation"
-        outcome={outcome} translations={T3()} />,
+      <DelegateProgress
+        ended={false}
+        progress={detecting()}
+        dataType="generation"
+        outcome={outcome}
+        translations={T3()}
+      />,
     );
     expect(screen.queryByText('Summary of PB')).toBeNull();
 
     rerender(
-      <DelegateProgress ended="completed" progress={detecting()} dataType="generation"
-        outcome={outcome} translations={T3()} />,
+      <DelegateProgress
+        ended="completed"
+        progress={detecting()}
+        dataType="generation"
+        outcome={outcome}
+        translations={T3()}
+      />,
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Summary of PB' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Summary of PB' }),
+    );
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
@@ -272,16 +385,30 @@ describe('DelegateProgress — the consolidated widget', () => {
       total: 1,
     });
     const { unmount } = render(
-      <DelegateProgress ended={false} progress={oneType} dataType="reference" translations={T3()} />,
+      <DelegateProgress
+        ended={false}
+        progress={oneType}
+        dataType="reference"
+        translations={T3()}
+      />,
     );
     expect(screen.queryByTestId(PARAMS)).toBeNull();
     unmount();
 
     const many = detecting({
-      requestParams: [{ label: 'entity-types', value: 'Person, Organization, Location' }],
+      requestParams: [
+        { label: 'entity-types', value: 'Person, Organization, Location' },
+      ],
       total: 3,
     });
-    render(<DelegateProgress ended={false} progress={many} dataType="reference" translations={T3()} />);
+    render(
+      <DelegateProgress
+        ended={false}
+        progress={many}
+        dataType="reference"
+        translations={T3()}
+      />,
+    );
     expect(screen.getByTestId(PARAMS)).toBeInTheDocument();
   });
 });
@@ -296,32 +423,60 @@ describe('DelegateProgress — the consolidated widget', () => {
 describe('DelegateProgress — the honest ended frame', () => {
   it('an ended frame renders a FULL bar whatever the last payload said', () => {
     const { container } = render(
-      <DelegateProgress ended="completed" progress={detecting({ percentage: 95 })} dataType="generation" translations={T3()} />,
+      <DelegateProgress
+        ended="completed"
+        progress={detecting({ percentage: 95 })}
+        dataType="generation"
+        translations={T3()}
+      />,
     );
-    const fill = container.querySelector('.xynolog-progress-bar__fill') as HTMLElement;
+    const fill = container.querySelector(
+      '.xynolog-progress-bar__fill',
+    ) as HTMLElement;
     expect(fill.style.width).toBe('100%');
   });
 
   it('a live frame keeps the payload percentage', () => {
     const { container } = render(
-      <DelegateProgress ended={false} progress={detecting({ percentage: 95 })} dataType="generation" translations={T3()} />,
+      <DelegateProgress
+        ended={false}
+        progress={detecting({ percentage: 95 })}
+        dataType="generation"
+        translations={T3()}
+      />,
     );
-    const fill = container.querySelector('.xynolog-progress-bar__fill') as HTMLElement;
+    const fill = container.querySelector(
+      '.xynolog-progress-bar__fill',
+    ) as HTMLElement;
     expect(fill.style.width).toBe('95%');
   });
 
   it('endedMessage replaces the stale payload copy once ended', () => {
     render(
-      <DelegateProgress ended="completed" endedMessage="tr.ended" progress={detecting({ percentage: 95 })} dataType="generation" translations={T3()} />,
+      <DelegateProgress
+        ended="completed"
+        endedMessage="tr.ended"
+        progress={detecting({ percentage: 95 })}
+        dataType="generation"
+        translations={T3()}
+      />,
     );
     expect(screen.getByTestId(STATUS).textContent).toBe('tr.ended');
   });
 
   it('endedMessage is inert while the run is live', () => {
     render(
-      <DelegateProgress ended={false} endedMessage="tr.ended" progress={detecting()} dataType="generation" translations={T3()} />,
+      <DelegateProgress
+        ended={false}
+        endedMessage="tr.ended"
+        progress={detecting()}
+        dataType="generation"
+        translations={T3()}
+      />,
     );
-    expect(screen.getByTestId(STATUS).textContent).toBe('tr.code(detecting-entities)');
+    expect(screen.getByTestId(STATUS).textContent).toBe(
+      'tr.code(detecting-entities)',
+    );
   });
 });
 
@@ -333,38 +488,71 @@ describe('DelegateProgress — the honest ended frame', () => {
 describe('DelegateProgress — the cancelled ending', () => {
   it('says the run was cancelled, in place of the last report and of any ending sentence', () => {
     render(
-      <DelegateProgress ended="cancelled" endedMessage="tr.ended" progress={detecting()} dataType="reference" translations={T3()} />,
+      <DelegateProgress
+        ended="cancelled"
+        endedMessage="tr.ended"
+        progress={detecting()}
+        dataType="reference"
+        translations={T3()}
+      />,
     );
     expect(screen.getByTestId(STATUS).textContent).toBe('tr.cancelled');
   });
 
   it('keeps the bar where the run stopped, and claims nothing done', () => {
     const { container } = render(
-      <DelegateProgress ended="cancelled" progress={detecting({ percentage: 40 })} dataType="reference" translations={T3()} />,
+      <DelegateProgress
+        ended="cancelled"
+        progress={detecting({ percentage: 40 })}
+        dataType="reference"
+        translations={T3()}
+      />,
     );
-    const fill = container.querySelector('.xynolog-progress-bar__fill') as HTMLElement;
+    const fill = container.querySelector(
+      '.xynolog-progress-bar__fill',
+    ) as HTMLElement;
     expect(fill.style.width).toBe('40%');
     expect(container.textContent).not.toContain('✅');
   });
 
   it('offers no outcome: a cancelled run made nothing', () => {
     render(
-      <DelegateProgress ended="cancelled" outcome={{ label: 'A summary', onOpen: vi.fn() }}
-        progress={detecting()} dataType="generation" translations={T3()} />,
+      <DelegateProgress
+        ended="cancelled"
+        outcome={{ label: 'A summary', onOpen: vi.fn() }}
+        progress={detecting()}
+        dataType="generation"
+        translations={T3()}
+      />,
     );
     expect(screen.queryByTestId('xynolog-delegate-outcome')).toBeNull();
   });
 
   it('keeps where the run stopped: the subject of its last report', () => {
-    render(<DelegateProgress ended="cancelled" progress={detecting()} dataType="reference" translations={T3()} />);
-    expect(screen.getByTestId(SUBJECT).textContent).toContain('tr.subject(entity-type:Person');
+    render(
+      <DelegateProgress
+        ended="cancelled"
+        progress={detecting()}
+        dataType="reference"
+        translations={T3()}
+      />,
+    );
+    expect(screen.getByTestId(SUBJECT).textContent).toContain(
+      'tr.subject(entity-type:Person',
+    );
   });
 
   it('its one control dismisses', async () => {
     const onDismiss = vi.fn();
     render(
-      <DelegateProgress ended="cancelled" progress={detecting()} dataType="reference"
-        onCancel={vi.fn(async () => true)} onDismiss={onDismiss} translations={T3()} />,
+      <DelegateProgress
+        ended="cancelled"
+        progress={detecting()}
+        dataType="reference"
+        onCancel={vi.fn(async () => true)}
+        onDismiss={onDismiss}
+        translations={T3()}
+      />,
     );
     const control = screen.getByTestId(CONTROL);
     expect(control).toHaveAccessibleName('tr.close');
@@ -380,14 +568,28 @@ describe('DelegateProgress — the cancelled ending', () => {
 // when nothing was cancelled: the request refused, or answered `false`.
 // ─────────────────────────────────────────────────────────────────────────────
 describe('DelegateProgress — between the click and the end', () => {
-  const live = { progress: detecting(), dataType: 'reference' as const, translations: T3() };
+  const live = {
+    progress: detecting(),
+    dataType: 'reference' as const,
+    translations: T3(),
+  };
 
   /** A cancel request the test answers when it chooses. */
   function heldCancel() {
     let answer!: (acted: boolean) => void;
     let refuse!: (error: Error) => void;
-    const onCancel = vi.fn(() => new Promise<boolean>((resolve, reject) => { answer = resolve; refuse = reject; }));
-    return { onCancel, answer: (acted: boolean) => answer(acted), refuse: (error: Error) => refuse(error) };
+    const onCancel = vi.fn(
+      () =>
+        new Promise<boolean>((resolve, reject) => {
+          answer = resolve;
+          refuse = reject;
+        }),
+    );
+    return {
+      onCancel,
+      answer: (acted: boolean) => answer(acted),
+      refuse: (error: Error) => refuse(error),
+    };
   }
 
   it('after a click the control is disabled and reads as cancelling', async () => {
@@ -419,7 +621,9 @@ describe('DelegateProgress — between the click and the end', () => {
 
   it('a refused cancel puts the control back', async () => {
     const held = heldCancel();
-    render(<DelegateProgress {...live} ended={false} onCancel={held.onCancel} />);
+    render(
+      <DelegateProgress {...live} ended={false} onCancel={held.onCancel} />,
+    );
 
     await userEvent.click(screen.getByTestId(CONTROL));
     expect(screen.getByTestId(CONTROL)).toBeDisabled();
@@ -431,7 +635,9 @@ describe('DelegateProgress — between the click and the end', () => {
 
   it('a cancel the queue did not act on puts the control back', async () => {
     const held = heldCancel();
-    render(<DelegateProgress {...live} ended={false} onCancel={held.onCancel} />);
+    render(
+      <DelegateProgress {...live} ended={false} onCancel={held.onCancel} />,
+    );
 
     await userEvent.click(screen.getByTestId(CONTROL));
     expect(screen.getByTestId(CONTROL)).toBeDisabled();

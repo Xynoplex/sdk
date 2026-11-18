@@ -18,13 +18,24 @@ describe('JobProgress message shape (A6, type half)', () => {
     void prose;
 
     const bare: Message = { code: 'loading' };
-    const detecting: Message = { code: 'detecting-entities', entityType: 'Person' };
+    const detecting: Message = {
+      code: 'detecting-entities',
+      entityType: 'Person',
+    };
     const creating: Message = { code: 'creating-annotations', count: 3 };
-    const done: Message = { code: 'complete-created', count: 3, motivation: 'highlighting' };
+    const done: Message = {
+      code: 'complete-created',
+      count: 3,
+      motivation: 'highlighting',
+    };
     // Generation's terminal success — generic (no name field: the client holds
     // the title it typed) plus the truncation bit.
     const generated: Message = { code: 'complete-generated', truncated: false };
-    expect([bare, detecting, creating, done, generated].every((m) => typeof m === 'object')).toBe(true);
+    expect(
+      [bare, detecting, creating, done, generated].every(
+        (m) => typeof m === 'object',
+      ),
+    ).toBe(true);
   });
 
   it('params are required where the census requires them', () => {
@@ -32,7 +43,10 @@ describe('JobProgress message shape (A6, type half)', () => {
     const missingCount: JobProgressMessage = { code: 'creating-annotations' };
     void missingCount;
     // @ts-expect-error — complete-created without its motivation is not a message
-    const missingMotivation: JobProgressMessage = { code: 'complete-created', count: 3 };
+    const missingMotivation: JobProgressMessage = {
+      code: 'complete-created',
+      count: 3,
+    };
     void missingMotivation;
   });
 });

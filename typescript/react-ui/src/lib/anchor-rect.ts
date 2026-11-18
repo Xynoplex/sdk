@@ -15,5 +15,14 @@ export function toViewportAnchorRect(
 ): AnchorRect {
   const left = origin.left + x;
   const top = origin.top + y;
-  return { x: left, y: top, width, height, top, right: left + width, bottom: top + height, left };
+  return {
+    x: left,
+    y: top,
+    width,
+    height,
+    top,
+    right: left + width,
+    bottom: top + height,
+    left,
+  };
 }

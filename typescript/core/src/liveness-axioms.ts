@@ -49,7 +49,9 @@ export interface LivenessScenario {
 
 export interface LivenessAxiomSpec {
   /** Build a FRESH composition wired to the given transport. Called per run. */
-  setup: (transport: FaultyTransport) => LivenessScenario | Promise<LivenessScenario>;
+  setup: (
+    transport: FaultyTransport,
+  ) => LivenessScenario | Promise<LivenessScenario>;
   /**
    * The timeoutMs the scenario passes to `Bus.request` — the bound is derived
    * from it: (timeoutMs × (1 + retryBudget) + Σdelays) × slackFactor.
@@ -60,7 +62,10 @@ export interface LivenessAxiomSpec {
   /** Override the generated fault schedules (teeth tests pin one). */
   scheduleArb?: fc.Arbitrary<readonly FaultAction[]>;
   /** Passed through to FaultyTransport (reply synthesis). */
-  makeResponse?: (operation: string, payload: Record<string, unknown>) => unknown;
+  makeResponse?: (
+    operation: string,
+    payload: Record<string, unknown>,
+  ) => unknown;
   /** fast-check run budget (default 25 — CI-fast; crank locally). */
   numRuns?: number;
   /** Real-scheduler jitter headroom on the bound (default 4×). */
@@ -72,18 +77,24 @@ export function arbFaultAction(): fc.Arbitrary<FaultAction> {
   return fc.oneof(
     fc.constant<FaultAction>({ kind: 'deliver' }),
     fc.constant<FaultAction>({ kind: 'drop-reply' }),
-    fc.integer({ min: 0, max: 5 }).map((ms): FaultAction => ({ kind: 'delay', ms })),
+    fc
+      .integer({ min: 0, max: 5 })
+      .map((ms): FaultAction => ({ kind: 'delay', ms })),
     fc.constant<FaultAction>({ kind: 'duplicate-reply' }),
     fc.constant<FaultAction>({ kind: 'reject-emit' }),
   );
 }
 
-export function arbFaultSchedule(maxLength = 8): fc.Arbitrary<readonly FaultAction[]> {
+export function arbFaultSchedule(
+  maxLength = 8,
+): fc.Arbitrary<readonly FaultAction[]> {
   return fc.array(arbFaultAction(), { minLength: 1, maxLength });
 }
 
 function describeSchedule(schedule: readonly FaultAction[]): string {
-  return schedule.map((a) => (a.kind === 'delay' ? `delay(${a.ms})` : a.kind)).join(',');
+  return schedule
+    .map((a) => (a.kind === 'delay' ? `delay(${a.ms})` : a.kind))
+    .join(',');
 }
 
 function sleep(ms: number): Promise<void> {
@@ -125,7 +136,9 @@ function capturing(slot: { violation: Error | null }, block: () => void): void {
  * Run L1 + L2 against `spec` across generated fault schedules. Throws a
  * labeled Error (`L1: …` / `L2: …`) on the first violation.
  */
-export async function assertLivenessAxioms(spec: LivenessAxiomSpec): Promise<void> {
+export async function assertLivenessAxioms(
+  spec: LivenessAxiomSpec,
+): Promise<void> {
   const retryBudget = spec.retryBudget ?? 1;
   const slack = spec.slackFactor ?? 4;
   const scheduleArb = spec.scheduleArb ?? arbFaultSchedule();
@@ -134,7 +147,10 @@ export async function assertLivenessAxioms(spec: LivenessAxiomSpec): Promise<voi
   await runLabeled('liveness', slot, () =>
     fc.assert(
       fc.asyncProperty(scheduleArb, async (schedule) => {
-        const delayTotal = schedule.reduce((n, a) => n + (a.kind === 'delay' ? a.ms : 0), 0);
+        const delayTotal = schedule.reduce(
+          (n, a) => n + (a.kind === 'delay' ? a.ms : 0),
+          0,
+        );
         const bound = (spec.timeoutMs * (1 + retryBudget) + delayTotal) * slack;
         const transport = new FaultyTransport({
           channels: BRIDGED_CHANNELS,
@@ -151,13 +167,23 @@ export async function assertLivenessAxioms(spec: LivenessAxiomSpec): Promise<voi
         const settled: boolean[] = settlements.map(() => false);
         const subs: Subscription[] = outputs.map((o, i) =>
           o.subscribe({
-            next: () => { notified[i] = true; },
-            error: () => { notified[i] = true; },
+            next: () => {
+              notified[i] = true;
+            },
+            error: () => {
+              notified[i] = true;
+            },
           }),
         );
         settlements.forEach((p, i) => {
-          p.then(() => { settled[i] = true; },
-                 () => { settled[i] = true; });
+          p.then(
+            () => {
+              settled[i] = true;
+            },
+            () => {
+              settled[i] = true;
+            },
+          );
         });
 
         // The whole bound, even once everything has spoken: a request sent
@@ -175,35 +201,48 @@ export async function assertLivenessAxioms(spec: LivenessAxiomSpec): Promise<voi
               if (!seen) {
                 throw new Error(
                   `L2: settlement #${i} did not settle within ${bound}ms ` +
-                  `under schedule ⟨${describeSchedule(schedule)}⟩ — the forbidden fourth state`,
+                    `under schedule ⟨${describeSchedule(schedule)}⟩ — the forbidden fourth state`,
                 );
               }
             });
 
             // L2 — retry accounting over the transport's request log.
-            const issues = new Map<string, { count: number; lastFaulted: boolean }>();
+            const issues = new Map<
+              string,
+              { count: number; lastFaulted: boolean }
+            >();
             for (const entry of transport.requestLog) {
-              const prior = issues.get(entry.retryKey) ?? { count: 0, lastFaulted: false };
+              const prior = issues.get(entry.retryKey) ?? {
+                count: 0,
+                lastFaulted: false,
+              };
               issues.set(entry.retryKey, {
                 count: prior.count + 1,
-                lastFaulted: entry.action.kind === 'drop-reply' || entry.action.kind === 'reject-emit',
+                lastFaulted:
+                  entry.action.kind === 'drop-reply' ||
+                  entry.action.kind === 'reject-emit',
               });
             }
             for (const [key, { count, lastFaulted }] of issues) {
               if (count > 1 + retryBudget) {
                 throw new Error(
                   `L2: request ⟨${key}⟩ issued ${count} times — exceeds the retry budget ` +
-                  `(1 + ${retryBudget}) under schedule ⟨${describeSchedule(schedule)}⟩`,
+                    `(1 + ${retryBudget}) under schedule ⟨${describeSchedule(schedule)}⟩`,
                 );
               }
               // Swallow detection: the final issue of a logical request was
               // faulted, the composition had retry budget left but didn't use
               // it, and no output surfaced anything — the rejection went into
               // a void (the `catch(() => {})` B14 rules out).
-              if (lastFaulted && count <= retryBudget && outputs.length > 0 && !notified.some(Boolean)) {
+              if (
+                lastFaulted &&
+                count <= retryBudget &&
+                outputs.length > 0 &&
+                !notified.some(Boolean)
+              ) {
                 throw new Error(
                   `L2: faulted request ⟨${key}⟩ was neither re-issued nor surfaced ` +
-                  `under schedule ⟨${describeSchedule(schedule)}⟩ — rejection swallowed`,
+                    `under schedule ⟨${describeSchedule(schedule)}⟩ — rejection swallowed`,
                 );
               }
             }
@@ -213,7 +252,7 @@ export async function assertLivenessAxioms(spec: LivenessAxiomSpec): Promise<voi
               if (!seen) {
                 throw new Error(
                   `L1: output #${i} received no next/error within ${bound}ms ` +
-                  `under schedule ⟨${describeSchedule(schedule)}⟩ — silently pending`,
+                    `under schedule ⟨${describeSchedule(schedule)}⟩ — silently pending`,
                 );
               }
             });
@@ -266,11 +305,20 @@ export interface DeliveryAxiomSpec {
   numRuns?: number;
 }
 
-export function arbDeliveryOps(maxOps = 12): fc.Arbitrary<readonly DeliveryOp[]> {
-  return fc
-    .array(fc.constantFrom<DeliveryOp>('write', 'transition'), { minLength: 1, maxLength: maxOps })
-    // A sequence with no write asserts nothing — always exercise delivery.
-    .map((ops) => (ops.includes('write') ? ops : ([...ops, 'write'] as const)));
+export function arbDeliveryOps(
+  maxOps = 12,
+): fc.Arbitrary<readonly DeliveryOp[]> {
+  return (
+    fc
+      .array(fc.constantFrom<DeliveryOp>('write', 'transition'), {
+        minLength: 1,
+        maxLength: maxOps,
+      })
+      // A sequence with no write asserts nothing — always exercise delivery.
+      .map((ops) =>
+        ops.includes('write') ? ops : ([...ops, 'write'] as const),
+      )
+  );
 }
 
 /**
@@ -279,7 +327,9 @@ export function arbDeliveryOps(maxOps = 12): fc.Arbitrary<readonly DeliveryOp[]>
  * to a live connection delivered zero times (lost — retired by abort instead
  * of drain) or more than once (duplicate).
  */
-export async function assertExactlyOnceDelivery(spec: DeliveryAxiomSpec): Promise<void> {
+export async function assertExactlyOnceDelivery(
+  spec: DeliveryAxiomSpec,
+): Promise<void> {
   const opsArb = spec.opsArb ?? arbDeliveryOps(spec.maxOps ?? 12);
 
   const slot = { violation: null as Error | null };
@@ -310,7 +360,7 @@ export async function assertExactlyOnceDelivery(spec: DeliveryAxiomSpec): Promis
               if (n === 0) {
                 throw new Error(
                   `L3: event ⟨${id}⟩ delivered 0 times under ⟨${ops.join(',')}⟩ — ` +
-                  `lost across a transition (retire by drain, never by abort)`,
+                    `lost across a transition (retire by drain, never by abort)`,
                 );
               }
               if (n > 1) {

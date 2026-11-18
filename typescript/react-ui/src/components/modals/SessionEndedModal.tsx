@@ -1,6 +1,12 @@
 'use client';
 
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 import type { SessionEndReason } from '@xynolog/sdk';
 import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
@@ -11,7 +17,10 @@ import { useTranslations } from '../../contexts/TranslationContext';
  * default: a reason added to the SDK does not compile here until it has a
  * sentence.
  */
-function whyEnded(reason: SessionEndReason, t: (key: string) => string): string {
+function whyEnded(
+  reason: SessionEndReason,
+  t: (key: string) => string,
+): string {
   switch (reason) {
     case 'expired':
       return t('expired');
@@ -74,11 +83,30 @@ export function SessionEndedModal() {
             >
               <DialogPanel className="xynolog-modal__panel xynolog-modal__panel--medium">
                 <div className="xynolog-modal__icon-wrapper">
-                  <div className="xynolog-modal__icon" style={{
-                    background: 'linear-gradient(to bottom right, var(--xynolog-color-red-100, #fee2e2), var(--xynolog-color-red-300, #fca5a5))',
-                  }}>
-                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--xynolog-color-red-600, #dc2626)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <div
+                    className="xynolog-modal__icon"
+                    style={{
+                      background:
+                        'linear-gradient(to bottom right, var(--xynolog-color-red-100, #fee2e2), var(--xynolog-color-red-300, #fca5a5))',
+                    }}
+                  >
+                    <svg
+                      style={{
+                        width: '1.5rem',
+                        height: '1.5rem',
+                        color: 'var(--xynolog-color-red-600, #dc2626)',
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </div>
                 </div>

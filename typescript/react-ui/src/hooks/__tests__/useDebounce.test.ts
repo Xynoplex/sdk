@@ -105,7 +105,7 @@ describe('useDebouncedCallback', () => {
     it('should cleanup timeout on unmount', () => {
       const callback = vi.fn();
       const { result, unmount } = renderHook(() =>
-        useDebouncedCallback(callback, 500)
+        useDebouncedCallback(callback, 500),
       );
 
       act(() => {
@@ -127,7 +127,7 @@ describe('useDebouncedCallback', () => {
     it('should handle multiple rapid calls followed by unmount', () => {
       const callback = vi.fn();
       const { result, unmount } = renderHook(() =>
-        useDebouncedCallback(callback, 500)
+        useDebouncedCallback(callback, 500),
       );
 
       act(() => {
@@ -153,7 +153,7 @@ describe('useDebouncedCallback', () => {
 
       const { result, rerender } = renderHook(
         ({ cb }) => useDebouncedCallback(cb, 500),
-        { initialProps: { cb: callback1 } }
+        { initialProps: { cb: callback1 } },
       );
 
       act(() => {
@@ -179,7 +179,7 @@ describe('useDebouncedCallback', () => {
 
       const { result, rerender } = renderHook(
         ({ cb }) => useDebouncedCallback(cb, 500),
-        { initialProps: { cb: callback1 } }
+        { initialProps: { cb: callback1 } },
       );
 
       act(() => {
@@ -209,7 +209,7 @@ describe('useDebouncedCallback', () => {
 
       const { result, rerender } = renderHook(
         ({ delay }) => useDebouncedCallback(callback, delay),
-        { initialProps: { delay: 500 } }
+        { initialProps: { delay: 500 } },
       );
 
       // First call with 500ms delay
@@ -262,7 +262,9 @@ describe('useDebouncedCallback', () => {
 
     it('should handle very long delays', () => {
       const callback = vi.fn();
-      const { result } = renderHook(() => useDebouncedCallback(callback, 10000));
+      const { result } = renderHook(() =>
+        useDebouncedCallback(callback, 10000),
+      );
 
       act(() => {
         result.current('test');
@@ -395,7 +397,7 @@ describe('useDebounce', () => {
   it('delays updating value by specified delay', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'initial', delay: 500 } }
+      { initialProps: { value: 'initial', delay: 500 } },
     );
 
     expect(result.current).toBe('initial');
@@ -422,7 +424,7 @@ describe('useDebounce', () => {
   it('resets delay on rapid value changes', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'initial', delay: 500 } }
+      { initialProps: { value: 'initial', delay: 500 } },
     );
 
     // First update
@@ -458,7 +460,7 @@ describe('useDebounce', () => {
     // Test with numbers
     const { result: numberResult, rerender: numberRerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 42, delay: 500 } }
+      { initialProps: { value: 42, delay: 500 } },
     );
 
     numberRerender({ value: 100, delay: 500 });
@@ -470,7 +472,7 @@ describe('useDebounce', () => {
     // Test with objects
     const { result: objectResult, rerender: objectRerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: { foo: 'bar' }, delay: 500 } }
+      { initialProps: { value: { foo: 'bar' }, delay: 500 } },
     );
 
     objectRerender({ value: { foo: 'baz' }, delay: 500 });
@@ -482,7 +484,7 @@ describe('useDebounce', () => {
     // Test with arrays
     const { result: arrayResult, rerender: arrayRerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: [1, 2, 3], delay: 500 } }
+      { initialProps: { value: [1, 2, 3], delay: 500 } },
     );
 
     arrayRerender({ value: [4, 5, 6], delay: 500 });
@@ -495,7 +497,7 @@ describe('useDebounce', () => {
   it('respects different delay values', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'initial', delay: 1000 } }
+      { initialProps: { value: 'initial', delay: 1000 } },
     );
 
     rerender({ value: 'updated', delay: 1000 });
@@ -514,7 +516,7 @@ describe('useDebounce', () => {
   it('cancels pending timeout on unmount', () => {
     const { result, rerender, unmount } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'initial', delay: 500 } }
+      { initialProps: { value: 'initial', delay: 500 } },
     );
 
     rerender({ value: 'updated', delay: 500 });
@@ -533,7 +535,7 @@ describe('useDebounce', () => {
   it('handles zero delay', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'initial', delay: 0 } }
+      { initialProps: { value: 'initial', delay: 0 } },
     );
 
     rerender({ value: 'updated', delay: 0 });

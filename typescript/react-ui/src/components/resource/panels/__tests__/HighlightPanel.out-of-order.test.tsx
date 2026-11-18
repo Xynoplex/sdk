@@ -10,16 +10,24 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import { HighlightPanel } from '../HighlightPanel';
-import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import {
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type XynologSession,
+} from '@xynolog/sdk';
 import type { Annotation, AnnotationId } from '@xynolog/core';
 import { resourceId } from '@xynolog/core';
 
 const mockT = vi.fn((key: string) => key);
 vi.mock('../../../../contexts/TranslationContext', () => ({
   useTranslations: () => mockT,
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 vi.mock('../../../../contexts/useEventSubscription', () => ({
   useEventSubscriptions: vi.fn(),
@@ -43,8 +51,9 @@ function highlightAt(id: string, start: number, exact: string): Annotation {
 }
 
 function renderedQuotes(): string[] {
-  return Array.from(document.querySelectorAll('.xynolog-annotation-entry__quote'))
-    .map((el) => el.textContent?.replace(/^"|"$/g, '').trim() ?? '');
+  return Array.from(
+    document.querySelectorAll('.xynolog-annotation-entry__quote'),
+  ).map((el) => el.textContent?.replace(/^"|"$/g, '').trim() ?? '');
 }
 
 describe('HighlightPanel — arrival order is invisible; list order is document order', () => {
@@ -61,7 +70,12 @@ describe('HighlightPanel — arrival order is invisible; list order is document 
 
   it('a scrambled initial load (concurrent units) renders in document order', () => {
     renderWithProviders(
-      <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+      <HighlightPanel
+        session={session}
+        mark={mark}
+        resourceId={resourceId('res-1')}
+        jobId={null}
+        cancelled={false}
         annotations={[
           highlightAt('h-chunk3', 900, 'gamma'),
           highlightAt('h-chunk1', 100, 'alpha'),
@@ -79,7 +93,12 @@ describe('HighlightPanel — arrival order is invisible; list order is document 
 
   it('an earlier-position annotation arriving LATE slots into place, not onto the end', () => {
     const { rerender } = renderWithProviders(
-      <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+      <HighlightPanel
+        session={session}
+        mark={mark}
+        resourceId={resourceId('res-1')}
+        jobId={null}
+        cancelled={false}
         annotations={[highlightAt('h-late-chunk', 700, 'omega')]}
         pendingAnnotation={null}
         isDelegating={false}
@@ -91,8 +110,16 @@ describe('HighlightPanel — arrival order is invisible; list order is document 
 
     // Chunk 1's find lands after chunk 2's — the out-of-order insert.
     rerender(
-      <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
-        annotations={[highlightAt('h-late-chunk', 700, 'omega'), highlightAt('h-early-chunk', 50, 'alpha')]}
+      <HighlightPanel
+        session={session}
+        mark={mark}
+        resourceId={resourceId('res-1')}
+        jobId={null}
+        cancelled={false}
+        annotations={[
+          highlightAt('h-late-chunk', 700, 'omega'),
+          highlightAt('h-early-chunk', 50, 'alpha'),
+        ]}
         pendingAnnotation={null}
         isDelegating={false}
         progress={null}

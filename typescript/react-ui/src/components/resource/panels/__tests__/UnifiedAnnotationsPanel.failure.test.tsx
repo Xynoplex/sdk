@@ -14,17 +14,28 @@ import { screen, fireEvent } from '@testing-library/react';
 import { renderInEnglish } from '../../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
-import type { LinkComponentProps, RouteBuilder } from '../../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../../contexts/RoutingContext';
 import { UnifiedAnnotationsPanel } from '../UnifiedAnnotationsPanel';
 import { ANNOTATORS } from '../../../../lib/annotation-registry';
 import { resourceId, EventBus } from '@xynolog/core';
 
-const TestLink = ({ href, children, ...rest }: LinkComponentProps) => <a href={href} {...rest}>{children}</a>;
+const TestLink = ({ href, children, ...rest }: LinkComponentProps) => (
+  <a href={href} {...rest}>
+    {children}
+  </a>
+);
 const testRoutes: RouteBuilder = { resourceDetail: (id) => `/r/${id}` };
 
 function fakeSession(): XynologSession {
   return {
-    client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
+    client: {
+      bus: new EventBus(),
+      browse: { click: vi.fn() },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
 }
 
@@ -71,6 +82,8 @@ describe('UnifiedAnnotationsPanel — annotations load failure', () => {
   it('says nothing about failure when the annotations are merely empty', () => {
     renderInEnglish(<UnifiedAnnotationsPanel {...base()} />);
 
-    expect(screen.queryByText(/Could not load annotations/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Could not load annotations/),
+    ).not.toBeInTheDocument();
   });
 });

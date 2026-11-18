@@ -8,10 +8,21 @@
  * The browser's path is `http-content-transport.xhr.test.ts`.
  */
 
-import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
+import {
+  createServer,
+  type IncomingMessage,
+  type Server,
+  type ServerResponse,
+} from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, test } from 'vitest';
-import { BRIDGED_CHANNELS, REQUEST_RETRY_PAUSE_MS, accessToken, baseUrl, type XynologError } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  REQUEST_RETRY_PAUSE_MS,
+  accessToken,
+  baseUrl,
+  type XynologError,
+} from '@xynolog/core';
 import { HttpContentTransport } from '../http-content-transport';
 import { HttpTransport } from '../http-transport';
 
@@ -25,7 +36,12 @@ interface Received {
   closed: boolean;
 }
 
-type Answer = (request: IncomingMessage, response: ServerResponse, received: Received, nth: number) => void;
+type Answer = (
+  request: IncomingMessage,
+  response: ServerResponse,
+  received: Received,
+  nth: number,
+) => void;
 
 /** Reads the body and answers 202 with an id, as the gateway does. */
 const accepts: Answer = (_request, response) => {
@@ -36,12 +52,21 @@ const accepts: Answer = (_request, response) => {
 let server: Server | undefined;
 
 /** A gateway that takes each upload's body, unless `reads` is false, and then does what `answer` does. */
-async function gateway(answer: Answer, reads = true): Promise<{ url: string; received: Received[] }> {
+async function gateway(
+  answer: Answer,
+  reads = true,
+): Promise<{ url: string; received: Received[] }> {
   const received: Received[] = [];
   server = createServer((request, response) => {
-    const record: Received = { headers: request.headers, bytes: 0, closed: false };
+    const record: Received = {
+      headers: request.headers,
+      bytes: 0,
+      closed: false,
+    };
     const nth = received.push(record);
-    request.socket.once('close', () => { record.closed = true; });
+    request.socket.once('close', () => {
+      record.closed = true;
+    });
     if (!reads) return;
     const pieces: Buffer[] = [];
     request.on('data', (piece: Buffer) => {
@@ -53,8 +78,13 @@ async function gateway(answer: Answer, reads = true): Promise<{ url: string; rec
       answer(request, response, record, nth);
     });
   });
-  await new Promise<void>((listening) => server!.listen(0, '127.0.0.1', listening));
-  return { url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`, received };
+  await new Promise<void>((listening) =>
+    server!.listen(0, '127.0.0.1', listening),
+  );
+  return {
+    url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
+    received,
+  };
 }
 
 afterEach(async () => {
@@ -66,17 +96,34 @@ afterEach(async () => {
 const TOKEN = accessToken('first');
 
 /** A transport with no token of its own, so it opens no stream: each upload names its token. */
-function contentOf(url: string, config: { timeout?: number; tokenRefresher?: () => Promise<string | null> } = {}) {
-  const transport = new HttpTransport({ baseUrl: baseUrl(url), channels: BRIDGED_CHANNELS, ...config });
+function contentOf(
+  url: string,
+  config: {
+    timeout?: number;
+    tokenRefresher?: () => Promise<string | null>;
+  } = {},
+) {
+  const transport = new HttpTransport({
+    baseUrl: baseUrl(url),
+    channels: BRIDGED_CHANNELS,
+    ...config,
+  });
   const errors: XynologError[] = [];
   transport.errors$.subscribe((error) => errors.push(error));
   return { content: new HttpContentTransport(transport), errors };
 }
 
-const upload = (file: Buffer) => ({ name: 'Every byte', file, format: 'image/png' as const, storageUri: 'file://uploads/every-byte.png', language: 'en' });
+const upload = (file: Buffer) => ({
+  name: 'Every byte',
+  file,
+  format: 'image/png' as const,
+  storageUri: 'file://uploads/every-byte.png',
+  language: 'en',
+});
 
 /** `size` bytes that are not all alike. */
-const bytes = (size: number): Buffer => Buffer.from(Uint8Array.from({ length: size }, (_, i) => i % 251));
+const bytes = (size: number): Buffer =>
+  Buffer.from(Uint8Array.from({ length: size }, (_, i) => i % 251));
 
 interface Report {
   bytesUploaded: number;
@@ -90,7 +137,8 @@ const until = async (what: string, met: () => boolean): Promise<void> => {
   }
 };
 
-const pause = (ms: number): Promise<void> => new Promise((over) => setTimeout(over, ms));
+const pause = (ms: number): Promise<void> =>
+  new Promise((over) => setTimeout(over, ms));
 
 describe('an upload outside a browser', () => {
   test('reports its progress a piece at a time: one total, never less than it last said, all of it by the end', async () => {
@@ -98,13 +146,23 @@ describe('an upload outside a browser', () => {
     const { content } = contentOf(url);
     const reports: Report[] = [];
 
-    const result = await content.putBinary(upload(bytes(300 * 1024)), { auth: TOKEN, onProgress: (report) => reports.push(report) });
+    const result = await content.putBinary(upload(bytes(300 * 1024)), {
+      auth: TOKEN,
+      onProgress: (report) => reports.push(report),
+    });
 
     expect(result).toEqual({ resourceId: 'uploaded' });
-    expect(reports.length, 'a 300 KiB upload is more than one piece').toBeGreaterThan(1);
+    expect(
+      reports.length,
+      'a 300 KiB upload is more than one piece',
+    ).toBeGreaterThan(1);
     const total = reports[0]!.totalBytes;
-    expect(reports.map((report) => report.totalBytes)).toEqual(reports.map(() => total));
-    expect(total, 'the total is the body as it was sent').toBe(received[0]!.bytes);
+    expect(reports.map((report) => report.totalBytes)).toEqual(
+      reports.map(() => total),
+    );
+    expect(total, 'the total is the body as it was sent').toBe(
+      received[0]!.bytes,
+    );
     expect(received[0]!.headers['content-length']).toBe(String(total));
     reports.reduce((before, report) => {
       expect(report.bytesUploaded).toBeGreaterThan(before);
@@ -118,11 +176,16 @@ describe('an upload outside a browser', () => {
     const { content } = contentOf(url);
     const file = bytes(300 * 1024);
 
-    await content.putBinary(upload(file), { auth: TOKEN, onProgress: () => {} });
+    await content.putBinary(upload(file), {
+      auth: TOKEN,
+      onProgress: () => {},
+    });
 
     const [{ headers, body }] = received as [Received];
     expect(headers.authorization).toBe('Bearer first');
-    const form = await new Response(new Uint8Array(body!), { headers: { 'content-type': headers['content-type']! } }).formData();
+    const form = await new Response(new Uint8Array(body!), {
+      headers: { 'content-type': headers['content-type']! },
+    }).formData();
     expect(form.get('name')).toBe('Every byte');
     expect(form.get('format')).toBe('image/png');
     expect(form.get('storageUri')).toBe('file://uploads/every-byte.png');
@@ -140,12 +203,18 @@ describe('an upload outside a browser', () => {
     const reports: Report[] = [];
     const caller = new AbortController();
 
-    const sending = content.putBinary(upload(bytes(24 * 1024 * 1024)), { auth: TOKEN, onProgress: (report) => reports.push(report), signal: caller.signal });
+    const sending = content.putBinary(upload(bytes(24 * 1024 * 1024)), {
+      auth: TOKEN,
+      onProgress: (report) => reports.push(report),
+      signal: caller.signal,
+    });
     const settled = sending.catch((error: unknown) => error);
     await until('the upload to begin', () => reports.length > 0);
     await pause(300);
 
-    expect(reports.at(-1)!.bytesUploaded).toBeLessThan(reports.at(-1)!.totalBytes);
+    expect(reports.at(-1)!.bytesUploaded).toBeLessThan(
+      reports.at(-1)!.totalBytes,
+    );
     caller.abort();
     await settled;
   });
@@ -153,22 +222,34 @@ describe('an upload outside a browser', () => {
   test('cancelled, it closes its connection unanswered, reports nothing more, and is not sent again', async () => {
     // A gateway that takes the whole upload and does not answer.
     const { url, received } = await gateway(() => {});
-    const { content, errors } = contentOf(url, { tokenRefresher: async () => 'second' });
+    const { content, errors } = contentOf(url, {
+      tokenRefresher: async () => 'second',
+    });
     const reports: Report[] = [];
     const caller = new AbortController();
 
-    const sending = content.putBinary(upload(bytes(300 * 1024)), { auth: TOKEN, onProgress: (report) => reports.push(report), signal: caller.signal });
+    const sending = content.putBinary(upload(bytes(300 * 1024)), {
+      auth: TOKEN,
+      onProgress: (report) => reports.push(report),
+      signal: caller.signal,
+    });
     const settled = sending.catch((error: unknown) => error);
     await until('the upload to arrive', () => received[0]?.body !== undefined);
     const reported = reports.length;
     caller.abort();
 
-    expect(await settled, 'it rejects with its caller\'s reason, as an abandoned request does').toBe(caller.signal.reason);
+    expect(
+      await settled,
+      "it rejects with its caller's reason, as an abandoned request does",
+    ).toBe(caller.signal.reason);
     await until('the connection to close', () => received[0]!.closed);
     await pause(200);
     expect(received).toHaveLength(1);
     expect(reports).toHaveLength(reported);
-    expect(errors, 'a cancellation its caller asked for is not a transport failure').toEqual([]);
+    expect(
+      errors,
+      'a cancellation its caller asked for is not a transport failure',
+    ).toEqual([]);
   });
 
   test('cancelled with no progress asked for, it closes its connection all the same', async () => {
@@ -176,7 +257,9 @@ describe('an upload outside a browser', () => {
     const { content, errors } = contentOf(url);
     const caller = new AbortController();
 
-    const settled = content.putBinary(upload(bytes(1024)), { auth: TOKEN, signal: caller.signal }).catch((error: unknown) => error);
+    const settled = content
+      .putBinary(upload(bytes(1024)), { auth: TOKEN, signal: caller.signal })
+      .catch((error: unknown) => error);
     await until('the upload to arrive', () => received[0]?.body !== undefined);
     caller.abort();
 
@@ -192,7 +275,13 @@ describe('an upload outside a browser', () => {
     const caller = new AbortController();
     caller.abort();
 
-    const settled = content.putBinary(upload(bytes(300 * 1024)), { auth: TOKEN, onProgress: (report) => reports.push(report), signal: caller.signal }).catch((error: unknown) => error);
+    const settled = content
+      .putBinary(upload(bytes(300 * 1024)), {
+        auth: TOKEN,
+        onProgress: (report) => reports.push(report),
+        signal: caller.signal,
+      })
+      .catch((error: unknown) => error);
 
     expect(await settled).toBe(caller.signal.reason);
     await pause(100);
@@ -211,31 +300,50 @@ describe('an upload outside a browser', () => {
       });
       const { content, errors } = contentOf(url, { timeout: 150 });
 
-      await expect(content.putBinary(upload(bytes(1024)), { auth: TOKEN, ...options })).resolves.toEqual({ resourceId: 'uploaded' });
+      await expect(
+        content.putBinary(upload(bytes(1024)), { auth: TOKEN, ...options }),
+      ).resolves.toEqual({ resourceId: 'uploaded' });
       expect(errors).toEqual([]);
     });
   }
 
   test('refused 401 and sent again with a renewed token, it arrives whole and never reports less than it last said', async () => {
-    const { url, received } = await gateway((request, response, record, nth) => {
-      if (nth === 1) {
-        response.writeHead(401, { 'content-type': 'application/json' });
-        response.end(JSON.stringify({ error: 'The token has expired' }));
-        return;
-      }
-      accepts(request, response, record, nth);
+    const { url, received } = await gateway(
+      (request, response, record, nth) => {
+        if (nth === 1) {
+          response.writeHead(401, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({ error: 'The token has expired' }));
+          return;
+        }
+        accepts(request, response, record, nth);
+      },
+    );
+    const { content } = contentOf(url, {
+      tokenRefresher: async () => 'second',
     });
-    const { content } = contentOf(url, { tokenRefresher: async () => 'second' });
     const reports: Report[] = [];
     const file = bytes(300 * 1024);
 
-    await expect(content.putBinary(upload(file), { auth: TOKEN, onProgress: (report) => reports.push(report) })).resolves.toEqual({ resourceId: 'uploaded' });
+    await expect(
+      content.putBinary(upload(file), {
+        auth: TOKEN,
+        onProgress: (report) => reports.push(report),
+      }),
+    ).resolves.toEqual({ resourceId: 'uploaded' });
 
-    expect(received.map((record) => record.headers.authorization)).toEqual(['Bearer first', 'Bearer second']);
-    const [first, second] = received.map((record) => record.headers['idempotency-key']);
+    expect(received.map((record) => record.headers.authorization)).toEqual([
+      'Bearer first',
+      'Bearer second',
+    ]);
+    const [first, second] = received.map(
+      (record) => record.headers['idempotency-key'],
+    );
     expect(first).toEqual(expect.any(String));
     expect(second, 'the second sending is the same upload').toBe(first);
-    expect(received[1]!.body!.equals(received[0]!.body!), 'the second sending is the first, byte for byte').toBe(true);
+    expect(
+      received[1]!.body!.equals(received[0]!.body!),
+      'the second sending is the first, byte for byte',
+    ).toBe(true);
     reports.reduce((before, report) => {
       expect(report.bytesUploaded).toBeGreaterThanOrEqual(before);
       return report.bytesUploaded;
@@ -250,22 +358,36 @@ describe('an upload outside a browser', () => {
       response.end(JSON.stringify({ error: 'The Archivist is not answering' }));
     };
 
-    const keysOf = (received: Received[]) => received.map((record) => record.headers['idempotency-key']);
+    const keysOf = (received: Received[]) =>
+      received.map((record) => record.headers['idempotency-key']);
 
     test('answered 503, then 202: it resolves, the 503 is not reported, and its progress never goes back', async () => {
-      const { url, received } = await gateway((request, response, record, nth) =>
-        (nth === 1 ? unavailable : accepts)(request, response, record, nth));
+      const { url, received } = await gateway(
+        (request, response, record, nth) =>
+          (nth === 1 ? unavailable : accepts)(request, response, record, nth),
+      );
       const { content, errors } = contentOf(url);
       const reports: Report[] = [];
 
-      await expect(content.putBinary(upload(bytes(300 * 1024)), { auth: TOKEN, onProgress: (report) => reports.push(report) })).resolves.toEqual({ resourceId: 'uploaded' });
+      await expect(
+        content.putBinary(upload(bytes(300 * 1024)), {
+          auth: TOKEN,
+          onProgress: (report) => reports.push(report),
+        }),
+      ).resolves.toEqual({ resourceId: 'uploaded' });
 
       expect(received).toHaveLength(2);
       const [first, second] = keysOf(received);
       expect(first).toEqual(expect.any(String));
       expect(second, 'the second sending is the same upload').toBe(first);
-      expect(received[1]!.body!.equals(received[0]!.body!), 'the second sending is the first, byte for byte').toBe(true);
-      expect(errors, 'an upload accepted the second time reports nothing').toEqual([]);
+      expect(
+        received[1]!.body!.equals(received[0]!.body!),
+        'the second sending is the first, byte for byte',
+      ).toBe(true);
+      expect(
+        errors,
+        'an upload accepted the second time reports nothing',
+      ).toEqual([]);
       reports.reduce((before, report) => {
         expect(report.bytesUploaded).toBeGreaterThanOrEqual(before);
         return report.bytesUploaded;
@@ -279,16 +401,20 @@ describe('an upload outside a browser', () => {
     ] as const) {
       test(`given no answer${how}, then 202: it resolves, and the failure is not reported`, async () => {
         // The gateway takes the whole upload, and closes the connection before answering.
-        const { url, received } = await gateway((request, response, record, nth) => {
-          if (nth === 1) {
-            request.socket.destroy();
-            return;
-          }
-          accepts(request, response, record, nth);
-        });
+        const { url, received } = await gateway(
+          (request, response, record, nth) => {
+            if (nth === 1) {
+              request.socket.destroy();
+              return;
+            }
+            accepts(request, response, record, nth);
+          },
+        );
         const { content, errors } = contentOf(url);
 
-        await expect(content.putBinary(upload(bytes(1024)), { auth: TOKEN, ...options })).resolves.toEqual({ resourceId: 'uploaded' });
+        await expect(
+          content.putBinary(upload(bytes(1024)), { auth: TOKEN, ...options }),
+        ).resolves.toEqual({ resourceId: 'uploaded' });
 
         expect(received).toHaveLength(2);
         const [first, second] = keysOf(received);
@@ -298,7 +424,10 @@ describe('an upload outside a browser', () => {
       });
     }
 
-    for (const [status, code] of [[400, 'bad-request'], [422, 'unprocessable']] as const) {
+    for (const [status, code] of [
+      [400, 'bad-request'],
+      [422, 'unprocessable'],
+    ] as const) {
       test(`answered ${status}, it is not sent again: a key makes a repeat harmless, not a refused upload acceptable`, async () => {
         const { url, received } = await gateway((_request, response) => {
           response.writeHead(status, { 'content-type': 'application/json' });
@@ -306,7 +435,9 @@ describe('an upload outside a browser', () => {
         });
         const { content, errors } = contentOf(url);
 
-        const failure = await content.putBinary(upload(bytes(1024)), { auth: TOKEN }).catch((error: unknown) => error);
+        const failure = await content
+          .putBinary(upload(bytes(1024)), { auth: TOKEN })
+          .catch((error: unknown) => error);
 
         expect(failure).toMatchObject({ name: 'APIError', status, code });
         expect(received).toHaveLength(1);
@@ -314,16 +445,20 @@ describe('an upload outside a browser', () => {
       });
     }
 
-    test('cancelled while it waits to be sent again, it rejects with its caller\'s reason and is not sent again', async () => {
+    test("cancelled while it waits to be sent again, it rejects with its caller's reason and is not sent again", async () => {
       let refused = false;
-      const { url, received } = await gateway((request, response, record, nth) => {
-        unavailable(request, response, record, nth);
-        refused = true;
-      });
+      const { url, received } = await gateway(
+        (request, response, record, nth) => {
+          unavailable(request, response, record, nth);
+          refused = true;
+        },
+      );
       const { content, errors } = contentOf(url);
       const caller = new AbortController();
 
-      const settled = content.putBinary(upload(bytes(1024)), { auth: TOKEN, signal: caller.signal }).catch((error: unknown) => error);
+      const settled = content
+        .putBinary(upload(bytes(1024)), { auth: TOKEN, signal: caller.signal })
+        .catch((error: unknown) => error);
       await until('the upload to be refused', () => refused);
       await pause(REQUEST_RETRY_PAUSE_MS / 3);
       caller.abort();
@@ -331,7 +466,10 @@ describe('an upload outside a browser', () => {
       expect(await settled).toBe(caller.signal.reason);
       await pause(REQUEST_RETRY_PAUSE_MS + 100);
       expect(received).toHaveLength(1);
-      expect(errors, 'a cancellation its caller asked for is not a transport failure').toEqual([]);
+      expect(
+        errors,
+        'a cancellation its caller asked for is not a transport failure',
+      ).toEqual([]);
     });
   });
 });

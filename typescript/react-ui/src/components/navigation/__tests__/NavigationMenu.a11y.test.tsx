@@ -16,9 +16,7 @@ expect.extend(toHaveNoViolations);
 
 describe('NavigationMenu - Accessibility', () => {
   const mockLink = vi.fn((props: LinkComponentProps) => (
-    <a {...props}>
-      {props.children}
-    </a>
+    <a {...props}>{props.children}</a>
   ));
 
   const mockRoutes = {
@@ -28,9 +26,9 @@ describe('NavigationMenu - Accessibility', () => {
 
   const mockTranslate = vi.fn((key: string) => {
     const translations: Record<string, string> = {
-      'home': 'Home',
-      'know': 'Knowledge',
-      'moderate': 'Moderate',
+      home: 'Home',
+      know: 'Knowledge',
+      moderate: 'Moderate',
     };
     return translations[key] || key;
   });
@@ -42,7 +40,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const results = await axe(container);
@@ -56,7 +54,7 @@ describe('NavigationMenu - Accessibility', () => {
           routes={mockRoutes}
           t={mockTranslate}
           currentPath="/knowledge"
-        />
+        />,
       );
 
       const results = await axe(container);
@@ -66,12 +64,12 @@ describe('NavigationMenu - Accessibility', () => {
 
   describe('WCAG 1.3.1 - Info and Relationships (Semantic HTML)', () => {
     it('should render navigation container with menu role', () => {
-      const { container} = render(
+      const { container } = render(
         <NavigationMenu
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const nav = container.querySelector('nav');
@@ -85,7 +83,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const menuItems = container.querySelectorAll('a');
@@ -100,7 +98,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const knowLink = screen.getByText('Knowledge');
@@ -116,13 +114,13 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const links = container.querySelectorAll('a');
 
       // All links should be focusable (no tabindex=-1)
-      links.forEach(link => {
+      links.forEach((link) => {
         expect(link).not.toHaveAttribute('tabindex', '-1');
       });
     });
@@ -135,13 +133,13 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const menuItems = container.querySelectorAll('a');
 
       // All menu items should have accessible names from aria-label
-      menuItems.forEach(item => {
+      menuItems.forEach((item) => {
         expect(item).toHaveAccessibleName();
       });
     });
@@ -157,7 +155,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       // Link text should be descriptive (not "click here" or "link")
@@ -173,14 +171,14 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       // axe-core will check color contrast
       const results = await axe(container, {
         rules: {
-          'color-contrast': { enabled: true }
-        }
+          'color-contrast': { enabled: true },
+        },
       });
 
       expect(results).toHaveNoViolations();
@@ -194,7 +192,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const knowLink = screen.getByText('Knowledge').closest('a');
@@ -210,13 +208,13 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const links = container.querySelectorAll('a');
 
       // Links should have focus styling classes
-      links.forEach(link => {
+      links.forEach((link) => {
         expect(link.className).toBeTruthy();
       });
     });
@@ -227,7 +225,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const links = container.querySelectorAll('a');
@@ -251,7 +249,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const menuItems = container.querySelectorAll('a');
@@ -270,7 +268,7 @@ describe('NavigationMenu - Accessibility', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       // Translation function should be called for navigation items
@@ -290,7 +288,7 @@ describe('NavigationMenu - Accessibility', () => {
           routes={mockRoutes}
           t={mockTranslate}
           onItemClick={onItemClick}
-        />
+        />,
       );
 
       const knowLink = screen.getByText('Knowledge').closest('a');

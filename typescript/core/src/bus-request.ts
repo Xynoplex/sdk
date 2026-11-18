@@ -2,7 +2,11 @@ import { XynologError } from './errors';
 import type { EventMap, EventName } from './bus-protocol';
 import { BUS_OPERATIONS, type BusOperationKey } from './bus-operations';
 import type { CommandErrorCode } from './payload-types';
-import { busRequestCodeByWireCode, unrecognizedFailureCode, type BusRequestErrorCode } from './error-codes';
+import {
+  busRequestCodeByWireCode,
+  unrecognizedFailureCode,
+  type BusRequestErrorCode,
+} from './error-codes';
 
 /**
  * The value a registered operation resolves to: the `response` field of its
@@ -12,7 +16,9 @@ import { busRequestCodeByWireCode, unrecognizedFailureCode, type BusRequestError
  * standard.
  */
 export type BusReply<Op extends BusOperationKey> =
-  EventMap[(typeof BUS_OPERATIONS)[Op]['result'] & EventName] extends { response: infer R }
+  EventMap[(typeof BUS_OPERATIONS)[Op]['result'] & EventName] extends {
+    response: infer R;
+  }
     ? R
     : void;
 
@@ -41,7 +47,8 @@ export type BusReply<Op extends BusOperationKey> =
  * a stale generated file fails to compile rather than defaulting to
  * `bus.rejected`.
  */
-const WIRE_CODES: Record<CommandErrorCode, BusRequestErrorCode> = busRequestCodeByWireCode;
+const WIRE_CODES: Record<CommandErrorCode, BusRequestErrorCode> =
+  busRequestCodeByWireCode;
 
 /**
  * A failure's code as read. A code from a peer newer than this build, none
@@ -49,14 +56,20 @@ const WIRE_CODES: Record<CommandErrorCode, BusRequestErrorCode> = busRequestCode
  * as absent (`readOfShape`), and a failure read with no code is the table's
  * `unrecognizedFailure`, as one that states none is.
  */
-export function classifyFailureCode(code: CommandErrorCode | undefined): BusRequestErrorCode {
+export function classifyFailureCode(
+  code: CommandErrorCode | undefined,
+): BusRequestErrorCode {
   return code === undefined ? unrecognizedFailureCode : WIRE_CODES[code];
 }
 
 export class BusRequestError extends XynologError {
   declare code: BusRequestErrorCode;
 
-  constructor(message: string, code: BusRequestErrorCode, details?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: BusRequestErrorCode,
+    details?: Record<string, unknown>,
+  ) {
     super(message, code, details);
     this.name = 'BusRequestError';
   }

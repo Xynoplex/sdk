@@ -16,16 +16,19 @@
 
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { BehaviorSubject, type Observable } from 'rxjs';
-import {
-  EventBus,
-  baseUrl,
-  resourceId,
-  annotationId,
-} from '@xynolog/core';
+import { EventBus, baseUrl, resourceId, annotationId } from '@xynolog/core';
 
 import { XynologClient } from '../client';
-import type { ConnectionState, ITransport, IContentTransport } from '@xynolog/core';
-import { inMemoryTransport, gatewayOperationSpies, contentTransportSpies } from './helpers/in-memory-transport';
+import type {
+  ConnectionState,
+  ITransport,
+  IContentTransport,
+} from '@xynolog/core';
+import {
+  inMemoryTransport,
+  gatewayOperationSpies,
+  contentTransportSpies,
+} from './helpers/in-memory-transport';
 import { annotationContextFor } from './fixtures/gathered-context';
 
 const TEST_BASE = baseUrl('http://test.local');
@@ -41,7 +44,9 @@ function makeMockTransport(wire: EventBus): ITransport {
     ...inMemoryTransport({ state$, bus: wire }),
     baseUrl: TEST_BASE,
     emit: vi.fn<ITransport['emit']>(async () => 1),
-    subscribeToResource: vi.fn<ITransport['subscribeToResource']>(() => () => {}),
+    subscribeToResource: vi.fn<ITransport['subscribeToResource']>(
+      () => () => {},
+    ),
     bridgeInto: vi.fn<ITransport['bridgeInto']>(),
     dispose: vi.fn<ITransport['dispose']>(),
     ...gatewayOperationSpies(),
@@ -72,10 +77,16 @@ describe('XynologClient lifecycle + namespace routing', () => {
       // The mock starts in 'open'; flip it and ensure the client's
       // state$ reflects the change.
       const observed: ConnectionState[] = [];
-      const sub = (transport.state$ as Observable<ConnectionState>).subscribe(() => { /* prime */ });
+      const sub = (transport.state$ as Observable<ConnectionState>).subscribe(
+        () => {
+          /* prime */
+        },
+      );
       sub.unsubscribe();
       const sub2 = client.state$.subscribe((s) => observed.push(s));
-      (transport.state$ as BehaviorSubject<ConnectionState>).next('reconnecting');
+      (transport.state$ as BehaviorSubject<ConnectionState>).next(
+        'reconnecting',
+      );
       sub2.unsubscribe();
       expect(observed).toEqual(['open', 'reconnecting']);
     });
@@ -143,17 +154,27 @@ describe('XynologClient lifecycle + namespace routing', () => {
     test('client.match.search() resolves from a global match:search-results event', async () => {
       const { firstValueFrom } = await import('rxjs');
       const gathered = { sourceContext: {}, targetContext: {} } as never;
-      const searchP = firstValueFrom(client.match.search(testResourceId, annotationId('ref-1'), gathered, { limit: 5 }));
+      const searchP = firstValueFrom(
+        client.match.search(testResourceId, annotationId('ref-1'), gathered, {
+          limit: 5,
+        }),
+      );
 
       await Promise.resolve();
-      const emitted = vi.mocked(transport.emit).mock.calls.find((c) => c[0] === 'match:search-requested');
+      const emitted = vi
+        .mocked(transport.emit)
+        .mock.calls.find((c) => c[0] === 'match:search-requested');
       expect(emitted).toBeTruthy();
       const cid = emitted![2]?.correlationId;
 
-      wire.emit('match:search-results', {
-        referenceId: annotationId('ref-1'),
-        response: [],
-      }, { correlationId: cid });
+      wire.emit(
+        'match:search-results',
+        {
+          referenceId: annotationId('ref-1'),
+          response: [],
+        },
+        { correlationId: cid },
+      );
 
       const result = await searchP;
       expect((result as { referenceId: string }).referenceId).toBe('ref-1');
@@ -163,38 +184,55 @@ describe('XynologClient lifecycle + namespace routing', () => {
     test('client.gather.annotation() resolves from a global gather:complete event', async () => {
       const { lastValueFrom } = await import('rxjs');
       const gatherP = lastValueFrom(
-        client.gather.annotation(testResourceId, testAnnotationId, { contextWindow: 500 }),
+        client.gather.annotation(testResourceId, testAnnotationId, {
+          contextWindow: 500,
+        }),
       );
 
       await Promise.resolve();
-      const emitted = vi.mocked(transport.emit).mock.calls.find((c) => c[0] === 'gather:requested');
+      const emitted = vi
+        .mocked(transport.emit)
+        .mock.calls.find((c) => c[0] === 'gather:requested');
       expect(emitted).toBeTruthy();
       const cid = emitted![2]?.correlationId;
 
-      wire.emit('gather:complete', {
-        annotationId: testAnnotationId,
-        response: annotationContextFor(testResourceId, testAnnotationId),
-      }, { correlationId: cid });
+      wire.emit(
+        'gather:complete',
+        {
+          annotationId: testAnnotationId,
+          response: annotationContextFor(testResourceId, testAnnotationId),
+        },
+        { correlationId: cid },
+      );
 
       const result = await gatherP;
-      expect((result as { annotationId: string }).annotationId).toBe(testAnnotationId as unknown as string);
+      expect((result as { annotationId: string }).annotationId).toBe(
+        testAnnotationId as unknown as string,
+      );
       expect(transport.subscribeToResource).not.toHaveBeenCalled();
     });
 
     test('a failed match:search-failed event resolves the Observable with an error', async () => {
       const { firstValueFrom } = await import('rxjs');
       const gathered = { sourceContext: {}, targetContext: {} } as never;
-      const searchP = firstValueFrom(client.match.search(testResourceId, annotationId('ref-x'), gathered));
+      const searchP = firstValueFrom(
+        client.match.search(testResourceId, annotationId('ref-x'), gathered),
+      );
 
       await Promise.resolve();
       const cid = vi
         .mocked(transport.emit)
-        .mock.calls.find((c) => c[0] === 'match:search-requested')![2]?.correlationId;
+        .mock.calls.find((c) => c[0] === 'match:search-requested')![2]
+        ?.correlationId;
 
-      wire.emit('match:search-failed', ({
-        referenceId: 'ref-x',
-        message: 'inference provider down',
-      }) as never, { correlationId: cid });
+      wire.emit(
+        'match:search-failed',
+        {
+          referenceId: 'ref-x',
+          message: 'inference provider down',
+        } as never,
+        { correlationId: cid },
+      );
 
       await expect(searchP).rejects.toThrow(/inference provider down/);
     });

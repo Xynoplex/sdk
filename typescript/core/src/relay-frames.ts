@@ -23,7 +23,9 @@ import type { EventMap } from './bus-protocol';
  * its channel's, and a relay passes it on as it passes on any frame.
  */
 export interface FrameSource {
-  frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>>;
+  frames<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>>;
 }
 
 /**
@@ -32,7 +34,11 @@ export interface FrameSource {
  * type cannot be handed a payload alone.
  */
 export interface FrameSink {
-  emit<K extends keyof EventMap>(channel: K, payload: EventMap[K] | FrameRefusal, envelope: BusEnvelope): unknown;
+  emit<K extends keyof EventMap>(
+    channel: K,
+    payload: EventMap[K] | FrameRefusal,
+    envelope: BusEnvelope,
+  ): unknown;
 }
 
 /** Per-channel so `K` is one channel's type, not the union of all of them. */
@@ -43,8 +49,11 @@ function relayChannel<K extends keyof EventMap>(
   onError: (channel: K, error: unknown) => void,
 ): Subscription {
   return from.frames(channel).subscribe((frame) => {
-    const delivered = to.emit(channel, frame.payload, { correlationId: frame.correlationId });
-    if (delivered instanceof Promise) delivered.catch((error: unknown) => onError(channel, error));
+    const delivered = to.emit(channel, frame.payload, {
+      correlationId: frame.correlationId,
+    });
+    if (delivered instanceof Promise)
+      delivered.catch((error: unknown) => onError(channel, error));
   });
 }
 

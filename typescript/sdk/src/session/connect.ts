@@ -6,7 +6,18 @@
 
 import { BehaviorSubject } from 'rxjs';
 import { HttpContentTransport, HttpTransport } from '@xynolog/http-transport';
-import { accessToken, baseUrl, BusRequestError, kbDid, isUserId, replyChannelsFor, type AccessToken, type IdentityUnverifiableReason, type KbDescription, type UserId } from '@xynolog/core';
+import {
+  accessToken,
+  baseUrl,
+  BusRequestError,
+  kbDid,
+  isUserId,
+  replyChannelsFor,
+  type AccessToken,
+  type IdentityUnverifiableReason,
+  type KbDescription,
+  type UserId,
+} from '@xynolog/core';
 import { XynologClient } from '../client';
 import type { HttpEndpoint } from '@xynolog/core';
 import { kbGatewayUrl } from './storage';
@@ -20,7 +31,10 @@ import { kbGatewayUrl } from './storage';
  * once hid a live auth bug from the UI.
  */
 export class IdentityUnverifiableError extends Error {
-  constructor(readonly reason: IdentityUnverifiableReason, detail: string) {
+  constructor(
+    readonly reason: IdentityUnverifiableReason,
+    detail: string,
+  ) {
     super(detail);
     this.name = 'IdentityUnverifiableError';
   }
@@ -31,7 +45,11 @@ export interface ConnectionIdentity {
   description: KbDescription;
 }
 
-export async function describeConnection(target: HttpEndpoint, access: string, fetch?: typeof globalThis.fetch): Promise<ConnectionIdentity> {
+export async function describeConnection(
+  target: HttpEndpoint,
+  access: string,
+  fetch?: typeof globalThis.fetch,
+): Promise<ConnectionIdentity> {
   // The KB describes itself only to a signed-in caller, so the throwaway
   // client carries the token from birth. It subscribes to this one
   // operation's replies and nothing else, and sends with `fetch` when it is
@@ -43,7 +61,11 @@ export async function describeConnection(target: HttpEndpoint, access: string, f
     channels: replyChannelsFor(['browse:kb-requested']),
     ...(fetch ? { fetch } : {}),
   });
-  const client = new XynologClient(transport, new HttpContentTransport(transport), transport);
+  const client = new XynologClient(
+    transport,
+    new HttpContentTransport(transport),
+    transport,
+  );
   try {
     let description: KbDescription;
     try {
@@ -51,12 +73,22 @@ export async function describeConnection(target: HttpEndpoint, access: string, f
     } catch (e) {
       // A refusal is the KB answering that it cannot say what it is; any
       // other failure is not having reached it.
-      const reason: IdentityUnverifiableReason = e instanceof BusRequestError && e.code === 'bus.rejected' ? 'not-reported' : 'unreachable';
-      throw new IdentityUnverifiableError(reason, e instanceof Error ? e.message : String(e));
+      const reason: IdentityUnverifiableReason =
+        e instanceof BusRequestError && e.code === 'bus.rejected'
+          ? 'not-reported'
+          : 'unreachable';
+      throw new IdentityUnverifiableError(
+        reason,
+        e instanceof Error ? e.message : String(e),
+      );
     }
     const did = kbDid(description.domain);
     // A domain no did can hold says nothing of who this is.
-    if (!isUserId(did)) throw new IdentityUnverifiableError('not-reported', `${JSON.stringify(did)} is not a did`);
+    if (!isUserId(did))
+      throw new IdentityUnverifiableError(
+        'not-reported',
+        `${JSON.stringify(did)} is not a did`,
+      );
     return { did, description };
   } finally {
     client.dispose();

@@ -3,7 +3,14 @@
 import type { ResourceId } from '@xynolog/core';
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import type { Annotation, AnchorRect } from '@xynolog/core';
-import { createRectangleSvg, createCircleSvg, createPolygonSvg, scaleSvgToNative, parseSvgSelector, Point } from '@xynolog/core';
+import {
+  createRectangleSvg,
+  createCircleSvg,
+  createPolygonSvg,
+  scaleSvgToNative,
+  parseSvgSelector,
+  Point,
+} from '@xynolog/core';
 import { toViewportAnchorRect } from '../../lib/anchor-rect';
 import { AnnotationOverlay } from './AnnotationOverlay';
 import { AnchoredTextNotice } from '../annotation/AnchoredTextNotice';
@@ -12,13 +19,17 @@ import type { XynologSession } from '@xynolog/sdk';
 import { useAnchoredText } from '../../hooks/useAnchoredText';
 import { useHoverDelay } from '../../hooks/useHoverDelay';
 
-export type DrawingMode = 'rectangle' | 'polygon' | 'circle' | 'freeform' | null;
+export type DrawingMode =
+  'rectangle' | 'polygon' | 'circle' | 'freeform' | null;
 
 /**
  * Get color for annotation preview based on motivation
  * Returns object with stroke color and fill color (with alpha)
  */
-function getMotivationColor(motivation: SelectionMotivation | null): { stroke: string; fill: string } {
+function getMotivationColor(motivation: SelectionMotivation | null): {
+  stroke: string;
+  fill: string;
+} {
   if (!motivation) {
     return { stroke: 'rgb(156, 163, 175)', fill: 'rgba(156, 163, 175, 0.2)' }; // gray default
   }
@@ -84,8 +95,14 @@ export function SvgDrawingCanvas({
   const drawing = anchoredText.status === 'held' ? drawingMode : null;
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
-  const [displayDimensions, setDisplayDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const [displayDimensions, setDisplayDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
   // Drawing state
   const [isDrawing, setIsDrawing] = useState(false);
@@ -98,7 +115,7 @@ export function SvgDrawingCanvas({
     img.onload = () => {
       setImageDimensions({
         width: img.naturalWidth,
-        height: img.naturalHeight
+        height: img.naturalHeight,
       });
     };
     img.src = imageUrl;
@@ -110,7 +127,7 @@ export function SvgDrawingCanvas({
       if (imageRef.current) {
         setDisplayDimensions({
           width: imageRef.current.clientWidth,
-          height: imageRef.current.clientHeight
+          height: imageRef.current.clientHeight,
         });
       }
     };
@@ -128,7 +145,9 @@ export function SvgDrawingCanvas({
       }
     } catch (error) {
       // Fallback for browsers without ResizeObserver support
-      console.warn('ResizeObserver not supported, falling back to window resize listener');
+      console.warn(
+        'ResizeObserver not supported, falling back to window resize listener',
+      );
       window.addEventListener('resize', updateDisplayDimensions);
     }
 
@@ -142,178 +161,207 @@ export function SvgDrawingCanvas({
   }, []);
 
   // Convert mouse event to SVG coordinates relative to image
-  const getRelativeCoordinates = useCallback((e: React.MouseEvent<HTMLDivElement>): Point | null => {
-    if (!imageRef.current) return null;
+  const getRelativeCoordinates = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>): Point | null => {
+      if (!imageRef.current) return null;
 
-    const rect = imageRef.current.getBoundingClientRect();
-    return {
-      x: (e.clientX - rect.left) / zoom,
-      y: (e.clientY - rect.top) / zoom
-    };
-  }, [zoom]);
+      const rect = imageRef.current.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) / zoom,
+        y: (e.clientY - rect.top) / zoom,
+      };
+    },
+    [zoom],
+  );
 
   // Handle mouse down - start drawing
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!drawing) return;
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!drawing) return;
 
-    const point = getRelativeCoordinates(e);
-    if (point) {
-      setIsDrawing(true);
-      setStartPoint(point);
-      setCurrentPoint(point);
-    }
-  }, [drawing, getRelativeCoordinates]);
+      const point = getRelativeCoordinates(e);
+      if (point) {
+        setIsDrawing(true);
+        setStartPoint(point);
+        setCurrentPoint(point);
+      }
+    },
+    [drawing, getRelativeCoordinates],
+  );
 
   // Handle mouse move - update current point
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDrawing || !startPoint) return;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isDrawing || !startPoint) return;
 
-    const point = getRelativeCoordinates(e);
-    if (point) {
-      setCurrentPoint(point);
-    }
-  }, [isDrawing, startPoint, getRelativeCoordinates]);
+      const point = getRelativeCoordinates(e);
+      if (point) {
+        setCurrentPoint(point);
+      }
+    },
+    [isDrawing, startPoint, getRelativeCoordinates],
+  );
 
   // Handle mouse up - distinguish between click and drag
-  const handleMouseUp = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDrawing || !startPoint || !drawing) return;
+  const handleMouseUp = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isDrawing || !startPoint || !drawing) return;
 
-    const endPoint = getRelativeCoordinates(e);
-    if (!endPoint || !displayDimensions || !imageDimensions) return;
+      const endPoint = getRelativeCoordinates(e);
+      if (!endPoint || !displayDimensions || !imageDimensions) return;
 
-    // Calculate drag distance
-    const dragDistance = Math.sqrt(
-      Math.pow(endPoint.x - startPoint.x, 2) +
-      Math.pow(endPoint.y - startPoint.y, 2)
-    );
+      // Calculate drag distance
+      const dragDistance = Math.sqrt(
+        Math.pow(endPoint.x - startPoint.x, 2) +
+          Math.pow(endPoint.y - startPoint.y, 2),
+      );
 
-    // Minimum drag threshold in pixels (10px)
-    const MIN_DRAG_DISTANCE = 10;
+      // Minimum drag threshold in pixels (10px)
+      const MIN_DRAG_DISTANCE = 10;
 
-    if (dragDistance < MIN_DRAG_DISTANCE) {
-      // This was a click, not a drag - check if we clicked an existing annotation
-      if (existingAnnotations.length > 0) {
-        // Find annotation at click point
-        // Note: We're checking in display coordinates. The hit-test owns the
-        // coordinate transform — capture the hit annotation's viewport rect
-        // for the emission below, where it rides the click as its anchor.
-        let hitRect: AnchorRect | undefined;
-        const clickedAnnotation = existingAnnotations.find(ann => {
-          if (typeof ann.target === 'string') return false;
+      if (dragDistance < MIN_DRAG_DISTANCE) {
+        // This was a click, not a drag - check if we clicked an existing annotation
+        if (existingAnnotations.length > 0) {
+          // Find annotation at click point
+          // Note: We're checking in display coordinates. The hit-test owns the
+          // coordinate transform — capture the hit annotation's viewport rect
+          // for the emission below, where it rides the click as its anchor.
+          let hitRect: AnchorRect | undefined;
+          const clickedAnnotation = existingAnnotations.find((ann) => {
+            if (typeof ann.target === 'string') return false;
 
-          const svgSelector = ann.target.selector;
-          if (!svgSelector) return false;
+            const svgSelector = ann.target.selector;
+            if (!svgSelector) return false;
 
-          // Handle selector array
-          const selectors = Array.isArray(svgSelector) ? svgSelector : [svgSelector];
-          const svgSel = selectors.find(s => s.type === 'SvgSelector');
-          if (!svgSel || svgSel.type !== 'SvgSelector') return false;
+            // Handle selector array
+            const selectors = Array.isArray(svgSelector)
+              ? svgSelector
+              : [svgSelector];
+            const svgSel = selectors.find((s) => s.type === 'SvgSelector');
+            if (!svgSel || svgSel.type !== 'SvgSelector') return false;
 
-          const parsed = parseSvgSelector(svgSel.value);
-          if (!parsed) return false;
+            const parsed = parseSvgSelector(svgSel.value);
+            if (!parsed) return false;
 
-          // Scale annotation bounds to display coordinates
-          const scaleX = displayDimensions.width / imageDimensions.width;
-          const scaleY = displayDimensions.height / imageDimensions.height;
+            // Scale annotation bounds to display coordinates
+            const scaleX = displayDimensions.width / imageDimensions.width;
+            const scaleY = displayDimensions.height / imageDimensions.height;
 
-          if (parsed.type === 'rect') {
-            const { x, y, width, height } = parsed.data;
-            const displayX = x * scaleX;
-            const displayY = y * scaleY;
-            const displayWidth = width * scaleX;
-            const displayHeight = height * scaleY;
+            if (parsed.type === 'rect') {
+              const { x, y, width, height } = parsed.data;
+              const displayX = x * scaleX;
+              const displayY = y * scaleY;
+              const displayWidth = width * scaleX;
+              const displayHeight = height * scaleY;
 
-            const hit = (
-              endPoint.x >= displayX &&
-              endPoint.x <= displayX + displayWidth &&
-              endPoint.y >= displayY &&
-              endPoint.y <= displayY + displayHeight
-            );
-            if (hit && imageRef.current) {
-              hitRect = toViewportAnchorRect(imageRef.current.getBoundingClientRect(), displayX * zoom, displayY * zoom, displayWidth * zoom, displayHeight * zoom);
+              const hit =
+                endPoint.x >= displayX &&
+                endPoint.x <= displayX + displayWidth &&
+                endPoint.y >= displayY &&
+                endPoint.y <= displayY + displayHeight;
+              if (hit && imageRef.current) {
+                hitRect = toViewportAnchorRect(
+                  imageRef.current.getBoundingClientRect(),
+                  displayX * zoom,
+                  displayY * zoom,
+                  displayWidth * zoom,
+                  displayHeight * zoom,
+                );
+              }
+              return hit;
             }
-            return hit;
+
+            return false;
+          });
+
+          if (clickedAnnotation) {
+            session?.client.browse.click(clickedAnnotation.id, hitRect);
+            setIsDrawing(false);
+            setStartPoint(null);
+            setCurrentPoint(null);
+            return;
           }
-
-          return false;
-        });
-
-        if (clickedAnnotation) {
-          session?.client.browse.click(clickedAnnotation.id, hitRect);
-          setIsDrawing(false);
-          setStartPoint(null);
-          setCurrentPoint(null);
-          return;
         }
+
+        // Click on empty space - do nothing
+        setIsDrawing(false);
+        setStartPoint(null);
+        setCurrentPoint(null);
+        return;
       }
 
-      // Click on empty space - do nothing
+      // This was a drag - create new annotation based on drawing mode
+      let displaySvg: string;
+
+      switch (drawing) {
+        case 'circle': {
+          // Calculate radius from start to end point
+          const radius = Math.sqrt(
+            Math.pow(endPoint.x - startPoint.x, 2) +
+              Math.pow(endPoint.y - startPoint.y, 2),
+          );
+          displaySvg = createCircleSvg(startPoint, radius);
+          break;
+        }
+
+        case 'polygon': {
+          // Create a 4-point polygon (diamond shape) using the bounding box
+          const centerX = (startPoint.x + endPoint.x) / 2;
+          const centerY = (startPoint.y + endPoint.y) / 2;
+          const halfWidth = Math.abs(endPoint.x - startPoint.x) / 2;
+          const halfHeight = Math.abs(endPoint.y - startPoint.y) / 2;
+
+          const points = [
+            { x: centerX, y: centerY - halfHeight }, // top
+            { x: centerX + halfWidth, y: centerY }, // right
+            { x: centerX, y: centerY + halfHeight }, // bottom
+            { x: centerX - halfWidth, y: centerY }, // left
+          ];
+          displaySvg = createPolygonSvg(points);
+          break;
+        }
+
+        case 'rectangle':
+        default:
+          displaySvg = createRectangleSvg(startPoint, endPoint);
+          break;
+      }
+
+      // Scale to native image resolution
+      const nativeSvg = scaleSvgToNative(
+        displaySvg,
+        displayDimensions.width,
+        displayDimensions.height,
+        imageDimensions.width,
+        imageDimensions.height,
+      );
+
+      // Emit annotation:requested event with SvgSelector
+      if (session && selectedMotivation) {
+        session.client.mark.request(
+          resourceUri,
+          { type: 'SvgSelector', value: nativeSvg },
+          selectedMotivation,
+        );
+      }
+
+      // Reset drawing state
       setIsDrawing(false);
       setStartPoint(null);
       setCurrentPoint(null);
-      return;
-    }
-
-    // This was a drag - create new annotation based on drawing mode
-    let displaySvg: string;
-
-    switch (drawing) {
-      case 'circle': {
-        // Calculate radius from start to end point
-        const radius = Math.sqrt(
-          Math.pow(endPoint.x - startPoint.x, 2) +
-          Math.pow(endPoint.y - startPoint.y, 2)
-        );
-        displaySvg = createCircleSvg(startPoint, radius);
-        break;
-      }
-
-      case 'polygon': {
-        // Create a 4-point polygon (diamond shape) using the bounding box
-        const centerX = (startPoint.x + endPoint.x) / 2;
-        const centerY = (startPoint.y + endPoint.y) / 2;
-        const halfWidth = Math.abs(endPoint.x - startPoint.x) / 2;
-        const halfHeight = Math.abs(endPoint.y - startPoint.y) / 2;
-
-        const points = [
-          { x: centerX, y: centerY - halfHeight },        // top
-          { x: centerX + halfWidth, y: centerY },         // right
-          { x: centerX, y: centerY + halfHeight },        // bottom
-          { x: centerX - halfWidth, y: centerY }          // left
-        ];
-        displaySvg = createPolygonSvg(points);
-        break;
-      }
-
-      case 'rectangle':
-      default:
-        displaySvg = createRectangleSvg(startPoint, endPoint);
-        break;
-    }
-
-    // Scale to native image resolution
-    const nativeSvg = scaleSvgToNative(
-      displaySvg,
-      displayDimensions.width,
-      displayDimensions.height,
-      imageDimensions.width,
-      imageDimensions.height
-    );
-
-    // Emit annotation:requested event with SvgSelector
-    if (session && selectedMotivation) {
-      session.client.mark.request(
-        resourceUri,
-        { type: 'SvgSelector', value: nativeSvg },
-        selectedMotivation,
-      );
-    }
-
-    // Reset drawing state
-    setIsDrawing(false);
-    setStartPoint(null);
-    setCurrentPoint(null);
-  }, [isDrawing, startPoint, drawing, displayDimensions, imageDimensions, getRelativeCoordinates, selectedMotivation, existingAnnotations, zoom]);
+    },
+    [
+      isDrawing,
+      startPoint,
+      drawing,
+      displayDimensions,
+      imageDimensions,
+      getRelativeCoordinates,
+      selectedMotivation,
+      existingAnnotations,
+      zoom,
+    ],
+  );
 
   // Cancel drawing on mouse leave
   const handleMouseLeave = useCallback(() => {
@@ -326,125 +374,141 @@ export function SvgDrawingCanvas({
 
   return (
     <>
-    {/* Beside the canvas and not inside it: the overlay is laid over the
+      {/* Beside the canvas and not inside it: the overlay is laid over the
         canvas from its top-left corner, and a line above the image in there
         would push the image out from under its shapes. */}
-    <AnchoredTextNotice status={anchoredText.status} />
-    <div
-      ref={containerRef}
-      className="xynolog-svg-drawing-canvas"
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      data-drawing-mode={drawing || 'none'}
-      data-annotate-deferred={anchoredText.status === 'held' ? 'false' : 'true'}
-    >
-      {/* Image */}
-      <img
-        ref={imageRef}
-        src={imageUrl}
-        alt="Annotatable content"
-        className="xynolog-svg-drawing-canvas__image"
-        draggable={false}
-      />
+      <AnchoredTextNotice status={anchoredText.status} />
+      <div
+        ref={containerRef}
+        className="xynolog-svg-drawing-canvas"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        data-drawing-mode={drawing || 'none'}
+        data-annotate-deferred={
+          anchoredText.status === 'held' ? 'false' : 'true'
+        }
+      >
+        {/* Image */}
+        <img
+          ref={imageRef}
+          src={imageUrl}
+          alt="Annotatable content"
+          className="xynolog-svg-drawing-canvas__image"
+          draggable={false}
+        />
 
-      {/* Overlay for annotations and drawing */}
-      {displayDimensions && imageDimensions && (
-        <div
-          className="xynolog-svg-drawing-canvas__overlay-container"
-        >
-          <div
-            className="xynolog-svg-drawing-canvas__overlay"
-            style={{
-              width: displayDimensions.width,
-              height: displayDimensions.height
-            }}
-          >
-            {/* Existing annotations */}
-            <AnnotationOverlay
-              annotations={existingAnnotations}
-              imageWidth={imageDimensions.width}
-              imageHeight={imageDimensions.height}
-              displayWidth={displayDimensions.width}
-              displayHeight={displayDimensions.height}
-              hoverDelayMs={hoverDelayMs}
-              {...(session && { session })}
-              {...(hoveredAnnotationId !== undefined && { hoveredAnnotationId })}
-              {...(selectedAnnotationId !== undefined && { selectedAnnotationId })}
-            />
+        {/* Overlay for annotations and drawing */}
+        {displayDimensions && imageDimensions && (
+          <div className="xynolog-svg-drawing-canvas__overlay-container">
+            <div
+              className="xynolog-svg-drawing-canvas__overlay"
+              style={{
+                width: displayDimensions.width,
+                height: displayDimensions.height,
+              }}
+            >
+              {/* Existing annotations */}
+              <AnnotationOverlay
+                annotations={existingAnnotations}
+                imageWidth={imageDimensions.width}
+                imageHeight={imageDimensions.height}
+                displayWidth={displayDimensions.width}
+                displayHeight={displayDimensions.height}
+                hoverDelayMs={hoverDelayMs}
+                {...(session && { session })}
+                {...(hoveredAnnotationId !== undefined && {
+                  hoveredAnnotationId,
+                })}
+                {...(selectedAnnotationId !== undefined && {
+                  selectedAnnotationId,
+                })}
+              />
 
-            {/* Current drawing preview */}
-            {isDrawing && startPoint && currentPoint && (() => {
-              const colors = getMotivationColor(selectedMotivation || null);
-              return (
-                <svg
-                  className="xynolog-svg-drawing-canvas__preview"
-                  style={{ width: displayDimensions.width, height: displayDimensions.height }}
-                >
-                  {drawing === 'circle' && (() => {
-                    const radius = Math.sqrt(
-                      Math.pow(currentPoint.x - startPoint.x, 2) +
-                      Math.pow(currentPoint.y - startPoint.y, 2)
-                    );
-                    return (
-                      <circle
-                        cx={startPoint.x}
-                        cy={startPoint.y}
-                        r={radius}
-                        fill={colors.fill}
-                        stroke={colors.stroke}
-                        strokeWidth="2"
-                        strokeDasharray="5,5"
-                      />
-                    );
-                  })()}
+              {/* Current drawing preview */}
+              {isDrawing &&
+                startPoint &&
+                currentPoint &&
+                (() => {
+                  const colors = getMotivationColor(selectedMotivation || null);
+                  return (
+                    <svg
+                      className="xynolog-svg-drawing-canvas__preview"
+                      style={{
+                        width: displayDimensions.width,
+                        height: displayDimensions.height,
+                      }}
+                    >
+                      {drawing === 'circle' &&
+                        (() => {
+                          const radius = Math.sqrt(
+                            Math.pow(currentPoint.x - startPoint.x, 2) +
+                              Math.pow(currentPoint.y - startPoint.y, 2),
+                          );
+                          return (
+                            <circle
+                              cx={startPoint.x}
+                              cy={startPoint.y}
+                              r={radius}
+                              fill={colors.fill}
+                              stroke={colors.stroke}
+                              strokeWidth="2"
+                              strokeDasharray="5,5"
+                            />
+                          );
+                        })()}
 
-                  {drawing === 'polygon' && (() => {
-                    const centerX = (startPoint.x + currentPoint.x) / 2;
-                    const centerY = (startPoint.y + currentPoint.y) / 2;
-                    const halfWidth = Math.abs(currentPoint.x - startPoint.x) / 2;
-                    const halfHeight = Math.abs(currentPoint.y - startPoint.y) / 2;
+                      {drawing === 'polygon' &&
+                        (() => {
+                          const centerX = (startPoint.x + currentPoint.x) / 2;
+                          const centerY = (startPoint.y + currentPoint.y) / 2;
+                          const halfWidth =
+                            Math.abs(currentPoint.x - startPoint.x) / 2;
+                          const halfHeight =
+                            Math.abs(currentPoint.y - startPoint.y) / 2;
 
-                    const points = [
-                      { x: centerX, y: centerY - halfHeight },        // top
-                      { x: centerX + halfWidth, y: centerY },         // right
-                      { x: centerX, y: centerY + halfHeight },        // bottom
-                      { x: centerX - halfWidth, y: centerY }          // left
-                    ];
+                          const points = [
+                            { x: centerX, y: centerY - halfHeight }, // top
+                            { x: centerX + halfWidth, y: centerY }, // right
+                            { x: centerX, y: centerY + halfHeight }, // bottom
+                            { x: centerX - halfWidth, y: centerY }, // left
+                          ];
 
-                    const pointsStr = points.map(p => `${p.x},${p.y}`).join(' ');
+                          const pointsStr = points
+                            .map((p) => `${p.x},${p.y}`)
+                            .join(' ');
 
-                    return (
-                      <polygon
-                        points={pointsStr}
-                        fill={colors.fill}
-                        stroke={colors.stroke}
-                        strokeWidth="2"
-                        strokeDasharray="5,5"
-                      />
-                    );
-                  })()}
+                          return (
+                            <polygon
+                              points={pointsStr}
+                              fill={colors.fill}
+                              stroke={colors.stroke}
+                              strokeWidth="2"
+                              strokeDasharray="5,5"
+                            />
+                          );
+                        })()}
 
-                  {drawing === 'rectangle' && (
-                    <rect
-                      x={Math.min(startPoint.x, currentPoint.x)}
-                      y={Math.min(startPoint.y, currentPoint.y)}
-                      width={Math.abs(currentPoint.x - startPoint.x)}
-                      height={Math.abs(currentPoint.y - startPoint.y)}
-                      fill={colors.fill}
-                      stroke={colors.stroke}
-                      strokeWidth="2"
-                      strokeDasharray="5,5"
-                    />
-                  )}
-                </svg>
-              );
-            })()}
+                      {drawing === 'rectangle' && (
+                        <rect
+                          x={Math.min(startPoint.x, currentPoint.x)}
+                          y={Math.min(startPoint.y, currentPoint.y)}
+                          width={Math.abs(currentPoint.x - startPoint.x)}
+                          height={Math.abs(currentPoint.y - startPoint.y)}
+                          fill={colors.fill}
+                          stroke={colors.stroke}
+                          strokeWidth="2"
+                          strokeDasharray="5,5"
+                        />
+                      )}
+                    </svg>
+                  );
+                })()}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </>
   );
 }

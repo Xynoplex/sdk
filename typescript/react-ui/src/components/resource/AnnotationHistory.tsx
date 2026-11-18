@@ -3,7 +3,10 @@
 import type { AnnotationId } from '@xynolog/core';
 import React, { useEffect, useRef } from 'react';
 import { useTranslations } from '../../contexts/TranslationContext';
-import type { RouteBuilder, LinkComponentProps } from '../../contexts/RoutingContext';
+import type {
+  RouteBuilder,
+  LinkComponentProps,
+} from '../../contexts/RoutingContext';
 import type { Annotation } from '@xynolog/core';
 import { getAnnotationIdFromEvent, type AttributedEvent } from '@xynolog/core';
 import { HistoryEvent } from './HistoryEvent';
@@ -55,7 +58,11 @@ export function AnnotationHistory({
   // events; naming it here keeps those out of the history.
   const events: AttributedEvent[] = eventsData
     .filter((e) => {
-      return e.type !== 'job:started' && e.type !== 'job:progress' && e.type !== 'job:completed';
+      return (
+        e.type !== 'job:started' &&
+        e.type !== 'job:progress' &&
+        e.type !== 'job:completed'
+      );
     })
     .sort((a, b) => a.metadata.sequenceNumber - b.metadata.sequenceNumber);
 
@@ -92,15 +99,17 @@ export function AnnotationHistory({
   if (error) {
     return (
       <div className="xynolog-history-panel">
-        <h3 className="xynolog-history-panel__title">
-          {t('history')}
-        </h3>
+        <h3 className="xynolog-history-panel__title">{t('history')}</h3>
         <p className="xynolog-history-panel__error">
           {t('failed')}
           {onRetryEvents && (
             <>
               {' '}
-              <button type="button" onClick={onRetryEvents} className="xynolog-panel__inline-action">
+              <button
+                type="button"
+                onClick={onRetryEvents}
+                className="xynolog-panel__inline-action"
+              >
                 {t('retry')}
               </button>
             </>
@@ -113,9 +122,7 @@ export function AnnotationHistory({
   if (loading) {
     return (
       <div className="xynolog-history-panel">
-        <h3 className="xynolog-history-panel__title">
-          {t('history')}
-        </h3>
+        <h3 className="xynolog-history-panel__title">{t('history')}</h3>
         <div className="xynolog-history-panel__loading">{t('loading')}</div>
       </div>
     );
@@ -127,12 +134,12 @@ export function AnnotationHistory({
 
   return (
     <div className="xynolog-history-panel">
-      <h3 className="xynolog-history-panel__title">
-        {t('history')}
-      </h3>
+      <h3 className="xynolog-history-panel__title">{t('history')}</h3>
       <div ref={containerRef} className="xynolog-history-panel__list">
         {events.map((stored) => {
-          const isRelated = Boolean(hoveredAnnotationId) && getAnnotationIdFromEvent(stored) === hoveredAnnotationId;
+          const isRelated =
+            Boolean(hoveredAnnotationId) &&
+            getAnnotationIdFromEvent(stored) === hoveredAnnotationId;
 
           return (
             <HistoryEvent

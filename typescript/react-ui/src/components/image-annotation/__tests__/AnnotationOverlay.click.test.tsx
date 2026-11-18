@@ -13,7 +13,11 @@ import type { Annotation, AnnotationId } from '@xynolog/core';
 import { AnnotationOverlay } from '../AnnotationOverlay';
 import { resourceId } from '@xynolog/core';
 
-function svgAnnotation(id: string, motivation: Annotation['motivation'], svgValue: string): Annotation {
+function svgAnnotation(
+  id: string,
+  motivation: Annotation['motivation'],
+  svgValue: string,
+): Annotation {
   return {
     '@context': 'http://www.w3.org/ns/anno.jsonld',
     id: id as AnnotationId,
@@ -30,7 +34,11 @@ function svgAnnotation(id: string, motivation: Annotation['motivation'], svgValu
   };
 }
 
-const rectAnnotation = svgAnnotation('img-ann-1', 'highlighting', '<svg><rect x="10" y="10" width="20" height="20"/></svg>');
+const rectAnnotation = svgAnnotation(
+  'img-ann-1',
+  'highlighting',
+  '<svg><rect x="10" y="10" width="20" height="20"/></svg>',
+);
 
 function sessionDouble() {
   const click = vi.fn();
@@ -75,38 +83,61 @@ describe('AnnotationOverlay — anchorRect on click', () => {
   // The other shape kinds render distinct SVG elements with their own
   // handlers — each instance of the pattern gets its own pin.
   it.each([
-    ['circle', svgAnnotation('img-circle-1', 'commenting', '<svg><circle cx="30" cy="30" r="10"/></svg>')],
-    ['polygon', svgAnnotation('img-polygon-1', 'assessing', '<svg><polygon points="10,10 30,10 20,30"/></svg>')],
-  ] as const)('passes the %s element rect as browse.click second argument', (_kind, annotation) => {
-    const { session, click } = sessionDouble();
+    [
+      'circle',
+      svgAnnotation(
+        'img-circle-1',
+        'commenting',
+        '<svg><circle cx="30" cy="30" r="10"/></svg>',
+      ),
+    ],
+    [
+      'polygon',
+      svgAnnotation(
+        'img-polygon-1',
+        'assessing',
+        '<svg><polygon points="10,10 30,10 20,30"/></svg>',
+      ),
+    ],
+  ] as const)(
+    'passes the %s element rect as browse.click second argument',
+    (_kind, annotation) => {
+      const { session, click } = sessionDouble();
 
-    const { container } = render(
-      <AnnotationOverlay
-        annotations={[annotation]}
-        imageWidth={100}
-        imageHeight={100}
-        displayWidth={200}
-        displayHeight={200}
-        session={session}
-        hoverDelayMs={0}
-      />,
-    );
+      const { container } = render(
+        <AnnotationOverlay
+          annotations={[annotation]}
+          imageWidth={100}
+          imageHeight={100}
+          displayWidth={200}
+          displayHeight={200}
+          session={session}
+          hoverDelayMs={0}
+        />,
+      );
 
-    const shape = container.querySelector('.xynolog-annotation-overlay__shape');
-    expect(shape).toBeInTheDocument();
+      const shape = container.querySelector(
+        '.xynolog-annotation-overlay__shape',
+      );
+      expect(shape).toBeInTheDocument();
 
-    fireEvent.click(shape!);
+      fireEvent.click(shape!);
 
-    expect(click).toHaveBeenCalledTimes(1);
-    expect(click.mock.calls[0]?.[0]).toBe(annotation.id);
-    const anchorRect = click.mock.calls[0]?.[1];
-    expect(anchorRect).toBeDefined();
-    expect(typeof anchorRect.width).toBe('number');
-  });
+      expect(click).toHaveBeenCalledTimes(1);
+      expect(click.mock.calls[0]?.[0]).toBe(annotation.id);
+      const anchorRect = click.mock.calls[0]?.[1];
+      expect(anchorRect).toBeDefined();
+      expect(typeof anchorRect.width).toBe('number');
+    },
+  );
 
   it('passes the status-indicator element rect as browse.click second argument', () => {
     // Only references render a status indicator (🔗/❓).
-    const reference = svgAnnotation('img-ref-1', 'linking', '<svg><rect x="10" y="10" width="20" height="20"/></svg>');
+    const reference = svgAnnotation(
+      'img-ref-1',
+      'linking',
+      '<svg><rect x="10" y="10" width="20" height="20"/></svg>',
+    );
     const { session, click } = sessionDouble();
 
     const { container } = render(
@@ -121,7 +152,9 @@ describe('AnnotationOverlay — anchorRect on click', () => {
       />,
     );
 
-    const indicator = container.querySelector('.xynolog-annotation-overlay__status-indicator');
+    const indicator = container.querySelector(
+      '.xynolog-annotation-overlay__status-indicator',
+    );
     expect(indicator).toBeInTheDocument();
 
     fireEvent.click(indicator!);

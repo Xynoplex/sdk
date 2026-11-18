@@ -8,7 +8,11 @@
  * points from its start, as a `TextPositionSelector` does.
  */
 
-import { extractContext, type TextOffsets, type components } from '@xynolog/core';
+import {
+  extractContext,
+  type TextOffsets,
+  type components,
+} from '@xynolog/core';
 
 /**
  * A pair of selectors for a text annotation:
@@ -35,7 +39,7 @@ export function buildTextSelectors(
   content: string,
   offsets: TextOffsets,
   start: number,
-  end: number
+  end: number,
 ): SelectorPair | null {
   if (start < 0 || end <= start || end > offsets.length) {
     return null;
@@ -47,14 +51,14 @@ export function buildTextSelectors(
     {
       type: 'TextPositionSelector',
       start,
-      end
+      end,
     },
     {
       type: 'TextQuoteSelector',
       exact: content.slice(offsets.indexAt(start), offsets.indexAt(end)),
       ...(context.prefix && { prefix: context.prefix }),
-      ...(context.suffix && { suffix: context.suffix })
-    }
+      ...(context.suffix && { suffix: context.suffix }),
+    },
   ];
 }
 
@@ -71,9 +75,12 @@ export function buildTextSelectors(
 export function fallbackTextPosition(
   content: string,
   offsets: TextOffsets,
-  selectedText: string
+  selectedText: string,
 ): { start: number; end: number } | null {
   const index = content.indexOf(selectedText);
   if (index === -1) return null;
-  return { start: offsets.offsetAt(index), end: offsets.offsetAt(index + selectedText.length) };
+  return {
+    start: offsets.offsetAt(index),
+    end: offsets.offsetAt(index + selectedText.length),
+  };
 }

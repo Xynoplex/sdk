@@ -20,7 +20,9 @@ function makeWrapper() {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <XynologWrapper>{children}</XynologWrapper>
   );
-  const viewed = vi.spyOn(client.browse, 'resourceViewed').mockImplementation(() => {});
+  const viewed = vi
+    .spyOn(client.browse, 'resourceViewed')
+    .mockImplementation(() => {});
   return { wrapper, viewed };
 }
 
@@ -32,7 +34,13 @@ describe('useResourceViewedReport', () => {
     const { wrapper, viewed } = makeWrapper();
 
     const { rerender } = renderHook(
-      ({ rid, loaded }: { rid: ReturnType<typeof resourceId>; loaded: boolean }) => useResourceViewedReport(rid, loaded),
+      ({
+        rid,
+        loaded,
+      }: {
+        rid: ReturnType<typeof resourceId>;
+        loaded: boolean;
+      }) => useResourceViewedReport(rid, loaded),
       { wrapper, initialProps: { rid: RID_A, loaded: false } },
     );
     expect(viewed).not.toHaveBeenCalled();
@@ -49,7 +57,13 @@ describe('useResourceViewedReport', () => {
     const { wrapper, viewed } = makeWrapper();
 
     const { rerender } = renderHook(
-      ({ rid, loaded }: { rid: ReturnType<typeof resourceId>; loaded: boolean }) => useResourceViewedReport(rid, loaded),
+      ({
+        rid,
+        loaded,
+      }: {
+        rid: ReturnType<typeof resourceId>;
+        loaded: boolean;
+      }) => useResourceViewedReport(rid, loaded),
       { wrapper, initialProps: { rid: RID_A, loaded: true } },
     );
     expect(viewed).toHaveBeenCalledTimes(1);

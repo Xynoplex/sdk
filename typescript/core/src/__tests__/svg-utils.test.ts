@@ -27,13 +27,22 @@ describe('createRectangleSvg', () => {
 
 describe('createPolygonSvg', () => {
   test('creates SVG polygon from points', () => {
-    const svg = createPolygonSvg([{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 50, y: 100 }]);
+    const svg = createPolygonSvg([
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 50, y: 100 },
+    ]);
     expect(svg).toContain('<polygon');
     expect(svg).toContain('points="0,0 100,0 50,100"');
   });
 
   test('throws for fewer than 3 points', () => {
-    expect(() => createPolygonSvg([{ x: 0, y: 0 }, { x: 1, y: 1 }])).toThrow('at least 3 points');
+    expect(() =>
+      createPolygonSvg([
+        { x: 0, y: 0 },
+        { x: 1, y: 1 },
+      ]),
+    ).toThrow('at least 3 points');
   });
 });
 
@@ -47,47 +56,78 @@ describe('createCircleSvg', () => {
   });
 
   test('throws for non-positive radius', () => {
-    expect(() => createCircleSvg({ x: 0, y: 0 }, 0)).toThrow('radius must be positive');
-    expect(() => createCircleSvg({ x: 0, y: 0 }, -5)).toThrow('radius must be positive');
+    expect(() => createCircleSvg({ x: 0, y: 0 }, 0)).toThrow(
+      'radius must be positive',
+    );
+    expect(() => createCircleSvg({ x: 0, y: 0 }, -5)).toThrow(
+      'radius must be positive',
+    );
   });
 });
 
 describe('parseSvgSelector', () => {
   test('parses rect', () => {
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="30" height="40"/></svg>';
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="30" height="40"/></svg>';
     const result = parseSvgSelector(svg);
-    expect(result).toEqual({ type: 'rect', data: { x: 10, y: 20, width: 30, height: 40 } });
+    expect(result).toEqual({
+      type: 'rect',
+      data: { x: 10, y: 20, width: 30, height: 40 },
+    });
   });
 
   test('parses polygon', () => {
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 100,0 50,100"/></svg>';
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 100,0 50,100"/></svg>';
     const result = parseSvgSelector(svg);
-    expect(result).toEqual({ type: 'polygon', data: { points: [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 50, y: 100 }] } });
+    expect(result).toEqual({
+      type: 'polygon',
+      data: {
+        points: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 50, y: 100 },
+        ],
+      },
+    });
   });
 
   test('parses circle', () => {
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="25"/></svg>';
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="25"/></svg>';
     const result = parseSvgSelector(svg);
     expect(result).toEqual({ type: 'circle', data: { cx: 50, cy: 50, r: 25 } });
   });
 
   test('returns null for unknown shape', () => {
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><text>Hello</text></svg>';
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg"><text>Hello</text></svg>';
     expect(parseSvgSelector(svg)).toBeNull();
   });
 
   test('reads the first self-closing element, past one that is not', () => {
-    const svg = '<svg><rect x="1"></rect><rect x="5" y="6" width="7" height="8"/></svg>';
-    expect(parseSvgSelector(svg)).toEqual({ type: 'rect', data: { x: 5, y: 6, width: 7, height: 8 } });
+    const svg =
+      '<svg><rect x="1"></rect><rect x="5" y="6" width="7" height="8"/></svg>';
+    expect(parseSvgSelector(svg)).toEqual({
+      type: 'rect',
+      data: { x: 5, y: 6, width: 7, height: 8 },
+    });
   });
 
   test('takes any white space after the name', () => {
     const svg = '<svg><circle\n\t  cx="1" cy="2" r="3"/></svg>';
-    expect(parseSvgSelector(svg)).toEqual({ type: 'circle', data: { cx: 1, cy: 2, r: 3 } });
+    expect(parseSvgSelector(svg)).toEqual({
+      type: 'circle',
+      data: { cx: 1, cy: 2, r: 3 },
+    });
   });
 
   test('refuses a name that only begins with the shape, and an element with no attributes', () => {
-    expect(parseSvgSelector('<svg><rectangle x="1" y="2" width="3" height="4"/></svg>')).toBeNull();
+    expect(
+      parseSvgSelector(
+        '<svg><rectangle x="1" y="2" width="3" height="4"/></svg>',
+      ),
+    ).toBeNull();
     expect(parseSvgSelector('<svg><rect /></svg>')).toBeNull();
   });
 
@@ -103,21 +143,40 @@ describe('scaleSvgToNative', () => {
     const svg = createRectangleSvg({ x: 10, y: 20 }, { x: 50, y: 60 });
     const scaled = scaleSvgToNative(svg, 100, 100, 200, 200);
     const parsed = parseSvgSelector(scaled);
-    expect(parsed).toEqual({ type: 'rect', data: { x: 20, y: 40, width: 80, height: 80 } });
+    expect(parsed).toEqual({
+      type: 'rect',
+      data: { x: 20, y: 40, width: 80, height: 80 },
+    });
   });
 
   test('scales circle SVG', () => {
     const svg = createCircleSvg({ x: 50, y: 50 }, 10);
     const scaled = scaleSvgToNative(svg, 100, 100, 200, 200);
     const parsed = parseSvgSelector(scaled);
-    expect(parsed).toEqual({ type: 'circle', data: { cx: 100, cy: 100, r: 20 } });
+    expect(parsed).toEqual({
+      type: 'circle',
+      data: { cx: 100, cy: 100, r: 20 },
+    });
   });
 
   test('scales polygon SVG', () => {
-    const svg = createPolygonSvg([{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 50, y: 100 }]);
+    const svg = createPolygonSvg([
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 50, y: 100 },
+    ]);
     const scaled = scaleSvgToNative(svg, 100, 100, 200, 200);
     const parsed = parseSvgSelector(scaled);
-    expect(parsed).toEqual({ type: 'polygon', data: { points: [{ x: 0, y: 0 }, { x: 200, y: 0 }, { x: 100, y: 200 }] } });
+    expect(parsed).toEqual({
+      type: 'polygon',
+      data: {
+        points: [
+          { x: 0, y: 0 },
+          { x: 200, y: 0 },
+          { x: 100, y: 200 },
+        ],
+      },
+    });
   });
 
   test('returns original for unparseable SVG', () => {

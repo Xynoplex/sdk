@@ -19,15 +19,26 @@ const event = (type: string, payload: unknown): StoredEventLike => ({
 
 describe('the annotation a stored event is about', () => {
   it('is the annotation a mark:added carries', () => {
-    expect(getAnnotationIdFromEvent(event('mark:added', { annotation: { id: 'ann-1' } }))).toBe('ann-1');
+    expect(
+      getAnnotationIdFromEvent(
+        event('mark:added', { annotation: { id: 'ann-1' } }),
+      ),
+    ).toBe('ann-1');
   });
 
-  it.each(['mark:removed', 'mark:body-updated'])('is the id a %s names', (type) => {
-    expect(getAnnotationIdFromEvent(event(type, { annotationId: 'ann-1' }))).toBe('ann-1');
-  });
+  it.each(['mark:removed', 'mark:body-updated'])(
+    'is the id a %s names',
+    (type) => {
+      expect(
+        getAnnotationIdFromEvent(event(type, { annotationId: 'ann-1' })),
+      ).toBe('ann-1');
+    },
+  );
 
   it('is none for an event about no annotation', () => {
-    expect(getAnnotationIdFromEvent(event('yield:created', { name: 'A' }))).toBeNull();
+    expect(
+      getAnnotationIdFromEvent(event('yield:created', { name: 'A' })),
+    ).toBeNull();
   });
 
   it.each([

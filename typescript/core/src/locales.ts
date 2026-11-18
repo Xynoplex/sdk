@@ -10,13 +10,15 @@ export type { LocaleCode, LocaleInfo } from './locale-registry';
 
 // Create lookup map for efficient access
 const localeByCode = new Map<string, LocaleInfo>(
-  LOCALES.map(locale => [locale.code.toLowerCase(), locale])
+  LOCALES.map((locale) => [locale.code.toLowerCase(), locale]),
 );
 
 /**
  * Get locale information by code
  */
-export function getLocaleInfo(code: string | undefined): LocaleInfo | undefined {
+export function getLocaleInfo(
+  code: string | undefined,
+): LocaleInfo | undefined {
   if (!code) return undefined;
   return localeByCode.get(code.toLowerCase());
 }
@@ -24,7 +26,9 @@ export function getLocaleInfo(code: string | undefined): LocaleInfo | undefined 
 /**
  * Format locale code for display as "Native Name (code)"
  */
-export function formatLocaleDisplay(code: string | undefined): string | undefined {
+export function formatLocaleDisplay(
+  code: string | undefined,
+): string | undefined {
   if (!code) return undefined;
 
   const info = getLocaleInfo(code);

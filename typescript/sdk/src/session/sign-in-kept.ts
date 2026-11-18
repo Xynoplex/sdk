@@ -62,7 +62,8 @@ export class MemorySignIn implements SignInKept {
   renewed(read: StoredSession, access: string, refresh: string): string | null {
     const kept = this.signIn;
     if (kept === null) return null;
-    if (kept.access !== read.access || kept.refresh !== read.refresh) return kept.access;
+    if (kept.access !== read.access || kept.refresh !== read.refresh)
+      return kept.access;
     this.signIn = { ...kept, access, refresh };
     return access;
   }
@@ -89,12 +90,20 @@ export class MemorySignIn implements SignInKept {
  * told forgets the token when it expires. The issuer is told with `fetch`, or
  * the runtime's own.
  */
-export async function signOut(kept: SignInKept, fetch?: typeof globalThis.fetch): Promise<void> {
+export async function signOut(
+  kept: SignInKept,
+  fetch?: typeof globalThis.fetch,
+): Promise<void> {
   const held = kept.held();
   if (held === null) return;
   try {
     if (held.revocationEndpoint !== undefined) {
-      await revokeAtIssuer(held.revocationEndpoint, held.clientId, held.refresh, fetch);
+      await revokeAtIssuer(
+        held.revocationEndpoint,
+        held.clientId,
+        held.refresh,
+        fetch,
+      );
     }
   } catch (error) {
     // Best effort: an issuer that could not be told forgets the token when it expires.

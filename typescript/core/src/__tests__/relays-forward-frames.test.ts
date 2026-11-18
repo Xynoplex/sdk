@@ -27,7 +27,8 @@ import { REPO, stripComments, typeScriptFiles } from './repository-files';
 /** Any per-channel subscription that could feed a relay, capturing the channel.
  *  `stream`/`on` are payload-only; `frames` carries the envelope but is still a
  *  hand-rolled hop everywhere except `relay-frames.ts`. */
-const CHANNEL_SUBSCRIBE = /\.\s*(?:stream|on|frames)\s*\(\s*([A-Za-z_$][\w$]*)\s*\)\s*\.\s*subscribe\s*\(/g;
+const CHANNEL_SUBSCRIBE =
+  /\.\s*(?:stream|on|frames)\s*\(\s*([A-Za-z_$][\w$]*)\s*\)\s*\.\s*subscribe\s*\(/g;
 
 /** The one home of the relay itself. */
 const RELAY_HOME = 'typescript/core/src/relay-frames.ts';

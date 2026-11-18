@@ -29,9 +29,14 @@ export interface CorpusPaneProps {
  * Read-only by decision: per-match actions belong to the footer's fork or a
  * designed extension of it, never ad-hoc buttons here.
  */
-export function CorpusPane({ semanticContext, translations: t }: CorpusPaneProps) {
+export function CorpusPane({
+  semanticContext,
+  translations: t,
+}: CorpusPaneProps) {
   // Descending by score, whatever order the wire delivered.
-  const matches = [...(semanticContext?.similar ?? [])].sort((a, b) => b.score - a.score);
+  const matches = [...(semanticContext?.similar ?? [])].sort(
+    (a, b) => b.score - a.score,
+  );
   const excluded = semanticContext?.excludedEntityTypes ?? [];
 
   return (
@@ -46,18 +51,35 @@ export function CorpusPane({ semanticContext, translations: t }: CorpusPaneProps
               <div className="xynolog-corpus__card-head">
                 <span className="xynolog-corpus__source">{m.resourceName}</span>
                 {(m.entityTypes ?? []).map((et) => (
-                  <span key={et} className="xynolog-chip" style={{ fontSize: 'var(--xynolog-text-xs)', padding: '0.125rem 0.375rem', fontWeight: 400 }}>
+                  <span
+                    key={et}
+                    className="xynolog-chip"
+                    style={{
+                      fontSize: 'var(--xynolog-text-xs)',
+                      padding: '0.125rem 0.375rem',
+                      fontWeight: 400,
+                    }}
+                  >
                     {et}
                   </span>
                 ))}
                 {m.machineRead && (
-                  <span className="xynolog-chip xynolog-corpus__trust" style={{ fontSize: 'var(--xynolog-text-xs)', padding: '0.125rem 0.375rem', fontWeight: 400 }}>
+                  <span
+                    className="xynolog-chip xynolog-corpus__trust"
+                    style={{
+                      fontSize: 'var(--xynolog-text-xs)',
+                      padding: '0.125rem 0.375rem',
+                      fontWeight: 400,
+                    }}
+                  >
                     {t.machineRead}
                   </span>
                 )}
                 {/* 0–1 cosine to two places — deliberately NOT the search step's
                     raw render, which is a different scale. */}
-                <span className="xynolog-corpus__score">{t.score}: {m.score.toFixed(2)}</span>
+                <span className="xynolog-corpus__score">
+                  {t.score}: {m.score.toFixed(2)}
+                </span>
               </div>
               <p className="xynolog-corpus__snippet">{m.text}</p>
             </li>

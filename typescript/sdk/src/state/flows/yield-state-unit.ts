@@ -1,6 +1,14 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
 import type { XynologClient } from '../../client';
-import { watched, type GenerationJobParams, type JobId, type StateUnit, type Watched, type YieldJobDone, type components } from '@xynolog/core';
+import {
+  watched,
+  type GenerationJobParams,
+  type JobId,
+  type StateUnit,
+  type Watched,
+  type YieldJobDone,
+  type components,
+} from '@xynolog/core';
 import type { DelegationObservable, YieldJobCompletion } from '../../awaitable';
 import { JobCancelledError } from '../../namespaces/job-status-poll';
 
@@ -99,7 +107,11 @@ export function createYieldStateUnit(
         // The `complete` event is `job:complete`. A generation's result is
         // the one that names the resource made, so it narrows by that member
         // without a cast. Held for the terminal frame's link.
-        if (e.kind === 'complete' && e.data.result && 'resourceId' in e.data.result) {
+        if (
+          e.kind === 'complete' &&
+          e.data.result &&
+          'resourceId' in e.data.result
+        ) {
           outcome$.next(e.data.result);
         }
       },
@@ -112,7 +124,9 @@ export function createYieldStateUnit(
       error: (error: unknown) => {
         // Why it ended is said before the end itself, so no reader sees an
         // ended run that has no reason yet.
-        failure$.next(error instanceof Error ? error : new Error(String(error)));
+        failure$.next(
+          error instanceof Error ? error : new Error(String(error)),
+        );
         // A cancelled run made nothing, and its display stays to say so; any
         // other ending without a result clears it.
         if (!(error instanceof JobCancelledError)) progress$.next(null);
@@ -123,7 +137,10 @@ export function createYieldStateUnit(
     subs.push(genSub);
   };
 
-  const generate = (params: GenerationJobParams, stallDeadlineMs?: number): void => {
+  const generate = (
+    params: GenerationJobParams,
+    stallDeadlineMs?: number,
+  ): void => {
     if (disposed) return;
     // A new run's frame must not carry the previous run's progress, its
     // link, its failure, or its job's id.
@@ -131,10 +148,12 @@ export function createYieldStateUnit(
     outcome$.next(null);
     failure$.next(null);
     jobId$.next(null);
-    drive(client.yield.delegate(
-      { ...params, language: params.language || locale },
-      stallDeadlineMs,
-    ));
+    drive(
+      client.yield.delegate(
+        { ...params, language: params.language || locale },
+        stallDeadlineMs,
+      ),
+    );
   };
 
   return {
@@ -152,7 +171,7 @@ export function createYieldStateUnit(
     },
     dispose() {
       disposed = true;
-      subs.forEach(s => s.unsubscribe());
+      subs.forEach((s) => s.unsubscribe());
       isGenerating$.complete();
       progress$.complete();
       outcome$.complete();

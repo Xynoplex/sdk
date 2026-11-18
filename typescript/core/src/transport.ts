@@ -24,11 +24,7 @@
 import type { Observable } from 'rxjs';
 
 import type { components, paths } from './types';
-import type {
-  AccessToken,
-  BaseUrl,
-  ContentFormat,
-} from './branded-types';
+import type { AccessToken, BaseUrl, ContentFormat } from './branded-types';
 import type { AnnotationId, ResourceId } from './identifiers';
 import type { EventMap } from './bus-protocol';
 import type { BusEnvelope, BusFrame } from './event-bus';
@@ -80,13 +76,20 @@ export type ConnectionState =
 
 // ── Response type helpers (shape-equivalent to the OpenAPI surface) ─────
 
-type ProtectedResourceMetadata = components['schemas']['ProtectedResourceMetadata'];
+type ProtectedResourceMetadata =
+  components['schemas']['ProtectedResourceMetadata'];
 
-type ResponseContent<T> = T extends { responses: { 200: { content: { 'application/json': infer R } } } }
+type ResponseContent<T> = T extends {
+  responses: { 200: { content: { 'application/json': infer R } } };
+}
   ? R
-  : T extends { responses: { 201: { content: { 'application/json': infer R } } } }
+  : T extends {
+        responses: { 201: { content: { 'application/json': infer R } } };
+      }
     ? R
-    : T extends { responses: { 202: { content: { 'application/json': infer R } } } }
+    : T extends {
+          responses: { 202: { content: { 'application/json': infer R } } };
+        }
       ? R
       : never;
 
@@ -133,8 +136,13 @@ export interface ITransport {
     envelope?: BusEnvelope,
     signal?: AbortSignal,
   ): Promise<number | undefined>;
-  on<K extends keyof EventMap>(channel: K, handler: (payload: EventMap[K] | FrameRefusal) => void): () => void;
-  stream<K extends keyof EventMap>(channel: K): Observable<EventMap[K] | FrameRefusal>;
+  on<K extends keyof EventMap>(
+    channel: K,
+    handler: (payload: EventMap[K] | FrameRefusal) => void,
+  ): () => void;
+  stream<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<EventMap[K] | FrameRefusal>;
 
   /**
    * Subscribe to a resource-scoped channel set. HTTP attaches a scope to
@@ -206,7 +214,9 @@ export interface ITransport {
    * `Bus.request` matches a reply on `frame.correlationId`, so the key never
    * enters a channel's domain type. Required: every transport can answer it.
    */
-  frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>>;
+  frames<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>>;
 
   /**
    * Stream of transport-level errors surfaced from typed-wire methods or
@@ -289,7 +299,10 @@ export interface PutBinaryRequest {
  * (chunked encoding, indeterminate streams). Consumers should render an
  * indeterminate state in that case.
  */
-export type PutBinaryProgress = (event: { bytesUploaded: number; totalBytes: number }) => void;
+export type PutBinaryProgress = (event: {
+  bytesUploaded: number;
+  totalBytes: number;
+}) => void;
 
 export interface PutBinaryOptions {
   auth?: AccessToken;

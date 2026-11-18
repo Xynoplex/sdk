@@ -1,7 +1,18 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { resourceId, userId, type EventBus, type EventOfType, type ResourceId, type StoredEvent } from '@xynolog/core';
-import { useEventSubscription, useEventSubscriptions, useResourceEventSubscriptions } from '../useEventSubscription';
+import {
+  resourceId,
+  userId,
+  type EventBus,
+  type EventOfType,
+  type ResourceId,
+  type StoredEvent,
+} from '@xynolog/core';
+import {
+  useEventSubscription,
+  useEventSubscriptions,
+  useResourceEventSubscriptions,
+} from '../useEventSubscription';
 import { createTestXynologWrapper } from '../../test-utils';
 import type { ReactNode } from 'react';
 
@@ -26,13 +37,12 @@ describe('useEventSubscription', () => {
       const handler = vi.fn();
       const { wrapper, eventBus } = makeWrapper();
 
-      renderHook(
-        () => useEventSubscription('beckon:hover', handler),
-        { wrapper },
-      );
+      renderHook(() => useEventSubscription('beckon:hover', handler), {
+        wrapper,
+      });
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
       });
 
       expect(handler).toHaveBeenCalledWith({ annotationId: 'ann-1' });
@@ -46,13 +56,14 @@ describe('useEventSubscription', () => {
       const handler = vi.fn();
       const { wrapper, eventBus } = makeWrapper();
 
-      renderHook(
-        () => useEventSubscription('browse:resource-open', handler),
-        { wrapper },
-      );
+      renderHook(() => useEventSubscription('browse:resource-open', handler), {
+        wrapper,
+      });
 
       act(() => {
-        eventBus.emit('browse:resource-open', ({ resourceId: 'res-42' }) as never);
+        eventBus.emit('browse:resource-open', {
+          resourceId: 'res-42',
+        } as never);
       });
 
       expect(handler).toHaveBeenCalledWith({ resourceId: 'res-42' });
@@ -73,7 +84,7 @@ describe('useEventSubscription', () => {
       );
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
       });
       expect(calls).toEqual(['initial']);
 
@@ -81,7 +92,7 @@ describe('useEventSubscription', () => {
       rerender();
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-2' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-2' } as never);
       });
       expect(calls).toEqual(['initial', 'updated']);
     });
@@ -98,7 +109,7 @@ describe('useEventSubscription', () => {
       );
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
       });
       expect(handler1).toHaveBeenCalledTimes(1);
 
@@ -106,7 +117,7 @@ describe('useEventSubscription', () => {
       rerender();
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-2' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-2' } as never);
       });
       expect(handler1).toHaveBeenCalledTimes(1);
       expect(handler2).toHaveBeenCalledTimes(1);
@@ -122,14 +133,14 @@ describe('useEventSubscription', () => {
       );
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
       });
       expect(handler).toHaveBeenCalledTimes(1);
 
       unmount();
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-2' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-2' } as never);
       });
       expect(handler).toHaveBeenCalledTimes(1);
     });
@@ -152,8 +163,8 @@ describe('useEventSubscription', () => {
       );
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
-        eventBus.emit('browse:click', ({ annotationId: 'ann-2' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
+        eventBus.emit('browse:click', { annotationId: 'ann-2' } as never);
       });
 
       expect(handler1).toHaveBeenCalledWith({ annotationId: 'ann-1' });
@@ -176,7 +187,7 @@ describe('useEventSubscription', () => {
       );
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
       });
       expect(calls).toEqual(['hover:initial']);
 
@@ -184,7 +195,7 @@ describe('useEventSubscription', () => {
       rerender();
 
       act(() => {
-        eventBus.emit('browse:click', ({ annotationId: 'ann-2' }) as never);
+        eventBus.emit('browse:click', { annotationId: 'ann-2' } as never);
       });
       expect(calls).toEqual(['hover:initial', 'click:updated']);
     });
@@ -207,8 +218,8 @@ describe('useEventSubscription', () => {
       unmount();
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
-        eventBus.emit('browse:click', ({ annotationId: 'ann-2' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
+        eventBus.emit('browse:click', { annotationId: 'ann-2' } as never);
       });
 
       expect(handler1).not.toHaveBeenCalled();
@@ -230,8 +241,8 @@ describe('useEventSubscription', () => {
       );
 
       act(() => {
-        eventBus.emit('beckon:hover', ({ annotationId: 'ann-1' }) as never);
-        eventBus.emit('browse:click', ({ annotationId: 'ann-2' }) as never);
+        eventBus.emit('beckon:hover', { annotationId: 'ann-1' } as never);
+        eventBus.emit('browse:click', { annotationId: 'ann-2' } as never);
       });
 
       expect(handler1).toHaveBeenCalledTimes(1);
@@ -263,26 +274,39 @@ describe('useResourceEventSubscriptions', () => {
     client.transport.subscribeToResource(OTHER);
     const holding = client.transport.subscribeToResource.bind(client.transport);
     const leave = vi.fn();
-    const held = vi.spyOn(client.transport, 'subscribeToResource').mockImplementation((resource) => {
-      const release = holding(resource);
-      return () => {
-        leave();
-        release();
-      };
-    });
+    const held = vi
+      .spyOn(client.transport, 'subscribeToResource')
+      .mockImplementation((resource) => {
+        const release = holding(resource);
+        return () => {
+          leave();
+          release();
+        };
+      });
     const seen: string[] = [];
 
     const { unmount } = renderHook(
-      () => useResourceEventSubscriptions(RID, { 'mark:archived': (stored) => seen.push(stored.id) }),
-      { wrapper: ({ children }: { children: ReactNode }) => <XynologWrapper>{children}</XynologWrapper> },
+      () =>
+        useResourceEventSubscriptions(RID, {
+          'mark:archived': (stored) => seen.push(stored.id),
+        }),
+      {
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <XynologWrapper>{children}</XynologWrapper>
+        ),
+      },
     );
     expect(held).toHaveBeenCalledExactlyOnceWith(RID);
 
     // Each delivered from the wire on its own resource's scope, as the
     // gateway delivers a resource's events.
     act(() => {
-      void client.transport.emit('mark:archived', archived(RID), { scope: RID });
-      void client.transport.emit('mark:archived', archived(OTHER), { scope: OTHER });
+      void client.transport.emit('mark:archived', archived(RID), {
+        scope: RID,
+      });
+      void client.transport.emit('mark:archived', archived(OTHER), {
+        scope: OTHER,
+      });
     });
     expect(seen).toEqual(['evt-res-1']);
 

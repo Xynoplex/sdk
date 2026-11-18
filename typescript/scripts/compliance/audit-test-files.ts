@@ -35,7 +35,7 @@ export class TestFileAuditor {
       filePath,
       fs.readFileSync(filePath, 'utf-8'),
       ts.ScriptTarget.Latest,
-      true
+      true,
     );
 
     const analysis: TestFileAnalysis = {
@@ -50,9 +50,9 @@ export class TestFileAuditor {
         components: [],
         apis: [],
         browserAPIs: [],
-        utilities: []
+        utilities: [],
       },
-      issues: []
+      issues: [],
     };
 
     this.analyzeSourceFile(sourceFile, analysis);
@@ -62,29 +62,41 @@ export class TestFileAuditor {
 
     // Generate issues
     if (analysis.mocksComponents) {
-      analysis.issues.push(`❌ Mocks React components: ${analysis.mockedTypes.components.join(', ')} (use real components instead)`);
+      analysis.issues.push(
+        `❌ Mocks React components: ${analysis.mockedTypes.components.join(', ')} (use real components instead)`,
+      );
     }
 
     if (analysis.spiesOnEventBus) {
-      analysis.issues.push(`❌ Spies on EventBus methods: ${analysis.eventBusSpies.join(', ')} (use EventTracker pattern instead)`);
+      analysis.issues.push(
+        `❌ Spies on EventBus methods: ${analysis.eventBusSpies.join(', ')} (use EventTracker pattern instead)`,
+      );
     }
 
     return analysis;
   }
 
-  private analyzeSourceFile(sourceFile: ts.SourceFile, analysis: TestFileAnalysis) {
+  private analyzeSourceFile(
+    sourceFile: ts.SourceFile,
+    analysis: TestFileAnalysis,
+  ) {
     const visit = (node: ts.Node) => {
       // Check for createEventTracker usage
-      if (ts.isCallExpression(node) &&
-          ts.isIdentifier(node.expression) &&
-          node.expression.text === 'createEventTracker') {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'createEventTracker'
+      ) {
         analysis.usesEventTracker = true;
       }
 
       // Check for EventTrackingWrapper usage
       if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
         const tagName = node.tagName;
-        if (ts.isIdentifier(tagName) && tagName.text === 'EventTrackingWrapper') {
+        if (
+          ts.isIdentifier(tagName) &&
+          tagName.text === 'EventTrackingWrapper'
+        ) {
           analysis.usesEventTracker = true;
         }
       }
@@ -110,14 +122,18 @@ export class TestFileAuditor {
     visit(sourceFile);
   }
 
-  private detectViMock(node: ts.CallExpression): { isMock: boolean, target: string } {
+  private detectViMock(node: ts.CallExpression): {
+    isMock: boolean;
+    target: string;
+  } {
     // Look for vi.mock('module-path', ...)
     const expr = node.expression;
-    if (ts.isPropertyAccessExpression(expr) &&
-        ts.isIdentifier(expr.expression) &&
-        expr.expression.text === 'vi' &&
-        expr.name.text === 'mock') {
-
+    if (
+      ts.isPropertyAccessExpression(expr) &&
+      ts.isIdentifier(expr.expression) &&
+      expr.expression.text === 'vi' &&
+      expr.name.text === 'mock'
+    ) {
       if (node.arguments.length > 0) {
         const moduleArg = node.arguments[0];
         if (ts.isStringLiteral(moduleArg)) {
@@ -129,20 +145,27 @@ export class TestFileAuditor {
     return { isMock: false, target: '' };
   }
 
-  private detectViSpyOn(node: ts.CallExpression): { isSpy: boolean, target: string } {
+  private detectViSpyOn(node: ts.CallExpression): {
+    isSpy: boolean;
+    target: string;
+  } {
     // Look for vi.spyOn(eventBus, 'emit'|'on'|'off')
     const expr = node.expression;
-    if (ts.isPropertyAccessExpression(expr) &&
-        ts.isIdentifier(expr.expression) &&
-        expr.expression.text === 'vi' &&
-        expr.name.text === 'spyOn') {
-
+    if (
+      ts.isPropertyAccessExpression(expr) &&
+      ts.isIdentifier(expr.expression) &&
+      expr.expression.text === 'vi' &&
+      expr.name.text === 'spyOn'
+    ) {
       if (node.arguments.length >= 2) {
         const targetArg = node.arguments[0];
         const methodArg = node.arguments[1];
 
-        if (ts.isIdentifier(targetArg) && targetArg.text === 'eventBus' &&
-            ts.isStringLiteral(methodArg)) {
+        if (
+          ts.isIdentifier(targetArg) &&
+          targetArg.text === 'eventBus' &&
+          ts.isStringLiteral(methodArg)
+        ) {
           const method = methodArg.text;
           if (['emit', 'on', 'off'].includes(method)) {
             return { isSpy: true, target: `eventBus.${method}` };
@@ -154,14 +177,18 @@ export class TestFileAuditor {
     return { isSpy: false, target: '' };
   }
 
-  private classifyMock(target: string): 'hook' | 'component' | 'api' | 'browserAPI' | 'utility' {
+  private classifyMock(
+    target: string,
+  ): 'hook' | 'component' | 'api' | 'browserAPI' | 'utility' {
     // Hooks: start with 'use' or path includes '/hooks/'
     if (target.match(/\/use[A-Z]/) || target.includes('/hooks/')) {
       return 'hook';
     }
 
     // Browser APIs
-    if (target.match(/^(window|document|navigator|localStorage|sessionStorage)/)) {
+    if (
+      target.match(/^(window|document|navigator|localStorage|sessionStorage)/)
+    ) {
       return 'browserAPI';
     }
 
@@ -183,7 +210,7 @@ export class TestFileAuditor {
   private addMockToType(
     analysis: TestFileAnalysis,
     type: 'hook' | 'component' | 'api' | 'browserAPI' | 'utility',
-    target: string
+    target: string,
   ) {
     // Extract just the file/module name from the path
     const name = target.split('/').pop() || target;

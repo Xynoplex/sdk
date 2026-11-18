@@ -7,11 +7,17 @@ describe('favicons index exports', () => {
       expect(faviconPaths).toBeDefined();
       expect(faviconPaths.ico).toBe('/favicons/favicon.ico');
       expect(faviconPaths.svg).toBe('/favicons/favicon.svg');
-      expect(faviconPaths.appleTouchIcon).toBe('/favicons/apple-touch-icon.png');
+      expect(faviconPaths.appleTouchIcon).toBe(
+        '/favicons/apple-touch-icon.png',
+      );
       expect(faviconPaths.favicon32).toBe('/favicons/favicon-32x32.png');
       expect(faviconPaths.favicon16).toBe('/favicons/favicon-16x16.png');
-      expect(faviconPaths.androidChrome192).toBe('/favicons/android-chrome-192x192.png');
-      expect(faviconPaths.androidChrome512).toBe('/favicons/android-chrome-512x512.png');
+      expect(faviconPaths.androidChrome192).toBe(
+        '/favicons/android-chrome-192x192.png',
+      );
+      expect(faviconPaths.androidChrome512).toBe(
+        '/favicons/android-chrome-512x512.png',
+      );
       expect(faviconPaths.manifest).toBe('/favicons/site.webmanifest');
     });
 
@@ -30,7 +36,7 @@ describe('favicons index exports', () => {
     });
 
     it('contains valid path strings', () => {
-      Object.values(faviconPaths).forEach(path => {
+      Object.values(faviconPaths).forEach((path) => {
         expect(typeof path).toBe('string');
         expect(path).toMatch(/^\/favicons\//);
         expect(path.length).toBeGreaterThan(10);

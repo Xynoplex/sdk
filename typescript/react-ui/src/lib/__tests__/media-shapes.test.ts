@@ -24,8 +24,16 @@ describe('media-shapes', () => {
     });
 
     it('returns all shapes for images', () => {
-      expect(getSupportedShapes('image/png')).toEqual(['rectangle', 'circle', 'polygon']);
-      expect(getSupportedShapes('image/jpeg')).toEqual(['rectangle', 'circle', 'polygon']);
+      expect(getSupportedShapes('image/png')).toEqual([
+        'rectangle',
+        'circle',
+        'polygon',
+      ]);
+      expect(getSupportedShapes('image/jpeg')).toEqual([
+        'rectangle',
+        'circle',
+        'polygon',
+      ]);
     });
 
     it('returns no shapes for text media — text anchors by character offsets', () => {
@@ -40,7 +48,14 @@ describe('media-shapes', () => {
     // rows are storage tier — `anchoring: 'none'`, `render: 'none'` — so they
     // draw nothing, however their type name begins.
     it('returns no shapes for storage-tier image types — the registry, not the prefix, decides', () => {
-      for (const t of ['image/gif', 'image/webp', 'image/svg+xml', 'image/bmp', 'image/tiff', 'image/x-icon']) {
+      for (const t of [
+        'image/gif',
+        'image/webp',
+        'image/svg+xml',
+        'image/bmp',
+        'image/tiff',
+        'image/x-icon',
+      ]) {
         expect(getSupportedShapes(t)).toEqual([]);
       }
     });
@@ -52,7 +67,11 @@ describe('media-shapes', () => {
 
     it('reads through media-type parameters', () => {
       // capabilitiesOf keys off the base type, so the dispatch inherits that.
-      expect(getSupportedShapes('image/png; charset=binary')).toEqual(['rectangle', 'circle', 'polygon']);
+      expect(getSupportedShapes('image/png; charset=binary')).toEqual([
+        'rectangle',
+        'circle',
+        'polygon',
+      ]);
       expect(getSupportedShapes('image/gif; charset=binary')).toEqual([]);
     });
   });
@@ -101,7 +120,14 @@ describe('media-shapes', () => {
     // land on the catch-all; harmless, because getSupportedShapes answers []
     // for them and the write path refuses.
     it('does not claim svg for storage-tier image types', () => {
-      for (const t of ['image/gif', 'image/webp', 'image/svg+xml', 'image/bmp', 'image/tiff', 'image/x-icon']) {
+      for (const t of [
+        'image/gif',
+        'image/webp',
+        'image/svg+xml',
+        'image/bmp',
+        'image/tiff',
+        'image/x-icon',
+      ]) {
         expect(getSelectorType(t)).not.toBe('svg');
         expect(getSelectorType(t)).toBe('text');
       }

@@ -42,6 +42,8 @@ describe('toGenerationParams', () => {
   it('omits sourceLanguage entirely when the resource has no language', () => {
     // Absence must stay absence: a manufactured '' would tell the prompt the
     // source is in a language named empty string.
-    expect(toGenerationParams(config, undefined)).not.toHaveProperty('sourceLanguage');
+    expect(toGenerationParams(config, undefined)).not.toHaveProperty(
+      'sourceLanguage',
+    );
   });
 });

@@ -5,27 +5,36 @@ import '@testing-library/jest-dom';
 import { resourceId } from '@xynolog/core';
 import type { EventMap } from '@xynolog/core';
 import type { XynologBrowser } from '@xynolog/sdk';
-import { useObservableRouter, useObservableExternalNavigation } from '../useObservableBrowse';
+import {
+  useObservableRouter,
+  useObservableExternalNavigation,
+} from '../useObservableBrowse';
 import { createTestXynologWrapper } from '../../test-utils';
 
-function makeWrapper(): { Wrapper: React.ComponentType<{ children: React.ReactNode }>; browser: XynologBrowser } {
+function makeWrapper(): {
+  Wrapper: React.ComponentType<{ children: React.ReactNode }>;
+  browser: XynologBrowser;
+} {
   // useObservableRouter/ExternalNavigation emit nav:* on the app-scoped
   // (XynologBrowser) bus; `browser.stream(channel)` is its published reader.
   const { XynologWrapper, browser } = createTestXynologWrapper();
-  const Wrapper = ({ children }: { children: React.ReactNode }) => <XynologWrapper>{children}</XynologWrapper>;
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <XynologWrapper>{children}</XynologWrapper>
+  );
   return { Wrapper, browser };
 }
 
 describe('useObservableRouter', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it('wraps push and emits nav:push event', () => {
     const basePush = vi.fn();
     const baseRouter = { push: basePush };
 
     const { Wrapper, browser } = makeWrapper();
-    const { result } = renderHook(() => useObservableRouter(baseRouter), { wrapper: Wrapper });
+    const { result } = renderHook(() => useObservableRouter(baseRouter), {
+      wrapper: Wrapper,
+    });
 
     const events: EventMap['nav:push'][] = [];
     browser.stream('nav:push').subscribe((e) => events.push(e));
@@ -44,7 +53,9 @@ describe('useObservableRouter', () => {
     const baseRouter = { push: vi.fn(), replace: baseReplace };
 
     const { Wrapper, browser } = makeWrapper();
-    const { result } = renderHook(() => useObservableRouter(baseRouter), { wrapper: Wrapper });
+    const { result } = renderHook(() => useObservableRouter(baseRouter), {
+      wrapper: Wrapper,
+    });
 
     const events: EventMap['nav:push'][] = [];
     browser.stream('nav:push').subscribe((e) => events.push(e));
@@ -61,16 +72,22 @@ describe('useObservableRouter', () => {
     const baseRouter = { push: vi.fn() };
     const { Wrapper } = makeWrapper();
 
-    const { result } = renderHook(() => useObservableRouter(baseRouter), { wrapper: Wrapper });
+    const { result } = renderHook(() => useObservableRouter(baseRouter), {
+      wrapper: Wrapper,
+    });
 
-    expect((result.current as { replace?: () => void }).replace).toBeUndefined();
+    expect(
+      (result.current as { replace?: () => void }).replace,
+    ).toBeUndefined();
   });
 
   it('passes through other router properties', () => {
     const baseRouter = { push: vi.fn(), back: vi.fn(), prefetch: vi.fn() };
     const { Wrapper } = makeWrapper();
 
-    const { result } = renderHook(() => useObservableRouter(baseRouter), { wrapper: Wrapper });
+    const { result } = renderHook(() => useObservableRouter(baseRouter), {
+      wrapper: Wrapper,
+    });
 
     expect(result.current.back).toBe(baseRouter.back);
     expect(result.current.prefetch).toBe(baseRouter.prefetch);
@@ -88,7 +105,9 @@ describe('useObservableExternalNavigation', () => {
 
   it('emits nav:external event with url and metadata', () => {
     const { Wrapper, browser } = makeWrapper();
-    const { result } = renderHook(() => useObservableExternalNavigation(), { wrapper: Wrapper });
+    const { result } = renderHook(() => useObservableExternalNavigation(), {
+      wrapper: Wrapper,
+    });
 
     const events: EventMap['nav:external'][] = [];
     browser.stream('nav:external').subscribe((e) => events.push(e));
@@ -109,7 +128,9 @@ describe('useObservableExternalNavigation', () => {
 
   it('provides cancelFallback that prevents window.location fallback', () => {
     const { Wrapper, browser } = makeWrapper();
-    const { result } = renderHook(() => useObservableExternalNavigation(), { wrapper: Wrapper });
+    const { result } = renderHook(() => useObservableExternalNavigation(), {
+      wrapper: Wrapper,
+    });
 
     // Subscribe and cancel the fallback
     browser.stream('nav:external').subscribe((e) => {

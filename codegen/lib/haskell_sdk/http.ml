@@ -200,11 +200,12 @@ let credential ~root =
         | Some j -> String.sub rest 0 j
         | None -> rest)
   in
-  let words =
+  let words_of text =
     List.filter (( <> ) "")
       (String.split_on_char ' '
-         (String.map (function '\n' | '\t' | '\r' -> ' ' | c -> c) body))
+         (String.map (function '\n' | '\t' | '\r' -> ' ' | c -> c) text))
   in
+  let words = words_of body in
   let strip ~prefix ~suffix text =
     if String.starts_with ~prefix text && String.ends_with ~suffix text then
       Some
@@ -217,6 +218,7 @@ let credential ~root =
     | [
      "{";
      "return";
+     "(";
      "status";
      "===";
      one;
@@ -230,12 +232,13 @@ let credential ~root =
      member;
      "===";
      symbol;
+     ");";
     ] -> (
         match
           ( int_of_string_opt one,
             int_of_string_opt two,
             strip ~prefix:"body['" ~suffix:"']" member,
-            strip ~prefix:"" ~suffix:");" symbol )
+            strip ~prefix:"" ~suffix:")" symbol )
         with
         | Some a, Some b, Some f, Some c -> Ok (a, b, f, c)
         | _ -> refused "unreadable credential refusal")
@@ -243,20 +246,20 @@ let credential ~root =
         refused
           "credential refusal reference changed; update the Haskell derivation"
   in
+  (* The constant's value, its declaration read as words: a line may break
+     after its [=]. *)
   let* refusal =
-    match
-      List.filter_map
-        (fun line ->
-          Option.map
-            (fun value ->
-              match String.index_opt value '\'' with
-              | Some i -> String.sub value 0 i
-              | None -> value)
-            (strip ~prefix:("const " ^ constant ^ " = '") ~suffix:"" line))
-        (String.split_on_char '\n' source)
-    with
-    | [ value ] when value <> "" -> Ok value
-    | _ -> refused "unreadable credential refusal constant"
+    let opening = "const " ^ constant ^ " = '" in
+    match after (String.concat " " (words_of source)) opening with
+    | "" -> refused "unreadable credential refusal constant"
+    | rest -> (
+        let value =
+          String.sub rest (String.length opening)
+            (String.length rest - String.length opening)
+        in
+        match String.index_opt value '\'' with
+        | Some i when i > 0 -> Ok (String.sub value 0 i)
+        | _ -> refused "unreadable credential refusal constant")
   in
   Ok { unauthorized; limited; field; refusal }
 

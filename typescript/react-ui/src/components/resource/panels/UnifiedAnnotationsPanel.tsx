@@ -4,9 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import type { components, JobId, ResourceId, Selector } from '@xynolog/core';
 type JobProgress = components['schemas']['JobProgress'];
-import type { RouteBuilder, LinkComponentProps } from '../../../contexts/RoutingContext';
+import type {
+  RouteBuilder,
+  LinkComponentProps,
+} from '../../../contexts/RoutingContext';
 import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
-import { annotatorKeyForMotivation, type Annotator, type AnnotatorKey } from '../../../lib/annotation-registry';
+import {
+  annotatorKeyForMotivation,
+  type Annotator,
+  type AnnotatorKey,
+} from '../../../lib/annotation-registry';
 import { StatisticsPanel } from './StatisticsPanel';
 import { HighlightPanel } from './HighlightPanel';
 import { ReferencesPanel } from './ReferencesPanel';
@@ -28,7 +35,14 @@ interface PendingAnnotation {
 }
 
 // Tab display order - statistics first, then matches AnnotateToolbar selection group order
-const TAB_ORDER: TabKey[] = ['statistics', 'reference', 'highlight', 'assessment', 'comment', 'tag'];
+const TAB_ORDER: TabKey[] = [
+  'statistics',
+  'reference',
+  'highlight',
+  'assessment',
+  'comment',
+  'tag',
+];
 
 /**
  * The annotations side panel: a statistics tab plus one tab per annotator,
@@ -124,11 +138,13 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
     comment: [],
     assessment: [],
     reference: [],
-    tag: []
+    tag: [],
   };
 
   for (const ann of props.annotations) {
-    const annotator = Object.values(props.annotators).find(a => a.matchesAnnotation(ann));
+    const annotator = Object.values(props.annotators).find((a) =>
+      a.matchesAnnotation(ann),
+    );
     if (annotator) {
       if (!groups[annotator.internalType]) {
         groups[annotator.internalType] = [];
@@ -166,7 +182,6 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
     localStorage.setItem(storageKey, activeTab);
   }, [activeTab, props.resourceId]);
 
-
   // Switch to initialTab when generation counter changes (e.g., when clicking annotations with different motivations)
   // Using generation counter ensures we can switch to the same tab multiple times
   useEffect(() => {
@@ -200,9 +215,7 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
     // not "no annotations", it is "we do not know".
     return (
       <div className="xynolog-unified-panel">
-        <h3 className="xynolog-unified-panel__title">
-          {t('title')}
-        </h3>
+        <h3 className="xynolog-unified-panel__title">{t('title')}</h3>
         <p className="xynolog-unified-panel__error">
           {t('annotationsFailed')}
           {props.onRetryAnnotations && (
@@ -225,13 +238,11 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
   return (
     <div className="xynolog-unified-panel">
       {/* Panel Title */}
-      <h3 className="xynolog-unified-panel__title">
-        {t('title')}
-      </h3>
+      <h3 className="xynolog-unified-panel__title">{t('title')}</h3>
 
       {/* Tab Navigation */}
       <div className="xynolog-unified-panel__tabs">
-        {TAB_ORDER.map(key => {
+        {TAB_ORDER.map((key) => {
           // Statistics tab (special case - not in annotators)
           if (key === 'statistics') {
             return (
@@ -259,7 +270,9 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
               title={t(key)}
               aria-pressed={activeTab === key}
             >
-              <span className="xynolog-unified-panel__tab-icon">{annotator.iconEmoji}</span>
+              <span className="xynolog-unified-panel__tab-icon">
+                {annotator.iconEmoji}
+              </span>
             </button>
           );
         })}
@@ -285,10 +298,12 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
           if (!annotator) return null;
 
           const annotations = grouped[activeTab] || [];
-          const isDelegating = props.delegatingMotivation === annotator.motivation;
+          const isDelegating =
+            props.delegatingMotivation === annotator.motivation;
           // The progress goes to the panel of the motivation it is of, and
           // only there: running, and once ended, until it is dismissed.
-          const showsProgress = props.progressMotivation === annotator.motivation;
+          const showsProgress =
+            props.progressMotivation === annotator.motivation;
           const progress = showsProgress ? (props.progress ?? null) : null;
           const jobId = isDelegating ? (props.jobId ?? null) : null;
           const cancelled = showsProgress && props.cancelled === true;
@@ -309,16 +324,12 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
             sourceLanguage: props.sourceLanguage,
             scrollToAnnotationId: props.scrollToAnnotationId,
             onScrollCompleted: props.onScrollCompleted,
-            hoveredAnnotationId: props.hoveredAnnotationId
+            hoveredAnnotationId: props.hoveredAnnotationId,
           };
 
           // Render specific panel based on activeTab with full type safety
           if (activeTab === 'highlight') {
-            return (
-              <HighlightPanel
-                {...commonProps}
-              />
-            );
+            return <HighlightPanel {...commonProps} />;
           }
 
           if (activeTab === 'reference') {
@@ -355,27 +366,15 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
           }
 
           if (activeTab === 'assessment') {
-            return (
-              <AssessmentPanel
-                {...commonProps}
-              />
-            );
+            return <AssessmentPanel {...commonProps} />;
           }
 
           if (activeTab === 'comment') {
-            return (
-              <CommentsPanel
-                {...commonProps}
-              />
-            );
+            return <CommentsPanel {...commonProps} />;
           }
 
           if (activeTab === 'tag') {
-            return (
-              <TaggingPanel
-                {...commonProps}
-              />
-            );
+            return <TaggingPanel {...commonProps} />;
           }
 
           return null;

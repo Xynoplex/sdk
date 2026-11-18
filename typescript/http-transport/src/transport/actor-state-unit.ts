@@ -1,6 +1,45 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map, share } from 'rxjs/operators';
-import { busLog, busLogEnabled, uuidV4, retryWithBackoff, withinDeadline, UnansweredError, retryAfterMs, equalJitter, BusRequestError, XynologError, FrameRefusal, faultOf, said, isObject, RESOURCE_SCOPED_CHANNELS, type BusEnvelope, type BusFrame, type BusPrimitive, type components, type ConnectionState, type EventMap, type Fault, type ResourceId, type RetryPolicy, type StateUnit, type TraceCarrier, type TransportErrorCode, DEGRADED_THRESHOLD_MS, EMIT_RETRY, EMIT_TIMEOUT_MS, HTTP_REQUEST_TIMEOUT_MS, LAZY_REMOVE_MS, LINGER_MS, MAX_RECONNECT_MS, RECONNECT_DEBOUNCE_MS, RECONNECT_MS, SEEN_EVENT_IDS_COUNT, STREAM_OPEN_TIMEOUT_MS } from '@xynolog/core';
+import {
+  busLog,
+  busLogEnabled,
+  uuidV4,
+  retryWithBackoff,
+  withinDeadline,
+  UnansweredError,
+  retryAfterMs,
+  equalJitter,
+  BusRequestError,
+  XynologError,
+  FrameRefusal,
+  faultOf,
+  said,
+  isObject,
+  RESOURCE_SCOPED_CHANNELS,
+  type BusEnvelope,
+  type BusFrame,
+  type BusPrimitive,
+  type components,
+  type ConnectionState,
+  type EventMap,
+  type Fault,
+  type ResourceId,
+  type RetryPolicy,
+  type StateUnit,
+  type TraceCarrier,
+  type TransportErrorCode,
+  DEGRADED_THRESHOLD_MS,
+  EMIT_RETRY,
+  EMIT_TIMEOUT_MS,
+  HTTP_REQUEST_TIMEOUT_MS,
+  LAZY_REMOVE_MS,
+  LINGER_MS,
+  MAX_RECONNECT_MS,
+  RECONNECT_DEBOUNCE_MS,
+  RECONNECT_MS,
+  SEEN_EVENT_IDS_COUNT,
+  STREAM_OPEN_TIMEOUT_MS,
+} from '@xynolog/core';
 import {
   SpanKind,
   extractTraceparent,
@@ -8,7 +47,12 @@ import {
   withSpan,
   withTraceparent,
 } from '@xynolog/observability';
-import { APIError, gatewayWords, refusalBody, retryableUnlessRefused } from './api-error';
+import {
+  APIError,
+  gatewayWords,
+  refusalBody,
+  retryableUnlessRefused,
+} from './api-error';
 import { MALFORMED } from './declared-body';
 import { fetchOf } from './fetch-of';
 import type { TokenRefresher } from './http-transport';
@@ -84,13 +128,19 @@ export interface ActorStateUnitOptions {
 }
 
 /** A frame as the stream delivered it, with the trace lifted off its payload. */
-type Received = components['schemas']['BusFrame'] & { readonly trace?: TraceCarrier };
+type Received = components['schemas']['BusFrame'] & {
+  readonly trace?: TraceCarrier;
+};
 
 /** The channel and scope a frame names, which name its readers. */
 type Readers = Pick<components['schemas']['BusFrame'], 'channel' | 'scope'>;
 
 /** A frame the stream refused that names its readers: its first fault as BusFrame, its payload as it came, and its correlation id when BusFrame allows it. */
-type Refused = Readers & Pick<components['schemas']['BusFrame'], 'correlationId'> & { readonly fault: Fault; readonly payload: unknown };
+type Refused = Readers &
+  Pick<components['schemas']['BusFrame'], 'correlationId'> & {
+    readonly fault: Fault;
+    readonly payload: unknown;
+  };
 
 /**
  * `data` held to BusFrame: the frame it is; or, for one BusFrame refuses,
@@ -112,19 +162,40 @@ function carried(data: string): Received | Refused | string {
   if (!isObject(value)) return said(fault);
   const scope = value['scope'];
   // A null scope is none, as BusFrame's walk reads a null optional member.
-  const readers = { channel: value['channel'], ...(scope === undefined || scope === null ? {} : { scope }) };
-  if (faultOf('BusFrame', { ...readers, payload: {} }) !== undefined) return said(fault);
+  const readers = {
+    channel: value['channel'],
+    ...(scope === undefined || scope === null ? {} : { scope }),
+  };
+  if (faultOf('BusFrame', { ...readers, payload: {} }) !== undefined)
+    return said(fault);
   const correlationId = value['correlationId'];
-  const carries = typeof correlationId === 'string' && faultOf('BusFrame', { ...readers, payload: {}, correlationId }) === undefined;
-  return { ...(readers as Readers), ...(carries ? { correlationId } : {}), fault, payload: value['payload'] };
+  const carries =
+    typeof correlationId === 'string' &&
+    faultOf('BusFrame', { ...readers, payload: {}, correlationId }) ===
+      undefined;
+  return {
+    ...(readers as Readers),
+    ...(carries ? { correlationId } : {}),
+    fault,
+    payload: value['payload'],
+  };
 }
 
 /** `frame` as a reader of `channel` is given it: the frame, or in place of one the stream refused, its refusal. */
-function framed<K extends keyof EventMap>(channel: K, frame: Received | Refused): BusFrame<EventMap[K] | FrameRefusal> {
+function framed<K extends keyof EventMap>(
+  channel: K,
+  frame: Received | Refused,
+): BusFrame<EventMap[K] | FrameRefusal> {
   if ('fault' in frame) {
     return {
       ...(frame.scope !== undefined ? { scope: frame.scope } : {}),
-      payload: new FrameRefusal(channel, frame.fault.member, frame.fault.reason, frame.payload, frame.correlationId),
+      payload: new FrameRefusal(
+        channel,
+        frame.fault.member,
+        frame.fault.reason,
+        frame.payload,
+        frame.correlationId,
+      ),
     };
   }
   return {
@@ -145,7 +216,10 @@ function framed<K extends keyof EventMap>(channel: K, frame: Received | Refused)
  * request fails on the refusal it already has, and why the renewal failed is
  * its owner's to report.
  */
-export async function renewedToken(tokenRefresher: TokenRefresher, refused: string | null): Promise<string | null> {
+export async function renewedToken(
+  tokenRefresher: TokenRefresher,
+  refused: string | null,
+): Promise<string | null> {
   let renewed: string | null;
   try {
     renewed = await tokenRefresher(refused);
@@ -162,7 +236,8 @@ export async function renewedToken(tokenRefresher: TokenRefresher, refused: stri
  * what only a wire connection has: refused connects, a subscription matrix
  * that changes while it runs, and a start/stop lifecycle.
  */
-export interface ActorStateUnit extends StateUnit, Omit<BusPrimitive, 'subscribeToResource'> {
+export interface ActorStateUnit
+  extends StateUnit, Omit<BusPrimitive, 'subscribeToResource'> {
   /**
    * Refused connects, and what the stream carried that names no reader.
    * One `APIError` per non-2xx `/bus/subscribe` answer, carrying the HTTP
@@ -188,21 +263,39 @@ export interface ActorStateUnit extends StateUnit, Omit<BusPrimitive, 'subscribe
 }
 
 /** Allowed transitions in the connection state machine. */
-const ALLOWED_TRANSITIONS: Record<ConnectionState, ReadonlyArray<ConnectionState>> = {
-  initial:      ['connecting', 'unauthenticated', 'closed'],
-  connecting:   ['open', 'reconnecting', 'unauthenticated', 'closed'],
-  open:         ['reconnecting', 'closed'],
+const ALLOWED_TRANSITIONS: Record<
+  ConnectionState,
+  ReadonlyArray<ConnectionState>
+> = {
+  initial: ['connecting', 'unauthenticated', 'closed'],
+  connecting: ['open', 'reconnecting', 'unauthenticated', 'closed'],
+  open: ['reconnecting', 'closed'],
   reconnecting: ['connecting', 'degraded', 'unauthenticated', 'closed'],
-  degraded:     ['connecting', 'unauthenticated', 'closed'],
+  degraded: ['connecting', 'unauthenticated', 'closed'],
   // Leaving `unauthenticated` takes a usable credential (the gate saw a
   // different, non-empty token) → straight to `connecting`; or teardown.
   unauthenticated: ['connecting', 'closed'],
-  closed:       [],
+  closed: [],
 };
 
-export function createActorStateUnit(options: ActorStateUnitOptions): ActorStateUnit {
-  const { baseUrl, token: tokenOrGetter, channels: initialChannels, reconnectMs = RECONNECT_MS, streamOpenTimeoutMs = STREAM_OPEN_TIMEOUT_MS, httpRequestTimeoutMs = HTTP_REQUEST_TIMEOUT_MS, lazyRemoveMs = LAZY_REMOVE_MS, emitRetry = EMIT_RETRY, lingerMs = LINGER_MS, seenEventIdsCount = SEEN_EVENT_IDS_COUNT, tokenRefresher } = options;
-  const getToken = typeof tokenOrGetter === 'function' ? tokenOrGetter : () => tokenOrGetter;
+export function createActorStateUnit(
+  options: ActorStateUnitOptions,
+): ActorStateUnit {
+  const {
+    baseUrl,
+    token: tokenOrGetter,
+    channels: initialChannels,
+    reconnectMs = RECONNECT_MS,
+    streamOpenTimeoutMs = STREAM_OPEN_TIMEOUT_MS,
+    httpRequestTimeoutMs = HTTP_REQUEST_TIMEOUT_MS,
+    lazyRemoveMs = LAZY_REMOVE_MS,
+    emitRetry = EMIT_RETRY,
+    lingerMs = LINGER_MS,
+    seenEventIdsCount = SEEN_EVENT_IDS_COUNT,
+    tokenRefresher,
+  } = options;
+  const getToken =
+    typeof tokenOrGetter === 'function' ? tokenOrGetter : () => tokenOrGetter;
 
   const globalChannels = new Set(initialChannels);
   /** The subscription matrix's scoped half: scope → channels. */
@@ -214,7 +307,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
    * its channels are removed — re-subscribing later replays what was missed
    * in between. Ephemeral ids never touch this map.
    */
-  const scopeWatermarks = new Map<ResourceId, string>(options.loadLastEventIds?.() ?? []);
+  const scopeWatermarks = new Map<ResourceId, string>(
+    options.loadLastEventIds?.() ?? [],
+  );
   /** Outstanding Bus.request correlationIds — ride every connect body, so a
    *  reply lost in a connection drop is asked for again. */
   const pendingReplies = new Set<string>();
@@ -255,7 +350,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
     if (currentState === next) return;
     const allowed = ALLOWED_TRANSITIONS[currentState];
     if (!allowed.includes(next)) {
-      console.warn(`[actor] ignoring invalid connection state transition: ${currentState} → ${next}`);
+      console.warn(
+        `[actor] ignoring invalid connection state transition: ${currentState} → ${next}`,
+      );
       return;
     }
     const prev = currentState;
@@ -271,7 +368,10 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
     if (prev === 'reconnecting' && next !== 'reconnecting') {
       // Leaving reconnecting (to connecting, degraded, or closed) —
       // the timer is either irrelevant or has just fired.
-      if (degradedTimer) { clearTimeout(degradedTimer); degradedTimer = null; }
+      if (degradedTimer) {
+        clearTimeout(degradedTimer);
+        degradedTimer = null;
+      }
     }
 
     state$.next(next);
@@ -360,11 +460,18 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
 
   const disconnect = () => {
     for (const c of inflightControllers) {
-      try { c.abort(); } catch { /* noop */ }
+      try {
+        c.abort();
+      } catch {
+        /* noop */
+      }
     }
     inflightControllers.clear();
     live = null;
-    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     for (const t of lingerTimers) clearTimeout(t);
     lingerTimers.clear();
   };
@@ -437,7 +544,8 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
         // With a stream still live the state stays `open`: only the change of
         // subscription is waiting for a credential, and that stream's own end
         // is what reports an outage.
-        if (live === null && currentState !== 'unauthenticated') transition('unauthenticated');
+        if (live === null && currentState !== 'unauthenticated')
+          transition('unauthenticated');
         scheduleRetry(reconnectMs, keepPrevious);
       }
       return;
@@ -456,7 +564,11 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
     const previous = [...inflightControllers];
     if (!keepPrevious) {
       for (const c of previous) {
-        try { c.abort(); } catch { /* noop */ }
+        try {
+          c.abort();
+        } catch {
+          /* noop */
+        }
       }
       inflightControllers.clear();
       live = null;
@@ -484,7 +596,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
           ...(watermark !== undefined ? { lastEventId: watermark } : {}),
         };
       }),
-      ...(pendingReplies.size > 0 ? { pendingReplies: [...pendingReplies] } : {}),
+      ...(pendingReplies.size > 0
+        ? { pendingReplies: [...pendingReplies] }
+        : {}),
       clientId,
     } satisfies components['schemas']['BusSubscribeRequest']);
     const url = `${baseUrl}/bus/subscribe`;
@@ -509,14 +623,24 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
       // stream that opened.
       const opening = new AbortController();
       const openDeadline = setTimeout(() => {
-        opening.abort(new DOMException(`/bus/subscribe got no answer within ${streamOpenTimeoutMs}ms`, 'TimeoutError'));
+        opening.abort(
+          new DOMException(
+            `/bus/subscribe got no answer within ${streamOpenTimeoutMs}ms`,
+            'TimeoutError',
+          ),
+        );
       }, streamOpenTimeoutMs);
       // Cleared by the await's own `finally`, not one chained to the fetch,
       // which would put promise turns between the answer and the state's
       // `open`.
       let response: Response;
       try {
-        response = await fetchOf(options.fetch)(url, { method: 'POST', headers, body, signal: AbortSignal.any([controller.signal, opening.signal]) });
+        response = await fetchOf(options.fetch)(url, {
+          method: 'POST',
+          headers,
+          body,
+          signal: AbortSignal.any([controller.signal, opening.signal]),
+        });
       } finally {
         clearTimeout(openDeadline);
       }
@@ -528,11 +652,19 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
         // by then, or not read at all, says nothing. A stop or a handoff still
         // ends the connect.
         const readDeadline = setTimeout(() => {
-          opening.abort(new DOMException(`/bus/subscribe's refusal was not read within ${httpRequestTimeoutMs}ms`, 'TimeoutError'));
+          opening.abort(
+            new DOMException(
+              `/bus/subscribe's refusal was not read within ${httpRequestTimeoutMs}ms`,
+              'TimeoutError',
+            ),
+          );
         }, httpRequestTimeoutMs);
         let said: unknown;
         try {
-          said = response.body === null ? undefined : refusalBody(await response.text());
+          said =
+            response.body === null
+              ? undefined
+              : refusalBody(await response.text());
         } catch (err) {
           if (controller.signal.aborted) throw err;
           said = undefined;
@@ -541,7 +673,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
         }
         const words = gatewayWords(said);
         throw APIError.fromStatus(
-          words === undefined ? `SSE connect failed: ${response.status}` : `SSE connect failed: ${response.status}: ${words}`,
+          words === undefined
+            ? `SSE connect failed: ${response.status}`
+            : `SSE connect failed: ${response.status}: ${words}`,
           response.status,
           response.statusText,
           said,
@@ -570,7 +704,11 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
         const lingerTimer = setTimeout(() => {
           lingerTimers.delete(lingerTimer);
           for (const c of previous) {
-            try { c.abort(); } catch { /* noop */ }
+            try {
+              c.abort();
+            } catch {
+              /* noop */
+            }
             inflightControllers.delete(c);
           }
         }, lingerMs);
@@ -622,7 +760,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
           const nl = text.indexOf('\n', searchFrom);
           if (nl === -1) {
             if (searchFrom < text.length) {
-              lineSegments.push(searchFrom === 0 ? text : text.slice(searchFrom));
+              lineSegments.push(
+                searchFrom === 0 ? text : text.slice(searchFrom),
+              );
             }
             break;
           }
@@ -644,17 +784,32 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
             // by both the old and new connection during a make-before-break
             // handoff. No two frames share an id, so this never drops a
             // distinct event.
-            const isDuplicate = currentId !== undefined && seenEventIds.has(currentId);
-            const parsed = currentEvent === 'bus-event' && currentData && !isDuplicate ? carried(currentData) : undefined;
+            const isDuplicate =
+              currentId !== undefined && seenEventIds.has(currentId);
+            const parsed =
+              currentEvent === 'bus-event' && currentData && !isDuplicate
+                ? carried(currentData)
+                : undefined;
             if (typeof parsed === 'string') {
               if (currentId !== undefined) rememberEventId(currentId);
               // What names no reader is told to the failure report.
-              errors$.next(new XynologError(`the stream carried what is not a frame: ${parsed}`, 'error' satisfies TransportErrorCode));
+              errors$.next(
+                new XynologError(
+                  `the stream carried what is not a frame: ${parsed}`,
+                  'error' satisfies TransportErrorCode,
+                ),
+              );
             } else if (parsed !== undefined && 'fault' in parsed) {
               if (currentId !== undefined) rememberEventId(currentId);
               events$.next(parsed);
             } else if (parsed !== undefined) {
-              busLog('RECV', parsed.channel, parsed.payload, parsed.scope, parsed.correlationId);
+              busLog(
+                'RECV',
+                parsed.channel,
+                parsed.payload,
+                parsed.scope,
+                parsed.correlationId,
+              );
               // Drain-window forensics: an event delivered by a SUPERSEDED
               // (lingering) connection is one that an immediate handover abort
               // would have discarded. Gated
@@ -662,7 +817,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
               // see how real the window is.
               if (busLogEnabled() && superseded.has(controller)) {
                 // eslint-disable-next-line no-console
-                console.debug(`[bus LINGER] ${parsed.channel} delivered on superseded connection`);
+                console.debug(
+                  `[bus LINGER] ${parsed.channel} delivered on superseded connection`,
+                );
               }
               // Tier 2: lift trace context off the SSE payload (the gateway's
               // stream route puts it there, as `TRACE_FIELD`). The synchronous
@@ -687,7 +844,11 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
                 await withTraceparent(carrier, () =>
                   withSpan(
                     `bus.recv:${parsed.channel}`,
-                    () => { events$.next(carrier ? { ...parsed, trace: carrier } : parsed); },
+                    () => {
+                      events$.next(
+                        carrier ? { ...parsed, trace: carrier } : parsed,
+                      );
+                    },
                     {
                       kind: SpanKind.CONSUMER,
                       attrs: {
@@ -716,7 +877,11 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
               // frame always carries `scope`), and ephemeral ids never displace
               // a scope's watermark, which would silently lose that scope's
               // replay. The places check the same component.
-              if (currentId !== undefined && faultOf('PersistedEventId', currentId) === undefined && parsed.scope) {
+              if (
+                currentId !== undefined &&
+                faultOf('PersistedEventId', currentId) === undefined &&
+                parsed.scope
+              ) {
                 scopeWatermarks.set(parsed.scope, currentId);
                 // B17: persist per scope — see ActorStateUnitOptions.
                 options.saveLastEventId?.(parsed.scope, currentId);
@@ -743,10 +908,15 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
         // token; until then, no requests at all. Other refusals (a limit,
         // 5xx, proxies) are transient in kind and take the backoff path
         // below.
-        if (err.code === 'unauthorized' && running && !superseded.has(controller)) {
+        if (
+          err.code === 'unauthorized' &&
+          running &&
+          !superseded.has(controller)
+        ) {
           refusedToken = token;
           retryAttempt = 0;
-          if (live === null && currentState !== 'unauthenticated') transition('unauthenticated');
+          if (live === null && currentState !== 'unauthenticated')
+            transition('unauthenticated');
           // Refresh ONCE before staying parked — the same hook a refused
           // request or emit is renewed with. Parked state is truthful while
           // the refresh call is in flight. On success the refresher's owner
@@ -805,7 +975,10 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
     // move the state: the stream stays open across a handoff. Cancel only a
     // pending drop-recovery retry, then connect — `connect(keepPrevious=true)`
     // retires the old connection after the new one is open (no gap).
-    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     connect(true);
   };
 
@@ -827,7 +1000,10 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
   let reconnectTimer2: ReturnType<typeof setTimeout> | null = null;
   let lazyReconnectTimer: ReturnType<typeof setTimeout> | null = null;
   const scheduleReconnect = () => {
-    if (lazyReconnectTimer) { clearTimeout(lazyReconnectTimer); lazyReconnectTimer = null; }
+    if (lazyReconnectTimer) {
+      clearTimeout(lazyReconnectTimer);
+      lazyReconnectTimer = null;
+    }
     if (reconnectTimer2) clearTimeout(reconnectTimer2);
     reconnectTimer2 = setTimeout(() => {
       reconnectTimer2 = null;
@@ -842,7 +1018,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
     }, lazyRemoveMs);
   };
 
-  const framesOn = <K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> => {
+  const framesOn = <K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> => {
     // A channel this connection does not carry can never fire, and a
     // stream that never fires is indistinguishable from a quiet system:
     // a worker sits idle on `stream('job:queued')` while the frame flows
@@ -857,7 +1035,9 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
     // wires every scoped channel up front so frames flow the moment a scope
     // is subscribed, and that pre-wiring is correct. Asking the live scope
     // entries instead would refuse the bridge its own subscription.
-    const scopable = (RESOURCE_SCOPED_CHANNELS as readonly string[]).includes(channel);
+    const scopable = (RESOURCE_SCOPED_CHANNELS as readonly string[]).includes(
+      channel,
+    );
     if (!globalChannels.has(channel) && !scopable) {
       throw new BusRequestError(
         `Transport is not subscribed to ${channel as string} — a frame on it can never arrive on this connection. Add the channel to this client's manifest.`,
@@ -874,11 +1054,18 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
   return {
     frames: framesOn,
 
-    stream<K extends keyof EventMap>(channel: K): Observable<EventMap[K] | FrameRefusal> {
+    stream<K extends keyof EventMap>(
+      channel: K,
+    ): Observable<EventMap[K] | FrameRefusal> {
       return framesOn(channel).pipe(map((frame) => frame.payload));
     },
 
-    emit: async <K extends keyof EventMap>(channel: K, payload: EventMap[K], envelope?: BusEnvelope, signal?: AbortSignal): Promise<number | undefined> => {
+    emit: async <K extends keyof EventMap>(
+      channel: K,
+      payload: EventMap[K],
+      envelope?: BusEnvelope,
+      signal?: AbortSignal,
+    ): Promise<number | undefined> => {
       // EMIT logging + bus.emit span live at the transport contract layer
       // (`HttpTransport.emit`). ActorStateUnit is plumbing. We do propagate the
       // active span's W3C traceparent on the outbound POST so the gateway
@@ -886,11 +1073,15 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
       // The envelope's fields go on the REQUEST envelope, beside `clientId`:
       // routing is a wire concern and never enters a channel's domain type.
       const body: Record<string, unknown> = { channel, payload, clientId };
-      if (envelope?.correlationId !== undefined) body.correlationId = envelope.correlationId;
+      if (envelope?.correlationId !== undefined)
+        body.correlationId = envelope.correlationId;
       if (envelope?.scope) body.scope = envelope?.scope;
       // One key for this emit, the same on every attempt at it, the resend
       // with a renewed credential too.
-      const headers: Record<string, string> = { 'Content-Type': 'application/json', 'Idempotency-Key': uuidV4() };
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': uuidV4(),
+      };
       const trace = getActiveTraceparent();
       if (trace) {
         headers['traceparent'] = trace.traceparent;
@@ -918,57 +1109,71 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
       // request's deadline, or its abandonment) bounds them all: when it
       // aborts the attempt in flight is cancelled, the wait for the next is
       // cut short, and none is made after.
-      const send = (token: string): Promise<number | undefined> => retryWithBackoff(() => withinDeadline(EMIT_TIMEOUT_MS, async (attemptDue) => {
-        // `fetch()` rejects only when no answer came: on a network error with
-        // a `TypeError` in the runtime's own words (the Fetch standard), on the
-        // deadline with a `TimeoutError`. So its rejection is no answer,
-        // whatever it says, and worth another attempt.
-        const attempt = await fetchOf(options.fetch)(`${baseUrl}/bus/emit`, {
-          method: 'POST',
-          headers: { ...headers, Authorization: `Bearer ${token}` },
-          body: JSON.stringify(body),
-          signal: signal === undefined ? attemptDue : AbortSignal.any([attemptDue, signal]),
-        }).catch((error: unknown) => {
-          throw new UnansweredError('/bus/emit', error);
-        });
-        // A refused emit (validation 400, auth 401…) must REJECT — Bus.request's
-        // contract detaches its doomed reply and propagates this to the caller.
-        // Resolving a sentinel here instead leaves that caller waiting for a
-        // reply the gateway will never send.
-        if (!attempt.ok) {
-          let said = '';
-          try {
-            said = await attempt.text();
-          } catch {
-            // status alone
-          }
-          const detail = said.slice(0, 500);
-          // APIError, not a bare Error: the status rides as a FIELD, which
-          // is what makes it classifiable without parsing it back out of prose.
-          throw APIError.fromStatus(
-            `/bus/emit ${attempt.status}${detail ? `: ${detail}` : ''}`,
-            attempt.status,
-            attempt.statusText,
-            refusalBody(said),
-            retryAfterMs(attempt.headers.get('retry-after')),
-          );
-        }
-        // No count is reported as no count, never as a zero: an absent
-        // `subscribers` is the gateway saying it could not count (a broker
-        // signal plane), and an unreadable body says nothing at all. Either way
-        // the emit was accepted, so neither may read as an empty room.
-        let accepted: components['schemas']['BusEmitAccepted'];
-        try {
-          accepted = await attempt.json();
-        } catch {
-          return undefined;
-        }
-        return accepted.subscribers;
-      }), retryableUnlessRefused, emitRetry, undefined, signal)
-        .catch((error: unknown) => {
+      const send = (token: string): Promise<number | undefined> =>
+        retryWithBackoff(
+          () =>
+            withinDeadline(EMIT_TIMEOUT_MS, async (attemptDue) => {
+              // `fetch()` rejects only when no answer came: on a network error with
+              // a `TypeError` in the runtime's own words (the Fetch standard), on the
+              // deadline with a `TimeoutError`. So its rejection is no answer,
+              // whatever it says, and worth another attempt.
+              const attempt = await fetchOf(options.fetch)(
+                `${baseUrl}/bus/emit`,
+                {
+                  method: 'POST',
+                  headers: { ...headers, Authorization: `Bearer ${token}` },
+                  body: JSON.stringify(body),
+                  signal:
+                    signal === undefined
+                      ? attemptDue
+                      : AbortSignal.any([attemptDue, signal]),
+                },
+              ).catch((error: unknown) => {
+                throw new UnansweredError('/bus/emit', error);
+              });
+              // A refused emit (validation 400, auth 401…) must REJECT — Bus.request's
+              // contract detaches its doomed reply and propagates this to the caller.
+              // Resolving a sentinel here instead leaves that caller waiting for a
+              // reply the gateway will never send.
+              if (!attempt.ok) {
+                let said = '';
+                try {
+                  said = await attempt.text();
+                } catch {
+                  // status alone
+                }
+                const detail = said.slice(0, 500);
+                // APIError, not a bare Error: the status rides as a FIELD, which
+                // is what makes it classifiable without parsing it back out of prose.
+                throw APIError.fromStatus(
+                  `/bus/emit ${attempt.status}${detail ? `: ${detail}` : ''}`,
+                  attempt.status,
+                  attempt.statusText,
+                  refusalBody(said),
+                  retryAfterMs(attempt.headers.get('retry-after')),
+                );
+              }
+              // No count is reported as no count, never as a zero: an absent
+              // `subscribers` is the gateway saying it could not count (a broker
+              // signal plane), and an unreadable body says nothing at all. Either way
+              // the emit was accepted, so neither may read as an empty room.
+              let accepted: components['schemas']['BusEmitAccepted'];
+              try {
+                accepted = await attempt.json();
+              } catch {
+                return undefined;
+              }
+              return accepted.subscribers;
+            }),
+          retryableUnlessRefused,
+          emitRetry,
+          undefined,
+          signal,
+        ).catch((error: unknown) => {
           // The gateway never answered, on any attempt the budget allowed. It
           // reaches the caller as every failure of this transport does.
-          if (error instanceof UnansweredError) throw APIError.withoutResponse(error.message, error.name);
+          if (error instanceof UnansweredError)
+            throw APIError.withoutResponse(error.message, error.name);
           throw error;
         });
       const token = getToken();
@@ -977,9 +1182,16 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
       // or the token refused, or refused again, the emit fails `unauthorized`
       // and is not sent a third time. Without a refresher the refusal is final.
       return send(token).catch(async (error: unknown) => {
-        if (!(error instanceof APIError && error.code === 'unauthorized') || !tokenRefresher) throw error;
+        if (
+          !(error instanceof APIError && error.code === 'unauthorized') ||
+          !tokenRefresher
+        )
+          throw error;
         // The actor holds no token as the empty one; a refresher is told none as null.
-        const renewed = await renewedToken(tokenRefresher, token === '' ? null : token);
+        const renewed = await renewedToken(
+          tokenRefresher,
+          token === '' ? null : token,
+        );
         if (renewed === null) throw error;
         return send(renewed);
       });
@@ -991,7 +1203,10 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
 
     isSubscribed: (channel: keyof EventMap) => globalChannels.has(channel),
 
-    addChannels: (channels: readonly (keyof EventMap)[], scope?: ResourceId) => {
+    addChannels: (
+      channels: readonly (keyof EventMap)[],
+      scope?: ResourceId,
+    ) => {
       let changed = false;
       if (scope !== undefined) {
         let entry = scopedSubscriptions.get(scope);
@@ -1000,11 +1215,17 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
           scopedSubscriptions.set(scope, entry);
         }
         for (const ch of channels) {
-          if (!entry.has(ch)) { entry.add(ch); changed = true; }
+          if (!entry.has(ch)) {
+            entry.add(ch);
+            changed = true;
+          }
         }
       } else {
         for (const ch of channels) {
-          if (!globalChannels.has(ch)) { globalChannels.add(ch); changed = true; }
+          if (!globalChannels.has(ch)) {
+            globalChannels.add(ch);
+            changed = true;
+          }
         }
       }
       if (changed) scheduleReconnect();
@@ -1055,18 +1276,36 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
     stop: () => {
       running = false;
       if (currentState !== 'closed') transition('closed');
-      if (reconnectTimer2) { clearTimeout(reconnectTimer2); reconnectTimer2 = null; }
-      if (lazyReconnectTimer) { clearTimeout(lazyReconnectTimer); lazyReconnectTimer = null; }
-      if (degradedTimer) { clearTimeout(degradedTimer); degradedTimer = null; }
+      if (reconnectTimer2) {
+        clearTimeout(reconnectTimer2);
+        reconnectTimer2 = null;
+      }
+      if (lazyReconnectTimer) {
+        clearTimeout(lazyReconnectTimer);
+        lazyReconnectTimer = null;
+      }
+      if (degradedTimer) {
+        clearTimeout(degradedTimer);
+        degradedTimer = null;
+      }
       disconnect();
     },
 
     dispose: () => {
       running = false;
       if (currentState !== 'closed') transition('closed');
-      if (reconnectTimer2) { clearTimeout(reconnectTimer2); reconnectTimer2 = null; }
-      if (lazyReconnectTimer) { clearTimeout(lazyReconnectTimer); lazyReconnectTimer = null; }
-      if (degradedTimer) { clearTimeout(degradedTimer); degradedTimer = null; }
+      if (reconnectTimer2) {
+        clearTimeout(reconnectTimer2);
+        reconnectTimer2 = null;
+      }
+      if (lazyReconnectTimer) {
+        clearTimeout(lazyReconnectTimer);
+        lazyReconnectTimer = null;
+      }
+      if (degradedTimer) {
+        clearTimeout(degradedTimer);
+        degradedTimer = null;
+      }
       disconnect();
       events$.complete();
       state$.complete();

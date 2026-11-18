@@ -37,7 +37,9 @@ export interface KBDiscoveryResult {
   kbs: DiscoveredKB[];
 }
 
-export function useKBDiscovery(options?: KBDiscoveryOptions): KBDiscoveryResult {
+export function useKBDiscovery(
+  options?: KBDiscoveryOptions,
+): KBDiscoveryResult {
   const enabled = options?.enabled ?? true;
   const intervalMs = options?.intervalMs;
   const externalTransport = options?.transport;
@@ -57,7 +59,8 @@ export function useKBDiscovery(options?: KBDiscoveryOptions): KBDiscoveryResult 
   useEffect(() => {
     const onVisibilityChange = () => setVisible(!document.hidden);
     document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', onVisibilityChange);
   }, []);
 
   useEffect(() => {

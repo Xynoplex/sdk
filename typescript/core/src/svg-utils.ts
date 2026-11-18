@@ -30,7 +30,7 @@ export function createPolygonSvg(points: Point[]): string {
     throw new Error('Polygon requires at least 3 points');
   }
 
-  const pointsStr = points.map(p => `${p.x},${p.y}`).join(' ');
+  const pointsStr = points.map((p) => `${p.x},${p.y}`).join(' ');
   return `<svg xmlns="http://www.w3.org/2000/svg"><polygon points="${pointsStr}"/></svg>`;
 }
 
@@ -50,15 +50,26 @@ export function createCircleSvg(center: Point, radius: number): string {
  * the name, at least one more character, and `/>` at the first `>`. Found by
  * index, in one pass, where a regular expression would backtrack quadratically.
  */
-function selfClosingElementAttributes(svg: string, name: string): string | undefined {
+function selfClosingElementAttributes(
+  svg: string,
+  name: string,
+): string | undefined {
   const opener = `<${name}`;
   let close = -1;
-  for (let start = svg.indexOf(opener); start !== -1; start = svg.indexOf(opener, start + 1)) {
+  for (
+    let start = svg.indexOf(opener);
+    start !== -1;
+    start = svg.indexOf(opener, start + 1)
+  ) {
     const attributesStart = start + opener.length;
     if (close < attributesStart) close = svg.indexOf('>', attributesStart);
     if (close === -1) return undefined;
     const attributes = svg.slice(attributesStart, close - 1);
-    if (attributes.length >= 2 && /\s/.test(attributes.charAt(0)) && svg.charAt(close - 1) === '/') {
+    if (
+      attributes.length >= 2 &&
+      /\s/.test(attributes.charAt(0)) &&
+      svg.charAt(close - 1) === '/'
+    ) {
       return attributes;
     }
   }
@@ -69,7 +80,10 @@ function selfClosingElementAttributes(svg: string, name: string): string | undef
  * Parse SVG selector to extract shape type and data
  */
 export function parseSvgSelector(svg: string):
-  | { type: 'rect'; data: { x: number; y: number; width: number; height: number } }
+  | {
+      type: 'rect';
+      data: { x: number; y: number; width: number; height: number };
+    }
   | { type: 'polygon'; data: { points: Point[] } }
   | { type: 'circle'; data: { cx: number; cy: number; r: number } }
   | null {
@@ -84,7 +98,7 @@ export function parseSvgSelector(svg: string):
 
     return {
       type: 'rect',
-      data: { x, y, width, height }
+      data: { x, y, width, height },
     };
   }
 
@@ -92,14 +106,14 @@ export function parseSvgSelector(svg: string):
   const polygonMatch = svg.match(/<polygon\s+points="([^"]+)"/);
   if (polygonMatch && polygonMatch[1]) {
     const pointsStr = polygonMatch[1];
-    const points = pointsStr.split(/\s+/).map(pair => {
+    const points = pointsStr.split(/\s+/).map((pair) => {
       const [x, y] = pair.split(',').map(parseFloat);
       return { x, y };
     });
 
     return {
       type: 'polygon',
-      data: { points }
+      data: { points },
     };
   }
 
@@ -113,7 +127,7 @@ export function parseSvgSelector(svg: string):
 
     return {
       type: 'circle',
-      data: { cx, cy, r }
+      data: { cx, cy, r },
     };
   }
 
@@ -128,7 +142,7 @@ export function scaleSvgToNative(
   displayWidth: number,
   displayHeight: number,
   imageWidth: number,
-  imageHeight: number
+  imageHeight: number,
 ): string {
   const parsed = parseSvgSelector(svg);
   if (!parsed) return svg;
@@ -141,7 +155,7 @@ export function scaleSvgToNative(
       const { x, y, width, height } = parsed.data;
       return createRectangleSvg(
         { x: x * scaleX, y: y * scaleY },
-        { x: (x + width) * scaleX, y: (y + height) * scaleY }
+        { x: (x + width) * scaleX, y: (y + height) * scaleY },
       );
     }
 
@@ -149,14 +163,14 @@ export function scaleSvgToNative(
       const { cx, cy, r } = parsed.data;
       return createCircleSvg(
         { x: cx * scaleX, y: cy * scaleY },
-        r * Math.min(scaleX, scaleY)
+        r * Math.min(scaleX, scaleY),
       );
     }
 
     case 'polygon': {
       const points = parsed.data.points.map((p: Point) => ({
         x: p.x * scaleX,
-        y: p.y * scaleY
+        y: p.y * scaleY,
       }));
       return createPolygonSvg(points);
     }

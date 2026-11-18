@@ -28,7 +28,10 @@ const RESPONSES = (op: string): unknown => {
     case 'browse:entity-types-requested':
       return { entityTypes: ['Person'] };
     case 'browse:resource-requested':
-      return { resource: mockResource('res-1', { name: 'R' }), lastSequence: 1 };
+      return {
+        resource: mockResource('res-1', { name: 'R' }),
+        lastSequence: 1,
+      };
     default:
       return refuseUnscriptedOperation(op);
   }
@@ -36,7 +39,9 @@ const RESPONSES = (op: string): unknown => {
 
 describe('lazy: the fetch belongs to the first subscription, not the call', () => {
   it('calling an accessor issues NO request; first subscribe issues exactly one', async () => {
-    const { client, transport } = createTestClient({ transport: { makeResponse: RESPONSES } });
+    const { client, transport } = createTestClient({
+      transport: { makeResponse: RESPONSES },
+    });
 
     const obs = client.browse.entityTypes();
     await flush();
@@ -62,7 +67,10 @@ describe('lazy: the fetch belongs to the first subscription, not the call', () =
 
   it('scoped accessors are lazy too', async () => {
     const content = contentTransportSpies();
-    const { client, transport } = createTestClient({ transport: { makeResponse: RESPONSES }, content });
+    const { client, transport } = createTestClient({
+      transport: { makeResponse: RESPONSES },
+      content,
+    });
     const rid = makeResourceId('res-1');
 
     client.browse.resource(rid);
@@ -80,13 +88,17 @@ describe('uniform identity: per-key, including the scope-acquiring accessors', (
     // The scope wrapper memoizes per source (`ScopedSources`), so identity is
     // uniform across scoped and un-scoped accessors, and laziness does not
     // change it. This test is the standing measurement.
-    const { client } = createTestClient({ transport: { makeResponse: RESPONSES } });
+    const { client } = createTestClient({
+      transport: { makeResponse: RESPONSES },
+    });
     const rid = makeResourceId('res-1');
     const other = makeResourceId('res-2');
 
     expect(client.browse.resource(rid)).toBe(client.browse.resource(rid));
     expect(client.browse.annotations(rid)).toBe(client.browse.annotations(rid));
-    expect(client.gather.referencedBy(rid)).toBe(client.gather.referencedBy(rid));
+    expect(client.gather.referencedBy(rid)).toBe(
+      client.gather.referencedBy(rid),
+    );
     expect(client.browse.events(rid)).toBe(client.browse.events(rid));
     // Distinct keys stay distinct.
     expect(client.browse.resource(rid)).not.toBe(client.browse.resource(other));
@@ -97,7 +109,9 @@ describe('uniform identity: per-key, including the scope-acquiring accessors', (
 
 describe('.fresh(): the explicit one-shot read', () => {
   it('fresh() fetches even when the cache is warm, and resolves the value', async () => {
-    const { client, transport } = createTestClient({ transport: { makeResponse: RESPONSES } });
+    const { client, transport } = createTestClient({
+      transport: { makeResponse: RESPONSES },
+    });
 
     const sub = client.browse.entityTypes().subscribe(() => {});
     await flush();
@@ -113,7 +127,10 @@ describe('.fresh(): the explicit one-shot read', () => {
 
   it('fresh() rejects on failure — the caller owns retry policy (B14 boundary)', async () => {
     const { client } = createTestClient({
-      transport: { schedule: [{ kind: 'reject-emit' }], makeResponse: RESPONSES },
+      transport: {
+        schedule: [{ kind: 'reject-emit' }],
+        makeResponse: RESPONSES,
+      },
     });
 
     await expect(client.browse.entityTypes().fresh()).rejects.toThrow();
@@ -121,7 +138,9 @@ describe('.fresh(): the explicit one-shot read', () => {
   });
 
   it('a live query is not thenable: awaiting one does not compile', async () => {
-    const { client } = createTestClient({ transport: { makeResponse: RESPONSES } });
+    const { client } = createTestClient({
+      transport: { makeResponse: RESPONSES },
+    });
 
     // The tripwire — compile-time only, deliberately never invoked:
     // if CacheObservable grows a `then`, the @ts-expect-error
@@ -138,10 +157,14 @@ describe('.fresh(): the explicit one-shot read', () => {
 
 describe('the discriminated emission: pending | ready | failed', () => {
   it('cold key: pending, then ready — the three-outcome truth is in the type', async () => {
-    const { client } = createTestClient({ transport: { makeResponse: RESPONSES } });
+    const { client } = createTestClient({
+      transport: { makeResponse: RESPONSES },
+    });
 
     const states: Array<string> = [];
-    const sub = client.browse.entityTypes().subscribe((s) => states.push(s.status));
+    const sub = client.browse
+      .entityTypes()
+      .subscribe((s) => states.push(s.status));
     await flush();
 
     expect(states[0]).toBe('pending');
@@ -152,10 +175,14 @@ describe('the discriminated emission: pending | ready | failed', () => {
   });
 
   it('invalidate keeps ready visible (B7 restated): no pending flash behind a stale value', async () => {
-    const { client } = createTestClient({ transport: { makeResponse: RESPONSES } });
+    const { client } = createTestClient({
+      transport: { makeResponse: RESPONSES },
+    });
 
     const states: Array<string> = [];
-    const sub = client.browse.entityTypes().subscribe((s) => states.push(s.status));
+    const sub = client.browse
+      .entityTypes()
+      .subscribe((s) => states.push(s.status));
     await flush();
     expect(states[states.length - 1]).toBe('ready');
 
@@ -174,7 +201,10 @@ describe('the discriminated emission: pending | ready | failed', () => {
   it('exhaustion emits failed — an EMISSION, not a stream death (B15 restated)', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { client } = createTestClient({
-      transport: { schedule: [{ kind: 'reject-emit' }], makeResponse: RESPONSES },
+      transport: {
+        schedule: [{ kind: 'reject-emit' }],
+        makeResponse: RESPONSES,
+      },
     });
 
     const states: Array<{ status: string }> = [];
@@ -185,7 +215,9 @@ describe('the discriminated emission: pending | ready | failed', () => {
         errored = true;
       },
     });
-    await vi.waitFor(() => expect(states[states.length - 1]!.status).toBe('failed'));
+    await vi.waitFor(() =>
+      expect(states[states.length - 1]!.status).toBe('failed'),
+    );
 
     // The subscription is ALIVE — failure is a state, not a termination.
     expect(errored).toBe(false);
@@ -199,16 +231,27 @@ describe('the discriminated emission: pending | ready | failed', () => {
   it('a late subscriber after failure recovers: pending → ready', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { client, transport } = createTestClient({
-      transport: { schedule: [{ kind: 'reject-emit' }, { kind: 'reject-emit' }, { kind: 'deliver' }], makeResponse: RESPONSES },
+      transport: {
+        schedule: [
+          { kind: 'reject-emit' },
+          { kind: 'reject-emit' },
+          { kind: 'deliver' },
+        ],
+        makeResponse: RESPONSES,
+      },
     });
 
     const first: string[] = [];
-    const sub1 = client.browse.entityTypes().subscribe((s) => first.push(s.status));
+    const sub1 = client.browse
+      .entityTypes()
+      .subscribe((s) => first.push(s.status));
     await vi.waitFor(() => expect(first[first.length - 1]).toBe('failed'));
     sub1.unsubscribe();
 
     const second: string[] = [];
-    const sub2 = client.browse.entityTypes().subscribe((s) => second.push(s.status));
+    const sub2 = client.browse
+      .entityTypes()
+      .subscribe((s) => second.push(s.status));
     await vi.waitFor(() => expect(second[second.length - 1]).toBe('ready'));
     expect(second[0]).toBe('pending'); // no stale failed replay
     expect(transport.requestLog.length).toBeGreaterThanOrEqual(3);

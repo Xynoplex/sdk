@@ -19,7 +19,8 @@ describe('the domain-event path needs no casts', () => {
     // The invariant that makes widening unnecessary: it fails the day a
     // persisted type is not a channel, which is the only way
     // `as keyof EventMap` could become necessary.
-    const holds: PersistedEventType extends keyof EventMap ? true : false = true;
+    const holds: PersistedEventType extends keyof EventMap ? true : false =
+      true;
     expect(holds).toBe(true);
   });
 

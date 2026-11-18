@@ -19,14 +19,33 @@
  *   whatever a full-map re-save touched last).
  */
 
-import { CACHE_VALUES, MAX_STORED_BYTES_COUNT, faultOf, isAnnotationId, isObject, isResourceId, isString } from '@xynolog/core';
-import type { AnnotationId, CachePer, CacheValues, PersistedQuery, ResourceId } from '@xynolog/core';
+import {
+  CACHE_VALUES,
+  MAX_STORED_BYTES_COUNT,
+  faultOf,
+  isAnnotationId,
+  isObject,
+  isResourceId,
+  isString,
+} from '@xynolog/core';
+import type {
+  AnnotationId,
+  CachePer,
+  CacheValues,
+  PersistedQuery,
+  ResourceId,
+} from '@xynolog/core';
 import { warnRefusedSave, type CachePersister } from './cache';
 import type { XynologClient } from './client';
 import { XynologSessionError } from './session/errors';
 import type { SessionStorage } from './session/session-storage';
 import type { SignInKept } from './session/sign-in-kept';
-import { cacheKey, lastEventIdKey, personKey, type StoredSession } from './session/storage';
+import {
+  cacheKey,
+  lastEventIdKey,
+  personKey,
+  type StoredSession,
+} from './session/storage';
 
 /**
  * B17 — where a client keeps its persisted queries' values: a store, under
@@ -54,7 +73,9 @@ const refusalsOf = new WeakMap<CachePersistence, (cause: unknown) => void>();
  * errors, as `session.save-refused`, for one a session keeps for its person;
  * a console line for one a client was given directly, which has no session.
  */
-export function refusedSaveOf(persistence: CachePersistence): (cause: unknown) => void {
+export function refusedSaveOf(
+  persistence: CachePersistence,
+): (cause: unknown) => void {
   return refusalsOf.get(persistence) ?? warnRefusedSave;
 }
 
@@ -120,7 +141,8 @@ export interface EntryDecoder<K extends string, V> {
   value(json: unknown): json is V;
 }
 
-const isPlace = (json: unknown): json is string => faultOf('PersistedEventId', json) === undefined;
+const isPlace = (json: unknown): json is string =>
+  faultOf('PersistedEventId', json) === undefined;
 
 /** The key of each kind of query's entries: what refresh.json says it is asked for per. */
 interface KeyPer {
@@ -142,15 +164,25 @@ const holdsValue = <Q extends PersistedQuery>(query: Q) => {
   const { component } = CACHE_VALUES[query];
   const members: readonly string[] = CACHE_VALUES[query].members;
   return (json: unknown): json is CacheValues[Q] =>
-    faultOf(component, members.reduceRight<unknown>((inner, member) => ({ [member]: inner }), json)) === undefined;
+    faultOf(
+      component,
+      members.reduceRight<unknown>(
+        (inner, member) => ({ [member]: inner }),
+        json,
+      ),
+    ) === undefined;
 };
 
-const resourceIdKey = (json: unknown): json is ResourceId => isString(json) && isResourceId(json);
-const annotationIdKey = (json: unknown): json is AnnotationId => isString(json) && isAnnotationId(json);
+const resourceIdKey = (json: unknown): json is ResourceId =>
+  isString(json) && isResourceId(json);
+const annotationIdKey = (json: unknown): json is AnnotationId =>
+  isString(json) && isAnnotationId(json);
 const wholeKey = (json: unknown): json is WholeKey => json === WHOLE_KEY;
 
 /** How each kept query's entries are read back. */
-export const KEPT_QUERIES: { [Q in PersistedQuery]: EntryDecoder<KeptKey<Q>, CacheValues[Q]> } = {
+export const KEPT_QUERIES: {
+  [Q in PersistedQuery]: EntryDecoder<KeptKey<Q>, CacheValues[Q]>;
+} = {
   resource: { key: resourceIdKey, value: holdsValue('resource') },
   annotations: { key: resourceIdKey, value: holdsValue('annotations') },
   annotation: { key: annotationIdKey, value: holdsValue('annotation') },
@@ -222,7 +254,10 @@ export function sealPlaces(client: XynologClient, atRest: boolean): void {
  * `lastEventIds` under `lastEventIdKey`, each a resource's id to a
  * PersistedEventId.
  */
-export function coupledLastEventId(storage: SessionStorage, lastEventIdKey: string): CoupledPlaces {
+export function coupledLastEventId(
+  storage: SessionStorage,
+  lastEventIdKey: string,
+): CoupledPlaces {
   const pending = new Map<ResourceId, string>();
   /** Whether what the coupled client keeps is at rest; null while the places are coupled to none. */
   let atRest: (() => boolean) | null = null;
@@ -276,7 +311,8 @@ export function coupledLastEventId(storage: SessionStorage, lastEventIdKey: stri
       return stored.size > 0 ? stored : null;
     },
     coupleTo: (client) => {
-      if (sealsOf.has(client)) throw new Error('A client is coupled to the places of one person');
+      if (sealsOf.has(client))
+        throw new Error('A client is coupled to the places of one person');
       atRest = () => client.browse.persistenceSettled();
       sealsOf.set(client, (settled) => {
         if (sealed) return;
@@ -321,7 +357,9 @@ export interface PersonKeeping {
     token: string,
     did: string,
     client: XynologClient,
-    transport: { restoreLastEventIds(places: ReadonlyMap<ResourceId, string>): void },
+    transport: {
+      restoreLastEventIds(places: ReadonlyMap<ResourceId, string>): void;
+    },
   ): void;
 }
 
@@ -341,8 +379,18 @@ export function personKeeping(
   kept: SignInKept,
   say: (error: XynologSessionError) => void,
 ): PersonKeeping {
-  const said = (code: 'session.keep-failed' | 'session.save-refused', what: string, cause: unknown): void => {
-    say(new XynologSessionError(code, `${what}: ${cause instanceof Error ? cause.message : String(cause)}`, kbId));
+  const said = (
+    code: 'session.keep-failed' | 'session.save-refused',
+    what: string,
+    cause: unknown,
+  ): void => {
+    say(
+      new XynologSessionError(
+        code,
+        `${what}: ${cause instanceof Error ? cause.message : String(cause)}`,
+        kbId,
+      ),
+    );
   };
   /** Whether the client keeps nothing more for the rest of its life, as `session.keep-failed` said once. */
   let keepsNothingMore = false;
@@ -352,15 +400,26 @@ export function personKeeping(
     said('session.keep-failed', what, cause);
   };
   const unreadable = (cause: unknown): void =>
-    keepFailed('The sign-in could not be read before what the client keeps was saved, so it keeps nothing more', cause);
+    keepFailed(
+      'The sign-in could not be read before what the client keeps was saved, so it keeps nothing more',
+      cause,
+    );
   const refused = (cause: unknown): void =>
-    said('session.save-refused', "The storage refused a write of what the client keeps, which is owed until the client's next change or its closing", cause);
+    said(
+      'session.save-refused',
+      "The storage refused a write of what the client keeps, which is owed until the client's next change or its closing",
+      cause,
+    );
   const keepingFor = (person: string): Keeping => {
     const places = coupledLastEventId(
       whileSignedIn(storage, kept, person, unreadable, () => keepsNothingMore),
       lastEventIdKey(kbId, person),
     );
-    const persistence: CachePersistence = { storage: places.storage, kbId, personKey: person };
+    const persistence: CachePersistence = {
+      storage: places.storage,
+      kbId,
+      personKey: person,
+    };
     refusalsOf.set(persistence, refused);
     return { places, persistence };
   };
@@ -379,7 +438,10 @@ export function personKeeping(
       try {
         recorded = kept.recordPersonKey(token, person);
       } catch (cause) {
-        keepFailed('The sign-in could not record the person the gateway named, so the client keeps nothing more', cause);
+        keepFailed(
+          'The sign-in could not record the person the gateway named, so the client keeps nothing more',
+          cause,
+        );
         return;
       }
       if (!recorded || keeping !== null) return;
@@ -396,7 +458,10 @@ export function personKeeping(
 type StoredEntry = [unknown, unknown, number];
 
 const isStoredEntry = (entry: unknown): entry is StoredEntry =>
-  Array.isArray(entry) && entry.length === 3 && Number.isInteger(entry[2]) && entry[2] >= 0;
+  Array.isArray(entry) &&
+  entry.length === 3 &&
+  Number.isInteger(entry[2]) &&
+  entry[2] >= 0;
 
 /** A document's entries, or null when its structure is not `cacheDocument`'s, which keeps none of it. */
 function storedEntries(raw: string | null): StoredEntry[] | null {
@@ -407,7 +472,8 @@ function storedEntries(raw: string | null): StoredEntry[] | null {
   } catch {
     return null;
   }
-  if (!isObject(document) || document['version'] !== CACHE_DOCUMENT_VERSION) return null;
+  if (!isObject(document) || document['version'] !== CACHE_DOCUMENT_VERSION)
+    return null;
   const entries: unknown = document['entries'];
   if (!Array.isArray(entries) || !entries.every(isStoredEntry)) return null;
   return entries;
@@ -437,8 +503,16 @@ export function sessionStoragePersister<K extends string, V>(opts: {
     load(): Map<K, V> | null {
       const entries = storedEntries(storage.get(storageKey));
       if (entries === null) return null;
-      const kept = entries.filter((entry): entry is [K, V, number] => decode.key(entry[0]) && decode.value(entry[1]));
-      stamps = new Map(kept.map(([key, value, at]) => [key, { valueJson: JSON.stringify(value), at }]));
+      const kept = entries.filter(
+        (entry): entry is [K, V, number] =>
+          decode.key(entry[0]) && decode.value(entry[1]),
+      );
+      stamps = new Map(
+        kept.map(([key, value, at]) => [
+          key,
+          { valueJson: JSON.stringify(value), at },
+        ]),
+      );
       return new Map(kept.map(([key, value]) => [key, value]));
     },
 
@@ -450,7 +524,8 @@ export function sessionStoragePersister<K extends string, V>(opts: {
       for (const [key, value] of entries) {
         const valueJson = JSON.stringify(value);
         const prior = stamps.get(key);
-        const at = prior !== undefined && prior.valueJson === valueJson ? prior.at : now;
+        const at =
+          prior !== undefined && prior.valueJson === valueJson ? prior.at : now;
         nextStamps.set(key, { valueJson, at });
         records.push([key, value, at]);
       }
@@ -461,9 +536,11 @@ export function sessionStoragePersister<K extends string, V>(opts: {
       // for non-ASCII values. localStorage itself accounts in code units,
       // so for that substrate the byte cap is conservative — acceptable
       // for a guard rail.
-      const text = (list: Array<[K, V, number]>): string => JSON.stringify({ version: CACHE_DOCUMENT_VERSION, entries: list });
+      const text = (list: Array<[K, V, number]>): string =>
+        JSON.stringify({ version: CACHE_DOCUMENT_VERSION, entries: list });
       const encoder = new TextEncoder();
-      const documentSize = (list: Array<[K, V, number]>): number => encoder.encode(text(list)).length;
+      const documentSize = (list: Array<[K, V, number]>): number =>
+        encoder.encode(text(list)).length;
       if (documentSize(records) > maxBytes) {
         records = [...records].sort((a, b) => a[2] - b[2]);
         while (records.length > 0 && documentSize(records) > maxBytes) {

@@ -17,7 +17,9 @@ import { useSessionExpiry, formatTime } from '@xynolog/react-ui';
 import type { MockedFunction } from 'vitest';
 import { SessionExpiryBanner } from '../SessionExpiryBanner';
 
-const mockUseSessionExpiry = useSessionExpiry as MockedFunction<typeof useSessionExpiry>;
+const mockUseSessionExpiry = useSessionExpiry as MockedFunction<
+  typeof useSessionExpiry
+>;
 const mockFormatTime = formatTime as MockedFunction<typeof formatTime>;
 
 describe('SessionExpiryBanner', () => {

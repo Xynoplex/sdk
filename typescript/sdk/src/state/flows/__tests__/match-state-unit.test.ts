@@ -1,6 +1,9 @@
 import { describe, it, vi } from 'vitest';
 import { createMatchStateUnit, type MatchStateUnit } from '../match-state-unit';
-import { makeTestClient, type TestClient } from '../../../__tests__/test-client';
+import {
+  makeTestClient,
+  type TestClient,
+} from '../../../__tests__/test-client';
 import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 function withMatch(searchFn: ReturnType<typeof vi.fn>): TestClient {
@@ -12,7 +15,10 @@ describe('MatchStateUnit — StateUnit axioms', () => {
     assertStateUnitAxioms<MatchStateUnit>({
       setup: () => {
         const tc = withMatch(vi.fn());
-        return { unit: createMatchStateUnit(tc.client), teardown: () => tc.bus.destroy() };
+        return {
+          unit: createMatchStateUnit(tc.client),
+          teardown: () => tc.bus.destroy(),
+        };
       },
     });
   });

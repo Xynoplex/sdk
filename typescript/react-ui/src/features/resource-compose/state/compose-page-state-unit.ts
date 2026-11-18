@@ -1,5 +1,9 @@
 import { BehaviorSubject, type Observable } from 'rxjs';
-import type { AccessToken, ResourceDescriptor, ResourceId } from '@xynolog/core';
+import type {
+  AccessToken,
+  ResourceDescriptor,
+  ResourceId,
+} from '@xynolog/core';
 import { createDisposer } from '@xynolog/sdk';
 import type { StateUnit } from '@xynolog/core';
 import type { ShellStateUnit } from '../../../state/shell-state-unit';
@@ -69,7 +73,10 @@ export function createComposePageStateUnit(
   const cloneData$ = new BehaviorSubject<CloneData | null>(null);
   const uploadProgress$ = new BehaviorSubject<UploadProgress | null>(null);
 
-  const entityTypes = trackList<string[]>(() => client.browse.entityTypes(), []);
+  const entityTypes = trackList<string[]>(
+    () => client.browse.entityTypes(),
+    [],
+  );
   disposer.add(entityTypes.dispose);
 
   // Initialize based on mode
@@ -79,9 +86,13 @@ export function createComposePageStateUnit(
         const tokenResult = await client.yield.fromToken(params.token!);
         if (tokenResult && auth) {
           const rId = tokenResult['@id'];
-          const { data, contentType } = await client.browse.resourceRepresentation(rId);
+          const { data, contentType } =
+            await client.browse.resourceRepresentation(rId);
           const content = decodeWithCharset(data, contentType);
-          cloneData$.next({ sourceResource: tokenResult, sourceContent: content });
+          cloneData$.next({
+            sourceResource: tokenResult,
+            sourceContent: content,
+          });
         }
       } catch {
         // Error handling is the consumer's responsibility (toast)
@@ -110,37 +121,48 @@ export function createComposePageStateUnit(
       fileToUpload = saveParams.file;
       mimeType = saveParams.format ?? 'application/octet-stream';
     } else {
-      const blob = new Blob([saveParams.content || ''], { type: saveParams.format ?? 'application/octet-stream' });
-      const extension = extensionForMediaType(saveParams.format ?? 'application/octet-stream');
-      fileToUpload = new File([blob], saveParams.name + extension, { type: saveParams.format ?? 'application/octet-stream' });
+      const blob = new Blob([saveParams.content || ''], {
+        type: saveParams.format ?? 'application/octet-stream',
+      });
+      const extension = extensionForMediaType(
+        saveParams.format ?? 'application/octet-stream',
+      );
+      fileToUpload = new File([blob], saveParams.name + extension, {
+        type: saveParams.format ?? 'application/octet-stream',
+      });
       mimeType = saveParams.format ?? 'application/octet-stream';
     }
 
-    const format = saveParams.charset && !saveParams.file ? `${mimeType}; charset=${saveParams.charset}` : mimeType;
+    const format =
+      saveParams.charset && !saveParams.file
+        ? `${mimeType}; charset=${saveParams.charset}`
+        : mimeType;
 
     // Subscribe to the upload's full progress lifecycle so the UI can
     // render an upload-in-progress indicator. Resolve the save() promise
     // on the `finished` event and clear the progress signal on completion
     // (success or error).
     const newResourceId = await new Promise<ResourceId>((resolve, reject) => {
-      client.yield.resource({
-        name: saveParams.name,
-        file: fileToUpload,
-        format,
-        entityTypes: saveParams.entityTypes || [],
-        language: saveParams.language,
-        storageUri: saveParams.storageUri,
-      }).subscribe({
-        next: (event) => {
-          uploadProgress$.next(event);
-          if (event.phase === 'finished') resolve(event.resourceId);
-        },
-        error: (err) => {
-          uploadProgress$.next(null);
-          reject(err);
-        },
-        complete: () => uploadProgress$.next(null),
-      });
+      client.yield
+        .resource({
+          name: saveParams.name,
+          file: fileToUpload,
+          format,
+          entityTypes: saveParams.entityTypes || [],
+          language: saveParams.language,
+          storageUri: saveParams.storageUri,
+        })
+        .subscribe({
+          next: (event) => {
+            uploadProgress$.next(event);
+            if (event.phase === 'finished') resolve(event.resourceId);
+          },
+          error: (err) => {
+            uploadProgress$.next(null);
+            reject(err);
+          },
+          complete: () => uploadProgress$.next(null),
+        });
     });
 
     return newResourceId;

@@ -26,11 +26,11 @@ export type MatchQuality = 'normalized' | 'case-insensitive' | 'fuzzy';
  */
 export function normalizeText(text: string): string {
   return text
-    .replace(/\s+/g, ' ')              // collapse whitespace
-    .replace(/[\u2018\u2019]/g, "'")   // curly single quotes → straight
-    .replace(/[\u201C\u201D]/g, '"')   // curly double quotes → straight
-    .replace(/\u2014/g, '--')          // em-dash → double hyphen
-    .replace(/\u2013/g, '-')           // en-dash → hyphen
+    .replace(/\s+/g, ' ') // collapse whitespace
+    .replace(/[\u2018\u2019]/g, "'") // curly single quotes → straight
+    .replace(/[\u201C\u201D]/g, '"') // curly double quotes → straight
+    .replace(/\u2014/g, '--') // em-dash → double hyphen
+    .replace(/\u2013/g, '-') // en-dash → hyphen
     .trim();
 }
 
@@ -59,7 +59,11 @@ function distancesFrom(
     let least = i;
     for (let n = 1; n <= longest; n++) {
       const cost = wanted[i - 1] === text[from + n - 1] ? 0 : 1;
-      const distance = Math.min(row[n]! + 1, next[n - 1]! + 1, row[n - 1]! + cost);
+      const distance = Math.min(
+        row[n]! + 1,
+        next[n - 1]! + 1,
+        row[n - 1]! + cost,
+      );
       next[n] = distance;
       if (distance < least) least = distance;
     }
@@ -105,7 +109,10 @@ export interface ContentCache {
  * The produced `normalized` string is identical to `normalizeText(input)`
  * — a test pins this equivalence so the two can't drift.
  */
-export function normalizeTextWithMap(input: string): { normalized: string; map: number[] } {
+export function normalizeTextWithMap(input: string): {
+  normalized: string;
+  map: number[];
+} {
   let normalized = '';
   const map: number[] = [];
 
@@ -137,15 +144,21 @@ export function normalizeTextWithMap(input: string): { normalized: string; map: 
     }
     flushWhitespace();
     if (ch === '‘' || ch === '’') {
-      normalized += "'"; map.push(offset);
+      normalized += "'";
+      map.push(offset);
     } else if (ch === '“' || ch === '”') {
-      normalized += '"'; map.push(offset);
+      normalized += '"';
+      map.push(offset);
     } else if (ch === '—') {
-      normalized += '--'; map.push(offset); map.push(offset);
+      normalized += '--';
+      map.push(offset);
+      map.push(offset);
     } else if (ch === '–') {
-      normalized += '-'; map.push(offset);
+      normalized += '-';
+      map.push(offset);
     } else {
-      normalized += ch; map.push(offset);
+      normalized += ch;
+      map.push(offset);
     }
     offset++;
   }
@@ -169,7 +182,10 @@ export function normalizeTextWithMap(input: string): { normalized: string; map: 
  * whole as alone (U+0130, a capital I with a dot, becomes two), which is what
  * the map is counted from.
  */
-export function lowerCaseWithMap(input: string): { lowered: string; map: number[] } {
+export function lowerCaseWithMap(input: string): {
+  lowered: string;
+  map: number[];
+} {
   const lowered = input.toLowerCase();
   const map: number[] = [];
   let offset = 0;
@@ -179,7 +195,9 @@ export function lowerCaseWithMap(input: string): { lowered: string; map: number[
     offset++;
   }
   if (map.length !== textOffsets(lowered).length) {
-    throw new Error('a text lower-cased whole is not as long as its characters lower-cased one at a time');
+    throw new Error(
+      'a text lower-cased whole is not as long as its characters lower-cased one at a time',
+    );
   }
   return { lowered, map };
 }
@@ -209,7 +227,11 @@ export function buildContentCache(content: string): ContentCache {
  * points is in the span whole, and white space the content has after the
  * match is not in it.
  */
-function spanOf(map: readonly number[], at: number, length: number): { start: number; end: number } {
+function spanOf(
+  map: readonly number[],
+  at: number,
+  length: number,
+): { start: number; end: number } {
   return { start: map[at]!, end: map[at + length - 1]! + 1 };
 }
 
@@ -229,8 +251,11 @@ function spanOf(map: readonly number[], at: number, length: number): { start: nu
 export function findBestTextMatch(
   content: string,
   searchText: string,
-  cache: ContentCache
-): { places: Array<{ start: number; end: number }>; matchQuality: MatchQuality } | null {
+  cache: ContentCache,
+): {
+  places: Array<{ start: number; end: number }>;
+  matchQuality: MatchQuality;
+} | null {
   // Nothing, or only white space, is no words to find: it is in no place.
   if (searchText.trim() === '') return null;
 
@@ -239,11 +264,17 @@ export function findBestTextMatch(
   // content it came from, through the precomputed offset map.
   const normalizedSearch = normalizeText(searchText);
   const normalizedLength = textOffsets(normalizedSearch).length;
-  const normalized = occurrencesOf(cache.normalizedContent, cache.normalizedOffsets, normalizedSearch);
+  const normalized = occurrencesOf(
+    cache.normalizedContent,
+    cache.normalizedOffsets,
+    normalizedSearch,
+  );
   if (normalized.length > 0) {
     return {
-      places: normalized.map((at) => spanOf(cache.normalizedMap, at, normalizedLength)),
-      matchQuality: 'normalized'
+      places: normalized.map((at) =>
+        spanOf(cache.normalizedMap, at, normalizedLength),
+      ),
+      matchQuality: 'normalized',
     };
   }
 
@@ -252,11 +283,15 @@ export function findBestTextMatch(
   // changes how many code points some characters are.
   const lowerSearch = searchText.toLowerCase();
   const lowerLength = textOffsets(lowerSearch).length;
-  const lowered = occurrencesOf(cache.lowerContent, cache.lowerOffsets, lowerSearch);
+  const lowered = occurrencesOf(
+    cache.lowerContent,
+    cache.lowerOffsets,
+    lowerSearch,
+  );
   if (lowered.length > 0) {
     return {
       places: lowered.map((at) => spanOf(cache.lowerMap, at, lowerLength)),
-      matchQuality: 'case-insensitive'
+      matchQuality: 'case-insensitive',
     };
   }
 
@@ -284,10 +319,15 @@ export function findBestTextMatch(
     const distances = distancesFrom(wanted, text, start, longest, allowance);
     if (distances === null) continue;
     for (let away = 0; away <= allowance; away++) {
-      for (const length of away === 0 ? [wanted.length] : [wanted.length - away, wanted.length + away]) {
+      for (const length of away === 0
+        ? [wanted.length]
+        : [wanted.length - away, wanted.length + away]) {
         if (length > longest) continue;
         const distance = distances[length]!;
-        if (distance <= allowance && (best === null || distance < best.distance)) {
+        if (
+          distance <= allowance &&
+          (best === null || distance < best.distance)
+        ) {
           best = { start, end: start + length, distance };
         }
       }
@@ -297,6 +337,6 @@ export function findBestTextMatch(
   if (best === null) return null;
   return {
     places: [{ start: best.start, end: best.end }],
-    matchQuality: 'fuzzy'
+    matchQuality: 'fuzzy',
   };
 }

@@ -5,7 +5,12 @@
  * No React dependencies - safe to use in any JavaScript environment.
  */
 
-import type { Annotation, StoredEventLike, TextQuoteSelector, components } from '@xynolog/core';
+import type {
+  Annotation,
+  StoredEventLike,
+  TextQuoteSelector,
+  components,
+} from '@xynolog/core';
 import {
   getAnnotationIdFromEvent,
   getEntityTypes,
@@ -17,8 +22,13 @@ import {
 } from '@xynolog/core';
 import { ANNOTATORS } from '../../lib/annotation-registry';
 
-type TranslateFn = (key: string, params?: Record<string, string | number>) => string;
-type TaggingBody = components['schemas']['TextualBody'] & { purpose: 'tagging' };
+type TranslateFn = (
+  key: string,
+  params?: Record<string, string | number>,
+) => string;
+type TaggingBody = components['schemas']['TextualBody'] & {
+  purpose: 'tagging';
+};
 
 // =============================================================================
 // READING A STORED EVENT'S PAYLOAD
@@ -38,38 +48,50 @@ function itemsOf(value: unknown): unknown[] {
 
 /** A selector that quotes: the one kind that carries an annotation's text. */
 function isTextQuoteSelector(value: unknown): value is TextQuoteSelector {
-  return isObject(value)
-    && value.type === 'TextQuoteSelector'
-    && isString(value.exact)
-    && (value.prefix === undefined || isString(value.prefix))
-    && (value.suffix === undefined || isString(value.suffix));
+  return (
+    isObject(value) &&
+    value.type === 'TextQuoteSelector' &&
+    isString(value.exact) &&
+    (value.prefix === undefined || isString(value.prefix)) &&
+    (value.suffix === undefined || isString(value.suffix))
+  );
 }
 
 /** A body that tags: the kind that states an entity type. */
 function isTaggingBody(value: unknown): value is TaggingBody {
-  return isObject(value)
-    && value.type === 'TextualBody'
-    && isString(value.value)
-    && value.purpose === 'tagging'
-    && (value.format === undefined || isString(value.format))
-    && (value.language === undefined || isString(value.language));
+  return (
+    isObject(value) &&
+    value.type === 'TextualBody' &&
+    isString(value.value) &&
+    value.purpose === 'tagging' &&
+    (value.format === undefined || isString(value.format)) &&
+    (value.language === undefined || isString(value.language))
+  );
 }
 
 /** The annotation a `mark:added` event carries, as its payload states it; null for any other event. */
-function addedAnnotation(event: StoredEventLike): Record<string, unknown> | null {
+function addedAnnotation(
+  event: StoredEventLike,
+): Record<string, unknown> | null {
   if (event.type !== 'mark:added' || !isObject(event.payload)) return null;
   return isObject(event.payload.annotation) ? event.payload.annotation : null;
 }
 
 /** The motivation of the annotation a `mark:added` payload carries. */
 function addedMotivation(payload: unknown): unknown {
-  return isObject(payload) && isObject(payload.annotation) ? payload.annotation.motivation : undefined;
+  return isObject(payload) && isObject(payload.annotation)
+    ? payload.annotation.motivation
+    : undefined;
 }
 
 /** The text an annotation quotes, read off the annotation a `mark:added` event carries. */
 function addedText(event: StoredEventLike): string {
   const target = addedAnnotation(event)?.target;
-  return getExactText(isObject(target) ? itemsOf(target.selector).filter(isTextQuoteSelector) : []);
+  return getExactText(
+    isObject(target)
+      ? itemsOf(target.selector).filter(isTextQuoteSelector)
+      : [],
+  );
 }
 
 /** A string field of a payload, or nothing. */
@@ -86,7 +108,11 @@ function stringField(payload: unknown, field: string): string | undefined {
 /**
  * Format event type for display with i18n support
  */
-export function formatEventType(type: string, t: TranslateFn, payload?: unknown): string {
+export function formatEventType(
+  type: string,
+  t: TranslateFn,
+  payload?: unknown,
+): string {
   switch (type) {
     case 'yield:created':
       return t('resourceCreated');
@@ -145,9 +171,12 @@ export function getEventEmoji(type: string, payload?: unknown): string {
     case 'mark:added': {
       const motivation = addedMotivation(payload);
       // Use annotation registry as single source of truth for emojis
-      if (motivation === 'highlighting') return ANNOTATORS.highlight.iconEmoji || '📝';
-      if (motivation === 'linking') return ANNOTATORS.reference.iconEmoji || '📝';
-      if (motivation === 'assessing') return ANNOTATORS.assessment.iconEmoji || '📝';
+      if (motivation === 'highlighting')
+        return ANNOTATORS.highlight.iconEmoji || '📝';
+      if (motivation === 'linking')
+        return ANNOTATORS.reference.iconEmoji || '📝';
+      if (motivation === 'assessing')
+        return ANNOTATORS.assessment.iconEmoji || '📝';
       return '📝';
     }
     case 'mark:removed': {
@@ -162,11 +191,11 @@ export function getEventEmoji(type: string, payload?: unknown): string {
       return '🏷️';
 
     case 'job:completed':
-      return '🔗';  // Link emoji for linked document creation
+      return '🔗'; // Link emoji for linked document creation
     case 'job:started':
-      return '⚙️';  // Gear for job processing
+      return '⚙️'; // Gear for job processing
     case 'job:failed':
-      return '❌';  // X mark for failed jobs
+      return '❌'; // X mark for failed jobs
 
     case 'yield:representation-added':
     case 'yield:representation-removed':
@@ -201,12 +230,18 @@ export function formatRelativeTime(timestamp: string, t: TranslateFn): string {
  */
 function truncateText(text: string, maxLength = 50): string {
   const trimmed = text.trim();
-  return trimmed.length > maxLength ? trimmed.substring(0, maxLength) + '...' : trimmed;
+  return trimmed.length > maxLength
+    ? trimmed.substring(0, maxLength) + '...'
+    : trimmed;
 }
 
 /** An annotation's text as the history quotes it, or nothing when it quotes none. */
-function quoted(exact: string): { exact: string; isQuoted: boolean; isTag: boolean } | null {
-  return exact ? { exact: truncateText(exact), isQuoted: true, isTag: false } : null;
+function quoted(
+  exact: string,
+): { exact: string; isQuoted: boolean; isTag: boolean } | null {
+  return exact
+    ? { exact: truncateText(exact), isQuoted: true, isTag: false }
+    : null;
 }
 
 /**
@@ -220,24 +255,30 @@ function quoted(exact: string): { exact: string; isQuoted: boolean; isTag: boole
 export function getEventDisplayContent(
   event: StoredEventLike,
   annotations: Annotation[],
-  allEvents: StoredEventLike[]
+  allEvents: StoredEventLike[],
 ): { exact: string; isQuoted: boolean; isTag: boolean } | null {
   switch (event.type) {
     case 'yield:created':
     case 'yield:cloned': {
       const name = stringField(event.payload, 'name');
-      return name === undefined ? null : { exact: name, isQuoted: false, isTag: false };
+      return name === undefined
+        ? null
+        : { exact: name, isQuoted: false, isTag: false };
     }
 
     case 'mark:body-updated': {
       const id = getAnnotationIdFromEvent(event);
-      const annotation = annotations.find(a => a.id === id);
-      return annotation ? quoted(getExactText(getTargetSelector(annotation.target))) : null;
+      const annotation = annotations.find((a) => a.id === id);
+      return annotation
+        ? quoted(getExactText(getTargetSelector(annotation.target)))
+        : null;
     }
 
     case 'mark:removed': {
       const id = getAnnotationIdFromEvent(event);
-      const added = allEvents.find(e => e.type === 'mark:added' && getAnnotationIdFromEvent(e) === id);
+      const added = allEvents.find(
+        (e) => e.type === 'mark:added' && getAnnotationIdFromEvent(e) === id,
+      );
       return added ? quoted(addedText(added)) : null;
     }
 
@@ -247,7 +288,9 @@ export function getEventDisplayContent(
     case 'mark:entity-tag-added':
     case 'mark:entity-tag-removed': {
       const entityType = stringField(event.payload, 'entityType');
-      return entityType === undefined ? null : { exact: entityType, isQuoted: false, isTag: true };
+      return entityType === undefined
+        ? null
+        : { exact: entityType, isQuoted: false, isTag: true };
     }
 
     default:
@@ -263,7 +306,9 @@ export function getEventDisplayContent(
 export function getEventEntityTypes(event: StoredEventLike): string[] {
   const annotation = addedAnnotation(event);
   if (!annotation || annotation.motivation !== 'linking') return [];
-  return getEntityTypes({ body: itemsOf(annotation.body).filter(isTaggingBody) });
+  return getEntityTypes({
+    body: itemsOf(annotation.body).filter(isTaggingBody),
+  });
 }
 
 /**
@@ -279,14 +324,18 @@ export interface ResourceCreationDetails {
 /**
  * Get resource creation details from event
  */
-export function getResourceCreationDetails(event: StoredEventLike): ResourceCreationDetails | null {
+export function getResourceCreationDetails(
+  event: StoredEventLike,
+): ResourceCreationDetails | null {
   if (event.type === 'yield:created') {
     return { type: 'created' };
   }
 
   if (event.type === 'yield:cloned') {
     const parent = stringField(event.payload, 'parentResourceId');
-    return parent === undefined ? { type: 'cloned' } : { type: 'cloned', sourceDocId: parent };
+    return parent === undefined
+      ? { type: 'cloned' }
+      : { type: 'cloned', sourceDocId: parent };
   }
 
   return null;

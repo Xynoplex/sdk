@@ -105,7 +105,11 @@ describe('isReportedJobResult', () => {
 
 describe('isMarkJobResult and isYieldJobResult', () => {
   const counts = { found: 3, persisted: 2 };
-  const made = { resourceId: resourceId('res-new'), resourceName: 'New', truncated: false };
+  const made = {
+    resourceId: resourceId('res-new'),
+    resourceName: 'New',
+    truncated: false,
+  };
   const decline = { declined: true as const, reason: 'empty' as const };
 
   it('a mark job reports its counts or a decline, and never the resource a yield job makes', () => {
@@ -114,7 +118,7 @@ describe('isMarkJobResult and isYieldJobResult', () => {
     expect(isMarkJobResult(made)).toBe(false);
   });
 
-  it('a yield job reports the resource it made or a decline, and never a mark job\'s counts', () => {
+  it("a yield job reports the resource it made or a decline, and never a mark job's counts", () => {
     expect(isYieldJobResult(made)).toBe(true);
     expect(isYieldJobResult(decline)).toBe(true);
     expect(isYieldJobResult(counts)).toBe(false);

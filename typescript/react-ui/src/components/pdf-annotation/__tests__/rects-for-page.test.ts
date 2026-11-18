@@ -32,7 +32,7 @@ function build(doc: ReadonlyArray<ReadonlyArray<Sel>>): Annotation[] {
     id: annotationId(`ann-${i}`),
     target: {
       source: resourceId('res-1'),
-      selector: sels.map(s => ({
+      selector: sels.map((s) => ({
         type: 'FragmentSelector' as const,
         value: `page=${s.page}&viewrect=${s.x},${s.y},${s.w},${s.h}`,
         conformsTo: 'http://tools.ietf.org/rfc/rfc3778',
@@ -44,37 +44,49 @@ function build(doc: ReadonlyArray<ReadonlyArray<Sel>>): Annotation[] {
 }
 
 const keysOn = (anns: Annotation[], page: number): string[] =>
-  rectsForPage(anns, page).map(r => `${r.annId}:${r.selectorIndex}`);
+  rectsForPage(anns, page).map((r) => `${r.annId}:${r.selectorIndex}`);
 
 describe('rectsForPage (multi-rect partition)', () => {
   it('completeness: every FragmentSelector renders exactly once across all pages', () => {
-    fc.assert(fc.property(docArb, doc => {
-      const anns = build(doc);
-      const total = doc.reduce((n, sels) => n + sels.length, 0);
-      let rendered = 0;
-      for (let p = 1; p <= PAGES; p++) rendered += rectsForPage(anns, p).length;
-      expect(rendered).toBe(total);
-    }));
+    fc.assert(
+      fc.property(docArb, (doc) => {
+        const anns = build(doc);
+        const total = doc.reduce((n, sels) => n + sels.length, 0);
+        let rendered = 0;
+        for (let p = 1; p <= PAGES; p++)
+          rendered += rectsForPage(anns, p).length;
+        expect(rendered).toBe(total);
+      }),
+    );
   });
 
   it('page-locality: every rect on page p came from a selector with page === p', () => {
-    fc.assert(fc.property(docArb, fc.integer({ min: 1, max: PAGES }), (doc, p) => {
-      for (const r of rectsForPage(build(doc), p)) expect(r.coord.page).toBe(p);
-    }));
+    fc.assert(
+      fc.property(docArb, fc.integer({ min: 1, max: PAGES }), (doc, p) => {
+        for (const r of rectsForPage(build(doc), p))
+          expect(r.coord.page).toBe(p);
+      }),
+    );
   });
 
   it('key uniqueness: `${annId}:${selectorIndex}` is pairwise unique on any page', () => {
-    fc.assert(fc.property(docArb, fc.integer({ min: 1, max: PAGES }), (doc, p) => {
-      const keys = keysOn(build(doc), p);
-      expect(new Set(keys).size).toBe(keys.length);
-    }));
+    fc.assert(
+      fc.property(docArb, fc.integer({ min: 1, max: PAGES }), (doc, p) => {
+        const keys = keysOn(build(doc), p);
+        expect(new Set(keys).size).toBe(keys.length);
+      }),
+    );
   });
 
   it('order independence: reversing the annotation list preserves the rendered set per page', () => {
-    fc.assert(fc.property(docArb, fc.integer({ min: 1, max: PAGES }), (doc, p) => {
-      const anns = build(doc);
-      expect([...keysOn([...anns].reverse(), p)].sort()).toEqual([...keysOn(anns, p)].sort());
-    }));
+    fc.assert(
+      fc.property(docArb, fc.integer({ min: 1, max: PAGES }), (doc, p) => {
+        const anns = build(doc);
+        expect([...keysOn([...anns].reverse(), p)].sort()).toEqual(
+          [...keysOn(anns, p)].sort(),
+        );
+      }),
+    );
   });
 
   it('single-selector invariance: a manual (one-selector) annotation → exactly one rect on its page', () => {
@@ -86,11 +98,13 @@ describe('rectsForPage (multi-rect partition)', () => {
   });
 
   it('multi-line: a 3-selector annotation on one page → 3 distinctly-keyed rects', () => {
-    const anns = build([[
-      { page: 2, x: 72, y: 720, w: 150, h: 12 },
-      { page: 2, x: 72, y: 700, w: 140, h: 12 },
-      { page: 2, x: 72, y: 680, w: 90, h: 12 },
-    ]]);
+    const anns = build([
+      [
+        { page: 2, x: 72, y: 720, w: 150, h: 12 },
+        { page: 2, x: 72, y: 700, w: 140, h: 12 },
+        { page: 2, x: 72, y: 680, w: 90, h: 12 },
+      ],
+    ]);
     expect(keysOn(anns, 2)).toEqual(['ann-0:0', 'ann-0:1', 'ann-0:2']);
   });
 });

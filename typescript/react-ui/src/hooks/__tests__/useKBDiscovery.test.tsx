@@ -21,7 +21,9 @@ const KB = {
 };
 
 /** A scripted transport: returns queued results, then repeats the last one. */
-function scriptedTransport(...results: DiscoveryReadResult[]): DiscoveryTransport & { reads: () => number } {
+function scriptedTransport(
+  ...results: DiscoveryReadResult[]
+): DiscoveryTransport & { reads: () => number } {
   let count = 0;
   return {
     read: async () => {
@@ -34,7 +36,10 @@ function scriptedTransport(...results: DiscoveryReadResult[]): DiscoveryTranspor
 }
 
 function setDocumentHidden(hidden: boolean) {
-  Object.defineProperty(document, 'hidden', { value: hidden, configurable: true });
+  Object.defineProperty(document, 'hidden', {
+    value: hidden,
+    configurable: true,
+  });
   document.dispatchEvent(new Event('visibilitychange'));
 }
 
@@ -46,7 +51,9 @@ describe('useKBDiscovery', () => {
   it('materializes the managed state and kbs from the first poll', async () => {
     const transport = scriptedTransport({ kind: 'managed', kbs: [KB] });
 
-    const { result, unmount } = renderHook(() => useKBDiscovery({ transport, intervalMs: 20 }));
+    const { result, unmount } = renderHook(() =>
+      useKBDiscovery({ transport, intervalMs: 20 }),
+    );
 
     await waitFor(() => {
       expect(result.current.state?.kind).toBe('managed');
@@ -56,14 +63,22 @@ describe('useKBDiscovery', () => {
   });
 
   it('surfaces the typed absent state with its reason', async () => {
-    const transport = scriptedTransport({ kind: 'absent', reason: 'not-found' });
+    const transport = scriptedTransport({
+      kind: 'absent',
+      reason: 'not-found',
+    });
 
-    const { result, unmount } = renderHook(() => useKBDiscovery({ transport, intervalMs: 20 }));
+    const { result, unmount } = renderHook(() =>
+      useKBDiscovery({ transport, intervalMs: 20 }),
+    );
 
     await waitFor(() => {
       expect(result.current.state?.kind).toBe('absent');
     });
-    expect(result.current.state).toMatchObject({ kind: 'absent', reason: 'not-found' });
+    expect(result.current.state).toMatchObject({
+      kind: 'absent',
+      reason: 'not-found',
+    });
     expect(result.current.kbs).toEqual([]);
     unmount();
   });
@@ -74,7 +89,9 @@ describe('useKBDiscovery', () => {
       { kind: 'managed', kbs: [KB] },
     );
 
-    const { result, unmount } = renderHook(() => useKBDiscovery({ transport, intervalMs: 20 }));
+    const { result, unmount } = renderHook(() =>
+      useKBDiscovery({ transport, intervalMs: 20 }),
+    );
 
     await waitFor(() => {
       expect(result.current.kbs).toEqual([KB]);
@@ -85,7 +102,9 @@ describe('useKBDiscovery', () => {
   it('is inert while enabled is false — the transport is never read', async () => {
     const transport = scriptedTransport({ kind: 'managed', kbs: [KB] });
 
-    const { result, unmount } = renderHook(() => useKBDiscovery({ transport, enabled: false, intervalMs: 20 }));
+    const { result, unmount } = renderHook(() =>
+      useKBDiscovery({ transport, enabled: false, intervalMs: 20 }),
+    );
 
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(transport.reads()).toBe(0);
@@ -98,7 +117,8 @@ describe('useKBDiscovery', () => {
     const transport = scriptedTransport({ kind: 'managed', kbs: [KB] });
 
     const { result, rerender, unmount } = renderHook(
-      ({ enabled }: { enabled: boolean }) => useKBDiscovery({ transport, enabled, intervalMs: 20 }),
+      ({ enabled }: { enabled: boolean }) =>
+        useKBDiscovery({ transport, enabled, intervalMs: 20 }),
       { initialProps: { enabled: true } },
     );
 
@@ -116,7 +136,9 @@ describe('useKBDiscovery', () => {
   it('pauses on document hidden and resumes (same transport) on visible', async () => {
     const transport = scriptedTransport({ kind: 'managed', kbs: [KB] });
 
-    const { result, unmount } = renderHook(() => useKBDiscovery({ transport, intervalMs: 20 }));
+    const { result, unmount } = renderHook(() =>
+      useKBDiscovery({ transport, intervalMs: 20 }),
+    );
 
     await waitFor(() => {
       expect(result.current.state?.kind).toBe('managed');
@@ -139,7 +161,9 @@ describe('useKBDiscovery', () => {
   it('stops reading after unmount', async () => {
     const transport = scriptedTransport({ kind: 'managed', kbs: [KB] });
 
-    const { result, unmount } = renderHook(() => useKBDiscovery({ transport, intervalMs: 20 }));
+    const { result, unmount } = renderHook(() =>
+      useKBDiscovery({ transport, intervalMs: 20 }),
+    );
 
     await waitFor(() => {
       expect(result.current.state?.kind).toBe('managed');

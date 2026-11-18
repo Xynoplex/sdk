@@ -53,27 +53,47 @@ vi.mock('../DelegateSection', () => ({
 }));
 
 const NINE_TYPES = [
-  'Author', 'Concept', 'Date', 'Event', 'Location',
-  'Organization', 'Person', 'Product', 'Technology',
+  'Author',
+  'Concept',
+  'Date',
+  'Event',
+  'Location',
+  'Organization',
+  'Person',
+  'Product',
+  'Technology',
 ];
 
-const MockLink: React.FC<{ href?: string; children?: React.ReactNode }> = ({ children }) => <>{children}</>;
-const mockRoutes: RouteBuilder = { resourceDetail: (id: string) => `/resource/${id}` };
+const MockLink: React.FC<{ href?: string; children?: React.ReactNode }> = ({
+  children,
+}) => <>{children}</>;
+const mockRoutes: RouteBuilder = {
+  resourceDetail: (id: string) => `/resource/${id}`,
+};
 
 /**
  * Thin harness: subscribes to a BehaviorSubject via useObservable (the
  * same hook ResourceViewerPage uses for vm.entityTypes$) and forwards
  * its value into ReferencesPanel as `allEntityTypes`.
  */
-function ObservableHarness({ source$, session }: { source$: BehaviorSubject<string[]>; session: XynologSession | null }) {
+function ObservableHarness({
+  source$,
+  session,
+}: {
+  source$: BehaviorSubject<string[]>;
+  session: XynologSession | null;
+}) {
   const entityTypes = useObservable(source$) ?? [];
   return (
-    <ReferencesPanel session={session} mark={undefined}
+    <ReferencesPanel
+      session={session}
+      mark={undefined}
       resourceId={resourceId('res-1')}
       annotations={[]}
       isDelegating={false}
       progress={null}
-      jobId={null} cancelled={false}
+      jobId={null}
+      cancelled={false}
       annotateMode={true}
       Link={MockLink}
       routes={mockRoutes}
@@ -98,11 +118,14 @@ const renderWithBus = (ui: (session: XynologSession) => React.ReactElement) => {
 describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPanel chips', () => {
   it('an observable seeded with [9 strings] renders 9 pending-reference chips', async () => {
     const source$ = new BehaviorSubject<string[]>(NINE_TYPES);
-    renderWithBus((session) => <ObservableHarness source$={source$} session={session} />);
+    renderWithBus((session) => (
+      <ObservableHarness source$={source$} session={session} />
+    ));
 
     // Wait for useEffect in useObservable to run and commit the value.
-    const chips = await screen.findAllByRole('button', { name: (_, el) =>
-      el.classList.contains('xynolog-tag-selector__item') ?? false,
+    const chips = await screen.findAllByRole('button', {
+      name: (_, el) =>
+        el.classList.contains('xynolog-tag-selector__item') ?? false,
     });
     expect(chips).toHaveLength(NINE_TYPES.length);
   });
@@ -112,10 +135,14 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
     // to []) first, then the 9-string array once fetch resolves. The
     // prop chain must survive this transition.
     const source$ = new BehaviorSubject<string[]>([]);
-    renderWithBus((session) => <ObservableHarness source$={source$} session={session} />);
+    renderWithBus((session) => (
+      <ObservableHarness source$={source$} session={session} />
+    ));
 
     // Initially: no chips (the gate is allEntityTypes.length > 0).
-    expect(document.querySelectorAll('.xynolog-tag-selector__item').length).toBe(0);
+    expect(
+      document.querySelectorAll('.xynolog-tag-selector__item').length,
+    ).toBe(0);
 
     await act(async () => {
       source$.next(NINE_TYPES);
@@ -123,7 +150,9 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
       await new Promise((r) => setTimeout(r, 0));
     });
 
-    expect(document.querySelectorAll('.xynolog-tag-selector__item').length).toBe(NINE_TYPES.length);
+    expect(
+      document.querySelectorAll('.xynolog-tag-selector__item').length,
+    ).toBe(NINE_TYPES.length);
   });
 
   it('[9 strings] with duplicate emissions (simulating SSE-duplicate deliveries) renders 9 chips', async () => {
@@ -131,7 +160,9 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
     // once: same data, but multiple BehaviorSubject writes. Must not clobber
     // the render.
     const source$ = new BehaviorSubject<string[]>([]);
-    renderWithBus((session) => <ObservableHarness source$={source$} session={session} />);
+    renderWithBus((session) => (
+      <ObservableHarness source$={source$} session={session} />
+    ));
 
     await act(async () => {
       source$.next(NINE_TYPES);
@@ -140,7 +171,9 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
       await new Promise((r) => setTimeout(r, 0));
     });
 
-    expect(document.querySelectorAll('.xynolog-tag-selector__item').length).toBe(NINE_TYPES.length);
+    expect(
+      document.querySelectorAll('.xynolog-tag-selector__item').length,
+    ).toBe(NINE_TYPES.length);
   });
 
   it('control: [] renders "No entity types available"', () => {
@@ -148,7 +181,9 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
     // message. Guards against the tests above passing trivially because of
     // a selector bug.
     const source$ = new BehaviorSubject<string[]>([]);
-    renderWithBus((session) => <ObservableHarness source$={source$} session={session} />);
+    renderWithBus((session) => (
+      <ObservableHarness source$={source$} session={session} />
+    ));
 
     // There are two such text nodes in the panel (pending prompt + delegate
     // section), but both correspond to the same allEntityTypes=[] state.

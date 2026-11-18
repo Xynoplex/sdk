@@ -26,15 +26,36 @@ import { isReady } from '../../cache';
 import { renewKept } from '../../index';
 import { XynologSession } from '../xynolog-session';
 import { MemorySignIn } from '../sign-in-kept';
-import { cacheKey, getStoredSession, kbGatewayUrl, keptIn, lastEventIdKey, personKey, setStoredSession } from '../storage';
+import {
+  cacheKey,
+  getStoredSession,
+  kbGatewayUrl,
+  keptIn,
+  lastEventIdKey,
+  personKey,
+  setStoredSession,
+} from '../storage';
 import { fakeGateway, refuses, renews } from './fake-gateway';
-import { TestStorage, UNREADABLE, UnreadableSignIn, freshJwt, storageKey, testSession, TEST_TOKEN_ENDPOINT } from './test-storage-helpers';
+import {
+  TestStorage,
+  UNREADABLE,
+  UnreadableSignIn,
+  freshJwt,
+  storageKey,
+  testSession,
+  TEST_TOKEN_ENDPOINT,
+} from './test-storage-helpers';
 
 const KB = {
   id: 'kb-factory',
   label: 'Factory KB',
   did: 'did:web:example.github.io:test-kb',
-  endpoint: { kind: 'http' as const, host: 'localhost', port: 4000, protocol: 'http' as const },
+  endpoint: {
+    kind: 'http' as const,
+    host: 'localhost',
+    port: 4000,
+    protocol: 'http' as const,
+  },
 };
 
 let storage: TestStorage;
@@ -45,15 +66,30 @@ const ENDED = 'the stream ended';
 /** The code of each error `session` says on its errors stream from now on, and `ENDED` once the stream ends. */
 function saidBy(session: XynologSession): string[] {
   const said: string[] = [];
-  session.errors$.subscribe({ next: (error) => said.push(error.code), complete: () => said.push(ENDED) });
+  session.errors$.subscribe({
+    next: (error) => said.push(error.code),
+    complete: () => said.push(ENDED),
+  });
   return said;
 }
 
 /** The name of the resource `id`, as `session`'s client reads it. */
 const nameOf = (session: XynologSession, id: string): Promise<string> =>
-  firstValueFrom(session.client.browse.resource(resourceId(id)).pipe(filter(isReady), map((state) => state.value.name), take(1)));
+  firstValueFrom(
+    session.client.browse.resource(resourceId(id)).pipe(
+      filter(isReady),
+      map((state) => state.value.name),
+      take(1),
+    ),
+  );
 
-const JO = { did: 'did:web:example.org:users:jo', email: 'jo@example.org', name: 'Jo', image: null, domain: 'example.org' };
+const JO = {
+  did: 'did:web:example.org:users:jo',
+  email: 'jo@example.org',
+  name: 'Jo',
+  image: null,
+  domain: 'example.org',
+};
 
 beforeEach(() => {
   storage = new TestStorage();
@@ -65,7 +101,11 @@ afterEach(() => {
 
 describe('XynologSession.fromHttp', () => {
   test('what it gives closes the client it was built with, then ends the session', async () => {
-    const opened = XynologSession.fromHttp({ kb: KB, kept: new MemorySignIn(), baseUrl: 'http://test.local' });
+    const opened = XynologSession.fromHttp({
+      kb: KB,
+      kept: new MemorySignIn(),
+      baseUrl: 'http://test.local',
+    });
     await opened.session.ready;
     const { client } = opened.session;
     const close = client.dispose.bind(client);
@@ -117,19 +157,25 @@ describe('XynologSession.fromHttp', () => {
 
   test('renews a refused token before retrying the request', async () => {
     const requests: string[] = [];
-    const fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
-      const headers = input instanceof Request ? input.headers : new Headers(init?.headers);
-      const token = (headers.get('authorization') ?? '').replace(/^Bearer /, '');
-      requests.push(token);
-      if (token === 'old-token') return new Response(null, { status: 401 });
-      return Response.json({
-        did: 'did:web:example.org:users:alice',
-        email: 'alice@example.org',
-        name: 'Alice',
-        image: null,
-        domain: 'example.org',
-      });
-    });
+    const fetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) => {
+        const headers =
+          input instanceof Request ? input.headers : new Headers(init?.headers);
+        const token = (headers.get('authorization') ?? '').replace(
+          /^Bearer /,
+          '',
+        );
+        requests.push(token);
+        if (token === 'old-token') return new Response(null, { status: 401 });
+        return Response.json({
+          did: 'did:web:example.org:users:alice',
+          email: 'alice@example.org',
+          name: 'Alice',
+          image: null,
+          domain: 'example.org',
+        });
+      },
+    );
     const refresh = vi.fn(async () => 'new-token');
     const opened = XynologSession.fromHttp({
       kb: KB,
@@ -142,7 +188,9 @@ describe('XynologSession.fromHttp', () => {
 
     try {
       await opened.session.ready;
-      await expect(opened.session.client.auth!.me()).resolves.toMatchObject({ name: 'Alice' });
+      await expect(opened.session.client.auth!.me()).resolves.toMatchObject({
+        name: 'Alice',
+      });
       expect(requests).toEqual(['old-token', 'new-token']);
       expect(refresh).toHaveBeenCalledOnce();
       expect(opened.session.token$.getValue()).toBe('new-token');
@@ -180,7 +228,11 @@ describe('XynologSession.fromHttp', () => {
 
   test('says on one errors stream what its transport failed at and what went wrong with its sign-in, each once, until it ends', async () => {
     const token = freshJwt();
-    const gateway = fakeGateway({ whoIs: async () => new Response(null, { status: 403 }), issuer: renews, resourceName: 'any' });
+    const gateway = fakeGateway({
+      whoIs: async () => new Response(null, { status: 403 }),
+      issuer: renews,
+      resourceName: 'any',
+    });
     const opened = XynologSession.fromHttp({
       kb: KB,
       kept: new MemorySignIn(testSession(token, 'refresh-tok')),
@@ -195,7 +247,9 @@ describe('XynologSession.fromHttp', () => {
     const said = saidBy(opened.session);
     try {
       await opened.session.ready;
-      await expect(opened.session.client.auth!.me()).rejects.toMatchObject({ code: 'forbidden' });
+      await expect(opened.session.client.auth!.me()).rejects.toMatchObject({
+        code: 'forbidden',
+      });
       await expect(opened.session.refresh(token)).resolves.toBeNull();
     } finally {
       opened.dispose();
@@ -207,15 +261,28 @@ describe('XynologSession.fromHttp', () => {
 });
 
 function issuerReply(json: unknown, status = 200): Response {
-  return { ok: status < 300, status, json: async () => json } as unknown as Response;
+  return {
+    ok: status < 300,
+    status,
+    json: async () => json,
+  } as unknown as Response;
 }
 
 /**
  * The runtime's `fetch` as a test stubs it: the gateway says who a token is,
  * jo, and `issuer` answers every other request.
  */
-const gatewayOr = (issuer: () => Response) => async (input: string | URL | Request, _init?: RequestInit): Promise<Response> =>
-  ((input instanceof Request ? input.url : String(input)).endsWith('/api/users/me') ? Response.json(JO) : issuer());
+const gatewayOr =
+  (issuer: () => Response) =>
+  async (
+    input: string | URL | Request,
+    _init?: RequestInit,
+  ): Promise<Response> =>
+    (input instanceof Request ? input.url : String(input)).endsWith(
+      '/api/users/me',
+    )
+      ? Response.json(JO)
+      : issuer();
 
 /** A sign-in kept in memory on which no person can be recorded: recording one throws. */
 class UnrecordableSignIn extends MemorySignIn {
@@ -241,7 +308,10 @@ class RefusingStorage extends TestStorage {
     super.set(key, value);
   }
 
-  override update(key: string, change: (stored: string | null) => string | null): void {
+  override update(
+    key: string,
+    change: (stored: string | null) => string | null,
+  ): void {
     this.refuse(key);
     super.update(key, change);
   }
@@ -261,9 +331,17 @@ describe('XynologSession.fromKept', () => {
   test('starts with the access token the kept sign-in holds, and is ready', async () => {
     const accessJwt = freshJwt();
     const kept = new MemorySignIn(testSession(accessJwt, 'refresh-tok'));
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'kept' });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: renews,
+      resourceName: 'kept',
+    });
 
-    const opened = await XynologSession.fromKept({ kb: KB, kept, fetch: gateway.fetch });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      fetch: gateway.fetch,
+    });
 
     try {
       expect(opened.session.token$.getValue()).toBe(accessJwt);
@@ -275,7 +353,10 @@ describe('XynologSession.fromKept', () => {
   });
 
   test('with nothing kept, the session is signed out', async () => {
-    const opened = await XynologSession.fromKept({ kb: KB, kept: new MemorySignIn() });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept: new MemorySignIn(),
+    });
 
     try {
       expect(opened.session.token$.getValue()).toBeNull();
@@ -287,9 +368,16 @@ describe('XynologSession.fromKept', () => {
 
   test('renews at the issuer the kept sign-in names, with its refresh token, and keeps the renewal where the sign-in is kept', async () => {
     const newAccess = freshJwt();
-    const fetchMock = vi.fn(gatewayOr(() => issuerReply({ access_token: newAccess, refresh_token: 'refresh-2' })));
+    const fetchMock = vi.fn(
+      gatewayOr(() =>
+        issuerReply({ access_token: newAccess, refresh_token: 'refresh-2' }),
+      ),
+    );
     vi.stubGlobal('fetch', fetchMock);
-    const kept = new MemorySignIn({ ...testSession(freshJwt(), 'refresh-tok'), personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I' });
+    const kept = new MemorySignIn({
+      ...testSession(freshJwt(), 'refresh-tok'),
+      personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I',
+    });
 
     const opened = await XynologSession.fromKept({ kb: KB, kept });
     const { session } = opened;
@@ -298,13 +386,21 @@ describe('XynologSession.fromKept', () => {
       expect(await session.refresh(session.token$.getValue())).toBe(newAccess);
       expect(session.token$.getValue()).toBe(newAccess);
       // The live transport's event stream also fetches; only the issuer call matters here.
-      const tokenCall = fetchMock.mock.calls.find(([url]) => url === TEST_TOKEN_ENDPOINT) as unknown as [string, { body: URLSearchParams }] | undefined;
+      const tokenCall = fetchMock.mock.calls.find(
+        ([url]) => url === TEST_TOKEN_ENDPOINT,
+      ) as unknown as [string, { body: URLSearchParams }] | undefined;
       expect(tokenCall).toBeDefined();
       expect(Object.fromEntries(tokenCall![1].body.entries())).toEqual({
-        grant_type: 'refresh_token', refresh_token: 'refresh-tok', client_id: 'xynolog-browser',
+        grant_type: 'refresh_token',
+        refresh_token: 'refresh-tok',
+        client_id: 'xynolog-browser',
       });
       // The rotation is kept, and the person with it: the next renewal starts from the new token.
-      expect(kept.held()).toMatchObject({ access: newAccess, refresh: 'refresh-2', personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I' });
+      expect(kept.held()).toMatchObject({
+        access: newAccess,
+        refresh: 'refresh-2',
+        personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I',
+      });
     } finally {
       opened.dispose();
     }
@@ -312,29 +408,48 @@ describe('XynologSession.fromKept', () => {
 
   test('renewals asked for together are one request of the issuer', async () => {
     const newAccess = freshJwt();
-    const fetchMock = vi.fn(gatewayOr(() => issuerReply({ access_token: newAccess, refresh_token: 'refresh-2' })));
+    const fetchMock = vi.fn(
+      gatewayOr(() =>
+        issuerReply({ access_token: newAccess, refresh_token: 'refresh-2' }),
+      ),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
-    const opened = await XynologSession.fromKept({ kb: KB, kept: new MemorySignIn(testSession(freshJwt(), 'refresh-tok')) });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept: new MemorySignIn(testSession(freshJwt(), 'refresh-tok')),
+    });
     const { session } = opened;
 
     try {
       // A stream refused and a request refused at the same moment each ask.
       // An issuer that rotates refresh tokens refuses the second grant.
-      const renewed = await Promise.all([session.refresh(session.token$.getValue()), session.refresh(session.token$.getValue())]);
+      const renewed = await Promise.all([
+        session.refresh(session.token$.getValue()),
+        session.refresh(session.token$.getValue()),
+      ]);
       expect(renewed).toEqual([newAccess, newAccess]);
-      expect(fetchMock.mock.calls.filter(([url]) => url === TEST_TOKEN_ENDPOINT)).toHaveLength(1);
+      expect(
+        fetchMock.mock.calls.filter(([url]) => url === TEST_TOKEN_ENDPOINT),
+      ).toHaveLength(1);
     } finally {
       opened.dispose();
     }
   });
 
   test('a renewal the issuer refuses ends the session, and the kept sign-in is forgotten', async () => {
-    vi.stubGlobal('fetch', vi.fn(gatewayOr(() => issuerReply({ error: 'invalid_grant' }, 400))));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(gatewayOr(() => issuerReply({ error: 'invalid_grant' }, 400))),
+    );
     const kept = new MemorySignIn(testSession(freshJwt(), 'refresh-tok'));
     const onAuthFailed = vi.fn();
 
-    const opened = await XynologSession.fromKept({ kb: KB, kept, onAuthFailed });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      onAuthFailed,
+    });
     const { session } = opened;
 
     try {
@@ -349,21 +464,34 @@ describe('XynologSession.fromKept', () => {
 
   test('at its start, an expired kept token is renewed, and the renewal kept', async () => {
     const newAccess = freshJwt();
-    vi.stubGlobal('fetch', vi.fn(gatewayOr(() => issuerReply({ access_token: newAccess, refresh_token: 'refresh-2' }))));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        gatewayOr(() =>
+          issuerReply({ access_token: newAccess, refresh_token: 'refresh-2' }),
+        ),
+      ),
+    );
     const kept = new MemorySignIn(testSession(freshJwt(-60), 'refresh-tok'));
 
     const opened = await XynologSession.fromKept({ kb: KB, kept });
 
     try {
       expect(opened.session.token$.getValue()).toBe(newAccess);
-      expect(kept.held()).toMatchObject({ access: newAccess, refresh: 'refresh-2' });
+      expect(kept.held()).toMatchObject({
+        access: newAccess,
+        refresh: 'refresh-2',
+      });
     } finally {
       opened.dispose();
     }
   });
 
   test('at its start, an expired kept token the issuer will not renew is forgotten', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => issuerReply({ error: 'invalid_grant' }, 400)));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => issuerReply({ error: 'invalid_grant' }, 400)),
+    );
     const kept = new MemorySignIn(testSession(freshJwt(-60), 'refresh-tok'));
 
     const opened = await XynologSession.fromKept({ kb: KB, kept });
@@ -377,15 +505,37 @@ describe('XynologSession.fromKept', () => {
   });
 
   test("over a storage, keeps its persisted queries' documents there, for the person the kept sign-in names", async () => {
-    const jo = { did: 'did:web:example.org:users:jo', email: 'jo@example.org', name: 'Jo', image: null, domain: 'example.org' };
+    const jo = {
+      did: 'did:web:example.org:users:jo',
+      email: 'jo@example.org',
+      name: 'Jo',
+      image: null,
+      domain: 'example.org',
+    };
     const person = personKey(jo.did);
-    const kept = new MemorySignIn({ ...testSession(freshJwt(), 'refresh-tok'), personKey: person });
-    const gateway = fakeGateway({ whoIs: async () => Response.json(jo), issuer: renews, resourceName: 'kept' });
+    const kept = new MemorySignIn({
+      ...testSession(freshJwt(), 'refresh-tok'),
+      personKey: person,
+    });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(jo),
+      issuer: renews,
+      resourceName: 'kept',
+    });
 
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage, fetch: gateway.fetch });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage,
+      fetch: gateway.fetch,
+    });
     try {
       const name = await firstValueFrom(
-        opened.session.client.browse.resource(resourceId('res-1')).pipe(filter(isReady), map((state) => state.value.name), take(1)),
+        opened.session.client.browse.resource(resourceId('res-1')).pipe(
+          filter(isReady),
+          map((state) => state.value.name),
+          take(1),
+        ),
       );
       expect(name).toBe('kept');
     } finally {
@@ -395,22 +545,50 @@ describe('XynologSession.fromKept', () => {
     }
 
     const document = storage.get(cacheKey(KB.id, person, 'resource'));
-    if (document === null) throw new Error("The resource's document was not kept in the storage");
-    const { entries } = JSON.parse(document) as { entries: [string, { name: string }, number][] };
-    expect(entries.map(([key, value]) => [key, value.name])).toEqual([['res-1', 'kept']]);
+    if (document === null)
+      throw new Error("The resource's document was not kept in the storage");
+    const { entries } = JSON.parse(document) as {
+      entries: [string, { name: string }, number][];
+    };
+    expect(entries.map(([key, value]) => [key, value.name])).toEqual([
+      ['res-1', 'kept'],
+    ]);
   });
 
   test('over a storage, a kept sign-in that names nobody keeps for the person the gateway names, once validate asks it', async () => {
-    const jo = { did: 'did:web:example.org:users:jo', email: 'jo@example.org', name: 'Jo', image: null, domain: 'example.org' };
+    const jo = {
+      did: 'did:web:example.org:users:jo',
+      email: 'jo@example.org',
+      name: 'Jo',
+      image: null,
+      domain: 'example.org',
+    };
     const person = personKey(jo.did);
     const kept = new MemorySignIn(testSession(freshJwt(), 'refresh-tok'));
-    const gateway = fakeGateway({ whoIs: async () => Response.json(jo), issuer: renews, resourceName: 'kept' });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(jo),
+      issuer: renews,
+      resourceName: 'kept',
+    });
 
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage, fetch: gateway.fetch, validate: true });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage,
+      fetch: gateway.fetch,
+      validate: true,
+    });
     try {
-      expect(kept.held()?.personKey, "the person's key is recorded on the kept sign-in").toBe(person);
+      expect(
+        kept.held()?.personKey,
+        "the person's key is recorded on the kept sign-in",
+      ).toBe(person);
       const name = await firstValueFrom(
-        opened.session.client.browse.resource(resourceId('res-1')).pipe(filter(isReady), map((state) => state.value.name), take(1)),
+        opened.session.client.browse.resource(resourceId('res-1')).pipe(
+          filter(isReady),
+          map((state) => state.value.name),
+          take(1),
+        ),
       );
       expect(name).toBe('kept');
     } finally {
@@ -420,13 +598,22 @@ describe('XynologSession.fromKept', () => {
     }
 
     const document = storage.get(cacheKey(KB.id, person, 'resource'));
-    if (document === null) throw new Error("The resource's document was not kept under the person the gateway named");
-    const { entries } = JSON.parse(document) as { entries: [string, { name: string }, number][] };
-    expect(entries.map(([key, value]) => [key, value.name])).toEqual([['res-1', 'kept']]);
+    if (document === null)
+      throw new Error(
+        "The resource's document was not kept under the person the gateway named",
+      );
+    const { entries } = JSON.parse(document) as {
+      entries: [string, { name: string }, number][];
+    };
+    expect(entries.map(([key, value]) => [key, value.name])).toEqual([
+      ['res-1', 'kept'],
+    ]);
   });
 
   test('with validate, asks the gateway who the kept token is, through the fetch it is given, and is ready knowing who', async () => {
-    const runtimes = vi.fn(async () => issuerReply({ error: 'not this fetch' }, 400));
+    const runtimes = vi.fn(async () =>
+      issuerReply({ error: 'not this fetch' }, 400),
+    );
     vi.stubGlobal('fetch', runtimes);
     let asked = 0;
     const gateway = fakeGateway({
@@ -446,7 +633,10 @@ describe('XynologSession.fromKept', () => {
     });
     try {
       expect(asked).toBe(1);
-      expect(opened.session.user$.getValue()).toMatchObject({ did: JO.did, name: 'Jo' });
+      expect(opened.session.user$.getValue()).toMatchObject({
+        did: JO.did,
+        name: 'Jo',
+      });
       expect(runtimes).not.toHaveBeenCalled();
     } finally {
       opened.dispose();
@@ -498,7 +688,10 @@ describe('XynologSession.fromKept', () => {
     });
     try {
       expect(asked).toBe(1);
-      expect(opened.session.user$.getValue()).toMatchObject({ did: JO.did, name: 'Jo' });
+      expect(opened.session.user$.getValue()).toMatchObject({
+        did: JO.did,
+        name: 'Jo',
+      });
     } finally {
       opened.dispose();
       gateway.close();
@@ -506,7 +699,11 @@ describe('XynologSession.fromKept', () => {
   });
 
   test('says a renewal the issuer refuses on its errors stream, once, and tells onAuthFailed why it ended', async () => {
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: refuses, resourceName: 'kept' });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: refuses,
+      resourceName: 'kept',
+    });
     const onAuthFailed = vi.fn();
     const opened = await XynologSession.fromKept({
       kb: KB,
@@ -516,7 +713,9 @@ describe('XynologSession.fromKept', () => {
     });
     const said = saidBy(opened.session);
     try {
-      expect(await opened.session.refresh(opened.session.token$.getValue())).toBeNull();
+      expect(
+        await opened.session.refresh(opened.session.token$.getValue()),
+      ).toBeNull();
       expect(onAuthFailed).toHaveBeenCalledWith('expired');
     } finally {
       opened.dispose();
@@ -529,18 +728,39 @@ describe('XynologSession.fromKept', () => {
   test.each([
     { where: 'without a storage', withStorage: false },
     { where: 'over a storage', withStorage: true },
-  ])('a kept sign-in that cannot be read as the session starts gives its caller why, and no session ($where)', async ({ withStorage }) => {
-    const kept = new UnreadableSignIn(testSession(freshJwt(), 'refresh-tok'));
-    kept.unreadable = true;
+  ])(
+    'a kept sign-in that cannot be read as the session starts gives its caller why, and no session ($where)',
+    async ({ withStorage }) => {
+      const kept = new UnreadableSignIn(testSession(freshJwt(), 'refresh-tok'));
+      kept.unreadable = true;
 
-    await expect(XynologSession.fromKept({ kb: KB, kept, ...(withStorage ? { storage } : {}) })).rejects.toThrow(UNREADABLE);
-  });
+      await expect(
+        XynologSession.fromKept({
+          kb: KB,
+          kept,
+          ...(withStorage ? { storage } : {}),
+        }),
+      ).rejects.toThrow(UNREADABLE);
+    },
+  );
 
   test("over a storage, a kept sign-in that cannot be read before a save says session.keep-failed once on the session's errors, and the client keeps nothing more", async () => {
     const person = personKey(JO.did);
-    const kept = new UnreadableSignIn({ ...testSession(freshJwt(), 'refresh-tok'), personKey: person });
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'kept' });
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage, fetch: gateway.fetch });
+    const kept = new UnreadableSignIn({
+      ...testSession(freshJwt(), 'refresh-tok'),
+      personKey: person,
+    });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: renews,
+      resourceName: 'kept',
+    });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage,
+      fetch: gateway.fetch,
+    });
     const said = saidBy(opened.session);
     try {
       kept.unreadable = true;
@@ -561,9 +781,21 @@ describe('XynologSession.fromKept', () => {
 
   test("over a storage, a closing save that cannot read the kept sign-in says one session.keep-failed on the session's errors, and the stream then ends", async () => {
     const person = personKey(JO.did);
-    const kept = new UnreadableSignIn({ ...testSession(freshJwt(), 'refresh-tok'), personKey: person });
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'kept' });
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage, fetch: gateway.fetch });
+    const kept = new UnreadableSignIn({
+      ...testSession(freshJwt(), 'refresh-tok'),
+      personKey: person,
+    });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: renews,
+      resourceName: 'kept',
+    });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage,
+      fetch: gateway.fetch,
+    });
     const said = saidBy(opened.session);
     try {
       // A value the client holds, whose save it owes as it closes: well inside the save's debounce.
@@ -583,9 +815,21 @@ describe('XynologSession.fromKept', () => {
   test("over a storage, a write the storage refuses says one session.save-refused on the session's errors, with what the storage said, and the save stays owed: the closing makes it", async () => {
     const person = personKey(JO.did);
     const refusing = new RefusingStorage(cacheKey(KB.id, person, 'resource'));
-    const kept = new MemorySignIn({ ...testSession(freshJwt(), 'refresh-tok'), personKey: person });
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'kept' });
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage: refusing, fetch: gateway.fetch });
+    const kept = new MemorySignIn({
+      ...testSession(freshJwt(), 'refresh-tok'),
+      personKey: person,
+    });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: renews,
+      resourceName: 'kept',
+    });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage: refusing,
+      fetch: gateway.fetch,
+    });
     const said = saidBy(opened.session);
     const words: string[] = [];
     opened.session.errors$.subscribe((error) => words.push(error.message));
@@ -612,9 +856,21 @@ describe('XynologSession.fromKept', () => {
   test("over a storage, a closing write the storage still refuses says one more session.save-refused on the session's errors, and the stream then ends", async () => {
     const person = personKey(JO.did);
     const refusing = new RefusingStorage(cacheKey(KB.id, person, 'resource'));
-    const kept = new MemorySignIn({ ...testSession(freshJwt(), 'refresh-tok'), personKey: person });
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'kept' });
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage: refusing, fetch: gateway.fetch });
+    const kept = new MemorySignIn({
+      ...testSession(freshJwt(), 'refresh-tok'),
+      personKey: person,
+    });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: renews,
+      resourceName: 'kept',
+    });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage: refusing,
+      fetch: gateway.fetch,
+    });
     const said = saidBy(opened.session);
     try {
       refusing.refusing = true;
@@ -630,7 +886,11 @@ describe('XynologSession.fromKept', () => {
     // What the closing could not write is lost.
     expect(refusing.refusals).toBe(2);
     expect(refusing.get(cacheKey(KB.id, person, 'resource'))).toBeNull();
-    expect(said).toEqual(['session.save-refused', 'session.save-refused', ENDED]);
+    expect(said).toEqual([
+      'session.save-refused',
+      'session.save-refused',
+      ENDED,
+    ]);
   });
 
   test("over a storage, a sign-in that cannot record the person the gateway named says session.keep-failed once on the session's errors, keeps nothing, and the session goes on", async () => {
@@ -645,7 +905,13 @@ describe('XynologSession.fromKept', () => {
       issuer: renews,
       resourceName: 'fresh',
     });
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage, fetch: gateway.fetch, validate: true });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage,
+      fetch: gateway.fetch,
+      validate: true,
+    });
     const said = saidBy(opened.session);
     // What the start said, it said before its caller could read the stream: whether the stream holds it is not this test's.
     const saidAtStart = said.length;
@@ -665,11 +931,23 @@ describe('XynologSession.fromKept', () => {
     expect(said.slice(saidAtStart)).toEqual(['session.keep-failed', ENDED]);
   });
 
-  test("over a storage, a sign-in that names its person but cannot record the person the gateway named says session.keep-failed once, the client keeping from the start writes nothing more, and the session goes on", async () => {
+  test('over a storage, a sign-in that names its person but cannot record the person the gateway named says session.keep-failed once, the client keeping from the start writes nothing more, and the session goes on', async () => {
     const person = personKey(JO.did);
-    const kept = new UnrecordableSignIn({ ...testSession(freshJwt(), 'refresh-tok'), personKey: person });
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'fresh' });
-    const opened = await XynologSession.fromKept({ kb: KB, kept, storage, fetch: gateway.fetch });
+    const kept = new UnrecordableSignIn({
+      ...testSession(freshJwt(), 'refresh-tok'),
+      personKey: person,
+    });
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: renews,
+      resourceName: 'fresh',
+    });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      storage,
+      fetch: gateway.fetch,
+    });
     // Its first reader: what the start said is kept for it.
     const said = saidBy(opened.session);
     try {
@@ -683,7 +961,10 @@ describe('XynologSession.fromKept', () => {
     }
 
     expect(kept.held()?.personKey).toBe(person);
-    for (const key of [lastEventIdKey(KB.id, person), ...PERSISTED_QUERIES.map((query) => cacheKey(KB.id, person, query))]) {
+    for (const key of [
+      lastEventIdKey(KB.id, person),
+      ...PERSISTED_QUERIES.map((query) => cacheKey(KB.id, person, query)),
+    ]) {
       expect(storage.get(key), key).toBeNull();
     }
     expect(said).toEqual(['session.keep-failed', ENDED]);
@@ -700,22 +981,42 @@ describe('XynologSession.signInDevice', () => {
 
   test('runs the device grant against the issuer the KB trusts and keeps the sign-in where it is told', async () => {
     vi.useFakeTimers();
-    vi.spyOn(HttpTransport.prototype, 'getProtectedResourceMetadata').mockResolvedValue({
-      resource: 'http://test.local', authorization_servers: [ISSUER], bearer_methods_supported: ['header'],
+    vi.spyOn(
+      HttpTransport.prototype,
+      'getProtectedResourceMetadata',
+    ).mockResolvedValue({
+      resource: 'http://test.local',
+      authorization_servers: [ISSUER],
+      bearer_methods_supported: ['header'],
     });
     const accessJwt = freshJwt();
-    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
-      if (url.endsWith('/.well-known/openid-configuration')) {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.endsWith('/.well-known/openid-configuration')) {
+          return issuerReply({
+            issuer: ISSUER,
+            authorization_endpoint: `${ISSUER}/auth`,
+            token_endpoint: `${ISSUER}/token`,
+            device_authorization_endpoint: `${ISSUER}/device`,
+            revocation_endpoint: `${ISSUER}/revoke`,
+          });
+        }
+        if (url === `${ISSUER}/device`) {
+          return issuerReply({
+            device_code: 'dev',
+            user_code: 'ABCD-EFGH',
+            verification_uri: `${ISSUER}/verify`,
+            expires_in: 600,
+            interval: 1,
+          });
+        }
         return issuerReply({
-          issuer: ISSUER, authorization_endpoint: `${ISSUER}/auth`, token_endpoint: `${ISSUER}/token`,
-          device_authorization_endpoint: `${ISSUER}/device`, revocation_endpoint: `${ISSUER}/revoke`,
+          access_token: accessJwt,
+          refresh_token: 'refresh-tok',
         });
-      }
-      if (url === `${ISSUER}/device`) {
-        return issuerReply({ device_code: 'dev', user_code: 'ABCD-EFGH', verification_uri: `${ISSUER}/verify`, expires_in: 600, interval: 1 });
-      }
-      return issuerReply({ access_token: accessJwt, refresh_token: 'refresh-tok' });
-    }));
+      }),
+    );
     const onCode = vi.fn();
     const kept = new MemorySignIn();
 
@@ -723,49 +1024,97 @@ describe('XynologSession.signInDevice', () => {
     await vi.advanceTimersByTimeAsync(1500);
     await pending;
 
-    expect(onCode).toHaveBeenCalledWith(expect.objectContaining({ userCode: 'ABCD-EFGH' }));
+    expect(onCode).toHaveBeenCalledWith(
+      expect.objectContaining({ userCode: 'ABCD-EFGH' }),
+    );
     expect(kept.held()).toEqual({
-      access: accessJwt, refresh: 'refresh-tok', clientId: 'xynolog-cli',
-      tokenEndpoint: `${ISSUER}/token`, revocationEndpoint: `${ISSUER}/revoke`,
+      access: accessJwt,
+      refresh: 'refresh-tok',
+      clientId: 'xynolog-cli',
+      tokenEndpoint: `${ISSUER}/token`,
+      revocationEndpoint: `${ISSUER}/revoke`,
     });
   });
 
-  test('signs in, and a session over what it kept asks the gateway and renews, through the fetch each is given, and nothing through the runtime\'s', async () => {
+  test("signs in, and a session over what it kept asks the gateway and renews, through the fetch each is given, and nothing through the runtime's", async () => {
     vi.useFakeTimers();
-    vi.spyOn(HttpTransport.prototype, 'getProtectedResourceMetadata').mockResolvedValue({
-      resource: 'http://test.local', authorization_servers: [ISSUER], bearer_methods_supported: ['header'],
+    vi.spyOn(
+      HttpTransport.prototype,
+      'getProtectedResourceMetadata',
+    ).mockResolvedValue({
+      resource: 'http://test.local',
+      authorization_servers: [ISSUER],
+      bearer_methods_supported: ['header'],
     });
-    const runtimes = vi.fn(async () => issuerReply({ error: 'not this fetch' }, 400));
+    const runtimes = vi.fn(async () =>
+      issuerReply({ error: 'not this fetch' }, 400),
+    );
     vi.stubGlobal('fetch', runtimes);
     const accessJwt = freshJwt();
-    const given = vi.fn(async (input: string | URL | Request, _init?: RequestInit): Promise<Response> => {
-      const url = input instanceof Request ? input.url : String(input);
-      if (url.endsWith('/.well-known/openid-configuration')) {
-        return issuerReply({
-          issuer: ISSUER, authorization_endpoint: `${ISSUER}/auth`, token_endpoint: `${ISSUER}/token`,
-          device_authorization_endpoint: `${ISSUER}/device`, revocation_endpoint: `${ISSUER}/revoke`,
-        });
-      }
-      if (url === `${ISSUER}/device`) {
-        return issuerReply({ device_code: 'dev', user_code: 'ABCD-EFGH', verification_uri: `${ISSUER}/verify`, expires_in: 600, interval: 1 });
-      }
-      if (url === `${ISSUER}/token`) return issuerReply({ access_token: accessJwt, refresh_token: 'refresh-tok' });
-      if (url.endsWith('/api/users/me')) return Response.json({ did: 'did:web:example.org:users:alice', email: null, name: 'Alice', image: null, domain: 'example.org' });
-      // The session's stream: held open, and saying nothing.
-      return new Promise<Response>(() => {});
-    });
+    const given = vi.fn(
+      async (
+        input: string | URL | Request,
+        _init?: RequestInit,
+      ): Promise<Response> => {
+        const url = input instanceof Request ? input.url : String(input);
+        if (url.endsWith('/.well-known/openid-configuration')) {
+          return issuerReply({
+            issuer: ISSUER,
+            authorization_endpoint: `${ISSUER}/auth`,
+            token_endpoint: `${ISSUER}/token`,
+            device_authorization_endpoint: `${ISSUER}/device`,
+            revocation_endpoint: `${ISSUER}/revoke`,
+          });
+        }
+        if (url === `${ISSUER}/device`) {
+          return issuerReply({
+            device_code: 'dev',
+            user_code: 'ABCD-EFGH',
+            verification_uri: `${ISSUER}/verify`,
+            expires_in: 600,
+            interval: 1,
+          });
+        }
+        if (url === `${ISSUER}/token`)
+          return issuerReply({
+            access_token: accessJwt,
+            refresh_token: 'refresh-tok',
+          });
+        if (url.endsWith('/api/users/me'))
+          return Response.json({
+            did: 'did:web:example.org:users:alice',
+            email: null,
+            name: 'Alice',
+            image: null,
+            domain: 'example.org',
+          });
+        // The session's stream: held open, and saying nothing.
+        return new Promise<Response>(() => {});
+      },
+    );
 
     const kept = new MemorySignIn();
-    const pending = XynologSession.signInDevice({ kb: KB, kept, onCode: () => {}, fetch: given });
+    const pending = XynologSession.signInDevice({
+      kb: KB,
+      kept,
+      onCode: () => {},
+      fetch: given,
+    });
     await vi.advanceTimersByTimeAsync(1500);
     await pending;
     vi.useRealTimers();
-    const opened = await XynologSession.fromKept({ kb: KB, kept, fetch: given });
+    const opened = await XynologSession.fromKept({
+      kb: KB,
+      kept,
+      fetch: given,
+    });
 
     try {
       await opened.session.client.auth!.me();
       await opened.session.refresh(opened.session.token$.getValue());
-      const asked = given.mock.calls.map(([input]) => (input instanceof Request ? input.url : String(input)));
+      const asked = given.mock.calls.map(([input]) =>
+        input instanceof Request ? input.url : String(input),
+      );
       expect(asked.filter((url) => !url.endsWith('/bus/subscribe'))).toEqual([
         `${ISSUER}/.well-known/openid-configuration`,
         `${ISSUER}/device`,
@@ -804,7 +1153,10 @@ describe('a new sign-in saved over a stored one', () => {
     for (const key of [...JOS, ...OTHERS]) storage.set(key, KEPT);
     if (signedIn === 'none') return;
     const old = testSession(freshJwt(), 'refresh-old');
-    storage.set(storageKey(KB.id), JSON.stringify(signedIn === 'named' ? { ...old, personKey: JO } : old));
+    storage.set(
+      storageKey(KB.id),
+      JSON.stringify(signedIn === 'named' ? { ...old, personKey: JO } : old),
+    );
   };
 
   describe('setStoredSession', () => {
@@ -819,15 +1171,19 @@ describe('a new sign-in saved over a stored one', () => {
       expect(getStoredSession(storage, KB.id)).toEqual(issued);
     });
 
-    test.each(['unnamed', 'none'] as const)('over %s: nothing is deleted', (signedIn) => {
-      seedOld(signedIn);
-      const issued = testSession(freshJwt(), 'refresh-new');
+    test.each(['unnamed', 'none'] as const)(
+      'over %s: nothing is deleted',
+      (signedIn) => {
+        seedOld(signedIn);
+        const issued = testSession(freshJwt(), 'refresh-new');
 
-      setStoredSession(storage, KB.id, issued);
+        setStoredSession(storage, KB.id, issued);
 
-      for (const key of [...JOS, ...OTHERS]) expect(storage.get(key), key).toBe(KEPT);
-      expect(getStoredSession(storage, KB.id)).toEqual(issued);
-    });
+        for (const key of [...JOS, ...OTHERS])
+          expect(storage.get(key), key).toBe(KEPT);
+        expect(getStoredSession(storage, KB.id)).toEqual(issued);
+      },
+    );
   });
 
   describe('a renewal', () => {
@@ -839,12 +1195,20 @@ describe('a new sign-in saved over a stored one', () => {
       seedOld('named');
       const held = getStoredSession(storage, KB.id);
       if (held === null) throw new Error('the sign-in was not stored');
-      vi.stubGlobal('fetch', vi.fn(async () => issuerReply({ access_token: freshJwt(), refresh_token: 'refresh-2' })));
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () =>
+          issuerReply({ access_token: freshJwt(), refresh_token: 'refresh-2' }),
+        ),
+      );
 
-      expect(await renewKept(keptIn(storage, KB.id), held.access)).not.toBeNull();
+      expect(
+        await renewKept(keptIn(storage, KB.id), held.access),
+      ).not.toBeNull();
 
       expect(getStoredSession(storage, KB.id)?.personKey).toBe(JO);
-      for (const key of [...JOS, ...OTHERS]) expect(storage.get(key), key).toBe(KEPT);
+      for (const key of [...JOS, ...OTHERS])
+        expect(storage.get(key), key).toBe(KEPT);
     });
   });
 });

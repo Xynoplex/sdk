@@ -27,16 +27,24 @@ export interface UploadProgressBarProps {
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-export function UploadProgressBar({ progress, label }: UploadProgressBarProps): React.ReactElement | null {
+export function UploadProgressBar({
+  progress,
+  label,
+}: UploadProgressBarProps): React.ReactElement | null {
   if (!progress) return null;
 
   if (progress.phase === 'started') {
     return (
-      <div className="xynolog-progress-wrapper" role="status" aria-live="polite">
+      <div
+        className="xynolog-progress-wrapper"
+        role="status"
+        aria-live="polite"
+      >
         <div className="xynolog-progress__label">
           <span>{label}: starting…</span>
         </div>
@@ -51,16 +59,30 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
     const indeterminate = progress.totalBytes <= 0;
     const percentage = indeterminate
       ? 0
-      : Math.min(100, Math.round((progress.bytesUploaded / progress.totalBytes) * 100));
+      : Math.min(
+          100,
+          Math.round((progress.bytesUploaded / progress.totalBytes) * 100),
+        );
     return (
-      <div className="xynolog-progress-wrapper" role="status" aria-live="polite">
+      <div
+        className="xynolog-progress-wrapper"
+        role="status"
+        aria-live="polite"
+      >
         <div className="xynolog-progress__label">
           {indeterminate ? (
-            <span>{label}: {formatBytes(progress.bytesUploaded)}…</span>
+            <span>
+              {label}: {formatBytes(progress.bytesUploaded)}…
+            </span>
           ) : (
             <>
-              <span>{label}: {percentage}%</span>
-              <span>{formatBytes(progress.bytesUploaded)} / {formatBytes(progress.totalBytes)}</span>
+              <span>
+                {label}: {percentage}%
+              </span>
+              <span>
+                {formatBytes(progress.bytesUploaded)} /{' '}
+                {formatBytes(progress.totalBytes)}
+              </span>
             </>
           )}
         </div>
@@ -86,8 +108,17 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
       <div className="xynolog-progress__label">
         <span>{label}: uploaded</span>
       </div>
-      <div className="xynolog-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
-        <div className="xynolog-progress__fill xynolog-progress__fill--success" style={{ width: '100%' }} />
+      <div
+        className="xynolog-progress"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={100}
+      >
+        <div
+          className="xynolog-progress__fill xynolog-progress__fill--success"
+          style={{ width: '100%' }}
+        />
       </div>
     </div>
   );

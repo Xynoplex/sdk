@@ -80,7 +80,9 @@ describe('createTestClient', () => {
     // The transport handed back is the FaultyTransport itself — its
     // accounting surface is the test's accounting surface.
     expect(transport.requestLog).toHaveLength(1);
-    expect(transport.requestLog[0]!.channel).toBe('browse:entity-types-requested');
+    expect(transport.requestLog[0]!.channel).toBe(
+      'browse:entity-types-requested',
+    );
 
     sub.unsubscribe();
     client.dispose();
@@ -89,7 +91,9 @@ describe('createTestClient', () => {
   it('refuses a read of an anchored text no test gave it, and asks nothing of the bus', async () => {
     const { client, transport } = createTestClient();
 
-    await expect(client.browse.resourceAnchoredText(resourceId('res-1'))).rejects.toThrow('no anchored text for res-1');
+    await expect(
+      client.browse.resourceAnchoredText(resourceId('res-1')),
+    ).rejects.toThrow('no anchored text for res-1');
     // A read of content: the double's content transport is asked, not the bus.
     expect(transport.requestLog).toHaveLength(0);
 

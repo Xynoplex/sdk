@@ -10,7 +10,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BehaviorSubject, of } from 'rxjs';
 import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
-import { createSearchPipeline, type SearchPipeline, type SearchState } from '../search-pipeline';
+import {
+  createSearchPipeline,
+  type SearchPipeline,
+  type SearchState,
+} from '../search-pipeline';
 
 describe('createSearchPipeline', () => {
   beforeEach(() => {
@@ -71,9 +75,13 @@ describe('SearchPipeline — StateUnit axioms', () => {
   it('satisfies the StateUnit axioms, over a search that never ends', () => {
     assertStateUnitAxioms<SearchPipeline<string>>({
       setup: () =>
-        createSearchPipeline<string>(() => new BehaviorSubject<string[] | undefined>(undefined).asObservable(), {
-          initialQuery: 'seed',
-        }),
+        createSearchPipeline<string>(
+          () =>
+            new BehaviorSubject<string[] | undefined>(undefined).asObservable(),
+          {
+            initialQuery: 'seed',
+          },
+        ),
       surfaces: (u) => [u.query$, u.state$],
       invocations: (u) => [() => u.setQuery('a'), () => u.setQuery('')],
     });

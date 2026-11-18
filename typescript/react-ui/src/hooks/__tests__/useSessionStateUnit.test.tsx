@@ -35,11 +35,14 @@ function makeSession(): XynologSession {
 describe('useSessionStateUnit', () => {
   it('constructs exactly once for a stable session across rerenders', async () => {
     const session = makeSession();
-    const factory = vi.fn(
-      (s: XynologSession): TestUnit => ({ ownerSessionId: s.id, dispose: vi.fn() }),
-    );
+    const factory = vi.fn((s: XynologSession): TestUnit => ({
+      ownerSessionId: s.id,
+      dispose: vi.fn(),
+    }));
 
-    const { result, rerender } = renderHook(() => useSessionStateUnit(session, factory));
+    const { result, rerender } = renderHook(() =>
+      useSessionStateUnit(session, factory),
+    );
 
     await waitFor(() => expect(result.current).toBeDefined());
     rerender();
@@ -57,17 +60,25 @@ describe('useSessionStateUnit', () => {
     const order: string[] = [];
     const factory = (s: XynologSession): TestUnit => {
       order.push(`create:${s.id}`);
-      return { ownerSessionId: s.id, dispose: () => order.push(`dispose:${s.id}`) };
+      return {
+        ownerSessionId: s.id,
+        dispose: () => order.push(`dispose:${s.id}`),
+      };
     };
 
     const { result, rerender } = renderHook(
-      ({ session }: { session: XynologSession }) => useSessionStateUnit(session, factory),
+      ({ session }: { session: XynologSession }) =>
+        useSessionStateUnit(session, factory),
       { initialProps: { session: sessionA } },
     );
-    await waitFor(() => expect(result.current?.ownerSessionId).toBe(sessionA.id));
+    await waitFor(() =>
+      expect(result.current?.ownerSessionId).toBe(sessionA.id),
+    );
 
     rerender({ session: sessionB });
-    await waitFor(() => expect(result.current?.ownerSessionId).toBe(sessionB.id));
+    await waitFor(() =>
+      expect(result.current?.ownerSessionId).toBe(sessionB.id),
+    );
 
     // The KB-switch ordering: teardown, then successor. Never overlap.
     expect(order).toEqual([
@@ -81,7 +92,10 @@ describe('useSessionStateUnit', () => {
     const session = makeSession();
     const dispose = vi.fn();
     const { result, unmount } = renderHook(() =>
-      useSessionStateUnit(session, (s): TestUnit => ({ ownerSessionId: s.id, dispose })),
+      useSessionStateUnit(session, (s): TestUnit => ({
+        ownerSessionId: s.id,
+        dispose,
+      })),
     );
     await waitFor(() => expect(result.current).toBeDefined());
 
@@ -90,9 +104,10 @@ describe('useSessionStateUnit', () => {
   });
 
   it('no session → no construction, and the return type says so', async () => {
-    const factory = vi.fn(
-      (s: XynologSession): TestUnit => ({ ownerSessionId: s.id, dispose: vi.fn() }),
-    );
+    const factory = vi.fn((s: XynologSession): TestUnit => ({
+      ownerSessionId: s.id,
+      dispose: vi.fn(),
+    }));
 
     const { result, rerender } = renderHook(
       ({ session }: { session: XynologSession | undefined }) =>
@@ -107,7 +122,9 @@ describe('useSessionStateUnit', () => {
     // Session arrives (activation completes) → the unit appears.
     const session = makeSession();
     rerender({ session });
-    await waitFor(() => expect(result.current?.ownerSessionId).toBe(session.id));
+    await waitFor(() =>
+      expect(result.current?.ownerSessionId).toBe(session.id),
+    );
     expect(factory).toHaveBeenCalledTimes(1);
   });
 
@@ -116,7 +133,10 @@ describe('useSessionStateUnit', () => {
     const dispose = vi.fn();
     const { result, rerender } = renderHook(
       ({ s }: { s: XynologSession | undefined }) =>
-        useSessionStateUnit(s, (live): TestUnit => ({ ownerSessionId: live.id, dispose })),
+        useSessionStateUnit(s, (live): TestUnit => ({
+          ownerSessionId: live.id,
+          dispose,
+        })),
       { initialProps: { s: session as XynologSession | undefined } },
     );
     await waitFor(() => expect(result.current).toBeDefined());

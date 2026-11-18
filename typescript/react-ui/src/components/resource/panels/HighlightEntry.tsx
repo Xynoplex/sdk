@@ -61,13 +61,17 @@ export function HighlightEntry({
       {/* Highlighted text */}
       {selectedText && (
         <div className="xynolog-annotation-entry__quote" data-type="highlight">
-          "{selectedText.substring(0, 200)}{selectedText.length > 200 ? '...' : ''}"
+          "{selectedText.substring(0, 200)}
+          {selectedText.length > 200 ? '...' : ''}"
         </div>
       )}
 
       {/* Metadata */}
       <div className="xynolog-annotation-entry__metadata">
-        {creatorName(highlight.creator) && <>By {creatorName(highlight.creator)} • </>}{formatRelativeTime(highlight.created || new Date().toISOString())}
+        {creatorName(highlight.creator) && (
+          <>By {creatorName(highlight.creator)} • </>
+        )}
+        {formatRelativeTime(highlight.created || new Date().toISOString())}
       </div>
       {highlight.generator && renderAgentLabels(highlight.generator) && (
         <div className="xynolog-annotation-entry__metadata">

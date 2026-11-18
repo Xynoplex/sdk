@@ -14,10 +14,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 import { resourceId } from '@xynolog/core';
-import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import {
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type XynologSession,
+} from '@xynolog/sdk';
 import { DelegateSection } from '../DelegateSection';
 
 // Mock translations
@@ -64,7 +71,9 @@ const mockT = vi.fn((key: string, params?: Record<string, unknown>) => {
     inProgress: 'Annotating...',
   });
   let out = translations[key] || key;
-  for (const [k, v] of Object.entries((params ?? {}) as Record<string, unknown>)) {
+  for (const [k, v] of Object.entries(
+    (params ?? {}) as Record<string, unknown>,
+  )) {
     out = out.replace(`{{${k}}}`, String(v));
   }
   return out;
@@ -72,7 +81,8 @@ const mockT = vi.fn((key: string, params?: Record<string, unknown>) => {
 
 vi.mock('../../../../contexts/TranslationContext', () => ({
   useTranslations: () => mockT,
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 describe('DelegateSection', () => {
@@ -102,13 +112,14 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={true}
           progress={{
             percentage: 30,
           }}
-        />
+        />,
       );
 
       expect(screen.getByText('Annotating...')).toBeInTheDocument();
@@ -119,19 +130,24 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={true}
           progress={{
             percentage: 0,
           }}
-        />
+        />,
       );
 
       // Check for icon and status text
-      const progressDiv = screen.getByText('Annotating...').closest('.xynolog-delegate-progress__status');
+      const progressDiv = screen
+        .getByText('Annotating...')
+        .closest('.xynolog-delegate-progress__status');
       expect(progressDiv).toBeInTheDocument();
-      expect(progressDiv?.querySelector('.xynolog-delegate-progress__icon')).toBeInTheDocument();
+      expect(
+        progressDiv?.querySelector('.xynolog-delegate-progress__icon'),
+      ).toBeInTheDocument();
     });
 
     it('should render request parameters when provided', () => {
@@ -139,7 +155,8 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={true}
           progress={{
@@ -149,7 +166,7 @@ describe('DelegateSection', () => {
               { label: 'density', value: '5' },
             ],
           }}
-        />
+        />,
       );
 
       expect(screen.getByTestId('xynolog-delegate-params')).toBeInTheDocument();
@@ -169,18 +186,23 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={true}
           progress={{
             percentage: 0,
           }}
-        />
+        />,
       );
 
       // Form should not be visible
-      expect(screen.queryByPlaceholderText('Enter custom instructions...')).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /✨\s*Annotate/ })).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText('Enter custom instructions...'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /✨\s*Annotate/ }),
+      ).not.toBeInTheDocument();
     });
 
     it('should show form when progress is null', () => {
@@ -188,16 +210,21 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       // Form should be visible
-      expect(screen.getByPlaceholderText('Enter custom instructions...')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /✨\s*Annotate/ })).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter custom instructions...'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /✨\s*Annotate/ }),
+      ).toBeInTheDocument();
     });
 
     it('should show form when progress is undefined', () => {
@@ -205,16 +232,21 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={undefined}
-        />
+        />,
       );
 
       // Form should be visible
-      expect(screen.getByPlaceholderText('Enter custom instructions...')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /✨\s*Annotate/ })).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter custom instructions...'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /✨\s*Annotate/ }),
+      ).toBeInTheDocument();
     });
 
     it('should keep progress visible after detection completes (isDelegating=false but progress exists)', () => {
@@ -222,20 +254,27 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={{
-            message: { code: 'complete-created', count: 3, motivation: 'highlighting' },
+            message: {
+              code: 'complete-created',
+              count: 3,
+              motivation: 'highlighting',
+            },
             percentage: 100,
           }}
-        />
+        />,
       );
 
       // Progress should still be visible, with the translated terminal copy
       expect(screen.getByText('Created 3 highlights')).toBeInTheDocument();
       // Form should NOT be visible
-      expect(screen.queryByPlaceholderText('Enter custom instructions...')).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText('Enter custom instructions...'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -245,11 +284,12 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       expect(screen.getByText('Annotate Highlights')).toBeInTheDocument();
@@ -260,11 +300,12 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="assessment"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       expect(screen.getByText('Annotate Assessments')).toBeInTheDocument();
@@ -275,11 +316,12 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="comment"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       expect(screen.getByText('Annotate Comments')).toBeInTheDocument();
@@ -290,11 +332,12 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="comment"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       expect(screen.getByText('Scholarly')).toBeInTheDocument();
@@ -306,11 +349,12 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="assessment"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       expect(screen.getByText('Analytical')).toBeInTheDocument();
@@ -322,11 +366,12 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       expect(screen.queryByText('Scholarly')).not.toBeInTheDocument();
@@ -337,86 +382,114 @@ describe('DelegateSection', () => {
   describe('Delegation', () => {
     it('asks the mark unit to delegate a highlighting job when Annotate is clicked', async () => {
       const user = userEvent.setup();
-      const requestDelegate = vi.spyOn(mark, 'requestDelegate').mockImplementation(() => {});
+      const requestDelegate = vi
+        .spyOn(mark, 'requestDelegate')
+        .mockImplementation(() => {});
 
       renderWithProviders(
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
-      const annotateButton = screen.getByRole('button', { name: /✨\s*Annotate/ });
+      const annotateButton = screen.getByRole('button', {
+        name: /✨\s*Annotate/,
+      });
       await user.click(annotateButton);
 
-      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ motivation: 'highlighting' }));
+      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ motivation: 'highlighting' }),
+      );
     });
 
     it('delegates an assessing job from the assessment form', async () => {
       const user = userEvent.setup();
-      const requestDelegate = vi.spyOn(mark, 'requestDelegate').mockImplementation(() => {});
+      const requestDelegate = vi
+        .spyOn(mark, 'requestDelegate')
+        .mockImplementation(() => {});
 
       renderWithProviders(
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="assessment"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
-      const annotateButton = screen.getByRole('button', { name: /✨\s*Annotate/ });
+      const annotateButton = screen.getByRole('button', {
+        name: /✨\s*Annotate/,
+      });
       await user.click(annotateButton);
 
-      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ motivation: 'assessing' }));
+      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ motivation: 'assessing' }),
+      );
     });
 
     it('delegates a commenting job from the comment form', async () => {
       const user = userEvent.setup();
-      const requestDelegate = vi.spyOn(mark, 'requestDelegate').mockImplementation(() => {});
+      const requestDelegate = vi
+        .spyOn(mark, 'requestDelegate')
+        .mockImplementation(() => {});
 
       renderWithProviders(
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="comment"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
-      const annotateButton = screen.getByRole('button', { name: /✨\s*Annotate/ });
+      const annotateButton = screen.getByRole('button', {
+        name: /✨\s*Annotate/,
+      });
       await user.click(annotateButton);
 
-      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ motivation: 'commenting' }));
+      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ motivation: 'commenting' }),
+      );
     });
 
     it('includes the instructions when they are given', async () => {
       const user = userEvent.setup();
-      const requestDelegate = vi.spyOn(mark, 'requestDelegate').mockImplementation(() => {});
+      const requestDelegate = vi
+        .spyOn(mark, 'requestDelegate')
+        .mockImplementation(() => {});
 
       renderWithProviders(
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
-      const textarea = screen.getByPlaceholderText('Enter custom instructions...');
+      const textarea = screen.getByPlaceholderText(
+        'Enter custom instructions...',
+      );
       await user.type(textarea, 'Find key concepts');
 
-      const annotateButton = screen.getByRole('button', { name: /✨\s*Annotate/ });
+      const annotateButton = screen.getByRole('button', {
+        name: /✨\s*Annotate/,
+      });
       await user.click(annotateButton);
 
       expect(requestDelegate).toHaveBeenCalledExactlyOnceWith({
@@ -433,16 +506,21 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
-      const collapseButton = screen.getByRole('button', { name: /Annotate Highlights/ });
+      const collapseButton = screen.getByRole('button', {
+        name: /Annotate Highlights/,
+      });
       expect(collapseButton).toHaveAttribute('aria-expanded', 'true');
-      expect(screen.getByPlaceholderText('Enter custom instructions...')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter custom instructions...'),
+      ).toBeInTheDocument();
     });
 
     it('should collapse when title clicked', async () => {
@@ -452,18 +530,23 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
-      const collapseButton = screen.getByRole('button', { name: /Annotate Highlights/ });
+      const collapseButton = screen.getByRole('button', {
+        name: /Annotate Highlights/,
+      });
       await user.click(collapseButton);
 
       expect(collapseButton).toHaveAttribute('aria-expanded', 'false');
-      expect(screen.queryByPlaceholderText('Enter custom instructions...')).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText('Enter custom instructions...'),
+      ).not.toBeInTheDocument();
     });
 
     it('should expand when title clicked again', async () => {
@@ -473,19 +556,24 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
-      const collapseButton = screen.getByRole('button', { name: /Annotate Highlights/ });
+      const collapseButton = screen.getByRole('button', {
+        name: /Annotate Highlights/,
+      });
       await user.click(collapseButton); // Collapse
       await user.click(collapseButton); // Expand
 
       expect(collapseButton).toHaveAttribute('aria-expanded', 'true');
-      expect(screen.getByPlaceholderText('Enter custom instructions...')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter custom instructions...'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -495,13 +583,14 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={true}
           progress={{
             percentage: 0,
           }}
-        />
+        />,
       );
 
       // Renders the progress section with the translated status line — the
@@ -515,17 +604,20 @@ describe('DelegateSection', () => {
         <DelegateSection
           session={session}
           mark={mark}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           annotationType="highlight"
           isDelegating={true}
           progress={{
             percentage: 0,
             requestParams: [],
           }}
-        />
+        />,
       );
 
-      expect(screen.queryByTestId('xynolog-delegate-params')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('xynolog-delegate-params'),
+      ).not.toBeInTheDocument();
     });
   });
 });

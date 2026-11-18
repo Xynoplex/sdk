@@ -41,13 +41,13 @@ export interface EnvelopeConformanceSpec {
  * other side. Throws with a message naming the failure mode, so a suite that
  * calls this reads its own diagnosis.
  */
-export async function assertCarriesEnvelope(spec: EnvelopeConformanceSpec): Promise<void> {
+export async function assertCarriesEnvelope(
+  spec: EnvelopeConformanceSpec,
+): Promise<void> {
   const correlationId = `envelope-conformance-${Math.random().toString(36).slice(2)}`;
-  await (spec.relay.emit as (c: unknown, p: unknown, e?: BusEnvelope) => unknown)(
-    spec.channel,
-    spec.payload,
-    { correlationId },
-  );
+  await (
+    spec.relay.emit as (c: unknown, p: unknown, e?: BusEnvelope) => unknown
+  )(spec.channel, spec.payload, { correlationId });
   const seen = await spec.observe();
   if (seen !== correlationId) {
     throw new Error(

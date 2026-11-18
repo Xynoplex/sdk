@@ -18,7 +18,12 @@ import { LineNumbersProvider } from '../../../contexts/LineNumbersContext';
 
 // Mock CodeMirrorRenderer to avoid CodeMirror dependencies
 vi.mock('../../../components/CodeMirrorRenderer', () => ({
-  CodeMirrorRenderer: ({ content, onChange, editable, showLineNumbers }: ComponentProps<typeof CodeMirrorRenderer>) => (
+  CodeMirrorRenderer: ({
+    content,
+    onChange,
+    editable,
+    showLineNumbers,
+  }: ComponentProps<typeof CodeMirrorRenderer>) => (
     <textarea
       data-testid="code-editor"
       data-line-numbers={String(showLineNumbers)}
@@ -66,7 +71,9 @@ const originalResource: ResourceDescriptor = {
   representations: [{ mediaType: 'text/plain' }],
 };
 
-const createMockProps = (overrides?: Partial<ResourceComposePageProps>): ResourceComposePageProps => ({
+const createMockProps = (
+  overrides?: Partial<ResourceComposePageProps>,
+): ResourceComposePageProps => ({
   mode: 'new',
   availableEntityTypes: ['Document', 'Article', 'Report'],
   initialLocale: 'en',
@@ -76,7 +83,9 @@ const createMockProps = (overrides?: Partial<ResourceComposePageProps>): Resourc
   onSaveResource: vi.fn().mockResolvedValue(undefined),
   onCancel: vi.fn(),
   translations: createMockTranslations(),
-  ToolbarPanels: ({ children }: ToolbarPanelsProps) => <div data-testid="toolbar-panels">{children}</div>,
+  ToolbarPanels: ({ children }: ToolbarPanelsProps) => (
+    <div data-testid="toolbar-panels">{children}</div>
+  ),
   Toolbar: () => <div data-testid="toolbar">Toolbar</div>,
   ...overrides,
 });
@@ -106,7 +115,9 @@ describe('ResourceComposePage', () => {
       renderWithProviders(<ResourceComposePage {...props} />);
 
       expect(screen.getByLabelText('Resource Name')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Enter resource name')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter resource name'),
+      ).toBeInTheDocument();
     });
 
     it('renders entity type selection', () => {
@@ -114,9 +125,15 @@ describe('ResourceComposePage', () => {
       renderWithProviders(<ResourceComposePage {...props} />);
 
       expect(screen.getByText('Entity Types')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Document entity type/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Article entity type/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Report entity type/ })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Document entity type/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Article entity type/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Report entity type/ }),
+      ).toBeInTheDocument();
     });
 
     it('renders language selector', () => {
@@ -167,7 +184,9 @@ describe('ResourceComposePage', () => {
       });
       renderWithProviders(<ResourceComposePage {...props} />);
 
-      const nameInput = screen.getByLabelText('Resource Name') as HTMLInputElement;
+      const nameInput = screen.getByLabelText(
+        'Resource Name',
+      ) as HTMLInputElement;
       expect(nameInput.value).toBe('Original Resource');
 
       const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
@@ -184,7 +203,9 @@ describe('ResourceComposePage', () => {
       });
       renderWithProviders(<ResourceComposePage {...props} />);
 
-      expect(screen.getByLabelText('Archive original resource')).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('Archive original resource'),
+      ).toBeInTheDocument();
     });
 
     it('does not show content source toggle', () => {
@@ -257,23 +278,35 @@ describe('ResourceComposePage', () => {
     // either): Chrome handled the drop by navigating to the file.
     it('cancels dragover on the dropzone so the browser never takes the drop', () => {
       const props = createMockProps();
-      const { container } = renderWithProviders(<ResourceComposePage {...props} />);
+      const { container } = renderWithProviders(
+        <ResourceComposePage {...props} />,
+      );
 
       fireEvent.click(screen.getByText('Upload File').closest('button')!);
-      const dropzone = container.querySelector('.xynolog-form__upload-dropzone')!;
+      const dropzone = container.querySelector(
+        '.xynolog-form__upload-dropzone',
+      )!;
 
       // fireEvent returns false when the event was preventDefault-ed.
-      expect(fireEvent.dragOver(dropzone, { dataTransfer: { files: [] } })).toBe(false);
+      expect(
+        fireEvent.dragOver(dropzone, { dataTransfer: { files: [] } }),
+      ).toBe(false);
     });
 
     it('applies a dropped file: name shown, resource name defaulted', async () => {
       const props = createMockProps();
-      const { container } = renderWithProviders(<ResourceComposePage {...props} />);
+      const { container } = renderWithProviders(
+        <ResourceComposePage {...props} />,
+      );
 
       fireEvent.click(screen.getByText('Upload File').closest('button')!);
-      const dropzone = container.querySelector('.xynolog-form__upload-dropzone')!;
+      const dropzone = container.querySelector(
+        '.xynolog-form__upload-dropzone',
+      )!;
 
-      const file = new File(['# notes'], 'field-notes.md', { type: 'text/markdown' });
+      const file = new File(['# notes'], 'field-notes.md', {
+        type: 'text/markdown',
+      });
       fireEvent.drop(dropzone, { dataTransfer: { files: [file] } });
 
       await waitFor(() => {
@@ -285,7 +318,9 @@ describe('ResourceComposePage', () => {
 
   describe('Form Submission', () => {
     it('uses the KB folder picker and saves the generated resource path', async () => {
-      const onChooseStorageDirectory = vi.fn().mockResolvedValue('notes/archive');
+      const onChooseStorageDirectory = vi
+        .fn()
+        .mockResolvedValue('notes/archive');
       const onSaveResource = vi.fn().mockResolvedValue(undefined);
       renderWithProviders(
         <ResourceComposePage
@@ -293,48 +328,77 @@ describe('ResourceComposePage', () => {
         />,
       );
 
-      fireEvent.change(screen.getByLabelText('Resource Name'), { target: { value: 'Field Notes' } });
+      fireEvent.change(screen.getByLabelText('Resource Name'), {
+        target: { value: 'Field Notes' },
+      });
       expect(screen.getByText('file://field-notes.md')).toBeInTheDocument();
-      const chooseButton = screen.getByRole('button', { name: 'Choose folder…' });
+      const chooseButton = screen.getByRole('button', {
+        name: 'Choose folder…',
+      });
       fireEvent.click(chooseButton);
 
       await waitFor(() => {
         expect(onChooseStorageDirectory).toHaveBeenCalledWith('');
-        expect(screen.getByText('file://notes/archive/field-notes.md')).toBeInTheDocument();
+        expect(
+          screen.getByText('file://notes/archive/field-notes.md'),
+        ).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: 'Create Resource' }));
       await waitFor(() => {
-        expect(onSaveResource).toHaveBeenCalledWith(expect.objectContaining({
-          storageUri: 'file://notes/archive/field-notes.md',
-        }));
+        expect(onSaveResource).toHaveBeenCalledWith(
+          expect.objectContaining({
+            storageUri: 'file://notes/archive/field-notes.md',
+          }),
+        );
       });
     });
 
     it('keeps the proposed path when the KB folder picker is cancelled', async () => {
       const onChooseStorageDirectory = vi.fn().mockResolvedValue(null);
-      renderWithProviders(<ResourceComposePage {...createMockProps({ onChooseStorageDirectory })} />);
+      renderWithProviders(
+        <ResourceComposePage
+          {...createMockProps({ onChooseStorageDirectory })}
+        />,
+      );
 
-      fireEvent.change(screen.getByLabelText('Resource Name'), { target: { value: 'Field Notes' } });
+      fireEvent.change(screen.getByLabelText('Resource Name'), {
+        target: { value: 'Field Notes' },
+      });
       fireEvent.click(screen.getByRole('button', { name: 'Choose folder…' }));
 
-      await waitFor(() => expect(onChooseStorageDirectory).toHaveBeenCalledOnce());
+      await waitFor(() =>
+        expect(onChooseStorageDirectory).toHaveBeenCalledOnce(),
+      );
       expect(screen.getByText('file://field-notes.md')).toBeInTheDocument();
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
     it('shows KB folder picker errors and allows another attempt', async () => {
-      const onChooseStorageDirectory = vi.fn()
+      const onChooseStorageDirectory = vi
+        .fn()
         .mockRejectedValueOnce(new Error('Folder access was denied'))
         .mockResolvedValueOnce('notes');
-      renderWithProviders(<ResourceComposePage {...createMockProps({ onChooseStorageDirectory })} />);
+      renderWithProviders(
+        <ResourceComposePage
+          {...createMockProps({ onChooseStorageDirectory })}
+        />,
+      );
 
-      fireEvent.change(screen.getByLabelText('Resource Name'), { target: { value: 'Field Notes' } });
+      fireEvent.change(screen.getByLabelText('Resource Name'), {
+        target: { value: 'Field Notes' },
+      });
       fireEvent.click(screen.getByRole('button', { name: 'Choose folder…' }));
-      expect(await screen.findByRole('alert')).toHaveTextContent('Folder access was denied');
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Folder access was denied',
+      );
 
       fireEvent.click(screen.getByRole('button', { name: 'Choose folder…' }));
-      await waitFor(() => expect(screen.getByText('file://notes/field-notes.md')).toBeInTheDocument());
+      await waitFor(() =>
+        expect(
+          screen.getByText('file://notes/field-notes.md'),
+        ).toBeInTheDocument(),
+      );
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
@@ -349,14 +413,18 @@ describe('ResourceComposePage', () => {
 
       // Fill in save location
       const storagePathInput = screen.getByLabelText('Save location');
-      fireEvent.change(storagePathInput, { target: { value: 'docs/test-resource.md' } });
+      fireEvent.change(storagePathInput, {
+        target: { value: 'docs/test-resource.md' },
+      });
 
       // Fill in content
       const editor = screen.getByTestId('code-editor');
       fireEvent.change(editor, { target: { value: 'Test content' } });
 
       // Submit form
-      const submitButton = screen.getByRole('button', { name: 'Create Resource' });
+      const submitButton = screen.getByRole('button', {
+        name: 'Create Resource',
+      });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -383,21 +451,27 @@ describe('ResourceComposePage', () => {
 
       // Fill in save location
       const storagePathInput = screen.getByLabelText('Save location');
-      fireEvent.change(storagePathInput, { target: { value: 'docs/test-resource.md' } });
+      fireEvent.change(storagePathInput, {
+        target: { value: 'docs/test-resource.md' },
+      });
 
       // Select entity type
-      const documentButton = screen.getByRole('button', { name: /Document entity type/ });
+      const documentButton = screen.getByRole('button', {
+        name: /Document entity type/,
+      });
       fireEvent.click(documentButton);
 
       // Submit form
-      const submitButton = screen.getByRole('button', { name: 'Create Resource' });
+      const submitButton = screen.getByRole('button', {
+        name: 'Create Resource',
+      });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(onSaveResource).toHaveBeenCalledWith(
           expect.objectContaining({
             entityTypes: ['Document'],
-          })
+          }),
         );
       });
     });
@@ -406,7 +480,9 @@ describe('ResourceComposePage', () => {
       const props = createMockProps();
       renderWithProviders(<ResourceComposePage {...props} />);
 
-      const submitButton = screen.getByRole('button', { name: 'Create Resource' });
+      const submitButton = screen.getByRole('button', {
+        name: 'Create Resource',
+      });
       expect(submitButton).toBeDisabled();
     });
 
@@ -417,12 +493,16 @@ describe('ResourceComposePage', () => {
       const nameInput = screen.getByLabelText('Resource Name');
       fireEvent.change(nameInput, { target: { value: 'Test Resource' } });
 
-      const submitButton = screen.getByRole('button', { name: 'Create Resource' });
+      const submitButton = screen.getByRole('button', {
+        name: 'Create Resource',
+      });
       expect(submitButton).not.toBeDisabled();
     });
 
     it('disables form during submission', async () => {
-      const onSaveResource = vi.fn(() => new Promise<void>(resolve => setTimeout(resolve, 100)));
+      const onSaveResource = vi.fn(
+        () => new Promise<void>((resolve) => setTimeout(resolve, 100)),
+      );
       const props = createMockProps({ onSaveResource });
       renderWithProviders(<ResourceComposePage {...props} />);
 
@@ -430,18 +510,26 @@ describe('ResourceComposePage', () => {
       fireEvent.change(nameInput, { target: { value: 'Test Resource' } });
 
       const storagePathInput = screen.getByLabelText('Save location');
-      fireEvent.change(storagePathInput, { target: { value: 'docs/test-resource.md' } });
+      fireEvent.change(storagePathInput, {
+        target: { value: 'docs/test-resource.md' },
+      });
 
-      const submitButton = screen.getByRole('button', { name: 'Create Resource' });
+      const submitButton = screen.getByRole('button', {
+        name: 'Create Resource',
+      });
       fireEvent.click(submitButton);
 
       // Button should show loading state
-      expect(screen.getByRole('button', { name: 'Creating...' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Creating...' }),
+      ).toBeInTheDocument();
       expect(nameInput).toBeDisabled();
 
       // Wait for the async operation to complete
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Create Resource' })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: 'Create Resource' }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -500,7 +588,10 @@ describe('ResourceComposePage', () => {
         const props = createMockProps({});
         renderWithProviders(<ResourceComposePage {...props} />);
 
-        expect(screen.getByTestId('code-editor')).toHaveAttribute('data-line-numbers', 'true');
+        expect(screen.getByTestId('code-editor')).toHaveAttribute(
+          'data-line-numbers',
+          'true',
+        );
       } finally {
         localStorage.removeItem('showLineNumbers');
       }

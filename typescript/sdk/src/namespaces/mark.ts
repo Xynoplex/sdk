@@ -23,11 +23,17 @@ const MARK: DelegatedVerb<MarkJobCompletion> = {
   heard: (frame) => (frame.jobType === 'mark' ? frame : undefined),
   learned: (status, resourceId) => {
     if (status.type !== 'mark') return undefined;
-    const completion = { jobId: status.jobId, jobType: status.type, resourceId };
+    const completion = {
+      jobId: status.jobId,
+      jobType: status.type,
+      resourceId,
+    };
     // A job completed without a result is stored with an empty one; the
     // job:complete this stands for carried none.
     if (!isReportedJobResult(status.result)) return completion;
-    return isMarkJobResult(status.result) ? { ...completion, result: status.result } : undefined;
+    return isMarkJobResult(status.result)
+      ? { ...completion, result: status.result }
+      : undefined;
   },
 };
 
@@ -42,42 +48,38 @@ export class MarkNamespace implements IMarkNamespace {
     this.wire = new Bus(transport);
   }
 
-  async annotation(input: CreateAnnotationInput): Promise<{ annotationId: AnnotationId }> {
+  async annotation(
+    input: CreateAnnotationInput,
+  ): Promise<{ annotationId: AnnotationId }> {
     // The wire schema (`MarkCreateRequest`) carries `resourceId` separately
     // for routing — we derive it from `input.target.source`, which is the
     // same value semantically.
     const resourceId = input.target.source;
-    const result = await this.wire.request(
-      'mark:create-request',
-      { resourceId, request: input },
-    );
+    const result = await this.wire.request('mark:create-request', {
+      resourceId,
+      request: input,
+    });
     return { annotationId: result.annotationId };
   }
 
-  async delete(resourceId: ResourceId, annotationId: AnnotationId): Promise<void> {
+  async delete(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+  ): Promise<void> {
     // Confirmed write (matches `annotation()` above): await the
     // correlation-keyed reply and REJECT on failure, rather than fire-and-forget
     // an emit whose mark:delete-failed nobody awaits.
-    await this.wire.request(
-      'mark:delete',
-      { annotationId, resourceId },
-    );
+    await this.wire.request('mark:delete', { annotationId, resourceId });
   }
 
   async archive(resourceId: ResourceId): Promise<void> {
     // Confirmed write: await the correlation-keyed reply and REJECT on failure,
     // rather than fire-and-forget an emit whose failure has nowhere to go.
-    await this.wire.request(
-      'mark:archive',
-      { resourceId },
-    );
+    await this.wire.request('mark:archive', { resourceId });
   }
 
   async unarchive(resourceId: ResourceId): Promise<void> {
-    await this.wire.request(
-      'mark:unarchive',
-      { resourceId },
-    );
+    await this.wire.request('mark:unarchive', { resourceId });
   }
 
   /**
@@ -92,15 +94,30 @@ export class MarkNamespace implements IMarkNamespace {
    * reply and REJECTS on failure rather than fire-and-forget an emit whose
    * failure has nowhere to go.
    */
-  async updateEntityTypes(resourceId: ResourceId, current: string[], updated: string[]): Promise<void> {
-    await this.wire.request(
-      'mark:update-entity-types',
-      { resourceId, currentEntityTypes: current, updatedEntityTypes: updated },
-    );
+  async updateEntityTypes(
+    resourceId: ResourceId,
+    current: string[],
+    updated: string[],
+  ): Promise<void> {
+    await this.wire.request('mark:update-entity-types', {
+      resourceId,
+      currentEntityTypes: current,
+      updatedEntityTypes: updated,
+    });
   }
 
-  delegate(resourceId: ResourceId, params: MarkJobParams): DelegationObservable<MarkJobCompletion> {
-    return delegated(this.transport, this.bus, this.timing, { jobType: 'mark', resourceId, params }, MARK, resourceId);
+  delegate(
+    resourceId: ResourceId,
+    params: MarkJobParams,
+  ): DelegationObservable<MarkJobCompletion> {
+    return delegated(
+      this.transport,
+      this.bus,
+      this.timing,
+      { jobType: 'mark', resourceId, params },
+      MARK,
+      resourceId,
+    );
   }
 
   request(

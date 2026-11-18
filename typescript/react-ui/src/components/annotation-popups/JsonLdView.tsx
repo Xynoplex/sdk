@@ -23,7 +23,11 @@ interface JsonLdViewProps {
  * colours from the page's theme, through the CSS variables the JSON theme is
  * written in.
  */
-export function JsonLdView({ annotation, onBack, showLineNumbers }: JsonLdViewProps) {
+export function JsonLdView({
+  annotation,
+  onBack,
+  showLineNumbers,
+}: JsonLdViewProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -104,9 +108,7 @@ export function JsonLdView({ annotation, onBack, showLineNumbers }: JsonLdViewPr
         >
           &lt;
         </button>
-        <h3 className="xynolog-jsonld-view__title">
-          JSON-LD
-        </h3>
+        <h3 className="xynolog-jsonld-view__title">JSON-LD</h3>
         {copyTo && (
           <button
             onClick={() => handleCopyToClipboard(copyTo)}
@@ -119,10 +121,7 @@ export function JsonLdView({ annotation, onBack, showLineNumbers }: JsonLdViewPr
       </div>
 
       {/* JSON-LD content rendered with CodeMirror */}
-      <div
-        ref={editorRef}
-        className="xynolog-jsonld-view__editor"
-      />
+      <div ref={editorRef} className="xynolog-jsonld-view__editor" />
     </div>
   );
 }

@@ -5,13 +5,17 @@ import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { resourceId as makeResourceId } from '@xynolog/core';
 import type { XynologClient } from '@xynolog/sdk';
-import { createResourceLoaderStateUnit, type ResourceLoaderStateUnit } from '../resource-loader-state-unit';
+import {
+  createResourceLoaderStateUnit,
+  type ResourceLoaderStateUnit,
+} from '../resource-loader-state-unit';
 import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 const RID = makeResourceId('res-1');
 
 function mockClient(resource$?: BehaviorSubject<unknown>): XynologClient {
-  const subject = resource$ ?? new BehaviorSubject<unknown>({ '@id': 'res-1', name: 'Test' });
+  const subject =
+    resource$ ?? new BehaviorSubject<unknown>({ '@id': 'res-1', name: 'Test' });
   const invalidate = vi.fn();
   return {
     browse: {
@@ -45,7 +49,10 @@ function failingClient() {
     invalidate,
     /** Fail the most recent attempt the way B15 does. */
     failLatest: (message: string) =>
-      attempts[attempts.length - 1]!.next({ status: 'failed', error: new Error(message) }),
+      attempts[attempts.length - 1]!.next({
+        status: 'failed',
+        error: new Error(message),
+      }),
     /** Resolve the most recent attempt with a value. */
     resolveLatest: (value: unknown) =>
       attempts[attempts.length - 1]!.next({ status: 'ready', value }),
@@ -55,19 +62,29 @@ function failingClient() {
 
 describe('createResourceLoaderStateUnit', () => {
   it('exposes resource from browse namespace', async () => {
-    const stateUnit = createResourceLoaderStateUnit(sessionOf(mockClient()), RID);
-    const resource = await firstValueFrom(stateUnit.resource$.pipe(filter((r) => r !== undefined)));
+    const stateUnit = createResourceLoaderStateUnit(
+      sessionOf(mockClient()),
+      RID,
+    );
+    const resource = await firstValueFrom(
+      stateUnit.resource$.pipe(filter((r) => r !== undefined)),
+    );
     expect((resource as { name: string }).name).toBe('Test');
     stateUnit.dispose();
   });
 
   it('reports loading when resource is undefined', async () => {
     const subject = new BehaviorSubject<unknown>(undefined);
-    const stateUnit = createResourceLoaderStateUnit(sessionOf(mockClient(subject)), RID);
+    const stateUnit = createResourceLoaderStateUnit(
+      sessionOf(mockClient(subject)),
+      RID,
+    );
     expect(await firstValueFrom(stateUnit.isLoading$)).toBe(true);
 
     subject.next({ '@id': 'res-1' });
-    expect(await firstValueFrom(stateUnit.isLoading$.pipe(filter((l) => !l)))).toBe(false);
+    expect(
+      await firstValueFrom(stateUnit.isLoading$.pipe(filter((l) => !l))),
+    ).toBe(false);
     stateUnit.dispose();
   });
 
@@ -129,7 +146,9 @@ describe('createResourceLoaderStateUnit — terminal failure (B15)', () => {
     expect(await firstValueFrom(stateUnit.error$)).toBeNull();
 
     h.resolveLatest({ '@id': 'res-1', name: 'Recovered' });
-    const resource = await firstValueFrom(stateUnit.resource$.pipe(filter((r) => r !== undefined)));
+    const resource = await firstValueFrom(
+      stateUnit.resource$.pipe(filter((r) => r !== undefined)),
+    );
     expect((resource as { name: string }).name).toBe('Recovered');
     expect(await firstValueFrom(stateUnit.isLoading$)).toBe(false);
     stateUnit.dispose();

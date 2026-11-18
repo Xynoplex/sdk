@@ -68,23 +68,22 @@ export function ObservableLink({
     onClickRef.current = onClick;
   });
 
-  const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Emit event for observability
-    xynolog.emit('nav:link-clicked', {
-      href,
-      label
-    });
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // Emit event for observability
+      xynolog.emit('nav:link-clicked', {
+        href,
+        label,
+      });
 
-    // Call original onClick if provided
-    onClickRef.current?.(e);
-  }, [href, label, xynolog]);
+      // Call original onClick if provided
+      onClickRef.current?.(e);
+    },
+    [href, label, xynolog],
+  );
 
   return (
-    <a
-      href={href}
-      onClick={handleClick}
-      {...anchorProps}
-    >
+    <a href={href} onClick={handleClick} {...anchorProps}>
       {children}
     </a>
   );

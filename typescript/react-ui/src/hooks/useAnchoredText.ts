@@ -29,7 +29,10 @@ const NEVER: AnchoredTextState = { status: 'never' };
 const UNASKED: AnchoredTextState = { status: 'unasked' };
 
 /** The text of a media type that has none (`no-map`): held, and empty. */
-const NO_TEXT: AnchoredTextState = { status: 'held', text: { text: '', items: [] } };
+const NO_TEXT: AnchoredTextState = {
+  status: 'held',
+  text: { text: '', items: [] },
+};
 
 /** An answer that ends the asking, with the ask it answers. */
 interface Settled {
@@ -62,7 +65,8 @@ export function useAnchoredText(
     let cancelled = false;
     let reask: ReturnType<typeof setTimeout> | undefined;
 
-    const settle = (state: AnchoredTextState) => setSettled({ session, resourceUri, state });
+    const settle = (state: AnchoredTextState) =>
+      setSettled({ session, resourceUri, state });
     const ask = () => {
       void session.client.browse.resourceAnchoredText(resourceUri).then(
         (answer) => {
@@ -97,7 +101,9 @@ export function useAnchoredText(
   }, [session, resourceUri]);
 
   if (!session) return UNASKED;
-  return settled && settled.session === session && settled.resourceUri === resourceUri
+  return settled &&
+    settled.session === session &&
+    settled.resourceUri === resourceUri
     ? settled.state
     : WAITING;
 }

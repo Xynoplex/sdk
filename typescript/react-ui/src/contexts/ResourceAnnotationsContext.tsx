@@ -1,12 +1,26 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
 import { useXynolog } from '../session/XynologProvider';
 import { useObservable } from '../hooks/useObservable';
-import type { Annotation, AnnotationId, ResourceId, Selector } from '@xynolog/core';
+import type {
+  Annotation,
+  AnnotationId,
+  ResourceId,
+  Selector,
+} from '@xynolog/core';
 import { useLiveRegion } from '../components/LiveRegion';
 // Create annotation request type - narrow target to only the object form (not string)
-type CreateAnnotationRequest = Omit<Annotation, 'id' | 'created' | 'modified' | 'creator' | '@context' | 'type' | 'target'> & {
+type CreateAnnotationRequest = Omit<
+  Annotation,
+  'id' | 'created' | 'modified' | 'creator' | '@context' | 'type' | 'target'
+> & {
   target: {
     source: ResourceId;
     selector: Selector | Selector[];
@@ -20,9 +34,10 @@ interface ResourceAnnotationsContextType {
   // Generic annotation creation (supports both text and image annotations)
   markAnnotation: (
     rUri: ResourceId,
-    motivation: 'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging',
+    motivation:
+      'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging',
     selector: Selector | Selector[],
-    body?: Annotation['body']
+    body?: Annotation['body'],
   ) => Promise<string | undefined>;
 
   // UI actions
@@ -30,66 +45,80 @@ interface ResourceAnnotationsContextType {
   triggerSparkleAnimation: (annotationId: string) => void;
 }
 
-const ResourceAnnotationsContext = createContext<ResourceAnnotationsContextType | undefined>(undefined);
+const ResourceAnnotationsContext = createContext<
+  ResourceAnnotationsContextType | undefined
+>(undefined);
 
 /**
  * @emits mark:create-request - Create an annotation of a resource. Payload: MarkCreateRequest
  */
-export function ResourceAnnotationsProvider({ children }: { children: React.ReactNode }) {
+export function ResourceAnnotationsProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   // UI state only - no data management
-  const [sparkleAnnotationIds, setSparkleAnnotationIds] = useState<Set<string>>(new Set());
+  const [sparkleAnnotationIds, setSparkleAnnotationIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Live region announcements
   const { announce } = useLiveRegion();
 
   const xynolog = useObservable(useXynolog().activeSession$)?.client;
 
-  const markAnnotation = useCallback(async (
-    rUri: ResourceId,
-    motivation: 'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging',
-    selector: Selector | Selector[],
-    body?: Annotation['body']
-  ): Promise<string | undefined> => {
-    if (!xynolog) throw new Error('Not authenticated');
-    try {
-      const createData: CreateAnnotationRequest = {
-        motivation,
-        target: {
-          source: rUri,
-          selector,
-        },
-        body,
-      };
+  const markAnnotation = useCallback(
+    async (
+      rUri: ResourceId,
+      motivation:
+        'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging',
+      selector: Selector | Selector[],
+      body?: Annotation['body'],
+    ): Promise<string | undefined> => {
+      if (!xynolog) throw new Error('Not authenticated');
+      try {
+        const createData: CreateAnnotationRequest = {
+          motivation,
+          target: {
+            source: rUri,
+            selector,
+          },
+          body,
+        };
 
-      const result = await xynolog.mark.annotation(createData);
+        const result = await xynolog.mark.annotation(createData);
 
-      // Track this as a new annotation for sparkle animation
-      if (result.annotationId) {
-        setSparkleAnnotationIds(prev => new Set(prev).add(result.annotationId));
+        // Track this as a new annotation for sparkle animation
+        if (result.annotationId) {
+          setSparkleAnnotationIds((prev) =>
+            new Set(prev).add(result.annotationId),
+          );
 
-        // Clear the ID after animation completes (6 seconds for 3 iterations)
-        setTimeout(() => {
-          setSparkleAnnotationIds(prev => {
-            const next = new Set(prev);
-            next.delete(result.annotationId);
-            return next;
-          });
-        }, 6000);
+          // Clear the ID after animation completes (6 seconds for 3 iterations)
+          setTimeout(() => {
+            setSparkleAnnotationIds((prev) => {
+              const next = new Set(prev);
+              next.delete(result.annotationId);
+              return next;
+            });
+          }, 6000);
 
-        // Announce the creation
-        announce('Annotation created', 'polite');
+          // Announce the creation
+          announce('Annotation created', 'polite');
+        }
+
+        return result.annotationId;
+      } catch (err) {
+        console.error('Failed to create annotation:', err);
+        announce('Failed to create annotation', 'assertive');
+        throw err;
       }
-
-      return result.annotationId;
-    } catch (err) {
-      console.error('Failed to create annotation:', err);
-      announce('Failed to create annotation', 'assertive');
-      throw err;
-    }
-  }, [xynolog, announce]);
+    },
+    [xynolog, announce],
+  );
 
   const clearSparkle = useCallback((id: AnnotationId) => {
-    setSparkleAnnotationIds(prev => {
+    setSparkleAnnotationIds((prev) => {
       const next = new Set(prev);
       next.delete(id);
       return next;
@@ -97,11 +126,11 @@ export function ResourceAnnotationsProvider({ children }: { children: React.Reac
   }, []);
 
   const triggerSparkleAnimation = useCallback((annotationId: string) => {
-    setSparkleAnnotationIds(prev => new Set(prev).add(annotationId));
+    setSparkleAnnotationIds((prev) => new Set(prev).add(annotationId));
 
     // Clear after animation
     setTimeout(() => {
-      setSparkleAnnotationIds(prev => {
+      setSparkleAnnotationIds((prev) => {
         const next = new Set(prev);
         next.delete(annotationId);
         return next;
@@ -116,7 +145,12 @@ export function ResourceAnnotationsProvider({ children }: { children: React.Reac
       clearSparkle,
       triggerSparkleAnimation,
     }),
-    [sparkleAnnotationIds, markAnnotation, clearSparkle, triggerSparkleAnimation]
+    [
+      sparkleAnnotationIds,
+      markAnnotation,
+      clearSparkle,
+      triggerSparkleAnimation,
+    ],
   );
 
   return (
@@ -129,7 +163,9 @@ export function ResourceAnnotationsProvider({ children }: { children: React.Reac
 export function useResourceAnnotations() {
   const context = useContext(ResourceAnnotationsContext);
   if (!context) {
-    throw new Error('useResourceAnnotations must be used within ResourceAnnotationsProvider');
+    throw new Error(
+      'useResourceAnnotations must be used within ResourceAnnotationsProvider',
+    );
   }
   return context;
 }

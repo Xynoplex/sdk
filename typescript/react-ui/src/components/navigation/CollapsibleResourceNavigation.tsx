@@ -9,7 +9,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-  DragStartEvent
+  DragStartEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -44,7 +44,7 @@ export function CollapsibleResourceNavigation({
   className = '',
   translations = {},
   icons,
-  navigationMenu
+  navigationMenu,
 }: CollapsibleResourceNavigationProps) {
   const ChevronLeftIcon = icons.chevronLeft;
   const BarsIcon = icons.bars;
@@ -52,7 +52,12 @@ export function CollapsibleResourceNavigation({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { announcePickup, announceDrop, announceKeyboardReorder, announceCannotMove } = useDragAnnouncements();
+  const {
+    announcePickup,
+    announceDrop,
+    announceKeyboardReorder,
+    announceCannotMove,
+  } = useDragAnnouncements();
   const t = useTranslations('CollapsibleResourceNavigation');
   const xynolog = useXynolog();
 
@@ -64,7 +69,7 @@ export function CollapsibleResourceNavigation({
     dragToReorder: translations?.dragToReorder || t('dragToReorder'),
     dragToReorderDoc: translations?.dragToReorderDoc || t('dragToReorderDoc'),
     closeResource: translations?.closeResource || t('closeResource'),
-    dragInstructions: translations?.dragInstructions || t('dragInstructions')
+    dragInstructions: translations?.dragInstructions || t('dragInstructions'),
   };
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
@@ -73,14 +78,18 @@ export function CollapsibleResourceNavigation({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         closeDropdown();
       }
     };
 
     if (isDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
     return undefined;
   }, [isDropdownOpen]);
@@ -94,29 +103,37 @@ export function CollapsibleResourceNavigation({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Handle keyboard reordering (Alt+Up/Down arrows)
-  const handleKeyboardReorder = useCallback((resourceId: ResourceId, direction: 'up' | 'down') => {
-    const currentIndex = resources.findIndex(r => r.id === resourceId);
-    if (currentIndex === -1) return;
+  const handleKeyboardReorder = useCallback(
+    (resourceId: ResourceId, direction: 'up' | 'down') => {
+      const currentIndex = resources.findIndex((r) => r.id === resourceId);
+      if (currentIndex === -1) return;
 
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-    // Check bounds
-    if (newIndex < 0 || newIndex >= resources.length) {
-      announceCannotMove(direction);
-      return;
-    }
+      // Check bounds
+      if (newIndex < 0 || newIndex >= resources.length) {
+        announceCannotMove(direction);
+        return;
+      }
 
-    // Emit event
-    xynolog.emit('tabs:reorder', { oldIndex: currentIndex, newIndex });
+      // Emit event
+      xynolog.emit('tabs:reorder', { oldIndex: currentIndex, newIndex });
 
-    // Announce the change
-    const resource = resources[currentIndex];
-    announceKeyboardReorder(resource.name, direction, newIndex + 1, resources.length);
-  }, [resources, xynolog]);
+      // Announce the change
+      const resource = resources[currentIndex];
+      announceKeyboardReorder(
+        resource.name,
+        direction,
+        newIndex + 1,
+        resources.length,
+      );
+    },
+    [resources, xynolog],
+  );
 
   // Handle resource close
   const handleResourceClose = (resourceId: ResourceId, e: React.MouseEvent) => {
@@ -136,7 +153,7 @@ export function CollapsibleResourceNavigation({
   // Handle drag start
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const resource = resources.find(r => r.id === active.id);
+    const resource = resources.find((r) => r.id === active.id);
     if (resource) {
       const index = resources.indexOf(resource);
       announcePickup(resource.name, index + 1, resources.length);
@@ -148,8 +165,12 @@ export function CollapsibleResourceNavigation({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = resources.findIndex((resource) => resource.id === active.id);
-      const newIndex = resources.findIndex((resource) => resource.id === over.id);
+      const oldIndex = resources.findIndex(
+        (resource) => resource.id === active.id,
+      );
+      const newIndex = resources.findIndex(
+        (resource) => resource.id === over.id,
+      );
       if (oldIndex !== -1 && newIndex !== -1) {
         // Emit event
         xynolog.emit('tabs:reorder', { oldIndex, newIndex });
@@ -173,7 +194,10 @@ export function CollapsibleResourceNavigation({
 
       <div className="xynolog-collapsible-nav__container">
         {/* Section header with collapse/expand button and optional dropdown */}
-        <div style={{ position: 'relative' }} ref={navigationMenu ? dropdownRef : undefined}>
+        <div
+          style={{ position: 'relative' }}
+          ref={navigationMenu ? dropdownRef : undefined}
+        >
           <div className="xynolog-nav-section__header">
             {!isCollapsed && navigationMenu && (
               <button
@@ -187,13 +211,23 @@ export function CollapsibleResourceNavigation({
               </button>
             )}
             {!isCollapsed && !navigationMenu && (
-              <span className="xynolog-nav-section__header-text">{mergedTranslations.title}</span>
+              <span className="xynolog-nav-section__header-text">
+                {mergedTranslations.title}
+              </span>
             )}
             <button
               onClick={() => xynolog.emit('shell:sidebar-toggle', undefined)}
               className="xynolog-nav-section__header-icon"
-              title={isCollapsed ? mergedTranslations.expandSidebar : mergedTranslations.collapseSidebar}
-              aria-label={isCollapsed ? mergedTranslations.expandSidebar : mergedTranslations.collapseSidebar}
+              title={
+                isCollapsed
+                  ? mergedTranslations.expandSidebar
+                  : mergedTranslations.collapseSidebar
+              }
+              aria-label={
+                isCollapsed
+                  ? mergedTranslations.expandSidebar
+                  : mergedTranslations.collapseSidebar
+              }
               type="button"
             >
               {!isCollapsed ? <ChevronLeftIcon /> : <BarsIcon />}
@@ -220,7 +254,10 @@ export function CollapsibleResourceNavigation({
                   title={item.description || item.name}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className="xynolog-nav-tab__icon" aria-hidden="true" />
+                  <item.icon
+                    className="xynolog-nav-tab__icon"
+                    aria-hidden="true"
+                  />
                   <span className="xynolog-nav-tab__text">{item.name}</span>
                 </Link>
               );
@@ -242,7 +279,10 @@ export function CollapsibleResourceNavigation({
                   aria-current={isActive ? 'page' : undefined}
                   aria-label={item.name}
                 >
-                  <item.icon className="xynolog-nav-tab__icon" aria-hidden="true" />
+                  <item.icon
+                    className="xynolog-nav-tab__icon"
+                    aria-hidden="true"
+                  />
                 </Link>
               );
             })}
@@ -250,69 +290,73 @@ export function CollapsibleResourceNavigation({
         )}
 
         {/* Resource tabs with drag and drop */}
-        <div className="xynolog-resource-tabs" role="tablist" aria-label="Open resources">
-                {isCollapsed ? (
-                  // When collapsed, dragging is disabled - just render simple tabs
-                  resources.map((resource) => {
-                    const resourceHref = getResourceHref(resource.id);
-                    const isActive = currentPath === resourceHref;
+        <div
+          className="xynolog-resource-tabs"
+          role="tablist"
+          aria-label="Open resources"
+        >
+          {isCollapsed ? (
+            // When collapsed, dragging is disabled - just render simple tabs
+            resources.map((resource) => {
+              const resourceHref = getResourceHref(resource.id);
+              const isActive = currentPath === resourceHref;
 
-                    return (
-                      <SortableResourceTab
-                        key={resource.id}
-                        resource={resource}
-                        isCollapsed={isCollapsed}
-                        isActive={isActive}
-                        href={resourceHref}
-                        onClose={handleResourceClose}
-                        Link={Link}
-                        translations={{
-                          dragToReorder: mergedTranslations.dragToReorder,
-                          dragToReorderDoc: mergedTranslations.dragToReorderDoc,
-                          closeResource: mergedTranslations.closeResource
-                        }}
-                      />
-                    );
-                  })
-                ) : (
-                  // When expanded, enable drag and drop
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext
-                      items={resources.map((resource) => resource.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {resources.map((resource, index) => {
-                        const resourceHref = getResourceHref(resource.id);
-                        const isActive = currentPath === resourceHref;
+              return (
+                <SortableResourceTab
+                  key={resource.id}
+                  resource={resource}
+                  isCollapsed={isCollapsed}
+                  isActive={isActive}
+                  href={resourceHref}
+                  onClose={handleResourceClose}
+                  Link={Link}
+                  translations={{
+                    dragToReorder: mergedTranslations.dragToReorder,
+                    dragToReorderDoc: mergedTranslations.dragToReorderDoc,
+                    closeResource: mergedTranslations.closeResource,
+                  }}
+                />
+              );
+            })
+          ) : (
+            // When expanded, enable drag and drop
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={resources.map((resource) => resource.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {resources.map((resource, index) => {
+                  const resourceHref = getResourceHref(resource.id);
+                  const isActive = currentPath === resourceHref;
 
-                        return (
-                          <SortableResourceTab
-                            key={resource.id}
-                            resource={resource}
-                            isCollapsed={isCollapsed}
-                            isActive={isActive}
-                            href={resourceHref}
-                            onClose={handleResourceClose}
-                            onReorder={handleKeyboardReorder}
-                            index={index}
-                            totalCount={resources.length}
-                            Link={Link}
-                            translations={{
-                              dragToReorder: mergedTranslations.dragToReorder,
-                              dragToReorderDoc: mergedTranslations.dragToReorderDoc,
-                              closeResource: mergedTranslations.closeResource
-                            }}
-                          />
-                        );
-                      })}
-                    </SortableContext>
-                  </DndContext>
-                )}
+                  return (
+                    <SortableResourceTab
+                      key={resource.id}
+                      resource={resource}
+                      isCollapsed={isCollapsed}
+                      isActive={isActive}
+                      href={resourceHref}
+                      onClose={handleResourceClose}
+                      onReorder={handleKeyboardReorder}
+                      index={index}
+                      totalCount={resources.length}
+                      Link={Link}
+                      translations={{
+                        dragToReorder: mergedTranslations.dragToReorder,
+                        dragToReorderDoc: mergedTranslations.dragToReorderDoc,
+                        closeResource: mergedTranslations.closeResource,
+                      }}
+                    />
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
+          )}
         </div>
       </div>
     </div>

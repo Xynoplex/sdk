@@ -39,35 +39,41 @@ interface Router {
 export function useObservableRouter<T extends Router>(baseRouter: T): T {
   const xynolog = useXynolog();
 
-  const push = useCallback((path: string, options?: { reason?: string }) => {
-    // Emit event for observability
-    xynolog.emit('nav:push', {
-      path,
-      reason: options?.reason
-    });
+  const push = useCallback(
+    (path: string, options?: { reason?: string }) => {
+      // Emit event for observability
+      xynolog.emit('nav:push', {
+        path,
+        reason: options?.reason,
+      });
 
-    // Perform actual navigation
-    baseRouter.push(path);
-  }, [xynolog, baseRouter]);
+      // Perform actual navigation
+      baseRouter.push(path);
+    },
+    [xynolog, baseRouter],
+  );
 
-  const replace = useCallback((path: string, options?: { reason?: string }) => {
-    // Only wrap replace if the router has it
-    if (!baseRouter.replace) return;
+  const replace = useCallback(
+    (path: string, options?: { reason?: string }) => {
+      // Only wrap replace if the router has it
+      if (!baseRouter.replace) return;
 
-    // Emit event for observability
-    xynolog.emit('nav:push', {
-      path,
-      reason: options?.reason ? `replace:${options.reason}` : 'replace'
-    });
+      // Emit event for observability
+      xynolog.emit('nav:push', {
+        path,
+        reason: options?.reason ? `replace:${options.reason}` : 'replace',
+      });
 
-    // Perform actual navigation
-    baseRouter.replace(path);
-  }, [xynolog, baseRouter]);
+      // Perform actual navigation
+      baseRouter.replace(path);
+    },
+    [xynolog, baseRouter],
+  );
 
   return {
     ...baseRouter,
     push,
-    ...(baseRouter.replace && { replace })
+    ...(baseRouter.replace && { replace }),
   } as T;
 }
 
@@ -106,22 +112,25 @@ export function useObservableRouter<T extends Router>(baseRouter: T): T {
 export function useObservableExternalNavigation() {
   const xynolog = useXynolog();
 
-  return useCallback((url: string, metadata?: { resourceId?: ResourceId }) => {
-    // Fallback: If no subscriber cancels within 10ms, use window.location
-    // This ensures navigation still works even if app doesn't implement handler
-    const fallbackTimer = setTimeout(() => {
-      console.warn(
-        '[Observable Navigation] No handler cancelled nav:external fallback. ' +
-        'Falling back to window.location.href. ' +
-        'For better UX, subscribe to this event in your app, call cancelFallback(), and use client-side routing.'
-      );
-      window.location.href = url;
-    }, 10);
+  return useCallback(
+    (url: string, metadata?: { resourceId?: ResourceId }) => {
+      // Fallback: If no subscriber cancels within 10ms, use window.location
+      // This ensures navigation still works even if app doesn't implement handler
+      const fallbackTimer = setTimeout(() => {
+        console.warn(
+          '[Observable Navigation] No handler cancelled nav:external fallback. ' +
+            'Falling back to window.location.href. ' +
+            'For better UX, subscribe to this event in your app, call cancelFallback(), and use client-side routing.',
+        );
+        window.location.href = url;
+      }, 10);
 
-    xynolog.emit('nav:external', {
-      url,
-      resourceId: metadata?.resourceId,
-      cancelFallback: () => clearTimeout(fallbackTimer),
-    });
-  }, [xynolog]);
+      xynolog.emit('nav:external', {
+        url,
+        resourceId: metadata?.resourceId,
+        cancelFallback: () => clearTimeout(fallbackTimer),
+      });
+    },
+    [xynolog],
+  );
 }

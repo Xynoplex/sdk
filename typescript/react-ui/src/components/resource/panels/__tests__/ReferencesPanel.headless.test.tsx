@@ -14,14 +14,20 @@ import { renderInEnglish } from '../../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import type { Annotation, AnnotationId } from '@xynolog/core';
-import type { RouteBuilder, LinkComponentProps } from '../../../../contexts/RoutingContext';
+import type {
+  RouteBuilder,
+  LinkComponentProps,
+} from '../../../../contexts/RoutingContext';
 import { ReferencesPanel } from '../ReferencesPanel';
 import { resourceId, EventBus } from '@xynolog/core';
 
 function fakeSession() {
   const client = {
     bus: new EventBus(),
-    browse: { click: vi.fn(), tagSchemas: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }) },
+    browse: {
+      click: vi.fn(),
+      tagSchemas: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+    },
     beckon: { hover: vi.fn(), sparkle: vi.fn() },
     mark: { delete: vi.fn() },
   };
@@ -50,7 +56,9 @@ function referenceAnnotation(): Annotation {
 }
 
 const TestLink = ({ href, children, ...rest }: LinkComponentProps) => (
-  <a href={href} {...rest}>{children}</a>
+  <a href={href} {...rest}>
+    {children}
+  </a>
 );
 const testRoutes: RouteBuilder = { resourceDetail: (id) => `/r/${id}` };
 
@@ -68,7 +76,8 @@ describe('ReferencesPanel — headless (session prop, no session provider)', () 
         annotations={[referenceAnnotation()]}
         isDelegating={false}
         progress={null}
-        jobId={null} cancelled={false}
+        jobId={null}
+        cancelled={false}
         pendingAnnotation={null}
         allEntityTypes={[]}
         Link={TestLink}
@@ -117,7 +126,9 @@ describe('ReferencesPanel — headless (session prop, no session provider)', () 
       );
 
       expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      expect(screen.getByText(/Could not load incoming references/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Could not load incoming references/),
+      ).toBeInTheDocument();
     });
 
     it('offers a retry that calls back', () => {
@@ -137,14 +148,12 @@ describe('ReferencesPanel — headless (session prop, no session provider)', () 
 
     it('with no error, a still-loading list keeps its loading affordance', () => {
       renderInEnglish(
-        <ReferencesPanel
-          {...base()}
-          referencedBy={[]}
-          referencedByLoading
-        />,
+        <ReferencesPanel {...base()} referencedBy={[]} referencedByLoading />,
       );
 
-      expect(screen.queryByText(/Could not load incoming references/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Could not load incoming references/),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -163,7 +172,8 @@ describe('ReferencesPanel — headless (session prop, no session provider)', () 
           annotations={[]}
           isDelegating={false}
           progress={null}
-          jobId={null} cancelled={false}
+          jobId={null}
+          cancelled={false}
           pendingAnnotation={null}
           allEntityTypes={[]}
           entityTypesError={new Error('boom')}
@@ -172,8 +182,12 @@ describe('ReferencesPanel — headless (session prop, no session provider)', () 
         />,
       );
 
-      expect(screen.queryByText('No entity types available')).not.toBeInTheDocument();
-      expect(screen.getByText(/Could not load entity types/)).toBeInTheDocument();
+      expect(
+        screen.queryByText('No entity types available'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByText(/Could not load entity types/),
+      ).toBeInTheDocument();
     });
   });
 });

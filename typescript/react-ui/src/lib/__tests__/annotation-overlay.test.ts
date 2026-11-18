@@ -36,7 +36,13 @@ function cleanup(container: HTMLDivElement): void {
   document.body.removeChild(container);
 }
 
-function makeAnnotation(overrides: Partial<OverlayAnnotation> & { id: string; offset: number; length: number }): OverlayAnnotation {
+function makeAnnotation(
+  overrides: Partial<OverlayAnnotation> & {
+    id: string;
+    offset: number;
+    length: number;
+  },
+): OverlayAnnotation {
   return {
     exact: '',
     type: 'highlight',
@@ -46,10 +52,17 @@ function makeAnnotation(overrides: Partial<OverlayAnnotation> & { id: string; of
 }
 
 /** Resolve + apply against a container in one step (the BrowseView pipeline). */
-function overlay(source: string, container: HTMLElement, annotations: OverlayAnnotation[]): void {
+function overlay(
+  source: string,
+  container: HTMLElement,
+  annotations: OverlayAnnotation[],
+): void {
   const offsetMap = buildSourceToRenderedMap(source, container);
   const textNodeIndex = buildTextNodeIndex(container);
-  applyHighlights(resolveAnnotationSpans(annotations, textOffsets(source), offsetMap), textNodeIndex);
+  applyHighlights(
+    resolveAnnotationSpans(annotations, textOffsets(source), offsetMap),
+    textNodeIndex,
+  );
 }
 
 // ─── buildSourceToRenderedMap ────────────────────────────────────────────────
@@ -72,7 +85,9 @@ describe('buildSourceToRenderedMap', () => {
   it('skips bold markdown syntax (**)', () => {
     const source = 'The **Zeus** ruled.';
     // Rendered: "The Zeus ruled." (** stripped)
-    const container = createContainer('<p>The <strong>Zeus</strong> ruled.</p>');
+    const container = createContainer(
+      '<p>The <strong>Zeus</strong> ruled.</p>',
+    );
 
     const map = buildSourceToRenderedMap(source, container);
 
@@ -103,7 +118,7 @@ describe('buildSourceToRenderedMap', () => {
     const map = buildSourceToRenderedMap(source, container);
 
     // "Athena" at source 5-10 → rendered 4-9
-    expect(map.get(5)).toBe(4);  // A
+    expect(map.get(5)).toBe(4); // A
     expect(map.get(10)).toBe(9); // a
 
     cleanup(container);
@@ -112,7 +127,9 @@ describe('buildSourceToRenderedMap', () => {
   it('handles link markdown syntax', () => {
     const source = 'See [Zeus](http://example.com) here.';
     // Rendered: "See Zeus here." (link syntax stripped, only link text remains)
-    const container = createContainer('<p>See <a href="http://example.com">Zeus</a> here.</p>');
+    const container = createContainer(
+      '<p>See <a href="http://example.com">Zeus</a> here.</p>',
+    );
 
     const map = buildSourceToRenderedMap(source, container);
 
@@ -158,18 +175,20 @@ describe('buildTextNodeIndex', () => {
   });
 
   it('builds cumulative offsets across multiple text nodes', () => {
-    const container = createContainer('<p>Hello <strong>Zeus</strong> world</p>');
+    const container = createContainer(
+      '<p>Hello <strong>Zeus</strong> world</p>',
+    );
 
     const index = buildTextNodeIndex(container);
 
     // Three text nodes: "Hello ", "Zeus", " world"
     expect(index.length).toBe(3);
     expect(index[0]!.start).toBe(0);
-    expect(index[0]!.end).toBe(6);   // "Hello " = 6 chars
+    expect(index[0]!.end).toBe(6); // "Hello " = 6 chars
     expect(index[1]!.start).toBe(6);
-    expect(index[1]!.end).toBe(10);  // "Zeus" = 4 chars
+    expect(index[1]!.end).toBe(10); // "Zeus" = 4 chars
     expect(index[2]!.start).toBe(10);
-    expect(index[2]!.end).toBe(16);  // " world" = 6 chars
+    expect(index[2]!.end).toBe(16); // " world" = 6 chars
 
     cleanup(container);
   });
@@ -181,7 +200,7 @@ describe('buildTextNodeIndex', () => {
 
     expect(index.length).toBe(2);
     expect(index[0]!.start).toBe(0);
-    expect(index[0]!.end).toBe(5);  // "First"
+    expect(index[0]!.end).toBe(5); // "First"
     expect(index[1]!.start).toBe(5);
     expect(index[1]!.end).toBe(11); // "Second"
 
@@ -211,7 +230,11 @@ describe('resolveAnnotationSpans', () => {
       makeAnnotation({ id: 'ann-1', offset: 0, length: 4, exact: 'Zeus' }),
     ];
 
-    const spans = resolveAnnotationSpans(annotations, textOffsets(source), offsetMap);
+    const spans = resolveAnnotationSpans(
+      annotations,
+      textOffsets(source),
+      offsetMap,
+    );
 
     expect(spans.length).toBe(1);
     expect(spans[0]!.start).toBe(0);
@@ -223,14 +246,20 @@ describe('resolveAnnotationSpans', () => {
 
   it('resolves annotation inside bold text to syntax-stripped offsets', () => {
     const source = 'The **Zeus** ruled.';
-    const container = createContainer('<p>The <strong>Zeus</strong> ruled.</p>');
+    const container = createContainer(
+      '<p>The <strong>Zeus</strong> ruled.</p>',
+    );
     const offsetMap = buildSourceToRenderedMap(source, container);
 
     const annotations: OverlayAnnotation[] = [
       makeAnnotation({ id: 'ann-1', offset: 6, length: 4, exact: 'Zeus' }),
     ];
 
-    const spans = resolveAnnotationSpans(annotations, textOffsets(source), offsetMap);
+    const spans = resolveAnnotationSpans(
+      annotations,
+      textOffsets(source),
+      offsetMap,
+    );
 
     expect(spans.length).toBe(1);
     // Rendered: "The Zeus ruled." — "Zeus" at 4-8
@@ -250,7 +279,11 @@ describe('resolveAnnotationSpans', () => {
       makeAnnotation({ id: 'ann-2', offset: 9, length: 4, exact: 'Hera' }),
     ];
 
-    const spans = resolveAnnotationSpans(annotations, textOffsets(source), offsetMap);
+    const spans = resolveAnnotationSpans(
+      annotations,
+      textOffsets(source),
+      offsetMap,
+    );
 
     expect(spans.length).toBe(2);
     expect(spans[0]!.start).toBe(0);
@@ -270,7 +303,11 @@ describe('resolveAnnotationSpans', () => {
       makeAnnotation({ id: 'ann-1', offset: 100, length: 4, exact: 'nope' }),
     ];
 
-    const spans = resolveAnnotationSpans(annotations, textOffsets(source), offsetMap);
+    const spans = resolveAnnotationSpans(
+      annotations,
+      textOffsets(source),
+      offsetMap,
+    );
 
     expect(spans.length).toBe(0);
 
@@ -301,7 +338,13 @@ describe('applyHighlights', () => {
     const container = createContainer('<p>Zeus was king.</p>');
 
     overlay('Zeus was king.', container, [
-      makeAnnotation({ id: 'ann-1', offset: 0, length: 4, exact: 'Zeus', type: 'reference' }),
+      makeAnnotation({
+        id: 'ann-1',
+        offset: 0,
+        length: 4,
+        exact: 'Zeus',
+        type: 'reference',
+      }),
     ]);
 
     const span = container.querySelector('[data-annotation-id="ann-1"]');
@@ -322,8 +365,12 @@ describe('applyHighlights', () => {
       makeAnnotation({ id: 'ann-2', offset: 5, length: 4, type: 'assessment' }),
     ]);
 
-    expect(container.querySelector('.annotation-highlight')!.textContent).toBe('Zeus');
-    expect(container.querySelector('.annotation-assessment')!.textContent).toBe('Hera');
+    expect(container.querySelector('.annotation-highlight')!.textContent).toBe(
+      'Zeus',
+    );
+    expect(container.querySelector('.annotation-assessment')!.textContent).toBe(
+      'Hera',
+    );
     expect(container.textContent).toBe('Zeus Hera');
 
     cleanup(container);
@@ -331,11 +378,18 @@ describe('applyHighlights', () => {
 
   it('wraps an annotation crossing element boundaries as sibling spans', () => {
     const source = 'The **Zeus** ruled.';
-    const container = createContainer('<p>The <strong>Zeus</strong> ruled.</p>');
+    const container = createContainer(
+      '<p>The <strong>Zeus</strong> ruled.</p>',
+    );
 
     // "e Zeus ru" in rendered text: crosses into and out of the <strong>.
     overlay(source, container, [
-      makeAnnotation({ id: 'ann-1', offset: 2, length: 13, exact: 'e **Zeus** ru' }),
+      makeAnnotation({
+        id: 'ann-1',
+        offset: 2,
+        length: 13,
+        exact: 'e **Zeus** ru',
+      }),
     ]);
 
     const segments = container.querySelectorAll('[data-annotation-id="ann-1"]');
@@ -379,16 +433,28 @@ describe('applyHighlights', () => {
       makeAnnotation({ id: 'ann-2', offset: 5, length: 8, type: 'reference' }),
     ]);
 
-    const ann1 = [...container.querySelectorAll('[data-annotation-id="ann-1"]')];
-    const ann2 = [...container.querySelectorAll('[data-annotation-id="ann-2"]')];
+    const ann1 = [
+      ...container.querySelectorAll('[data-annotation-id="ann-1"]'),
+    ];
+    const ann2 = [
+      ...container.querySelectorAll('[data-annotation-id="ann-2"]'),
+    ];
     expect(ann1.map((s) => s.textContent).join('')).toBe('Zeus and');
     expect(ann2.map((s) => s.textContent).join('')).toBe('and Hera');
 
     // In the overlap region, the later-listed annotation is innermost: walking
     // up from "and" hits ann-2 (the reference) before ann-1.
-    const overlapText = [...container.querySelectorAll('span')]
-      .find((s) => s.textContent === 'and' && s.childNodes.length === 1 && s.firstChild!.nodeType === Node.TEXT_NODE)!;
-    expect(overlapText.closest('[data-annotation-id]')!.getAttribute('data-annotation-id')).toBe('ann-2');
+    const overlapText = [...container.querySelectorAll('span')].find(
+      (s) =>
+        s.textContent === 'and' &&
+        s.childNodes.length === 1 &&
+        s.firstChild!.nodeType === Node.TEXT_NODE,
+    )!;
+    expect(
+      overlapText
+        .closest('[data-annotation-id]')!
+        .getAttribute('data-annotation-id'),
+    ).toBe('ann-2');
     expect(container.textContent).toBe('Zeus and Hera');
 
     cleanup(container);
@@ -439,7 +505,7 @@ describe('clearHighlights', () => {
 
   it('handles multiple annotation spans', () => {
     const container = createContainer(
-      '<p><span data-annotation-id="a1" data-annotation-type="highlight" class="annotation-highlight">Zeus</span> and <span data-annotation-id="a2" data-annotation-type="reference" class="annotation-reference">Hera</span></p>'
+      '<p><span data-annotation-id="a1" data-annotation-type="highlight" class="annotation-highlight">Zeus</span> and <span data-annotation-id="a2" data-annotation-type="reference" class="annotation-reference">Hera</span></p>',
     );
 
     clearHighlights(container);
@@ -467,7 +533,9 @@ describe('clearHighlights', () => {
   });
 
   it('merges adjacent text nodes after clearing', () => {
-    const container = createContainer('<p>Hello <span data-annotation-id="a1">world</span> end</p>');
+    const container = createContainer(
+      '<p>Hello <span data-annotation-id="a1">world</span> end</p>',
+    );
 
     clearHighlights(container);
 
@@ -493,7 +561,13 @@ describe('end-to-end overlay pipeline', () => {
     const container = createContainer('<p>Zeus was the king of the gods.</p>');
 
     overlay(source, container, [
-      makeAnnotation({ id: 'ann-1', offset: 0, length: 4, exact: 'Zeus', type: 'reference' }),
+      makeAnnotation({
+        id: 'ann-1',
+        offset: 0,
+        length: 4,
+        exact: 'Zeus',
+        type: 'reference',
+      }),
     ]);
 
     // Verify annotation applied
@@ -512,10 +586,18 @@ describe('end-to-end overlay pipeline', () => {
 
   it('annotates text inside bold markdown', () => {
     const source = 'The **Zeus** ruled.';
-    const container = createContainer('<p>The <strong>Zeus</strong> ruled.</p>');
+    const container = createContainer(
+      '<p>The <strong>Zeus</strong> ruled.</p>',
+    );
 
     overlay(source, container, [
-      makeAnnotation({ id: 'ann-1', offset: 6, length: 4, exact: 'Zeus', type: 'highlight' }),
+      makeAnnotation({
+        id: 'ann-1',
+        offset: 6,
+        length: 4,
+        exact: 'Zeus',
+        type: 'highlight',
+      }),
     ]);
 
     const span = container.querySelector('[data-annotation-id="ann-1"]');
@@ -527,15 +609,33 @@ describe('end-to-end overlay pipeline', () => {
 
   it('handles multiple annotations across paragraphs', () => {
     const source = 'Zeus ruled.\n\nHera was queen.';
-    const container = createContainer('<p>Zeus ruled.</p><p>Hera was queen.</p>');
+    const container = createContainer(
+      '<p>Zeus ruled.</p><p>Hera was queen.</p>',
+    );
 
     overlay(source, container, [
-      makeAnnotation({ id: 'ann-1', offset: 0, length: 4, exact: 'Zeus', type: 'reference' }),
-      makeAnnotation({ id: 'ann-2', offset: 13, length: 4, exact: 'Hera', type: 'highlight' }),
+      makeAnnotation({
+        id: 'ann-1',
+        offset: 0,
+        length: 4,
+        exact: 'Zeus',
+        type: 'reference',
+      }),
+      makeAnnotation({
+        id: 'ann-2',
+        offset: 13,
+        length: 4,
+        exact: 'Hera',
+        type: 'highlight',
+      }),
     ]);
 
-    expect(container.querySelector('[data-annotation-id="ann-1"]')!.textContent).toBe('Zeus');
-    expect(container.querySelector('[data-annotation-id="ann-2"]')!.textContent).toBe('Hera');
+    expect(
+      container.querySelector('[data-annotation-id="ann-1"]')!.textContent,
+    ).toBe('Zeus');
+    expect(
+      container.querySelector('[data-annotation-id="ann-2"]')!.textContent,
+    ).toBe('Hera');
 
     clearHighlights(container);
     expect(container.querySelectorAll('[data-annotation-id]').length).toBe(0);
@@ -548,8 +648,20 @@ describe('end-to-end overlay pipeline', () => {
     const container = createContainer('<p>Zeus loved Zeus.</p>');
 
     overlay(source, container, [
-      makeAnnotation({ id: 'ann-1', offset: 0, length: 4, exact: 'Zeus', type: 'reference' }),
-      makeAnnotation({ id: 'ann-2', offset: 11, length: 4, exact: 'Zeus', type: 'highlight' }),
+      makeAnnotation({
+        id: 'ann-1',
+        offset: 0,
+        length: 4,
+        exact: 'Zeus',
+        type: 'reference',
+      }),
+      makeAnnotation({
+        id: 'ann-2',
+        offset: 11,
+        length: 4,
+        exact: 'Zeus',
+        type: 'highlight',
+      }),
     ]);
 
     const spans = container.querySelectorAll('[data-annotation-id]');

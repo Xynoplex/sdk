@@ -40,7 +40,10 @@ describe('annotationIdFor — content-addressed annotation identity', () => {
     // The body is built by different code paths for different motivations; if
     // the hash depended on property order, the same annotation would get two
     // ids depending on which builder produced it.
-    const reordered = { ...base, body: [{ purpose: 'commenting', value: 'a remark', type: 'TextualBody' }] };
+    const reordered = {
+      ...base,
+      body: [{ purpose: 'commenting', value: 'a remark', type: 'TextualBody' }],
+    };
     expect(annotationIdFor(reordered)).toBe(annotationIdFor(base));
   });
 
@@ -48,32 +51,49 @@ describe('annotationIdFor — content-addressed annotation identity', () => {
     // The case of protocol/specs/src/annotations/id-cases.json whose two names tell the
     // orders apart: U+FF5A comes before U+1F600, whose first UTF-16 unit is
     // the lesser. Ordered by unit the id is 2VS31GK5k_0lv4Pz-ei7o.
-    expect(annotationIdFor({
-      resourceId: 'res-1',
-      motivation: 'commenting',
-      anchor: '0:12:Ada Lovelace',
-      body: { type: 'TextualBody', value: 'an author', '😀': 1, 'ｚ': 2 },
-    })).toBe('ezkXvdosD9657eaaCQKLh');
+    expect(
+      annotationIdFor({
+        resourceId: 'res-1',
+        motivation: 'commenting',
+        anchor: '0:12:Ada Lovelace',
+        body: { type: 'TextualBody', value: 'an author', '😀': 1, ｚ: 2 },
+      }),
+    ).toBe('ezkXvdosD9657eaaCQKLh');
   });
 
   // ── what must make two annotations DIFFERENT ──────────────────────────
 
   it('distinguishes different resources', () => {
-    expect(annotationIdFor({ ...base, resourceId: 'res-2' })).not.toBe(annotationIdFor(base));
+    expect(annotationIdFor({ ...base, resourceId: 'res-2' })).not.toBe(
+      annotationIdFor(base),
+    );
   });
 
   it('distinguishes different spans', () => {
-    expect(annotationIdFor({ ...base, anchor: 'text:11-21' })).not.toBe(annotationIdFor(base));
+    expect(annotationIdFor({ ...base, anchor: 'text:11-21' })).not.toBe(
+      annotationIdFor(base),
+    );
   });
 
   it('distinguishes different motivations on the same span', () => {
-    expect(annotationIdFor({ ...base, motivation: 'assessing' })).not.toBe(annotationIdFor(base));
+    expect(annotationIdFor({ ...base, motivation: 'assessing' })).not.toBe(
+      annotationIdFor(base),
+    );
   });
 
   it('distinguishes different bodies on the same span', () => {
     // Two comments on one span are two annotations. Hashing without the body
     // would silently collapse them into one.
-    const other = { ...base, body: [{ type: 'TextualBody', value: 'a DIFFERENT remark', purpose: 'commenting' }] };
+    const other = {
+      ...base,
+      body: [
+        {
+          type: 'TextualBody',
+          value: 'a DIFFERENT remark',
+          purpose: 'commenting',
+        },
+      ],
+    };
     expect(annotationIdFor(other)).not.toBe(annotationIdFor(base));
   });
 
@@ -89,7 +109,9 @@ describe('annotationIdFor — content-addressed annotation identity', () => {
     // the identity inputs, so `created` and the emitting agent cannot leak in.
     // A re-emission during recovery happens at a different time, by a
     // different worker process, and must still collide.
-    const ids = new Set(Array.from({ length: 50 }, () => annotationIdFor(base)));
+    const ids = new Set(
+      Array.from({ length: 50 }, () => annotationIdFor(base)),
+    );
     expect(ids.size).toBe(1);
   });
 

@@ -8,7 +8,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { asDeclared, Bus, FrameRefusal, type Delivered, type Heard } from '../bus';
+import {
+  asDeclared,
+  Bus,
+  FrameRefusal,
+  type Delivered,
+  type Heard,
+} from '../bus';
 import { BRIDGED_CHANNELS } from '../bridging';
 import { FaultyTransport } from '../faulty-transport';
 import { EventBus } from '../event-bus';
@@ -36,7 +42,10 @@ function archived(of: typeof RID): StoredEvent<EventOfType<'mark:archived'>> {
 }
 
 /** Every value `observable` gives from now on. */
-function collect<T>(observable: Observable<T>): { seen: T[]; stop: () => void } {
+function collect<T>(observable: Observable<T>): {
+  seen: T[];
+  stop: () => void;
+} {
   const seen: T[] = [];
   const subscription = observable.subscribe((value) => seen.push(value));
   return { seen, stop: () => subscription.unsubscribe() };
@@ -44,7 +53,10 @@ function collect<T>(observable: Observable<T>): { seen: T[]; stop: () => void } 
 
 /** `heard` as the frame it is; a test that reads a refusal here fails. */
 function delivered<T>(heard: Heard<T>): Delivered<T> {
-  if (heard.status === 'refused') throw new Error(`refused: ${heard.channel}, its \`${heard.member}\` ${heard.reason}`);
+  if (heard.status === 'refused')
+    throw new Error(
+      `refused: ${heard.channel}, its \`${heard.member}\` ${heard.reason}`,
+    );
   return heard;
 }
 
@@ -61,38 +73,66 @@ describe('Bus.frames: a channel of no scope', () => {
     };
     void transport.emit('beckon:focus', focus, { correlationId: 'c-1' });
 
-    expect(seen.map(delivered).map((frame) => [frame.status, frame.correlationId, frame.userId, frame.scope, frame.payload.annotationId])).toEqual([
-      ['delivered', 'c-1', ALICE, undefined, 'ann-1'],
-    ]);
+    expect(
+      seen
+        .map(delivered)
+        .map((frame) => [
+          frame.status,
+          frame.correlationId,
+          frame.userId,
+          frame.scope,
+          frame.payload.annotationId,
+        ]),
+    ).toEqual([['delivered', 'c-1', ALICE, undefined, 'ann-1']]);
   });
 
   it('leaves out of a payload a stamp its channel does not declare, and keeps one it does', () => {
     const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
     const { seen } = collect(new Bus(transport).frames('job:fail'));
 
-    const failed = { resourceId: RID, jobId: jobId('job-1'), jobType: 'mark', error: 'the model did not answer' } as const;
-    const stamped: EventMap['job:fail'] & { _roles: string[] } = { ...failed, _userId: ALICE, _roles: ['xynolog-service'] };
+    const failed = {
+      resourceId: RID,
+      jobId: jobId('job-1'),
+      jobType: 'mark',
+      error: 'the model did not answer',
+    } as const;
+    const stamped: EventMap['job:fail'] & { _roles: string[] } = {
+      ...failed,
+      _userId: ALICE,
+      _roles: ['xynolog-service'],
+    };
     void transport.emit('job:fail', stamped);
 
-    expect(seen.map(delivered).map((frame) => frame.payload)).toEqual([{ ...failed, _userId: ALICE }]);
+    expect(seen.map(delivered).map((frame) => frame.payload)).toEqual([
+      { ...failed, _userId: ALICE },
+    ]);
   });
 
   it('gives the trace a frame was sent under, when the transport received one', () => {
-    const trace: TraceCarrier = { traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01' };
+    const trace: TraceCarrier = {
+      traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+    };
     class Traced extends FaultyTransport {
-      override frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
-        return super.frames(channel).pipe(map((frame) => ({ ...frame, trace })));
+      override frames<K extends keyof EventMap>(
+        channel: K,
+      ): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
+        return super
+          .frames(channel)
+          .pipe(map((frame) => ({ ...frame, trace })));
       }
     }
     const transport = new Traced({ channels: BRIDGED_CHANNELS });
     const { seen } = collect(new Bus(transport).frames('beckon:focus'));
 
-    void transport.emit('beckon:focus', { resourceId: RID, annotationId: annotationId('ann-1') });
+    void transport.emit('beckon:focus', {
+      resourceId: RID,
+      annotationId: annotationId('ann-1'),
+    });
 
     expect(seen.map(delivered).map((frame) => frame.trace)).toEqual([trace]);
   });
 
-  it('refuses a channel of a resource\'s scope read with no resource: it would hear nothing', () => {
+  it("refuses a channel of a resource's scope read with no resource: it would hear nothing", () => {
     const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
     const held = vi.spyOn(transport, 'subscribeToResource');
 
@@ -110,8 +150,13 @@ describe('Bus.frames: a channel of no scope', () => {
  * every SDK's typed read does. A transport's bridge publishes the refusal on
  * the bus it feeds, in place of the payload.
  */
-describe('Bus.frames: a payload that is not its channel\'s', () => {
-  const failed: EventMap['job:fail'] = { resourceId: RID, jobId: jobId('job-1'), jobType: 'mark', error: 'the model did not answer' };
+describe("Bus.frames: a payload that is not its channel's", () => {
+  const failed: EventMap['job:fail'] = {
+    resourceId: RID,
+    jobId: jobId('job-1'),
+    jobType: 'mark',
+    error: 'the model did not answer',
+  };
 
   /** `failed` as a peer might send it, with no job id: what its type says it cannot be. */
   function withNoJobId(): EventMap['job:fail'] {
@@ -132,7 +177,15 @@ describe('Bus.frames: a payload that is not its channel\'s', () => {
       const [refused, next] = seen;
       expect(seen).toHaveLength(2);
       expect(refused).toBeInstanceOf(FrameRefusal);
-      expect(refused).toStrictEqual(new FrameRefusal('job:fail', 'payload.jobId', 'lacks', lacking, undefined));
+      expect(refused).toStrictEqual(
+        new FrameRefusal(
+          'job:fail',
+          'payload.jobId',
+          'lacks',
+          lacking,
+          undefined,
+        ),
+      );
       expect(refused?.status).toBe('refused');
       expect(next !== undefined && delivered(next).payload).toEqual(failed);
       // The reader is told, and nothing is said in its place.
@@ -153,7 +206,16 @@ describe('Bus.frames: a payload that is not its channel\'s', () => {
       void transport.emit('job:fail', lacking);
       void transport.emit('job:fail', failed);
 
-      expect(seen).toStrictEqual([new FrameRefusal('job:fail', 'payload.jobId', 'lacks', lacking, undefined), failed]);
+      expect(seen).toStrictEqual([
+        new FrameRefusal(
+          'job:fail',
+          'payload.jobId',
+          'lacks',
+          lacking,
+          undefined,
+        ),
+        failed,
+      ]);
       expect(warned).not.toHaveBeenCalled();
       bridged.destroy();
     } finally {
@@ -172,11 +234,20 @@ describe('Bus.frames: a payload that is not its channel\'s', () => {
     void transport.emit('job:fail', numbered);
     void transport.emit('job:fail', twice);
 
-    expect(seen).toStrictEqual([new FrameRefusal('job:fail', 'payload.error', 'malformed', numbered, undefined), new FrameRefusal('job:fail', 'payload.jobId', 'lacks', twice, undefined)]);
+    expect(seen).toStrictEqual([
+      new FrameRefusal(
+        'job:fail',
+        'payload.error',
+        'malformed',
+        numbered,
+        undefined,
+      ),
+      new FrameRefusal('job:fail', 'payload.jobId', 'lacks', twice, undefined),
+    ]);
   });
 });
 
-describe('Bus.frames: a channel of a resource\'s scope', () => {
+describe("Bus.frames: a channel of a resource's scope", () => {
   it("holds the resource's scope for as long as it is read, and gives that resource's frames only", () => {
     const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
     // A stream carries every scope it holds on the one channel: another
@@ -185,20 +256,26 @@ describe('Bus.frames: a channel of a resource\'s scope', () => {
     const stream = collect(transport.frames('mark:archived'));
     const holding = transport.subscribeToResource.bind(transport);
     const leave = vi.fn();
-    const held = vi.spyOn(transport, 'subscribeToResource').mockImplementation((resource) => {
-      const release = holding(resource);
-      return () => {
-        leave();
-        release();
-      };
-    });
+    const held = vi
+      .spyOn(transport, 'subscribeToResource')
+      .mockImplementation((resource) => {
+        const release = holding(resource);
+        return () => {
+          leave();
+          release();
+        };
+      });
     const reading = collect(new Bus(transport).frames('mark:archived', RID));
     expect(held).toHaveBeenCalledExactlyOnceWith(RID);
 
     void transport.emit('mark:archived', archived(RID), { scope: RID });
     void transport.emit('mark:archived', archived(OTHER), { scope: OTHER });
     expect(stream.seen.map((frame) => frame.scope)).toEqual([RID, OTHER]);
-    expect(reading.seen.map(delivered).map((frame) => [frame.payload.id, frame.scope])).toEqual([['evt-res-1', RID]]);
+    expect(
+      reading.seen
+        .map(delivered)
+        .map((frame) => [frame.payload.id, frame.scope]),
+    ).toEqual([['evt-res-1', RID]]);
     expect(leave).not.toHaveBeenCalled();
 
     reading.stop();
@@ -223,7 +300,9 @@ describe('Bus.frames: a channel of a resource\'s scope', () => {
     const held = vi.spyOn(transport, 'subscribeToResource');
 
     // @ts-expect-error — beckon:hover is no resource's channel
-    expect(() => new Bus(transport).frames('beckon:hover', RID)).toThrow(TypeError);
+    expect(() => new Bus(transport).frames('beckon:hover', RID)).toThrow(
+      TypeError,
+    );
     expect(held).not.toHaveBeenCalled();
   });
 });
@@ -233,7 +312,11 @@ describe('Bus.emit', () => {
     const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
     const { seen } = collect(transport.frames('beckon:sparkle'));
 
-    const count = await new Bus(transport).emit('beckon:sparkle', { annotationId: annotationId('ann-1') }, { correlationId: 'c-2' });
+    const count = await new Bus(transport).emit(
+      'beckon:sparkle',
+      { annotationId: annotationId('ann-1') },
+      { correlationId: 'c-2' },
+    );
 
     expect(count).toBe(1);
     expect(seen.map((frame) => frame.correlationId)).toEqual(['c-2']);
@@ -242,10 +325,26 @@ describe('Bus.emit', () => {
 
 describe('asDeclared', () => {
   it('holds a payload to its shape without the stamps its type does not declare, which a closed object does not name', () => {
-    const gap = { scope: resourceId('res-1'), lastSeenId: 'e-1', reason: 'scope-mismatch' as const };
-    const stamped = { ...gap, _userId: 'did:web:example.org:users:a', _roles: ['admin'] };
+    const gap = {
+      scope: resourceId('res-1'),
+      lastSeenId: 'e-1',
+      reason: 'scope-mismatch' as const,
+    };
+    const stamped = {
+      ...gap,
+      _userId: 'did:web:example.org:users:a',
+      _roles: ['admin'],
+    };
     expect(asDeclared('bus:resume-gap', stamped, undefined)).toStrictEqual(gap);
     const more = { ...gap, more: 1 };
-    expect(asDeclared('bus:resume-gap', more, 'c-1')).toStrictEqual(new FrameRefusal('bus:resume-gap', 'payload.more', 'malformed', more, 'c-1'));
+    expect(asDeclared('bus:resume-gap', more, 'c-1')).toStrictEqual(
+      new FrameRefusal(
+        'bus:resume-gap',
+        'payload.more',
+        'malformed',
+        more,
+        'c-1',
+      ),
+    );
   });
 });

@@ -65,7 +65,12 @@ export interface RetryRule {
 
 /** Repeating these cannot cause a second effect upstream (RFC 9110 §9.2.2). */
 const IDEMPOTENT_METHODS: ReadonlySet<string> = new Set([
-  'GET', 'HEAD', 'PUT', 'DELETE', 'OPTIONS', 'TRACE',
+  'GET',
+  'HEAD',
+  'PUT',
+  'DELETE',
+  'OPTIONS',
+  'TRACE',
 ]);
 
 const boot: RetryRule = {
@@ -103,7 +108,7 @@ const job: RetryRule = {
 const transport: RetryRule = {
   name: 'transport',
   rationale:
-    'An HTTP client\'s request. A retryable status applies only where a repeat cannot cause a ' +
+    "An HTTP client's request. A retryable status applies only where a repeat cannot cause a " +
     'second effect: on an idempotent method, or on a request that carries an Idempotency-Key, ' +
     'whose repeat the server answers as it answered the first. A POST with no key that got a ' +
     '502 may already have been processed, so a repeat could do it twice. The method and the ' +
@@ -112,10 +117,19 @@ const transport: RetryRule = {
     'credential is renewed before any rule is asked, and the same token gets the same answer.',
   retryable: ({ status, method, keyed }) => {
     if (status === undefined) return false;
-    const repeatable = keyed === true || (method !== undefined && IDEMPOTENT_METHODS.has(method.toUpperCase()));
+    const repeatable =
+      keyed === true ||
+      (method !== undefined && IDEMPOTENT_METHODS.has(method.toUpperCase()));
     if (!repeatable) return false;
-    return status === 408 || status === 413 || status === 429 || status === 500
-      || status === 502 || status === 503 || status === 504;
+    return (
+      status === 408 ||
+      status === 413 ||
+      status === 429 ||
+      status === 500 ||
+      status === 502 ||
+      status === 503 ||
+      status === 504
+    );
   },
 };
 
@@ -127,7 +141,7 @@ const transport: RetryRule = {
 const refresh: RetryRule = {
   name: 'refresh',
   rationale:
-    'Exchanging a refresh token at its issuer. The issuer\'s answer is the verdict and its ' +
+    "Exchanging a refresh token at its issuer. The issuer's answer is the verdict and its " +
     'absence never is: a refused grant (RFC 6749 §5.2 returns 400 `invalid_grant` for a ' +
     'revoked, expired or already-rotated token) is terminal on the first answer, because ' +
     'retrying cannot change it and only delays a re-login the user must perform anyway. No ' +

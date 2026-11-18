@@ -31,9 +31,15 @@ export type BaseUrl = string & { readonly __brand: 'BaseUrl' };
 // HELPER FUNCTIONS (minimal validation, just branding)
 // ============================================================================
 
-export function accessToken(value: string): AccessToken { return value as AccessToken; }
-export function entityType(value: string): EntityType { return value as EntityType; }
-export function baseUrl(value: string): BaseUrl { return value as BaseUrl; }
+export function accessToken(value: string): AccessToken {
+  return value as AccessToken;
+}
+export function entityType(value: string): EntityType {
+  return value as EntityType;
+}
+export function baseUrl(value: string): BaseUrl {
+  return value as BaseUrl;
+}
 
 // Motivation is an OpenAPI enum — use its values directly, no helper needed.
 // ContentFormat is a free-form MIME string whose base type must be a

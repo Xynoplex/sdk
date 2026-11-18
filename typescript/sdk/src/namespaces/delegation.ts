@@ -1,10 +1,23 @@
 import { merge } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import type { EventBus, EventMap, ITransport, ResourceId, TransportErrorCode, components } from '@xynolog/core';
+import type {
+  EventBus,
+  EventMap,
+  ITransport,
+  ResourceId,
+  TransportErrorCode,
+  components,
+} from '@xynolog/core';
 import { Bus, XynologError } from '@xynolog/core';
 import { DelegationObservable, type JobCompletion } from '../awaitable';
 import { GenerationStallError } from './generation-stall';
-import { JobCancelledError, JobFailedError, JobFrames, JobStatusPoll, type JobFollowTiming } from './job-status-poll';
+import {
+  JobCancelledError,
+  JobFailedError,
+  JobFrames,
+  JobStatusPoll,
+  type JobFollowTiming,
+} from './job-status-poll';
 
 /**
  * How a follower reads its job's completion as its verb's. A completion is
@@ -18,7 +31,10 @@ export interface DelegatedVerb<C extends JobCompletion> {
   /** A `job:complete` frame as this verb's, or nothing when it is another's. */
   heard(frame: JobCompletion): C | undefined;
   /** The completion a complete job's status stands for, or nothing when its type or its result is another verb's. */
-  learned(status: components['schemas']['JobStatusResponse'], resourceId: ResourceId): C | undefined;
+  learned(
+    status: components['schemas']['JobStatusResponse'],
+    resourceId: ResourceId,
+  ): C | undefined;
 }
 
 /**
@@ -71,7 +87,12 @@ export function delegated<C extends JobCompletion>(
     // The end: the job's completion, read as the verb's.
     const completed = (completion: C | undefined, from: string) => {
       if (completion === undefined) {
-        subscriber.error(new XynologError(`${from} is not a completed ${verb.jobType} job's`, 'error' satisfies TransportErrorCode));
+        subscriber.error(
+          new XynologError(
+            `${from} is not a completed ${verb.jobType} job's`,
+            'error' satisfies TransportErrorCode,
+          ),
+        );
         return;
       }
       subscriber.next({ kind: 'complete', data: completion });
@@ -86,10 +107,19 @@ export function delegated<C extends JobCompletion>(
         if (status.status === 'complete') {
           cleanup();
           // The `complete` event the stream did not carry, from the status.
-          completed(verb.learned(status, resourceId), `The status of job ${status.jobId}`);
+          completed(
+            verb.learned(status, resourceId),
+            `The status of job ${status.jobId}`,
+          );
         } else if (status.status === 'failed') {
           cleanup();
-          subscriber.error(new JobFailedError(status.error ?? 'Job failed', status.jobId, status.failureClass));
+          subscriber.error(
+            new JobFailedError(
+              status.error ?? 'Job failed',
+              status.jobId,
+              status.failureClass,
+            ),
+          );
         } else if (status.status === 'cancelled') {
           cleanup();
           subscriber.error(new JobCancelledError(status.jobId));
@@ -106,7 +136,10 @@ export function delegated<C extends JobCompletion>(
     const cleanup = () => {
       done = true;
       poll.stop();
-      if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+      if (stallTimer) {
+        clearTimeout(stallTimer);
+        stallTimer = null;
+      }
     };
 
     // Subscribe to the job lifecycle before the job exists: `JobFrames` holds
@@ -130,7 +163,9 @@ export function delegated<C extends JobCompletion>(
         const stalledJobId = activeJobId;
         cleanup();
         if (stalledJobId !== null) {
-          void wire.request('job:cancel-requested', { jobId: stalledJobId }).catch(() => {});
+          void wire
+            .request('job:cancel-requested', { jobId: stalledJobId })
+            .catch(() => {});
         }
         // subscriber.error runs the producer teardown, which unsubscribes
         // the three lifecycle subs — no manual unsubscribe needed here.
@@ -174,14 +209,17 @@ export function delegated<C extends JobCompletion>(
 
     // A refusal is no word of the job: neither the silence nor the stall
     // deadline starts again.
-    const refusedSub = frames.refused$.subscribe(({ channel, member, reason }) => {
-      if (done) return;
-      subscriber.next({ kind: 'refused', data: { channel, member, reason } });
-    });
+    const refusedSub = frames.refused$.subscribe(
+      ({ channel, member, reason }) => {
+        if (done) return;
+        subscriber.next({ kind: 'refused', data: { channel, member, reason } });
+      },
+    );
 
     armStall();
 
-    wire.request('job:create', job)
+    wire
+      .request('job:create', job)
       .then((created) => {
         const { jobId } = created;
         if (jobId && !done) {

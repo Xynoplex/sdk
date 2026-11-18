@@ -3,7 +3,10 @@
 import React from 'react';
 import { UnifiedHeader } from './UnifiedHeader';
 import { MainContent } from './SkipLinks';
-import type { LinkComponentProps, RouteBuilder } from '../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../contexts/RoutingContext';
 import type { TranslateFn } from '../../types/translation';
 
 interface PageLayoutProps {

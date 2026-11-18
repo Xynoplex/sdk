@@ -33,8 +33,7 @@ import { isObject } from './type-guards';
 const NODE_BUS_LOG =
   typeof process !== 'undefined' && !!process.env?.XYNOLOG_BUS_LOG;
 
-const IS_NODE =
-  typeof process !== 'undefined' && !!process.versions?.node;
+const IS_NODE = typeof process !== 'undefined' && !!process.versions?.node;
 
 export type BusOp = 'EMIT' | 'RECV' | 'SSE' | 'PUT' | 'GET';
 
@@ -57,7 +56,9 @@ export function busLogEnabled(): boolean {
  */
 let traceIdProvider: (() => string | undefined) | undefined;
 
-export function setBusLogTraceIdProvider(fn: (() => string | undefined) | undefined): void {
+export function setBusLogTraceIdProvider(
+  fn: (() => string | undefined) | undefined,
+): void {
   traceIdProvider = fn;
 }
 
@@ -133,7 +134,11 @@ export function busLog(
   const cid = correlationId ? correlationId.slice(0, 8) : undefined;
   let traceId: string | undefined;
   if (traceIdProvider) {
-    try { traceId = traceIdProvider(); } catch { /* noop */ }
+    try {
+      traceId = traceIdProvider();
+    } catch {
+      /* noop */
+    }
   }
   const tag =
     `[bus ${op}] ${channel}` +

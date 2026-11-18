@@ -44,7 +44,7 @@ describe('ResourceTagsInline', () => {
 
     it('should return null when tags array is empty', () => {
       const { container } = render(
-        <ResourceTagsInline {...defaultProps} tags={[]} />
+        <ResourceTagsInline {...defaultProps} tags={[]} />,
       );
 
       expect(container.firstChild).toBeNull();
@@ -60,7 +60,7 @@ describe('ResourceTagsInline', () => {
       const manyTags = Array.from({ length: 20 }, (_, i) => `tag-${i}`);
       render(<ResourceTagsInline {...defaultProps} tags={manyTags} />);
 
-      manyTags.forEach(tag => {
+      manyTags.forEach((tag) => {
         expect(screen.getByText(tag)).toBeInTheDocument();
       });
     });
@@ -93,7 +93,10 @@ describe('ResourceTagsInline', () => {
   describe('Tag Display', () => {
     it('should preserve tag order', () => {
       const { container } = render(
-        <ResourceTagsInline {...defaultProps} tags={['first', 'second', 'third']} />
+        <ResourceTagsInline
+          {...defaultProps}
+          tags={['first', 'second', 'third']}
+        />,
       );
 
       const tagElements = container.querySelectorAll('.xynolog-resource-tag');
@@ -103,10 +106,14 @@ describe('ResourceTagsInline', () => {
     });
 
     it('should handle tags with special characters', () => {
-      const specialTags = ['tag-with-dash', 'tag_with_underscore', 'tag.with.dots'];
+      const specialTags = [
+        'tag-with-dash',
+        'tag_with_underscore',
+        'tag.with.dots',
+      ];
       render(<ResourceTagsInline {...defaultProps} tags={specialTags} />);
 
-      specialTags.forEach(tag => {
+      specialTags.forEach((tag) => {
         expect(screen.getByText(tag)).toBeInTheDocument();
       });
     });
@@ -115,14 +122,14 @@ describe('ResourceTagsInline', () => {
       const tagsWithSpaces = ['multi word tag', 'another tag'];
       render(<ResourceTagsInline {...defaultProps} tags={tagsWithSpaces} />);
 
-      tagsWithSpaces.forEach(tag => {
+      tagsWithSpaces.forEach((tag) => {
         expect(screen.getByText(tag)).toBeInTheDocument();
       });
     });
 
     it('should handle empty string tags', () => {
       const { container } = render(
-        <ResourceTagsInline {...defaultProps} tags={['', 'valid-tag', '']} />
+        <ResourceTagsInline {...defaultProps} tags={['', 'valid-tag', '']} />,
       );
 
       // All tags render, even empty ones
@@ -141,7 +148,10 @@ describe('ResourceTagsInline', () => {
   describe('Edge Cases', () => {
     it('should handle duplicate tags', () => {
       const { container } = render(
-        <ResourceTagsInline {...defaultProps} tags={['duplicate', 'duplicate', 'unique']} />
+        <ResourceTagsInline
+          {...defaultProps}
+          tags={['duplicate', 'duplicate', 'unique']}
+        />,
       );
 
       // Note: React will warn about duplicate keys, but component still renders
@@ -162,7 +172,7 @@ describe('ResourceTagsInline', () => {
 
     it('should update from empty to non-empty', () => {
       const { container, rerender } = render(
-        <ResourceTagsInline {...defaultProps} tags={[]} />
+        <ResourceTagsInline {...defaultProps} tags={[]} />,
       );
 
       expect(container.firstChild).toBeNull();
@@ -173,7 +183,9 @@ describe('ResourceTagsInline', () => {
     });
 
     it('should update from non-empty to empty', () => {
-      const { container, rerender } = render(<ResourceTagsInline {...defaultProps} />);
+      const { container, rerender } = render(
+        <ResourceTagsInline {...defaultProps} />,
+      );
 
       expect(screen.getByText('tag1')).toBeInTheDocument();
 
@@ -188,14 +200,23 @@ describe('ResourceTagsInline', () => {
   describe('Editing mode', () => {
     it('browse mode renders no editing affordances', () => {
       const { container } = render(
-        <ResourceTagsInline {...defaultProps} isEditing={false} vocabulary={['Person']} />,
+        <ResourceTagsInline
+          {...defaultProps}
+          isEditing={false}
+          vocabulary={['Person']}
+        />,
       );
       expect(container.querySelector('button')).toBeNull();
     });
 
     it('renders the editor for EMPTY tags while editing (the primary tagging case)', () => {
       const { container } = render(
-        <ResourceTagsInline {...defaultProps} tags={[]} isEditing={true} vocabulary={['Person']} />,
+        <ResourceTagsInline
+          {...defaultProps}
+          tags={[]}
+          isEditing={true}
+          vocabulary={['Person']}
+        />,
       );
       // No null short-circuit in edit mode: the strip renders with an add affordance.
       expect(container.firstChild).not.toBeNull();
@@ -211,7 +232,12 @@ describe('ResourceTagsInline', () => {
 
     it('disabled renders the editor inert', () => {
       render(
-        <ResourceTagsInline {...defaultProps} isEditing={true} disabled={true} vocabulary={['Person']} />,
+        <ResourceTagsInline
+          {...defaultProps}
+          isEditing={true}
+          disabled={true}
+          vocabulary={['Person']}
+        />,
       );
       fireEvent.click(screen.getByLabelText('Remove tag1'));
       expect(mockOnUpdate).not.toHaveBeenCalled();
@@ -221,7 +247,12 @@ describe('ResourceTagsInline', () => {
 
     it('an in-flight onUpdate blocks a second commit', async () => {
       let resolveUpdate!: () => void;
-      mockOnUpdate.mockImplementation(() => new Promise<void>((r) => { resolveUpdate = r; }));
+      mockOnUpdate.mockImplementation(
+        () =>
+          new Promise<void>((r) => {
+            resolveUpdate = r;
+          }),
+      );
       render(<ResourceTagsInline {...defaultProps} isEditing={true} />);
 
       fireEvent.click(screen.getByLabelText('Remove tag1'));
@@ -229,7 +260,9 @@ describe('ResourceTagsInline', () => {
       expect(mockOnUpdate).toHaveBeenCalledTimes(1);
 
       resolveUpdate();
-      await waitFor(() => expect(screen.getByLabelText('Remove tag2')).not.toBeDisabled());
+      await waitFor(() =>
+        expect(screen.getByLabelText('Remove tag2')).not.toBeDisabled(),
+      );
       fireEvent.click(screen.getByLabelText('Remove tag2')); // settled — fires again
       expect(mockOnUpdate).toHaveBeenCalledTimes(2);
     });
@@ -238,20 +271,30 @@ describe('ResourceTagsInline', () => {
   describe('Vocabulary (controlled — adds are a picker, never free text)', () => {
     it('the add affordance offers ONLY vocabulary entries minus already-applied tags', () => {
       render(
-        <ResourceTagsInline {...defaultProps} tags={['Person']} isEditing={true}
-          vocabulary={['Person', 'Place', 'Topic']} />,
+        <ResourceTagsInline
+          {...defaultProps}
+          tags={['Person']}
+          isEditing={true}
+          vocabulary={['Person', 'Place', 'Topic']}
+        />,
       );
       fireEvent.click(screen.getByLabelText('Add tag'));
       expect(screen.getByRole('button', { name: 'Place' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Topic' })).toBeInTheDocument();
       // Already applied → not a candidate (the chip renders as text, not a candidate button)
-      expect(screen.queryByRole('button', { name: 'Person' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Person' }),
+      ).not.toBeInTheDocument();
     });
 
     it('picking a candidate commits the full set including the added tag', async () => {
       render(
-        <ResourceTagsInline {...defaultProps} tags={['Person']} isEditing={true}
-          vocabulary={['Person', 'Place']} />,
+        <ResourceTagsInline
+          {...defaultProps}
+          tags={['Person']}
+          isEditing={true}
+          vocabulary={['Person', 'Place']}
+        />,
       );
       fireEvent.click(screen.getByLabelText('Add tag'));
       fireEvent.click(screen.getByRole('button', { name: 'Place' }));
@@ -267,8 +310,12 @@ describe('ResourceTagsInline', () => {
 
     it('removal is never vocabulary-gated — a stale tag not in the vocabulary is removable', async () => {
       render(
-        <ResourceTagsInline {...defaultProps} tags={['LegacyType', 'Person']} isEditing={true}
-          vocabulary={['Person']} />,
+        <ResourceTagsInline
+          {...defaultProps}
+          tags={['LegacyType', 'Person']}
+          isEditing={true}
+          vocabulary={['Person']}
+        />,
       );
       fireEvent.click(screen.getByLabelText('Remove LegacyType'));
       await waitFor(() => expect(mockOnUpdate).toHaveBeenCalledTimes(1));

@@ -13,29 +13,49 @@ import { describe, it, expect, vi } from 'vitest';
 import { map, firstValueFrom, filter } from 'rxjs';
 import { BusRequestError, SAVE_DEBOUNCE_MS } from '@xynolog/core';
 import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
-import { createCache, createPersistableCache, isReady, type Cache, type CachePersister, type CacheState } from '../cache';
+import {
+  createCache,
+  createPersistableCache,
+  isReady,
+  type Cache,
+  type CachePersister,
+  type CacheState,
+} from '../cache';
 
 /**
  * Collector projection for sequence assertions: pending → undefined,
  * ready → value, failed → its Error (failure is an EMISSION — it shows
  * up IN the sequence, not on the error callback).
  */
-const st = <V,>(s: CacheState<V>): V | undefined | Error =>
+const st = <V>(s: CacheState<V>): V | undefined | Error =>
   s.status === 'ready' ? s.value : s.status === 'failed' ? s.error : undefined;
 
 function flush(): Promise<void> {
   return new Promise((r) => setTimeout(r, 0));
 }
 
-function firstDefined<T>(obs: import('rxjs').Observable<CacheState<T>>): Promise<T> {
-  return firstValueFrom(obs.pipe(filter(isReady), map((s) => s.value)));
+function firstDefined<T>(
+  obs: import('rxjs').Observable<CacheState<T>>,
+): Promise<T> {
+  return firstValueFrom(
+    obs.pipe(
+      filter(isReady),
+      map((s) => s.value),
+    ),
+  );
 }
 
 /** Fetches the test answers by hand: one per ask, in the order asked. */
 function heldFetches() {
-  const answers: Array<{ resolve: (v: string) => void; reject: (e: Error) => void }> = [];
+  const answers: Array<{
+    resolve: (v: string) => void;
+    reject: (e: Error) => void;
+  }> = [];
   const fetchFn = vi.fn().mockImplementation(
-    () => new Promise<string>((resolve, reject) => { answers.push({ resolve, reject }); }),
+    () =>
+      new Promise<string>((resolve, reject) => {
+        answers.push({ resolve, reject });
+      }),
   );
   return { answers, fetchFn };
 }
@@ -53,7 +73,12 @@ describe('Cache<K, V>', () => {
 
     it('emits pending before the fetch resolves, then the value', async () => {
       let resolveFetch!: (v: string) => void;
-      const fetchFn = vi.fn().mockImplementation(() => new Promise<string>((r) => { resolveFetch = r; }));
+      const fetchFn = vi.fn().mockImplementation(
+        () =>
+          new Promise<string>((r) => {
+            resolveFetch = r;
+          }),
+      );
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<string | undefined | Error> = [];
       cache.observe('k1').subscribe((s) => seen.push(st(s)));
@@ -121,7 +146,10 @@ describe('Cache<K, V>', () => {
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<string | undefined | Error> = [];
       const errors: unknown[] = [];
-      cache.observe('k').subscribe({ next: (s) => seen.push(st(s)), error: (e) => errors.push(e) });
+      cache.observe('k').subscribe({
+        next: (s) => seen.push(st(s)),
+        error: (e) => errors.push(e),
+      });
       await flush();
       // Failure is an EMISSION — it lands IN the sequence; the stream
       // never errors and stays alive.
@@ -180,7 +208,12 @@ describe('Cache<K, V>', () => {
 
     it('orphan recovery: invalidate fires a new fetch even while one is in flight', () => {
       let resolveFetch!: (v: string) => void;
-      const fetchFn = vi.fn().mockImplementation(() => new Promise<string>((r) => { resolveFetch = r; }));
+      const fetchFn = vi.fn().mockImplementation(
+        () =>
+          new Promise<string>((r) => {
+            resolveFetch = r;
+          }),
+      );
       const cache = createCache<string, string>(fetchFn);
       cache.observe('k').subscribe(() => {});
       expect(fetchFn).toHaveBeenCalledTimes(1);
@@ -209,7 +242,9 @@ describe('Cache<K, V>', () => {
   describe('B9 — only the newest fetch writes', () => {
     it('two fetches answered in the order asked: only the newer, the one the invalidate started, is stored', async () => {
       const values = ['first', 'second'];
-      const fetchFn = vi.fn().mockImplementation(() => Promise.resolve(values.shift()!));
+      const fetchFn = vi
+        .fn()
+        .mockImplementation(() => Promise.resolve(values.shift()!));
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<string | undefined | Error> = [];
       cache.observe('k').subscribe((s) => seen.push(st(s)));
@@ -222,7 +257,10 @@ describe('Cache<K, V>', () => {
       vi.useFakeTimers();
       try {
         const { answers, fetchFn } = heldFetches();
-        const persister: CachePersister<string, string> = { load: () => null, save: vi.fn() };
+        const persister: CachePersister<string, string> = {
+          load: () => null,
+          save: vi.fn(),
+        };
         const cache = createCache<string, string>(fetchFn, { persister });
         const seen: Array<string | undefined | Error> = [];
         cache.observe('k').subscribe((s) => seen.push(st(s)));
@@ -275,17 +313,24 @@ describe('Cache<K, V>', () => {
       cache.observe('k').subscribe(() => {});
       expect(cache.persistencePending()).toBe(true);
       cache.invalidate('k');
-      expect(cache.persistencePending(), 'the newer fetch is in flight').toBe(true);
+      expect(cache.persistencePending(), 'the newer fetch is in flight').toBe(
+        true,
+      );
 
       answers[1]!.resolve('newer');
       await flush();
-      expect(cache.persistencePending(), 'the fetch let go of is in flight no more').toBe(false);
+      expect(
+        cache.persistencePending(),
+        'the fetch let go of is in flight no more',
+      ).toBe(false);
     });
   });
 
   describe('B10 — multiple keys are independent', () => {
     it('invalidate(a) does not affect b', async () => {
-      const fetchFn = vi.fn().mockImplementation((k: string) => Promise.resolve(`v-${k}`));
+      const fetchFn = vi
+        .fn()
+        .mockImplementation((k: string) => Promise.resolve(`v-${k}`));
       const cache = createCache<string, string>(fetchFn);
       await firstDefined(cache.observe('a'));
       await firstDefined(cache.observe('b'));
@@ -324,7 +369,9 @@ describe('Cache<K, V>', () => {
     });
 
     it('its observer goes from ready straight to failed, with the error remove was given', async () => {
-      const cache = createCache<string, string>(vi.fn().mockResolvedValue('v1'));
+      const cache = createCache<string, string>(
+        vi.fn().mockResolvedValue('v1'),
+      );
       const seen: Array<CacheState<string>> = [];
       cache.observe('k').subscribe((s) => seen.push(s));
       await firstDefined(cache.observe('k'));
@@ -337,7 +384,12 @@ describe('Cache<K, V>', () => {
 
     it('the fetch a removal let go of stores nothing: the key stays failed with what remove was given (B9)', async () => {
       const answers: Array<(v: string) => void> = [];
-      const fetchFn = vi.fn().mockImplementation(() => new Promise<string>((resolve) => { answers.push(resolve); }));
+      const fetchFn = vi.fn().mockImplementation(
+        () =>
+          new Promise<string>((resolve) => {
+            answers.push(resolve);
+          }),
+      );
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<CacheState<string>> = [];
       cache.observe('k').subscribe((s) => seen.push(s));
@@ -352,7 +404,10 @@ describe('Cache<K, V>', () => {
       expect(seen.map((s) => s.status)).toEqual(['pending', 'ready', 'failed']);
       expect(seen.at(-1)).toEqual({ status: 'failed', error: gone });
       expect(cache.get('k')).toBeUndefined();
-      expect(cache.persistencePending(), 'the fetch let go of is in flight no more').toBe(false);
+      expect(
+        cache.persistencePending(),
+        'the fetch let go of is in flight no more',
+      ).toBe(false);
     });
 
     it('the key is still known, and an observer arriving at it asks again (B15)', async () => {
@@ -390,7 +445,10 @@ describe('Cache<K, V>', () => {
       vi.useFakeTimers();
       try {
         const { answers, fetchFn } = heldFetches();
-        const persister: CachePersister<string, string> = { load: () => null, save: vi.fn() };
+        const persister: CachePersister<string, string> = {
+          load: () => null,
+          save: vi.fn(),
+        };
         const made = createPersistableCache<string, string>(fetchFn);
         made.attach(persister, () => {});
         const seen: Array<string | undefined | Error> = [];
@@ -400,7 +458,10 @@ describe('Cache<K, V>', () => {
 
         made.cache.set('k', 'written');
         expect(seen).toEqual([undefined, 'written']);
-        expect(made.fetching(), 'the fetch let go of is in flight no more').toBe(false);
+        expect(
+          made.fetching(),
+          'the fetch let go of is in flight no more',
+        ).toBe(false);
         await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
         expect(persister.save).toHaveBeenCalledTimes(1);
 
@@ -417,7 +478,7 @@ describe('Cache<K, V>', () => {
       }
     });
 
-    it('a set lets go of the live view\'s ask: the fetch it let go of fails, and nothing is asked again or failed (B14)', async () => {
+    it("a set lets go of the live view's ask: the fetch it let go of fails, and nothing is asked again or failed (B14)", async () => {
       const { answers, fetchFn } = heldFetches();
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<string | undefined | Error> = [];
@@ -432,7 +493,10 @@ describe('Cache<K, V>', () => {
   });
 
   describe('B13b — patch writes part of a value, and rides on the fetch in flight', () => {
-    const appended = (part: string) => (value: string): string => `${value}+${part}`;
+    const appended =
+      (part: string) =>
+      (value: string): string =>
+        `${value}+${part}`;
 
     it('a key being fetched for the first time is patched in what that fetch answers, which its awaiter is given too', async () => {
       const { answers, fetchFn } = heldFetches();
@@ -453,7 +517,10 @@ describe('Cache<K, V>', () => {
       vi.useFakeTimers();
       try {
         const { answers, fetchFn } = heldFetches();
-        const persister: CachePersister<string, string> = { load: () => null, save: vi.fn() };
+        const persister: CachePersister<string, string> = {
+          load: () => null,
+          save: vi.fn(),
+        };
         const cache = createCache<string, string>(fetchFn, { persister });
         const seen: Array<string | undefined | Error> = [];
         cache.observe('k').subscribe((s) => seen.push(st(s)));
@@ -465,7 +532,9 @@ describe('Cache<K, V>', () => {
         cache.patch('k', appended('p2'));
         expect(seen).toEqual([undefined, 'L0', 'L0+p1', 'L0+p1+p2']);
         await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
-        expect(persister.save).toHaveBeenLastCalledWith(new Map([['k', 'L0+p1+p2']]));
+        expect(persister.save).toHaveBeenLastCalledWith(
+          new Map([['k', 'L0+p1+p2']]),
+        );
 
         answers[1]!.resolve('L');
         await vi.advanceTimersByTimeAsync(0);
@@ -477,7 +546,7 @@ describe('Cache<K, V>', () => {
       }
     });
 
-    it('a replaced fetch\'s patches go with it: the newer answer is stored as it is, and the older changes nothing', async () => {
+    it("a replaced fetch's patches go with it: the newer answer is stored as it is, and the older changes nothing", async () => {
       const { answers, fetchFn } = heldFetches();
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<string | undefined | Error> = [];
@@ -493,7 +562,7 @@ describe('Cache<K, V>', () => {
       expect(seen).toEqual([undefined, 'L1']);
     });
 
-    it('a failed fetch\'s patches go with it: its retry\'s answer is stored as it is', async () => {
+    it("a failed fetch's patches go with it: its retry's answer is stored as it is", async () => {
       const { answers, fetchFn } = heldFetches();
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<string | undefined | Error> = [];
@@ -510,7 +579,10 @@ describe('Cache<K, V>', () => {
 
     it('a patch to a key with neither a value nor a fetch in flight does nothing, emits nothing and owes no save (B20)', async () => {
       const fetchFn = vi.fn().mockRejectedValue(new Error('down'));
-      const persister: CachePersister<string, string> = { load: () => null, save: vi.fn() };
+      const persister: CachePersister<string, string> = {
+        load: () => null,
+        save: vi.fn(),
+      };
       const cache = createCache<string, string>(fetchFn, { persister });
       const change = vi.fn(appended('p'));
 
@@ -531,7 +603,10 @@ describe('Cache<K, V>', () => {
 
     it('a patched restored value is still revalidated when first observed (B18)', async () => {
       const { answers, fetchFn } = heldFetches();
-      const persister: CachePersister<string, string> = { load: () => new Map([['k', 'kept']]), save: vi.fn() };
+      const persister: CachePersister<string, string> = {
+        load: () => new Map([['k', 'kept']]),
+        save: vi.fn(),
+      };
       const cache = createCache<string, string>(fetchFn, { persister });
       cache.patch('k', appended('p'));
       expect(cache.get('k')).toBe('kept+p');
@@ -549,7 +624,9 @@ describe('Cache<K, V>', () => {
 
   describe('invalidateAll — per-key SWR refetch', () => {
     it('refetches every cached entry, one per key', async () => {
-      const fetchFn = vi.fn().mockImplementation((k: string) => Promise.resolve(`v-${k}`));
+      const fetchFn = vi
+        .fn()
+        .mockImplementation((k: string) => Promise.resolve(`v-${k}`));
       const cache = createCache<string, string>(fetchFn);
       await firstDefined(cache.observe('a'));
       await firstDefined(cache.observe('b'));
@@ -572,7 +649,12 @@ describe('Cache<K, V>', () => {
   describe('keys() — every key the cache knows (B20)', () => {
     it('lists a key from the moment it is asked for: being fetched, then holding its value', async () => {
       let resolveFetch!: (v: string) => void;
-      const fetchFn = vi.fn().mockImplementation(() => new Promise<string>((r) => { resolveFetch = r; }));
+      const fetchFn = vi.fn().mockImplementation(
+        () =>
+          new Promise<string>((r) => {
+            resolveFetch = r;
+          }),
+      );
       const cache = createCache<string, string>(fetchFn);
       expect(cache.keys()).toEqual([]);
       cache.observe('k').subscribe(() => {});
@@ -607,7 +689,9 @@ describe('Cache<K, V>', () => {
   describe('fetch — one-shot fresh', () => {
     it('always re-fetches (returns the fresh value, not the memo)', async () => {
       let n = 0;
-      const fetchFn = vi.fn().mockImplementation(() => Promise.resolve(`v${++n}`));
+      const fetchFn = vi
+        .fn()
+        .mockImplementation(() => Promise.resolve(`v${++n}`));
       const cache = createCache<string, string>(fetchFn);
       expect(await cache.fetch('k')).toBe('v1');
       expect(await cache.fetch('k')).toBe('v2'); // fresh, not memoized 'v1'
@@ -616,7 +700,12 @@ describe('Cache<K, V>', () => {
 
     it('dedups concurrent fetches for the same key', async () => {
       let resolveFetch!: (v: string) => void;
-      const fetchFn = vi.fn().mockImplementation(() => new Promise<string>((r) => { resolveFetch = r; }));
+      const fetchFn = vi.fn().mockImplementation(
+        () =>
+          new Promise<string>((r) => {
+            resolveFetch = r;
+          }),
+      );
       const cache = createCache<string, string>(fetchFn);
       const a = cache.fetch('k');
       const b = cache.fetch('k');
@@ -634,7 +723,10 @@ describe('Cache<K, V>', () => {
       const cache = createCache<string, string>(fetchFn);
       const seen: Array<string | undefined | Error> = [];
       const errors: unknown[] = [];
-      cache.observe('k').subscribe({ next: (s) => seen.push(st(s)), error: (e) => errors.push(e) });
+      cache.observe('k').subscribe({
+        next: (s) => seen.push(st(s)),
+        error: (e) => errors.push(e),
+      });
       // The awaiter joins the (failing) in-flight fetch and sees the rejection…
       await expect(cache.fetch('k')).rejects.toThrow('boom');
       expect(errors).toEqual([]); // …but the subscriber is never errored (B6)
@@ -700,7 +792,12 @@ describe('Cache<K, V>', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       try {
         const answers: Array<(e: Error) => void> = [];
-        const fetchFn = vi.fn().mockImplementation(() => new Promise<string>((_, reject) => { answers.push(reject); }));
+        const fetchFn = vi.fn().mockImplementation(
+          () =>
+            new Promise<string>((_, reject) => {
+              answers.push(reject);
+            }),
+        );
         const cache = createCache<string, string>(fetchFn);
         cache.observe('k').subscribe(() => {});
         answers[0]!(new Error('lost'));
@@ -712,7 +809,10 @@ describe('Cache<K, V>', () => {
         // before the live view's ask that joins it is.
         const read = cache.fetch('k').then(
           () => null,
-          () => ({ asked: fetchFn.mock.calls.length, fetching: cache.persistencePending() }),
+          () => ({
+            asked: fetchFn.mock.calls.length,
+            fetching: cache.persistencePending(),
+          }),
         );
         cache.observe('k').subscribe(() => {});
         expect(fetchFn).toHaveBeenCalledTimes(3);
@@ -741,7 +841,10 @@ describe('Cache<K, V>', () => {
     // `pending` forever — the forbidden fourth state.
 
     const exhaust = () =>
-      vi.fn().mockRejectedValueOnce(new Error('lost')).mockRejectedValueOnce(new Error('lost'));
+      vi
+        .fn()
+        .mockRejectedValueOnce(new Error('lost'))
+        .mockRejectedValueOnce(new Error('lost'));
 
     it('a subscriber attaching AFTER exhaustion RECOVERS — marker cleared, fresh chain', async () => {
       // The fetch decision runs at subscribe time, so ARRIVING at a failed
@@ -760,7 +863,10 @@ describe('Cache<K, V>', () => {
       fetchFn.mockResolvedValue('recovered');
       const seen: Array<string | undefined | Error> = [];
       const errors: unknown[] = [];
-      obs.subscribe({ next: (s) => seen.push(st(s)), error: (e) => errors.push(e) });
+      obs.subscribe({
+        next: (s) => seen.push(st(s)),
+        error: (e) => errors.push(e),
+      });
       await flush();
       expect(errors).toEqual([]); // the stream does not error
       expect(seen[seen.length - 1]).toBe('recovered'); // the fresh chain delivered
@@ -774,7 +880,10 @@ describe('Cache<K, V>', () => {
 
       const errors: unknown[] = [];
       const seen: Array<string | undefined | Error> = [];
-      cache.observe('k').subscribe({ next: (s) => seen.push(st(s)), error: (e) => errors.push(e) });
+      cache.observe('k').subscribe({
+        next: (s) => seen.push(st(s)),
+        error: (e) => errors.push(e),
+      });
       await flush();
       expect(errors).toEqual([]); // the stream does not error
       expect(seen[seen.length - 1]).toBe('v2');
@@ -788,7 +897,9 @@ describe('Cache<K, V>', () => {
         .mockRejectedValueOnce(new Error('boom'));
       const cache = createCache<string, string>(fetchFn);
       const errors: unknown[] = [];
-      cache.observe('k').subscribe({ next: () => {}, error: (e) => errors.push(e) });
+      cache
+        .observe('k')
+        .subscribe({ next: () => {}, error: (e) => errors.push(e) });
       await firstDefined(cache.observe('k'));
       cache.invalidate('k'); // refetch + retry both fail — but a value exists
       await flush();
@@ -814,7 +925,10 @@ describe('Cache<K, V>', () => {
       await expect(cache.fetch('k')).resolves.toBe('v3'); // await path succeeds → marker cleared
       const errors: unknown[] = [];
       const seen: Array<string | undefined | Error> = [];
-      obs.subscribe({ next: (s) => seen.push(st(s)), error: (e) => errors.push(e) });
+      obs.subscribe({
+        next: (s) => seen.push(st(s)),
+        error: (e) => errors.push(e),
+      });
       expect(errors).toEqual([]); // marker gone — no error, and (store populated)
       expect(seen[seen.length - 1]).toBe('v3'); // …no fresh chain either: the value serves
       expect(fetchFn).toHaveBeenCalledTimes(3); // 2 exhaust + 1 fetch(); the late subscribe fetched nothing
@@ -829,10 +943,17 @@ describe('Cache<K, V>', () => {
     // this key in".
 
     const exhaust = () =>
-      vi.fn().mockRejectedValueOnce(new Error('lost')).mockRejectedValueOnce(new Error('lost'));
+      vi
+        .fn()
+        .mockRejectedValueOnce(new Error('lost'))
+        .mockRejectedValueOnce(new Error('lost'));
 
     /** A fetch the test settles by hand. */
-    function deferred(): { promise: Promise<string>; resolve: (v: string) => void; reject: (e: Error) => void } {
+    function deferred(): {
+      promise: Promise<string>;
+      resolve: (v: string) => void;
+      reject: (e: Error) => void;
+    } {
       let resolve!: (v: string) => void;
       let reject!: (e: Error) => void;
       const promise = new Promise<string>((res, rej) => {
@@ -953,25 +1074,32 @@ describe('Cache<K, V>', () => {
         let rejectFirst!: (e: Error) => void;
         const fetchFn = vi
           .fn()
-          .mockImplementationOnce(() => new Promise<string>((_, rej) => { rejectFirst = rej; }))
+          .mockImplementationOnce(
+            () =>
+              new Promise<string>((_, rej) => {
+                rejectFirst = rej;
+              }),
+          )
           .mockRejectedValue(new Error('retry would also fail'));
         const cache = createCache<string, string>(fetchFn);
 
         const events: string[] = [];
         cache.observe('k').subscribe({
-          next: (s) => { if (s.status !== 'pending') events.push('next'); },
+          next: (s) => {
+            if (s.status !== 'pending') events.push('next');
+          },
           error: () => events.push('error'),
           complete: () => events.push('complete'),
         });
 
-        cache.dispose();                       // teardown with attempt 1 in flight
-        rejectFirst(new Error('late loss'));   // the straddling failure lands
+        cache.dispose(); // teardown with attempt 1 in flight
+        rejectFirst(new Error('late loss')); // the straddling failure lands
         await flush();
         await flush();
 
-        expect(events).toEqual(['complete']);      // completed at dispose — no `failed`, no error
-        expect(fetchFn).toHaveBeenCalledTimes(1);  // no B14 re-issue after dispose
-        expect(warnSpy).not.toHaveBeenCalled();    // no [cache RETRY]/[cache IDLE] teardown noise
+        expect(events).toEqual(['complete']); // completed at dispose — no `failed`, no error
+        expect(fetchFn).toHaveBeenCalledTimes(1); // no B14 re-issue after dispose
+        expect(warnSpy).not.toHaveBeenCalled(); // no [cache RETRY]/[cache IDLE] teardown noise
       } finally {
         warnSpy.mockRestore();
       }
@@ -997,13 +1125,15 @@ describe('Cache<K, V>', () => {
     it('post-dispose invalidate()/invalidateAll()/fetch() issue no fetches; fetch() rejects', async () => {
       const fetchFn = vi.fn().mockResolvedValue('v');
       const cache = createCache<string, string>(fetchFn);
-      await firstDefined(cache.observe('k'));   // one real fetch, so invalidateAll has a key
+      await firstDefined(cache.observe('k')); // one real fetch, so invalidateAll has a key
       cache.dispose();
 
       cache.invalidate('k');
       cache.invalidateAll();
       // The code a request of a closed bus fails with.
-      await expect(cache.fetch('k')).rejects.toMatchObject({ code: 'bus.closed' });
+      await expect(cache.fetch('k')).rejects.toMatchObject({
+        code: 'bus.closed',
+      });
       await flush();
 
       expect(fetchFn).toHaveBeenCalledTimes(1); // only the pre-dispose fetch
@@ -1020,7 +1150,8 @@ describe('Cache<K, V>', () => {
 describe('Cache — StateUnit axioms', () => {
   it('satisfies the StateUnit axioms: every observer ends on dispose, and a disposed cache fetches nothing', () => {
     assertStateUnitAxioms<Cache<string, string>>({
-      setup: () => createCache<string, string>(async (key) => `value of ${key}`),
+      setup: () =>
+        createCache<string, string>(async (key) => `value of ${key}`),
       surfaces: (cache) => [cache.observe('a'), cache.observe('b')],
       invocations: (cache) => [
         () => cache.set('a', 'set'),

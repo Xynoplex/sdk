@@ -31,9 +31,18 @@ function generatingIndicatorUnder(theme: 'light' | 'dark') {
   localStorage.setItem('theme', theme);
   render(<ThemeProvider>{null}</ThemeProvider>);
 
-  const widget = new ReferenceResolutionWidget(unresolvedReference, undefined, true).toDOM();
-  const [ping, badge] = widget.querySelectorAll<HTMLElement>('.reference-indicator > span > span');
-  if (!ping || !badge) throw new Error('the generating indicator did not render its ring and badge');
+  const widget = new ReferenceResolutionWidget(
+    unresolvedReference,
+    undefined,
+    true,
+  ).toDOM();
+  const [ping, badge] = widget.querySelectorAll<HTMLElement>(
+    '.reference-indicator > span > span',
+  );
+  if (!ping || !badge)
+    throw new Error(
+      'the generating indicator did not render its ring and badge',
+    );
   return { ping, badge };
 }
 
@@ -41,7 +50,11 @@ describe('ReferenceResolutionWidget generating indicator', () => {
   beforeEach(() => {
     localStorage.clear();
     Object.defineProperty(window, 'matchMedia', {
-      value: vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
       writable: true,
       configurable: true,
     });

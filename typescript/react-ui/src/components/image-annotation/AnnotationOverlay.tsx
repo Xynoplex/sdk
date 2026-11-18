@@ -1,7 +1,16 @@
 'use client';
 
 import type { Annotation } from '@xynolog/core';
-import { getSvgSelector, isHighlight, isReference, isAssessment, isComment, isTag, isBodyResolved, isResolvedReference } from '@xynolog/core';
+import {
+  getSvgSelector,
+  isHighlight,
+  isReference,
+  isAssessment,
+  isComment,
+  isTag,
+  isBodyResolved,
+  isResolvedReference,
+} from '@xynolog/core';
 import { useHoverDwell } from '../../hooks/useHoverDwell';
 import { parseSvgSelector } from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
@@ -21,7 +30,10 @@ interface AnnotationOverlayProps {
  * Get color for annotation based on type/motivation
  * Returns object with stroke color and fill color (with alpha)
  */
-function getAnnotationColor(annotation: Annotation): { stroke: string; fill: string } {
+function getAnnotationColor(annotation: Annotation): {
+  stroke: string;
+  fill: string;
+} {
   if (isHighlight(annotation)) {
     return { stroke: 'rgb(250, 204, 21)', fill: 'rgba(250, 204, 21, 0.2)' }; // yellow
   } else if (isReference(annotation)) {
@@ -70,7 +82,7 @@ export function AnnotationOverlay({
   session,
   hoveredAnnotationId,
   selectedAnnotationId,
-  hoverDelayMs
+  hoverDelayMs,
 }: AnnotationOverlayProps) {
   const scaleX = displayWidth / imageWidth;
   const scaleY = displayHeight / imageHeight;
@@ -82,7 +94,7 @@ export function AnnotationOverlay({
       className="xynolog-annotation-overlay"
       style={{ width: displayWidth, height: displayHeight }}
     >
-      {annotations.map(annotation => {
+      {annotations.map((annotation) => {
         // Handle both string and object targets
         if (typeof annotation.target === 'string') return null;
 
@@ -123,7 +135,12 @@ export function AnnotationOverlay({
                   className="xynolog-annotation-overlay__shape"
                   data-hovered={isHovered ? 'true' : 'false'}
                   data-selected={isSelected ? 'true' : 'false'}
-                  onClick={(e) => session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect())}
+                  onClick={(e) =>
+                    session?.client.browse.click(
+                      annotation.id,
+                      e.currentTarget.getBoundingClientRect(),
+                    )
+                  }
                   onMouseEnter={() => dwell?.enter(annotation.id)}
                   onMouseLeave={() => dwell?.leave()}
                 />
@@ -136,7 +153,10 @@ export function AnnotationOverlay({
                     style={{ userSelect: 'none' }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect());
+                      session?.client.browse.click(
+                        annotation.id,
+                        e.currentTarget.getBoundingClientRect(),
+                      );
                     }}
                     onMouseEnter={() => dwell?.enter(annotation.id)}
                     onMouseLeave={() => dwell?.leave()}
@@ -170,7 +190,12 @@ export function AnnotationOverlay({
                   className="xynolog-annotation-overlay__shape"
                   data-hovered={isHovered ? 'true' : 'false'}
                   data-selected={isSelected ? 'true' : 'false'}
-                  onClick={(e) => session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect())}
+                  onClick={(e) =>
+                    session?.client.browse.click(
+                      annotation.id,
+                      e.currentTarget.getBoundingClientRect(),
+                    )
+                  }
                   onMouseEnter={() => dwell?.enter(annotation.id)}
                   onMouseLeave={() => dwell?.leave()}
                 />
@@ -183,7 +208,10 @@ export function AnnotationOverlay({
                     style={{ userSelect: 'none' }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect());
+                      session?.client.browse.click(
+                        annotation.id,
+                        e.currentTarget.getBoundingClientRect(),
+                      );
                     }}
                     onMouseEnter={() => dwell?.enter(annotation.id)}
                     onMouseLeave={() => dwell?.leave()}
@@ -197,18 +225,25 @@ export function AnnotationOverlay({
 
           case 'polygon': {
             const points = parsed.data.points
-              .map((p: { x: number; y: number }) => `${p.x * scaleX},${p.y * scaleY}`)
+              .map(
+                (p: { x: number; y: number }) =>
+                  `${p.x * scaleX},${p.y * scaleY}`,
+              )
               .join(' ');
 
             // Find the lower-right edge by finding the two vertices with highest (x + y) values
-            const scaledPoints = parsed.data.points.map((p: { x: number; y: number }) => ({
-              x: p.x * scaleX,
-              y: p.y * scaleY,
-              sum: p.x * scaleX + p.y * scaleY
-            }));
+            const scaledPoints = parsed.data.points.map(
+              (p: { x: number; y: number }) => ({
+                x: p.x * scaleX,
+                y: p.y * scaleY,
+                sum: p.x * scaleX + p.y * scaleY,
+              }),
+            );
 
             // Sort by sum (x + y) descending to get bottom-right points first
-            const sortedByBottomRight = [...scaledPoints].sort((a, b) => b.sum - a.sum);
+            const sortedByBottomRight = [...scaledPoints].sort(
+              (a, b) => b.sum - a.sum,
+            );
 
             // Take the top 2 points (most bottom-right)
             const point1 = sortedByBottomRight[0];
@@ -230,7 +265,12 @@ export function AnnotationOverlay({
                   className="xynolog-annotation-overlay__shape"
                   data-hovered={isHovered ? 'true' : 'false'}
                   data-selected={isSelected ? 'true' : 'false'}
-                  onClick={(e) => session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect())}
+                  onClick={(e) =>
+                    session?.client.browse.click(
+                      annotation.id,
+                      e.currentTarget.getBoundingClientRect(),
+                    )
+                  }
                   onMouseEnter={() => dwell?.enter(annotation.id)}
                   onMouseLeave={() => dwell?.leave()}
                 />
@@ -243,7 +283,10 @@ export function AnnotationOverlay({
                     style={{ userSelect: 'none' }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect());
+                      session?.client.browse.click(
+                        annotation.id,
+                        e.currentTarget.getBoundingClientRect(),
+                      );
                     }}
                     onMouseEnter={() => dwell?.enter(annotation.id)}
                     onMouseLeave={() => dwell?.leave()}

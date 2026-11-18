@@ -49,7 +49,7 @@ export function ResizeHandle({
   minWidth,
   maxWidth,
   position = 'left',
-  ariaLabel
+  ariaLabel,
 }: ResizeHandleProps) {
   const [isDragging, setIsDragging] = useState(false);
   const startXRef = useRef<number>(0);
@@ -61,62 +61,74 @@ export function ResizeHandle({
     onResizeRef.current = onResize;
   });
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    startXRef.current = e.clientX;
-    startWidthRef.current = width;
-  }, [width]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+      startXRef.current = e.clientX;
+      startWidthRef.current = width;
+    },
+    [width],
+  );
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
 
-    const deltaX = e.clientX - startXRef.current;
-    // For left-positioned handles, moving right decreases width (panel is on right)
-    // For right-positioned handles, moving right increases width (panel is on left)
-    const widthDelta = position === 'left' ? -deltaX : deltaX;
-    const newWidth = startWidthRef.current + widthDelta;
+      const deltaX = e.clientX - startXRef.current;
+      // For left-positioned handles, moving right decreases width (panel is on right)
+      // For right-positioned handles, moving right increases width (panel is on left)
+      const widthDelta = position === 'left' ? -deltaX : deltaX;
+      const newWidth = startWidthRef.current + widthDelta;
 
-    // Enforce constraints
-    const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-    onResizeRef.current(constrainedWidth);
-  }, [isDragging, minWidth, maxWidth, position]);
+      // Enforce constraints
+      const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+      onResizeRef.current(constrainedWidth);
+    },
+    [isDragging, minWidth, maxWidth, position],
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
 
   // Keyboard navigation for accessibility
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const step = e.shiftKey ? 50 : 10; // Shift+Arrow for larger steps
-    let newWidth = width;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const step = e.shiftKey ? 50 : 10; // Shift+Arrow for larger steps
+      let newWidth = width;
 
-    if (position === 'left') {
-      // Left handle: Left arrow = wider, Right arrow = narrower
-      if (e.key === 'ArrowLeft') {
-        newWidth = width + step;
-        e.preventDefault();
-      } else if (e.key === 'ArrowRight') {
-        newWidth = width - step;
-        e.preventDefault();
+      if (position === 'left') {
+        // Left handle: Left arrow = wider, Right arrow = narrower
+        if (e.key === 'ArrowLeft') {
+          newWidth = width + step;
+          e.preventDefault();
+        } else if (e.key === 'ArrowRight') {
+          newWidth = width - step;
+          e.preventDefault();
+        }
+      } else {
+        // Right handle: Right arrow = wider, Left arrow = narrower
+        if (e.key === 'ArrowRight') {
+          newWidth = width + step;
+          e.preventDefault();
+        } else if (e.key === 'ArrowLeft') {
+          newWidth = width - step;
+          e.preventDefault();
+        }
       }
-    } else {
-      // Right handle: Right arrow = wider, Left arrow = narrower
-      if (e.key === 'ArrowRight') {
-        newWidth = width + step;
-        e.preventDefault();
-      } else if (e.key === 'ArrowLeft') {
-        newWidth = width - step;
-        e.preventDefault();
-      }
-    }
 
-    // Only resize if arrow key was pressed
-    if (newWidth !== width) {
-      const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-      onResizeRef.current(constrainedWidth);
-    }
-  }, [width, minWidth, maxWidth, position]);
+      // Only resize if arrow key was pressed
+      if (newWidth !== width) {
+        const constrainedWidth = Math.max(
+          minWidth,
+          Math.min(maxWidth, newWidth),
+        );
+        onResizeRef.current(constrainedWidth);
+      }
+    },
+    [width, minWidth, maxWidth, position],
+  );
 
   // Add/remove global mouse event listeners for dragging
   useEffect(() => {

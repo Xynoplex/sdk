@@ -26,52 +26,59 @@ import { textUnder, type AnchoredText } from '../pdf-anchoring';
 const LAYER: AnchoredText = {
   text: 'Hello world again\nSecond line\nElsewhere',
   items: [
-    { start: 0, end: 5, page: 1, x: 72, y: 700, width: 30, height: 12 },   // Hello
+    { start: 0, end: 5, page: 1, x: 72, y: 700, width: 30, height: 12 }, // Hello
     { start: 6, end: 11, page: 1, x: 106, y: 700, width: 32, height: 12 }, // world
-    { start: 12, end: 17, page: 1, x: 142, y: 700, width: 30, height: 12 },// again
+    { start: 12, end: 17, page: 1, x: 142, y: 700, width: 30, height: 12 }, // again
     { start: 18, end: 24, page: 1, x: 72, y: 680, width: 38, height: 12 }, // Second
-    { start: 25, end: 29, page: 1, x: 114, y: 680, width: 22, height: 12 },// line
+    { start: 25, end: 29, page: 1, x: 114, y: 680, width: 22, height: 12 }, // line
     { start: 30, end: 39, page: 2, x: 72, y: 700, width: 50, height: 12 }, // Elsewhere
   ],
 };
 
 describe('textUnder', () => {
   it('returns the single run a rectangle covers', () => {
-    expect(textUnder(LAYER, { page: 1, x: 104, y: 698, width: 36, height: 16 }))
-      .toBe('world');
+    expect(
+      textUnder(LAYER, { page: 1, x: 104, y: 698, width: 36, height: 16 }),
+    ).toBe('world');
   });
 
-  it('joins runs on one line using the document\'s own spacing', () => {
-    expect(textUnder(LAYER, { page: 1, x: 70, y: 698, width: 70, height: 16 }))
-      .toBe('Hello world');
+  it("joins runs on one line using the document's own spacing", () => {
+    expect(
+      textUnder(LAYER, { page: 1, x: 70, y: 698, width: 70, height: 16 }),
+    ).toBe('Hello world');
   });
 
   it('keeps the real line break when a rectangle covers two lines', () => {
-    expect(textUnder(LAYER, { page: 1, x: 70, y: 675, width: 110, height: 40 }))
-      .toBe('Hello world again\nSecond line');
+    expect(
+      textUnder(LAYER, { page: 1, x: 70, y: 675, width: 110, height: 40 }),
+    ).toBe('Hello world again\nSecond line');
   });
 
   // The deliberate cost of RUN_COVERAGE_THRESHOLD. The box's left edge cuts
   // through "Second" (x 72..110), leaving 5pt of its 38pt width inside — 13%,
   // below the threshold — so it is dropped rather than quoted from a sliver.
   it('drops a run the rectangle only clips', () => {
-    expect(textUnder(LAYER, { page: 1, x: 105, y: 675, width: 75, height: 40 }))
-      .toBe('world again line');
+    expect(
+      textUnder(LAYER, { page: 1, x: 105, y: 675, width: 75, height: 40 }),
+    ).toBe('world again line');
   });
 
   it('ignores runs on other pages', () => {
     // A rectangle at Elsewhere's exact geometry, but on page 1.
-    expect(textUnder(LAYER, { page: 1, x: 70, y: 695, width: 60, height: 20 }))
-      .not.toContain('Elsewhere');
-    expect(textUnder(LAYER, { page: 2, x: 70, y: 695, width: 60, height: 20 }))
-      .toBe('Elsewhere');
+    expect(
+      textUnder(LAYER, { page: 1, x: 70, y: 695, width: 60, height: 20 }),
+    ).not.toContain('Elsewhere');
+    expect(
+      textUnder(LAYER, { page: 2, x: 70, y: 695, width: 60, height: 20 }),
+    ).toBe('Elsewhere');
   });
 
   it('returns empty string over blank space', () => {
     // Never an empty-string TextQuoteSelector: the caller drops the quote when
     // this is ''.
-    expect(textUnder(LAYER, { page: 1, x: 72, y: 400, width: 100, height: 20 }))
-      .toBe('');
+    expect(
+      textUnder(LAYER, { page: 1, x: 72, y: 400, width: 100, height: 20 }),
+    ).toBe('');
   });
 
   // pdf.js splits a word into several runs at kerning or font changes. Those
@@ -85,8 +92,9 @@ describe('textUnder', () => {
         { start: 3, end: 5, page: 1, x: 90, y: 700, width: 12, height: 12 },
       ],
     };
-    expect(textUnder(split, { page: 1, x: 70, y: 698, width: 40, height: 16 }))
-      .toBe('again');
+    expect(
+      textUnder(split, { page: 1, x: 70, y: 698, width: 40, height: 16 }),
+    ).toBe('again');
   });
 
   // The over-inclusion trap. `annotationOfSpan` slices text from the first
@@ -97,26 +105,30 @@ describe('textUnder', () => {
     const twoLines: AnchoredText = {
       text: 'one two three\nfour five six',
       items: [
-        { start: 0, end: 3, page: 1, x: 72, y: 700, width: 28, height: 12 },   // one
-        { start: 4, end: 7, page: 1, x: 104, y: 700, width: 26, height: 12 },  // two
+        { start: 0, end: 3, page: 1, x: 72, y: 700, width: 28, height: 12 }, // one
+        { start: 4, end: 7, page: 1, x: 104, y: 700, width: 26, height: 12 }, // two
         { start: 8, end: 13, page: 1, x: 134, y: 700, width: 46, height: 12 }, // three
         { start: 14, end: 18, page: 1, x: 72, y: 680, width: 28, height: 12 }, // four
-        { start: 19, end: 23, page: 1, x: 104, y: 680, width: 26, height: 12 },// five
-        { start: 24, end: 27, page: 1, x: 134, y: 680, width: 26, height: 12 },// six
+        { start: 19, end: 23, page: 1, x: 104, y: 680, width: 26, height: 12 }, // five
+        { start: 24, end: 27, page: 1, x: 134, y: 680, width: 26, height: 12 }, // six
       ],
     };
     // A narrow rectangle down the left margin: the first word of each line.
-    expect(textUnder(twoLines, { page: 1, x: 60, y: 675, width: 42, height: 40 }))
-      .toBe('one four');
+    expect(
+      textUnder(twoLines, { page: 1, x: 60, y: 675, width: 42, height: 40 }),
+    ).toBe('one four');
   });
 
   it('trims whitespace carried by the outermost runs', () => {
     const padded: AnchoredText = {
       text: '  Hello  ',
-      items: [{ start: 0, end: 9, page: 1, x: 72, y: 700, width: 40, height: 12 }],
+      items: [
+        { start: 0, end: 9, page: 1, x: 72, y: 700, width: 40, height: 12 },
+      ],
     };
-    expect(textUnder(padded, { page: 1, x: 70, y: 698, width: 50, height: 16 }))
-      .toBe('Hello');
+    expect(
+      textUnder(padded, { page: 1, x: 70, y: 698, width: 50, height: 16 }),
+    ).toBe('Hello');
   });
 
   // Pins RUN_COVERAGE_THRESHOLD, the rule that makes a hand-drawn box usable.
@@ -125,14 +137,16 @@ describe('textUnder', () => {
   it('ignores a line the rectangle merely grazes', () => {
     // Covers Second/line (y 680..692) fully, and reaches 1pt into the y=700
     // line — 8% of those runs, well under the threshold.
-    expect(textUnder(LAYER, { page: 1, x: 70, y: 660, width: 200, height: 41 }))
-      .toBe('Second line');
+    expect(
+      textUnder(LAYER, { page: 1, x: 70, y: 660, width: 200, height: 41 }),
+    ).toBe('Second line');
   });
 
   it('includes a line the rectangle covers most of', () => {
     // Reaches 8pt into the y=700 line: 67% of each 12pt-tall run.
-    expect(textUnder(LAYER, { page: 1, x: 70, y: 660, width: 200, height: 48 }))
-      .toBe('Hello world again\nSecond line');
+    expect(
+      textUnder(LAYER, { page: 1, x: 70, y: 660, width: 200, height: 48 }),
+    ).toBe('Hello world again\nSecond line');
   });
 });
 
@@ -144,23 +158,29 @@ describe('textUnder — items count code points', () => {
   const ASTRAL: AnchoredText = {
     text: '😀 Hello 𝑥 world',
     items: [
-      { start: 0, end: 1, page: 1, x: 72, y: 700, width: 12, height: 12 },    // 😀
-      { start: 2, end: 7, page: 1, x: 88, y: 700, width: 30, height: 12 },    // Hello
-      { start: 8, end: 9, page: 1, x: 122, y: 700, width: 8, height: 12 },    // 𝑥
+      { start: 0, end: 1, page: 1, x: 72, y: 700, width: 12, height: 12 }, // 😀
+      { start: 2, end: 7, page: 1, x: 88, y: 700, width: 30, height: 12 }, // Hello
+      { start: 8, end: 9, page: 1, x: 122, y: 700, width: 8, height: 12 }, // 𝑥
       { start: 10, end: 15, page: 1, x: 134, y: 700, width: 32, height: 12 }, // world
     ],
   };
 
   it('quotes a run after such a character whole', () => {
-    expect(textUnder(ASTRAL, { page: 1, x: 86, y: 698, width: 34, height: 16 })).toBe('Hello');
+    expect(
+      textUnder(ASTRAL, { page: 1, x: 86, y: 698, width: 34, height: 16 }),
+    ).toBe('Hello');
   });
 
-  it('quotes such a character itself, and the document\'s own spacing after it', () => {
-    expect(textUnder(ASTRAL, { page: 1, x: 70, y: 698, width: 50, height: 16 })).toBe('😀 Hello');
+  it("quotes such a character itself, and the document's own spacing after it", () => {
+    expect(
+      textUnder(ASTRAL, { page: 1, x: 70, y: 698, width: 50, height: 16 }),
+    ).toBe('😀 Hello');
   });
 
   it('joins runs on either side of one', () => {
-    expect(textUnder(ASTRAL, { page: 1, x: 86, y: 698, width: 82, height: 16 })).toBe('Hello 𝑥 world');
+    expect(
+      textUnder(ASTRAL, { page: 1, x: 86, y: 698, width: 82, height: 16 }),
+    ).toBe('Hello 𝑥 world');
   });
 
   it('puts one space for the text a rectangle misses, counted in code points', () => {
@@ -173,6 +193,8 @@ describe('textUnder — items count code points', () => {
         { start: 10, end: 15, page: 1, x: 72, y: 680, width: 32, height: 12 },
       ],
     };
-    expect(textUnder(columns, { page: 1, x: 70, y: 675, width: 40, height: 40 })).toBe('😀 world');
+    expect(
+      textUnder(columns, { page: 1, x: 70, y: 675, width: 40, height: 40 }),
+    ).toBe('😀 world');
   });
 });

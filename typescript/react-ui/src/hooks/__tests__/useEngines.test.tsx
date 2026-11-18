@@ -30,18 +30,25 @@ const entry = (model: string): EngineWithLimits => ({
 /** A client whose `browse.engines()` replays whatever the given subject holds. */
 function makeClient(subject: Subject<CacheState<EngineWithLimits[]>>) {
   const engines = vi.fn(() => subject);
-  return { client: { browse: { engines } } as unknown as XynologClient, engines };
+  return {
+    client: { browse: { engines } } as unknown as XynologClient,
+    engines,
+  };
 }
 
 describe('useEngines', () => {
   it('surfaces the engines once the cache is ready', async () => {
-    const subject = new BehaviorSubject<CacheState<EngineWithLimits[]>>({ status: 'pending' });
+    const subject = new BehaviorSubject<CacheState<EngineWithLimits[]>>({
+      status: 'pending',
+    });
     const { client } = makeClient(subject);
 
     const { result } = renderHook(() => useEngines(client));
     expect(result.current.loading).toBe(true);
 
-    act(() => subject.next({ status: 'ready', value: [entry('claude-sonnet-5')] }));
+    act(() =>
+      subject.next({ status: 'ready', value: [entry('claude-sonnet-5')] }),
+    );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.engines).toHaveLength(1);
@@ -59,11 +66,18 @@ describe('useEngines', () => {
   });
 
   it('degrades to no engines when the cache reports failure', async () => {
-    const subject = new BehaviorSubject<CacheState<EngineWithLimits[]>>({ status: 'pending' });
+    const subject = new BehaviorSubject<CacheState<EngineWithLimits[]>>({
+      status: 'pending',
+    });
     const { client } = makeClient(subject);
     const { result } = renderHook(() => useEngines(client));
 
-    act(() => subject.next({ status: 'failed', error: new Error('engines unavailable') }));
+    act(() =>
+      subject.next({
+        status: 'failed',
+        error: new Error('engines unavailable'),
+      }),
+    );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.engines).toEqual([]);
@@ -99,7 +113,9 @@ describe('useEngines', () => {
   });
 
   it('unsubscribes on unmount and resubscribes for a new client', async () => {
-    const subject = new BehaviorSubject<CacheState<EngineWithLimits[]>>({ status: 'pending' });
+    const subject = new BehaviorSubject<CacheState<EngineWithLimits[]>>({
+      status: 'pending',
+    });
     const { client, engines } = makeClient(subject);
 
     const { unmount, rerender } = renderHook(
@@ -110,7 +126,11 @@ describe('useEngines', () => {
     expect(subject.observed).toBe(true);
 
     // A KB switch replaces the client; the old subscription must not linger.
-    const second = makeClient(new BehaviorSubject<CacheState<EngineWithLimits[]>>({ status: 'pending' }));
+    const second = makeClient(
+      new BehaviorSubject<CacheState<EngineWithLimits[]>>({
+        status: 'pending',
+      }),
+    );
     rerender({ c: second.client });
     expect(subject.observed).toBe(false);
     expect(second.engines).toHaveBeenCalledTimes(1);

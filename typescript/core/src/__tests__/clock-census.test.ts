@@ -16,7 +16,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPO, stripComments, typeScriptFiles } from './repository-files';
 
-const PRODUCT_SOURCE = ['typescript/core/src', 'typescript/http-transport/src', 'typescript/sdk/src'];
+const PRODUCT_SOURCE = [
+  'typescript/core/src',
+  'typescript/http-transport/src',
+  'typescript/sdk/src',
+];
 
 const TEST_FILE = /(?:^|\/)__tests__\/|\.test\.tsx?$/;
 
@@ -29,12 +33,19 @@ const OUTSIDE_THE_CLOCK: ReadonlyArray<readonly [RegExp, string]> = [
 ];
 
 /** A draw from a generator that is not `Math.random`. */
-const OWN_DRAW = /\b(?:getRandomValues|randomUUID|randomBytes|randomInt|randomFillSync|randomFill)\b/g;
+const OWN_DRAW =
+  /\b(?:getRandomValues|randomUUID|randomBytes|randomInt|randomFillSync|randomFill)\b/g;
 
 /** The files that draw from the platform's cryptographic source, and what for. Neither is a jitter. */
 const SECRETS_AND_IDS = new Map<string, string>([
-  ['typescript/core/src/id-generation.ts', "ids, a client assertion's jti among them"],
-  ['typescript/sdk/src/session/oauth.ts', "a PKCE verifier and a sign-in's state"],
+  [
+    'typescript/core/src/id-generation.ts',
+    "ids, a client assertion's jti among them",
+  ],
+  [
+    'typescript/sdk/src/session/oauth.ts',
+    "a PKCE verifier and a sign-in's state",
+  ],
 ]);
 
 /** Each place in `source` that waits, reads or draws outside the clock and the random source a test controls. */
@@ -43,15 +54,20 @@ function escapes(path: string, source: string): string[] {
   const found: string[] = [];
   const at = (index: number) => read.slice(0, index).split('\n').length;
   for (const [pattern, what] of OUTSIDE_THE_CLOCK) {
-    for (const match of read.matchAll(pattern)) found.push(`${path}:${at(match.index)} ${match[0]}: ${what}`);
+    for (const match of read.matchAll(pattern))
+      found.push(`${path}:${at(match.index)} ${match[0]}: ${what}`);
   }
   if (!SECRETS_AND_IDS.has(path)) {
-    for (const match of read.matchAll(OWN_DRAW)) found.push(`${path}:${at(match.index)} ${match[0]}: a generator of its own`);
+    for (const match of read.matchAll(OWN_DRAW))
+      found.push(
+        `${path}:${at(match.index)} ${match[0]}: a generator of its own`,
+      );
   }
   return found;
 }
 
-const productFiles = () => typeScriptFiles(...PRODUCT_SOURCE).filter((path) => !TEST_FILE.test(path));
+const productFiles = () =>
+  typeScriptFiles(...PRODUCT_SOURCE).filter((path) => !TEST_FILE.test(path));
 
 describe('the SDK waits and draws only on what a test controls', () => {
   test('the census reads what it is shown', () => {
@@ -73,19 +89,34 @@ describe('the SDK waits and draws only on what a test controls', () => {
       'sample.ts:5 getRandomValues: a generator of its own',
       'sample.ts:6 randomInt: a generator of its own',
     ]);
-    expect(escapes('typescript/sdk/src/session/oauth.ts', 'crypto.getRandomValues(buffer);')).toEqual([]);
+    expect(
+      escapes(
+        'typescript/sdk/src/session/oauth.ts',
+        'crypto.getRandomValues(buffer);',
+      ),
+    ).toEqual([]);
   });
 
   test('nothing in the product source waits, reads or draws outside them', () => {
-    const found = productFiles().flatMap((path) => escapes(path, readFileSync(join(REPO, path), 'utf-8')));
-    expect(found, 'a wait, a reading or a draw that fake timers and Math.random do not reach').toEqual([]);
+    const found = productFiles().flatMap((path) =>
+      escapes(path, readFileSync(join(REPO, path), 'utf-8')),
+    );
+    expect(
+      found,
+      'a wait, a reading or a draw that fake timers and Math.random do not reach',
+    ).toEqual([]);
   });
 
   test('each file listed as drawing a secret or an id draws one', () => {
     const files = new Set(productFiles());
     const stale = [...SECRETS_AND_IDS].filter(
-      ([path]) => !files.has(path) || !stripComments(readFileSync(join(REPO, path), 'utf-8')).match(OWN_DRAW),
+      ([path]) =>
+        !files.has(path) ||
+        !stripComments(readFileSync(join(REPO, path), 'utf-8')).match(OWN_DRAW),
     );
-    expect(stale.map(([path, what]) => `${path} (${what})`), 'a listing whose file no longer draws: remove it').toEqual([]);
+    expect(
+      stale.map(([path, what]) => `${path} (${what})`),
+      'a listing whose file no longer draws: remove it',
+    ).toEqual([]);
   });
 });
