@@ -74,3 +74,8 @@
  (name schema)
  (modules schema)
  (libraries xynolog_codegen alcotest))
+
+(test
+ (name ocaml_syntax)
+ (modules ocaml_syntax)
+ (libraries xynolog_codegen compiler-libs.common ocamlformat-lib alcotest))

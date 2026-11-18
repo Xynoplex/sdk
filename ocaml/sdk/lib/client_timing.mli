@@ -1,9 +1,8 @@
 (* Generated from protocol/specs/src/client/timing.json. Do not edit.
    Regenerate: make generate (codegen/lib/timing/ocaml.ml) *)
 
-[@@@ocamlformat "disable"]
-
 type retry = { attempts : int; initial_delay_ms : int; max_delay_ms : int }
+
 val bus_request_timeout_ms : int
 val emit_timeout_ms : int
 val emit_retry : retry

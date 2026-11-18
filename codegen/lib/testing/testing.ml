@@ -262,40 +262,53 @@ let haskell t =
   }
 
 let ocaml t =
+  let module O = Ocaml_syntax in
   let s = t.table in
   let name (fault : T.fault_action) =
     String.capitalize_ascii (Text.snake fault.name)
   in
-  let count = List.length s.fault_actions in
   let span (b : T.bounds) = b.maximum - b.minimum + 1 in
-  {
-    Output.path = "ocaml/sdk/lib/testing_facts.ml";
-    text =
-      Banner.ocaml ~from_:file __FILE__
-      ^ "type fault_action = "
-      ^ String.concat " | "
-          (List.map
-             (fun (fault : T.fault_action) ->
-               name fault ^ if fault.holds = [] then "" else " of int")
-             s.fault_actions)
-      ^ "\ntype delivery_op = "
-      ^ String.concat " | "
-          (List.map String.capitalize_ascii s.delivery_ops.ops)
-      ^ "\nlet fault_actions random =\n  match Random.State.int random "
-      ^ string_of_int count ^ " with\n"
-      ^ String.concat ""
-          (List.mapi
-             (fun i (fault : T.fault_action) ->
-               Printf.sprintf "  | %d -> %s%s\n" i (name fault)
-                 (if fault.holds = [] then ""
-                  else
-                    Printf.sprintf " (%d + Random.State.int random %d)"
-                      s.delay_ms.minimum (span s.delay_ms)))
-             s.fault_actions)
-      ^ "  | _ -> assert false\n"
-      ^ Printf.sprintf "let schedule_length = (%d, %d)\nlet slack = %d\n"
-          s.schedule_length.minimum s.schedule_length.maximum s.slack.times;
-  }
+  let random_int bound =
+    O.apply (O.ident "Random.State.int") [ O.ident "random"; O.int bound ]
+  in
+  O.implementation ~path:"ocaml/sdk/lib/testing_facts.ml"
+    ~banner:(Banner.ocaml ~from_:file __FILE__)
+    [
+      O.type_item
+        (O.type_declaration "fault_action"
+           (Variant
+              (List.map
+                 (fun (fault : T.fault_action) ->
+                   O.constructor (name fault)
+                     ~args:(if fault.holds = [] then [] else [ O.type_ "int" ]))
+                 s.fault_actions)));
+      O.type_item
+        (O.type_declaration "delivery_op"
+           (Variant
+              (List.map
+                 (fun op -> O.constructor (String.capitalize_ascii op))
+                 s.delivery_ops.ops)));
+      O.let_ "fault_actions"
+        (O.fun_
+           [ O.Pattern.var "random" ]
+           (O.match_
+              (random_int (List.length s.fault_actions))
+              (List.mapi
+                 (fun i (fault : T.fault_action) ->
+                   O.case (O.Pattern.int i)
+                     (if fault.holds = [] then O.construct (name fault)
+                      else
+                        O.construct (name fault)
+                          ~arg:
+                            (O.infix "+" (O.int s.delay_ms.minimum)
+                               (random_int (span s.delay_ms)))))
+                 s.fault_actions
+              @ [ O.case O.Pattern.any O.assert_false ])));
+      O.let_ "schedule_length"
+        (O.tuple
+           [ O.int s.schedule_length.minimum; O.int s.schedule_length.maximum ]);
+      O.let_ "slack" (O.int s.slack.times);
+    ]
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
