@@ -217,7 +217,7 @@ of printable ASCII, a camel-case name in upper or lower snake case, and a
 comment as Go, Python and TypeScript write one. `Ocaml_syntax` builds an
 OCaml module as compiler-libs' Parsetree, prints it with Pprintast and lays
 it out with ocamlformat-lib, so a generated module is one the SDK's
-`ocamlformat --check` leaves as it is. `Python_layout` lays a Python
+`dune build @fmt` leaves as it is. `Python_layout` lays a Python
 statement out as ruff's formatter does at the SDK's line length, so a
 generated module is one `ruff format` leaves as it is. `Swift_syntax` is
 the Swift a writer builds, printed as swift-format 6.4.2 lays it out under

@@ -1,5 +1,6 @@
 (lang dune 3.24)
 (name xynolog)
+(formatting (enabled_for ocaml))
 (generate_opam_files true)
 (source (github xynolog/sdk))
 (license Apache-2.0)

@@ -3,7 +3,9 @@
    discriminator maps, each a record of the branch's members and whatever
    else the object holds. A branch is an open object whose tag is its own
    name alone, and each other member a string or an integer, with at most a
-   least value; the mapping and the branches are one to one. *)
+   least value; the mapping and the branches are one to one. The module reads
+   and writes through ocaml/sdk/lib/selector_codec.ml and has no interface,
+   so each type is stated once and each member named once a direction. *)
 
 let file = "components/schemas/Selector.json"
 
@@ -152,105 +154,10 @@ let derive (spec : Spec.t) =
   in
   Ok (tag, variants)
 
-let ok value = O.construct "Ok" ~arg:value
-let malformed member = O.call "malformed" [ member ]
-let fault = O.type_declaration "fault" Required.Ocaml.fault
-
-let helpers =
-  let fails reason =
-    O.construct "Error"
-      ~arg:
-        (O.record
-           [ ("member", O.ident "member"); ("reason", O.variant reason) ])
-  in
-  let otherwise = O.case O.Pattern.any (malformed (O.ident "member")) in
-  let integer_cases =
-    [
-      O.case
-        (O.Pattern.variant "Int" ~arg:(O.Pattern.var "value"))
-        (ok (O.call "Z.of_int" [ O.ident "value" ]));
-      O.case
-        (O.Pattern.variant "Intlit" ~arg:(O.Pattern.var "value"))
-        (O.try_
-           (O.let_in "number"
-              (O.call "Z.of_string" [ O.ident "value" ])
-              (O.if_
-                 (O.infix "||"
-                    (O.infix "="
-                       (O.call "Z.to_string" [ O.ident "number" ])
-                       (O.ident "value"))
-                    (O.infix "=" (O.ident "value") (O.string "-0")))
-                 (ok (O.ident "number"))
-                 (malformed (O.ident "member"))))
-           [
-             O.case
-               (O.Pattern.construct "Invalid_argument" ~arg:O.Pattern.any)
-               (malformed (O.ident "member"));
-           ]);
-      otherwise;
-    ]
-  in
-  let lookup = O.call "List.assoc_opt" [ O.ident "member"; O.ident "fields" ] in
-  [
-    O.let_ "let*" (O.ident "Result.bind");
-    O.define "malformed" [ "member" ] (fails "Malformed");
-    O.let_ "string"
-      (O.fun_function
-         [ O.Pattern.var "member" ]
-         [
-           O.case
-             (O.Pattern.variant "String" ~arg:(O.Pattern.var "value"))
-             (ok (O.ident "value"));
-           otherwise;
-         ]);
-    O.let_ "integer" (O.fun_function [ O.Pattern.var "member" ] integer_cases);
-    O.define "integer_at_least"
-      [ "minimum"; "member"; "json" ]
-      (O.let_star (O.Pattern.var "value")
-         (O.call "integer" [ O.ident "member"; O.ident "json" ])
-         (O.if_
-            (O.call "Z.geq"
-               [ O.ident "value"; O.call "Z.of_int" [ O.ident "minimum" ] ])
-            (ok (O.ident "value"))
-            (malformed (O.ident "member"))));
-    O.define "required"
-      [ "read"; "member"; "fields" ]
-      (O.match_ lookup
-         [
-           O.case (O.Pattern.construct "None") (fails "Lacks");
-           O.case
-             (O.Pattern.construct "Some" ~arg:(O.Pattern.var "value"))
-             (O.call "read" [ O.ident "member"; O.ident "value" ]);
-         ]);
-    O.define "optional"
-      [ "read"; "member"; "fields" ]
-      (O.match_ lookup
-         [
-           O.case (O.Pattern.construct "None") (ok O.none);
-           O.case
-             (O.Pattern.construct "Some" ~arg:(O.Pattern.var "value"))
-             (O.call "Result.map"
-                [
-                  O.ident "Option.some";
-                  O.call "read" [ O.ident "member"; O.ident "value" ];
-                ]);
-         ]);
-    O.define "extra" [ "names" ]
-      (O.call "List.filter"
-         [
-           O.fun_
-             [ O.Pattern.tuple [ O.Pattern.var "name"; O.Pattern.any ] ]
-             (O.call "not"
-                [ O.call "List.mem" [ O.ident "name"; O.ident "names" ] ]);
-         ]);
-    O.define "json_string" [ "value" ]
-      (O.variant "String" ~arg:(O.ident "value"));
-    O.define "json_integer" [ "value" ]
-      (O.if_
-         (O.call "Z.fits_int" [ O.ident "value" ])
-         (O.variant "Int" ~arg:(O.call "Z.to_int" [ O.ident "value" ]))
-         (O.variant "Intlit" ~arg:(O.call "Z.to_string" [ O.ident "value" ])));
-  ]
+let fault =
+  O.type_declaration "fault"
+    ~manifest:(O.type_ "Schema_codec.fault")
+    Required.Ocaml.fault
 
 let files (tag, variants) =
   let extra_type =
@@ -280,9 +187,7 @@ let files (tag, variants) =
         fault;
       ]
   in
-  let names fields =
-    O.list (List.map O.string (tag :: List.map (fun f -> f.name) fields))
-  in
+  let read f = O.call (if f.optional then "optional" else "required") in
   let branch v =
     let reading =
       List.filter (fun f -> not f.optional) v.fields
@@ -293,83 +198,76 @@ let files (tag, variants) =
       (List.fold_right
          (fun f body ->
            O.let_star (O.Pattern.var f.label)
-             (O.call
-                (if f.optional then "optional" else "required")
-                [ f.reader; O.string f.name; O.ident "fields" ])
+             (read f [ O.ident "reader"; f.reader; O.string f.name ])
              body)
          reading
-         (ok
-            (O.construct v.constructor
-               ~arg:
-                 (O.record
-                    (List.map (fun f -> (f.label, O.ident f.label)) v.fields
-                    @ [
-                        ( "extra",
-                          O.call "extra" [ names v.fields; O.ident "fields" ] );
-                      ])))))
+         (O.construct "Ok"
+            ~arg:
+              (O.construct v.constructor
+                 ~arg:
+                   (O.record
+                      (List.map (fun f -> (f.label, O.ident f.label)) v.fields
+                      @ [ ("extra", O.call "rest" [ O.ident "reader" ]) ])))))
   in
+  let json = O.type_ "Yojson.Safe.t" in
   let of_json =
     O.let_ "of_json"
+      ~type_:
+        (O.arrow json (O.type_ "result" ~args:[ O.type_ "t"; O.type_ "fault" ]))
       (O.function_
          [
            O.case
              (O.Pattern.variant "Assoc" ~arg:(O.Pattern.var "fields"))
-             (O.let_star (O.Pattern.var "tag")
-                (O.call "required"
-                   [ O.ident "string"; O.string tag; O.ident "fields" ])
-                (O.match_ (O.ident "tag")
-                   (List.map branch variants
-                   @ [ O.case O.Pattern.any (malformed (O.string tag)) ])));
-           O.case O.Pattern.any (malformed (O.string ""));
+             (O.let_in "reader"
+                (O.call "start" [ O.ident "fields" ])
+                (O.let_star (O.Pattern.var "tag")
+                   (O.call "required"
+                      [ O.ident "reader"; O.ident "string"; O.string tag ])
+                   (O.match_ (O.ident "tag")
+                      (List.map branch variants
+                      @ [
+                          O.case O.Pattern.any
+                            (O.call "malformed" [ O.string tag ]);
+                        ]))));
+           O.case O.Pattern.any (O.call "malformed" [ O.string "" ]);
          ])
   in
   let encode v =
     let value = O.ident "value" in
-    let pair f field = O.tuple [ O.string f.name; O.call f.writer [ field ] ] in
     O.case
       (O.Pattern.construct v.constructor ~arg:(O.Pattern.var "value"))
-      (O.variant "Assoc"
-         ~arg:
-           (O.infix "@"
-              (O.call "List.filter_map"
-                 [
-                   O.ident "Fun.id";
-                   O.list
-                     (O.some
-                        (O.tuple
-                           [
-                             O.string tag;
-                             O.variant "String" ~arg:(O.string v.constructor);
-                           ])
-                     :: List.map
-                          (fun f ->
-                            if f.optional then
-                              O.call "Option.map"
-                                [
-                                  O.fun_
-                                    [ O.Pattern.var "field" ]
-                                    (pair f (O.ident "field"));
-                                  O.field value f.label;
-                                ]
-                            else O.some (pair f (O.field value f.label)))
-                          v.fields);
-                 ])
-              (O.call "extra" [ names v.fields; O.field value "extra" ])))
+      (O.call "write"
+         [
+           O.list
+             (O.tuple
+                [
+                  O.string tag;
+                  O.some (O.call "json_string" [ O.string v.constructor ]);
+                ]
+             :: List.map
+                  (fun f ->
+                    let field = O.field value f.label in
+                    O.tuple
+                      [
+                        O.string f.name;
+                        (if f.optional then
+                           O.call "Option.map" [ O.ident f.writer; field ]
+                         else O.some (O.call f.writer [ field ]));
+                      ])
+                  v.fields);
+           O.field value "extra";
+         ])
   in
-  let to_json = O.let_ "to_json" (O.function_ (List.map encode variants)) in
-  let json = O.type_ "Yojson.Safe.t" in
+  let to_json =
+    O.let_ "to_json"
+      ~type_:(O.arrow (O.type_ "t") json)
+      (O.function_ (List.map encode variants))
+  in
   let banner =
     Banner.ocaml ~from_:"Selector.json and its component branches" __FILE__
   in
   [
     O.implementation ~path:"ocaml/sdk/lib/selector.ml" ~banner
-      (List.map O.type_item types @ helpers @ [ of_json; to_json ]);
-    O.interface ~path:"ocaml/sdk/lib/selector.mli" ~banner
-      (List.map O.type_spec types
-      @ [
-          O.val_ "of_json"
-            (O.arrow json
-               (O.type_ "result" ~args:[ O.type_ "t"; O.type_ "fault" ]));
-          O.val_ "to_json" (O.arrow (O.type_ "t") json);
-        ]);
+      ((O.open_ "Selector_codec" :: List.map O.type_item types)
+      @ [ of_json; to_json ]);
   ]

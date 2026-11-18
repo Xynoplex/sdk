@@ -24,7 +24,7 @@ container run --rm --memory 4g --volume "$input:/input:ro" \
     cd /package
     tar -xzf /input/source.tar.gz
     dune build @all @opam
-    python3 test/check-format.py
+    dune build @fmt
     dune runtest
     dune install --pkg=disabled --prefix /installed
     python3 test/check-installed-api.py --installed /installed/lib/xynolog

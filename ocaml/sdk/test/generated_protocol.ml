@@ -23,6 +23,18 @@ let selectors () =
   selector {|{"type":"TextQuoteSelector","exact":"a","suffix":"b"}|};
   selector {|{"type":"SvgSelector","value":"<svg/>"}|};
   selector {|{"type":"FragmentSelector","value":"page=1"}|};
+  Alcotest.(check string)
+    "an extra member a branch states is not written"
+    {|{"type":"TextQuoteSelector","exact":"a","extension":1}|}
+    (Yojson.Safe.to_string
+       (Selector.to_json
+          (TextQuoteSelector
+             {
+               exact = "a";
+               prefix = None;
+               suffix = None;
+               extra = [ ("prefix", `String "b"); ("extension", `Int 1) ];
+             })));
   refuses {|{"type":"Unknown"}|} "type" `Malformed;
   refuses {|{"type":"TextQuoteSelector","exact":"a","suffix":null}|} "suffix"
     `Malformed;
