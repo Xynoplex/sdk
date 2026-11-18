@@ -91,7 +91,7 @@ applications can implement `SessionStorage` for their own storage.
 `KeptSignIn`; `SignIn.newMemorySignIn` is one independent in-memory grant.
 Its `update` transforms and returns a result atomically, so redirect completion
 and refresh rotation cannot overwrite another writer. The shared
-[sign-in guide](../../../docs/builder/SIGN-IN.md) describes the flows.
+[sign-in guide](https://github.com/xynolog/docs/blob/main/builder/SIGN-IN.md) describes the flows.
 
 `Xynolog.ServiceToken` performs a lazy client-credentials grant with a secret
 or RSA key. It discovers the token endpoint once and keeps each opaque access
@@ -209,7 +209,7 @@ The Haskell client implements the
 channel and operation descriptors in `Xynolog.Channels`.
 All methods of Frame, Bind, Beckon, Browse, Gather, Match, Mark, Yield, Job,
 Auth and System are available. See the
-[builder guide](../../../docs/builder/README.md) for the shared model.
+[builder guide](https://github.com/xynolog/docs/blob/main/builder/README.md) for the shared model.
 
 ## Delegation
 
@@ -330,7 +330,7 @@ rest; `Search` debounces typed queries and joins the search it replaces.
 `SessionSignals` holds host notices beside a session. The cache and session
 are state units too. Each has an idempotent `dispose` that joins its work and
 ends its observations without disposing the borrowed client. See
-[State units](../../../docs/builder/STATE-UNITS.md).
+[State units](https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md).
 
 Mark and hover take the caller's `RetryOptions`; search takes it with an
 explicit debounce and initial query. Mark uses the supplied `Timing.Settings`

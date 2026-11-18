@@ -9,7 +9,7 @@
  * version on registries that don't honor workspace ranges.
  *
  * We publish every package at every version, so an exact pin always resolves —
- * see docs/contributor/RELEASE.md ("Internal dependency pinning").
+ * see https://github.com/xynolog/docs/blob/main/contributor/DEPENDENCIES.md#how-the-sdks-packages-depend-on-each-other.
  *
  * @param {object} json    a parsed package.json (mutated in place)
  * @param {string} version the exact release version, e.g. "0.5.8"

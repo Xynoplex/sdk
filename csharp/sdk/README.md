@@ -124,7 +124,7 @@ updates to consumers. A transport tells its refresher the token refused: an
 agent or a kept session that holds another by then gives it and renews
 nothing. Dispose the agent before disposing its service token.
 
-See the [builder sign-in guide](../../../docs/builder/SIGN-IN.md) for the shared flows.
+See the [builder sign-in guide](https://github.com/xynolog/docs/blob/main/builder/SIGN-IN.md) for the shared flows.
 
 ## Connect
 
@@ -250,7 +250,7 @@ State units in `Xynolog.State` expose read-only `StateValue<T>` properties.
 Read `Value` for a snapshot or enumerate the property to receive the current
 value followed by updates. Dispose the unit to stop its work and end its streams.
 `XynologSession` owns the kept-session lifecycle and leaves its client with its caller.
-See the [state-unit contract](../../../docs/builder/STATE-UNITS.md).
+See the [state-unit contract](https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md).
 
 ## Running a worker
 

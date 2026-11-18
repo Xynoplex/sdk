@@ -22,7 +22,7 @@ the [Python SDK](https://github.com/xynolog/sdk/tree/main/python/sdk) ([`xynolog
 the [Go SDK](https://github.com/xynolog/sdk/tree/main/go) ([`github.com/xynolog/sdk/go`](https://pkg.go.dev/github.com/xynolog/sdk/go) on pkg.go.dev)
 and the [Kotlin SDK](https://github.com/xynolog/sdk/tree/main/kotlin/sdk), for Kotlin and Java programs,
 and the five are held to the same [conformance suite](https://github.com/xynolog/sdk/tree/main/protocol/conformance/sdk).
-New to Xynolog? The [Introduction](https://github.com/xynolog/sdk/blob/main/docs/builder/INTRODUCTION.md)
+New to Xynolog? The [Introduction](https://github.com/xynolog/docs/blob/main/builder/INTRODUCTION.md)
 explains the domain and the ideas the API falls out of.
 
 ## Install
@@ -34,7 +34,7 @@ npm install @xynolog/sdk
 It runs in a browser and in Node. In a browser it needs Chrome 116, Firefox 124 or Safari 17.4,
 or later: its transport joins abort signals with `AbortSignal.any`, which each of those was the
 first version to have. A client speaks to a running knowledge base.
-The [Quick Start](https://github.com/xynolog/sdk/blob/main/docs/builder/QUICK-START.md) sets one up on
+The [Quick Start](https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md) sets one up on
 your own machine.
 
 ## Connect
@@ -163,7 +163,7 @@ gateway. What each flow means is in
 
 From a signed-in session, this ingests a paper, has a model mark the concepts
 it mentions, gathers the context around it, and generates a summary grounded
-in that context. Those are the [Quick Start](https://github.com/xynolog/sdk/blob/main/docs/builder/QUICK-START.md)'s
+in that context. Those are the [Quick Start](https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md)'s
 last two steps, from code, and the two that come next. [Connect](#connect) is
 how a session comes to be signed in.
 
@@ -201,10 +201,10 @@ for the next participant, person or agent, to read and build on.
 
 Where to go from here:
 
-- The [Developer Guide](https://github.com/xynolog/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md) has
+- The [Developer Guide](https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md) has
   each of these steps as a recipe, and the ones after them: reading, searching,
   annotating by hand, reacting to what others do, and testing.
-- The [agent skills](https://github.com/xynolog/sdk/tree/main/docs/builder/skills) are whole scripts on
+- The [agent skills](https://github.com/xynolog/docs/tree/main/builder/skills) are whole scripts on
   this SDK, one per task, for an AI coding assistant to load: ingesting a
   corpus, annotating it, linking it, and the layers built on those.
 
@@ -229,7 +229,7 @@ Methods return one of: `Promise<T>` (atomic gateway ops), `StreamObservable` /
 never silently become a round trip), `ClaimsObservable` (a worker's claims — below), a count
 (wire drives — below), or `void` (local signals). The
 per-method table and the `.run()` rule for progress-plus-result live in
-[`docs/builder/REACTIVE-MODEL.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/REACTIVE-MODEL.md).
+[docs' `builder/REACTIVE-MODEL.md`](https://github.com/xynolog/docs/blob/main/builder/REACTIVE-MODEL.md).
 
 ## Directing attention
 
@@ -364,7 +364,7 @@ is what a worker promises the dispatcher.
   endpoint shapes, and `SignInStore` and `stateDir` for the sign-in `xynolog login` keeps.
 - **Flow state machines** — closure-based factories (`createMarkStateUnit`, `…Gather…`,
   `…Match…`, `…Yield…`, `…Beckon…`) wrapping each long-running flow with `loading$`/`error$`/
-  progress observables; UI-shape-agnostic ([`docs/builder/STATE-UNITS.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/STATE-UNITS.md)).
+  progress observables; UI-shape-agnostic ([docs' `builder/STATE-UNITS.md`](https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md)).
 - **KB discovery** — the consumer side of the launcher's published KB view:
   `httpDiscovery` (polls the Browser origin's `DISCOVERY_URL_PATH` with ETag/304),
   `textDiscovery` (bring-your-own IO — the sdk never imports `fs`), and
@@ -384,13 +384,13 @@ page-shaped. Page-level state machines and components, including the **embeddabl
 
 ## Documentation
 
-The builder docs start at [`docs/builder/README.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/README.md):
+The builder docs start at [docs' `builder/README.md`](https://github.com/xynolog/docs/blob/main/builder/README.md):
 who the SDK is for, where it goes, and the docs in reading order.
 
-- **[`docs/builder/DEVELOPER-GUIDE.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md) — start here to build.** Task-ordered recipes, connect through teardown.
-- [`docs/builder/Usage.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/Usage.md) — per-namespace API tour with concrete examples, plus SSE and error handling.
-- [`docs/builder/REACTIVE-MODEL.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/REACTIVE-MODEL.md) — the Promise-shape-over-Observable design.
-- [`docs/builder/STATE-UNITS.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/STATE-UNITS.md) — the state-unit pattern and its enforced axioms.
+- **[docs' `builder/DEVELOPER-GUIDE.md`](https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md) — start here to build.** Task-ordered recipes, connect through teardown.
+- [docs' `builder/Usage.md`](https://github.com/xynolog/docs/blob/main/builder/Usage.md) — per-namespace API tour with concrete examples, plus SSE and error handling.
+- [docs' `builder/REACTIVE-MODEL.md`](https://github.com/xynolog/docs/blob/main/builder/REACTIVE-MODEL.md) — the Promise-shape-over-Observable design.
+- [docs' `builder/STATE-UNITS.md`](https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md) — the state-unit pattern and its enforced axioms.
 - [`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/xynolog/sdk/blob/main/protocol/contract/CACHE-SEMANTICS.md) — the cache primitive's numbered behavioral contract.
 - [`protocol/contract/TRANSPORT-CONTRACT.md`](https://github.com/xynolog/sdk/blob/main/protocol/contract/TRANSPORT-CONTRACT.md) — what every `ITransport` must honor; HTTP specifics in [TRANSPORT-HTTP.md](https://github.com/xynolog/sdk/blob/main/protocol/contract/TRANSPORT-HTTP.md). New transports implement the `@xynolog/core` interfaces directly — no inheritance from `HttpTransport`.
 
@@ -402,7 +402,7 @@ who the SDK is for, where it goes, and the docs in reading order.
 - [`@xynolog/core`](https://github.com/xynolog/sdk/tree/main/typescript/core) — domain types, `ITransport` contract, `Bus`, OpenAPI-derived schemas
 - [`@xynolog/http-transport`](https://github.com/xynolog/sdk/tree/main/typescript/http-transport) — HTTP transport (`HttpTransport`, `HttpContentTransport`)
 - [`@xynolog/observability`](https://github.com/xynolog/sdk/tree/main/typescript/observability) — OpenTelemetry tracing the SDK propagates across the bus
-- [`@xynolog/react-ui`](https://github.com/xynolog/sdk/tree/main/typescript/react-ui) — the embeddable `ResourceViewer` (bring-your-own-session) plus React hooks (`useResourceLoader`, `useMediaToken`, `useObservable`) and the web `SessionStorage`; its docs cross-link the [Developer Guide](https://github.com/xynolog/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md)
+- [`@xynolog/react-ui`](https://github.com/xynolog/sdk/tree/main/typescript/react-ui) — the embeddable `ResourceViewer` (bring-your-own-session) plus React hooks (`useResourceLoader`, `useMediaToken`, `useObservable`) and the web `SessionStorage`; its docs cross-link the [Developer Guide](https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md)
 
 ## License
 

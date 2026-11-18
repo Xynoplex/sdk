@@ -1,6 +1,6 @@
 """What a state unit is: a long-running flow, held as state a consumer reads and watches.
 
-The pattern is `docs/builder/STATE-UNITS.md`'s, kept by every Xynolog SDK. A
+The pattern is the one https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md states, kept by every Xynolog SDK. A
 unit's consumers read it and never write it; it is moved by its methods and by
 what it hears on the client's own bus; and it ends by `dispose`.
 
