@@ -10,7 +10,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { EntityTagsPage } from '../components/EntityTagsPage';
 import type { EntityTagsPageProps } from '../components/EntityTagsPage';
 
-const createMockProps = (overrides?: Partial<EntityTagsPageProps>): EntityTagsPageProps => ({
+const createMockProps = (
+  overrides?: Partial<EntityTagsPageProps>,
+): EntityTagsPageProps => ({
   entityTypes: ['Document', 'Person', 'Organization'],
   isLoading: false,
   error: '',
@@ -49,7 +51,9 @@ describe('EntityTagsPage', () => {
       render(<EntityTagsPage {...props} />);
 
       expect(screen.getByText('Available Tags')).toBeInTheDocument();
-      expect(screen.getByText('Tags for categorizing entities')).toBeInTheDocument();
+      expect(
+        screen.getByText('Tags for categorizing entities'),
+      ).toBeInTheDocument();
     });
 
     it('renders tag icon', () => {
@@ -121,7 +125,9 @@ describe('EntityTagsPage', () => {
       const props = createMockProps({ newTag: 'Current Value' });
       render(<EntityTagsPage {...props} />);
 
-      const input = screen.getByPlaceholderText('Enter new tag') as HTMLInputElement;
+      const input = screen.getByPlaceholderText(
+        'Enter new tag',
+      ) as HTMLInputElement;
       expect(input.value).toBe('Current Value');
     });
 
@@ -162,7 +168,9 @@ describe('EntityTagsPage', () => {
       const props = createMockProps();
       render(<EntityTagsPage {...props} />);
 
-      expect(screen.getByRole('button', { name: /Add Tag/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Add Tag/i }),
+      ).toBeInTheDocument();
     });
 
     it('calls onAddTag when clicked', () => {
@@ -234,7 +242,9 @@ describe('EntityTagsPage', () => {
       const props = createMockProps({ error: 'Error occurred' });
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const errorIcon = container.querySelector('.xynolog-entity-tags__error-icon');
+      const errorIcon = container.querySelector(
+        '.xynolog-entity-tags__error-icon',
+      );
       expect(errorIcon).toBeInTheDocument();
     });
 
@@ -242,7 +252,9 @@ describe('EntityTagsPage', () => {
       const props = createMockProps({ error: '' });
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const errorMessage = container.querySelector('.xynolog-entity-tags__error');
+      const errorMessage = container.querySelector(
+        '.xynolog-entity-tags__error',
+      );
       expect(errorMessage).not.toBeInTheDocument();
     });
 
@@ -367,7 +379,9 @@ describe('EntityTagsPage', () => {
       expect(screen.getByText('Custom Title')).toBeInTheDocument();
       expect(screen.getByText('Custom Description')).toBeInTheDocument();
       expect(screen.getByText('Custom Section')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Custom Placeholder')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Custom Placeholder'),
+      ).toBeInTheDocument();
     });
   });
 });

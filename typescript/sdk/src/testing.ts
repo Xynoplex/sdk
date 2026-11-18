@@ -30,7 +30,10 @@ import type {
 } from '@xynolog/core';
 import type { CachePersistence } from './cache-persister';
 import { BRIDGED_CHANNELS, resourceId as makeResourceId } from '@xynolog/core';
-import { FaultyTransport, type FaultyTransportConfig } from '@xynolog/core/testing';
+import {
+  FaultyTransport,
+  type FaultyTransportConfig,
+} from '@xynolog/core/testing';
 import { XynologClient } from './client';
 import { XynologSession } from './session/xynolog-session';
 import type { KbTarget } from '@xynolog/core';
@@ -67,7 +70,10 @@ export function inMemoryContent(): IContentTransport {
   const toBuffer = (file: File | Buffer): Promise<ArrayBuffer> =>
     file instanceof Uint8Array
       ? Promise.resolve(
-          file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer,
+          file.buffer.slice(
+            file.byteOffset,
+            file.byteOffset + file.byteLength,
+          ) as ArrayBuffer,
         )
       : file.arrayBuffer();
 
@@ -84,9 +90,14 @@ export function inMemoryContent(): IContentTransport {
       });
       return { resourceId: rId };
     },
-    async getBinary(rId: ResourceId): Promise<{ data: ArrayBuffer; contentType: string }> {
+    async getBinary(
+      rId: ResourceId,
+    ): Promise<{ data: ArrayBuffer; contentType: string }> {
       const hit = store.get(rId as string);
-      if (!hit) throw new Error(`inMemoryContent: no content stored for ${String(rId)}`);
+      if (!hit)
+        throw new Error(
+          `inMemoryContent: no content stored for ${String(rId)}`,
+        );
       return hit;
     },
     async getBinaryStream(
@@ -105,7 +116,12 @@ export function inMemoryContent(): IContentTransport {
     },
     async getResourceGraph(rId: ResourceId): Promise<GetResourceResponse> {
       return {
-        resource: { '@context': 'https://xynolog.dev/context/v1', '@id': rId, name: String(rId), representations: [] },
+        resource: {
+          '@context': 'https://xynolog.dev/context/v1',
+          '@id': rId,
+          name: String(rId),
+          representations: [],
+        },
         annotations: [],
       };
     },
@@ -180,11 +196,23 @@ export function createTestClient(options: TestClientOptions = {}): {
   client: XynologClient;
   transport: FaultyTransport;
 } {
-  const transport = new FaultyTransport({ ...options.transport, channels: BRIDGED_CHANNELS });
-  const client = new XynologClient(transport, options.content ?? inMemoryContent(), options.gateway, {
-    ...(options.busTimeoutMs !== undefined ? { busTimeoutMs: options.busTimeoutMs } : {}),
-    ...(options.cachePersistence ? { cachePersistence: options.cachePersistence } : {}),
+  const transport = new FaultyTransport({
+    ...options.transport,
+    channels: BRIDGED_CHANNELS,
   });
+  const client = new XynologClient(
+    transport,
+    options.content ?? inMemoryContent(),
+    options.gateway,
+    {
+      ...(options.busTimeoutMs !== undefined
+        ? { busTimeoutMs: options.busTimeoutMs }
+        : {}),
+      ...(options.cachePersistence
+        ? { cachePersistence: options.cachePersistence }
+        : {}),
+    },
+  );
   return { client, transport };
 }
 
@@ -221,6 +249,11 @@ export function createTestSession(options: TestSessionOptions = {}): {
       port: 4000,
       protocol: 'http',
     });
-  const session = new XynologSession({ kb, kept: keptIn(storage, kb.id), client, token$ });
+  const session = new XynologSession({
+    kb,
+    kept: keptIn(storage, kb.id),
+    client,
+    token$,
+  });
   return { session, client, transport, storage, token$ };
 }

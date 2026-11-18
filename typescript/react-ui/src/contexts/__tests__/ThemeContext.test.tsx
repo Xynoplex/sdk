@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type Mock,
+} from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 import { ThemeProvider, useTheme } from '../ThemeContext';
@@ -8,11 +16,18 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 /** What the provider hands `matchMedia`'s list: its `change` listener. */
-type ChangeListening = (type: string, listener: (event: MediaQueryListEvent) => void) => void;
+type ChangeListening = (
+  type: string,
+  listener: (event: MediaQueryListEvent) => void,
+) => void;
 
 describe('ThemeContext', () => {
   let localStorageMock: Record<string, string>;
-  let matchMediaMock: { matches: boolean; addEventListener: Mock<ChangeListening>; removeEventListener: Mock<ChangeListening> };
+  let matchMediaMock: {
+    matches: boolean;
+    addEventListener: Mock<ChangeListening>;
+    removeEventListener: Mock<ChangeListening>;
+  };
 
   beforeEach(() => {
     // Mock localStorage
@@ -105,14 +120,14 @@ describe('ThemeContext', () => {
 
       expect(matchMediaMock.addEventListener).toHaveBeenCalledWith(
         'change',
-        expect.any(Function)
+        expect.any(Function),
       );
 
       unmount();
 
       expect(matchMediaMock.removeEventListener).toHaveBeenCalledWith(
         'change',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -125,7 +140,7 @@ describe('ThemeContext', () => {
       // to keep the systemTheme state up to date
       expect(matchMediaMock.addEventListener).toHaveBeenCalledWith(
         'change',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -254,7 +269,7 @@ describe('ThemeContext', () => {
 
       expect(matchMediaMock.addEventListener).toHaveBeenCalledWith(
         'change',
-        expect.any(Function)
+        expect.any(Function),
       );
 
       act(() => {
@@ -273,7 +288,7 @@ describe('ThemeContext', () => {
       // Listener is added on mount
       expect(matchMediaMock.addEventListener).toHaveBeenCalledWith(
         'change',
-        expect.any(Function)
+        expect.any(Function),
       );
 
       act(() => {
@@ -320,7 +335,7 @@ describe('ThemeContext', () => {
 
     it('should throw when used outside ThemeProvider', () => {
       expect(() => renderHook(() => useTheme())).toThrow(
-        'useTheme must be used within a ThemeProvider'
+        'useTheme must be used within a ThemeProvider',
       );
     });
   });

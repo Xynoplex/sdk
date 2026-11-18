@@ -12,10 +12,12 @@
     "esbuild@0.28.2": true
   },
   "scripts": {
-    "build:packages": "npm run build --workspace=@xynolog/core && npm run build --workspace=@xynolog/observability && npm run build --workspace=@xynolog/http-transport && npm run build --workspace=@xynolog/sdk && npm run build --workspace=@xynolog/react-ui"
+    "build:packages": "npm run build --workspace=@xynolog/core && npm run build --workspace=@xynolog/observability && npm run build --workspace=@xynolog/http-transport && npm run build --workspace=@xynolog/sdk && npm run build --workspace=@xynolog/react-ui",
+    "format:check": "prettier --check --ignore-path ../.gitignore \"**/*.{ts,tsx,mts,cts}\""
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "prettier": "3.9.10",
     "stylelint": "^18.0.0",
     "stylelint-config-standard": "^41.0.0",
     "stylelint-order": "^8.1.1",

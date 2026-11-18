@@ -18,13 +18,18 @@ const rectAnnotation: Annotation = {
   created: '2024-01-01T10:00:00Z',
   target: {
     source: resourceId('resource-1'),
-    selector: { type: 'SvgSelector', value: '<svg><rect x="10" y="10" width="20" height="20"/></svg>' },
+    selector: {
+      type: 'SvgSelector',
+      value: '<svg><rect x="10" y="10" width="20" height="20"/></svg>',
+    },
   },
 };
 
 function sessionDouble() {
   const hover = vi.fn();
-  const session = { client: { browse: { click: vi.fn() }, beckon: { hover } } } as unknown as XynologSession;
+  const session = {
+    client: { browse: { click: vi.fn() }, beckon: { hover } },
+  } as unknown as XynologSession;
   return { session, hover };
 }
 
@@ -43,8 +48,12 @@ function overlay(session: XynologSession) {
 }
 
 describe('AnnotationOverlay — hover', () => {
-  beforeEach(() => { vi.useFakeTimers(); });
-  afterEach(() => { vi.useRealTimers(); });
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it('says a shape is hovered once the pointer has rested on it, and none when it leaves', () => {
     const { session, hover } = sessionDouble();
@@ -63,7 +72,9 @@ describe('AnnotationOverlay — hover', () => {
     const { session, hover } = sessionDouble();
     const { container, unmount } = render(overlay(session));
 
-    fireEvent.mouseEnter(container.querySelector('.xynolog-annotation-overlay__shape')!);
+    fireEvent.mouseEnter(
+      container.querySelector('.xynolog-annotation-overlay__shape')!,
+    );
     unmount();
     vi.advanceTimersByTime(200);
 

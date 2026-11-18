@@ -22,7 +22,12 @@ import type { components } from './types';
 type KnowledgeGraph = components['schemas']['KnowledgeGraph'];
 
 export interface GraphViews {
-  connections: { resourceId: string; resourceName: string; entityTypes: string[]; bidirectional: boolean }[];
+  connections: {
+    resourceId: string;
+    resourceName: string;
+    entityTypes: string[];
+    bidirectional: boolean;
+  }[];
   citedBy: { resourceId: string; resourceName: string }[];
   citedByCount: number;
   siblingEntityTypes: string[];
@@ -35,27 +40,34 @@ export function deriveViews(
 ): GraphViews {
   // An edge names its ends as text, of either kind of node: the nodes are
   // looked up by that text.
-  const nodeById = new Map<string, KnowledgeGraph['nodes'][number]>(graph.nodes.map((n) => [n.id, n]));
+  const nodeById = new Map<string, KnowledgeGraph['nodes'][number]>(
+    graph.nodes.map((n) => [n.id, n]),
+  );
   // annotation id → the resource it lives on. Both derivations resolve through
   // this, which is what keeps them structural: a peer connection whose
   // relationshipType happens to be named 'cites' has no annotation-of entry.
   const annotationOf = new Map<string, string>();
   for (const edge of graph.edges) {
-    if (edge.type === 'annotation-of') annotationOf.set(edge.source, edge.target);
+    if (edge.type === 'annotation-of')
+      annotationOf.set(edge.source, edge.target);
   }
 
   const connections: GraphViews['connections'] = [];
   const citedBy: GraphViews['citedBy'] = [];
   const citingSeen = new Set<string>();
   for (const edge of graph.edges) {
-    const citingResource = edge.type === 'cites' && edge.target === mainResourceId
-      ? annotationOf.get(edge.source)
-      : undefined;
+    const citingResource =
+      edge.type === 'cites' && edge.target === mainResourceId
+        ? annotationOf.get(edge.source)
+        : undefined;
     if (citingResource !== undefined) {
       if (citingSeen.has(citingResource)) continue;
       citingSeen.add(citingResource);
       const node = nodeById.get(citingResource);
-      citedBy.push({ resourceId: citingResource, resourceName: node?.label ?? citingResource });
+      citedBy.push({
+        resourceId: citingResource,
+        resourceName: node?.label ?? citingResource,
+      });
     } else if (edge.source === mainResourceId) {
       const node = nodeById.get(edge.target);
       connections.push({
@@ -69,7 +81,11 @@ export function deriveViews(
 
   const siblingEntityTypes = new Set<string>();
   for (const node of graph.nodes) {
-    if (node.type === 'annotation' && node.id !== focalAnnotationId && annotationOf.get(node.id) === mainResourceId) {
+    if (
+      node.type === 'annotation' &&
+      node.id !== focalAnnotationId &&
+      annotationOf.get(node.id) === mainResourceId
+    ) {
       for (const et of node.entityTypes ?? []) siblingEntityTypes.add(et);
     }
   }

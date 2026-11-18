@@ -16,12 +16,20 @@
 import util from 'node:util';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BehaviorSubject } from 'rxjs';
-import { BRIDGED_CHANNELS, accessToken, baseUrl, resourceId, type AccessToken, type XynologError } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  accessToken,
+  baseUrl,
+  resourceId,
+  type AccessToken,
+  type XynologError,
+} from '@xynolog/core';
 import { HttpContentTransport } from '../http-content-transport';
 import { HttpTransport, currentUserOf } from '../http-transport';
 
 /** A token, which is a credential whether or not a request can carry it. */
-const CARRIED = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE4MDAwMDAwMDAsIm4iOjd9.InNpZ25hdHVyZSI';
+const CARRIED =
+  'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE4MDAwMDAwMDAsIm4iOjd9.InNpZ25hdHVyZSI';
 /** The same token with a line break inside it: no header's value. */
 const BROKEN = accessToken(`${CARRIED.slice(0, 24)}\n${CARRIED.slice(24)}`);
 const GATEWAY = baseUrl('http://gateway.test');
@@ -41,11 +49,22 @@ function says(failure: unknown): boolean {
 let fetched: ReturnType<typeof vi.fn>;
 /** What was asked of the gateway, the stream's own connect aside. */
 const asked = (): string[] =>
-  fetched.mock.calls.map(([input]) => String(input instanceof Request ? input.url : input)).filter((url) => !url.endsWith('/bus/subscribe'));
+  fetched.mock.calls
+    .map(([input]) => String(input instanceof Request ? input.url : input))
+    .filter((url) => !url.endsWith('/bus/subscribe'));
 
 const open: HttpTransport[] = [];
-function transportWith(token: AccessToken, address = GATEWAY, more: { tokenRefresher?: () => Promise<string | null> } = {}): HttpTransport {
-  const transport = new HttpTransport({ baseUrl: address, channels: BRIDGED_CHANNELS, token$: new BehaviorSubject<AccessToken | null>(token), ...more });
+function transportWith(
+  token: AccessToken,
+  address = GATEWAY,
+  more: { tokenRefresher?: () => Promise<string | null> } = {},
+): HttpTransport {
+  const transport = new HttpTransport({
+    baseUrl: address,
+    channels: BRIDGED_CHANNELS,
+    token$: new BehaviorSubject<AccessToken | null>(token),
+    ...more,
+  });
   open.push(transport);
   return transport;
 }
@@ -53,9 +72,15 @@ function transportWith(token: AccessToken, address = GATEWAY, more: { tokenRefre
 beforeEach(() => {
   // The stream connects as soon as there is a token. Its connect is held, and every other request is refused.
   fetched = vi.fn(async (input: string | URL | Request) =>
-    String(input instanceof Request ? input.url : input).endsWith('/bus/subscribe')
+    String(input instanceof Request ? input.url : input).endsWith(
+      '/bus/subscribe',
+    )
       ? new Promise<Response>(() => {})
-      : Response.json({ error: 'The token is not one this gateway admits' }, { status: 401 }));
+      : Response.json(
+          { error: 'The token is not one this gateway admits' },
+          { status: 401 },
+        ),
+  );
   vi.stubGlobal('fetch', fetched);
 });
 
@@ -64,35 +89,72 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-type Asking = (transport: HttpTransport, content: HttpContentTransport) => Promise<unknown>;
+type Asking = (
+  transport: HttpTransport,
+  content: HttpContentTransport,
+) => Promise<unknown>;
 
 const REQUESTS: ReadonlyArray<readonly [string, Asking]> = [
   ['GET /api/users/me', (transport) => transport.getCurrentUser()],
   ['POST /api/tokens/media', (transport) => transport.getMediaToken(RESOURCE)],
   ['GET /api/health', (transport) => transport.healthCheck()],
   ['GET /api/status', (transport) => transport.getStatus()],
-  ['GET /resources/res-1', (_transport, content) => content.getBinary(RESOURCE)],
-  ['GET /resources/res-1', (_transport, content) => content.getBinaryStream(RESOURCE)],
-  ['GET /resources/res-1/jsonld', (_transport, content) => content.getResourceGraph(RESOURCE)],
-  ['GET /resources/res-1/annotations', (_transport, content) => content.getAnnotations(RESOURCE)],
-  ['GET /resources/res-1/anchored-text', (_transport, content) => content.getAnchoredText(RESOURCE)],
-  ['POST /resources', (_transport, content) => content.putBinary({ name: 'a note', file: Buffer.from('a note'), format: 'text/plain', storageUri: 'file://a-note.txt' })],
+  [
+    'GET /resources/res-1',
+    (_transport, content) => content.getBinary(RESOURCE),
+  ],
+  [
+    'GET /resources/res-1',
+    (_transport, content) => content.getBinaryStream(RESOURCE),
+  ],
+  [
+    'GET /resources/res-1/jsonld',
+    (_transport, content) => content.getResourceGraph(RESOURCE),
+  ],
+  [
+    'GET /resources/res-1/annotations',
+    (_transport, content) => content.getAnnotations(RESOURCE),
+  ],
+  [
+    'GET /resources/res-1/anchored-text',
+    (_transport, content) => content.getAnchoredText(RESOURCE),
+  ],
+  [
+    'POST /resources',
+    (_transport, content) =>
+      content.putBinary({
+        name: 'a note',
+        file: Buffer.from('a note'),
+        format: 'text/plain',
+        storageUri: 'file://a-note.txt',
+      }),
+  ],
 ];
 
 describe('a request of a token that is no header value', () => {
-  it.each(REQUESTS)('%s got no answer: it says the kind of error, and none of the token', async (request, asking) => {
-    const transport = transportWith(BROKEN);
-    const reported: XynologError[] = [];
-    transport.errors$.subscribe((error) => reported.push(error));
+  it.each(REQUESTS)(
+    '%s got no answer: it says the kind of error, and none of the token',
+    async (request, asking) => {
+      const transport = transportWith(BROKEN);
+      const reported: XynologError[] = [];
+      transport.errors$.subscribe((error) => reported.push(error));
 
-    const failure: unknown = await asking(transport, new HttpContentTransport(transport)).catch((e: unknown) => e);
+      const failure: unknown = await asking(
+        transport,
+        new HttpContentTransport(transport),
+      ).catch((e: unknown) => e);
 
-    expect(says(failure)).toBe(false);
-    expect(failure).toMatchObject({ name: 'APIError', code: 'unavailable', message: `${request} got no answer: TypeError` });
-    // It is on the transport's error stream, as every request that got no answer is.
-    expect(reported).toEqual([failure]);
-    expect(asked()).toEqual([]);
-  });
+      expect(says(failure)).toBe(false);
+      expect(failure).toMatchObject({
+        name: 'APIError',
+        code: 'unavailable',
+        message: `${request} got no answer: TypeError`,
+      });
+      // It is on the transport's error stream, as every request that got no answer is.
+      expect(reported).toEqual([failure]);
+      expect(asked()).toEqual([]);
+    },
+  );
 
   it('asked of a gateway with no transport: the asking rejects, and does not throw where it was called', async () => {
     let asking: Promise<unknown> | undefined;
@@ -103,32 +165,56 @@ describe('a request of a token that is no header value', () => {
     const failure: unknown = await asking?.catch((e: unknown) => e);
 
     expect(says(failure)).toBe(false);
-    expect(failure).toMatchObject({ name: 'APIError', code: 'unavailable', message: 'GET /api/users/me got no answer: TypeError' });
+    expect(failure).toMatchObject({
+      name: 'APIError',
+      code: 'unavailable',
+      message: 'GET /api/users/me got no answer: TypeError',
+    });
     expect(asked()).toEqual([]);
   });
 
   it('handed back by a refresher after a refusal: it is no fresh credential, and the refusal is the answer', async () => {
-    const transport = transportWith(accessToken('a-token-the-gateway-refuses'), GATEWAY, { tokenRefresher: async () => BROKEN });
+    const transport = transportWith(
+      accessToken('a-token-the-gateway-refuses'),
+      GATEWAY,
+      { tokenRefresher: async () => BROKEN },
+    );
 
-    const failure: unknown = await transport.getCurrentUser().catch((e: unknown) => e);
+    const failure: unknown = await transport
+      .getCurrentUser()
+      .catch((e: unknown) => e);
 
     expect(says(failure)).toBe(false);
-    expect(failure).toMatchObject({ name: 'APIError', code: 'unauthorized', status: 401 });
+    expect(failure).toMatchObject({
+      name: 'APIError',
+      code: 'unauthorized',
+      status: 401,
+    });
     // The request was made once, and not again with a token it could not carry.
     expect(asked()).toEqual(['http://gateway.test/api/users/me']);
   });
 });
 
 describe('a request of an address that carries a credential', () => {
-  it.each(REQUESTS)('%s got no answer: it says the kind of error, and none of the address', async (request, asking) => {
-    const transport = transportWith(accessToken('a-token'), CREDENTIALED);
+  it.each(REQUESTS)(
+    '%s got no answer: it says the kind of error, and none of the address',
+    async (request, asking) => {
+      const transport = transportWith(accessToken('a-token'), CREDENTIALED);
 
-    const failure: unknown = await asking(transport, new HttpContentTransport(transport)).catch((e: unknown) => e);
+      const failure: unknown = await asking(
+        transport,
+        new HttpContentTransport(transport),
+      ).catch((e: unknown) => e);
 
-    expect(says(failure)).toBe(false);
-    expect(failure).toMatchObject({ name: 'APIError', code: 'unavailable', message: `${request} got no answer: TypeError` });
-    expect(asked()).toEqual([]);
-  });
+      expect(says(failure)).toBe(false);
+      expect(failure).toMatchObject({
+        name: 'APIError',
+        code: 'unavailable',
+        message: `${request} got no answer: TypeError`,
+      });
+      expect(asked()).toEqual([]);
+    },
+  );
 
   it('asked of a gateway with no transport: the asking rejects, and says none of the address', async () => {
     const failure: unknown = await Promise.resolve()
@@ -136,7 +222,11 @@ describe('a request of an address that carries a credential', () => {
       .catch((e: unknown) => e);
 
     expect(says(failure)).toBe(false);
-    expect(failure).toMatchObject({ name: 'APIError', code: 'unavailable', message: 'GET /api/users/me got no answer: TypeError' });
+    expect(failure).toMatchObject({
+      name: 'APIError',
+      code: 'unavailable',
+      message: 'GET /api/users/me got no answer: TypeError',
+    });
     expect(asked()).toEqual([]);
   });
 });

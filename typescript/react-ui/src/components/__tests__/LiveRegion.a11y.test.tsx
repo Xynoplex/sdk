@@ -35,7 +35,7 @@ describe('LiveRegion - Accessibility', () => {
       const { container } = render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const results = await axe(container);
@@ -48,7 +48,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const politeRegion = screen.getByRole('status');
@@ -61,7 +61,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const assertiveRegion = screen.getByRole('alert');
@@ -74,7 +74,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const politeRegion = screen.getByRole('status');
@@ -91,7 +91,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const politeButton = screen.getByText('Announce Polite');
@@ -107,7 +107,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const assertiveButton = screen.getByText('Announce Assertive');
@@ -123,7 +123,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const politeButton = screen.getByText('Announce Polite');
@@ -137,9 +137,12 @@ describe('LiveRegion - Accessibility', () => {
       });
 
       // Message should clear after 1 second
-      await waitFor(() => {
-        expect(politeRegion).toHaveTextContent('');
-      }, { timeout: 1500 });
+      await waitFor(
+        () => {
+          expect(politeRegion).toHaveTextContent('');
+        },
+        { timeout: 1500 },
+      );
     });
   });
 
@@ -148,7 +151,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       // Polite region uses role="status"
@@ -162,7 +165,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const politeRegion = screen.getByRole('status');
@@ -179,7 +182,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <TestComponent />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       const politeRegion = screen.getByRole('status');
@@ -196,7 +199,8 @@ describe('LiveRegion - Accessibility', () => {
 
   describe('Context Provider', () => {
     it('should provide announce function through context', () => {
-      let announceFunction: ReturnType<typeof useLiveRegion>['announce'] | undefined;
+      let announceFunction:
+        ReturnType<typeof useLiveRegion>['announce'] | undefined;
 
       function CaptureContext() {
         const { announce } = useLiveRegion();
@@ -207,7 +211,7 @@ describe('LiveRegion - Accessibility', () => {
       render(
         <LiveRegionProvider>
           <CaptureContext />
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       expect(announceFunction).toBeDefined();
@@ -218,11 +222,7 @@ describe('LiveRegion - Accessibility', () => {
       function ComponentWithoutProvider() {
         const { announce } = useLiveRegion();
 
-        return (
-          <button onClick={() => announce('Test', 'polite')}>
-            Test
-          </button>
-        );
+        return <button onClick={() => announce('Test', 'polite')}>Test</button>;
       }
 
       // Should not throw error
@@ -243,7 +243,7 @@ describe('LiveRegion - Accessibility', () => {
             <p>Page content</p>
             <TestComponent />
           </main>
-        </LiveRegionProvider>
+        </LiveRegionProvider>,
       );
 
       // Live regions should not affect main content

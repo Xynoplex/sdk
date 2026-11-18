@@ -21,9 +21,13 @@ describe('Toast System', () => {
 
       return (
         <div>
-          <button onClick={() => toast.showSuccess('Success!')}>Show Success</button>
+          <button onClick={() => toast.showSuccess('Success!')}>
+            Show Success
+          </button>
           <button onClick={() => toast.showError('Error!')}>Show Error</button>
-          <button onClick={() => toast.showWarning('Warning!')}>Show Warning</button>
+          <button onClick={() => toast.showWarning('Warning!')}>
+            Show Warning
+          </button>
           <button onClick={() => toast.showInfo('Info!')}>Show Info</button>
           <button onClick={() => toast.showToast('Custom', 'success', 5000)}>
             Show Custom
@@ -37,7 +41,7 @@ describe('Toast System', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => render(<TestComponent />)).toThrow(
-        'useToast must be used within a ToastProvider'
+        'useToast must be used within a ToastProvider',
       );
 
       spy.mockRestore();
@@ -48,8 +52,8 @@ describe('Toast System', () => {
         render(
           <ToastProvider>
             <TestComponent />
-          </ToastProvider>
-        )
+          </ToastProvider>,
+        ),
       ).not.toThrow();
     });
 
@@ -64,7 +68,7 @@ describe('Toast System', () => {
       render(
         <ToastProvider>
           <CaptureContext />
-        </ToastProvider>
+        </ToastProvider>,
       );
 
       expect(contextValue).toBeDefined();
@@ -79,7 +83,7 @@ describe('Toast System', () => {
       render(
         <ToastProvider>
           <TestComponent />
-        </ToastProvider>
+        </ToastProvider>,
       );
 
       expect(screen.getByText('Show Success')).toBeInTheDocument();

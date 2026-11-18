@@ -10,14 +10,19 @@ export interface IdentifierKind<Id extends string> {
 }
 
 /** The kind named `name` whose rule is `pattern`, matched against the whole text. */
-export function identifierKind<Id extends string>(name: string, pattern: string): IdentifierKind<Id> {
+export function identifierKind<Id extends string>(
+  name: string,
+  pattern: string,
+): IdentifierKind<Id> {
   const rule = new RegExp(pattern, 'u');
   const is = (value: string): value is Id => rule.test(value);
   return {
     is,
     of: (value) => {
       if (!is(value)) {
-        throw new TypeError(`${JSON.stringify(value)} is not a ${name}: it does not match ${rule.source}`);
+        throw new TypeError(
+          `${JSON.stringify(value)} is not a ${name}: it does not match ${rule.source}`,
+        );
       }
       return value;
     },

@@ -20,10 +20,24 @@ export const Dialog = ({ children, onClose, ...props }: DialogProps) => (
   </div>
 );
 
-export const DialogPanel = ({ children, ...props }: HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>;
+export const DialogPanel = ({
+  children,
+  ...props
+}: HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>;
 
-export const DialogTitle = ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => <h2 {...props}>{children}</h2>;
+export const DialogTitle = ({
+  children,
+  ...props
+}: HTMLAttributes<HTMLHeadingElement>) => <h2 {...props}>{children}</h2>;
 
-export const Transition = ({ show, children }: { show?: boolean; children?: ReactNode }) => (show ? <>{children}</> : null);
+export const Transition = ({
+  show,
+  children,
+}: {
+  show?: boolean;
+  children?: ReactNode;
+}) => (show ? <>{children}</> : null);
 
-export const TransitionChild = ({ children }: { children?: ReactNode }) => <>{children}</>;
+export const TransitionChild = ({ children }: { children?: ReactNode }) => (
+  <>{children}</>
+);

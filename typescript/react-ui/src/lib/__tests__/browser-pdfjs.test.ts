@@ -43,7 +43,8 @@ describe('loadPdfDocument', () => {
   test('applies the worker URL when setPdfWorkerSrc was called', async () => {
     getDocumentMock.mockReturnValue({ promise: Promise.resolve({}) });
 
-    const { setPdfWorkerSrc, loadPdfDocument } = await import('../browser-pdfjs');
+    const { setPdfWorkerSrc, loadPdfDocument } =
+      await import('../browser-pdfjs');
     setPdfWorkerSrc('/assets/pdf.worker.min.mjs');
     await loadPdfDocument('https://example.com/x.pdf');
 
@@ -62,7 +63,8 @@ describe('loadPdfDocument', () => {
   test('imports pdf.js only once across multiple loads (memoized)', async () => {
     getDocumentMock.mockReturnValue({ promise: Promise.resolve({}) });
 
-    const { setPdfWorkerSrc, loadPdfDocument } = await import('../browser-pdfjs');
+    const { setPdfWorkerSrc, loadPdfDocument } =
+      await import('../browser-pdfjs');
     setPdfWorkerSrc('first');
     await loadPdfDocument('https://example.com/a.pdf');
     expect(globalWorkerOptions.workerSrc).toBe('first');
@@ -91,8 +93,14 @@ describe('renderPdfPageToDataUrl', () => {
   }
 
   function stubCanvas(dataUrl: string) {
-    const canvas = { width: 0, height: 0, toDataURL: vi.fn().mockReturnValue(dataUrl) };
-    vi.spyOn(document, 'createElement').mockReturnValue(canvas as unknown as HTMLCanvasElement);
+    const canvas = {
+      width: 0,
+      height: 0,
+      toDataURL: vi.fn().mockReturnValue(dataUrl),
+    };
+    vi.spyOn(document, 'createElement').mockReturnValue(
+      canvas as unknown as HTMLCanvasElement,
+    );
     return canvas;
   }
 
@@ -111,7 +119,11 @@ describe('renderPdfPageToDataUrl', () => {
       viewport: { width: 400, height: 200 },
     });
     expect(canvas.toDataURL).toHaveBeenCalledWith('image/png');
-    expect(result).toEqual({ dataUrl: 'data:image/png;base64,XXX', width: 400, height: 200 });
+    expect(result).toEqual({
+      dataUrl: 'data:image/png;base64,XXX',
+      width: 400,
+      height: 200,
+    });
   });
 
   test('defaults to scale 1.0', async () => {
@@ -122,7 +134,11 @@ describe('renderPdfPageToDataUrl', () => {
     const result = await renderPdfPageToDataUrl(page);
 
     expect(page.getViewport).toHaveBeenCalledWith({ scale: 1.0 });
-    expect(result).toEqual({ dataUrl: 'data:image/png;base64,YYY', width: 200, height: 100 });
+    expect(result).toEqual({
+      dataUrl: 'data:image/png;base64,YYY',
+      width: 200,
+      height: 100,
+    });
   });
 });
 
@@ -141,7 +157,10 @@ describe('setPdfWasmUrl', () => {
     setPdfWasmUrl('/pdfjs/wasm/');
     await loadPdfDocument('https://example.com/x.pdf');
 
-    expect(getDocumentMock).toHaveBeenCalledWith({ url: 'https://example.com/x.pdf', wasmUrl: '/pdfjs/wasm/' });
+    expect(getDocumentMock).toHaveBeenCalledWith({
+      url: 'https://example.com/x.pdf',
+      wasmUrl: '/pdfjs/wasm/',
+    });
   });
 
   test('omits wasmUrl entirely when the host never configured one', async () => {
@@ -152,6 +171,8 @@ describe('setPdfWasmUrl', () => {
 
     // Absent, not defaulted: a manufactured path would 404 into the SPA
     // fallback and turn a config gap into HTML-as-wasm.
-    expect(getDocumentMock).toHaveBeenCalledWith({ url: 'https://example.com/y.pdf' });
+    expect(getDocumentMock).toHaveBeenCalledWith({
+      url: 'https://example.com/y.pdf',
+    });
   });
 });

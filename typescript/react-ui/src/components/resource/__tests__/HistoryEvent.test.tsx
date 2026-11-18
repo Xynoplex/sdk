@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AttributedEvent } from '@xynolog/core';
-import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../contexts/RoutingContext';
 import { HistoryEvent } from '../HistoryEvent';
 import { renderWithProviders } from '../../../test-utils';
 
@@ -16,16 +19,26 @@ vi.mock('@xynolog/core', async (importOriginal) => {
 });
 
 // Stable mock return values (defined outside vi.mock to avoid re-render loops)
-const mockDisplayContent = { exact: 'Test content', isTag: false, isQuoted: false };
+const mockDisplayContent = {
+  exact: 'Test content',
+  isTag: false,
+  isQuoted: false,
+};
 const mockEmptyDisplayContent = null;
 const mockTagContent = { exact: 'Person', isTag: true, isQuoted: false };
-const mockQuotedContent = { exact: 'quoted text', isTag: false, isQuoted: true };
+const mockQuotedContent = {
+  exact: 'quoted text',
+  isTag: false,
+  isQuoted: true,
+};
 const mockEntityTypes: string[] = [];
 const mockCreationDetails = null;
 
 // Mock event-formatting utilities
 vi.mock('../event-formatting', () => ({
-  formatEventType: vi.fn((_type: string, t: (key: string) => string) => t('resourceCreated')),
+  formatEventType: vi.fn((_type: string, t: (key: string) => string) =>
+    t('resourceCreated'),
+  ),
   getEventEmoji: vi.fn(() => '\u{1F4C4}'),
   formatRelativeTime: vi.fn(() => '2 minutes ago'),
   getEventDisplayContent: vi.fn(() => mockDisplayContent),
@@ -41,10 +54,16 @@ import {
   getResourceCreationDetails,
 } from '../event-formatting';
 
-const mockGetAnnotationId = getAnnotationIdFromEvent as ReturnType<typeof vi.fn>;
-const mockGetEventDisplayContent = getEventDisplayContent as ReturnType<typeof vi.fn>;
+const mockGetAnnotationId = getAnnotationIdFromEvent as ReturnType<
+  typeof vi.fn
+>;
+const mockGetEventDisplayContent = getEventDisplayContent as ReturnType<
+  typeof vi.fn
+>;
 const mockGetEventEntityTypes = getEventEntityTypes as ReturnType<typeof vi.fn>;
-const mockGetResourceCreationDetails = getResourceCreationDetails as ReturnType<typeof vi.fn>;
+const mockGetResourceCreationDetails = getResourceCreationDetails as ReturnType<
+  typeof vi.fn
+>;
 const mockFormatEventType = formatEventType as ReturnType<typeof vi.fn>;
 
 const KB = 'did:web:xynoplex.github.io:xynoplex-template-kb';
@@ -52,7 +71,9 @@ const PERSON = `${KB}:users:59523dd4-a0e3-4c1c-8c2d-7fcbe3d789dd`;
 const WORKER = `${KB}:agents:xynolog-worker`;
 
 /** An event as a history reply carries it: the stored event and its actor's agent. */
-function makeStoredEvent(overrides: Partial<AttributedEvent> = {}): AttributedEvent {
+function makeStoredEvent(
+  overrides: Partial<AttributedEvent> = {},
+): AttributedEvent {
   return {
     id: 'evt-1',
     type: 'yield:created',
@@ -70,7 +91,11 @@ function makeStoredEvent(overrides: Partial<AttributedEvent> = {}): AttributedEv
 }
 
 const mockT = (key: string) => key;
-const MockLink = ({ href, children, ...props }: LinkComponentProps) => <a href={href} {...props}>{children}</a>;
+const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
+  <a href={href} {...props}>
+    {children}
+  </a>
+);
 const mockRoutes: RouteBuilder = {
   resourceDetail: (id: string) => `/resources/${id}`,
 };
@@ -95,7 +120,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     expect(screen.getByText('Test content')).toBeInTheDocument();
@@ -113,7 +138,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     expect(screen.getByText('\u{1F4C4}')).toBeInTheDocument();
@@ -131,7 +156,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const wrapper = container.querySelector('.xynolog-history-event');
@@ -150,7 +175,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const wrapper = container.querySelector('.xynolog-history-event');
@@ -173,7 +198,7 @@ describe('HistoryEvent', () => {
         Link={MockLink}
         routes={mockRoutes}
         onEventClick={onEventClick}
-      />
+      />,
     );
 
     const button = screen.getByRole('button');
@@ -192,7 +217,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const wrapper = container.querySelector('.xynolog-history-event');
@@ -210,7 +235,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const wrapper = container.querySelector('.xynolog-history-event');
@@ -228,33 +253,15 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     expect(screen.getByText('Adam Pingel')).toBeInTheDocument();
   });
 
-  it("shows a person the reply does not name by their DID", () => {
-    const event = makeStoredEvent({ agent: { '@type': 'Person', '@id': PERSON } });
-    renderWithProviders(
-      <HistoryEvent
-        event={event}
-        annotations={[]}
-        allEvents={[event]}
-        isRelated={false}
-        t={mockT}
-        Link={MockLink}
-        routes={mockRoutes}
-      />
-    );
-
-    expect(screen.getByText(PERSON)).toBeInTheDocument();
-  });
-
-  it("names a software peer's row by its name, then its provider and model", () => {
+  it('shows a person the reply does not name by their DID', () => {
     const event = makeStoredEvent({
-      userId: userId(WORKER),
-      agent: { '@type': 'Software', '@id': WORKER, name: 'xynolog-worker', provider: 'anthropic', model: 'claude-haiku-4-5' },
+      agent: { '@type': 'Person', '@id': PERSON },
     });
     renderWithProviders(
       <HistoryEvent
@@ -265,10 +272,38 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
-    expect(screen.getByText('xynolog-worker (anthropic claude-haiku-4-5)')).toBeInTheDocument();
+    expect(screen.getByText(PERSON)).toBeInTheDocument();
+  });
+
+  it("names a software peer's row by its name, then its provider and model", () => {
+    const event = makeStoredEvent({
+      userId: userId(WORKER),
+      agent: {
+        '@type': 'Software',
+        '@id': WORKER,
+        name: 'xynolog-worker',
+        provider: 'anthropic',
+        model: 'claude-haiku-4-5',
+      },
+    });
+    renderWithProviders(
+      <HistoryEvent
+        event={event}
+        annotations={[]}
+        allEvents={[event]}
+        isRelated={false}
+        t={mockT}
+        Link={MockLink}
+        routes={mockRoutes}
+      />,
+    );
+
+    expect(
+      screen.getByText('xynolog-worker (anthropic claude-haiku-4-5)'),
+    ).toBeInTheDocument();
   });
 
   it('renders tag content with tag class', () => {
@@ -283,7 +318,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const tagEl = container.querySelector('.xynolog-history-event__tag');
@@ -303,10 +338,12 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
-    const quotedEl = container.querySelector('.xynolog-history-event__text--quoted');
+    const quotedEl = container.querySelector(
+      '.xynolog-history-event__text--quoted',
+    );
     expect(quotedEl).toBeInTheDocument();
   });
 
@@ -323,7 +360,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     expect(screen.getByText('Resource Created')).toBeInTheDocument();
@@ -341,7 +378,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     expect(screen.getByText('Person')).toBeInTheDocument();
@@ -362,10 +399,12 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
-    expect(container.querySelector('.xynolog-history-event__detail-value')).toHaveTextContent('Adam Pingel');
+    expect(
+      container.querySelector('.xynolog-history-event__detail-value'),
+    ).toHaveTextContent('Adam Pingel');
   });
 
   it('renders "View Original" link for cloned resources', () => {
@@ -383,7 +422,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const link = screen.getByText('viewOriginal');
@@ -407,10 +446,13 @@ describe('HistoryEvent', () => {
         Link={MockLink}
         routes={mockRoutes}
         onEventRef={onEventRef}
-      />
+      />,
     );
 
-    expect(onEventRef).toHaveBeenCalledWith(annotationUri, expect.any(HTMLElement));
+    expect(onEventRef).toHaveBeenCalledWith(
+      annotationUri,
+      expect.any(HTMLElement),
+    );
   });
 
   it('handles emoji hover with delayed callback', () => {
@@ -430,7 +472,7 @@ describe('HistoryEvent', () => {
         Link={MockLink}
         routes={mockRoutes}
         onEventHover={onEventHover}
-      />
+      />,
     );
 
     const emoji = container.querySelector('.xynolog-history-event__emoji')!;
@@ -440,7 +482,9 @@ describe('HistoryEvent', () => {
     expect(onEventHover).not.toHaveBeenCalled();
 
     // Should fire after 300ms delay
-    act(() => { vi.advanceTimersByTime(300); });
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
     expect(onEventHover).toHaveBeenCalledWith(annotationUri);
 
     vi.useRealTimers();
@@ -463,21 +507,25 @@ describe('HistoryEvent', () => {
         Link={MockLink}
         routes={mockRoutes}
         onEventHover={onEventHover}
-      />
+      />,
     );
 
     const emoji = container.querySelector('.xynolog-history-event__emoji')!;
     fireEvent.mouseEnter(emoji);
 
     // Leave before 300ms timeout fires
-    act(() => { vi.advanceTimersByTime(100); });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     fireEvent.mouseLeave(emoji);
 
     // The timeout should have been cleared, and hover state cleared
     expect(onEventHover).toHaveBeenCalledWith(null);
 
     // After full timeout, the delayed hover should NOT have fired
-    act(() => { vi.advanceTimersByTime(300); });
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
     expect(onEventHover).toHaveBeenCalledTimes(1); // Only the null call
 
     vi.useRealTimers();
@@ -495,7 +543,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const wrapper = container.querySelector('.xynolog-history-event');
@@ -514,7 +562,7 @@ describe('HistoryEvent', () => {
         t={mockT}
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     const wrapper = container.querySelector('.xynolog-history-event');

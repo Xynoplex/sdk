@@ -29,7 +29,9 @@ export function useGenerationArrival(
   // job:complete), but the ordering is not this hook's to assume.
   const pending = useRef<YieldJobDone | null>(null);
   const onRevealRef = useRef(onReveal);
-  useEffect(() => { onRevealRef.current = onReveal; });
+  useEffect(() => {
+    onRevealRef.current = onReveal;
+  });
 
   useEffect(() => {
     if (outcome && outcome !== seen.current) {
@@ -40,7 +42,9 @@ export function useGenerationArrival(
 
     const target = String(pending.current.resourceId);
     const edge = annotations.find(
-      (a) => a.motivation === 'linking' && String(getBodySource(a.body) ?? '') === target,
+      (a) =>
+        a.motivation === 'linking' &&
+        String(getBodySource(a.body) ?? '') === target,
     );
     if (edge) {
       pending.current = null;

@@ -12,7 +12,10 @@ import {
 import type { WidgetClickResult } from '../codemirror-handlers';
 import type { TextSegment } from '../codemirror-logic';
 
-function makeSegment(id: string, motivation: Annotation['motivation']): TextSegment {
+function makeSegment(
+  id: string,
+  motivation: Annotation['motivation'],
+): TextSegment {
   return {
     exact: 'test',
     start: 0,
@@ -43,12 +46,18 @@ function makeSession() {
   const { session, client } = createTestSession();
   sessions.push(session);
   const click = vi.spyOn(client.browse, 'click').mockImplementation(() => {});
-  const openResource = vi.spyOn(client.browse, 'openResource').mockImplementation(() => {});
+  const openResource = vi
+    .spyOn(client.browse, 'openResource')
+    .mockImplementation(() => {});
   return { session, click, openResource };
 }
 
 // DOM helper: create element with data attributes
-function createElement(tag: string, attrs: Record<string, string> = {}, parent?: HTMLElement): HTMLElement {
+function createElement(
+  tag: string,
+  attrs: Record<string, string> = {},
+  parent?: HTMLElement,
+): HTMLElement {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
     el.setAttribute(k, v);
@@ -60,14 +69,22 @@ function createElement(tag: string, attrs: Record<string, string> = {}, parent?:
 describe('handleAnnotationClick', () => {
   it('returns false when target has no annotation-id', () => {
     const target = document.createElement('span');
-    const result = handleAnnotationClick(target, new Map(), makeSession().session);
+    const result = handleAnnotationClick(
+      target,
+      new Map(),
+      makeSession().session,
+    );
     expect(result).toBe(false);
   });
 
   it('returns false when annotation not in segments map', () => {
     const parent = createElement('span', { 'data-annotation-id': 'missing' });
     const child = createElement('span', {}, parent);
-    const result = handleAnnotationClick(child, new Map(), makeSession().session);
+    const result = handleAnnotationClick(
+      child,
+      new Map(),
+      makeSession().session,
+    );
     expect(result).toBe(false);
   });
 
@@ -134,7 +151,6 @@ describe('handleWidgetClick', () => {
       annotationId: 'ann-1',
     });
   });
-
 });
 
 describe('dispatchWidgetClick', () => {
@@ -199,7 +215,11 @@ describe('handleWidgetMouseEnter', () => {
 
   it('raises indicator opacity', () => {
     const widget = createElement('div', { class: 'reference-preview-widget' });
-    const indicator = createElement('span', { class: 'reference-indicator' }, widget);
+    const indicator = createElement(
+      'span',
+      { class: 'reference-indicator' },
+      widget,
+    );
     handleWidgetMouseEnter(widget);
     expect(indicator.style.opacity).toBe('1');
   });
@@ -225,7 +245,11 @@ describe('handleWidgetMouseLeave', () => {
 
   it('lowers indicator opacity', () => {
     const widget = createElement('div', { class: 'reference-preview-widget' });
-    const indicator = createElement('span', { class: 'reference-indicator' }, widget);
+    const indicator = createElement(
+      'span',
+      { class: 'reference-indicator' },
+      widget,
+    );
     handleWidgetMouseLeave(widget);
     expect(indicator.style.opacity).toBe('0.6');
   });

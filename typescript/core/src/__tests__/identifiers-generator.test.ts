@@ -10,14 +10,32 @@
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const GENERATOR = fileURLToPath(new URL('../../../scripts/generators/generate-identifiers.mjs', import.meta.url));
-const KINDS = fileURLToPath(new URL('../../../../protocol/specs/src/identifiers/kinds.json', import.meta.url));
-const SCHEMAS = fileURLToPath(new URL('../../../../protocol/specs/src/components/schemas', import.meta.url));
+const GENERATOR = fileURLToPath(
+  new URL(
+    '../../../scripts/generators/generate-identifiers.mjs',
+    import.meta.url,
+  ),
+);
+const KINDS = fileURLToPath(
+  new URL(
+    '../../../../protocol/specs/src/identifiers/kinds.json',
+    import.meta.url,
+  ),
+);
+const SCHEMAS = fileURLToPath(
+  new URL('../../../../protocol/specs/src/components/schemas', import.meta.url),
+);
 
 /** The types as openapi-typescript writes the four schemas, before any is branded. */
 const TYPES = [
@@ -49,8 +67,14 @@ interface Fault {
 }
 
 /** Run the generator on the committed inputs after `fault` has changed them. */
-function generate(fault: Fault = {}): { status: number | null; stderr: string; types: string } {
-  const table = JSON.parse(readFileSync(KINDS, 'utf8')) as { kinds: Array<{ schema: string }> };
+function generate(fault: Fault = {}): {
+  status: number | null;
+  stderr: string;
+  types: string;
+} {
+  const table = JSON.parse(readFileSync(KINDS, 'utf8')) as {
+    kinds: Array<{ schema: string }>;
+  };
   fault.kinds?.(table.kinds);
   const kindsPath = join(dir, 'kinds.json');
   writeFileSync(kindsPath, JSON.stringify(table));
@@ -60,14 +84,33 @@ function generate(fault: Fault = {}): { status: number | null; stderr: string; t
   if (fault.schema) {
     const [name, change] = fault.schema;
     const path = join(schemas, `${name}.json`);
-    const schema = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
+    const schema = JSON.parse(readFileSync(path, 'utf8')) as Record<
+      string,
+      unknown
+    >;
     change(schema);
     writeFileSync(path, JSON.stringify(schema));
   }
   const typesPath = join(dir, 'types.ts');
   writeFileSync(typesPath, fault.types ? fault.types(TYPES) : TYPES);
-  const run = spawnSync(process.execPath, [GENERATOR, '--kinds', kindsPath, '--schemas', schemas, '--types', typesPath], { encoding: 'utf8' });
-  return { status: run.status, stderr: run.stderr, types: readFileSync(typesPath, 'utf8') };
+  const run = spawnSync(
+    process.execPath,
+    [
+      GENERATOR,
+      '--kinds',
+      kindsPath,
+      '--schemas',
+      schemas,
+      '--types',
+      typesPath,
+    ],
+    { encoding: 'utf8' },
+  );
+  return {
+    status: run.status,
+    stderr: run.stderr,
+    types: readFileSync(typesPath, 'utf8'),
+  };
 }
 
 describe('the generator of the kinds of id', () => {
@@ -75,31 +118,54 @@ describe('the generator of the kinds of id', () => {
     const run = generate();
     expect(run.stderr).toBe('');
     expect(run.status).toBe(0);
-    expect(run.types).toContain('        ResourceId: string & { readonly __brand: "ResourceId" };');
-    expect(run.types).toContain('        UserId: string & { readonly __brand: "UserId" };');
+    expect(run.types).toContain(
+      '        ResourceId: string & { readonly __brand: "ResourceId" };',
+    );
+    expect(run.types).toContain(
+      '        UserId: string & { readonly __brand: "UserId" };',
+    );
     expect(run.types).not.toMatch(/Id: string;/);
   });
 
   it('refuses a kind whose schema states no rule', () => {
-    const run = generate({ schema: ['JobId', (schema) => delete schema['pattern']] });
+    const run = generate({
+      schema: ['JobId', (schema) => delete schema['pattern']],
+    });
     expect(run.status).toBe(1);
-    expect(run.stderr).toContain('JobId is not a string with a pattern and a description');
+    expect(run.stderr).toContain(
+      'JobId is not a string with a pattern and a description',
+    );
   });
 
   it('refuses a rule that is not a regular expression', () => {
-    const run = generate({ schema: ['UserId', (schema) => { schema['pattern'] = '^did:(' }] });
+    const run = generate({
+      schema: [
+        'UserId',
+        (schema) => {
+          schema['pattern'] = '^did:(';
+        },
+      ],
+    });
     expect(run.status).toBe(1);
-    expect(run.stderr).toContain("UserId's pattern is not a regular expression");
+    expect(run.stderr).toContain(
+      "UserId's pattern is not a regular expression",
+    );
   });
 
   it('refuses a kind the generated types do not declare: a brand with nothing to brand', () => {
-    const run = generate({ types: (types) => types.replace('        JobId: string;\n', '') });
+    const run = generate({
+      types: (types) => types.replace('        JobId: string;\n', ''),
+    });
     expect(run.status).toBe(1);
     expect(run.stderr).toContain('declares JobId as a string 0 times');
   });
 
   it('refuses a name that is not a kind of id', () => {
-    const run = generate({ kinds: (kinds) => { kinds[0]!.schema = 'Motivation'; } });
+    const run = generate({
+      kinds: (kinds) => {
+        kinds[0]!.schema = 'Motivation';
+      },
+    });
     expect(run.status).toBe(1);
     expect(run.stderr).toContain('"Motivation" is not a kind\'s name');
   });

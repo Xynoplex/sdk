@@ -32,8 +32,17 @@ import {
   type TagSchema,
   type components,
 } from '@xynolog/core';
-import { CacheObservable, DelegationObservable, StreamObservable, UploadObservable } from '../awaitable';
-import { ClaimsObservable, JOB_CLAIM_CHANNELS, type ClaimOptions } from '../claims';
+import {
+  CacheObservable,
+  DelegationObservable,
+  StreamObservable,
+  UploadObservable,
+} from '../awaitable';
+import {
+  ClaimsObservable,
+  JOB_CLAIM_CHANNELS,
+  type ClaimOptions,
+} from '../claims';
 import { XynologClient } from '../client';
 import { FaultyTransport } from '../testing';
 import type {
@@ -77,7 +86,16 @@ interface Case {
 }
 interface Row {
   method: string;
-  shape: 'promise' | 'stream' | 'delegation' | 'upload' | 'cache' | 'signal' | 'count' | 'events' | 'claims';
+  shape:
+    | 'promise'
+    | 'stream'
+    | 'delegation'
+    | 'upload'
+    | 'cache'
+    | 'signal'
+    | 'count'
+    | 'events'
+    | 'claims';
   via: Omit<Step, 'sends'>;
   absent?: Record<string, string>;
   cases: Case[];
@@ -88,7 +106,13 @@ interface Table {
 }
 
 const TABLE: Table = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/client/surface.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/client/surface.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
 /** `value` with each `{"$fixture": name}` replaced by the table's fixture. */
@@ -98,10 +122,13 @@ function resolved(value: Json): Json {
   const keys = Object.keys(value);
   if (keys.length === 1 && keys[0] === '$fixture') {
     const fixture = TABLE.fixtures[String(value['$fixture'])];
-    if (fixture === undefined) throw new Error(`the table has no fixture ${String(value['$fixture'])}`);
+    if (fixture === undefined)
+      throw new Error(`the table has no fixture ${String(value['$fixture'])}`);
     return fixture;
   }
-  return Object.fromEntries(keys.map((key) => [key, resolved(value[key] as Json)]));
+  return Object.fromEntries(
+    keys.map((key) => [key, resolved(value[key] as Json)]),
+  );
 }
 
 /** A value as it goes over a wire: what is undefined is not there, and a payload of nothing is the empty object. */
@@ -126,13 +153,20 @@ interface Namespaces {
 /** A member's name as the table has it: an `events` row is a property named `<method>$`. */
 type Listed<K> = K extends `${infer Stem}$` ? Stem : K;
 type Call = (client: XynologClient, args: Args) => unknown;
-type Calls = { [N in keyof Namespaces]: { [M in keyof Namespaces[N] as Listed<M & string>]: Call } };
+type Calls = {
+  [N in keyof Namespaces]: {
+    [M in keyof Namespaces[N] as Listed<M & string>]: Call;
+  };
+};
 
 const rid = (args: Args): ResourceId => resourceId(String(args['resourceId']));
-const aid = (args: Args): AnnotationId => annotationId(String(args['annotationId']));
-const optional = <T>(value: Json | undefined): T | undefined => (value === undefined ? undefined : (value as T));
+const aid = (args: Args): AnnotationId =>
+  annotationId(String(args['annotationId']));
+const optional = <T>(value: Json | undefined): T | undefined =>
+  value === undefined ? undefined : (value as T);
 const gatewayOf = <T>(namespace: T | undefined): T => {
-  if (!namespace) throw new Error('a client with a gateway has auth and system');
+  if (!namespace)
+    throw new Error('a client with a gateway has auth and system');
   return namespace;
 };
 
@@ -155,38 +189,54 @@ const CALLS: Calls = {
     resourceGraph: (c, a) => c.browse.resourceGraph(rid(a)),
     resourceAnchoredText: (c, a) => c.browse.resourceAnchoredText(rid(a)),
     resourceRepresentation: (c, a) => c.browse.resourceRepresentation(rid(a)),
-    resourceRepresentationStream: (c, a) => c.browse.resourceRepresentationStream(rid(a)),
+    resourceRepresentationStream: (c, a) =>
+      c.browse.resourceRepresentationStream(rid(a)),
     resourceEvents: (c, a) => c.browse.resourceEvents(rid(a)),
     annotationHistory: (c, a) => c.browse.annotationHistory(rid(a), aid(a)),
-    files: (c, a) => c.browse.files(optional(a['dirPath']), optional(a['sort'])),
+    files: (c, a) =>
+      c.browse.files(optional(a['dirPath']), optional(a['sort'])),
     kb: (c) => c.browse.kb(),
     click: (c, a) => c.browse.click(aid(a)),
     openResource: (c, a) => c.browse.openResource(rid(a)),
     resourceViewed: (c, a) => c.browse.resourceViewed(rid(a)),
   },
   mark: {
-    annotation: (c, a) => c.mark.annotation(a['input'] as CreateAnnotationInput),
+    annotation: (c, a) =>
+      c.mark.annotation(a['input'] as CreateAnnotationInput),
     delete: (c, a) => c.mark.delete(rid(a), aid(a)),
     archive: (c, a) => c.mark.archive(rid(a)),
     unarchive: (c, a) => c.mark.unarchive(rid(a)),
-    updateEntityTypes: (c, a) => c.mark.updateEntityTypes(rid(a), a['current'] as string[], a['updated'] as string[]),
+    updateEntityTypes: (c, a) =>
+      c.mark.updateEntityTypes(
+        rid(a),
+        a['current'] as string[],
+        a['updated'] as string[],
+      ),
     delegate: (c, a) => c.mark.delegate(rid(a), a['params'] as MarkJobParams),
     request: (c, a) =>
       c.mark.request(
         resourceId(String(a['source'])),
-        a['selector'] as components['schemas']['MarkRequestedEvent']['selector'],
+        a[
+          'selector'
+        ] as components['schemas']['MarkRequestedEvent']['selector'],
         a['motivation'] as Motivation,
       ),
-    submit: (c, a) => c.mark.submit(a['input'] as components['schemas']['MarkSubmitEvent']),
-    reportDeleteError: (c, a) => c.mark.reportDeleteError(a['input'] as EventMap['mark:delete-error']),
+    submit: (c, a) =>
+      c.mark.submit(a['input'] as components['schemas']['MarkSubmitEvent']),
+    reportDeleteError: (c, a) =>
+      c.mark.reportDeleteError(a['input'] as EventMap['mark:delete-error']),
   },
   bind: {
-    body: (c, a) => c.bind.body(rid(a), aid(a), a['operations'] as BodyOperation[]),
-    initiate: (c, a) => c.bind.initiate(a['input'] as EventMap['bind:initiate']),
-    reportBodyError: (c, a) => c.bind.reportBodyError(a['input'] as EventMap['bind:body-error']),
+    body: (c, a) =>
+      c.bind.body(rid(a), aid(a), a['operations'] as BodyOperation[]),
+    initiate: (c, a) =>
+      c.bind.initiate(a['input'] as EventMap['bind:initiate']),
+    reportBodyError: (c, a) =>
+      c.bind.reportBodyError(a['input'] as EventMap['bind:body-error']),
   },
   gather: {
-    annotation: (c, a) => c.gather.annotation(rid(a), aid(a), optional(a['options'])),
+    annotation: (c, a) =>
+      c.gather.annotation(rid(a), aid(a), optional(a['options'])),
     resource: (c, a) => c.gather.resource(rid(a), optional(a['options'])),
     referencedBy: (c, a) => c.gather.referencedBy(rid(a)),
   },
@@ -199,23 +249,47 @@ const CALLS: Calls = {
         optional(a['options']),
       ),
     requestSearch: (c, a) =>
-      c.match.requestSearch(a['input'] as unknown as components['schemas']['MatchSearchRequest'], String(a['correlationId'])),
-    resources: (c, a) => c.match.resources(String(a['search']), optional(a['filters'])),
+      c.match.requestSearch(
+        a['input'] as unknown as components['schemas']['MatchSearchRequest'],
+        String(a['correlationId']),
+      ),
+    resources: (c, a) =>
+      c.match.resources(String(a['search']), optional(a['filters'])),
   },
   yield: {
     resource: (c, a) => {
-      const data = a['data'] as { name: string; content: string; format: string; storageUri: string };
-      return c.yield.resource({ name: data.name, file: Buffer.from(data.content), format: data.format, storageUri: data.storageUri });
+      const data = a['data'] as {
+        name: string;
+        content: string;
+        format: string;
+        storageUri: string;
+      };
+      return c.yield.resource({
+        name: data.name,
+        file: Buffer.from(data.content),
+        format: data.format,
+        storageUri: data.storageUri,
+      });
     },
     delegate: (c, a) =>
-      c.yield.delegate(a['params'] as unknown as GenerationJobParams, a['stallDeadlineMs'] === undefined ? undefined : Number(a['stallDeadlineMs'])),
+      c.yield.delegate(
+        a['params'] as unknown as GenerationJobParams,
+        a['stallDeadlineMs'] === undefined
+          ? undefined
+          : Number(a['stallDeadlineMs']),
+      ),
     cloneToken: (c, a) => c.yield.cloneToken(rid(a)),
     fromToken: (c, a) => c.yield.fromToken(String(a['token'])),
-    createFromToken: (c, a) => c.yield.createFromToken(a['options'] as CreateFromTokenOptions),
+    createFromToken: (c, a) =>
+      c.yield.createFromToken(a['options'] as CreateFromTokenOptions),
     clone: (c) => c.yield.clone(),
   },
   beckon: {
-    attention: (c, a) => c.beckon.attention(rid(a), a['annotationId'] === undefined ? undefined : aid(a)),
+    attention: (c, a) =>
+      c.beckon.attention(
+        rid(a),
+        a['annotationId'] === undefined ? undefined : aid(a),
+      ),
     click: (c, a) => c.beckon.click(aid(a)),
     openResource: (c, a) => c.beckon.openResource(rid(a)),
     sparkleAll: (c, a) => c.beckon.sparkleAll(aid(a)),
@@ -228,14 +302,19 @@ const CALLS: Calls = {
     complete: (c) => c.job.complete$,
     fail: (c) => c.job.fail$,
     status: (c, a) => c.job.status(jobId(String(a['jobId']))),
-    pollUntilComplete: (c, a) => c.job.pollUntilComplete(jobId(String(a['jobId'])), { interval: 10, timeout: 50 }),
+    pollUntilComplete: (c, a) =>
+      c.job.pollUntilComplete(jobId(String(a['jobId'])), {
+        interval: 10,
+        timeout: 50,
+      }),
     cancel: (c, a) => c.job.cancel(jobId(String(a['jobId']))),
     claim: (c, a) => c.job.claim(a['options'] as unknown as ClaimOptions),
   },
   auth: {
     me: (c) => gatewayOf(c.auth).me(),
     mediaToken: (c, a) => gatewayOf(c.auth).mediaToken(rid(a)),
-    protectedResourceMetadata: (c) => gatewayOf(c.auth).protectedResourceMetadata(),
+    protectedResourceMetadata: (c) =>
+      gatewayOf(c.auth).protectedResourceMetadata(),
   },
   system: {
     healthCheck: (c) => gatewayOf(c.system).healthCheck(),
@@ -274,7 +353,10 @@ function recordingContent(calls: Recorded[]): IContentTransport {
     },
     async getBinaryStream(id) {
       read('getBinaryStream', id);
-      return { stream: new ReadableStream<Uint8Array>(), contentType: 'text/plain' };
+      return {
+        stream: new ReadableStream<Uint8Array>(),
+        contentType: 'text/plain',
+      };
     },
     async getResourceGraph(id) {
       read('getResourceGraph', id);
@@ -299,7 +381,8 @@ function recordingGateway(calls: Recorded[]): IGatewayOperations {
   };
   return {
     getCurrentUser: () => refused('getCurrentUser'),
-    getMediaToken: (id) => refused('getMediaToken', { resourceId: id as string }),
+    getMediaToken: (id) =>
+      refused('getMediaToken', { resourceId: id as string }),
     getProtectedResourceMetadata: () => refused('getProtectedResourceMetadata'),
     healthCheck: () => refused('healthCheck'),
     getStatus: () => refused('getStatus'),
@@ -310,8 +393,14 @@ function world() {
   const content: Recorded[] = [];
   const gateway: Recorded[] = [];
   // A client that is every namespace, a worker's claims among them: a full client's channels, and what claims read.
-  const transport = new FaultyTransport({ channels: [...BRIDGED_CHANNELS, ...JOB_CLAIM_CHANNELS] });
-  const client = new XynologClient(transport, recordingContent(content), recordingGateway(gateway));
+  const transport = new FaultyTransport({
+    channels: [...BRIDGED_CHANNELS, ...JOB_CLAIM_CHANNELS],
+  });
+  const client = new XynologClient(
+    transport,
+    recordingContent(content),
+    recordingGateway(gateway),
+  );
   const wire = vi.spyOn(transport, 'emit');
   const own = vi.spyOn(client.bus, 'emit');
   return { client, transport, wire, own, content, gateway };
@@ -355,21 +444,33 @@ function started(row: Row, returned: unknown): void {
 }
 
 /** One step of a case: what was done, and what it was given. */
-async function heldTo(w: ReturnType<typeof world>, at: number, step: Step, sends: Json): Promise<void> {
+async function heldTo(
+  w: ReturnType<typeof world>,
+  at: number,
+  step: Step,
+  sends: Json,
+): Promise<void> {
   const named = step.request ?? step.emit;
   if (named !== undefined) {
-    await vi.waitFor(() => expect(w.wire.mock.calls.length).toBeGreaterThan(at));
+    await vi.waitFor(() =>
+      expect(w.wire.mock.calls.length).toBeGreaterThan(at),
+    );
     const [channel, payload, envelope] = w.wire.mock.calls[at]!;
     expect(channel).toBe(named);
     expect(wired(payload)).toEqual(sends);
     expect(envelope?.scope).toBeUndefined();
     // A request carries a key of the client's making; a frame nobody answers carries none.
-    expect(envelope?.correlationId !== undefined).toBe(step.request !== undefined);
+    expect(envelope?.correlationId !== undefined).toBe(
+      step.request !== undefined,
+    );
     return;
   }
   const calls = step.content !== undefined ? w.content : w.gateway;
   await vi.waitFor(() => expect(calls.length).toBeGreaterThan(0));
-  expect(calls[0]).toEqual({ operation: step.content ?? step.gateway, given: sends });
+  expect(calls[0]).toEqual({
+    operation: step.content ?? step.gateway,
+    given: sends,
+  });
 }
 
 function callOf(namespace: string, method: string): Call | undefined {
@@ -379,7 +480,9 @@ function callOf(namespace: string, method: string): Call | undefined {
 
 describe('the client surface (protocol/specs/src/client/surface.json)', () => {
   const listed = TABLE.namespaces.flatMap(({ namespace, methods }) =>
-    methods.filter((row) => row.absent?.[SDK] === undefined).map((row) => ({ namespace, row })),
+    methods
+      .filter((row) => row.absent?.[SDK] === undefined)
+      .map((row) => ({ namespace, row })),
   );
 
   it('lists the methods this SDK has, and no other', () => {
@@ -387,50 +490,65 @@ describe('the client surface (protocol/specs/src/client/surface.json)', () => {
     const called = Object.entries(calls).flatMap(([namespace, methods]) =>
       Object.keys(methods).map((method) => `${namespace}.${method}`),
     );
-    expect(called.sort()).toEqual(listed.map(({ namespace, row }) => `${namespace}.${row.method}`).sort());
+    expect(called.sort()).toEqual(
+      listed.map(({ namespace, row }) => `${namespace}.${row.method}`).sort(),
+    );
   });
 
   for (const { namespace, row } of listed) {
     const [[kind, channel]] = Object.entries(row.via) as [[keyof Step, string]];
 
-    it.each(row.cases.map((c) => [c.why ?? 'as stated', c] as const))(`${namespace}.${row.method}: %s`, async (_why, stated) => {
-      const call = callOf(namespace, row.method);
-      if (!call) throw new Error(`this SDK's surface test has no call for ${namespace}.${row.method}`);
-      const w = world();
-      const args = resolved(stated.args) as Args;
-      const sends = resolved(stated.sends);
-      if ('answers' in stated) {
-        w.transport.queueReply(channel as Parameters<typeof w.transport.queueReply>[0], stated.answers === null ? undefined : resolved(stated.answers ?? null));
-      }
+    it.each(row.cases.map((c) => [c.why ?? 'as stated', c] as const))(
+      `${namespace}.${row.method}: %s`,
+      async (_why, stated) => {
+        const call = callOf(namespace, row.method);
+        if (!call)
+          throw new Error(
+            `this SDK's surface test has no call for ${namespace}.${row.method}`,
+          );
+        const w = world();
+        const args = resolved(stated.args) as Args;
+        const sends = resolved(stated.sends);
+        if ('answers' in stated) {
+          w.transport.queueReply(
+            channel as Parameters<typeof w.transport.queueReply>[0],
+            stated.answers === null
+              ? undefined
+              : resolved(stated.answers ?? null),
+          );
+        }
 
-      if (kind === 'observes') {
-        const heard: unknown[] = [];
-        const events = call(w.client, args);
-        started(row, events);
-        (events as Observable<unknown>).subscribe((event) => heard.push(event));
-        w.client.bus.emit(channel as keyof EventMap, sends as never);
-        expect(heard.map(wired)).toEqual([sends]);
-        return;
-      }
+        if (kind === 'observes') {
+          const heard: unknown[] = [];
+          const events = call(w.client, args);
+          started(row, events);
+          (events as Observable<unknown>).subscribe((event) =>
+            heard.push(event),
+          );
+          w.client.bus.emit(channel as keyof EventMap, sends as never);
+          expect(heard.map(wired)).toEqual([sends]);
+          return;
+        }
 
-      started(row, call(w.client, args));
+        started(row, call(w.client, args));
 
-      if (kind === 'local') {
-        expect(w.own.mock.calls.length).toBeGreaterThan(0);
-        const [published, payload, envelope] = w.own.mock.calls[0]!;
-        expect(published).toBe(channel);
-        expect(wired(payload)).toEqual(sends);
-        expect(envelope?.correlationId).toBe(stated.correlationId);
-        await Promise.resolve();
-        // A signal never reaches the wire.
-        expect(w.wire).not.toHaveBeenCalled();
-        return;
-      }
+        if (kind === 'local') {
+          expect(w.own.mock.calls.length).toBeGreaterThan(0);
+          const [published, payload, envelope] = w.own.mock.calls[0]!;
+          expect(published).toBe(channel);
+          expect(wired(payload)).toEqual(sends);
+          expect(envelope?.correlationId).toBe(stated.correlationId);
+          await Promise.resolve();
+          // A signal never reaches the wire.
+          expect(w.wire).not.toHaveBeenCalled();
+          return;
+        }
 
-      await heldTo(w, 0, { ...row.via, sends }, sends);
-      for (const [index, step] of (stated.then ?? []).entries()) {
-        await heldTo(w, index + 1, step, resolved(step.sends));
-      }
-    });
+        await heldTo(w, 0, { ...row.via, sends }, sends);
+        for (const [index, step] of (stated.then ?? []).entries()) {
+          await heldTo(w, index + 1, step, resolved(step.sends));
+        }
+      },
+    );
   }
 });

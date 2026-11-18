@@ -29,7 +29,9 @@ import type { Observable } from 'rxjs';
  *   `Uncaught BusRequestError` seen in the field whenever a cache key
  *   exhausted its B14 retry with nothing stored (B15).
  */
-export function useObservable<T>(obs$: Observable<T> | null | undefined): T | undefined {
+export function useObservable<T>(
+  obs$: Observable<T> | null | undefined,
+): T | undefined {
   const [value, setValue] = useState<T | undefined>(() => {
     if (!obs$) return undefined;
     const getValue = (obs$ as unknown as { getValue?: () => T }).getValue;

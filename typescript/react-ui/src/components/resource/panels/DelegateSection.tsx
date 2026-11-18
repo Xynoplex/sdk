@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { delegateProgressCopy, delegateSubjectCopy, delegateParamLabel } from '../../../lib/delegate-progress-copy';
+import {
+  delegateProgressCopy,
+  delegateSubjectCopy,
+  delegateParamLabel,
+} from '../../../lib/delegate-progress-copy';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
 import type { JobId, MarkJobParams, components } from '@xynolog/core';
@@ -13,15 +17,29 @@ import './DelegateSection.css';
 type JobProgress = components['schemas']['JobProgress'];
 
 /** The tone a job of `M` takes, as the job's own params type states it. */
-type ToneOf<M extends 'commenting' | 'assessing'> = NonNullable<Extract<MarkJobParams, { motivation: M }>['tone']>;
+type ToneOf<M extends 'commenting' | 'assessing'> = NonNullable<
+  Extract<MarkJobParams, { motivation: M }>['tone']
+>;
 
 // The tones each menu offers, held to the job they are sent to.
-const COMMENT_TONES = ['scholarly', 'explanatory', 'conversational', 'technical'] as const satisfies readonly ToneOf<'commenting'>[];
-const ASSESSMENT_TONES = ['analytical', 'critical', 'balanced', 'constructive'] as const satisfies readonly ToneOf<'assessing'>[];
+const COMMENT_TONES = [
+  'scholarly',
+  'explanatory',
+  'conversational',
+  'technical',
+] as const satisfies readonly ToneOf<'commenting'>[];
+const ASSESSMENT_TONES = [
+  'analytical',
+  'critical',
+  'balanced',
+  'constructive',
+] as const satisfies readonly ToneOf<'assessing'>[];
 
 /** `chosen` as one of `tones`, or none when the menu is on its default. */
-const toneAmong = <T extends string>(tones: readonly T[], chosen: string): T | undefined =>
-  tones.find((tone) => tone === chosen);
+const toneAmong = <T extends string>(
+  tones: readonly T[],
+  chosen: string,
+): T | undefined => tones.find((tone) => tone === chosen);
 
 /** `Part` itself, held to `Whole`: a member of `Part` that is no member of `Whole` does not compile. */
 type Subset<Whole, Part extends Whole> = Part;
@@ -61,10 +79,12 @@ export function DelegateSection({
   jobId,
   cancelled,
 }: DelegateSectionProps) {
-
-  const panelName = annotationType === 'highlight' ? 'HighlightPanel' :
-                     annotationType === 'assessment' ? 'AssessmentPanel' :
-                     'CommentsPanel';
+  const panelName =
+    annotationType === 'highlight'
+      ? 'HighlightPanel'
+      : annotationType === 'assessment'
+        ? 'AssessmentPanel'
+        : 'CommentsPanel';
   const t = useTranslations(panelName);
   const ta = useTranslations('DelegateProgress');
   const [instructions, setInstructions] = useState('');
@@ -87,23 +107,48 @@ export function DelegateSection({
     // natural-language text: a comment and an assessment have a body, a
     // highlight does not, and its job takes neither.
     const params: MarkJobParams =
-      annotationType === 'highlight' ? { motivation: 'highlighting', ...shared }
-      : annotationType === 'assessment' ? { motivation: 'assessing', ...shared, tone: toneAmong(ASSESSMENT_TONES, tone), language: locale }
-      : { motivation: 'commenting', ...shared, tone: toneAmong(COMMENT_TONES, tone), language: locale };
+      annotationType === 'highlight'
+        ? { motivation: 'highlighting', ...shared }
+        : annotationType === 'assessment'
+          ? {
+              motivation: 'assessing',
+              ...shared,
+              tone: toneAmong(ASSESSMENT_TONES, tone),
+              language: locale,
+            }
+          : {
+              motivation: 'commenting',
+              ...shared,
+              tone: toneAmong(COMMENT_TONES, tone),
+              language: locale,
+            };
 
     mark?.requestDelegate(params);
 
     setInstructions('');
     setTone('');
     // Don't reset density/useDensity - persist across delegated jobs
-  }, [annotationType, instructions, tone, useDensity, density, locale, sourceLanguage, mark]);
+  }, [
+    annotationType,
+    instructions,
+    tone,
+    useDensity,
+    density,
+    locale,
+    sourceLanguage,
+    mark,
+  ]);
 
   return (
     <DelegateShell
       delegateType={annotationType}
-      title={t(annotationType === 'highlight' ? 'annotateHighlights' :
-               annotationType === 'assessment' ? 'annotateAssessments' :
-               'annotateComments')}
+      title={t(
+        annotationType === 'highlight'
+          ? 'annotateHighlights'
+          : annotationType === 'assessment'
+            ? 'annotateAssessments'
+            : 'annotateComments',
+      )}
       isDelegating={isDelegating}
       cancelled={cancelled}
       progress={progress}
@@ -140,7 +185,8 @@ export function DelegateSection({
           </div>
 
           {/* Tone selector - for comments and assessments */}
-          {(annotationType === 'comment' || annotationType === 'assessment') && (
+          {(annotationType === 'comment' ||
+            annotationType === 'assessment') && (
             <div className="xynolog-form-field">
               <label className="xynolog-form-field__label">
                 {t('toneLabel')} {t('toneOptional')}
@@ -155,7 +201,9 @@ export function DelegateSection({
                   <>
                     <option value="scholarly">{t('toneScholarly')}</option>
                     <option value="explanatory">{t('toneExplanatory')}</option>
-                    <option value="conversational">{t('toneConversational')}</option>
+                    <option value="conversational">
+                      {t('toneConversational')}
+                    </option>
                     <option value="technical">{t('toneTechnical')}</option>
                   </>
                 )}
@@ -164,7 +212,9 @@ export function DelegateSection({
                     <option value="analytical">{t('toneAnalytical')}</option>
                     <option value="critical">{t('toneCritical')}</option>
                     <option value="balanced">{t('toneBalanced')}</option>
-                    <option value="constructive">{t('toneConstructive')}</option>
+                    <option value="constructive">
+                      {t('toneConstructive')}
+                    </option>
                   </>
                 )}
               </select>
@@ -186,7 +236,9 @@ export function DelegateSection({
                 <span>{t('densityLabel')}</span>
               </label>
               {useDensity && (
-                <span className="xynolog-form-field__info">{t('densityPerWords', { density })}</span>
+                <span className="xynolog-form-field__info">
+                  {t('densityPerWords', { density })}
+                </span>
               )}
             </div>
 
@@ -196,7 +248,13 @@ export function DelegateSection({
                 <input
                   type="range"
                   min={annotationType === 'comment' ? '2' : '1'}
-                  max={annotationType === 'comment' ? '12' : annotationType === 'assessment' ? '10' : '15'}
+                  max={
+                    annotationType === 'comment'
+                      ? '12'
+                      : annotationType === 'assessment'
+                        ? '10'
+                        : '15'
+                  }
                   value={density}
                   onChange={(e) => setDensity(Number(e.target.value))}
                   className="xynolog-slider"

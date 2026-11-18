@@ -45,7 +45,7 @@ export function parseFragmentSelector(fragment: string): PdfCoordinate | null {
   // Each coordinate: optional sign, integer part, optional fraction — tight enough
   // to round-trip negatives and reject malformed numbers (e.g. "1.2.3").
   const viewrectMatch = fragment.match(
-    /viewrect=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/
+    /viewrect=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
   );
   if (!viewrectMatch) return null;
 

@@ -18,7 +18,11 @@ import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { annotationId, resourceId, type Annotation } from '@xynolog/core';
 import type { AnnotationUIState } from '../../../types/annotation-props';
-import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  createTestXynologWrapper,
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import { AnnotateView } from '../AnnotateView';
 
 /** One line. 199 code points and 204 UTF-16 code units: five characters are outside the basic plane. */
@@ -33,7 +37,13 @@ const CRLF = 'first line\r\nsecond line here\r\nthird line words\r\n';
 const CRLF_ASTRAL = '😀 first line\r\nsecond 𝑥 line\r\nthird line 🎉 words\r\n';
 
 const RESOURCE = resourceId('res-1');
-const NO_ANNOTATIONS = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const NO_ANNOTATIONS = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 const UI_STATE: AnnotationUIState = {
   selectedMotivation: 'highlighting',
   selectedClick: 'detail',
@@ -42,7 +52,11 @@ const UI_STATE: AnnotationUIState = {
   scrollToAnnotationId: null,
 };
 
-function mount(content: string, highlights: Annotation[] = [], showToolbar = false) {
+function mount(
+  content: string,
+  highlights: Annotation[] = [],
+  showToolbar = false,
+) {
   const { session, client } = createTestXynologWrapper();
   const request = vi.spyOn(client.mark, 'request');
   const view = renderInEnglish(
@@ -69,12 +83,19 @@ function line(container: HTMLElement, number: number): Element {
 }
 
 /** Where `words` are in a line's own text, the `occurrence`-th time, as the DOM counts: in UTF-16 code units. */
-function placeIn(lineElement: Element, words: string, occurrence: number): number {
+function placeIn(
+  lineElement: Element,
+  words: string,
+  occurrence: number,
+): number {
   const text = lineElement.textContent;
   let at = -1;
   for (let n = 0; n < occurrence; n++) {
     at = text.indexOf(words, at + 1);
-    if (at === -1) throw new Error(`"${text}" does not have "${words}" ${occurrence} time(s)`);
+    if (at === -1)
+      throw new Error(
+        `"${text}" does not have "${words}" ${occurrence} time(s)`,
+      );
   }
   return at;
 }
@@ -107,7 +128,11 @@ function toolbarText(container: HTMLElement): Text[] {
 }
 
 /** Drag from a point to a point and let go, as a reader's selection does. */
-function select(from: [Node, number], to: [Node, number], releasedOn: Element): void {
+function select(
+  from: [Node, number],
+  to: [Node, number],
+  releasedOn: Element,
+): void {
   const range = document.createRange();
   range.setStart(...from);
   range.setEnd(...to);
@@ -119,10 +144,19 @@ function select(from: [Node, number], to: [Node, number], releasedOn: Element): 
 }
 
 /** Select `words` where a line has them the `occurrence`-th time. */
-function selectWords(container: HTMLElement, lineNumber: number, words: string, occurrence = 1): void {
+function selectWords(
+  container: HTMLElement,
+  lineNumber: number,
+  words: string,
+  occurrence = 1,
+): void {
   const lineElement = line(container, lineNumber);
   const at = placeIn(lineElement, words, occurrence);
-  select(pointIn(lineElement, at), pointIn(lineElement, at + words.length), lineElement);
+  select(
+    pointIn(lineElement, at),
+    pointIn(lineElement, at + words.length),
+    lineElement,
+  );
 }
 
 /** What one request to mark carried. */
@@ -134,7 +168,12 @@ function recorded(request: ReturnType<typeof mount>['request']): unknown {
   return selectors;
 }
 
-function highlight(id: string, start: number, end: number, exact?: string): Annotation {
+function highlight(
+  id: string,
+  start: number,
+  end: number,
+  exact?: string,
+): Annotation {
   return {
     '@context': 'http://www.w3.org/ns/anno.jsonld',
     type: 'Annotation',
@@ -142,9 +181,13 @@ function highlight(id: string, start: number, end: number, exact?: string): Anno
     motivation: 'highlighting',
     target: {
       source: RESOURCE,
-      selector: exact === undefined
-        ? { type: 'TextPositionSelector', start, end }
-        : [{ type: 'TextPositionSelector', start, end }, { type: 'TextQuoteSelector', exact }],
+      selector:
+        exact === undefined
+          ? { type: 'TextPositionSelector', start, end }
+          : [
+              { type: 'TextPositionSelector', start, end },
+              { type: 'TextQuoteSelector', exact },
+            ],
     },
     created: '2026-01-01T00:00:00Z',
   };
@@ -152,7 +195,9 @@ function highlight(id: string, start: number, end: number, exact?: string): Anno
 
 /** The text the editor lights for an annotation: one piece for each line it is on. */
 function lit(container: HTMLElement, id: string): string[] {
-  return Array.from(container.querySelectorAll(`[data-annotation-id="${id}"]`)).map((span) => span.textContent);
+  return Array.from(
+    container.querySelectorAll(`[data-annotation-id="${id}"]`),
+  ).map((span) => span.textContent);
 }
 
 beforeEach(() => {
@@ -170,8 +215,10 @@ describe('a selection in the source view is recorded at its offsets in the conte
       {
         type: 'TextQuoteSelector',
         exact: 'chosen words',
-        prefix: 'and a rare 𠮷 character, long enough that the context is cut. The ',
-        suffix: ' sit here, after the 🎉 and before the 🙂; the same chosen words come',
+        prefix:
+          'and a rare 𠮷 character, long enough that the context is cut. The ',
+        suffix:
+          ' sit here, after the 🎉 and before the 🙂; the same chosen words come',
       },
     ]);
   });
@@ -185,7 +232,8 @@ describe('a selection in the source view is recorded at its offsets in the conte
       {
         type: 'TextQuoteSelector',
         exact: 'chosen words',
-        prefix: 'The chosen words sit here, after the 🎉 and before the 🙂; the same ',
+        prefix:
+          'The chosen words sit here, after the 🎉 and before the 🙂; the same ',
         suffix: ' come again at the end.',
       },
     ]);
@@ -200,13 +248,14 @@ describe('a selection in the source view is recorded at its offsets in the conte
       {
         type: 'TextQuoteSelector',
         exact: '🎉 and',
-        prefix: 'enough that the context is cut. The chosen words sit here, after the ',
+        prefix:
+          'enough that the context is cut. The chosen words sit here, after the ',
         suffix: ' before the 🙂; the same chosen words come again at the end.',
       },
     ]);
   });
 
-  it('the offset table\'s own repeated words, with such a character between them', () => {
+  it("the offset table's own repeated words, with such a character between them", () => {
     const { container, request } = mount('ab 🎉 ab');
     selectWords(container, 1, 'ab', 2);
 
@@ -225,7 +274,12 @@ describe('a selection in a CRLF document is recorded at its offsets in the conte
     // In the editor's document, where a line break is one, these words are at 11 to 17.
     expect(recorded(request)).toEqual([
       { type: 'TextPositionSelector', start: 12, end: 18 },
-      { type: 'TextQuoteSelector', exact: 'second', prefix: 'first line\r\n', suffix: ' line here\r\nthird line words\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'second',
+        prefix: 'first line\r\n',
+        suffix: ' line here\r\nthird line words\r\n',
+      },
     ]);
   });
 
@@ -235,7 +289,12 @@ describe('a selection in a CRLF document is recorded at its offsets in the conte
 
     expect(recorded(request)).toEqual([
       { type: 'TextPositionSelector', start: 41, end: 46 },
-      { type: 'TextQuoteSelector', exact: 'words', prefix: 'first line\r\nsecond line here\r\nthird line ', suffix: '\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'words',
+        prefix: 'first line\r\nsecond line here\r\nthird line ',
+        suffix: '\r\n',
+      },
     ]);
   });
 
@@ -245,7 +304,12 @@ describe('a selection in a CRLF document is recorded at its offsets in the conte
 
     expect(recorded(request)).toEqual([
       { type: 'TextPositionSelector', start: 36, end: 40 },
-      { type: 'TextQuoteSelector', exact: 'line', prefix: 'first line\r\nsecond line here\r\nthird ', suffix: ' words\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'line',
+        prefix: 'first line\r\nsecond line here\r\nthird ',
+        suffix: ' words\r\n',
+      },
     ]);
   });
 
@@ -256,7 +320,12 @@ describe('a selection in a CRLF document is recorded at its offsets in the conte
     // In the string these words are at 45 to 50, and in the editor's document at 43 to 48.
     expect(recorded(request)).toEqual([
       { type: 'TextPositionSelector', start: 42, end: 47 },
-      { type: 'TextQuoteSelector', exact: 'words', prefix: '😀 first line\r\nsecond 𝑥 line\r\nthird line 🎉 ', suffix: '\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'words',
+        prefix: '😀 first line\r\nsecond 𝑥 line\r\nthird line 🎉 ',
+        suffix: '\r\n',
+      },
     ]);
   });
 
@@ -266,19 +335,33 @@ describe('a selection in a CRLF document is recorded at its offsets in the conte
 
     expect(recorded(request)).toEqual([
       { type: 'TextPositionSelector', start: 21, end: 27 },
-      { type: 'TextQuoteSelector', exact: '𝑥 line', prefix: '😀 first line\r\nsecond ', suffix: '\r\nthird line 🎉 words\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: '𝑥 line',
+        prefix: '😀 first line\r\nsecond ',
+        suffix: '\r\nthird line 🎉 words\r\n',
+      },
     ]);
   });
 
-  it('a selection across a line break quotes the content\'s own line ending', () => {
+  it("a selection across a line break quotes the content's own line ending", () => {
     const { container, request } = mount(CRLF);
     const second = line(container, 2);
     const third = line(container, 3);
-    select(pointIn(second, placeIn(second, 'here', 1)), pointIn(third, 'third'.length), third);
+    select(
+      pointIn(second, placeIn(second, 'here', 1)),
+      pointIn(third, 'third'.length),
+      third,
+    );
 
     expect(recorded(request)).toEqual([
       { type: 'TextPositionSelector', start: 24, end: 35 },
-      { type: 'TextQuoteSelector', exact: 'here\r\nthird', prefix: 'first line\r\nsecond line ', suffix: ' line words\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'here\r\nthird',
+        prefix: 'first line\r\nsecond line ',
+        suffix: ' line words\r\n',
+      },
     ]);
   });
 
@@ -286,11 +369,20 @@ describe('a selection in a CRLF document is recorded at its offsets in the conte
     const { container, request } = mount(CRLF_ASTRAL);
     const second = line(container, 2);
     const third = line(container, 3);
-    select(pointIn(second, placeIn(second, 'line', 1)), pointIn(third, 'third'.length), third);
+    select(
+      pointIn(second, placeIn(second, 'line', 1)),
+      pointIn(third, 'third'.length),
+      third,
+    );
 
     expect(recorded(request)).toEqual([
       { type: 'TextPositionSelector', start: 23, end: 34 },
-      { type: 'TextQuoteSelector', exact: 'line\r\nthird', prefix: '😀 first line\r\nsecond 𝑥 ', suffix: ' line 🎉 words\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'line\r\nthird',
+        prefix: '😀 first line\r\nsecond 𝑥 ',
+        suffix: ' line 🎉 words\r\n',
+      },
     ]);
   });
 });
@@ -298,14 +390,23 @@ describe('a selection in a CRLF document is recorded at its offsets in the conte
 describe('a selection that is not of the content records nothing', () => {
   it('text selected in the toolbar, which the content also has', () => {
     const probe = mount('anything', [], true);
-    const words = toolbarText(probe.container).find((node) => node.data.trim() !== '')?.data;
+    const words = toolbarText(probe.container).find(
+      (node) => node.data.trim() !== '',
+    )?.data;
     if (!words) throw new Error('the toolbar shows no text');
     probe.unmount();
 
     // The content has the toolbar's words too, so a search of the content for the selected text finds them.
-    const { container, request } = mount(`${words} is in the content as well`, [], true);
-    const inToolbar = toolbarText(container).find((node) => node.data === words);
-    if (!inToolbar?.parentElement) throw new Error('the toolbar no longer shows its words');
+    const { container, request } = mount(
+      `${words} is in the content as well`,
+      [],
+      true,
+    );
+    const inToolbar = toolbarText(container).find(
+      (node) => node.data === words,
+    );
+    if (!inToolbar?.parentElement)
+      throw new Error('the toolbar no longer shows its words');
     select([inToolbar, 0], [inToolbar, words.length], inToolbar.parentElement);
 
     expect(request).not.toHaveBeenCalled();
@@ -313,7 +414,9 @@ describe('a selection that is not of the content records nothing', () => {
 
   it('a selection that begins in the toolbar and ends in the content', () => {
     const { container, request } = mount(LONG, [], true);
-    const inToolbar = toolbarText(container).find((node) => node.data.trim() !== '');
+    const inToolbar = toolbarText(container).find(
+      (node) => node.data.trim() !== '',
+    );
     if (!inToolbar) throw new Error('the toolbar shows no text');
     const first = line(container, 1);
     select([inToolbar, 0], pointIn(first, placeIn(first, 'Opening', 1)), first);
@@ -336,7 +439,10 @@ describe('a stored selector lights exactly its words in the source view', () => 
   });
 
   it('with a position and no quote: the offsets alone place it', () => {
-    const { container } = mount('😀 first, then words', [highlight('first', 2, 7), highlight('words', 14, 19)]);
+    const { container } = mount('😀 first, then words', [
+      highlight('first', 2, 7),
+      highlight('words', 14, 19),
+    ]);
 
     expect(lit(container, 'first')).toEqual(['first']);
     expect(lit(container, 'words')).toEqual(['words']);
@@ -367,7 +473,9 @@ describe('a stored selector lights exactly its words in the source view', () => 
   });
 
   it('across a line break of such a document', () => {
-    const { container } = mount(CRLF_ASTRAL, [highlight('across', 23, 34, 'line\r\nthird')]);
+    const { container } = mount(CRLF_ASTRAL, [
+      highlight('across', 23, 34, 'line\r\nthird'),
+    ]);
 
     expect(lit(container, 'across')).toEqual(['line', 'third']);
   });

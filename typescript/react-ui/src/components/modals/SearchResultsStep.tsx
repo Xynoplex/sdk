@@ -36,7 +36,10 @@ export function SearchResultsStep({
     <>
       <div className="xynolog-search-results">
         {results.length === 0 ? (
-          <div className="xynolog-modal__empty-state" style={{ textAlign: 'center', padding: '2rem 0' }}>
+          <div
+            className="xynolog-modal__empty-state"
+            style={{ textAlign: 'center', padding: '2rem 0' }}
+          >
             {t.noResults}
           </div>
         ) : (
@@ -55,28 +58,43 @@ export function SearchResultsStep({
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 500, color: 'var(--xynolog-text-primary)' }}>
+                  <div
+                    style={{
+                      fontWeight: 500,
+                      color: 'var(--xynolog-text-primary)',
+                    }}
+                  >
                     {result.name}
                   </div>
                   {result.description && (
-                    <div style={{
-                      fontSize: 'var(--xynolog-text-sm)',
-                      color: 'var(--xynolog-text-secondary)',
-                      marginTop: '0.25rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
+                    <div
+                      style={{
+                        fontSize: 'var(--xynolog-text-sm)',
+                        color: 'var(--xynolog-text-secondary)',
+                        marginTop: '0.25rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {result.description}
                     </div>
                   )}
-                  <div style={{ fontSize: 'var(--xynolog-text-xs)', color: 'var(--xynolog-text-tertiary)', marginTop: '0.25rem', display: 'flex', gap: '0.5rem' }}>
+                  <div
+                    style={{
+                      fontSize: 'var(--xynolog-text-xs)',
+                      color: 'var(--xynolog-text-tertiary)',
+                      marginTop: '0.25rem',
+                      display: 'flex',
+                      gap: '0.5rem',
+                    }}
+                  >
                     {result.score !== undefined && (
-                      <span>{t.score}: {result.score}</span>
+                      <span>
+                        {t.score}: {result.score}
+                      </span>
                     )}
-                    {result.matchReason && (
-                      <span>{result.matchReason}</span>
-                    )}
+                    {result.matchReason && <span>{result.matchReason}</span>}
                   </div>
                 </div>
                 <button

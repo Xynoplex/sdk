@@ -29,9 +29,9 @@ interface UsePanelWidthOptions {
  */
 export function usePanelWidth({
   defaultWidth = 384, // 24rem
-  minWidth = 256,     // 16rem
-  maxWidth = 800,     // 50rem
-  storageKey = 'xynolog-panel-width'
+  minWidth = 256, // 16rem
+  maxWidth = 800, // 50rem
+  storageKey = 'xynolog-panel-width',
 }: UsePanelWidthOptions = {}) {
   // Always initialize with defaultWidth to avoid hydration mismatch
   // localStorage value will be synced in useEffect

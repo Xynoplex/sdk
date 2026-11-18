@@ -35,7 +35,13 @@ interface Case {
 }
 
 const table: { readers: string[]; cases: Case[] } = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/annotations/reader-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/annotations/reader-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
 /** Each reader of the table, given the part of the annotation it reads. Nothing is `null`, as the table writes it. */
@@ -56,7 +62,8 @@ const READERS: Record<string, (annotation: Annotation) => unknown> = {
   annotationExactText: getAnnotationExactText,
   textQuoteSelector: (a) => {
     const selector = getTargetSelector(a.target);
-    if (selector === undefined) throw new Error('the table gives textQuoteSelector no selector to read');
+    if (selector === undefined)
+      throw new Error('the table gives textQuoteSelector no selector to read');
     return getTextQuoteSelector(selector);
   },
   entityTypes: getEntityTypes,
@@ -72,7 +79,9 @@ describe('the annotation readers (protocol/specs/src/annotations/reader-cases.js
   it('states every reader in every case, but the quote selector where there is no selector', () => {
     for (const { why, annotation, reads } of table.cases) {
       const applies = table.readers.filter(
-        (reader) => reader !== 'textQuoteSelector' || getTargetSelector(annotation.target) !== undefined,
+        (reader) =>
+          reader !== 'textQuoteSelector' ||
+          getTargetSelector(annotation.target) !== undefined,
       );
       expect(Object.keys(reads).sort(), why).toEqual(applies.sort());
     }
@@ -81,7 +90,10 @@ describe('the annotation readers (protocol/specs/src/annotations/reader-cases.js
   for (const { why, annotation, reads } of table.cases) {
     it(why, () => {
       for (const [reader, answer] of Object.entries(reads)) {
-        expect(READERS[reader]?.(annotation), `${reader} of ${annotation.id}`).toEqual(answer);
+        expect(
+          READERS[reader]?.(annotation),
+          `${reader} of ${annotation.id}`,
+        ).toEqual(answer);
       }
     });
   }

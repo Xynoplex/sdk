@@ -25,7 +25,11 @@ function ThrowOnRender({ message }: { message: string }): React.ReactElement {
  * A child that throws on first render but stops throwing if `shouldThrow`
  * becomes false. Used to test boundary reset behavior.
  */
-function ThrowOnce({ shouldThrow }: { shouldThrow: boolean }): React.ReactElement {
+function ThrowOnce({
+  shouldThrow,
+}: {
+  shouldThrow: boolean;
+}): React.ReactElement {
   if (shouldThrow) throw new Error('boom');
   return <div data-testid="recovered">recovered</div>;
 }
@@ -48,12 +52,14 @@ describe('ProtectedErrorBoundary', () => {
       render(
         <ProtectedErrorBoundary>
           <div data-testid="child">protected content</div>
-        </ProtectedErrorBoundary>
+        </ProtectedErrorBoundary>,
       );
 
       expect(screen.getByTestId('child')).toBeInTheDocument();
       expect(screen.getByText('protected content')).toBeInTheDocument();
-      expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Something went wrong'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -62,7 +68,7 @@ describe('ProtectedErrorBoundary', () => {
       render(
         <ProtectedErrorBoundary>
           <ThrowOnRender message="boom" />
-        </ProtectedErrorBoundary>
+        </ProtectedErrorBoundary>,
       );
 
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -75,11 +81,15 @@ describe('ProtectedErrorBoundary', () => {
       render(
         <ProtectedErrorBoundary>
           <ThrowOnRender message="session blew up" />
-        </ProtectedErrorBoundary>
+        </ProtectedErrorBoundary>,
       );
 
-      expect(screen.queryByText(/Authentication Error/i)).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Authentication Error/i),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /sign in/i }),
+      ).not.toBeInTheDocument();
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     });
 
@@ -87,11 +97,15 @@ describe('ProtectedErrorBoundary', () => {
       render(
         <ProtectedErrorBoundary>
           <ThrowOnRender message="boom" />
-        </ProtectedErrorBoundary>
+        </ProtectedErrorBoundary>,
       );
 
-      expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /refresh page/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /try again/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /refresh page/i }),
+      ).toBeInTheDocument();
     });
 
     it('calls window.location.reload when the Refresh Page button is clicked', () => {
@@ -107,7 +121,7 @@ describe('ProtectedErrorBoundary', () => {
         render(
           <ProtectedErrorBoundary>
             <ThrowOnRender message="boom" />
-          </ProtectedErrorBoundary>
+          </ProtectedErrorBoundary>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: /refresh page/i }));
@@ -135,7 +149,7 @@ describe('ProtectedErrorBoundary', () => {
       render(
         <ProtectedErrorBoundary>
           <MaybeThrow />
-        </ProtectedErrorBoundary>
+        </ProtectedErrorBoundary>,
       );
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
@@ -143,14 +157,22 @@ describe('ProtectedErrorBoundary', () => {
       shouldThrow = false;
       fireEvent.click(screen.getByRole('button', { name: /try again/i }));
 
-      expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Something went wrong'),
+      ).not.toBeInTheDocument();
       expect(screen.getByTestId('recovered')).toBeInTheDocument();
     });
   });
 
   describe('resetKeys', () => {
     it('auto-resets when a resetKey changes (simulating navigation)', () => {
-      function Harness({ pathname, shouldThrow }: { pathname: string; shouldThrow: boolean }) {
+      function Harness({
+        pathname,
+        shouldThrow,
+      }: {
+        pathname: string;
+        shouldThrow: boolean;
+      }) {
         return (
           <ProtectedErrorBoundary resetKeys={[pathname]}>
             <ThrowOnce shouldThrow={shouldThrow} />
@@ -158,14 +180,18 @@ describe('ProtectedErrorBoundary', () => {
         );
       }
 
-      const { rerender } = render(<Harness pathname="/know" shouldThrow={true} />);
+      const { rerender } = render(
+        <Harness pathname="/know" shouldThrow={true} />,
+      );
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
       // Simulate navigation to a different path AND a render that no longer throws
       rerender(<Harness pathname="/admin" shouldThrow={false} />);
 
       // Boundary auto-recovers because the resetKey changed
-      expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Something went wrong'),
+      ).not.toBeInTheDocument();
       expect(screen.getByTestId('recovered')).toBeInTheDocument();
     });
 
@@ -180,14 +206,15 @@ describe('ProtectedErrorBoundary', () => {
         render(
           <ProtectedErrorBoundary>
             <ThrowOnRender message="instrumented boom" />
-          </ProtectedErrorBoundary>
+          </ProtectedErrorBoundary>,
         );
 
         // Multiple console.error calls happen (React's own logs, plus ours).
         // Look for the boundary's prefix specifically.
         const ourCall = consoleErrorSpy.mock.calls.find(
           (call: Parameters<typeof console.error>) =>
-            typeof call[0] === 'string' && call[0].includes('ProtectedErrorBoundary caught:')
+            typeof call[0] === 'string' &&
+            call[0].includes('ProtectedErrorBoundary caught:'),
         );
         expect(ourCall).toBeDefined();
       } finally {

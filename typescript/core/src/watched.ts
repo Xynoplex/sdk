@@ -12,5 +12,7 @@ export interface Watched<T> extends Observable<T> {
 
 /** The read-only view of a state held in `held`. */
 export function watched<T>(held: BehaviorSubject<T>): Watched<T> {
-  return Object.assign(held.asObservable(), { getValue: () => held.getValue() });
+  return Object.assign(held.asObservable(), {
+    getValue: () => held.getValue(),
+  });
 }

@@ -33,7 +33,11 @@ export interface WizardState {
 }
 
 const WIZARD_CLOSED: WizardState = {
-  open: false, annotationId: null, resourceId: null, defaultTitle: '', entityTypes: [],
+  open: false,
+  annotationId: null,
+  resourceId: null,
+  defaultTitle: '',
+  entityTypes: [],
 };
 
 export interface ResourceViewerPageStateUnit extends StateUnit {
@@ -83,10 +87,22 @@ export function createResourceViewerPageStateUnit(
   disposer.add(matchStateUnit);
   disposer.add(yieldStateUnit);
 
-  const annotations = trackList<Annotation[]>(() => client.browse.annotations(resourceId), []);
-  const entityTypes = trackList<string[]>(() => client.browse.entityTypes(), []);
-  const events = trackList<AttributedEvent[]>(() => client.browse.events(resourceId), []);
-  const referencedBy = trackList<ReferencedByEntry[]>(() => client.gather.referencedBy(resourceId), []);
+  const annotations = trackList<Annotation[]>(
+    () => client.browse.annotations(resourceId),
+    [],
+  );
+  const entityTypes = trackList<string[]>(
+    () => client.browse.entityTypes(),
+    [],
+  );
+  const events = trackList<AttributedEvent[]>(
+    () => client.browse.events(resourceId),
+    [],
+  );
+  const referencedBy = trackList<ReferencedByEntry[]>(
+    () => client.gather.referencedBy(resourceId),
+    [],
+  );
   disposer.add(annotations.dispose);
   disposer.add(entityTypes.dispose);
   disposer.add(events.dispose);
@@ -106,7 +122,8 @@ export function createResourceViewerPageStateUnit(
   const bindInitiateSub = client.bus.on('bind:initiate').subscribe((event) => {
     // The signal names its resource, and several viewers may share a client;
     // one whose payload is not its channel's names none.
-    if (event instanceof FrameRefusal || event.resourceId !== resourceId) return;
+    if (event instanceof FrameRefusal || event.resourceId !== resourceId)
+      return;
     wizard$.next({
       open: true,
       annotationId: event.annotationId,

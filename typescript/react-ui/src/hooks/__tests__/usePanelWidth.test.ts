@@ -99,7 +99,7 @@ describe('usePanelWidth', () => {
 
   it('uses custom min/max constraints', async () => {
     const { result } = renderHook(() =>
-      usePanelWidth({ minWidth: 300, maxWidth: 600 })
+      usePanelWidth({ minWidth: 300, maxWidth: 600 }),
     );
 
     expect(result.current.minWidth).toBe(300);
@@ -125,7 +125,7 @@ describe('usePanelWidth', () => {
     localStorage.setItem(customKey, '450');
 
     const { result } = renderHook(() =>
-      usePanelWidth({ storageKey: customKey })
+      usePanelWidth({ storageKey: customKey }),
     );
 
     await waitFor(() => {

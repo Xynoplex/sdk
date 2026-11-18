@@ -52,7 +52,8 @@ export interface AnnotationIdentity {
  * preserved — it is meaningful (a tagging body is [category, schema]).
  */
 function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'null';
+  if (value === null || typeof value !== 'object')
+    return JSON.stringify(value) ?? 'null';
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   const entries = Object.entries(value as Record<string, unknown>)
     .filter(([, v]) => v !== undefined)

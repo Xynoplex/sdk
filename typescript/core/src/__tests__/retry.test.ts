@@ -18,7 +18,9 @@ const FAST = { attempts: 4, initialDelayMs: 1, maxDelayMs: 4 };
 
 function fetchFailed(): TypeError {
   return Object.assign(new TypeError('fetch failed'), {
-    cause: Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:4000'), { code: 'ECONNREFUSED' }),
+    cause: Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:4000'), {
+      code: 'ECONNREFUSED',
+    }),
   });
 }
 
@@ -72,7 +74,9 @@ describe('retryWithBackoff', () => {
     const seen: RetryAttemptInfo[] = [];
     await expect(
       retryWithBackoff(
-        async () => { throw fetchFailed(); },
+        async () => {
+          throw fetchFailed();
+        },
         isTransientFetchError,
         { attempts: 5, initialDelayMs: 8, maxDelayMs: 32 },
         (info) => seen.push(info),
@@ -86,7 +90,9 @@ describe('retryWithBackoff', () => {
     const caps = [8, 16, 32, 32];
     expect(seen).toHaveLength(caps.length);
     seen.forEach((info, i) => {
-      expect(info.delayMs, `attempt ${i + 1}`).toBeGreaterThanOrEqual(caps[i]! / 2);
+      expect(info.delayMs, `attempt ${i + 1}`).toBeGreaterThanOrEqual(
+        caps[i]! / 2,
+      );
       expect(info.delayMs, `attempt ${i + 1}`).toBeLessThan(caps[i]!);
     });
     expect(seen.map((s) => s.attempt)).toEqual([1, 2, 3, 4]);
@@ -102,7 +108,9 @@ describe('retryWithBackoff', () => {
     for (let run = 0; run < 12; run++) {
       await expect(
         retryWithBackoff(
-          async () => { throw fetchFailed(); },
+          async () => {
+            throw fetchFailed();
+          },
           isTransientFetchError,
           { attempts: 2, initialDelayMs: 8, maxDelayMs: 8 },
           (info) => firstDelays.push(info.delayMs),
@@ -136,8 +144,14 @@ describe('isTransientFetchError', () => {
   });
 
   it('rejects HTTP-level and programming errors', () => {
-    expect(isTransientFetchError(new Error('Authentication failed: 503'))).toBe(false);
-    expect(isTransientFetchError(new TypeError("Cannot read properties of undefined (reading 'x')"))).toBe(false);
+    expect(isTransientFetchError(new Error('Authentication failed: 503'))).toBe(
+      false,
+    );
+    expect(
+      isTransientFetchError(
+        new TypeError("Cannot read properties of undefined (reading 'x')"),
+      ),
+    ).toBe(false);
     expect(isTransientFetchError('fetch failed')).toBe(false);
   });
 });
@@ -146,7 +160,10 @@ describe('isRetryableRequestError', () => {
   /** What a status-carrying transport error looks like to this predicate. The
    *  real one is http-transport's `APIError`, which already carries `status`. */
   const withStatus = (status: number): HttpStatusError =>
-    Object.assign(new Error(`/bus/emit ${status}`), { status, retryAfterMs: undefined });
+    Object.assign(new Error(`/bus/emit ${status}`), {
+      status,
+      retryAfterMs: undefined,
+    });
 
   it('accepts 429 — the gateway is UP and asking us to wait', () => {
     // The whole reason this predicate exists. `isTransientFetchError` refuses
@@ -164,7 +181,9 @@ describe('isRetryableRequestError', () => {
 
   it('rejects auth and validation failures — retrying cannot change their minds', () => {
     for (const status of [400, 401, 403, 404, 409, 422]) {
-      expect(isRetryableRequestError(withStatus(status)), String(status)).toBe(false);
+      expect(isRetryableRequestError(withStatus(status)), String(status)).toBe(
+        false,
+      );
     }
   });
 
@@ -179,16 +198,25 @@ describe('isRetryableRequestError', () => {
     // rejects with a DOMException named 'TimeoutError', NOT a TypeError — so
     // `isTransientFetchError` cannot see it, and without this case a bounded
     // `/bus/emit` is unretryable on timeout.
-    const timeout = new DOMException('The deadline of 30000ms passed', 'TimeoutError');
+    const timeout = new DOMException(
+      'The deadline of 30000ms passed',
+      'TimeoutError',
+    );
     expect(isTransientFetchError(timeout)).toBe(false);
     expect(isRetryableRequestError(timeout)).toBe(true);
   });
 
   it('still accepts everything isTransientFetchError does — the two compose', () => {
     expect(isRetryableRequestError(fetchFailed())).toBe(true);
-    expect(isRetryableRequestError(Object.assign(new TypeError('terminated'), {
-      cause: Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }),
-    }))).toBe(true);
+    expect(
+      isRetryableRequestError(
+        Object.assign(new TypeError('terminated'), {
+          cause: Object.assign(new Error('socket hang up'), {
+            code: 'ECONNRESET',
+          }),
+        }),
+      ),
+    ).toBe(true);
   });
 
   it('rejects errors with no status and no connection failure', () => {
@@ -196,7 +224,9 @@ describe('isRetryableRequestError', () => {
     expect(isRetryableRequestError('429')).toBe(false);
     expect(isRetryableRequestError(undefined)).toBe(false);
     // A status that is not a number is not a status — never coerce.
-    expect(isRetryableRequestError(Object.assign(new Error('x'), { status: '429' }))).toBe(false);
+    expect(
+      isRetryableRequestError(Object.assign(new Error('x'), { status: '429' })),
+    ).toBe(false);
   });
 });
 
@@ -212,7 +242,11 @@ describe("a caller's deadline outranks the budget", () => {
 
     await expect(
       retryWithBackoff(
-        async () => { calls++; if (calls === 2) controller.abort(); throw fetchFailed(); },
+        async () => {
+          calls++;
+          if (calls === 2) controller.abort();
+          throw fetchFailed();
+        },
         isTransientFetchError,
         { attempts: 10, initialDelayMs: 1, maxDelayMs: 1 },
         undefined,
@@ -230,7 +264,10 @@ describe("a caller's deadline outranks the budget", () => {
     let calls = 0;
     await expect(
       retryWithBackoff(
-        async () => { calls++; throw fetchFailed(); },
+        async () => {
+          calls++;
+          throw fetchFailed();
+        },
         isTransientFetchError,
         { attempts: 3, initialDelayMs: 1, maxDelayMs: 1 },
         undefined,
@@ -252,9 +289,19 @@ describe('a wait the server states', () => {
 
   it('retryWithBackoff waits at least the stated wait before the next attempt', async () => {
     vi.useFakeTimers();
-    const refused: HttpStatusError = Object.assign(new Error('/bus/emit 429'), { status: 429, retryAfterMs: 5_000 });
-    const fn = vi.fn().mockRejectedValueOnce(refused).mockResolvedValueOnce('done');
-    const result = retryWithBackoff(fn, isRetryableRequestError, { attempts: 3, initialDelayMs: 100, maxDelayMs: 1_000 });
+    const refused: HttpStatusError = Object.assign(new Error('/bus/emit 429'), {
+      status: 429,
+      retryAfterMs: 5_000,
+    });
+    const fn = vi
+      .fn()
+      .mockRejectedValueOnce(refused)
+      .mockResolvedValueOnce('done');
+    const result = retryWithBackoff(fn, isRetryableRequestError, {
+      attempts: 3,
+      initialDelayMs: 100,
+      maxDelayMs: 1_000,
+    });
     await vi.advanceTimersByTimeAsync(4_900);
     expect(fn).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(200);
@@ -263,4 +310,3 @@ describe('a wait the server states', () => {
     vi.useRealTimers();
   });
 });
-

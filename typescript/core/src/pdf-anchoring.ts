@@ -80,51 +80,53 @@ const SAME_LINE_THRESHOLD_PT = 2;
  * an empty span (`start` equal to `end`) overlaps none, wherever it falls.
  */
 export function locate(
-    anchored: AnchoredText,
-    start: number,
-    end: number
+  anchored: AnchoredText,
+  start: number,
+  end: number,
 ): { rects: PdfCoordinate[]; overlap: PdfTextItem[] } {
-    // An empty span has no character for an item to hold, inside one as between two.
-    if (start === end) return { rects: [], overlap: [] };
+  // An empty span has no character for an item to hold, inside one as between two.
+  if (start === end) return { rects: [], overlap: [] };
 
-    const overlap: PdfTextItem[] = anchored.items.filter(
-        item => item.start < end && item.end > start
-    );
-    if (overlap.length === 0) return { rects: [], overlap };
+  const overlap: PdfTextItem[] = anchored.items.filter(
+    (item) => item.start < end && item.end > start,
+  );
+  if (overlap.length === 0) return { rects: [], overlap };
 
-    const pages: Map<number, PdfTextItem[]> = groupItemsByPage(overlap);
-    const rects: PdfCoordinate[] = [];
+  const pages: Map<number, PdfTextItem[]> = groupItemsByPage(overlap);
+  const rects: PdfCoordinate[] = [];
 
-    // for each page, group items into lines and compute one rectangle per line
-    for (const [page, pageItems] of pages) {
-        const lines = groupItemsByLine(pageItems, SAME_LINE_THRESHOLD_PT);
-        // Compute one bounding rectangle per line and add it to rects.
-        // Boundary items that extend past [start, end) are clipped by the
-        // fraction of their code points the span takes: renderers like Typst
-        // emit ONE item per line, so without
-        // clipping a mid-line phrase would bound the whole line. Proportional
-        // interpolation is the measured fallback — exact glyph metrics need
-        // the operator-list route, an open refinement, and can replace this
-        // arithmetic without changing the shape.
-        for (const lineItems of lines) {
-            const edges = lineItems.map(i => {
-                const codePoints = i.end - i.start;
-                const left = i.start < start && codePoints > 0
-                    ? i.x + i.width * ((start - i.start) / codePoints)
-                    : i.x;
-                const right = i.end > end && codePoints > 0
-                    ? i.x + i.width * ((end - i.start) / codePoints)
-                    : i.x + i.width;
-                return { left, right };
-            });
-            const x = Math.min(...edges.map(e => e.left));
-            const right = Math.max(...edges.map(e => e.right));
-            const y = Math.min(...lineItems.map(i => i.y));
-            const top = Math.max(...lineItems.map(i => i.y + i.height));
-            rects.push({page, x, y, width: right - x, height: top - y});
-        }
+  // for each page, group items into lines and compute one rectangle per line
+  for (const [page, pageItems] of pages) {
+    const lines = groupItemsByLine(pageItems, SAME_LINE_THRESHOLD_PT);
+    // Compute one bounding rectangle per line and add it to rects.
+    // Boundary items that extend past [start, end) are clipped by the
+    // fraction of their code points the span takes: renderers like Typst
+    // emit ONE item per line, so without
+    // clipping a mid-line phrase would bound the whole line. Proportional
+    // interpolation is the measured fallback — exact glyph metrics need
+    // the operator-list route, an open refinement, and can replace this
+    // arithmetic without changing the shape.
+    for (const lineItems of lines) {
+      const edges = lineItems.map((i) => {
+        const codePoints = i.end - i.start;
+        const left =
+          i.start < start && codePoints > 0
+            ? i.x + i.width * ((start - i.start) / codePoints)
+            : i.x;
+        const right =
+          i.end > end && codePoints > 0
+            ? i.x + i.width * ((end - i.start) / codePoints)
+            : i.x + i.width;
+        return { left, right };
+      });
+      const x = Math.min(...edges.map((e) => e.left));
+      const right = Math.max(...edges.map((e) => e.right));
+      const y = Math.min(...lineItems.map((i) => i.y));
+      const top = Math.max(...lineItems.map((i) => i.y + i.height));
+      rects.push({ page, x, y, width: right - x, height: top - y });
     }
-    return { rects, overlap };
+  }
+  return { rects, overlap };
 }
 
 /**
@@ -151,30 +153,32 @@ export function locate(
  * around nothing.
  */
 export function textUnder(anchored: AnchoredText, rect: PdfCoordinate): string {
-    const covered = anchored.items
-        .filter(item => item.page === rect.page && covers(item, rect))
-        .sort((a, b) => a.start - b.start);
-    if (covered.length === 0) return '';
+  const covered = anchored.items
+    .filter((item) => item.page === rect.page && covers(item, rect))
+    .sort((a, b) => a.start - b.start);
+  if (covered.length === 0) return '';
 
-    const offsets = textOffsets(anchored.text);
-    /** The text between two offsets. */
-    const between = (start: number, end: number): string =>
-        anchored.text.slice(offsets.indexAt(start), offsets.indexAt(end));
+  const offsets = textOffsets(anchored.text);
+  /** The text between two offsets. */
+  const between = (start: number, end: number): string =>
+    anchored.text.slice(offsets.indexAt(start), offsets.indexAt(end));
 
-    // Join with the document's own separator when the runs are adjacent in
-    // `text` — pdf.js splits words at kerning and font changes, so a blanket
-    // join(' ') would emit "aga in" for a single word. When runs are NOT
-    // adjacent the rectangle missed the text between them, so substitute a
-    // space rather than splicing in words the box does not cover. (Slicing
-    // first-offset..last-offset the way `annotationOfSpan` does is safe there
-    // — it only feeds a containment check — but here the result is the stored
-    // quote, and on a two-column page it would swallow half of each column.)
-    let quoted = between(covered[0].start, covered[0].end);
-    for (let i = 1; i < covered.length; i++) {
-        const gap = between(covered[i - 1].end, covered[i].start);
-        quoted += (gap.trim() === '' ? gap : ' ') + between(covered[i].start, covered[i].end);
-    }
-    return quoted.trim();
+  // Join with the document's own separator when the runs are adjacent in
+  // `text` — pdf.js splits words at kerning and font changes, so a blanket
+  // join(' ') would emit "aga in" for a single word. When runs are NOT
+  // adjacent the rectangle missed the text between them, so substitute a
+  // space rather than splicing in words the box does not cover. (Slicing
+  // first-offset..last-offset the way `annotationOfSpan` does is safe there
+  // — it only feeds a containment check — but here the result is the stored
+  // quote, and on a two-column page it would swallow half of each column.)
+  let quoted = between(covered[0].start, covered[0].end);
+  for (let i = 1; i < covered.length; i++) {
+    const gap = between(covered[i - 1].end, covered[i].start);
+    quoted +=
+      (gap.trim() === '' ? gap : ' ') +
+      between(covered[i].start, covered[i].end);
+  }
+  return quoted.trim();
 }
 
 /**
@@ -226,25 +230,30 @@ export function textUnder(anchored: AnchoredText, rect: PdfCoordinate): string {
 export const RUN_COVERAGE_THRESHOLD = 0.5;
 
 function covers(item: PdfTextItem, rect: PdfCoordinate): boolean {
-    const overlapX = Math.min(item.x + item.width, rect.x + rect.width) - Math.max(item.x, rect.x);
-    const overlapY = Math.min(item.y + item.height, rect.y + rect.height) - Math.max(item.y, rect.y);
-    if (overlapX <= 0 || overlapY <= 0) return false;
-    return overlapX * overlapY >= RUN_COVERAGE_THRESHOLD * item.width * item.height;
+  const overlapX =
+    Math.min(item.x + item.width, rect.x + rect.width) -
+    Math.max(item.x, rect.x);
+  const overlapY =
+    Math.min(item.y + item.height, rect.y + rect.height) -
+    Math.max(item.y, rect.y);
+  if (overlapX <= 0 || overlapY <= 0) return false;
+  return (
+    overlapX * overlapY >= RUN_COVERAGE_THRESHOLD * item.width * item.height
+  );
 }
 
 function groupItemsByPage(items: PdfTextItem[]): Map<number, PdfTextItem[]> {
-    const map = new Map<number, PdfTextItem[]>();
-    for (const item of items) {
-        const existing = map.get(item.page);
-        if (existing) {
-            existing.push(item);
-        } else {
-            map.set(item.page, [item]);
-        }
+  const map = new Map<number, PdfTextItem[]>();
+  for (const item of items) {
+    const existing = map.get(item.page);
+    if (existing) {
+      existing.push(item);
+    } else {
+      map.set(item.page, [item]);
     }
-    return map;
+  }
+  return map;
 }
-
 
 /**
  * Sorts text items into lines when their y coordinates are
@@ -254,21 +263,27 @@ function groupItemsByPage(items: PdfTextItem[]): Map<number, PdfTextItem[]> {
  * Returns 2D array:
  * Outer array = list of lines
  * Inner array = list of items on that line
-*/
-function groupItemsByLine(items: PdfTextItem[], sameLineThreshold: number): PdfTextItem[][] {
-    // Sort top-to-bottom by y; if y is equal, sort left-to-right by x
-    const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x);
-    const lines: PdfTextItem[][] = [];
-    let currentLine: PdfTextItem[] = [];
+ */
+function groupItemsByLine(
+  items: PdfTextItem[],
+  sameLineThreshold: number,
+): PdfTextItem[][] {
+  // Sort top-to-bottom by y; if y is equal, sort left-to-right by x
+  const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x);
+  const lines: PdfTextItem[][] = [];
+  let currentLine: PdfTextItem[] = [];
 
-    for (const item of sorted) {
-        if (currentLine.length === 0 || Math.abs(item.y - currentLine[0].y) <= sameLineThreshold) {
-            currentLine.push(item);
-        } else {
-            lines.push(currentLine);
-            currentLine = [item];
-        }
+  for (const item of sorted) {
+    if (
+      currentLine.length === 0 ||
+      Math.abs(item.y - currentLine[0].y) <= sameLineThreshold
+    ) {
+      currentLine.push(item);
+    } else {
+      lines.push(currentLine);
+      currentLine = [item];
     }
-    if (currentLine.length > 0) lines.push(currentLine);
-    return lines;
+  }
+  if (currentLine.length > 0) lines.push(currentLine);
+  return lines;
 }

@@ -37,7 +37,11 @@ export interface WizardFooterProps {
   primary?: WizardFooterPrimary;
 }
 
-export function WizardFooter({ backLabel, onBack, primary }: WizardFooterProps) {
+export function WizardFooter({
+  backLabel,
+  onBack,
+  primary,
+}: WizardFooterProps) {
   const pending = primary?.pending ?? false;
 
   return (

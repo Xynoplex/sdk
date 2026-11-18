@@ -26,7 +26,9 @@ type Translate = (key: string, params?: Record<string, unknown>) => string;
  * client chooses the word. That separation is the point of the coded wire — do
  * not "fix" the divergence by renaming either side.
  */
-export function delegateProgressCopy(t: Translate): (m: JobProgressMessage) => string {
+export function delegateProgressCopy(
+  t: Translate,
+): (m: JobProgressMessage) => string {
   return (m) => {
     switch (m.code) {
       case 'loading':
@@ -45,7 +47,9 @@ export function delegateProgressCopy(t: Translate): (m: JobProgressMessage) => s
         // job:complete. A run cut off at the maxTokens ceiling still
         // completes — but never silently: the producer derives the bit, this
         // is where it becomes a sentence.
-        return m.truncated ? t('codeCompleteGeneratedTruncated') : t('codeCompleteGenerated');
+        return m.truncated
+          ? t('codeCompleteGeneratedTruncated')
+          : t('codeCompleteGenerated');
       case 'detecting-entities':
         // The entity type itself belongs on the subject line beneath, not
         // repeated here.
@@ -55,7 +59,10 @@ export function delegateProgressCopy(t: Translate): (m: JobProgressMessage) => s
       case 'creating-tag-annotations':
         return t('codeCreatingTagAnnotations', { count: m.count });
       case 'complete-created':
-        return t('codeCompleteCreated', { count: m.count, noun: t(nounKey(m.motivation)) });
+        return t('codeCompleteCreated', {
+          count: m.count,
+          noun: t(nounKey(m.motivation)),
+        });
       default: {
         const unreachable: never = m;
         return unreachable;
@@ -78,8 +85,9 @@ const capitalize = <S extends string>(word: S) =>
  * `en.json` has: a motivation with no noun there does not compile.
  * `lint:translations` holds every other locale to `en.json`.
  */
-const nounKey = (motivation: Motivation): keyof (typeof en)['DelegateProgress'] =>
-  `noun${capitalize(motivation)}`;
+const nounKey = (
+  motivation: Motivation,
+): keyof (typeof en)['DelegateProgress'] => `noun${capitalize(motivation)}`;
 
 /** What the run is working on — one shape for every flow. */
 type Current = components['schemas']['JobProgress']['current'];
@@ -115,7 +123,9 @@ export function delegateSubjectCopy(
  * `never` default: a new `kind` on the wire is a compile error here, which is
  * the cheapest place to learn the copy is missing.
  */
-function delegateSubjectKind(t: Translate): (kind: NonNullable<Current>['kind']) => string {
+function delegateSubjectKind(
+  t: Translate,
+): (kind: NonNullable<Current>['kind']) => string {
   return (kind) => {
     switch (kind) {
       case 'entity-type':
@@ -141,11 +151,16 @@ function delegateSubjectKind(t: Translate): (kind: NonNullable<Current>['kind'])
 export function delegateParamLabel(t: Translate): (code: string) => string {
   return (code) => {
     switch (code) {
-      case 'entity-types': return t('paramEntityTypes');
-      case 'instructions': return t('paramInstructions');
-      case 'tone': return t('paramTone');
-      case 'density': return t('paramDensity');
-      default: return code;
+      case 'entity-types':
+        return t('paramEntityTypes');
+      case 'instructions':
+        return t('paramInstructions');
+      case 'tone':
+        return t('paramTone');
+      case 'density':
+        return t('paramDensity');
+      default:
+        return code;
     }
   };
 }

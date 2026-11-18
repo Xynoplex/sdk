@@ -35,7 +35,11 @@ export function DownloadFileLink({ resourceUri, session }: Props) {
 
   if (!href) {
     return (
-      <button type="button" disabled className="xynolog-button xynolog-button--primary xynolog-button--disabled">
+      <button
+        type="button"
+        disabled
+        className="xynolog-button xynolog-button--primary xynolog-button--disabled"
+      >
         Download File
       </button>
     );

@@ -48,7 +48,9 @@ describe('ResizeHandle', () => {
   describe('keyboard resize with left position', () => {
     it('calls onResize on ArrowLeft (wider) for left position', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} position="left" />);
+      render(
+        <ResizeHandle {...defaultProps} onResize={onResize} position="left" />,
+      );
 
       fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowLeft' });
 
@@ -57,7 +59,9 @@ describe('ResizeHandle', () => {
 
     it('calls onResize on ArrowRight (narrower) for left position', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} position="left" />);
+      render(
+        <ResizeHandle {...defaultProps} onResize={onResize} position="left" />,
+      );
 
       fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowRight' });
 
@@ -68,7 +72,9 @@ describe('ResizeHandle', () => {
   describe('keyboard resize with right position', () => {
     it('calls onResize on ArrowRight (wider) for right position', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} position="right" />);
+      render(
+        <ResizeHandle {...defaultProps} onResize={onResize} position="right" />,
+      );
 
       fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowRight' });
 
@@ -77,7 +83,9 @@ describe('ResizeHandle', () => {
 
     it('calls onResize on ArrowLeft (narrower) for right position', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} position="right" />);
+      render(
+        <ResizeHandle {...defaultProps} onResize={onResize} position="right" />,
+      );
 
       fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowLeft' });
 
@@ -88,7 +96,14 @@ describe('ResizeHandle', () => {
   describe('constraints', () => {
     it('respects minWidth constraint on keyboard resize', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} width={210} position="left" />);
+      render(
+        <ResizeHandle
+          {...defaultProps}
+          onResize={onResize}
+          width={210}
+          position="left"
+        />,
+      );
 
       fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowRight' }); // narrower for left position
 
@@ -97,7 +112,14 @@ describe('ResizeHandle', () => {
 
     it('respects maxWidth constraint on keyboard resize', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} width={795} position="left" />);
+      render(
+        <ResizeHandle
+          {...defaultProps}
+          onResize={onResize}
+          width={795}
+          position="left"
+        />,
+      );
 
       fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowLeft' }); // wider for left position
 
@@ -108,9 +130,14 @@ describe('ResizeHandle', () => {
   describe('shift key step', () => {
     it('Shift+Arrow uses 50px step instead of 10px', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} position="left" />);
+      render(
+        <ResizeHandle {...defaultProps} onResize={onResize} position="left" />,
+      );
 
-      fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowLeft', shiftKey: true });
+      fireEvent.keyDown(screen.getByRole('separator'), {
+        key: 'ArrowLeft',
+        shiftKey: true,
+      });
 
       expect(onResize).toHaveBeenCalledWith(450); // 400 + 50
     });
@@ -119,7 +146,9 @@ describe('ResizeHandle', () => {
   describe('mouse drag', () => {
     it('resizes from the width it was given when the drag began', () => {
       const onResize = vi.fn();
-      render(<ResizeHandle {...defaultProps} onResize={onResize} position="right" />);
+      render(
+        <ResizeHandle {...defaultProps} onResize={onResize} position="right" />,
+      );
 
       fireEvent.mouseDown(screen.getByRole('separator'), { clientX: 100 });
       fireEvent.mouseMove(document, { clientX: 130 });

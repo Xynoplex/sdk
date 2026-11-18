@@ -28,8 +28,7 @@ import type { PersistedEvent } from './persisted-events';
  * type MyCommand = Brand<components['schemas']['YieldCreateCommand'], { userId: UserId }>;
  * // Result: YieldCreateCommand with userId narrowed from string to UserId
  */
-export type Brand<T, Overrides> =
-  Omit<T, keyof Overrides> & Overrides;
+export type Brand<T, Overrides> = Omit<T, keyof Overrides> & Overrides;
 
 // ── Core event shape ─────────────────────────────────────────────────────────
 
@@ -48,7 +47,10 @@ export type Brand<T, Overrides> =
  * `timestamp` is for humans. Ordering is `metadata.sequenceNumber`'s.
  */
 export type EventBase = Brand<
-  Omit<components['schemas']['StoredEventResponse'], 'type' | 'payload' | 'metadata'>,
+  Omit<
+    components['schemas']['StoredEventResponse'],
+    'type' | 'payload' | 'metadata'
+  >,
   { resourceId?: ResourceId; userId: UserId }
 >;
 
@@ -85,11 +87,13 @@ export type StoredEvent<T extends EventBase = PersistedEvent> = T & {
  * A removal is not among them — the view never holds the annotation by then, so
  * the flag would promise what the enricher cannot deliver.
  */
-export type EnrichedEvent<T extends EventBase = PersistedEvent> = StoredEvent<T> & EnrichmentFields;
+export type EnrichedEvent<T extends EventBase = PersistedEvent> =
+  StoredEvent<T> & EnrichmentFields;
 
-type EnrichmentFields =
-  & Omit<components['schemas']['EnrichedResourceEvent'], keyof components['schemas']['StoredEventResponse']>
-  & { annotation?: Annotation };
+type EnrichmentFields = Omit<
+  components['schemas']['EnrichedResourceEvent'],
+  keyof components['schemas']['StoredEventResponse']
+> & { annotation?: Annotation };
 
 /**
  * A persisted event as a history reply carries it: the stored event, and the
@@ -100,7 +104,9 @@ export type AttributedEvent = components['schemas']['AttributedEvent'];
 
 // ── Body operation types (OpenAPI-derived) ───────────────────────────────────
 
-export type BodyItem = components['schemas']['TextualBody'] | components['schemas']['SpecificResource'];
+export type BodyItem =
+  | components['schemas']['TextualBody']
+  | components['schemas']['SpecificResource'];
 
 export type BodyOperation =
   | components['schemas']['BodyOperationAdd']

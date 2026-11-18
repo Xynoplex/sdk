@@ -25,9 +25,9 @@ const harness = vi.hoisted(() => ({
 }));
 
 vi.mock('../../../session/XynologProvider', async () => {
-  const actual = await vi.importActual<typeof import('../../../session/XynologProvider')>(
-    '../../../session/XynologProvider',
-  );
+  const actual = await vi.importActual<
+    typeof import('../../../session/XynologProvider')
+  >('../../../session/XynologProvider');
   return { ...actual, useXynolog: () => harness.browser };
 });
 
@@ -39,7 +39,10 @@ const OBSERVED = 'did:web:example.github.io:scratch-kb';
 function mount(withConflict: boolean) {
   const signals = createSessionSignals();
   if (withConflict) {
-    signals.notifyKbIdentityConflict({ expectedDid: EXPECTED, observedDid: OBSERVED });
+    signals.notifyKbIdentityConflict({
+      expectedDid: EXPECTED,
+      observedDid: OBSERVED,
+    });
   }
   harness.browser = {
     activeSignals$: new BehaviorSubject<unknown>(signals),
@@ -70,7 +73,9 @@ describe('KbIdentityConflictModal', () => {
     // The identity that answered — verbatim, and NOT under the registered label.
     expect(screen.getByText(OBSERVED)).toBeInTheDocument();
     // The void is stated: the user's tabs did not silently vanish.
-    expect(screen.getByText(/tabs.*cleared|cleared.*tabs/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/tabs.*cleared|cleared.*tabs/i),
+    ).toBeInTheDocument();
   });
 
   it('dismiss acknowledges the signal and closes', () => {
@@ -85,9 +90,13 @@ describe('KbIdentityConflictModal', () => {
   it('the forward route opens the Knowledge Base panel and acknowledges', () => {
     const { signals } = mount(true);
 
-    fireEvent.click(screen.getByRole('button', { name: /review knowledge bases/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /review knowledge bases/i }),
+    );
 
-    expect(harness.browser.emit).toHaveBeenCalledWith('panel:open', { panel: 'knowledge-base' });
+    expect(harness.browser.emit).toHaveBeenCalledWith('panel:open', {
+      panel: 'knowledge-base',
+    });
     expect(signals.kbIdentityConflict$.getValue()).toBeNull();
   });
 });

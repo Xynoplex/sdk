@@ -18,7 +18,8 @@ const mockDispose = vi.fn();
 const mockStateSubject = { subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })) };
 
 vi.mock('../../client', async () => {
-  const actual = await vi.importActual<typeof import('../../client')>('../../client');
+  const actual =
+    await vi.importActual<typeof import('../../client')>('../../client');
   const { Subject } = await import('rxjs');
   class MockXynologApiClient {
     dispose = mockDispose;
@@ -35,10 +36,34 @@ vi.mock('../../client', async () => {
 });
 
 import { XynologClient, APIError } from '../../client';
-import { XynologSession, sayOn, type XynologSessionConfig, type UserInfo } from '../xynolog-session';
+import {
+  XynologSession,
+  sayOn,
+  type XynologSessionConfig,
+  type UserInfo,
+} from '../xynolog-session';
 import { XynologSessionError } from '../errors';
-import { accessToken, userId, ERRORS_KEPT_FOR_FIRST_READER_COUNT, MAX_RECONNECT_MS, RECONNECT_MS, REFRESH_RETRY, SignInError, type AccessToken, type XynologError } from '@xynolog/core';
-import { SESSION_PREFIX_RE, UNREADABLE, UnreadableSignIn, freshJwt, storageKey, seedStoredSession, testSession, TestStorage } from './test-storage-helpers';
+import {
+  accessToken,
+  userId,
+  ERRORS_KEPT_FOR_FIRST_READER_COUNT,
+  MAX_RECONNECT_MS,
+  RECONNECT_MS,
+  REFRESH_RETRY,
+  SignInError,
+  type AccessToken,
+  type XynologError,
+} from '@xynolog/core';
+import {
+  SESSION_PREFIX_RE,
+  UNREADABLE,
+  UnreadableSignIn,
+  freshJwt,
+  storageKey,
+  seedStoredSession,
+  testSession,
+  TestStorage,
+} from './test-storage-helpers';
 import { getStoredSession, keptIn } from '../storage';
 import { MemorySignIn } from '../sign-in-kept';
 import { renewKept } from '../oauth';
@@ -46,7 +71,12 @@ import { renewKept } from '../oauth';
 const KB = {
   id: 'kb-alpha',
   label: 'Alpha',
-  endpoint: { kind: 'http' as const, host: 'localhost', port: 4000, protocol: 'http' as const },
+  endpoint: {
+    kind: 'http' as const,
+    host: 'localhost',
+    port: 4000,
+    protocol: 'http' as const,
+  },
 };
 
 const ALICE: UserInfo = {
@@ -58,13 +88,17 @@ const ALICE: UserInfo = {
 };
 
 let storage: TestStorage;
-let refresh: NonNullable<XynologSessionConfig['refresh']> & ReturnType<typeof vi.fn>;
-let validate: NonNullable<XynologSessionConfig['validate']> & ReturnType<typeof vi.fn>;
+let refresh: NonNullable<XynologSessionConfig['refresh']> &
+  ReturnType<typeof vi.fn>;
+let validate: NonNullable<XynologSessionConfig['validate']> &
+  ReturnType<typeof vi.fn>;
 
 /** Shortcut: new session with the default test callbacks. */
 function newSession(overrides?: Partial<XynologSessionConfig>): XynologSession {
   // The mock XynologClient takes no constructor args.
-  const client = new (XynologClient as unknown as new (...args: unknown[]) => XynologClient)();
+  const client = new (
+    XynologClient as unknown as new (...args: unknown[]) => XynologClient
+  )();
   const token$ = new BehaviorSubject<AccessToken | null>(null);
   return new XynologSession({
     kb: KB,
@@ -91,8 +125,12 @@ function saidBy(session: XynologSession): XynologError[] {
 beforeEach(() => {
   storage = new TestStorage();
   mockDispose.mockReset();
-  refresh = vi.fn<NonNullable<XynologSessionConfig['refresh']>>(async () => null) as typeof refresh;
-  validate = vi.fn<NonNullable<XynologSessionConfig['validate']>>(async () => ALICE) as typeof validate;
+  refresh = vi.fn<NonNullable<XynologSessionConfig['refresh']>>(
+    async () => null,
+  ) as typeof refresh;
+  validate = vi.fn<NonNullable<XynologSessionConfig['validate']>>(
+    async () => ALICE,
+  ) as typeof validate;
 });
 
 describe('XynologSession — construction & initial token', () => {
@@ -163,7 +201,10 @@ describe('XynologSession — construction & initial token', () => {
     expect(session.user$.getValue()).toBeNull();
     expect(getStoredSession(storage, KB.id)).not.toBeNull();
     expect(said).toEqual([
-      expect.objectContaining({ code: 'session.auth-failed', message: 'Token refresh failed: ECONNREFUSED' }),
+      expect.objectContaining({
+        code: 'session.auth-failed',
+        message: 'Token refresh failed: ECONNREFUSED',
+      }),
     ]);
 
     session.dispose();
@@ -171,7 +212,13 @@ describe('XynologSession — construction & initial token', () => {
 
   it('forgets an expired stored session the issuer refuses to renew, and says nothing: there was no session to end', async () => {
     seedStoredSession(storage, KB.id, freshJwt(-3600), 'refresh-tok');
-    refresh.mockRejectedValue(new SignInError('exchange', 'The issuer refused the token request (invalid_grant: Token is not active)', 400));
+    refresh.mockRejectedValue(
+      new SignInError(
+        'exchange',
+        'The issuer refused the token request (invalid_grant: Token is not active)',
+        400,
+      ),
+    );
     const onAuthFailed = vi.fn();
 
     const session = newSession({ onAuthFailed });
@@ -186,31 +233,50 @@ describe('XynologSession — construction & initial token', () => {
   });
 
   it.each([
-    { why: 'no answer', failure: new SignInError('exchange', 'The issuer did not answer: TypeError') },
-    { why: 'only answers worth another attempt', failure: new SignInError('exchange', 'The session could not be renewed after 4 attempts: HTTP 503', 503) },
-  ])('keeps an expired stored session whose renewal got $why, and renews it when a request is refused', async ({ failure }) => {
-    seedStoredSession(storage, KB.id, freshJwt(-3600), 'refresh-tok');
-    const renewed = freshJwt();
-    refresh.mockRejectedValueOnce(failure).mockResolvedValueOnce(renewed);
-    const onAuthFailed = vi.fn();
+    {
+      why: 'no answer',
+      failure: new SignInError(
+        'exchange',
+        'The issuer did not answer: TypeError',
+      ),
+    },
+    {
+      why: 'only answers worth another attempt',
+      failure: new SignInError(
+        'exchange',
+        'The session could not be renewed after 4 attempts: HTTP 503',
+        503,
+      ),
+    },
+  ])(
+    'keeps an expired stored session whose renewal got $why, and renews it when a request is refused',
+    async ({ failure }) => {
+      seedStoredSession(storage, KB.id, freshJwt(-3600), 'refresh-tok');
+      const renewed = freshJwt();
+      refresh.mockRejectedValueOnce(failure).mockResolvedValueOnce(renewed);
+      const onAuthFailed = vi.fn();
 
-    const session = newSession({ onAuthFailed });
-    const said = saidBy(session);
-    await session.ready;
-    expect(session.token$.getValue()).toBeNull();
-    expect(getStoredSession(storage, KB.id)).not.toBeNull();
-    expect(onAuthFailed).not.toHaveBeenCalled();
-    expect(said).toEqual([
-      expect.objectContaining({ code: 'session.auth-failed', message: `Token refresh failed: ${failure.message}` }),
-    ]);
+      const session = newSession({ onAuthFailed });
+      const said = saidBy(session);
+      await session.ready;
+      expect(session.token$.getValue()).toBeNull();
+      expect(getStoredSession(storage, KB.id)).not.toBeNull();
+      expect(onAuthFailed).not.toHaveBeenCalled();
+      expect(said).toEqual([
+        expect.objectContaining({
+          code: 'session.auth-failed',
+          message: `Token refresh failed: ${failure.message}`,
+        }),
+      ]);
 
-    // The issuer answers again: a request refused for want of a token renews it.
-    expect(await session.refresh(session.token$.getValue())).toBe(renewed);
-    expect(session.token$.getValue()).toBe(renewed);
-    expect(refresh).toHaveBeenCalledTimes(2);
+      // The issuer answers again: a request refused for want of a token renews it.
+      expect(await session.refresh(session.token$.getValue())).toBe(renewed);
+      expect(session.token$.getValue()).toBe(renewed);
+      expect(refresh).toHaveBeenCalledTimes(2);
 
-    session.dispose();
-  });
+      session.dispose();
+    },
+  );
 
   it('stays with null user$ if stored token is expired and refresh returns null', async () => {
     const expired = freshJwt(-3600);
@@ -317,7 +383,10 @@ describe('XynologSession — refresh', () => {
       // Ten more minutes at one refresh per half-life is four, plus the one
       // already counted. A zero delay produces 1418 in ten SECONDS.
       await vi.advanceTimersByTimeAsync(10 * 60_000);
-      expect(refresh.mock.calls.length, 'refresh count over ten minutes').toBeLessThanOrEqual(6);
+      expect(
+        refresh.mock.calls.length,
+        'refresh count over ten minutes',
+      ).toBeLessThanOrEqual(6);
 
       session.dispose();
     } finally {
@@ -328,13 +397,18 @@ describe('XynologSession — refresh', () => {
   it('tries a renewal that got no answer again on the reconnect backoff until one is made', async () => {
     vi.useFakeTimers();
     try {
-      const waits = Array.from({ length: 6 }, (_, n) => Math.min(RECONNECT_MS * 2 ** n, MAX_RECONNECT_MS));
+      const waits = Array.from({ length: 6 }, (_, n) =>
+        Math.min(RECONNECT_MS * 2 ** n, MAX_RECONNECT_MS),
+      );
       seedStoredSession(storage, KB.id, freshJwt(), 'refresh-tok');
       const renewed = freshJwt();
       // What each renewal answers, in order, and when it was asked for.
       const answers = [
         ...waits.map(() => async (): Promise<string> => {
-          throw new SignInError('exchange', 'The issuer did not answer: TypeError');
+          throw new SignInError(
+            'exchange',
+            'The issuer did not answer: TypeError',
+          );
         }),
         async (): Promise<string> => renewed,
       ];
@@ -346,9 +420,13 @@ describe('XynologSession — refresh', () => {
 
       const session = newSession();
       await session.ready;
-      await expect(session.refresh(session.token$.getValue())).resolves.toBeNull();
+      await expect(
+        session.refresh(session.token$.getValue()),
+      ).resolves.toBeNull();
       // Past every wait at its longest: the renewal made ends them.
-      await vi.advanceTimersByTimeAsync(waits.reduce((all, wait) => all + wait, 0) + 30_000);
+      await vi.advanceTimersByTimeAsync(
+        waits.reduce((all, wait) => all + wait, 0) + 30_000,
+      );
       expect(refresh).toHaveBeenCalledTimes(waits.length + 1);
       // Each wait is the equal jitter of its step, the step doubling from the reconnect wait up to the longest.
       waits.forEach((wait, n) => {
@@ -368,18 +446,28 @@ describe('XynologSession — refresh', () => {
     }
   });
 
-  it('ends the renewals on the reconnect backoff at the issuer\'s refusal', async () => {
+  it("ends the renewals on the reconnect backoff at the issuer's refusal", async () => {
     vi.useFakeTimers();
     try {
       seedStoredSession(storage, KB.id, freshJwt(), 'refresh-tok');
       refresh
-        .mockRejectedValueOnce(new SignInError('exchange', 'The issuer did not answer: TypeError'))
-        .mockRejectedValueOnce(new SignInError('exchange', 'The issuer refused the token request (invalid_grant)', 400));
+        .mockRejectedValueOnce(
+          new SignInError('exchange', 'The issuer did not answer: TypeError'),
+        )
+        .mockRejectedValueOnce(
+          new SignInError(
+            'exchange',
+            'The issuer refused the token request (invalid_grant)',
+            400,
+          ),
+        );
       const onAuthFailed = vi.fn();
 
       const session = newSession({ onAuthFailed });
       await session.ready;
-      await expect(session.refresh(session.token$.getValue())).resolves.toBeNull();
+      await expect(
+        session.refresh(session.token$.getValue()),
+      ).resolves.toBeNull();
       await vi.advanceTimersByTimeAsync((RECONNECT_MS * 6) / 5);
       expect(refresh).toHaveBeenCalledTimes(2);
       expect(getStoredSession(storage, KB.id)).toBeNull();
@@ -421,7 +509,13 @@ describe('XynologSession — refresh', () => {
   it('a THROWN refresh the issuer refused terminates the session exactly like one that returns null', async () => {
     const jwt = freshJwt();
     seedStoredSession(storage, KB.id, jwt, 'refresh-tok');
-    refresh.mockRejectedValue(new SignInError('exchange', 'The issuer refused the token request (invalid_grant)', 400));
+    refresh.mockRejectedValue(
+      new SignInError(
+        'exchange',
+        'The issuer refused the token request (invalid_grant)',
+        400,
+      ),
+    );
     const onAuthFailed = vi.fn();
 
     const session = newSession({ onAuthFailed });
@@ -430,44 +524,69 @@ describe('XynologSession — refresh', () => {
 
     // It must not propagate: the caller (and the proactive timer) treat this
     // as "no token", not as an exception to handle.
-    await expect(session.refresh(session.token$.getValue())).resolves.toBeNull();
+    await expect(
+      session.refresh(session.token$.getValue()),
+    ).resolves.toBeNull();
 
     expect(session.token$.getValue()).toBeNull();
     expect(getStoredSession(storage, KB.id)).toBeNull();
     expect(onAuthFailed).toHaveBeenCalledWith('expired');
-    expect(said).toEqual([expect.objectContaining({ code: 'session.refresh-exhausted' })]);
+    expect(said).toEqual([
+      expect.objectContaining({ code: 'session.refresh-exhausted' }),
+    ]);
 
     session.dispose();
   });
 
   it.each([
     { why: 'a network failure', failure: new Error('ECONNREFUSED') },
-    { why: 'no answer from the issuer', failure: new SignInError('exchange', 'The issuer did not answer: TypeError') },
-    { why: 'a budget spent on not now', failure: new SignInError('exchange', 'The session could not be renewed after 4 attempts: HTTP 503', 503) },
-  ])('a THROWN refresh that is $why keeps what is stored, and the next refusal renews again', async ({ failure }) => {
-    seedStoredSession(storage, KB.id, freshJwt(), 'refresh-tok');
-    const renewed = freshJwt();
-    refresh.mockRejectedValueOnce(failure).mockResolvedValueOnce(renewed);
-    const onAuthFailed = vi.fn();
+    {
+      why: 'no answer from the issuer',
+      failure: new SignInError(
+        'exchange',
+        'The issuer did not answer: TypeError',
+      ),
+    },
+    {
+      why: 'a budget spent on not now',
+      failure: new SignInError(
+        'exchange',
+        'The session could not be renewed after 4 attempts: HTTP 503',
+        503,
+      ),
+    },
+  ])(
+    'a THROWN refresh that is $why keeps what is stored, and the next refusal renews again',
+    async ({ failure }) => {
+      seedStoredSession(storage, KB.id, freshJwt(), 'refresh-tok');
+      const renewed = freshJwt();
+      refresh.mockRejectedValueOnce(failure).mockResolvedValueOnce(renewed);
+      const onAuthFailed = vi.fn();
 
-    const session = newSession({ onAuthFailed });
-    const said = saidBy(session);
-    await session.ready;
+      const session = newSession({ onAuthFailed });
+      const said = saidBy(session);
+      await session.ready;
 
-    await expect(session.refresh(session.token$.getValue())).resolves.toBeNull();
-    // No usable token, what is stored stays, and the session is not over.
-    expect(session.token$.getValue()).toBeNull();
-    expect(getStoredSession(storage, KB.id)).not.toBeNull();
-    expect(onAuthFailed).not.toHaveBeenCalled();
-    expect(said).toEqual([
-      expect.objectContaining({ code: 'session.refresh-exhausted', message: `Token refresh failed: ${failure.message}` }),
-    ]);
+      await expect(
+        session.refresh(session.token$.getValue()),
+      ).resolves.toBeNull();
+      // No usable token, what is stored stays, and the session is not over.
+      expect(session.token$.getValue()).toBeNull();
+      expect(getStoredSession(storage, KB.id)).not.toBeNull();
+      expect(onAuthFailed).not.toHaveBeenCalled();
+      expect(said).toEqual([
+        expect.objectContaining({
+          code: 'session.refresh-exhausted',
+          message: `Token refresh failed: ${failure.message}`,
+        }),
+      ]);
 
-    expect(await session.refresh(session.token$.getValue())).toBe(renewed);
-    expect(session.token$.getValue()).toBe(renewed);
+      expect(await session.refresh(session.token$.getValue())).toBe(renewed);
+      expect(session.token$.getValue()).toBe(renewed);
 
-    session.dispose();
-  });
+      session.dispose();
+    },
+  );
 
   it('names the cause when a refresh throws — a network failure must not read as a revoked session', async () => {
     const jwt = freshJwt();
@@ -480,7 +599,9 @@ describe('XynologSession — refresh', () => {
     await session.refresh(session.token$.getValue());
 
     expect(said).toEqual([
-      expect.objectContaining({ message: expect.stringContaining('ECONNREFUSED') }),
+      expect.objectContaining({
+        message: expect.stringContaining('ECONNREFUSED'),
+      }),
     ]);
 
     session.dispose();
@@ -519,10 +640,19 @@ describe('XynologSession — a refusal while the session is still starting', () 
     const stored = freshJwt(3600);
     const renewed = freshJwt(7200);
     seedStoredSession(storage, KB.id, stored, 'refresh-tok');
-    const refusal = () => APIError.fromStatus('HTTP 401', 401, 'Unauthorized', undefined, undefined);
+    const refusal = () =>
+      APIError.fromStatus(
+        'HTTP 401',
+        401,
+        'Unauthorized',
+        undefined,
+        undefined,
+      );
     // The gateway's answer about the stored token is held until released.
     let release!: () => void;
-    const held = new Promise<void>((resolve) => { release = resolve; });
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     const asked: string[] = [];
     validate = vi.fn(async (token: AccessToken) => {
       asked.push(token);
@@ -546,7 +676,9 @@ describe('XynologSession — a refusal while the session is still starting', () 
     expect(asked).toEqual([stored, renewed]);
     expect(refresh).toHaveBeenCalledTimes(1);
     expect(onAuthFailed).toHaveBeenCalledTimes(1);
-    expect(said.map((error) => error.code)).toEqual(['session.credential-refused']);
+    expect(said.map((error) => error.code)).toEqual([
+      'session.credential-refused',
+    ]);
     expect(session.token$.getValue()).toBeNull();
     session.dispose();
   });
@@ -557,17 +689,27 @@ describe('XynologSession — a refusal while the session is still starting', () 
     seedStoredSession(storage, KB.id, stored, 'refresh-tok');
     // One renewal serves both askers, as renewals asked for together do.
     let issue!: (token: string) => void;
-    const renewal = new Promise<string>((resolve) => { issue = resolve; });
+    const renewal = new Promise<string>((resolve) => {
+      issue = resolve;
+    });
     refresh = vi.fn(() => renewal) as typeof refresh;
     // The gateway refuses the stored token at once, and holds its answer
     // about the renewed one until released.
     let release!: () => void;
-    const held = new Promise<void>((resolve) => { release = resolve; });
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     const asked: string[] = [];
     validate = vi.fn(async (token: AccessToken) => {
       asked.push(token);
       if (token === renewed) await held;
-      throw APIError.fromStatus('HTTP 401', 401, 'Unauthorized', undefined, undefined);
+      throw APIError.fromStatus(
+        'HTTP 401',
+        401,
+        'Unauthorized',
+        undefined,
+        undefined,
+      );
     }) as typeof validate;
     const onAuthFailed = vi.fn();
     const session = newSession({ onAuthFailed });
@@ -585,7 +727,9 @@ describe('XynologSession — a refusal while the session is still starting', () 
     expect(await refreshing).toBe(renewed);
     expect(asked).toEqual([stored, renewed]);
     expect(onAuthFailed).toHaveBeenCalledTimes(1);
-    expect(said.map((error) => error.code)).toEqual(['session.credential-refused']);
+    expect(said.map((error) => error.code)).toEqual([
+      'session.credential-refused',
+    ]);
     session.dispose();
   });
 
@@ -594,13 +738,21 @@ describe('XynologSession — a refusal while the session is still starting', () 
     const renewed = freshJwt(7200);
     seedStoredSession(storage, KB.id, stored, 'refresh-tok');
     let release!: () => void;
-    const held = new Promise<void>((resolve) => { release = resolve; });
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     const asked: string[] = [];
     validate = vi.fn(async (token: AccessToken) => {
       asked.push(token);
       if (token === renewed) return ALICE;
       await held;
-      throw APIError.fromStatus('HTTP 401', 401, 'Unauthorized', undefined, undefined);
+      throw APIError.fromStatus(
+        'HTTP 401',
+        401,
+        'Unauthorized',
+        undefined,
+        undefined,
+      );
     }) as typeof validate;
     refresh = vi.fn(async () => renewed) as typeof refresh;
     const onAuthFailed = vi.fn();
@@ -625,7 +777,8 @@ describe('XynologSession — a refusal while the session is still starting', () 
 });
 
 describe('XynologSession — a refusal of a running session', () => {
-  const refusal = () => APIError.fromStatus('HTTP 401', 401, 'Unauthorized', undefined, undefined);
+  const refusal = () =>
+    APIError.fromStatus('HTTP 401', 401, 'Unauthorized', undefined, undefined);
 
   it('answers refusals that arrive together with one renewal and one ask', async () => {
     const stored = freshJwt(3600);
@@ -641,7 +794,11 @@ describe('XynologSession — a refusal of a running session', () => {
     await session.ready;
 
     // Three requests refused at once: each asks the session to refresh.
-    const given = await Promise.all([session.refresh(session.token$.getValue()), session.refresh(session.token$.getValue()), session.refresh(session.token$.getValue())]);
+    const given = await Promise.all([
+      session.refresh(session.token$.getValue()),
+      session.refresh(session.token$.getValue()),
+      session.refresh(session.token$.getValue()),
+    ]);
 
     expect(given).toEqual([renewed, renewed, renewed]);
     expect(refresh).toHaveBeenCalledTimes(1);
@@ -660,7 +817,9 @@ describe('XynologSession — a refusal of a running session', () => {
     seedStoredSession(storage, KB.id, stored, 'refresh-tok');
     // The gateway holds its answer about the renewed token until released.
     let release!: () => void;
-    const held = new Promise<void>((resolve) => { release = resolve; });
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     validate = vi.fn(async (token: AccessToken) => {
       if (token !== renewed) return ALICE;
       await held;
@@ -698,15 +857,21 @@ describe('XynologSession — a kept sign-in that cannot be read when the session
     try {
       const kept = new UnreadableSignIn(testSession(freshJwt(), 'refresh-tok'));
       const renewed = freshJwt();
-      refresh.mockRejectedValueOnce(new Error(UNREADABLE)).mockResolvedValueOnce(renewed);
+      refresh
+        .mockRejectedValueOnce(new Error(UNREADABLE))
+        .mockResolvedValueOnce(renewed);
       const onAuthFailed = vi.fn();
       const session = newSession({ kept, onAuthFailed });
       const said = saidBy(session);
       await session.ready;
 
       kept.unreadable = true;
-      await expect(session.refresh(session.token$.getValue())).resolves.toBeNull();
-      expect(said.map((error) => error.code)).toEqual(['session.refresh-exhausted']);
+      await expect(
+        session.refresh(session.token$.getValue()),
+      ).resolves.toBeNull();
+      expect(said.map((error) => error.code)).toEqual([
+        'session.refresh-exhausted',
+      ]);
       expect(session.token$.getValue()).toBeNull();
       expect(onAuthFailed).not.toHaveBeenCalled();
 
@@ -726,7 +891,9 @@ describe('XynologSession — a kept sign-in that cannot be read when the session
   it("the start's renewal says session.auth-failed, the backoff's session.refresh-exhausted, and the backoff goes on", async () => {
     vi.useFakeTimers();
     try {
-      const kept = new UnreadableSignIn(testSession(freshJwt(-3600), 'refresh-tok'));
+      const kept = new UnreadableSignIn(
+        testSession(freshJwt(-3600), 'refresh-tok'),
+      );
       const renewed = freshJwt();
       refresh
         .mockRejectedValueOnce(new Error(UNREADABLE))
@@ -744,7 +911,10 @@ describe('XynologSession — a kept sign-in that cannot be read when the session
       // Past the latest the renewal on the backoff falls due, and short of the earliest a second can.
       await vi.advanceTimersByTimeAsync((RECONNECT_MS * 6) / 5);
       expect(refresh).toHaveBeenCalledTimes(2);
-      expect(said.map((error) => error.code)).toEqual(['session.auth-failed', 'session.refresh-exhausted']);
+      expect(said.map((error) => error.code)).toEqual([
+        'session.auth-failed',
+        'session.refresh-exhausted',
+      ]);
 
       // Readable again, and still kept: the next renewal on the backoff, its step doubled, is made.
       kept.unreadable = false;
@@ -776,10 +946,18 @@ describe('XynologSession — every renewal is handed the token it renews', () =>
       const renewed = freshJwt();
       const kept = new MemorySignIn(testSession(refused, 'refresh-tok'));
       let reachable = false;
-      const issuer = vi.fn(async (_input: string | URL | Request, _init?: RequestInit): Promise<Response> => {
-        if (!reachable) throw new TypeError('fetch failed');
-        return Response.json({ access_token: renewed, refresh_token: 'refresh-2' });
-      });
+      const issuer = vi.fn(
+        async (
+          _input: string | URL | Request,
+          _init?: RequestInit,
+        ): Promise<Response> => {
+          if (!reachable) throw new TypeError('fetch failed');
+          return Response.json({
+            access_token: renewed,
+            refresh_token: 'refresh-2',
+          });
+        },
+      );
       const handed: (string | null)[] = [];
       const session = newSession({
         kept,
@@ -805,7 +983,10 @@ describe('XynologSession — every renewal is handed the token it renews', () =>
       expect(handed).toEqual([refused, refused]);
       expect(issuer).toHaveBeenCalledTimes(REFRESH_RETRY.attempts + 1);
       expect(session.token$.getValue()).toBe(renewed);
-      expect(kept.held()).toMatchObject({ access: renewed, refresh: 'refresh-2' });
+      expect(kept.held()).toMatchObject({
+        access: renewed,
+        refresh: 'refresh-2',
+      });
 
       session.dispose();
     } finally {
@@ -864,7 +1045,9 @@ describe('XynologSession — dispose', () => {
     await session.ready;
     session.dispose();
 
-    await expect(session.refresh(session.token$.getValue())).resolves.toBeNull();
+    await expect(
+      session.refresh(session.token$.getValue()),
+    ).resolves.toBeNull();
     expect(refresh).not.toHaveBeenCalled();
   });
 
@@ -873,11 +1056,14 @@ describe('XynologSession — dispose', () => {
     const renewed = freshJwt(7200);
     seedStoredSession(storage, KB.id, stored, 'refresh-tok');
     let answer!: (token: string | null) => void;
-    refresh = vi.fn<NonNullable<XynologSessionConfig['refresh']>>()
+    refresh = vi
+      .fn<NonNullable<XynologSessionConfig['refresh']>>()
       .mockResolvedValueOnce(renewed)
-      .mockReturnValueOnce(new Promise<string | null>((resolve) => {
-        answer = resolve;
-      })) as typeof refresh;
+      .mockReturnValueOnce(
+        new Promise<string | null>((resolve) => {
+          answer = resolve;
+        }),
+      ) as typeof refresh;
     const onAuthFailed = vi.fn();
     const session = newSession({ onAuthFailed });
     await session.ready;
@@ -894,7 +1080,10 @@ describe('XynologSession — dispose', () => {
 
     session.dispose();
     await settled();
-    expect(given, 'the refusal is given no token at once, and does not wait on the issuer').toEqual([null]);
+    expect(
+      given,
+      'the refusal is given no token at once, and does not wait on the issuer',
+    ).toEqual([null]);
 
     // The issuer's answer comes later, and is not taken.
     answer(freshJwt(10800));
@@ -917,8 +1106,15 @@ describe('XynologSession — what is kept for the first reader', () => {
     const session = newSession();
     await session.ready;
     const beyond = 5;
-    const messages = Array.from({ length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond }, (_, n) => `failure ${n}`);
-    for (const message of messages) sayOn(session, new XynologSessionError('session.keep-failed', message, KB.id));
+    const messages = Array.from(
+      { length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond },
+      (_, n) => `failure ${n}`,
+    );
+    for (const message of messages)
+      sayOn(
+        session,
+        new XynologSessionError('session.keep-failed', message, KB.id),
+      );
 
     const said = saidBy(session);
     session.dispose();
@@ -929,7 +1125,14 @@ describe('XynologSession — what is kept for the first reader', () => {
   it('drops what it kept when it ends: a reader who comes after is given nothing', async () => {
     const session = newSession();
     await session.ready;
-    sayOn(session, new XynologSessionError('session.keep-failed', 'said before anyone read', KB.id));
+    sayOn(
+      session,
+      new XynologSessionError(
+        'session.keep-failed',
+        'said before anyone read',
+        KB.id,
+      ),
+    );
     session.dispose();
 
     expect(saidBy(session)).toEqual([]);

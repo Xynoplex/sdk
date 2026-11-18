@@ -22,7 +22,8 @@ import type { EventMap } from '../bus-protocol';
 import { resourceId } from '../identifiers';
 
 const CH = 'beckon:hover' as const;
-const payloadFor = (id: string): EventMap[typeof CH] => ({ annotationId: id }) as EventMap[typeof CH];
+const payloadFor = (id: string): EventMap[typeof CH] =>
+  ({ annotationId: id }) as EventMap[typeof CH];
 
 describe('EventBus carries frames and offers verbs', () => {
   test('emit + on: a payload subscriber sees the payload, envelope and all', () => {
@@ -48,7 +49,9 @@ describe('EventBus carries frames and offers verbs', () => {
     expect(frames[0]!.correlationId).toBe('cid-1');
     expect(frames[0]!.payload).toEqual(payloadFor('a-1'));
     // The whole point: the domain payload is untouched by routing metadata.
-    expect(Object.keys(frames[0]!.payload as object)).not.toContain('correlationId');
+    expect(Object.keys(frames[0]!.payload as object)).not.toContain(
+      'correlationId',
+    );
   });
 
   test('an uncorrelated emit carries an envelope with no correlationId — absent, not empty-string', () => {
@@ -81,14 +84,20 @@ describe('EventBus carries frames and offers verbs', () => {
     // invisible.
     expect((bus as unknown as Record<string, unknown>).get).toBeUndefined();
     const observable = bus.on(CH) as unknown as Record<string, unknown>;
-    expect(observable.next, 'on() must not hand back a writable surface').toBeUndefined();
+    expect(
+      observable.next,
+      'on() must not hand back a writable surface',
+    ).toBeUndefined();
   });
 
   describe('scope rides the envelope too, and scopes stay isolated', () => {
     test('a scoped subscriber sees its own scope only', () => {
       const bus = new EventBus();
       const scoped: unknown[] = [];
-      bus.scope(resourceId('res-1')).on(CH).subscribe((p) => scoped.push(p));
+      bus
+        .scope(resourceId('res-1'))
+        .on(CH)
+        .subscribe((p) => scoped.push(p));
 
       bus.scope(resourceId('res-1')).emit(CH, payloadFor('mine'));
       bus.scope(resourceId('res-2')).emit(CH, payloadFor('theirs'));
@@ -116,7 +125,10 @@ describe('EventBus carries frames and offers verbs', () => {
       // instead of having to parse it back out of a channel key.
       const bus = new EventBus();
       const frames: Array<{ scope?: string }> = [];
-      bus.scope(resourceId('res-1')).frames(CH).subscribe((f) => frames.push(f));
+      bus
+        .scope(resourceId('res-1'))
+        .frames(CH)
+        .subscribe((f) => frames.push(f));
 
       bus.scope(resourceId('res-1')).emit(CH, payloadFor('x'));
       bus.emit(CH, payloadFor('global'));

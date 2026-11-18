@@ -44,7 +44,7 @@ export function canvasToPdfCoordinates(
   page: number,
   _pageWidth: number,
   pageHeight: number,
-  scale: number = 1
+  scale: number = 1,
 ): PdfCoordinate {
   // Normalize rectangle (handle drag in any direction)
   const x1 = Math.min(canvasRect.startX, canvasRect.endX);
@@ -57,7 +57,7 @@ export function canvasToPdfCoordinates(
   const pdfWidth = (x2 - x1) / scale;
 
   // Flip Y coordinate (canvas top-left to PDF bottom-left)
-  const pdfY = pageHeight - (y2 / scale);
+  const pdfY = pageHeight - y2 / scale;
   const pdfHeight = (y2 - y1) / scale;
 
   return {
@@ -65,7 +65,7 @@ export function canvasToPdfCoordinates(
     x: Math.round(pdfX),
     y: Math.round(pdfY),
     width: Math.round(pdfWidth),
-    height: Math.round(pdfHeight)
+    height: Math.round(pdfHeight),
   };
 }
 
@@ -79,7 +79,7 @@ export function canvasToPdfCoordinates(
 export function pdfToCanvasCoordinates(
   pdfCoord: PdfCoordinate,
   pageHeight: number,
-  scale: number = 1
+  scale: number = 1,
 ): Rectangle {
   // Convert from PDF points to canvas pixels
   const canvasX = pdfCoord.x * scale;
@@ -93,6 +93,6 @@ export function pdfToCanvasCoordinates(
     x: canvasX,
     y: canvasY,
     width: canvasWidth,
-    height: canvasHeight
+    height: canvasHeight,
   };
 }

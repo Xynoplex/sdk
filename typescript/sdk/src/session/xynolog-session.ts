@@ -59,7 +59,12 @@ import {
   type BaseUrl,
 } from '@xynolog/core';
 import type { components, StateUnit } from '@xynolog/core';
-import { XynologClient, APIError, HttpTransport, HttpContentTransport } from '../client';
+import {
+  XynologClient,
+  APIError,
+  HttpTransport,
+  HttpContentTransport,
+} from '../client';
 import type { XynologError } from '@xynolog/core';
 import { watched, type Watched } from '@xynolog/core';
 import type { ConnectionState } from '@xynolog/core';
@@ -77,7 +82,12 @@ import type { SignInKept } from './sign-in-kept';
 import type { SessionStorage } from './session-storage';
 import { personKeeping } from '../cache-persister';
 import type { SessionEndReason } from './session-signals';
-import { SCRIPT_CLIENT_ID, renewKept, signInWithDeviceGrant, type DeviceCode } from './oauth';
+import {
+  SCRIPT_CLIENT_ID,
+  renewKept,
+  signInWithDeviceGrant,
+  type DeviceCode,
+} from './oauth';
 import { sharedRenewal, type SharedRenewal } from './shared-renewal';
 
 export type UserInfo = components['schemas']['UserResponse'];
@@ -92,10 +102,10 @@ const notRenewed = (failure: string | undefined): string =>
  * until the budget is spent, is no refusal.
  */
 const refusedByTheIssuer = (failure: unknown): boolean =>
-  failure instanceof SignInError
-  && failure.code === 'exchange'
-  && failure.status !== undefined
-  && !RETRY_RULES.refresh.retryable({ status: failure.status });
+  failure instanceof SignInError &&
+  failure.code === 'exchange' &&
+  failure.status !== undefined &&
+  !RETRY_RULES.refresh.retryable({ status: failure.status });
 
 export interface XynologSessionConfig {
   kb: KbTarget;
@@ -168,15 +178,24 @@ let sessionSeq = 0;
  * by `sayOn`. Held here rather than on the session, so that what its
  * client's keeping says reaches its errors with no part of its surface.
  */
-const voices = new WeakMap<XynologSession, (error: XynologSessionError) => void>();
+const voices = new WeakMap<
+  XynologSession,
+  (error: XynologSessionError) => void
+>();
 
 /**
  * Say `error` on `session`'s errors stream, as one of its own: what the
  * keeping of a client a factory built beside it says (`personKeeping`).
  */
-export function sayOn(session: XynologSession, error: XynologSessionError): void {
+export function sayOn(
+  session: XynologSession,
+  error: XynologSessionError,
+): void {
   const say = voices.get(session);
-  if (say === undefined) throw new Error('A session says what its client keeps only once it is made');
+  if (say === undefined)
+    throw new Error(
+      'A session says what its client keeps only once it is made',
+    );
   say(error);
 }
 
@@ -231,8 +250,12 @@ export class XynologSession implements StateUnit {
    */
   #heldLast: string | null;
   private readonly kept: SignInKept;
-  private readonly doRefresh?: (holding: string | null) => Promise<string | null>;
-  private readonly doValidate?: (token: AccessToken) => Promise<UserInfo | null>;
+  private readonly doRefresh?: (
+    holding: string | null,
+  ) => Promise<string | null>;
+  private readonly doValidate?: (
+    token: AccessToken,
+  ) => Promise<UserInfo | null>;
   private readonly onAuthFailed: (reason: SessionEndReason) => void;
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
   /** The next renewal owed after one that got no answer, and the step of the wait after it. */
@@ -259,14 +282,20 @@ export class XynologSession implements StateUnit {
     this.token$ = watched(this.#heldToken$);
     this.#heldUser$ = new BehaviorSubject<UserInfo | null>(null);
     this.user$ = watched(this.#heldUser$);
-    this.#transportFailures = this.client.transport.errors$.subscribe((failure) => this.#said.say(failure));
+    this.#transportFailures = this.client.transport.errors$.subscribe(
+      (failure) => this.#said.say(failure),
+    );
     this.errors$ = this.#said.said$;
     voices.set(this, (error) => this.#said.say(error));
 
     // Reconcile the kept token: if there's a fresh kept access token
     // and `token$` hasn't been seeded yet, push the kept value so the
     // transport (which shares this token$) sees it on first auth.
-    if (stored && !isJwtExpired(stored.access) && this.#heldToken$.getValue() === null) {
+    if (
+      stored &&
+      !isJwtExpired(stored.access) &&
+      this.#heldToken$.getValue() === null
+    ) {
       this.#heldToken$.next(accessToken(stored.access));
     }
     const initialToken = this.#heldToken$.getValue();
@@ -316,7 +345,13 @@ export class XynologSession implements StateUnit {
         } else {
           // The issuer did not refuse it: the stored session is kept, and renewed on the reconnect backoff or when a request is refused.
           this.renewAgainLater();
-          this.#said.say(new XynologSessionError('session.auth-failed', notRenewed(failure), this.kb.id));
+          this.#said.say(
+            new XynologSessionError(
+              'session.auth-failed',
+              notRenewed(failure),
+              this.kb.id,
+            ),
+          );
         }
         return;
       }
@@ -362,7 +397,11 @@ export class XynologSession implements StateUnit {
           return;
         }
         if (justIssued) {
-          this.signedOut('refused', 'session.credential-refused', 'The gateway refused a token its issuer had just issued');
+          this.signedOut(
+            'refused',
+            'session.credential-refused',
+            'The gateway refused a token its issuer had just issued',
+          );
           return;
         }
         // The session's token has changed since the ask: the stream
@@ -394,7 +433,11 @@ export class XynologSession implements StateUnit {
    * for the person it named, and the person and the application are each
    * told why. The one teardown, whichever way the session ended.
    */
-  private signedOut(told: SessionEndReason, code: XynologSessionErrorCode, why: string): void {
+  private signedOut(
+    told: SessionEndReason,
+    code: XynologSessionErrorCode,
+    why: string,
+  ): void {
     this.clearRefreshTimer();
     this.clearUnanswered();
     this.#heldToken$.next(null);
@@ -429,12 +472,25 @@ export class XynologSession implements StateUnit {
    * stored, and an operator reading the error needs to know which one
    * happened.
    */
-  private async tryRefresh(): Promise<{ token: string | null; failure?: string; refused: boolean }> {
+  private async tryRefresh(): Promise<{
+    token: string | null;
+    failure?: string;
+    refused: boolean;
+  }> {
     if (!this.doRefresh) return { token: null, refused: false };
     try {
-      return { token: await this.doRefresh(this.#heldToken$.getValue() ?? this.#heldLast), refused: false };
+      return {
+        token: await this.doRefresh(
+          this.#heldToken$.getValue() ?? this.#heldLast,
+        ),
+        refused: false,
+      };
     } catch (err) {
-      return { token: null, failure: err instanceof Error ? err.message : String(err), refused: refusedByTheIssuer(err) };
+      return {
+        token: null,
+        failure: err instanceof Error ? err.message : String(err),
+        refused: refusedByTheIssuer(err),
+      };
     }
   }
 
@@ -470,9 +526,11 @@ export class XynologSession implements StateUnit {
     if (this.disposed) return null;
     const held = this.#heldToken$.getValue();
     if (held !== refused) return held;
-    this.refusal ??= sharedRenewal(this.renewForRefusal().finally(() => {
-      this.refusal = null;
-    }));
+    this.refusal ??= sharedRenewal(
+      this.renewForRefusal().finally(() => {
+        this.refusal = null;
+      }),
+    );
     return this.refusal.answer;
   }
 
@@ -486,7 +544,8 @@ export class XynologSession implements StateUnit {
     try {
       const user = await validate(renewed);
       // Who the token the session still holds is, as the gateway said.
-      if (!this.disposed && this.#heldToken$.getValue() === renewed) this.#heldUser$.next(user);
+      if (!this.disposed && this.#heldToken$.getValue() === renewed)
+        this.#heldUser$.next(user);
     } catch (err) {
       if (this.disposed) return null;
       const refused = err instanceof APIError && err.code === 'unauthorized';
@@ -494,7 +553,11 @@ export class XynologSession implements StateUnit {
       // the gateway was being asked (another context signed in, or renewed)
       // is not the session's to be refused.
       if (refused && this.#heldToken$.getValue() === renewed) {
-        this.signedOut('refused', 'session.credential-refused', 'The gateway refused a token its issuer had just issued');
+        this.signedOut(
+          'refused',
+          'session.credential-refused',
+          'The gateway refused a token its issuer had just issued',
+        );
       }
     }
     return this.disposed ? null : this.#heldToken$.getValue();
@@ -530,7 +593,10 @@ export class XynologSession implements StateUnit {
     } catch (cause) {
       // A sign-in that cannot be read is a renewal with no answer: what is
       // stored stays, and is renewed again on the backoff.
-      this.unrenewed(failure ?? (cause instanceof Error ? cause.message : String(cause)), false);
+      this.unrenewed(
+        failure ?? (cause instanceof Error ? cause.message : String(cause)),
+        false,
+      );
       return null;
     }
     if (nothingKept) {
@@ -550,13 +616,23 @@ export class XynologSession implements StateUnit {
    */
   private unrenewed(failure: string | undefined, refused: boolean): void {
     if (failure === undefined || refused) {
-      this.signedOut('expired', 'session.refresh-exhausted', notRenewed(failure));
+      this.signedOut(
+        'expired',
+        'session.refresh-exhausted',
+        notRenewed(failure),
+      );
       return;
     }
     this.clearRefreshTimer();
     this.#heldToken$.next(null);
     this.renewAgainLater();
-    this.#said.say(new XynologSessionError('session.refresh-exhausted', notRenewed(failure), this.kb.id));
+    this.#said.say(
+      new XynologSessionError(
+        'session.refresh-exhausted',
+        notRenewed(failure),
+        this.kb.id,
+      ),
+    );
   }
 
   /**
@@ -578,7 +654,9 @@ export class XynologSession implements StateUnit {
         this.unansweredWaitMs = RECONNECT_MS;
         return;
       }
-      void (this.#heldUser$.getValue() === null ? this.refresh(null) : this.renew());
+      void (this.#heldUser$.getValue() === null
+        ? this.refresh(null)
+        : this.renew());
     }, equalJitter(step));
   }
 
@@ -672,15 +750,25 @@ export class XynologSession implements StateUnit {
    * token is, with the stream's places coupled to the client. What that
    * keeping says, the session says on its errors.
    */
-  private static overHttp(opts: Parameters<typeof XynologSession.fromHttp>[0], storage: SessionStorage | undefined): OpenedSession {
+  private static overHttp(
+    opts: Parameters<typeof XynologSession.fromHttp>[0],
+    storage: SessionStorage | undefined,
+  ): OpenedSession {
     let session!: XynologSession;
-    const keeps = storage === undefined
-      ? null
-      : personKeeping(storage, opts.kb.id, opts.kept, (error) => session.#said.say(error));
-    const url = typeof opts.baseUrl === 'string' ? baseUrl(opts.baseUrl) : opts.baseUrl;
-    const tok = opts.token == null
-      ? null
-      : (typeof opts.token === 'string' ? accessToken(opts.token) : opts.token);
+    const keeps =
+      storage === undefined
+        ? null
+        : personKeeping(storage, opts.kb.id, opts.kept, (error) =>
+            session.#said.say(error),
+          );
+    const url =
+      typeof opts.baseUrl === 'string' ? baseUrl(opts.baseUrl) : opts.baseUrl;
+    const tok =
+      opts.token == null
+        ? null
+        : typeof opts.token === 'string'
+          ? accessToken(opts.token)
+          : opts.token;
     const token$ = new BehaviorSubject<AccessToken | null>(tok);
     // A session may be handed a token that the gateway no longer accepts
     // (for example after its issuer rotates signing keys). Let the transport
@@ -693,24 +781,40 @@ export class XynologSession implements StateUnit {
       channels: BRIDGED_CHANNELS,
       tokenRefresher: (refused) => session.refresh(refused),
       ...(keeps === null ? {} : { saveLastEventId: keeps.saveLastEventId }),
-      ...(keeps === null || keeps.fromStart === null ? {} : { loadLastEventIds: keeps.fromStart.places.loadLastEventIds }),
+      ...(keeps === null || keeps.fromStart === null
+        ? {}
+        : { loadLastEventIds: keeps.fromStart.places.loadLastEventIds }),
       ...(opts.fetch ? { fetch: opts.fetch } : {}),
     });
     const content = new HttpContentTransport(transport);
     const fromStart = keeps === null ? null : keeps.fromStart;
-    const client = new XynologClient(transport, content, transport, fromStart === null ? {} : { cachePersistence: fromStart.persistence });
+    const client = new XynologClient(
+      transport,
+      content,
+      transport,
+      fromStart === null ? {} : { cachePersistence: fromStart.persistence },
+    );
     if (fromStart !== null) fromStart.places.coupleTo(client);
-    const config: XynologSessionConfig = { kb: opts.kb, kept: opts.kept, client, token$ };
+    const config: XynologSessionConfig = {
+      kb: opts.kb,
+      kept: opts.kept,
+      client,
+      token$,
+    };
     if (opts.refresh) config.refresh = opts.refresh;
     if (opts.validate) {
       const validate = opts.validate;
       // Who the token is, as validate says, starts keeping for that person
       // before the answer is handed back, so before the session is ready.
-      config.validate = keeps === null ? validate : async (token) => {
-        const user = await validate(token);
-        if (user !== null) keeps.named(token, user.did, client, transport);
-        return user;
-      };
+      config.validate =
+        keeps === null
+          ? validate
+          : async (token) => {
+              const user = await validate(token);
+              if (user !== null)
+                keeps.named(token, user.did, client, transport);
+              return user;
+            };
     }
     if (opts.onAuthFailed) config.onAuthFailed = opts.onAuthFailed;
     try {
@@ -782,18 +886,28 @@ export class XynologSession implements StateUnit {
     // same moment each ask for one, and an issuer that rotates refresh tokens
     // refuses the second grant, which would end a session that was fine.
     let renewing: Promise<string | null> | null = null;
-    const opened = XynologSession.overHttp({
-      kb: opts.kb,
-      kept: opts.kept,
-      baseUrl: gateway,
-      refresh: (holding) => {
-        renewing ??= renewKept(opts.kept, holding, opts.fetch).finally(() => { renewing = null; });
-        return renewing;
+    const opened = XynologSession.overHttp(
+      {
+        kb: opts.kb,
+        kept: opts.kept,
+        baseUrl: gateway,
+        refresh: (holding) => {
+          renewing ??= renewKept(opts.kept, holding, opts.fetch).finally(() => {
+            renewing = null;
+          });
+          return renewing;
+        },
+        ...(opts.fetch ? { fetch: opts.fetch } : {}),
+        ...(asks
+          ? {
+              validate: (token: AccessToken) =>
+                currentUserOf(baseUrl(gateway), token, opts.fetch),
+            }
+          : {}),
+        ...(opts.onAuthFailed ? { onAuthFailed: opts.onAuthFailed } : {}),
       },
-      ...(opts.fetch ? { fetch: opts.fetch } : {}),
-      ...(asks ? { validate: (token: AccessToken) => currentUserOf(baseUrl(gateway), token, opts.fetch) } : {}),
-      ...(opts.onAuthFailed ? { onAuthFailed: opts.onAuthFailed } : {}),
-    }, opts.storage);
+      opts.storage,
+    );
     await opened.session.ready;
     return opened;
   }
@@ -816,7 +930,9 @@ export class XynologSession implements StateUnit {
     fetch?: typeof fetch;
   }): Promise<void> {
     if (opts.kb.endpoint.kind !== 'http') {
-      throw new Error(`The device grant needs an HTTP endpoint; this knowledge base's is "${opts.kb.endpoint.kind}"`);
+      throw new Error(
+        `The device grant needs an HTTP endpoint; this knowledge base's is "${opts.kb.endpoint.kind}"`,
+      );
     }
     const { issuer, tokens } = await signInWithDeviceGrant({
       target: opts.kb.endpoint,

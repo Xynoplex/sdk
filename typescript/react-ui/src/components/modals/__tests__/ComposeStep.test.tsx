@@ -19,7 +19,11 @@ import type { CodeMirrorRenderer } from '../../CodeMirrorRenderer';
 // Mock CodeMirrorRenderer to avoid CodeMirror dependencies (same mock the
 // compose page's own tests use).
 vi.mock('../../CodeMirrorRenderer', () => ({
-  CodeMirrorRenderer: ({ content, onChange, editable }: ComponentProps<typeof CodeMirrorRenderer>) => (
+  CodeMirrorRenderer: ({
+    content,
+    onChange,
+    editable,
+  }: ComponentProps<typeof CodeMirrorRenderer>) => (
     <textarea
       data-testid="code-editor"
       value={content}
@@ -49,10 +53,14 @@ const DRAFT: ComposeDraft = {
   language: 'en',
 };
 
-function renderStep(over: Partial<React.ComponentProps<typeof ComposeStep>> = {}) {
+function renderStep(
+  over: Partial<React.ComponentProps<typeof ComposeStep>> = {},
+) {
   const onDraftChange = vi.fn();
   const onBack = vi.fn();
-  const onCompose = vi.fn<(p: unknown) => Promise<void>>().mockResolvedValue(undefined);
+  const onCompose = vi
+    .fn<(p: unknown) => Promise<void>>()
+    .mockResolvedValue(undefined);
   const utils = render(
     <ComposeStep
       draft={DRAFT}
@@ -74,16 +82,22 @@ describe('ComposeStep — the from-reference slice, and nothing else', () => {
   it('renders the draft: name, save location, content, language', () => {
     renderStep();
     expect(screen.getByLabelText(T.resourceTitle)).toHaveValue('Black Hawk');
-    expect(screen.getByLabelText(T.saveLocation)).toHaveValue('people/black-hawk.md');
+    expect(screen.getByLabelText(T.saveLocation)).toHaveValue(
+      'people/black-hawk.md',
+    );
     expect(screen.getByTestId('code-editor')).toHaveValue('Sauk leader.');
     expect(screen.getByLabelText(T.language)).toBeInTheDocument();
   });
 
   it('edits flow through onDraftChange — the host owns the draft', () => {
     const { onDraftChange } = renderStep();
-    fireEvent.change(screen.getByLabelText(T.resourceTitle), { target: { value: 'Black Hawk (Sauk)' } });
+    fireEvent.change(screen.getByLabelText(T.resourceTitle), {
+      target: { value: 'Black Hawk (Sauk)' },
+    });
     expect(onDraftChange).toHaveBeenCalledWith({ name: 'Black Hawk (Sauk)' });
-    fireEvent.change(screen.getByTestId('code-editor'), { target: { value: 'A Sauk leader.' } });
+    fireEvent.change(screen.getByTestId('code-editor'), {
+      target: { value: 'A Sauk leader.' },
+    });
     expect(onDraftChange).toHaveBeenCalledWith({ content: 'A Sauk leader.' });
   });
 
@@ -91,8 +105,12 @@ describe('ComposeStep — the from-reference slice, and nothing else', () => {
     renderStep(); // referenceEntityTypes: ['Person']
     expect(screen.getByText('Person')).toBeInTheDocument();
     // No toggling: the types were chosen when the reference was created.
-    expect(screen.queryByRole('button', { name: /Person/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Topic/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Person/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Topic/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('an empty reference set falls back to the picker over the owner-supplied options', () => {
@@ -104,8 +122,12 @@ describe('ComposeStep — the from-reference slice, and nothing else', () => {
 
   it('carries NONE of the page-only machinery: no upload, no format, no encoding', () => {
     const { container } = renderStep();
-    expect(container.querySelector('.xynolog-form__upload-dropzone')).toBeNull();
-    expect(container.querySelector('.xynolog-form__content-source-toggle')).toBeNull();
+    expect(
+      container.querySelector('.xynolog-form__upload-dropzone'),
+    ).toBeNull();
+    expect(
+      container.querySelector('.xynolog-form__content-source-toggle'),
+    ).toBeNull();
     expect(container.querySelector('#format-select')).toBeNull();
     expect(container.querySelector('#charset-select')).toBeNull();
   });
@@ -131,15 +153,26 @@ describe('ComposeStep — the from-reference slice, and nothing else', () => {
 
   it('the footer is a wizard footer: Back + Create, pending while in flight, re-enabled on rejection', async () => {
     let reject!: (e: Error) => void;
-    const onCompose = vi.fn(() => new Promise<void>((_, r) => { reject = r; }));
+    const onCompose = vi.fn(
+      () =>
+        new Promise<void>((_, r) => {
+          reject = r;
+        }),
+    );
     const { container } = renderStep({ onCompose });
 
-    expect(container.querySelector('.xynolog-modal__actions--wizard')).not.toBeNull();
+    expect(
+      container.querySelector('.xynolog-modal__actions--wizard'),
+    ).not.toBeNull();
     fireEvent.click(screen.getByRole('button', { name: T.createAndLink }));
-    expect(await screen.findByRole('button', { name: T.creatingAndLinking })).toBeDisabled();
+    expect(
+      await screen.findByRole('button', { name: T.creatingAndLinking }),
+    ).toBeDisabled();
 
     reject(new Error('boom'));
-    expect(await screen.findByRole('button', { name: T.createAndLink })).toBeEnabled();
+    expect(
+      await screen.findByRole('button', { name: T.createAndLink }),
+    ).toBeEnabled();
   });
 
   it('Back is the only retreat and dismissal never lives in the footer', () => {

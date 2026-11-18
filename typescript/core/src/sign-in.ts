@@ -27,15 +27,18 @@ export interface SignIn {
 
 /** Whether `value` is a SignIn: what it requires is there, and every member it has is text. */
 export function isSignIn(value: unknown): value is SignIn {
-  return isObject(value)
-    && isString(value["token"])
-    && (value["refreshToken"] === undefined || isString(value["refreshToken"]))
-    && (value["email"] === undefined || isString(value["email"]))
-    && isString(value["obtainedAt"])
-    && (value["expiresAt"] === undefined || isString(value["expiresAt"]))
-    && isString(value["issuer"])
-    && isString(value["tokenEndpoint"])
-    && (value["revocationEndpoint"] === undefined || isString(value["revocationEndpoint"]));
+  return (
+    isObject(value) &&
+    isString(value['token']) &&
+    (value['refreshToken'] === undefined || isString(value['refreshToken'])) &&
+    (value['email'] === undefined || isString(value['email'])) &&
+    isString(value['obtainedAt']) &&
+    (value['expiresAt'] === undefined || isString(value['expiresAt'])) &&
+    isString(value['issuer']) &&
+    isString(value['tokenEndpoint']) &&
+    (value['revocationEndpoint'] === undefined ||
+      isString(value['revocationEndpoint']))
+  );
 }
 
 /** The directory's mode, in octal, on a system that has modes: its owner reads, writes and enters it, and nobody else does. */
@@ -46,19 +49,19 @@ export const OWNER_ONLY_FILE_MODE = 0o600;
 
 /** The directory's access list on Windows, where a mode keeps nobody out, in SDDL, with `owner` where the SID of the user the writer runs as goes (its process token's user): full access for that user, the system and the administrators, and nobody else. It is handed down to everything made in the directory, and protected, so nothing is inherited from above. */
 export function ownerOnlyDirectoryAccessList(owner: string): string {
-  return "D:PAI(A;OICI;FA;;;" + owner + ")(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)";
+  return 'D:PAI(A;OICI;FA;;;' + owner + ')(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)';
 }
 
 /** A file's access list on Windows, which the launcher gives each file it keeps to its owner, in SDDL, with `owner` where the SID of the user it runs as goes: the directory's list, with nothing handed down, since a file has nothing beneath it. Full access for that user, the system and the administrators, and nobody else, protected, so nothing is inherited from above. */
 export function ownerOnlyFileAccessList(owner: string): string {
-  return "D:PAI(A;;FA;;;" + owner + ")(A;;FA;;;SY)(A;;FA;;;BA)";
+  return 'D:PAI(A;;FA;;;' + owner + ')(A;;FA;;;SY)(A;;FA;;;BA)';
 }
 
 /** The document's name in the state home: one sign-in per stack. */
-export const SIGN_IN_STORE_FILE = "tokens.json";
+export const SIGN_IN_STORE_FILE = 'tokens.json';
 
 /** The name, beside the document, of the file every writer locks from before its read until after its rename. */
-export const SIGN_IN_STORE_LOCK = "tokens.lock";
+export const SIGN_IN_STORE_LOCK = 'tokens.lock';
 
 /** On Windows, the high 32 bits of the offset of the one byte of the lock file that is locked: far past anything the file holds. */
 export const SIGN_IN_STORE_WINDOWS_OFFSET_HIGH = 0x40000000;

@@ -1,6 +1,10 @@
 'use client';
 
-import { createShellStateUnit, type ShellStateUnit, type ToolbarPanelType } from '../state/shell-state-unit';
+import {
+  createShellStateUnit,
+  type ShellStateUnit,
+  type ToolbarPanelType,
+} from '../state/shell-state-unit';
 import { useXynolog } from '../session/XynologProvider';
 import { useStateUnit } from './useStateUnit';
 
@@ -24,8 +28,10 @@ function persistPanel(panel: ToolbarPanelType | null): void {
  */
 export function useShellStateUnit(): ShellStateUnit {
   const xynolog = useXynolog();
-  return useStateUnit(() => createShellStateUnit(xynolog, {
-    initialPanel: readPanel(),
-    onPanelChange: persistPanel,
-  }));
+  return useStateUnit(() =>
+    createShellStateUnit(xynolog, {
+      initialPanel: readPanel(),
+      onPanelChange: persistPanel,
+    }),
+  );
 }

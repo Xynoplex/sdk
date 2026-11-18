@@ -8,25 +8,41 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, screen, within } from '@testing-library/react';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import { EventBus } from '@xynolog/core';
-import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 import { ResourceViewer } from '../ResourceViewer';
 
 // Render the real content so jsdom text selection can target it.
 vi.mock('../../CodeMirrorRenderer', () => ({
-  CodeMirrorRenderer: ({ content }: { content: string }) => <div className="xynolog-codemirror">{content}</div>,
+  CodeMirrorRenderer: ({ content }: { content: string }) => (
+    <div className="xynolog-codemirror">{content}</div>
+  ),
 }));
-vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({ SvgDrawingCanvas: () => <div>svg-mock</div> }));
-vi.mock('../../pdf-annotation/PdfAnnotationCanvas.client', () => ({ PdfAnnotationCanvas: () => <div>pdf-mock</div> }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({
+  SvgDrawingCanvas: () => <div>svg-mock</div>,
+}));
+vi.mock('../../pdf-annotation/PdfAnnotationCanvas.client', () => ({
+  PdfAnnotationCanvas: () => <div>pdf-mock</div>,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const CONTENT = 'hello world selectme end';
 
-function makeResource(mediaType = 'text/plain'): XynologResource & { content: string } {
+function makeResource(
+  mediaType = 'text/plain',
+): XynologResource & { content: string } {
   return {
     '@context': 'https://www.w3.org/ns/activitystreams',
     '@id': 'res-1' as ResourceId,
@@ -39,7 +55,13 @@ function makeResource(mediaType = 'text/plain'): XynologResource & { content: st
   };
 }
 
-const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const annotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession() {
   const client = {
@@ -47,10 +69,16 @@ function fakeSession() {
     beckon: { hover: vi.fn() },
     mark: { request: vi.fn(), delete: vi.fn() },
   };
-  return { session: { client: { ...client, bus: new EventBus() } } as unknown as XynologSession, client };
+  return {
+    session: {
+      client: { ...client, bus: new EventBus() },
+    } as unknown as XynologSession,
+    client,
+  };
 }
 
-const bars = (c: HTMLElement) => c.querySelectorAll('.xynolog-annotate-toolbar').length;
+const bars = (c: HTMLElement) =>
+  c.querySelectorAll('.xynolog-annotate-toolbar').length;
 
 describe('ResourceViewer — showToolbar opt-out', () => {
   beforeEach(() => {
@@ -61,13 +89,24 @@ describe('ResourceViewer — showToolbar opt-out', () => {
   it('by default the bar renders in browse and annotate modes', () => {
     const { session } = fakeSession();
     const browse = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+      />,
     );
     expect(bars(browse.container)).toBe(1);
 
     const annotate = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+      />,
     );
     expect(bars(annotate.container)).toBe(1);
   });
@@ -75,8 +114,13 @@ describe('ResourceViewer — showToolbar opt-out', () => {
   it('showToolbar={false}: no bar in browse mode', () => {
     const { session } = fakeSession();
     const { container } = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations}
-        showToolbar={false} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+        showToolbar={false}
+      />,
     );
     expect(bars(container)).toBe(0);
     expect(screen.getByText(CONTENT)).toBeInTheDocument(); // content still renders
@@ -85,21 +129,42 @@ describe('ResourceViewer — showToolbar opt-out', () => {
   it('showToolbar={false}: no bar in any annotate render mode (text / image / pdf)', async () => {
     const { session } = fakeSession();
     const text = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource('text/plain')} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()} showToolbar={false} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource('text/plain')}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+        showToolbar={false}
+      />,
     );
     expect(bars(text.container)).toBe(0);
 
     const image = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource('image/png')} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()} showToolbar={false} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource('image/png')}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+        showToolbar={false}
+      />,
     );
     expect(within(image.container).getByText('svg-mock')).toBeInTheDocument();
     expect(bars(image.container)).toBe(0);
 
     const pdf = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource('application/pdf')} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()} showToolbar={false} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource('application/pdf')}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+        showToolbar={false}
+      />,
     );
     await within(pdf.container).findByText('pdf-mock'); // flush the lazy canvas
     expect(bars(pdf.container)).toBe(0);
@@ -108,10 +173,17 @@ describe('ResourceViewer — showToolbar opt-out', () => {
   it('keystone: with the bar hidden, annotate-mode selection still emits mark.request', () => {
     const { session, client } = fakeSession();
     const { container } = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource('text/plain')} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()}
-        selectionMotivation="highlighting" onSelectionMotivationChange={vi.fn()}
-        showToolbar={false} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource('text/plain')}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+        selectionMotivation="highlighting"
+        onSelectionMotivationChange={vi.fn()}
+        showToolbar={false}
+      />,
     );
     expect(bars(container)).toBe(0);
 

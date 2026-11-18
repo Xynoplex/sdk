@@ -5,17 +5,34 @@ import { useRef, useEffect, useCallback, useMemo } from 'react';
 import { capabilitiesOf, textOffsets } from '@xynolog/core';
 import { ANNOTATORS } from '../../lib/annotation-registry';
 import { documentPositions } from '../../lib/codemirror-logic';
-import { buildTextSelectors, fallbackTextPosition } from '../../lib/text-selection-handler';
-import { defaultAnnotateRenderers, type AnnotateMediaRenderers } from './annotate-renderers';
+import {
+  buildTextSelectors,
+  fallbackTextPosition,
+} from '../../lib/text-selection-handler';
+import {
+  defaultAnnotateRenderers,
+  type AnnotateMediaRenderers,
+} from './annotate-renderers';
 import { DownloadFileLink } from './DownloadFileLink';
-import { TranslationProvider, type TranslationSource } from '../../contexts/TranslationContext';
+import {
+  TranslationProvider,
+  type TranslationSource,
+} from '../../contexts/TranslationContext';
 import { translationSourceOf } from '../../lib/translation-source';
 import { EditorView } from '@codemirror/view';
 import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../hooks/useSessionEventSubscriptions';
 import { scrollAnnotationIntoView } from '../../lib/scroll-utils';
-import { AnnotateToolbar, type SelectionMotivation, type ClickAction, type ShapeType } from '../annotation/AnnotateToolbar';
-import type { AnnotationsCollection, AnnotationUIState } from '../../types/annotation-props';
+import {
+  AnnotateToolbar,
+  type SelectionMotivation,
+  type ClickAction,
+  type ShapeType,
+} from '../annotation/AnnotateToolbar';
+import type {
+  AnnotationsCollection,
+  AnnotationUIState,
+} from '../../types/annotation-props';
 
 // Re-export for convenience
 export type { SelectionMotivation, ClickAction, ShapeType };
@@ -97,14 +114,29 @@ function AnnotateViewBody({
   // code points, and a selection is found at a position in the editor's
   // document, which counts UTF-16 code units and each line break as one.
   const offsets = useMemo(() => textOffsets(content), [content]);
-  const positions = useMemo(() => documentPositions(content, offsets), [content, offsets]);
+  const positions = useMemo(
+    () => documentPositions(content, offsets),
+    [content, offsets],
+  );
 
   const { highlights, references, assessments, comments, tags } = annotations;
 
-  const allAnnotations = [...highlights, ...references, ...assessments, ...comments, ...tags];
+  const allAnnotations = [
+    ...highlights,
+    ...references,
+    ...assessments,
+    ...comments,
+    ...tags,
+  ];
 
   // Extract UI state
-  const { selectedMotivation, selectedClick, selectedShape, hoveredAnnotationId, scrollToAnnotationId } = uiState;
+  const {
+    selectedMotivation,
+    selectedClick,
+    selectedShape,
+    hoveredAnnotationId,
+    scrollToAnnotationId,
+  } = uiState;
 
   // Store onUIStateChange in ref to avoid dependency issues
   const onUIStateChangeRef = useRef(onUIStateChange);
@@ -112,9 +144,12 @@ function AnnotateViewBody({
 
   // Toolbar callbacks: the presentational bar reports chosen values; route them up
   // through the existing onUIStateChange path (the owner applies them).
-  const handleToolbarSelectionChange = useCallback((motivation: SelectionMotivation | null) => {
-    onUIStateChangeRef.current?.({ selectedMotivation: motivation });
-  }, []);
+  const handleToolbarSelectionChange = useCallback(
+    (motivation: SelectionMotivation | null) => {
+      onUIStateChangeRef.current?.({ selectedMotivation: motivation });
+    },
+    [],
+  );
 
   const handleToolbarClickActionChange = useCallback((action: ClickAction) => {
     onUIStateChangeRef.current?.({ selectedClick: action });
@@ -124,9 +159,12 @@ function AnnotateViewBody({
     onUIStateChangeRef.current?.({ selectedShape: shape });
   }, []);
 
-  const handleAnnotationHover = useCallback(({ annotationId }: { annotationId: string | null }) => {
-    onUIStateChangeRef.current?.({ hoveredAnnotationId: annotationId });
-  }, []);
+  const handleAnnotationHover = useCallback(
+    ({ annotationId }: { annotationId: string | null }) => {
+      onUIStateChangeRef.current?.({ hoveredAnnotationId: annotationId });
+    },
+    [],
+  );
 
   // "Scroll to and highlight this annotation" — the same contract BrowseView
   // serves, so the behaviour does not depend on which view mode is active.
@@ -144,7 +182,9 @@ function AnnotateViewBody({
         return;
       }
       if (!containerRef.current) return;
-      scrollAnnotationIntoView(annotationId, containerRef.current, { pulse: true });
+      scrollAnnotationIntoView(annotationId, containerRef.current, {
+        pulse: true,
+      });
     },
     [resourceUri],
   );
@@ -173,8 +213,10 @@ function AnnotateViewBody({
       // Skip if the mouseUp came from PDF or image canvas
       // (those components handle their own mark:requested events)
       const target = e.target as Element;
-      if (target.closest('.xynolog-pdf-annotation-canvas') ||
-          target.closest('.xynolog-svg-drawing-canvas')) {
+      if (
+        target.closest('.xynolog-pdf-annotation-canvas') ||
+        target.closest('.xynolog-svg-drawing-canvas')
+      ) {
         return;
       }
 
@@ -202,14 +244,22 @@ function AnnotateViewBody({
       if (view) {
         // A selection that begins or ends outside the editor's text is not a
         // selection of the content.
-        if (!view.contentDOM.contains(range.startContainer) || !view.contentDOM.contains(range.endContainer)) return;
+        if (
+          !view.contentDOM.contains(range.startContainer) ||
+          !view.contentDOM.contains(range.endContainer)
+        )
+          return;
         // CodeMirror's posAtDOM gives the position in its document of a DOM
         // node/offset; both ends are asked, since the selection's own string
         // is not the content's text between them (a line break of the
         // document is the content's CRLF, and a widget's text is not content).
         selected = {
-          start: positions.offsetAt(view.posAtDOM(range.startContainer, range.startOffset)),
-          end: positions.offsetAt(view.posAtDOM(range.endContainer, range.endOffset)),
+          start: positions.offsetAt(
+            view.posAtDOM(range.startContainer, range.startOffset),
+          ),
+          end: positions.offsetAt(
+            view.posAtDOM(range.endContainer, range.endOffset),
+          ),
         };
       } else {
         // No editor (a host's own text renderer): where the content first has
@@ -220,7 +270,12 @@ function AnnotateViewBody({
 
       if (!selected) return;
 
-      const selectors = buildTextSelectors(content, offsets, selected.start, selected.end);
+      const selectors = buildTextSelectors(
+        content,
+        offsets,
+        selected.start,
+        selected.end,
+      );
       if (!selectors) return;
 
       session?.client.mark.request(resourceUri, selectors, selectedMotivation);
@@ -242,7 +297,10 @@ function AnnotateViewBody({
   // A `switch` per mode would repeat this wrapper, the toolbar block and the
   // content div in each branch, so any toolbar prop change would have to be
   // made in every one and stay correct only by vigilance.
-  const mediaRenderers: AnnotateMediaRenderers = { ...defaultAnnotateRenderers, ...renderers };
+  const mediaRenderers: AnnotateMediaRenderers = {
+    ...defaultAnnotateRenderers,
+    ...renderers,
+  };
   const Renderer = mediaRenderers[render];
 
   // A mode with no renderer, in neither the defaults nor the override,
@@ -253,7 +311,11 @@ function AnnotateViewBody({
   // absent in this branch.
   if (!Renderer) {
     return (
-      <div ref={containerRef} className="xynolog-annotate-view xynolog-annotate-view--unsupported" data-mime-type="unsupported">
+      <div
+        ref={containerRef}
+        className="xynolog-annotate-view xynolog-annotate-view--unsupported"
+        data-mime-type="unsupported"
+      >
         <div className="xynolog-annotate-view__empty">
           <p className="xynolog-annotate-view__empty-message">
             Annotation not supported for {mimeType}
@@ -265,7 +327,11 @@ function AnnotateViewBody({
   }
 
   return (
-    <div className="xynolog-annotate-view" data-mime-type={render} ref={containerRef}>
+    <div
+      className="xynolog-annotate-view"
+      data-mime-type={render}
+      ref={containerRef}
+    >
       {showToolbar && (
         <AnnotateToolbar
           selectedMotivation={selectedMotivation}

@@ -59,7 +59,9 @@ describe('anchorAnnotation — unique-occurrence', () => {
 
   it('returns the single occurrence even with no position selector', () => {
     const content = 'aaa BBB ccc';
-    const result = anchorAnnotation(content, textOffsets(content), { quote: { exact: 'BBB' } });
+    const result = anchorAnnotation(content, textOffsets(content), {
+      quote: { exact: 'BBB' },
+    });
     expect(result).toEqual<RenderedAnchor>({
       start: 4,
       end: 7,
@@ -209,12 +211,22 @@ describe('anchorAnnotation — position-fallback', () => {
 
   it('returns null when neither selector is usable', () => {
     expect(anchorAnnotation('content', textOffsets('content'), {})).toBeNull();
-    expect(anchorAnnotation('', textOffsets(''), { quote: { exact: 'anything' } })).toBeNull();
+    expect(
+      anchorAnnotation('', textOffsets(''), { quote: { exact: 'anything' } }),
+    ).toBeNull();
   });
 
   it('returns null when position is given but out of range and no quote', () => {
-    expect(anchorAnnotation('hi', textOffsets('hi'), { position: { start: 5, end: 10 } })).toBeNull();
-    expect(anchorAnnotation('hi', textOffsets('hi'), { position: { start: 0, end: 0 } })).toBeNull();
+    expect(
+      anchorAnnotation('hi', textOffsets('hi'), {
+        position: { start: 5, end: 10 },
+      }),
+    ).toBeNull();
+    expect(
+      anchorAnnotation('hi', textOffsets('hi'), {
+        position: { start: 0, end: 0 },
+      }),
+    ).toBeNull();
   });
 
   it('returns null when exact is not found verbatim and the stored offset is out of range', () => {
@@ -263,7 +275,9 @@ describe('anchorAnnotation — cross-cutting', () => {
 
   it('returned start/end always satisfy content.substring(start, end) === exact when exact is found', () => {
     const content = 'alpha beta gamma delta beta epsilon';
-    const result = anchorAnnotation(content, textOffsets(content), { quote: { exact: 'beta' } });
+    const result = anchorAnnotation(content, textOffsets(content), {
+      quote: { exact: 'beta' },
+    });
     expect(result).not.toBeNull();
     expect(content.substring(result!.start, result!.end)).toBe('beta');
   });
@@ -294,7 +308,7 @@ describe('anchorAnnotation — calibration', () => {
     // doesn't short-circuit before the scorer runs.
     const farContext = 'BEFORE_CTX target AFTER_CTX';
     const filler = 'x'.repeat(5000);
-    const nearNoContext = '  target';  // leading spaces so hint offset misses
+    const nearNoContext = '  target'; // leading spaces so hint offset misses
     const content = `${nearNoContext} ${filler}${farContext}`;
     const nearTargetPos = content.indexOf('target'); // = 2
     const hint = nearTargetPos - 2; // = 0 — substring(0, 6) is "  targ", not "target"
@@ -306,7 +320,8 @@ describe('anchorAnnotation — calibration', () => {
         suffix: ' AFTER_CTX',
       },
     });
-    const expected = content.indexOf('BEFORE_CTX target') + 'BEFORE_CTX '.length;
+    const expected =
+      content.indexOf('BEFORE_CTX target') + 'BEFORE_CTX '.length;
     expect(result?.start).toBe(expected);
     expect(result?.strategy).toBe('context-disambiguated');
     expect(result?.confidence).toBe('high');
@@ -366,11 +381,20 @@ describe('anchorAnnotation — offsets count code points', () => {
       position: { start: 2, end: 27 },
       quote: { exact: 'The question for decision' },
     });
-    expect(result).toEqual<RenderedAnchor>({ start: 2, end: 27, strategy: 'fast-path', confidence: 'high' });
+    expect(result).toEqual<RenderedAnchor>({
+      start: 2,
+      end: 27,
+      strategy: 'fast-path',
+      confidence: 'high',
+    });
   });
 
   it('unique-occurrence: the anchor answered is offsets', () => {
-    expect(anchorAnnotation('aaa 😀 BBB ccc', textOffsets('aaa 😀 BBB ccc'), { quote: { exact: 'BBB' } })).toEqual<RenderedAnchor>({
+    expect(
+      anchorAnnotation('aaa 😀 BBB ccc', textOffsets('aaa 😀 BBB ccc'), {
+        quote: { exact: 'BBB' },
+      }),
+    ).toEqual<RenderedAnchor>({
       start: 6,
       end: 9,
       strategy: 'unique-occurrence',
@@ -379,7 +403,11 @@ describe('anchorAnnotation — offsets count code points', () => {
   });
 
   it('a quote that holds such a character is as long as its code points', () => {
-    expect(anchorAnnotation('x 𝑥𝑦 z', textOffsets('x 𝑥𝑦 z'), { quote: { exact: '𝑥𝑦' } })).toEqual<RenderedAnchor>({
+    expect(
+      anchorAnnotation('x 𝑥𝑦 z', textOffsets('x 𝑥𝑦 z'), {
+        quote: { exact: '𝑥𝑦' },
+      }),
+    ).toEqual<RenderedAnchor>({
       start: 2,
       end: 4,
       strategy: 'unique-occurrence',
@@ -388,9 +416,14 @@ describe('anchorAnnotation — offsets count code points', () => {
   });
 
   it('context-disambiguated: the occurrence the context picks is answered as offsets', () => {
-    const content = '😀 Section A: the parties agree to terms. 😀 Section B: the parties agree to conditions.';
+    const content =
+      '😀 Section A: the parties agree to terms. 😀 Section B: the parties agree to conditions.';
     const result = anchorAnnotation(content, textOffsets(content), {
-      quote: { exact: 'the parties agree', prefix: 'Section B: ', suffix: ' to conditions' },
+      quote: {
+        exact: 'the parties agree',
+        prefix: 'Section B: ',
+        suffix: ' to conditions',
+      },
     });
     expect(result).toEqual<RenderedAnchor>({
       start: 54,
@@ -422,14 +455,27 @@ describe('anchorAnnotation — offsets count code points', () => {
   it('position-fallback: a position is in the text when it is within its code points', () => {
     // Seven code points, ten units of a string.
     const content = '😀😀😀 abc';
-    expect(anchorAnnotation(content, textOffsets(content), { position: { start: 4, end: 7 } })).toEqual<RenderedAnchor>({
+    expect(
+      anchorAnnotation(content, textOffsets(content), {
+        position: { start: 4, end: 7 },
+      }),
+    ).toEqual<RenderedAnchor>({
       start: 4,
       end: 7,
       strategy: 'position-fallback',
       confidence: 'low',
     });
-    expect(anchorAnnotation(content, textOffsets(content), { position: { start: 8, end: 10 } })).toBeNull();
-    expect(anchorAnnotation(content, textOffsets(content), { position: { start: 8, end: 10 }, quote: { exact: 'zzz' } })).toBeNull();
+    expect(
+      anchorAnnotation(content, textOffsets(content), {
+        position: { start: 8, end: 10 },
+      }),
+    ).toBeNull();
+    expect(
+      anchorAnnotation(content, textOffsets(content), {
+        position: { start: 8, end: 10 },
+        quote: { exact: 'zzz' },
+      }),
+    ).toBeNull();
   });
 
   // A stored context is looked for, loosely, in as many code points beside
@@ -442,7 +488,11 @@ describe('anchorAnnotation — offsets count code points', () => {
 
   it('a stored prefix is looked for in as many code points before an occurrence as it has', () => {
     const content = `The bound holds. For ${FORMULA}, it also holds.`;
-    expect(anchorAnnotation(content, textOffsets(content), { quote: { exact: 'holds', prefix: `${FORMULA} ` } })).toEqual<RenderedAnchor>({
+    expect(
+      anchorAnnotation(content, textOffsets(content), {
+        quote: { exact: 'holds', prefix: `${FORMULA} ` },
+      }),
+    ).toEqual<RenderedAnchor>({
       start: 10,
       end: 15,
       strategy: 'position-tiebreaker',
@@ -452,7 +502,11 @@ describe('anchorAnnotation — offsets count code points', () => {
 
   it('a stored suffix is looked for in as many code points after an occurrence as it has', () => {
     const content = `It holds. It also holds for ${FORMULA}.`;
-    expect(anchorAnnotation(content, textOffsets(content), { quote: { exact: 'holds', suffix: ` ${FORMULA}` } })).toEqual<RenderedAnchor>({
+    expect(
+      anchorAnnotation(content, textOffsets(content), {
+        quote: { exact: 'holds', suffix: ` ${FORMULA}` },
+      }),
+    ).toEqual<RenderedAnchor>({
       start: 3,
       end: 8,
       strategy: 'position-tiebreaker',
@@ -467,6 +521,11 @@ describe('anchorAnnotation — offsets count code points', () => {
       position: { start: 0.5, end: 3.5 },
       quote: { exact: 'abc' },
     });
-    expect(result).toEqual<RenderedAnchor>({ start: 0, end: 3, strategy: 'position-tiebreaker', confidence: 'medium' });
+    expect(result).toEqual<RenderedAnchor>({
+      start: 0,
+      end: 3,
+      strategy: 'position-tiebreaker',
+      confidence: 'medium',
+    });
   });
 });

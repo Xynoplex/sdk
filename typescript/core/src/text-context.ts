@@ -54,7 +54,10 @@ export function contextOf(
     let prefixStart = Math.max(0, start - CONTEXT_LENGTH);
     let extensionCount = 0;
     while (prefixStart > 0 && extensionCount < MAX_EXTENSION) {
-      if (BOUNDARY.test(between(content, offsets, prefixStart - 1, prefixStart))) break;
+      if (
+        BOUNDARY.test(between(content, offsets, prefixStart - 1, prefixStart))
+      )
+        break;
       prefixStart--;
       extensionCount++;
     }
@@ -65,7 +68,8 @@ export function contextOf(
     let suffixEnd = Math.min(offsets.length, end + CONTEXT_LENGTH);
     let extensionCount = 0;
     while (suffixEnd < offsets.length && extensionCount < MAX_EXTENSION) {
-      if (BOUNDARY.test(between(content, offsets, suffixEnd, suffixEnd + 1))) break;
+      if (BOUNDARY.test(between(content, offsets, suffixEnd, suffixEnd + 1)))
+        break;
       suffixEnd++;
       extensionCount++;
     }

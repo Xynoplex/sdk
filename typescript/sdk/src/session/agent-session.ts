@@ -46,8 +46,19 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import { accessToken as makeAccessToken, RETRY_RULES, ServiceToken, SignInError, watched } from '@xynolog/core';
-import type { AccessToken, ServiceAccountCredential, UserId, Watched } from '@xynolog/core';
+import {
+  accessToken as makeAccessToken,
+  RETRY_RULES,
+  ServiceToken,
+  SignInError,
+  watched,
+} from '@xynolog/core';
+import type {
+  AccessToken,
+  ServiceAccountCredential,
+  UserId,
+  Watched,
+} from '@xynolog/core';
 import { agentToken } from '@xynolog/http-transport';
 import { sharedRenewal, type SharedRenewal } from './shared-renewal';
 import { parseJwtExpiry, refreshDelayMs } from './storage';
@@ -100,7 +111,9 @@ export interface AgentSession {
  * is what lets its supervisor restart it. Later refreshes only log, because a
  * process holding a still-valid token should not die over one bad round trip.
  */
-export async function startAgentSession(opts: AgentSessionOptions): Promise<AgentSession> {
+export async function startAgentSession(
+  opts: AgentSessionOptions,
+): Promise<AgentSession> {
   const { baseUrl, credential, logger, fetch } = opts;
   const service = new ServiceToken(credential, fetch);
 
@@ -120,7 +133,10 @@ export async function startAgentSession(opts: AgentSessionOptions): Promise<Agen
     },
   });
   const token$ = new BehaviorSubject<AccessToken>(makeAccessToken(first.token));
-  logger.info('Authenticated', { did: first.did, expiresAt: parseJwtExpiry(first.token)?.toISOString() ?? null });
+  logger.info('Authenticated', {
+    did: first.did,
+    expiresAt: parseJwtExpiry(first.token)?.toISOString() ?? null,
+  });
 
   let timer: ReturnType<typeof setTimeout> | null = null;
   let stopped = false;
@@ -147,13 +163,18 @@ export async function startAgentSession(opts: AgentSessionOptions): Promise<Agen
     if (delay === null) return;
     timer = setTimeout(() => {
       refresh(token).catch((error: unknown) => {
-        const detail = { error: error instanceof Error ? error.message : String(error) };
+        const detail = {
+          error: error instanceof Error ? error.message : String(error),
+        };
         // The issuer's answer is the verdict; its absence never is. A refused
         // credential cannot become valid again, so re-arming against it is an
         // infinite loop that outlives the revocation it should have respected —
         // 47 attempts in ten minutes, measured. An outage is the other case:
         // the token in hand may still be good, and the loop is how it recovers.
-        const facts = error instanceof SignInError && error.status !== undefined ? { status: error.status } : {};
+        const facts =
+          error instanceof SignInError && error.status !== undefined
+            ? { status: error.status }
+            : {};
         if (!RETRY_RULES.refresh.retryable(facts)) {
           logger.error('Re-authentication refused; not retrying', detail);
           return;

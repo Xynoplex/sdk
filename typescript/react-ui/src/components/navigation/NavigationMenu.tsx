@@ -1,7 +1,10 @@
 'use client';
 
 import React from 'react';
-import type { RouteBuilder, LinkComponentProps } from '../../contexts/RoutingContext';
+import type {
+  RouteBuilder,
+  LinkComponentProps,
+} from '../../contexts/RoutingContext';
 import type { TranslateFn } from '../../types/translation';
 import './NavigationMenu.css';
 
@@ -20,10 +23,12 @@ export function NavigationMenu({
   routes,
   t,
   onItemClick,
-  className = "",
-  currentPath
+  className = '',
+  currentPath,
 }: NavigationMenuProps) {
-  const navClassName = className ? `xynolog-navigation-menu ${className}` : "xynolog-navigation-menu";
+  const navClassName = className
+    ? `xynolog-navigation-menu ${className}`
+    : 'xynolog-navigation-menu';
 
   // Helper to check if a path is current
   const isCurrentPage = (path: string) => {
@@ -38,7 +43,9 @@ export function NavigationMenu({
         href={routes.knowledge?.() || '/know'}
         {...(onItemClick && { onClick: onItemClick })}
         className="xynolog-navigation-menu__link"
-        aria-current={isCurrentPage(routes.knowledge?.() || '/know') ? 'page' : undefined}
+        aria-current={
+          isCurrentPage(routes.knowledge?.() || '/know') ? 'page' : undefined
+        }
       >
         {t('know')}
       </Link>
@@ -48,7 +55,9 @@ export function NavigationMenu({
         href={routes.moderate?.() || '/moderate'}
         {...(onItemClick && { onClick: onItemClick })}
         className="xynolog-navigation-menu__link"
-        aria-current={isCurrentPage(routes.moderate?.() || '/moderate') ? 'page' : undefined}
+        aria-current={
+          isCurrentPage(routes.moderate?.() || '/moderate') ? 'page' : undefined
+        }
       >
         {t('moderate')}
       </Link>

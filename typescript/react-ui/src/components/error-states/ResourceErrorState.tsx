@@ -9,7 +9,10 @@ export interface ResourceErrorStateProps {
   onRetry: () => void;
 }
 
-export function ResourceErrorState({ error, onRetry }: ResourceErrorStateProps) {
+export function ResourceErrorState({
+  error,
+  onRetry,
+}: ResourceErrorStateProps) {
   return (
     <div className="xynolog-error-state xynolog-error-state-resource">
       <p className="xynolog-error-message">

@@ -22,7 +22,10 @@ import type { EventMap } from '@xynolog/core';
 import type { IContentTransport, ResourceId } from '@xynolog/core';
 import { readyValue } from '../cache';
 import { BrowseNamespace } from '../namespaces/browse';
-import { inMemoryTransport, contentTransportSpies } from './helpers/in-memory-transport';
+import {
+  inMemoryTransport,
+  contentTransportSpies,
+} from './helpers/in-memory-transport';
 import { mockAnnotation } from './fixtures/annotation';
 import { mockResource } from './fixtures/resource';
 
@@ -59,9 +62,33 @@ function makeFakeTransport() {
     bus,
     subscribeToResource,
     onEmit: (channel, _payload, envelope) => {
-      respond(channel as string, 'browse:resource-requested', 'browse:resource-result', envelope?.correlationId, { response: { resource: mockResource('res-1'), lastSequence: 1 } });
-      respond(channel as string, 'browse:events-requested', 'browse:events-result', envelope?.correlationId, { response: { events: [], total: 0, resourceId: makeResourceId('res-1') } });
-      respond(channel as string, 'browse:entity-types-requested', 'browse:entity-types-result', envelope?.correlationId, { response: { entityTypes: [] } });
+      respond(
+        channel as string,
+        'browse:resource-requested',
+        'browse:resource-result',
+        envelope?.correlationId,
+        { response: { resource: mockResource('res-1'), lastSequence: 1 } },
+      );
+      respond(
+        channel as string,
+        'browse:events-requested',
+        'browse:events-result',
+        envelope?.correlationId,
+        {
+          response: {
+            events: [],
+            total: 0,
+            resourceId: makeResourceId('res-1'),
+          },
+        },
+      );
+      respond(
+        channel as string,
+        'browse:entity-types-requested',
+        'browse:entity-types-result',
+        envelope?.correlationId,
+        { response: { entityTypes: [] } },
+      );
     },
   });
 
@@ -72,14 +99,19 @@ function makeFakeTransport() {
 // subscription acquires does not depend on how its query is fetched.
 function makeContent(): IContentTransport {
   return contentTransportSpies({
-    getAnnotations: async () => ({ annotations: [mockAnnotation('a1')], total: 1 }),
+    getAnnotations: async () => ({
+      annotations: [mockAnnotation('a1')],
+      total: 1,
+    }),
   });
 }
 
 describe('browse live-query subscription acquires the resource scope', () => {
   let bus: EventBus;
   let browse: BrowseNamespace;
-  let subscribeToResource: ReturnType<typeof makeFakeTransport>['subscribeToResource'];
+  let subscribeToResource: ReturnType<
+    typeof makeFakeTransport
+  >['subscribeToResource'];
   let releases: ReturnType<typeof makeFakeTransport>['releases'];
   const rId: ResourceId = makeResourceId('res-1');
 
@@ -153,8 +185,14 @@ describe('multi-scope: distinct-rid live queries COMPOSE — all fully live', ()
     const values2: unknown[] = [];
     const errors: unknown[] = [];
 
-    browse.resource(rid1).subscribe({ next: (s) => values1.push(readyValue(s)), error: (e) => errors.push(e) });
-    browse.resource(rid2).subscribe({ next: (s) => values2.push(readyValue(s)), error: (e) => errors.push(e) });
+    browse.resource(rid1).subscribe({
+      next: (s) => values1.push(readyValue(s)),
+      error: (e) => errors.push(e),
+    });
+    browse.resource(rid2).subscribe({
+      next: (s) => values2.push(readyValue(s)),
+      error: (e) => errors.push(e),
+    });
     await flush();
 
     expect(errors).toEqual([]);
@@ -163,7 +201,11 @@ describe('multi-scope: distinct-rid live queries COMPOSE — all fully live', ()
     expect(subscribeToResource).toHaveBeenCalledWith(rid1);
     expect(subscribeToResource).toHaveBeenCalledWith(rid2);
     // Scope acquisition has no degraded mode — nothing may warn here.
-    expect(warnSpy.mock.calls.map((c) => String(c[0])).filter((w) => w.includes('SCOPE-CONTENTION'))).toEqual([]);
+    expect(
+      warnSpy.mock.calls
+        .map((c) => String(c[0]))
+        .filter((w) => w.includes('SCOPE-CONTENTION')),
+    ).toEqual([]);
 
     warnSpy.mockRestore();
     bus.destroy();
@@ -181,7 +223,7 @@ describe('multi-scope: distinct-rid live queries COMPOSE — all fully live', ()
 
     sub1.unsubscribe();
     expect(releases[0]).toHaveBeenCalledTimes(1); // rid1's release only
-    expect(releases[1]).not.toHaveBeenCalled();   // rid2 still held
+    expect(releases[1]).not.toHaveBeenCalled(); // rid2 still held
 
     sub2.unsubscribe();
     expect(releases[1]).toHaveBeenCalledTimes(1);

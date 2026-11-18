@@ -16,14 +16,19 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { components } from '@xynolog/core';
-import { DelegateProgress, type DelegateProgressTranslations } from '../DelegateProgress';
+import {
+  DelegateProgress,
+  type DelegateProgressTranslations,
+} from '../DelegateProgress';
 
 type JobProgress = components['schemas']['JobProgress'];
 type JobProgressMessage = components['schemas']['JobProgressMessage'];
 
 const TALLY = 'xynolog-delegate-tally';
 
-const T = (over: Partial<DelegateProgressTranslations> = {}): DelegateProgressTranslations =>
+const T = (
+  over: Partial<DelegateProgressTranslations> = {},
+): DelegateProgressTranslations =>
   ({
     cancel: 'tr.cancel',
     cancelling: 'tr.cancelling',
@@ -31,9 +36,11 @@ const T = (over: Partial<DelegateProgressTranslations> = {}): DelegateProgressTr
     close: 'tr.close',
     inProgress: 'tr.inProgress',
     message: (m: JobProgressMessage) => `tr.code(${m.code})`,
-    subject: (c: { kind: string; value: string }) => `tr.subject(${c.kind}:${c.value})`,
+    subject: (c: { kind: string; value: string }) =>
+      `tr.subject(${c.kind}:${c.value})`,
     paramLabel: (code: string) => `tr.param(${code})`,
-    tally: (found: number, expected: number) => `tr.tally(${found}/${expected})`,
+    tally: (found: number, expected: number) =>
+      `tr.tally(${found}/${expected})`,
     ...over,
   }) as DelegateProgressTranslations;
 
@@ -47,7 +54,10 @@ const detecting = (over: Partial<JobProgress> = {}): JobProgress =>
 describe('DelegateProgress — the denominator tally', () => {
   it('renders found of ~expected when the wire prices both', () => {
     render(
-      <DelegateProgress ended={false} dataType="reference" translations={T()}
+      <DelegateProgress
+        ended={false}
+        dataType="reference"
+        translations={T()}
         progress={detecting({ entitiesFound: 7, entitiesExpected: 37 })}
       />,
     );
@@ -56,7 +66,10 @@ describe('DelegateProgress — the denominator tally', () => {
 
   it('renders NO tally when entitiesExpected is absent — a denominator is never manufactured', () => {
     render(
-      <DelegateProgress ended={false} dataType="reference" translations={T()}
+      <DelegateProgress
+        ended={false}
+        dataType="reference"
+        translations={T()}
         progress={detecting({ entitiesFound: 7 })}
       />,
     );
@@ -65,7 +78,10 @@ describe('DelegateProgress — the denominator tally', () => {
 
   it('zero found is a real count, not absence: renders 0 of ~expected', () => {
     render(
-      <DelegateProgress ended={false} dataType="reference" translations={T()}
+      <DelegateProgress
+        ended={false}
+        dataType="reference"
+        translations={T()}
         progress={detecting({ entitiesFound: 0, entitiesExpected: 37 })}
       />,
     );
@@ -74,7 +90,9 @@ describe('DelegateProgress — the denominator tally', () => {
 
   it('no tally translator, no line — flows without the copy render nothing', () => {
     render(
-      <DelegateProgress ended={false} dataType="highlight"
+      <DelegateProgress
+        ended={false}
+        dataType="highlight"
         translations={T({ tally: undefined })}
         progress={detecting({ entitiesFound: 7, entitiesExpected: 37 })}
       />,

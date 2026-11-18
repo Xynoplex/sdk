@@ -13,7 +13,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BusRequestError, PERSISTED_EVENT_TYPES, BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS, resourceId } from '@xynolog/core';
+import {
+  BusRequestError,
+  PERSISTED_EVENT_TYPES,
+  BRIDGED_CHANNELS,
+  RESOURCE_SCOPED_CHANNELS,
+  resourceId,
+} from '@xynolog/core';
 import { createActorStateUnit } from '../actor-state-unit';
 import { mockFetch, mockSSEResponse } from './helpers/mock-conn';
 
@@ -42,9 +48,10 @@ describe('stream() refuses a channel outside the subscription set', () => {
       thrown = err;
     }
 
-    expect(thrown, 'stream() on an unsubscribed channel must throw, not return a silent observable').toBeInstanceOf(
-      BusRequestError,
-    );
+    expect(
+      thrown,
+      'stream() on an unsubscribed channel must throw, not return a silent observable',
+    ).toBeInstanceOf(BusRequestError);
     const error = thrown as BusRequestError;
     expect(error.code).toBe('bus.unsubscribed');
     // Naming the channel is the whole point: a silent stream does not say
@@ -66,7 +73,9 @@ describe('stream() refuses a channel outside the subscription set', () => {
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
     const seen: unknown[] = [];
-    expect(() => actor.stream('job:claimed').subscribe((v) => seen.push(v))).not.toThrow();
+    expect(() =>
+      actor.stream('job:claimed').subscribe((v) => seen.push(v)),
+    ).not.toThrow();
 
     sse.push(
       `event: bus-event\ndata: ${JSON.stringify({ channel: 'job:claimed', payload: { jobId: 'j1' } })}\n\n`,
@@ -116,7 +125,8 @@ describe('stream() refuses a channel outside the subscription set', () => {
     const scoped = RESOURCE_SCOPED_CHANNELS.find(
       (c) => !(BRIDGED_CHANNELS as readonly string[]).includes(c),
     );
-    if (!scoped) throw new Error('fixture assumes at least one scope-only channel exists');
+    if (!scoped)
+      throw new Error('fixture assumes at least one scope-only channel exists');
     expect(PERSISTED_EVENT_TYPES as readonly string[]).toContain(scoped);
 
     // No scope joined yet — the bridge's case.

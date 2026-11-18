@@ -18,7 +18,12 @@
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import type { KyInstance } from 'ky';
-import { BRIDGED_CHANNELS, HTTP_REQUEST_TIMEOUT_MS, baseUrl, resourceId } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  HTTP_REQUEST_TIMEOUT_MS,
+  baseUrl,
+  resourceId,
+} from '@xynolog/core';
 
 vi.mock('ky', () => ({
   default: {
@@ -36,8 +41,14 @@ const actorHarness = {
   start: vi.fn(),
   stop: vi.fn(),
   dispose: vi.fn(),
-  pushEvent: (channel: string, payload: Record<string, unknown>, correlationId?: string): void => {
-    throw new Error(`no actor constructed yet (pushing ${channel} ${JSON.stringify(payload)}${correlationId ? ` cid=${correlationId}` : ''})`);
+  pushEvent: (
+    channel: string,
+    payload: Record<string, unknown>,
+    correlationId?: string,
+  ): void => {
+    throw new Error(
+      `no actor constructed yet (pushing ${channel} ${JSON.stringify(payload)}${correlationId ? ` cid=${correlationId}` : ''})`,
+    );
   },
 };
 
@@ -48,19 +59,29 @@ vi.mock('../actor-state-unit', async (importOriginal) => {
   return {
     ...actual,
     createActorStateUnit: () => {
-      const events$ = new Subject<{ channel: string; payload: Record<string, unknown>; correlationId?: string }>();
+      const events$ = new Subject<{
+        channel: string;
+        payload: Record<string, unknown>;
+        correlationId?: string;
+      }>();
       actorHarness.pushEvent = (channel, payload, correlationId) =>
         events$.next({ channel, payload, correlationId });
       return {
-        stream: <T,>(channel: string) =>
-          events$.pipe(filter((e) => e.channel === channel), map((e) => e.payload as T)),
+        stream: <T>(channel: string) =>
+          events$.pipe(
+            filter((e) => e.channel === channel),
+            map((e) => e.payload as T),
+          ),
         // The bridge reads FRAMES: the transport forwards the envelope
         // into the client bus, so a double that only answered `stream` would
         // let a key-dropping bridge pass.
-        frames: <T,>(channel: string) =>
+        frames: <T>(channel: string) =>
           events$.pipe(
             filter((e) => e.channel === channel),
-            map((e) => ({ correlationId: e.correlationId, payload: e.payload as T })),
+            map((e) => ({
+              correlationId: e.correlationId,
+              payload: e.payload as T,
+            })),
           ),
         emit: vi.fn(),
         state$: new BehaviorSubject<string>('open').asObservable(),
@@ -102,7 +123,11 @@ describe('HttpTransport — HTTP wire shape', () => {
     actorHarness.addChannels.mockClear();
     actorHarness.removeChannels.mockClear();
     actorHarness.dispose.mockClear();
-    transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10000 });
+    transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10000,
+    });
     content = new HttpContentTransport(transport);
   });
 
@@ -110,23 +135,39 @@ describe('HttpTransport — HTTP wire shape', () => {
     test('is the one every SDK keeps, when the caller states none', () => {
       vi.mocked(ky.create).mockClear();
       new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS });
-      expect(vi.mocked(ky.create).mock.calls[0]?.[0]).toMatchObject({ timeout: HTTP_REQUEST_TIMEOUT_MS });
+      expect(vi.mocked(ky.create).mock.calls[0]?.[0]).toMatchObject({
+        timeout: HTTP_REQUEST_TIMEOUT_MS,
+      });
     });
 
     test('is the one the caller states', () => {
       vi.mocked(ky.create).mockClear();
-      new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 1234 });
-      expect(vi.mocked(ky.create).mock.calls[0]?.[0]).toMatchObject({ timeout: 1234 });
+      new HttpTransport({
+        baseUrl: testBaseUrl,
+        channels: BRIDGED_CHANNELS,
+        timeout: 1234,
+      });
+      expect(vi.mocked(ky.create).mock.calls[0]?.[0]).toMatchObject({
+        timeout: 1234,
+      });
     });
   });
 
   describe('Auth', () => {
     test('getCurrentUser gets /api/users/me', async () => {
       vi.mocked(mockKy.get).mockReturnValue({
-        json: vi.fn().mockResolvedValue({ did: 'did:web:localhost:users:u1', email: null, name: null, image: null, domain: 'localhost' }),
+        json: vi.fn().mockResolvedValue({
+          did: 'did:web:localhost:users:u1',
+          email: null,
+          name: null,
+          image: null,
+          domain: 'localhost',
+        }),
       } as never);
       await transport.getCurrentUser();
-      expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/api/users/me`, { headers: {} });
+      expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/api/users/me`, {
+        headers: {},
+      });
     });
 
     test('getProtectedResourceMetadata gets /.well-known/oauth-protected-resource with no token', async () => {
@@ -138,9 +179,10 @@ describe('HttpTransport — HTTP wire shape', () => {
         }),
       } as never);
       await transport.getProtectedResourceMetadata();
-      expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/.well-known/oauth-protected-resource`);
+      expect(mockKy.get).toHaveBeenCalledWith(
+        `${testBaseUrl}/.well-known/oauth-protected-resource`,
+      );
     });
-
 
     test('getMediaToken posts resourceId to /api/tokens/media', async () => {
       vi.mocked(mockKy.post).mockReturnValue({
@@ -166,15 +208,24 @@ describe('HttpTransport — HTTP wire shape', () => {
       } as never);
       const result = await transport.getStatus();
       expect((result as { version: string }).version).toBe('1.0.0');
-      expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/api/status`, { headers: {} });
+      expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/api/status`, {
+        headers: {},
+      });
     });
 
     test('healthCheck gets /api/health', async () => {
       vi.mocked(mockKy.get).mockReturnValue({
-        json: vi.fn().mockResolvedValue({ status: 'ok', message: 'Xynolog is running', version: '1.0.0', timestamp: '2026-10-31T00:00:00.000Z' }),
+        json: vi.fn().mockResolvedValue({
+          status: 'ok',
+          message: 'Xynolog is running',
+          version: '1.0.0',
+          timestamp: '2026-10-31T00:00:00.000Z',
+        }),
       } as never);
       await transport.healthCheck();
-      expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/api/health`, { headers: {} });
+      expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/api/health`, {
+        headers: {},
+      });
     });
   });
 
@@ -183,7 +234,11 @@ describe('HttpTransport — HTTP wire shape', () => {
       const text = 'hello';
       const buffer = new TextEncoder().encode(text).buffer;
       vi.mocked(mockKy.get).mockReturnValue({
-        headers: { get: vi.fn((h: string) => (h === 'content-type' ? 'text/plain' : null)) },
+        headers: {
+          get: vi.fn((h: string) =>
+            h === 'content-type' ? 'text/plain' : null,
+          ),
+        },
         arrayBuffer: vi.fn().mockResolvedValue(buffer),
       } as never);
 
@@ -217,13 +272,20 @@ describe('HttpTransport — HTTP wire shape', () => {
         headers: { get: vi.fn(() => 'text/plain') },
         body: null,
       } as never);
-      await expect(content.getBinaryStream(testResourceId)).rejects.toThrow('Response body is null');
+      await expect(content.getBinaryStream(testResourceId)).rejects.toThrow(
+        'Response body is null',
+      );
     });
   });
 
   describe('Resource graph (HttpContentTransport.getResourceGraph)', () => {
     const graph = {
-      resource: { '@context': 'https://schema.org/', '@id': 'test-resource-id', name: 'A resource', representations: [] },
+      resource: {
+        '@context': 'https://schema.org/',
+        '@id': 'test-resource-id',
+        name: 'A resource',
+        representations: [],
+      },
       annotations: [],
     };
 
@@ -258,7 +320,9 @@ describe('HttpTransport — HTTP wire shape', () => {
         json: vi.fn().mockResolvedValue(graph),
       } as never);
 
-      await content.getResourceGraph(testResourceId, { auth: 'tok-123' as never });
+      await content.getResourceGraph(testResourceId, {
+        auth: 'tok-123' as never,
+      });
       expect(mockKy.get).toHaveBeenCalledWith(
         `${testBaseUrl}/resources/${testResourceId}/jsonld`,
         { headers: { Authorization: 'Bearer tok-123' } },
@@ -286,7 +350,9 @@ describe('HttpTransport — HTTP wire shape', () => {
         json: vi.fn().mockResolvedValue({ annotations: [], total: 0 }),
       } as never);
 
-      await content.getAnnotations(testResourceId, { auth: 'tok-123' as never });
+      await content.getAnnotations(testResourceId, {
+        auth: 'tok-123' as never,
+      });
       expect(mockKy.get).toHaveBeenCalledWith(
         `${testBaseUrl}/resources/${testResourceId}/annotations`,
         { headers: { Authorization: 'Bearer tok-123' } },
@@ -296,7 +362,12 @@ describe('HttpTransport — HTTP wire shape', () => {
 
   describe('Anchored text (HttpContentTransport.getAnchoredText)', () => {
     test('GETs /resources/:id/anchored-text and returns the body as the answer', async () => {
-      const answer = { kind: 'extracted', text: 'hello', items: [], method: 'pdf-text-layer' };
+      const answer = {
+        kind: 'extracted',
+        text: 'hello',
+        items: [],
+        method: 'pdf-text-layer',
+      };
       vi.mocked(mockKy.get).mockReturnValue({
         json: vi.fn().mockResolvedValue(answer),
       } as never);
@@ -316,7 +387,9 @@ describe('HttpTransport — HTTP wire shape', () => {
         json: vi.fn().mockResolvedValue({ kind: 'not-yet' }),
       } as never);
 
-      await expect(content.getAnchoredText(testResourceId)).resolves.toEqual({ kind: 'not-yet' });
+      await expect(content.getAnchoredText(testResourceId)).resolves.toEqual({
+        kind: 'not-yet',
+      });
     });
 
     test('an id is one segment of the path, whatever text a caller with no type checker hands over', async () => {
@@ -337,7 +410,9 @@ describe('HttpTransport — HTTP wire shape', () => {
         json: vi.fn().mockResolvedValue({ kind: 'unknown' }),
       } as never);
 
-      await content.getAnchoredText(testResourceId, { auth: 'tok-123' as never });
+      await content.getAnchoredText(testResourceId, {
+        auth: 'tok-123' as never,
+      });
       expect(mockKy.get).toHaveBeenCalledWith(
         `${testBaseUrl}/resources/${testResourceId}/anchored-text`,
         { headers: { Authorization: 'Bearer tok-123' } },
@@ -464,7 +539,9 @@ describe('HttpTransport — HTTP wire shape', () => {
       );
 
       const [, init] = vi.mocked(mockKy.post).mock.calls[0]!;
-      expect((init as { headers: Record<string, string> }).headers.Authorization).toBe('Bearer tok-123');
+      expect(
+        (init as { headers: Record<string, string> }).headers.Authorization,
+      ).toBe('Bearer tok-123');
     });
 
     test('returns the resourceId from the server response', async () => {
@@ -499,10 +576,14 @@ describe('HttpTransport — HTTP wire shape', () => {
       expect(actorHarness.addChannels.mock.calls.length - addBefore).toBe(1);
 
       first();
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(0);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        0,
+      );
 
       second();
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(1);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        1,
+      );
     });
 
     test('calling an unsubscribe twice is a no-op (idempotent)', () => {
@@ -510,7 +591,9 @@ describe('HttpTransport — HTTP wire shape', () => {
       const cleanup = transport.subscribeToResource(testResourceId);
       cleanup();
       cleanup();
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(1);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        1,
+      );
     });
 
     // ── Distinct resources COMPOSE ───────────────────────────────────────
@@ -523,17 +606,33 @@ describe('HttpTransport — HTTP wire shape', () => {
       const releaseA = transport.subscribeToResource(testResourceId);
       const releaseB = transport.subscribeToResource(otherResourceId);
       expect(actorHarness.addChannels.mock.calls.length - addBefore).toBe(2);
-      expect(actorHarness.addChannels).toHaveBeenCalledWith(expect.any(Array), testResourceId as unknown as string);
-      expect(actorHarness.addChannels).toHaveBeenCalledWith(expect.any(Array), otherResourceId as unknown as string);
+      expect(actorHarness.addChannels).toHaveBeenCalledWith(
+        expect.any(Array),
+        testResourceId as unknown as string,
+      );
+      expect(actorHarness.addChannels).toHaveBeenCalledWith(
+        expect.any(Array),
+        otherResourceId as unknown as string,
+      );
 
       // Releasing A drops ONLY A's scope; B stays subscribed.
       releaseA();
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(1);
-      expect(actorHarness.removeChannels).toHaveBeenCalledWith(expect.any(Array), testResourceId as unknown as string);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        1,
+      );
+      expect(actorHarness.removeChannels).toHaveBeenCalledWith(
+        expect.any(Array),
+        testResourceId as unknown as string,
+      );
 
       releaseB();
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(2);
-      expect(actorHarness.removeChannels).toHaveBeenCalledWith(expect.any(Array), otherResourceId as unknown as string);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        2,
+      );
+      expect(actorHarness.removeChannels).toHaveBeenCalledWith(
+        expect.any(Array),
+        otherResourceId as unknown as string,
+      );
     });
 
     test('per-scope ref-counting stays independent across resources', () => {
@@ -547,11 +646,17 @@ describe('HttpTransport — HTTP wire shape', () => {
       expect(actorHarness.addChannels.mock.calls.length - addBefore).toBe(2);
 
       a1();
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(0);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        0,
+      );
       b1(); // B's LAST release — drops B even while A is still held
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(1);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        1,
+      );
       a2();
-      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(2);
+      expect(actorHarness.removeChannels.mock.calls.length - removeBefore).toBe(
+        2,
+      );
     });
 
     test('one scoped SSE event reaches a bridged bus exactly ONCE with several scopes subscribed (singleton fan-in)', async () => {
@@ -597,13 +702,24 @@ describe('HttpTransport — HTTP wire shape', () => {
       transport.bridgeInto(bus);
 
       const wire: unknown[] = [];
-      transport.frames('job:fail').subscribe((frame) => wire.push(frame.payload));
+      transport
+        .frames('job:fail')
+        .subscribe((frame) => wire.push(frame.payload));
       const bridged: unknown[] = [];
       bus.on('job:fail').subscribe((payload) => bridged.push(payload));
 
       // job:fail's payload declares `_userId` and not `_roles`.
-      const failed = { resourceId: 'res-1', jobId: 'job-1', jobType: 'mark', error: 'the model did not answer', _userId: 'did:web:example.org:agents:worker' };
-      actorHarness.pushEvent('job:fail', { ...failed, _roles: ['xynolog-service'] });
+      const failed = {
+        resourceId: 'res-1',
+        jobId: 'job-1',
+        jobType: 'mark',
+        error: 'the model did not answer',
+        _userId: 'did:web:example.org:agents:worker',
+      };
+      actorHarness.pushEvent('job:fail', {
+        ...failed,
+        _roles: ['xynolog-service'],
+      });
 
       expect(wire).toEqual([{ ...failed, _roles: ['xynolog-service'] }]);
       expect(bridged).toEqual([failed]);
@@ -619,17 +735,35 @@ describe('HttpTransport — HTTP wire shape', () => {
 
       // The wire's own frames are read first, which is what makes the actor the bridge relays from.
       const wire: unknown[] = [];
-      transport.frames('job:fail').subscribe((frame) => wire.push(frame.payload));
+      transport
+        .frames('job:fail')
+        .subscribe((frame) => wire.push(frame.payload));
       const bridged: unknown[] = [];
       bus.on('job:fail').subscribe((payload) => bridged.push(payload));
 
-      const lacking ={ resourceId: 'res-1', jobType: 'mark', error: 'the model did not answer' };
+      const lacking = {
+        resourceId: 'res-1',
+        jobType: 'mark',
+        error: 'the model did not answer',
+      };
       const failed = { ...lacking, jobId: 'job-1' };
       actorHarness.pushEvent('job:fail', lacking);
       actorHarness.pushEvent('job:fail', failed);
 
-      expect(wire, "the transport's own frames are the wire's").toEqual([lacking, failed]);
-      expect(bridged).toStrictEqual([new FrameRefusal('job:fail', 'payload.jobId', 'lacks', lacking, undefined), failed]);
+      expect(wire, "the transport's own frames are the wire's").toEqual([
+        lacking,
+        failed,
+      ]);
+      expect(bridged).toStrictEqual([
+        new FrameRefusal(
+          'job:fail',
+          'payload.jobId',
+          'lacks',
+          lacking,
+          undefined,
+        ),
+        failed,
+      ]);
       expect(warned).not.toHaveBeenCalled();
 
       warned.mockRestore();
@@ -637,20 +771,29 @@ describe('HttpTransport — HTTP wire shape', () => {
     });
   });
 
-  describe('An answer with a fault as its schema\'s', () => {
+  describe("An answer with a fault as its schema's", () => {
     // Refused as every SDK's transport refuses it before it reads it: an
     // `error` that states the answer's status, says the answer is not its
     // declared body and names its first fault, and is on `errors$` as well.
-    async function refusedAs(answering: () => Promise<unknown>, said: string): Promise<void> {
+    async function refusedAs(
+      answering: () => Promise<unknown>,
+      said: string,
+    ): Promise<void> {
       const reported: unknown[] = [];
-      const listening = transport.errors$.subscribe((failure) => reported.push(failure));
+      const listening = transport.errors$.subscribe((failure) =>
+        reported.push(failure),
+      );
       const refusal = await answering().then(
         () => undefined,
         (thrown: unknown) => thrown,
       );
       listening.unsubscribe();
       expect(refusal).toBeInstanceOf(APIError);
-      expect(refusal).toMatchObject({ code: 'error', status: 200, message: said });
+      expect(refusal).toMatchObject({
+        code: 'error',
+        status: 200,
+        message: said,
+      });
       expect(reported).toEqual([refusal]);
     }
 
@@ -658,16 +801,31 @@ describe('HttpTransport — HTTP wire shape', () => {
       vi.mocked(mockKy.get).mockReturnValue({
         status: 200,
         statusText: 'OK',
-        json: vi.fn().mockResolvedValue({ did: 'did:web:example.org:users:alice', email: null, name: null, image: null }),
+        json: vi.fn().mockResolvedValue({
+          did: 'did:web:example.org:users:alice',
+          email: null,
+          name: null,
+          image: null,
+        }),
       } as never);
-      await refusedAs(() => transport.getCurrentUser(), 'GET /api/users/me answered what is not its declared body: it has no `domain`');
+      await refusedAs(
+        () => transport.getCurrentUser(),
+        'GET /api/users/me answered what is not its declared body: it has no `domain`',
+      );
     });
 
     test("is refused: a resource's description whose resource states no representations", async () => {
       vi.mocked(mockKy.get).mockReturnValue({
         status: 200,
         statusText: 'OK',
-        json: vi.fn().mockResolvedValue({ resource: { '@context': 'https://schema.org/', '@id': 'test-resource-id', name: 'A resource' }, annotations: [] }),
+        json: vi.fn().mockResolvedValue({
+          resource: {
+            '@context': 'https://schema.org/',
+            '@id': 'test-resource-id',
+            name: 'A resource',
+          },
+          annotations: [],
+        }),
       } as never);
       await refusedAs(
         () => content.getResourceGraph(testResourceId),
@@ -679,9 +837,18 @@ describe('HttpTransport — HTTP wire shape', () => {
       vi.mocked(mockKy.get).mockReturnValue({
         status: 200,
         statusText: 'OK',
-        json: vi.fn().mockResolvedValue({ did: 'did:web:example.org:users:alice', domain: 'example.org', email: null, name: null, image: 7 }),
+        json: vi.fn().mockResolvedValue({
+          did: 'did:web:example.org:users:alice',
+          domain: 'example.org',
+          email: null,
+          name: null,
+          image: 7,
+        }),
       } as never);
-      await refusedAs(() => transport.getCurrentUser(), 'GET /api/users/me answered what is not its declared body: its `image` is malformed');
+      await refusedAs(
+        () => transport.getCurrentUser(),
+        'GET /api/users/me answered what is not its declared body: its `image` is malformed',
+      );
     });
 
     test('is refused: an answer that is no object', async () => {
@@ -690,16 +857,26 @@ describe('HttpTransport — HTTP wire shape', () => {
         statusText: 'OK',
         json: vi.fn().mockResolvedValue('alice'),
       } as never);
-      await refusedAs(() => transport.getCurrentUser(), 'GET /api/users/me answered what is not its declared body: it is malformed');
+      await refusedAs(
+        () => transport.getCurrentUser(),
+        'GET /api/users/me answered what is not its declared body: it is malformed',
+      );
     });
 
     test('is refused: an answer that is no JSON', async () => {
       vi.mocked(mockKy.get).mockReturnValue({
         status: 200,
         statusText: 'OK',
-        json: vi.fn().mockRejectedValue(new SyntaxError('Unexpected token < in JSON at position 0')),
+        json: vi
+          .fn()
+          .mockRejectedValue(
+            new SyntaxError('Unexpected token < in JSON at position 0'),
+          ),
       } as never);
-      await refusedAs(() => transport.getCurrentUser(), 'GET /api/users/me answered what is not its declared body: it is malformed');
+      await refusedAs(
+        () => transport.getCurrentUser(),
+        'GET /api/users/me answered what is not its declared body: it is malformed',
+      );
     });
   });
 
@@ -707,14 +884,21 @@ describe('HttpTransport — HTTP wire shape', () => {
     test('accepts a BehaviorSubject token source and constructs without error', async () => {
       const { BehaviorSubject } = await import('rxjs');
       const token$ = new BehaviorSubject<string | null>('tok-1');
-      const t = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, token$: token$ as never });
+      const t = new HttpTransport({
+        baseUrl: testBaseUrl,
+        channels: BRIDGED_CHANNELS,
+        token$: token$ as never,
+      });
       expect(t).toBeDefined();
       // Updates propagate; no throw.
       token$.next('tok-2');
     });
 
     test('defaults to a null BehaviorSubject when token$ is omitted', () => {
-      const t = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS });
+      const t = new HttpTransport({
+        baseUrl: testBaseUrl,
+        channels: BRIDGED_CHANNELS,
+      });
       expect(t).toBeDefined();
     });
   });

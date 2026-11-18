@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { textOffsets } from '@xynolog/core';
-import { buildTextSelectors, fallbackTextPosition } from '../text-selection-handler';
+import {
+  buildTextSelectors,
+  fallbackTextPosition,
+} from '../text-selection-handler';
 
 describe('buildTextSelectors', () => {
   const content = 'The quick brown fox jumps over the lazy dog';
@@ -9,7 +12,11 @@ describe('buildTextSelectors', () => {
   it('returns TextPositionSelector + TextQuoteSelector pair', () => {
     const result = buildTextSelectors(content, offsets, 10, 19);
     expect(result).not.toBeNull();
-    expect(result![0]).toEqual({ type: 'TextPositionSelector', start: 10, end: 19 });
+    expect(result![0]).toEqual({
+      type: 'TextPositionSelector',
+      start: 10,
+      end: 19,
+    });
     expect(result![1].type).toBe('TextQuoteSelector');
     expect(result![1].exact).toBe('brown fox');
   });
@@ -46,7 +53,9 @@ describe('buildTextSelectors', () => {
   });
 
   it('returns null for end beyond content length', () => {
-    expect(buildTextSelectors(content, offsets, 0, content.length + 1)).toBeNull();
+    expect(
+      buildTextSelectors(content, offsets, 0, content.length + 1),
+    ).toBeNull();
   });
 });
 

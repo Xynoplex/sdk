@@ -3,7 +3,10 @@
  * and can express intent directly.
  */
 
-import { InMemorySessionStorage, type SessionStorage } from '../session-storage';
+import {
+  InMemorySessionStorage,
+  type SessionStorage,
+} from '../session-storage';
 import { MemorySignIn } from '../sign-in-kept';
 import type { StoredSession } from '../storage';
 
@@ -12,8 +15,10 @@ const PREFIX = 'xynolog.session.';
 export const SESSION_PREFIX_RE = new RegExp(`^${PREFIX.replace('.', '\\.')}`);
 
 /** The issuer every seeded session came from; refresh tests point their fetch stub here. */
-export const TEST_TOKEN_ENDPOINT = 'https://issuer.test/realms/xynolog/protocol/openid-connect/token';
-export const TEST_REVOCATION_ENDPOINT = 'https://issuer.test/realms/xynolog/protocol/openid-connect/revoke';
+export const TEST_TOKEN_ENDPOINT =
+  'https://issuer.test/realms/xynolog/protocol/openid-connect/token';
+export const TEST_REVOCATION_ENDPOINT =
+  'https://issuer.test/realms/xynolog/protocol/openid-connect/revoke';
 
 export function storageKey(kbId: string): string {
   return `${PREFIX}${kbId}`;
@@ -30,7 +35,12 @@ let minted = 0;
 export function freshJwt(expSecondsFromNow = 3600): string {
   minted += 1;
   const header = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + expSecondsFromNow, jti: `minted-${minted}` }));
+  const payload = btoa(
+    JSON.stringify({
+      exp: Math.floor(Date.now() / 1000) + expSecondsFromNow,
+      jti: `minted-${minted}`,
+    }),
+  );
   return `${header}.${payload}.sig`;
 }
 
@@ -83,7 +93,9 @@ export function seedStoredSession(
 export class TestStorage extends InMemorySessionStorage {
   private handlers: Array<(key: string, newValue: string | null) => void> = [];
 
-  override subscribe(handler: (key: string, newValue: string | null) => void): () => void {
+  override subscribe(
+    handler: (key: string, newValue: string | null) => void,
+  ): () => void {
     this.handlers.push(handler);
     return () => {
       this.handlers = this.handlers.filter((h) => h !== handler);
@@ -105,7 +117,10 @@ export class RefusingStorage extends TestStorage {
     super.set(key, value);
   }
 
-  override update(key: string, change: (stored: string | null) => string | null): void {
+  override update(
+    key: string,
+    change: (stored: string | null) => string | null,
+  ): void {
     if (this.refusing) throw new Error(`refused: ${key}`);
     super.update(key, change);
   }
@@ -114,7 +129,10 @@ export class RefusingStorage extends TestStorage {
 /** What every context's handle on a `SharedStorage` reads and writes, and who listens from which context. */
 interface Shared {
   stored: Map<string, string>;
-  listeners: Map<number, { context: number; heard: (key: string, newValue: string | null) => void }>;
+  listeners: Map<
+    number,
+    { context: number; heard: (key: string, newValue: string | null) => void }
+  >;
   contexts: number;
   subscriptions: number;
 }
@@ -127,7 +145,12 @@ interface Shared {
  * another's.
  */
 export class SharedStorage implements SessionStorage {
-  private shared: Shared = { stored: new Map(), listeners: new Map(), contexts: 0, subscriptions: 0 };
+  private shared: Shared = {
+    stored: new Map(),
+    listeners: new Map(),
+    contexts: 0,
+    subscriptions: 0,
+  };
   private contextId = 0;
 
   /** Another context's handle on the same storage. */
@@ -165,10 +188,15 @@ export class SharedStorage implements SessionStorage {
     this.tell(key, next);
   }
 
-  subscribe(handler: (key: string, newValue: string | null) => void): () => void {
+  subscribe(
+    handler: (key: string, newValue: string | null) => void,
+  ): () => void {
     this.shared.subscriptions += 1;
     const subscription = this.shared.subscriptions;
-    this.shared.listeners.set(subscription, { context: this.contextId, heard: handler });
+    this.shared.listeners.set(subscription, {
+      context: this.contextId,
+      heard: handler,
+    });
     return () => {
       this.shared.listeners.delete(subscription);
     };

@@ -14,9 +14,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import { HighlightPanel } from '../HighlightPanel';
-import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import {
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type XynologSession,
+} from '@xynolog/sdk';
 
 import type { Annotation, AnnotationId } from '@xynolog/core';
 import { resourceId } from '@xynolog/core';
@@ -56,7 +63,9 @@ const mockT = vi.fn((key: string, params?: Record<string, unknown>) => {
     inProgress: 'Annotating...',
   });
   let out = translations[key] || key;
-  for (const [k, v] of Object.entries((params ?? {}) as Record<string, unknown>)) {
+  for (const [k, v] of Object.entries(
+    (params ?? {}) as Record<string, unknown>,
+  )) {
     out = out.replace(`{{${k}}}`, String(v));
   }
   return out;
@@ -64,7 +73,8 @@ const mockT = vi.fn((key: string, params?: Record<string, unknown>) => {
 
 vi.mock('../../../../contexts/TranslationContext', () => ({
   useTranslations: () => mockT,
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 vi.mock('../../../../contexts/useEventSubscription', () => ({
@@ -110,7 +120,12 @@ describe('HighlightPanel + DelegateSection Integration', () => {
   describe('Detection Progress Prop Passing', () => {
     it('should pass progress to DelegateSection when provided', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
@@ -118,7 +133,7 @@ describe('HighlightPanel + DelegateSection Integration', () => {
             percentage: 30,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       // Verify DelegateSection received and rendered the progress
@@ -127,59 +142,93 @@ describe('HighlightPanel + DelegateSection Integration', () => {
 
     it('should pass null progress to DelegateSection', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={false}
           progress={null}
           annotateMode={true}
-        />
+        />,
       );
 
       // Form should be visible (meaning progress was null)
-      expect(screen.getByPlaceholderText('Enter custom instructions...')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /✨\s*Annotate/ })).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter custom instructions...'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /✨\s*Annotate/ }),
+      ).toBeInTheDocument();
     });
 
     it('should pass undefined progress to DelegateSection', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={false}
           progress={undefined}
           annotateMode={true}
-        />
+        />,
       );
 
       // Form should be visible (meaning progress was undefined)
-      expect(screen.getByPlaceholderText('Enter custom instructions...')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /✨\s*Annotate/ })).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter custom instructions...'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /✨\s*Annotate/ }),
+      ).toBeInTheDocument();
     });
 
     it('should keep progress visible after detection completes (isDelegating=false)', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={false}
           progress={{
-            message: { code: 'complete-created', count: 3, motivation: 'highlighting' },
+            message: {
+              code: 'complete-created',
+              count: 3,
+              motivation: 'highlighting',
+            },
             percentage: 100,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       // Progress should still be visible
       expect(screen.getByText('Created 3 highlights')).toBeInTheDocument();
       // Form should NOT be visible
-      expect(screen.queryByPlaceholderText('Enter custom instructions...')).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText('Enter custom instructions...'),
+      ).not.toBeInTheDocument();
     });
 
     it('should pass progress with request parameters to DelegateSection', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
@@ -191,7 +240,7 @@ describe('HighlightPanel + DelegateSection Integration', () => {
             ],
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       expect(screen.getByTestId('xynolog-delegate-params')).toBeInTheDocument();
@@ -203,13 +252,18 @@ describe('HighlightPanel + DelegateSection Integration', () => {
   describe('Annotate Mode Toggling', () => {
     it('should render DelegateSection when annotateMode is true', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={false}
           progress={null}
           annotateMode={true}
-        />
+        />,
       );
 
       expect(screen.getByText('Annotate Highlights')).toBeInTheDocument();
@@ -217,13 +271,18 @@ describe('HighlightPanel + DelegateSection Integration', () => {
 
     it('should NOT render DelegateSection when annotateMode is false', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={false}
           progress={null}
           annotateMode={false}
-        />
+        />,
       );
 
       expect(screen.queryByText('Annotate Highlights')).not.toBeInTheDocument();
@@ -231,7 +290,12 @@ describe('HighlightPanel + DelegateSection Integration', () => {
 
     it('should hide progress when switching to browse mode (annotateMode=false)', () => {
       const { rerender } = renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
@@ -239,14 +303,19 @@ describe('HighlightPanel + DelegateSection Integration', () => {
             percentage: 0,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       expect(screen.getByText('Annotating...')).toBeInTheDocument();
 
       // Switch to browse mode
       rerender(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
@@ -254,7 +323,7 @@ describe('HighlightPanel + DelegateSection Integration', () => {
             percentage: 0,
           }}
           annotateMode={false}
-        />
+        />,
       );
 
       // Progress should be hidden
@@ -265,42 +334,65 @@ describe('HighlightPanel + DelegateSection Integration', () => {
   describe('State Combinations', () => {
     it('should handle isDelegating=true with no progress (starting state)', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
           progress={null}
           annotateMode={true}
-        />
+        />,
       );
 
       // Form should still be visible (waiting for first progress chunk)
-      expect(screen.getByPlaceholderText('Enter custom instructions...')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter custom instructions...'),
+      ).toBeInTheDocument();
     });
 
     it('should handle isDelegating=false with progress (final state)', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={false}
           progress={{
-            message: { code: 'complete-created', count: 3, motivation: 'highlighting' },
+            message: {
+              code: 'complete-created',
+              count: 3,
+              motivation: 'highlighting',
+            },
             percentage: 100,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       // Progress should be visible
       expect(screen.getByText('Created 3 highlights')).toBeInTheDocument();
       // Form should be hidden
-      expect(screen.queryByPlaceholderText('Enter custom instructions...')).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText('Enter custom instructions...'),
+      ).not.toBeInTheDocument();
     });
 
     it('should handle multiple progress updates', () => {
       const { rerender } = renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
@@ -308,16 +400,23 @@ describe('HighlightPanel + DelegateSection Integration', () => {
             percentage: 0,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       // Stage is the observable across non-terminal updates: the status text
       // is a single translated string (the wire carries codes).
-      expect(document.querySelector('.xynolog-delegate-progress')).toHaveAttribute('data-ended', 'false');
+      expect(
+        document.querySelector('.xynolog-delegate-progress'),
+      ).toHaveAttribute('data-ended', 'false');
 
       // Update to analyzing
       rerender(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
@@ -325,24 +424,35 @@ describe('HighlightPanel + DelegateSection Integration', () => {
             percentage: 50,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
-      expect(document.querySelector('.xynolog-delegate-progress')).toHaveAttribute('data-ended', 'false');
+      expect(
+        document.querySelector('.xynolog-delegate-progress'),
+      ).toHaveAttribute('data-ended', 'false');
       expect(screen.getByText('Annotating...')).toBeInTheDocument();
 
       // Update to complete
       rerender(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={false}
           progress={{
-            message: { code: 'complete-created', count: 3, motivation: 'highlighting' },
+            message: {
+              code: 'complete-created',
+              count: 3,
+              motivation: 'highlighting',
+            },
             percentage: 100,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       expect(screen.queryByText('Annotating...')).not.toBeInTheDocument();
@@ -353,7 +463,12 @@ describe('HighlightPanel + DelegateSection Integration', () => {
   describe('Highlights List Rendering', () => {
     it('should render highlights list alongside detection progress', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={mockAnnotations}
           pendingAnnotation={null}
           isDelegating={true}
@@ -361,7 +476,7 @@ describe('HighlightPanel + DelegateSection Integration', () => {
             percentage: 0,
           }}
           annotateMode={true}
-        />
+        />,
       );
 
       // Both progress and highlights should be visible
@@ -371,13 +486,18 @@ describe('HighlightPanel + DelegateSection Integration', () => {
 
     it('should show empty state when no highlights', () => {
       renderWithProviders(
-        <HighlightPanel session={session} mark={mark} resourceId={resourceId('res-1')} jobId={null} cancelled={false}
+        <HighlightPanel
+          session={session}
+          mark={mark}
+          resourceId={resourceId('res-1')}
+          jobId={null}
+          cancelled={false}
           annotations={[]}
           pendingAnnotation={null}
           isDelegating={false}
           progress={null}
           annotateMode={true}
-        />
+        />,
       );
 
       expect(screen.getByText('No highlights yet')).toBeInTheDocument();

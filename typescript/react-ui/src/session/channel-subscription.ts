@@ -35,4 +35,3 @@ export function subscribeChannel<K extends UnscopedChannel>(
   });
   return () => sub.unsubscribe();
 }
-

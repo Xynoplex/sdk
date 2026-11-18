@@ -9,10 +9,21 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import * as core from '@xynolog/core';
-import { annotationOfResource, annotationOfSpan, reconcile, SpanRefusedError } from '../index';
+import {
+  annotationOfResource,
+  annotationOfSpan,
+  reconcile,
+  SpanRefusedError,
+} from '../index';
 
 const table: { builders: string[] } = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/annotations/builder-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/annotations/builder-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
 /** Each builder the SDK exports, under the name the table gives it, beside core's. */
@@ -27,14 +38,14 @@ describe('the annotation builders the SDK exports', () => {
     expect(Object.keys(BUILDERS).sort()).toEqual([...table.builders].sort());
   });
 
-  it('are each core\'s own function', () => {
+  it("are each core's own function", () => {
     for (const [name, [exported, own]] of Object.entries(BUILDERS)) {
       expect(exported, name).toBe(own);
       expect(typeof exported, name).toBe('function');
     }
   });
 
-  it('come with the error a refused span is, which is core\'s own', () => {
+  it("come with the error a refused span is, which is core's own", () => {
     expect(SpanRefusedError).toBe(core.SpanRefusedError);
     expect(typeof SpanRefusedError).toBe('function');
   });

@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { UnifiedHeader } from '../UnifiedHeader';
-import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../contexts/RoutingContext';
 
 // Mock only hooks - using real components via composition
 vi.mock('@/hooks/useUI', () => ({
@@ -19,7 +22,9 @@ import { useDropdown } from '@/hooks/useUI';
 
 // Mock Link component
 const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
-  <a href={href} {...props}>{children}</a>
+  <a href={href} {...props}>
+    {children}
+  </a>
 );
 
 // Mock routes: the layout links to no resource, and leaves the others to their defaults
@@ -52,7 +57,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="standalone"
-        />
+        />,
       );
 
       const header = container.querySelector('header');
@@ -68,7 +73,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="standalone"
-        />
+        />,
       );
 
       // Real XynologBranding renders "Xynolog" text
@@ -82,7 +87,7 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-        />
+        />,
       );
 
       const header = container.querySelector('header');
@@ -99,7 +104,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="embedded"
-        />
+        />,
       );
 
       const header = container.querySelector('header');
@@ -114,7 +119,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="embedded"
-        />
+        />,
       );
 
       expect(screen.getByText('Xynolog')).toBeInTheDocument();
@@ -130,10 +135,12 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="floating"
-        />
+        />,
       );
 
-      const floatingDiv = container.querySelector('.xynolog-unified-header--floating');
+      const floatingDiv = container.querySelector(
+        '.xynolog-unified-header--floating',
+      );
       expect(floatingDiv).toBeInTheDocument();
     });
 
@@ -145,7 +152,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="floating"
-        />
+        />,
       );
 
       expect(screen.getByText('Xynolog')).toBeInTheDocument();
@@ -160,10 +167,12 @@ describe('UnifiedHeader Component', () => {
           tHome={mockTHome}
           variant="floating"
           showBranding={false}
-        />
+        />,
       );
 
-      const floatingDiv = container.querySelector('.xynolog-unified-header--floating');
+      const floatingDiv = container.querySelector(
+        '.xynolog-unified-header--floating',
+      );
       expect(floatingDiv).not.toBeInTheDocument();
     });
   });
@@ -176,7 +185,7 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-        />
+        />,
       );
 
       expect(screen.getByText('Xynolog')).toBeInTheDocument();
@@ -190,7 +199,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           showBranding={false}
-        />
+        />,
       );
 
       expect(screen.queryByText('Xynolog')).not.toBeInTheDocument();
@@ -203,7 +212,7 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-        />
+        />,
       );
 
       const button = screen.getByLabelText('Navigation menu');
@@ -228,7 +237,7 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-        />
+        />,
       );
 
       const button = screen.getByLabelText('Navigation menu');
@@ -252,8 +261,8 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-                  isAuthenticated={true}
-        />
+          isAuthenticated={true}
+        />,
       );
 
       // Real NavigationMenu renders nav.know link
@@ -275,8 +284,8 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-                  isAuthenticated={false}
-        />
+          isAuthenticated={false}
+        />,
       );
 
       expect(screen.queryByText('nav.know')).not.toBeInTheDocument();
@@ -297,8 +306,8 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-                  isAuthenticated={true}
-        />
+          isAuthenticated={true}
+        />,
       );
 
       expect(screen.queryByText('nav.know')).not.toBeInTheDocument();
@@ -320,8 +329,8 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-                  isAuthenticated={true}
-        />
+          isAuthenticated={true}
+        />,
       );
 
       // Real NavigationMenu renders nav.know link
@@ -349,7 +358,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           brandingLink="/custom"
-        />
+        />,
       );
 
       // Should render branding with custom link
@@ -363,7 +372,7 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-        />
+        />,
       );
 
       expect(screen.getByText('Xynolog')).toBeInTheDocument();
@@ -384,8 +393,8 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-                  isAuthenticated={true}
-        />
+          isAuthenticated={true}
+        />,
       );
 
       // Real NavigationMenu renders moderate link
@@ -402,7 +411,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="standalone"
-        />
+        />,
       );
 
       const button = screen.getByLabelText('Navigation menu');
@@ -420,7 +429,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="floating"
-        />
+        />,
       );
 
       const button = screen.getByLabelText('Navigation menu');
@@ -445,7 +454,7 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-        />
+        />,
       );
 
       const button = screen.getByLabelText('Navigation menu');
@@ -467,8 +476,8 @@ describe('UnifiedHeader Component', () => {
           routes={mockRoutes}
           t={mockT}
           tHome={mockTHome}
-                  isAuthenticated={true}
-        />
+          isAuthenticated={true}
+        />,
       );
 
       const dropdown = screen.getByRole('menu');
@@ -487,7 +496,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="standalone"
-        />
+        />,
       );
 
       const header = container.querySelector('header');
@@ -502,10 +511,12 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="floating"
-        />
+        />,
       );
 
-      const floatingDiv = container.querySelector('.xynolog-unified-header--floating');
+      const floatingDiv = container.querySelector(
+        '.xynolog-unified-header--floating',
+      );
       expect(floatingDiv).toBeInTheDocument();
     });
 
@@ -517,7 +528,7 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="standalone"
-        />
+        />,
       );
 
       const { container: embeddedContainer } = render(
@@ -527,14 +538,17 @@ describe('UnifiedHeader Component', () => {
           t={mockT}
           tHome={mockTHome}
           variant="embedded"
-        />
+        />,
       );
 
-      const standaloneContent = standaloneContainer.querySelector('.xynolog-unified-header');
+      const standaloneContent = standaloneContainer.querySelector(
+        '.xynolog-unified-header',
+      );
       expect(standaloneContent).toBeInTheDocument();
 
       // Embedded variant has branding directly in container
-      const embeddedContent = embeddedContainer.querySelector('.xynolog-branding');
+      const embeddedContent =
+        embeddedContainer.querySelector('.xynolog-branding');
       expect(embeddedContent).toBeInTheDocument();
     });
   });

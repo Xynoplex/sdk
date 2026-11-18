@@ -7,7 +7,6 @@
  * - UI state
  */
 
-
 import type { Annotation } from '@xynolog/core';
 
 /**

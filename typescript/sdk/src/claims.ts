@@ -67,8 +67,26 @@ import {
   KeptForFirstReader,
   replyChannelsFor,
 } from '@xynolog/core';
-import type { Annotation, AnnotationId, BusOperationKey, BusRequestErrorCode, BusPrimitive, EventMap, JobFilter, JobId, JobType, ResourceId, TraceCarrier, UnitCursor, components } from '@xynolog/core';
-import { getActiveTraceparent, withTraceparent, withoutTrace } from '@xynolog/observability';
+import type {
+  Annotation,
+  AnnotationId,
+  BusOperationKey,
+  BusRequestErrorCode,
+  BusPrimitive,
+  EventMap,
+  JobFilter,
+  JobId,
+  JobType,
+  ResourceId,
+  TraceCarrier,
+  UnitCursor,
+  components,
+} from '@xynolog/core';
+import {
+  getActiveTraceparent,
+  withTraceparent,
+  withoutTrace,
+} from '@xynolog/observability';
 
 /** The job a `job:claimed` reply carries, running under this worker: the spec's `JobRunning`. */
 type ClaimedJob = EventMap['job:claimed']['response'];
@@ -100,11 +118,15 @@ export const JOB_CLAIM_CHANNELS: readonly (keyof EventMap)[] = [
  * replies are the frames of many megabytes a worker's stream exists to keep
  * out; one annotation's frame is small.
  */
-const COMMIT_OPERATIONS = ['mark:commit', 'browse:annotation-requested'] as const satisfies readonly BusOperationKey[];
+const COMMIT_OPERATIONS = [
+  'mark:commit',
+  'browse:annotation-requested',
+] as const satisfies readonly BusOperationKey[];
 type CommitOperation = (typeof COMMIT_OPERATIONS)[number];
 
 /** What a worker's stream names for its commits: the replies of `mark:commit` and of the question it asks when one goes unacknowledged. */
-export const JOB_COMMIT_CHANNELS: readonly (keyof EventMap)[] = replyChannelsFor(COMMIT_OPERATIONS);
+export const JOB_COMMIT_CHANNELS: readonly (keyof EventMap)[] =
+  replyChannelsFor(COMMIT_OPERATIONS);
 
 /**
  * How weak each observation of a commit is, as evidence that the batch is on
@@ -148,10 +170,16 @@ const RETRIED: Record<FailureClass, boolean> = {
  * stated class is retried as a transient one is.
  */
 export function willRetryAfter(
-  budget: Pick<components['schemas']['JobMetadata'], 'retryCount' | 'maxRetries'>,
+  budget: Pick<
+    components['schemas']['JobMetadata'],
+    'retryCount' | 'maxRetries'
+  >,
   failureClass?: FailureClass,
 ): boolean {
-  return (failureClass === undefined || RETRIED[failureClass]) && budget.retryCount < budget.maxRetries;
+  return (
+    (failureClass === undefined || RETRIED[failureClass]) &&
+    budget.retryCount < budget.maxRetries
+  );
 }
 
 export interface ClaimOptions {
@@ -264,7 +292,10 @@ interface Held<T extends JobType, R> {
   /** `job:checkpoint`: what a later attempt resumes from. Counts as activity. */
   checkpoint(checkpoint: JobCheckpoint): Promise<void>;
   /** `mark:commit` for this job: resolves once the batch is established. */
-  commit(resourceId: ResourceId, annotations: readonly Annotation[]): Promise<void>;
+  commit(
+    resourceId: ResourceId,
+    annotations: readonly Annotation[],
+  ): Promise<void>;
   /** Settle: `job:complete`, with the result this job's verb reports, and how its commits were established. */
   complete(result: R): Promise<void>;
   /**
@@ -293,13 +324,18 @@ export type HeldJob = HeldMarkJob | HeldYieldJob;
  * focused on. A `yield` job focused on a resource has none, and neither has a
  * `mark` job.
  */
-function anchorOf(jobType: JobType, params: ClaimedJob['params']): AnnotationId | undefined {
+function anchorOf(
+  jobType: JobType,
+  params: ClaimedJob['params'],
+): AnnotationId | undefined {
   if (jobType !== 'yield') return undefined;
   const context: unknown = params['context'];
   const focus = isObject(context) ? context['focus'] : undefined;
   if (!isObject(focus) || focus['kind'] !== 'annotation') return undefined;
   const annotation = focus['annotation'];
-  return isObject(annotation) && isString(annotation['id']) ? makeAnnotationId(annotation['id']) : undefined;
+  return isObject(annotation) && isString(annotation['id'])
+    ? makeAnnotationId(annotation['id'])
+    : undefined;
 }
 
 /** What a held job's messages name it by. `job:cancel` carries this and no more. */
@@ -312,9 +348,15 @@ interface Named<T extends JobType> {
 
 /** What a held job asks of the loop that claimed it. */
 interface Holder {
-  emit<K extends keyof EventMap>(channel: K, payload: EventMap[K]): Promise<unknown>;
+  emit<K extends keyof EventMap>(
+    channel: K,
+    payload: EventMap[K],
+  ): Promise<unknown>;
   /** One of a commit's requests, awaited for `markCommitTimeoutMs`. It fails as `Bus.request` fails. */
-  request<Op extends CommitOperation>(operation: Op, payload: EventMap[Op]): Promise<unknown>;
+  request<Op extends CommitOperation>(
+    operation: Op,
+    payload: EventMap[Op],
+  ): Promise<unknown>;
   /** The work showed it is alive. */
   active(): void;
   /** `job` is settled, and no longer held. */
@@ -350,7 +392,10 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
     /** The trace the reply that carried `claimed` arrived in. */
     trace: TraceCarrier | undefined,
     /** The completion this job's verb states, from what every lifecycle message carries and its result. */
-    private readonly completion: (said: Named<T> & { attempt: number }, result: R) => EventMap['job:complete'],
+    private readonly completion: (
+      said: Named<T> & { attempt: number },
+      result: R,
+    ) => EventMap['job:complete'],
   ) {
     const { metadata, params } = claimed;
     this.jobId = metadata.id;
@@ -391,12 +436,18 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
   }
 
   private unsettled(saying: string): void {
-    if (this.state === 'settled') throw new Error(`Job ${this.jobId} is already settled: it cannot say ${saying}`);
+    if (this.state === 'settled')
+      throw new Error(
+        `Job ${this.jobId} is already settled: it cannot say ${saying}`,
+      );
   }
 
   async start(): Promise<void> {
     this.unsettled('job:start');
-    if (this.state !== 'claimed') throw new Error(`job:start is a held job's first message, said once: job ${this.jobId} has already said more`);
+    if (this.state !== 'claimed')
+      throw new Error(
+        `job:start is a held job's first message, said once: job ${this.jobId} has already said more`,
+      );
     this.state = 'begun';
     await this.holder.emit('job:start', this.identity);
   }
@@ -408,7 +459,10 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
     await this.holder.emit('job:report-progress', {
       ...this.identity,
       percentage: progress.percentage,
-      progress: { ...progress, ...(this.annotationId ? { annotationId: this.annotationId } : {}) },
+      progress: {
+        ...progress,
+        ...(this.annotationId ? { annotationId: this.annotationId } : {}),
+      },
     });
   }
 
@@ -416,7 +470,10 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
     this.unsettled('job:checkpoint');
     this.state = 'begun';
     this.holder.active();
-    await this.holder.emit('job:checkpoint', { jobId: this.jobId, ...checkpoint });
+    await this.holder.emit('job:checkpoint', {
+      jobId: this.jobId,
+      ...checkpoint,
+    });
   }
 
   /**
@@ -438,18 +495,26 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
    * with that request's own failure. What was observed leaves by the job's
    * settle, the one place it can still be told.
    */
-  async commit(resourceId: ResourceId, annotations: readonly Annotation[]): Promise<void> {
+  async commit(
+    resourceId: ResourceId,
+    annotations: readonly Annotation[],
+  ): Promise<void> {
     this.unsettled('mark:commit');
     const last = annotations.at(-1);
     // A batch of no annotations is no commit: there is nothing to establish.
     if (last === undefined) return;
     try {
-      await this.holder.request('mark:commit', { resourceId, annotations: [...annotations], jobId: this.jobId });
+      await this.holder.request('mark:commit', {
+        resourceId,
+        annotations: [...annotations],
+        jobId: this.jobId,
+      });
     } catch (error) {
       // The record's refusal, and every other failure of the request, is the
       // commit's failure as it is. Only an acknowledgement that did not
       // arrive leaves what the record holds unknown.
-      if (!(error instanceof BusRequestError) || error.code !== 'bus.timeout') throw error;
+      if (!(error instanceof BusRequestError) || error.code !== 'bus.timeout')
+        throw error;
       const observed = await this.askWhetherRecorded(resourceId, last.id);
       this.observe(observed);
       if (observed !== 'probe-confirmed') throw error;
@@ -474,9 +539,15 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
    * neither yes nor no. It is said as its own observation, and it does not
    * establish the commit.
    */
-  private async askWhetherRecorded(resourceId: ResourceId, annotationId: AnnotationId): Promise<Exclude<DurabilityEvidence, 'acknowledged'>> {
+  private async askWhetherRecorded(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+  ): Promise<Exclude<DurabilityEvidence, 'acknowledged'>> {
     try {
-      await this.holder.request('browse:annotation-requested', { resourceId, annotationId });
+      await this.holder.request('browse:annotation-requested', {
+        resourceId,
+        annotationId,
+      });
       return 'probe-confirmed';
     } catch (error) {
       // A failure reply (`bus.rejected`) means the question was answered and
@@ -488,14 +559,19 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
       // copy of @xynolog/core anywhere in the tree makes a class check fail,
       // and silently, so that a refusal is said as "nobody answered", the one
       // distinction this observation exists to make.
-      const code = isObject(error) && isString(error.code) ? error.code : undefined;
+      const code =
+        isObject(error) && isString(error.code) ? error.code : undefined;
       return code === 'bus.rejected' ? 'probe-refused' : 'probe-unreachable';
     }
   }
 
   /** Remember `evidence` if it is weaker than what is remembered. Of two equally weak, the first seen is kept. */
   private observe(evidence: DurabilityEvidence): void {
-    if (this.durability === undefined || WEAKNESS[evidence] > WEAKNESS[this.durability]) this.durability = evidence;
+    if (
+      this.durability === undefined ||
+      WEAKNESS[evidence] > WEAKNESS[this.durability]
+    )
+      this.durability = evidence;
   }
 
   complete(result: R): Promise<void> {
@@ -513,13 +589,19 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
       // Stated only when a commit was not established: what is weaker than
       // any observation that establishes one. Otherwise the failure says
       // nothing of the job's commits.
-      ...(this.durability !== undefined && WEAKNESS[this.durability] > WEAKNESS['probe-confirmed'] ? { durability: this.durability } : {}),
+      ...(this.durability !== undefined &&
+      WEAKNESS[this.durability] > WEAKNESS['probe-confirmed']
+        ? { durability: this.durability }
+        : {}),
       willRetry: willRetryAfter(this, failure.failureClass),
     }));
   }
 
   cancel(reached: Partial<JobCheckpoint> = {}): Promise<void> {
-    return this.settle('job:cancel', false, () => ({ ...this.named, ...reached }));
+    return this.settle('job:cancel', false, () => ({
+      ...this.named,
+      ...reached,
+    }));
   }
 
   /**
@@ -530,7 +612,11 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
    * claiming. The dispatcher's sweep concludes a job whose outcome never
    * arrived.
    */
-  private async settle<K extends 'job:complete' | 'job:fail' | 'job:cancel'>(channel: K, completed: boolean, payload: () => EventMap[K]): Promise<void> {
+  private async settle<K extends 'job:complete' | 'job:fail' | 'job:cancel'>(
+    channel: K,
+    completed: boolean,
+    payload: () => EventMap[K],
+  ): Promise<void> {
     this.unsettled(channel);
     this.state = 'settled';
     try {
@@ -555,9 +641,21 @@ function heldJob(
   const trace = arrivedIn.get(claimed.metadata.id);
   switch (claimed.metadata.type) {
     case 'mark':
-      return new HeldJobOf('mark', claimed, holder, trace, (said, result: MarkJobResult) => ({ ...said, result }));
+      return new HeldJobOf(
+        'mark',
+        claimed,
+        holder,
+        trace,
+        (said, result: MarkJobResult) => ({ ...said, result }),
+      );
     case 'yield':
-      return new HeldJobOf('yield', claimed, holder, trace, (said, result: YieldJobResult) => ({ ...said, result }));
+      return new HeldJobOf(
+        'yield',
+        claimed,
+        holder,
+        trace,
+        (said, result: YieldJobResult) => ({ ...said, result }),
+      );
   }
 }
 
@@ -565,7 +663,8 @@ type AnyHeldJob = ReturnType<typeof heldJob>;
 
 /** The error of a job failed because its worker stopped, and not because the work failed. */
 const STOPPED_WHILE_HELD = 'The worker stopped while it held the job';
-type ClaimOutcome = { job: AnyHeldJob } | { declined: true } | { refused: ClaimRefusal };
+type ClaimOutcome =
+  { job: AnyHeldJob } | { declined: true } | { refused: ClaimRefusal };
 
 /** One worker's claiming, from the first read of its claims until it stops. */
 class ClaimLoop implements Holder {
@@ -611,22 +710,33 @@ class ClaimLoop implements Holder {
 
   private readonly wire: Bus;
 
-  constructor(private readonly bus: BusPrimitive, options: ClaimOptions) {
+  constructor(
+    private readonly bus: BusPrimitive,
+    options: ClaimOptions,
+  ) {
     this.wire = new Bus(bus);
     this.accepts = options.accepts;
     this.jobClaimTimeoutMs = options.jobClaimTimeoutMs ?? JOB_CLAIM_TIMEOUT_MS;
     this.heldJobStallMs = options.heldJobStallMs ?? HELD_JOB_STALL_MS;
-    this.heldJobStallCheckMs = options.heldJobStallCheckMs ?? HELD_JOB_STALL_CHECK_MS;
-    this.markCommitTimeoutMs = options.markCommitTimeoutMs ?? MARK_COMMIT_TIMEOUT_MS;
+    this.heldJobStallCheckMs =
+      options.heldJobStallCheckMs ?? HELD_JOB_STALL_CHECK_MS;
+    this.markCommitTimeoutMs =
+      options.markCommitTimeoutMs ?? MARK_COMMIT_TIMEOUT_MS;
   }
 
   // ── what a held job asks ─────────────────────────────────────────────────
 
-  emit<K extends keyof EventMap>(channel: K, payload: EventMap[K]): Promise<unknown> {
+  emit<K extends keyof EventMap>(
+    channel: K,
+    payload: EventMap[K],
+  ): Promise<unknown> {
     return this.wire.emit(channel, payload);
   }
 
-  request<Op extends CommitOperation>(operation: Op, payload: EventMap[Op]): Promise<unknown> {
+  request<Op extends CommitOperation>(
+    operation: Op,
+    payload: EventMap[Op],
+  ): Promise<unknown> {
     return this.wire.request(operation, payload, this.markCommitTimeoutMs);
   }
 
@@ -649,19 +759,27 @@ class ClaimLoop implements Holder {
 
   read(reader: Subscriber<HeldJob>): () => void {
     if (this.phase !== 'unread') {
-      reader.error(new Error('A worker\'s claims are read once: this worker is already claiming, or has stopped'));
+      reader.error(
+        new Error(
+          "A worker's claims are read once: this worker is already claiming, or has stopped",
+        ),
+      );
       return () => {};
     }
-    const unnamed = JOB_CLAIM_CHANNELS.filter((channel) => !this.bus.isSubscribed(channel));
+    const unnamed = JOB_CLAIM_CHANNELS.filter(
+      (channel) => !this.bus.isSubscribed(channel),
+    );
     if (unnamed.length > 0) {
       this.phase = 'stopped';
       this.refused.end();
       this.stalled.end();
-      reader.error(new BusRequestError(
-        `This transport's stream does not name ${unnamed.join(', ')}: a worker on it would never be answered, woken or told of a cancellation. Give the transport JOB_CLAIM_CHANNELS.`,
-        'bus.unsubscribed',
-        { channels: unnamed },
-      ));
+      reader.error(
+        new BusRequestError(
+          `This transport's stream does not name ${unnamed.join(', ')}: a worker on it would never be answered, woken or told of a cancellation. Give the transport JOB_CLAIM_CHANNELS.`,
+          'bus.unsubscribed',
+          { channels: unnamed },
+        ),
+      );
       return () => {};
     }
     this.phase = 'claiming';
@@ -677,19 +795,31 @@ class ClaimLoop implements Holder {
       this.bus.frames('job:queued').subscribe(({ payload: announced }) => {
         // Every announcement received is stamped, before any filtering.
         this.lastQueuedEventAt = Date.now();
-        if (announced instanceof FrameRefusal || this.accepts.some((filter) => jobMatchesFilter(filter, announced))) this.pull();
+        if (
+          announced instanceof FrameRefusal ||
+          this.accepts.some((filter) => jobMatchesFilter(filter, announced))
+        )
+          this.pull();
       }),
       // A cancellation is the held job's only when it names it.
-      this.bus.frames('job:cancel-requested').subscribe(({ payload: request }) => {
-        if (request instanceof FrameRefusal) return;
-        if (this.held !== null && request.jobId === this.held.jobId) this.held.signalCancellation();
-      }),
+      this.bus
+        .frames('job:cancel-requested')
+        .subscribe(({ payload: request }) => {
+          if (request instanceof FrameRefusal) return;
+          if (this.held !== null && request.jobId === this.held.jobId)
+            this.held.signalCancellation();
+        }),
       // A reply that names no job is refused where the claim's answer is read (C9).
       this.bus.frames('job:claimed').subscribe(({ payload: reply }) => {
         if (reply instanceof FrameRefusal) return;
         const response: unknown = reply.response;
         const metadata = isObject(response) ? response['metadata'] : undefined;
-        if (this.claimInFlight && isObject(metadata) && isString(metadata['id'])) this.arrivedIn.set(metadata['id'], getActiveTraceparent());
+        if (
+          this.claimInFlight &&
+          isObject(metadata) &&
+          isString(metadata['id'])
+        )
+          this.arrivedIn.set(metadata['id'], getActiveTraceparent());
       }),
     );
 
@@ -708,7 +838,10 @@ class ClaimLoop implements Holder {
       }),
     );
 
-    this.stallCheck = setInterval(() => this.lookForStall(), this.heldJobStallCheckMs);
+    this.stallCheck = setInterval(
+      () => this.lookForStall(),
+      this.heldJobStallCheckMs,
+    );
 
     if (wasOpen) this.pull();
     return () => void this.stop();
@@ -726,33 +859,39 @@ class ClaimLoop implements Holder {
     this.claimInFlight = true;
     this.wakePending = false;
     // In no trace: the claim, and the reading of its answer.
-    withoutTrace(() => void this.claimNext().then((outcome) => {
-      this.claimInFlight = false;
-      this.arrivedIn.clear();
-      if (this.phase !== 'claiming') {
-        // Answered after the worker stopped: the job is this worker's at the
-        // dispatcher, and nobody here will run it.
-        if ('job' in outcome) void outcome.job.fail(STOPPED_WHILE_HELD).catch(() => {});
-        return;
-      }
-      if ('job' in outcome) {
-        const now = Date.now();
-        this.lastClaimAt = now;
-        this.lastActivityAt = now;
-        this.heldSince = now;
-        // A wake-up that arrived during the claim is moot: the settle claims.
-        this.wakePending = false;
-        this.held = outcome.job;
-        // In the trace its reply arrived in.
-        withTraceparent(outcome.job.trace, () => this.reader?.next(outcome.job));
-        return;
-      }
-      if ('refused' in outcome) this.refused.say(outcome.refused);
-      if (this.wakePending) {
-        this.wakePending = false;
-        this.pull();
-      }
-    }));
+    withoutTrace(
+      () =>
+        void this.claimNext().then((outcome) => {
+          this.claimInFlight = false;
+          this.arrivedIn.clear();
+          if (this.phase !== 'claiming') {
+            // Answered after the worker stopped: the job is this worker's at the
+            // dispatcher, and nobody here will run it.
+            if ('job' in outcome)
+              void outcome.job.fail(STOPPED_WHILE_HELD).catch(() => {});
+            return;
+          }
+          if ('job' in outcome) {
+            const now = Date.now();
+            this.lastClaimAt = now;
+            this.lastActivityAt = now;
+            this.heldSince = now;
+            // A wake-up that arrived during the claim is moot: the settle claims.
+            this.wakePending = false;
+            this.held = outcome.job;
+            // In the trace its reply arrived in.
+            withTraceparent(outcome.job.trace, () =>
+              this.reader?.next(outcome.job),
+            );
+            return;
+          }
+          if ('refused' in outcome) this.refused.say(outcome.refused);
+          if (this.wakePending) {
+            this.wakePending = false;
+            this.pull();
+          }
+        }),
+    );
   }
 
   private async claimNext(): Promise<ClaimOutcome> {
@@ -762,20 +901,35 @@ class ClaimLoop implements Holder {
     // every SDK refuses it.
     let claimed: ClaimedJob;
     try {
-      claimed = await this.wire.request('job:claim', { accepts: this.accepts }, this.jobClaimTimeoutMs);
+      claimed = await this.wire.request(
+        'job:claim',
+        { accepts: this.accepts },
+        this.jobClaimTimeoutMs,
+      );
     } catch (error) {
       if (error instanceof BusRequestError) {
         if (error.code === 'bus.none-pending') return { declined: true };
         return { refused: { code: error.code, message: error.message } };
       }
-      return { refused: { code: null, message: error instanceof Error ? error.message : String(error) } };
+      return {
+        refused: {
+          code: null,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      };
     }
     return { job: heldJob(claimed, this, this.arrivedIn) };
   }
 
   private lookForStall(): void {
     const { held } = this;
-    if (held === null || held === this.stallReported || this.lastActivityAt === null || this.heldSince === null) return;
+    if (
+      held === null ||
+      held === this.stallReported ||
+      this.lastActivityAt === null ||
+      this.heldSince === null
+    )
+      return;
     const silentForMs = Date.now() - this.lastActivityAt;
     if (silentForMs <= this.heldJobStallMs) return;
     this.stallReported = held;
@@ -803,22 +957,29 @@ class ClaimLoop implements Holder {
     // A job held and not settled is failed, on a best-effort basis, and not
     // left for the dispatcher's sweep of running jobs. The failure states no
     // class, so the record's retry budget decides what becomes of the job.
-    if (held !== null && !held.settled) await held.fail(STOPPED_WHILE_HELD).catch(() => {});
+    if (held !== null && !held.settled)
+      await held.fail(STOPPED_WHILE_HELD).catch(() => {});
     this.refused.end();
     this.stalled.end();
     this.reader?.complete();
   }
 
   vitals(): WorkerVitals {
-    const iso = (at: number | null): string | null => (at === null ? null : new Date(at).toISOString());
+    const iso = (at: number | null): string | null =>
+      at === null ? null : new Date(at).toISOString();
     return {
       lastQueuedEventAt: iso(this.lastQueuedEventAt),
       lastClaimAt: iso(this.lastClaimAt),
       lastFinishedAt: iso(this.lastFinishedAt),
       lastActivityAt: iso(this.lastActivityAt),
-      activeJob: this.held !== null && this.heldSince !== null
-        ? { jobId: this.held.jobId, type: this.held.jobType, since: new Date(this.heldSince).toISOString() }
-        : null,
+      activeJob:
+        this.held !== null && this.heldSince !== null
+          ? {
+              jobId: this.held.jobId,
+              type: this.held.jobType,
+              since: new Date(this.heldSince).toISOString(),
+            }
+          : null,
       jobsCompleted: this.jobsCompleted,
     };
   }

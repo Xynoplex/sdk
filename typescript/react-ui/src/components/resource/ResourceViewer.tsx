@@ -2,16 +2,42 @@
 
 import type { ResourceId } from '@xynolog/core';
 import React, { useState, useCallback, useRef, useMemo } from 'react';
-import { TranslationProvider, useTranslations, type TranslationSource } from '../../contexts/TranslationContext';
+import {
+  TranslationProvider,
+  useTranslations,
+  type TranslationSource,
+} from '../../contexts/TranslationContext';
 import { translationSourceOf } from '../../lib/translation-source';
-import { AnnotateView, type SelectionMotivation, type ClickAction, type ShapeType } from './AnnotateView';
+import {
+  AnnotateView,
+  type SelectionMotivation,
+  type ClickAction,
+  type ShapeType,
+} from './AnnotateView';
 import type { AnnotateMediaRenderers } from './annotate-renderers';
 import { BrowseView, type ReferenceHover } from './BrowseView';
 import type { BrowseMediaRenderers } from './browse-renderers';
 import { PopupContainer } from '../annotation-popups/SharedPopupElements';
 import { JsonLdView } from '../annotation-popups/JsonLdView';
-import type { Annotation, AnnotationId, ResourceDescriptor as XynologResource, EventMap, AnchorRect } from '@xynolog/core';
-import { getExactText, getTargetSelector, getPrimaryMediaType, isHighlight, isAssessment, isReference, isComment, isTag, getBodySource, annotationId as makeAnnotationId } from '@xynolog/core';
+import type {
+  Annotation,
+  AnnotationId,
+  ResourceDescriptor as XynologResource,
+  EventMap,
+  AnchorRect,
+} from '@xynolog/core';
+import {
+  getExactText,
+  getTargetSelector,
+  getPrimaryMediaType,
+  isHighlight,
+  isAssessment,
+  isReference,
+  isComment,
+  isTag,
+  getBodySource,
+  annotationId as makeAnnotationId,
+} from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../hooks/useSessionEventSubscriptions';
 import { ANNOTATORS } from '../../lib/annotation-registry';
@@ -72,7 +98,9 @@ interface Props {
   clickAction?: ClickAction;
   onClickActionChange?: (action: ClickAction) => void;
   selectionMotivation?: SelectionMotivation | null;
-  onSelectionMotivationChange?: (motivation: SelectionMotivation | null) => void;
+  onSelectionMotivationChange?: (
+    motivation: SelectionMotivation | null,
+  ) => void;
   shape?: ShapeType;
   onShapeChange?: (shape: ShapeType) => void;
   /**
@@ -194,10 +222,13 @@ function ResourceViewerBody({
   // compose useToolbarPrefs() (the policy layer) and pass the values down.
   const [internalAnnotateMode, setInternalAnnotateMode] = useState(false);
   const annotateMode = annotateModeProp ?? internalAnnotateMode;
-  const changeAnnotateMode = useCallback((mode: boolean) => {
-    if (annotateModeProp === undefined) setInternalAnnotateMode(mode);
-    onAnnotateModeChangeRef.current?.(mode);
-  }, [annotateModeProp]);
+  const changeAnnotateMode = useCallback(
+    (mode: boolean) => {
+      if (annotateModeProp === undefined) setInternalAnnotateMode(mode);
+      onAnnotateModeChangeRef.current?.(mode);
+    },
+    [annotateModeProp],
+  );
 
   // Determine active view based on annotate mode
   const activeView = annotateMode ? 'annotate' : 'browse';
@@ -211,30 +242,47 @@ function ResourceViewerBody({
   // amplification on every mark event.
 
   // Remaining toolbar preferences — same controlled/uncontrolled split as mode.
-  const [internalSelectionMotivation, setInternalSelectionMotivation] = useState<SelectionMotivation | null>('linking');
-  const selectedMotivation = selectionMotivationProp !== undefined ? selectionMotivationProp : internalSelectionMotivation;
-  const changeSelectionMotivation = useCallback((motivation: SelectionMotivation | null) => {
-    if (selectionMotivationProp === undefined) setInternalSelectionMotivation(motivation);
-    onSelectionMotivationChangeRef.current?.(motivation);
-  }, [selectionMotivationProp]);
+  const [internalSelectionMotivation, setInternalSelectionMotivation] =
+    useState<SelectionMotivation | null>('linking');
+  const selectedMotivation =
+    selectionMotivationProp !== undefined
+      ? selectionMotivationProp
+      : internalSelectionMotivation;
+  const changeSelectionMotivation = useCallback(
+    (motivation: SelectionMotivation | null) => {
+      if (selectionMotivationProp === undefined)
+        setInternalSelectionMotivation(motivation);
+      onSelectionMotivationChangeRef.current?.(motivation);
+    },
+    [selectionMotivationProp],
+  );
 
-  const [internalClickAction, setInternalClickAction] = useState<ClickAction>('detail');
+  const [internalClickAction, setInternalClickAction] =
+    useState<ClickAction>('detail');
   const selectedClick = clickActionProp ?? internalClickAction;
-  const changeClickAction = useCallback((action: ClickAction) => {
-    if (clickActionProp === undefined) setInternalClickAction(action);
-    onClickActionChangeRef.current?.(action);
-  }, [clickActionProp]);
+  const changeClickAction = useCallback(
+    (action: ClickAction) => {
+      if (clickActionProp === undefined) setInternalClickAction(action);
+      onClickActionChangeRef.current?.(action);
+    },
+    [clickActionProp],
+  );
 
   const [internalShape, setInternalShape] = useState<ShapeType>('rectangle');
   const selectedShape = shapeProp ?? internalShape;
-  const changeShape = useCallback((shape: ShapeType) => {
-    if (shapeProp === undefined) setInternalShape(shape);
-    onShapeChangeRef.current?.(shape);
-  }, [shapeProp]);
+  const changeShape = useCallback(
+    (shape: ShapeType) => {
+      if (shapeProp === undefined) setInternalShape(shape);
+      onShapeChangeRef.current?.(shape);
+    },
+    [shapeProp],
+  );
 
   // JSON-LD view state
   const [showJsonLdView, setShowJsonLdView] = useState(false);
-  const [jsonLdAnnotation, setJsonLdAnnotation] = useState<Annotation | null>(null);
+  const [jsonLdAnnotation, setJsonLdAnnotation] = useState<Annotation | null>(
+    null,
+  );
 
   // Delete confirmation state
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -260,93 +308,138 @@ function ResourceViewerBody({
   };
 
   // Handle deleting annotations
-  const handleDeleteAnnotation = useCallback((id: AnnotationId) => {
-    if (!session) return;
-    session.client.mark.delete(rUri, id).catch((error: unknown) => {
-      session.client.mark.reportDeleteError({
-        resourceId: rUri,
-        message: error instanceof Error ? error.message : String(error),
+  const handleDeleteAnnotation = useCallback(
+    (id: AnnotationId) => {
+      if (!session) return;
+      session.client.mark.delete(rUri, id).catch((error: unknown) => {
+        session.client.mark.reportDeleteError({
+          resourceId: rUri,
+          message: error instanceof Error ? error.message : String(error),
+        });
       });
-    });
-  }, [session, rUri]);
+    },
+    [session, rUri],
+  );
 
   // Handle annotation clicks - memoized
-  const handleAnnotationClick = useCallback((annotation: Annotation, event?: React.MouseEvent) => {
-    const metadata = Object.values(ANNOTATORS).find(a => a.matchesAnnotation(annotation));
+  const handleAnnotationClick = useCallback(
+    (annotation: Annotation, event?: React.MouseEvent) => {
+      const metadata = Object.values(ANNOTATORS).find((a) =>
+        a.matchesAnnotation(annotation),
+      );
 
-    // An annotation of a registered type opens the annotations panel, and
-    // only when Detail mode is active: handleAnnotationClickEvent routes that
-    // to the host's panel before this is ever called. Here only the toolbar
-    // click modes (delete / jsonld / follow) fall through to the handlers below.
-    if (metadata && selectedClick !== 'deleting' && selectedClick !== 'jsonld' && selectedClick !== 'follow') {
-      return;
-    }
-
-    // Check if this is a highlight, assessment, comment, reference, or tag
-    const isSimpleAnnotation = isHighlight(annotation) || isAssessment(annotation) || isComment(annotation) || isReference(annotation) || isTag(annotation);
-
-    // Handle follow mode - navigate to resolved references only (works in both Browse and Annotate modes)
-    if (selectedClick === 'follow' && isReference(annotation)) {
-      const bodySource = getBodySource(annotation.body);
-      if (bodySource) {
-        // bodySource is already a bare resource ID — the host owns navigation
-        onOpenResourceRef.current?.(bodySource);
+      // An annotation of a registered type opens the annotations panel, and
+      // only when Detail mode is active: handleAnnotationClickEvent routes that
+      // to the host's panel before this is ever called. Here only the toolbar
+      // click modes (delete / jsonld / follow) fall through to the handlers below.
+      if (
+        metadata &&
+        selectedClick !== 'deleting' &&
+        selectedClick !== 'jsonld' &&
+        selectedClick !== 'follow'
+      ) {
+        return;
       }
-      return;
-    }
 
-    // Handle JSON-LD mode for all annotation types (works in both Browse and Annotate modes)
-    if (selectedClick === 'jsonld' && isSimpleAnnotation) {
-      setJsonLdAnnotation(annotation);
-      setShowJsonLdView(true);
-      return;
-    }
+      // Check if this is a highlight, assessment, comment, reference, or tag
+      const isSimpleAnnotation =
+        isHighlight(annotation) ||
+        isAssessment(annotation) ||
+        isComment(annotation) ||
+        isReference(annotation) ||
+        isTag(annotation);
 
-    // Only handle annotation clicks in annotate mode with toolbar modes
-    if (!annotateMode) return;
+      // Handle follow mode - navigate to resolved references only (works in both Browse and Annotate modes)
+      if (selectedClick === 'follow' && isReference(annotation)) {
+        const bodySource = getBodySource(annotation.body);
+        if (bodySource) {
+          // bodySource is already a bare resource ID — the host owns navigation
+          onOpenResourceRef.current?.(bodySource);
+        }
+        return;
+      }
 
-    // Handle delete mode for all annotation types
-    if (selectedClick === 'deleting' && isSimpleAnnotation) {
-      // Show confirmation dialog
-      const position = event
-        ? { x: event.clientX, y: event.clientY + 10 }
-        : { x: window.innerWidth / 2 - 150, y: window.innerHeight / 2 - 75 };
+      // Handle JSON-LD mode for all annotation types (works in both Browse and Annotate modes)
+      if (selectedClick === 'jsonld' && isSimpleAnnotation) {
+        setJsonLdAnnotation(annotation);
+        setShowJsonLdView(true);
+        return;
+      }
 
-      setDeleteConfirmation({ annotation, position });
-      return;
-    }
-  }, [annotateMode, selectedClick]);
+      // Only handle annotation clicks in annotate mode with toolbar modes
+      if (!annotateMode) return;
+
+      // Handle delete mode for all annotation types
+      if (selectedClick === 'deleting' && isSimpleAnnotation) {
+        // Show confirmation dialog
+        const position = event
+          ? { x: event.clientX, y: event.clientY + 10 }
+          : { x: window.innerWidth / 2 - 150, y: window.innerHeight / 2 - 75 };
+
+        setDeleteConfirmation({ annotation, position });
+        return;
+      }
+    },
+    [annotateMode, selectedClick],
+  );
 
   // Annotation click coordinator - handles panel opening and scrolling
-  const handleAnnotationClickEvent = useCallback(({ annotationId, anchorRect }: {
-    annotationId: string;
-    anchorRect?: AnchorRect;
-  }) => {
-    // Resolve the annotation FIRST. The id is the whole address, and the
-    // motivation is derived from the annotation it names rather than carried
-    // beside it — one fact, one encoding. Resolving first also means a click
-    // naming an annotation this viewer has not loaded (a remote drive that
-    // arrived while the participant was elsewhere) finds nothing and does
-    // nothing, which is why the channel needs no resourceId guard.
-    const allAnnotations = [...highlights, ...references, ...assessments, ...comments, ...tags];
-    const annotation = allAnnotations.find(a => a.id === annotationId);
-    if (!annotation) return;
+  const handleAnnotationClickEvent = useCallback(
+    ({
+      annotationId,
+      anchorRect,
+    }: {
+      annotationId: string;
+      anchorRect?: AnchorRect;
+    }) => {
+      // Resolve the annotation FIRST. The id is the whole address, and the
+      // motivation is derived from the annotation it names rather than carried
+      // beside it — one fact, one encoding. Resolving first also means a click
+      // naming an annotation this viewer has not loaded (a remote drive that
+      // arrived while the participant was elsewhere) finds nothing and does
+      // nothing, which is why the channel needs no resourceId guard.
+      const allAnnotations = [
+        ...highlights,
+        ...references,
+        ...assessments,
+        ...comments,
+        ...tags,
+      ];
+      const annotation = allAnnotations.find((a) => a.id === annotationId);
+      if (!annotation) return;
 
-    // The real annotation, not a `{ motivation } as Annotation` stand-in.
-    const metadata = Object.values(ANNOTATORS).find(a => a.matchesAnnotation(annotation));
+      // The real annotation, not a `{ motivation } as Annotation` stand-in.
+      const metadata = Object.values(ANNOTATORS).find((a) =>
+        a.matchesAnnotation(annotation),
+      );
 
-    // No registered annotator, or a click mode other than detail: this is a
-    // plain annotation click, not a panel-opening one.
-    if (!metadata || selectedClick !== 'detail') {
-      handleAnnotationClick(annotation);
-      return;
-    }
+      // No registered annotator, or a click mode other than detail: this is a
+      // plain annotation click, not a panel-opening one.
+      if (!metadata || selectedClick !== 'detail') {
+        handleAnnotationClick(annotation);
+        return;
+      }
 
-    // All annotations open the unified annotations panel — the host owns the panel.
-    // The panel internally switches tabs based on the motivation → tab mapping in UnifiedAnnotationsPanel.
-    // View geometry passes through untouched: the emitter owned it, the host anchors with it.
-    onOpenPanelRef.current?.({ panel: 'annotations', scrollToAnnotationId: makeAnnotationId(annotationId), motivation: annotation.motivation, ...(anchorRect ? { anchorRect } : {}) });
-  }, [highlights, references, assessments, comments, tags, handleAnnotationClick, selectedClick]);
+      // All annotations open the unified annotations panel — the host owns the panel.
+      // The panel internally switches tabs based on the motivation → tab mapping in UnifiedAnnotationsPanel.
+      // View geometry passes through untouched: the emitter owned it, the host anchors with it.
+      onOpenPanelRef.current?.({
+        panel: 'annotations',
+        scrollToAnnotationId: makeAnnotationId(annotationId),
+        motivation: annotation.motivation,
+        ...(anchorRect ? { anchorRect } : {}),
+      });
+    },
+    [
+      highlights,
+      references,
+      assessments,
+      comments,
+      tags,
+      handleAnnotationClick,
+      selectedClick,
+    ],
+  );
 
   // Single subscription call per file (see typescript/scripts/compliance/audit-hooks-ordering.mts).
   useSessionEventSubscriptions(session, {
@@ -357,7 +450,7 @@ function ResourceViewerBody({
   // Prepare props for child components (memoized to prevent unnecessary re-renders of BrowseView/AnnotateView)
   const annotationsCollection = useMemo(
     () => ({ highlights, references, assessments, comments, tags }),
-    [highlights, references, assessments, comments, tags]
+    [highlights, references, assessments, comments, tags],
   );
 
   // No scrollToAnnotationId: panel-entry scrolling is the host's loop (page →
@@ -372,13 +465,23 @@ function ResourceViewerBody({
 
   // Define getTargetResourceName callback OUTSIDE the conditional
   // IMPORTANT: This must be defined before the return statement to avoid hook ordering violations
-  const getTargetResourceName = useCallback((resourceId: string) => {
-    const referencedResource = references.find((a: Annotation) => getBodySource(a.body) === resourceId);
-    return referencedResource ? getExactText(getTargetSelector(referencedResource.target)) : undefined;
-  }, [references]);
+  const getTargetResourceName = useCallback(
+    (resourceId: string) => {
+      const referencedResource = references.find(
+        (a: Annotation) => getBodySource(a.body) === resourceId,
+      );
+      return referencedResource
+        ? getExactText(getTargetSelector(referencedResource.target))
+        : undefined;
+    },
+    [references],
+  );
 
   return (
-    <div ref={documentViewerRef} className={`xynolog-resource-viewer${inline ? ' xynolog-resource-viewer--inline' : ''}`}>
+    <div
+      ref={documentViewerRef}
+      className={`xynolog-resource-viewer${inline ? ' xynolog-resource-viewer--inline' : ''}`}
+    >
       {/* Content */}
       {activeView === 'annotate' ? (
         <AnnotateView
@@ -390,13 +493,17 @@ function ResourceViewerBody({
           annotations={annotationsCollection}
           uiState={uiState}
           onUIStateChange={(updates) => {
-            if ('selectedMotivation' in updates) changeSelectionMotivation(updates.selectedMotivation ?? null);
-            if ('selectedClick' in updates) changeClickAction(updates.selectedClick!);
+            if ('selectedMotivation' in updates)
+              changeSelectionMotivation(updates.selectedMotivation ?? null);
+            if ('selectedClick' in updates)
+              changeClickAction(updates.selectedClick!);
             if ('selectedShape' in updates) changeShape(updates.selectedShape!);
           }}
           enableWidgets={true}
           getTargetResourceName={getTargetResourceName}
-          {...(generatingReferenceId !== undefined && { generatingReferenceId })}
+          {...(generatingReferenceId !== undefined && {
+            generatingReferenceId,
+          })}
           showLineNumbers={showLineNumbers}
           hoverDelayMs={hoverDelayMs}
           annotateMode={annotateMode}
@@ -449,59 +556,68 @@ function ResourceViewerBody({
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmation && (() => {
-        const annotation = deleteConfirmation.annotation;
-        const metadata = Object.values(ANNOTATORS).find(a => a.matchesAnnotation(annotation));
-        const targetSelector = getTargetSelector(annotation.target);
-        const selectedText = getExactText(targetSelector);
-        const motivationEmoji = metadata?.iconEmoji || '📝';
+      {deleteConfirmation &&
+        (() => {
+          const annotation = deleteConfirmation.annotation;
+          const metadata = Object.values(ANNOTATORS).find((a) =>
+            a.matchesAnnotation(annotation),
+          );
+          const targetSelector = getTargetSelector(annotation.target);
+          const selectedText = getExactText(targetSelector);
+          const motivationEmoji = metadata?.iconEmoji || '📝';
 
-        return (
-          <PopupContainer
-            isOpen={!!deleteConfirmation}
-            onClose={() => setDeleteConfirmation(null)}
-            position={deleteConfirmation.position}
-          >
-            <div className="xynolog-delete-confirmation">
-              <div className="xynolog-delete-confirmation__header">
-                <span className="xynolog-delete-confirmation__icon">{motivationEmoji}</span>
-                <h3 className="xynolog-delete-confirmation__title">
-                  {t('deleteConfirmationTitle')}
-                </h3>
-              </div>
-
-              {selectedText && (
-                <div className="xynolog-delete-confirmation__quote">
-                  <p className="xynolog-delete-confirmation__text">
-                    "{selectedText.length > 100 ? selectedText.substring(0, 100) + '...' : selectedText}"
-                  </p>
+          return (
+            <PopupContainer
+              isOpen={!!deleteConfirmation}
+              onClose={() => setDeleteConfirmation(null)}
+              position={deleteConfirmation.position}
+            >
+              <div className="xynolog-delete-confirmation">
+                <div className="xynolog-delete-confirmation__header">
+                  <span className="xynolog-delete-confirmation__icon">
+                    {motivationEmoji}
+                  </span>
+                  <h3 className="xynolog-delete-confirmation__title">
+                    {t('deleteConfirmationTitle')}
+                  </h3>
                 </div>
-              )}
 
-              <p className="xynolog-delete-confirmation__message">
-                {t('deleteConfirmationMessage')}
-              </p>
-              <div className="xynolog-delete-confirmation__actions">
-              <button
-                onClick={() => setDeleteConfirmation(null)}
-                className="xynolog-button xynolog-button--secondary"
-              >
-                {t('deleteConfirmationCancel')}
-              </button>
-              <button
-                onClick={() => {
-                  handleDeleteAnnotation(deleteConfirmation.annotation.id);
-                  setDeleteConfirmation(null);
-                }}
-                className="xynolog-button xynolog-button--danger"
-              >
-                {t('deleteConfirmationDelete')}
-              </button>
-            </div>
-          </div>
-        </PopupContainer>
-        );
-      })()}
+                {selectedText && (
+                  <div className="xynolog-delete-confirmation__quote">
+                    <p className="xynolog-delete-confirmation__text">
+                      "
+                      {selectedText.length > 100
+                        ? selectedText.substring(0, 100) + '...'
+                        : selectedText}
+                      "
+                    </p>
+                  </div>
+                )}
+
+                <p className="xynolog-delete-confirmation__message">
+                  {t('deleteConfirmationMessage')}
+                </p>
+                <div className="xynolog-delete-confirmation__actions">
+                  <button
+                    onClick={() => setDeleteConfirmation(null)}
+                    className="xynolog-button xynolog-button--secondary"
+                  >
+                    {t('deleteConfirmationCancel')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDeleteAnnotation(deleteConfirmation.annotation.id);
+                      setDeleteConfirmation(null);
+                    }}
+                    className="xynolog-button xynolog-button--danger"
+                  >
+                    {t('deleteConfirmationDelete')}
+                  </button>
+                </div>
+              </div>
+            </PopupContainer>
+          );
+        })()}
     </div>
   );
 }

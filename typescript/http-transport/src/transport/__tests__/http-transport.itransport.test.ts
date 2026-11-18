@@ -13,10 +13,24 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BehaviorSubject } from 'rxjs';
-import { BRIDGED_CHANNELS, accessToken, baseUrl, type AccessToken, type EventMap, type FrameRefusal, annotationId, resourceId } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  accessToken,
+  baseUrl,
+  type AccessToken,
+  type EventMap,
+  type FrameRefusal,
+  annotationId,
+  resourceId,
+} from '@xynolog/core';
 import { HttpContentTransport } from '../http-content-transport';
 import { HttpTransport, currentUserOf } from '../http-transport';
-import { createSSEStream, mockFetch, mockSSEResponse, sseChunk } from './helpers/mock-conn';
+import {
+  createSSEStream,
+  mockFetch,
+  mockSSEResponse,
+  sseChunk,
+} from './helpers/mock-conn';
 
 const BASE = baseUrl('http://localhost:4000');
 
@@ -25,13 +39,22 @@ describe('HttpTransport ITransport delegation', () => {
     mockFetch.mockReset();
   });
 
-  const token = () => new BehaviorSubject<AccessToken | null>(accessToken('tok'));
+  const token = () =>
+    new BehaviorSubject<AccessToken | null>(accessToken('tok'));
 
   it('emit posts the channel and payload, and resolves the subscriber count', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ subscribers: 2 }) });
-    const transport = new HttpTransport({ baseUrl: BASE, channels: BRIDGED_CHANNELS });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ subscribers: 2 }),
+    });
+    const transport = new HttpTransport({
+      baseUrl: BASE,
+      channels: BRIDGED_CHANNELS,
+    });
 
-    await expect(transport.emit('beckon:hover', { annotationId: annotationId('a-1') })).resolves.toBe(2);
+    await expect(
+      transport.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).resolves.toBe(2);
 
     const [url, opts] = mockFetch.mock.calls[0] as [string, { body: string }];
     expect(url).toBe(`${BASE}/bus/emit`);
@@ -44,10 +67,20 @@ describe('HttpTransport ITransport delegation', () => {
   });
 
   it('emit carries the resource scope when one is given', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ subscribers: 1 }) });
-    const transport = new HttpTransport({ baseUrl: BASE, channels: BRIDGED_CHANNELS });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ subscribers: 1 }),
+    });
+    const transport = new HttpTransport({
+      baseUrl: BASE,
+      channels: BRIDGED_CHANNELS,
+    });
 
-    await transport.emit('beckon:hover', { annotationId: annotationId('a-1') }, { scope: resourceId('res-9') });
+    await transport.emit(
+      'beckon:hover',
+      { annotationId: annotationId('a-1') },
+      { scope: resourceId('res-9') },
+    );
 
     const [, opts] = mockFetch.mock.calls[0] as [string, { body: string }];
     expect(JSON.parse(opts.body)).toMatchObject({ scope: 'res-9' });
@@ -64,33 +97,64 @@ describe('HttpTransport ITransport delegation', () => {
     const sse = mockSSEResponse();
     // A credential is required to connect at all (the SSE connect gate), so a
     // tokenless transport would never issue the subscribe this test waits on.
-    const transport = new HttpTransport({ baseUrl: BASE, channels: BRIDGED_CHANNELS, token$: token() });
+    const transport = new HttpTransport({
+      baseUrl: BASE,
+      channels: BRIDGED_CHANNELS,
+      token$: token(),
+    });
 
     const seen: (EventMap['beckon:focus'] | FrameRefusal)[] = [];
     const off = transport.on('beckon:focus', (p) => seen.push(p));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
-    sse.push(sseChunk('bus-event', JSON.stringify({
-      channel: 'beckon:focus', payload: { resourceId: 'res-1', annotationId: 'a-1' },
-    })));
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'beckon:focus',
+          payload: { resourceId: 'res-1', annotationId: 'a-1' },
+        }),
+      ),
+    );
     await vi.waitFor(() => expect(seen).toHaveLength(1));
     expect(seen[0]).toEqual({ resourceId: 'res-1', annotationId: 'a-1' });
 
     // A different channel must not reach this subscriber — the filter is the
     // whole reason `stream` takes a channel rather than returning everything.
-    sse.push(sseChunk('bus-event', JSON.stringify({
-      channel: 'beckon:sparkle', payload: { annotationId: 'a-2' },
-    })));
-    sse.push(sseChunk('bus-event', JSON.stringify({
-      channel: 'beckon:focus', payload: { resourceId: 'res-1', annotationId: 'a-3' },
-    })));
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'beckon:sparkle',
+          payload: { annotationId: 'a-2' },
+        }),
+      ),
+    );
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'beckon:focus',
+          payload: { resourceId: 'res-1', annotationId: 'a-3' },
+        }),
+      ),
+    );
     await vi.waitFor(() => expect(seen).toHaveLength(2));
-    expect(seen).toEqual([{ resourceId: 'res-1', annotationId: 'a-1' }, { resourceId: 'res-1', annotationId: 'a-3' }]);
+    expect(seen).toEqual([
+      { resourceId: 'res-1', annotationId: 'a-1' },
+      { resourceId: 'res-1', annotationId: 'a-3' },
+    ]);
 
     off();
-    sse.push(sseChunk('bus-event', JSON.stringify({
-      channel: 'beckon:focus', payload: { resourceId: 'res-1', annotationId: 'a-4' },
-    })));
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'beckon:focus',
+          payload: { resourceId: 'res-1', annotationId: 'a-4' },
+        }),
+      ),
+    );
     await new Promise((r) => setTimeout(r, 10));
     expect(seen).toHaveLength(2);
 
@@ -101,16 +165,28 @@ describe('HttpTransport ITransport delegation', () => {
     const sse = mockSSEResponse();
     // A credential is required to connect at all (the SSE connect gate), so a
     // tokenless transport would never issue the subscribe this test waits on.
-    const transport = new HttpTransport({ baseUrl: BASE, channels: BRIDGED_CHANNELS, token$: token() });
+    const transport = new HttpTransport({
+      baseUrl: BASE,
+      channels: BRIDGED_CHANNELS,
+      token$: token(),
+    });
 
     const seen: (EventMap['beckon:focus'] | FrameRefusal)[] = [];
     const sub = transport.stream('beckon:focus').subscribe((p) => seen.push(p));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
-    sse.push(sseChunk('bus-event', JSON.stringify({
-      channel: 'beckon:focus', payload: { resourceId: 'res-1', annotationId: 'a-1' },
-    })));
-    await vi.waitFor(() => expect(seen).toEqual([{ resourceId: 'res-1', annotationId: 'a-1' }]));
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'beckon:focus',
+          payload: { resourceId: 'res-1', annotationId: 'a-1' },
+        }),
+      ),
+    );
+    await vi.waitFor(() =>
+      expect(seen).toEqual([{ resourceId: 'res-1', annotationId: 'a-1' }]),
+    );
 
     sub.unsubscribe();
     transport.dispose();
@@ -118,7 +194,10 @@ describe('HttpTransport ITransport delegation', () => {
 
   it('state$ and trackReply reach the actor', async () => {
     mockSSEResponse();
-    const transport = new HttpTransport({ baseUrl: BASE, channels: BRIDGED_CHANNELS });
+    const transport = new HttpTransport({
+      baseUrl: BASE,
+      channels: BRIDGED_CHANNELS,
+    });
 
     const states: string[] = [];
     transport.state$.subscribe((s) => states.push(s));
@@ -135,7 +214,7 @@ describe('HttpTransport ITransport delegation', () => {
   });
 });
 
-describe('HttpTransport given its caller\'s fetch', () => {
+describe("HttpTransport given its caller's fetch", () => {
   beforeEach(() => {
     mockFetch.mockReset();
   });
@@ -144,28 +223,59 @@ describe('HttpTransport given its caller\'s fetch', () => {
   function recordingFetch() {
     const asked: string[] = [];
     const sse = createSSEStream();
-    const fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
-      const url = new URL(input instanceof Request ? input.url : String(input));
-      asked.push(`${input instanceof Request ? input.method : (init?.method ?? 'GET')} ${url.pathname}`);
-      if (url.pathname === '/bus/subscribe') return new Response(sse.stream, { headers: { 'content-type': 'text/event-stream' } });
-      if (url.pathname === '/bus/emit') return Response.json({ subscribers: 1 });
-      if (url.pathname === '/api/users/me') return Response.json({ did: 'did:web:kb.test:users:alice', email: null, name: null, image: null, domain: 'kb.test' });
-      return new Response('the bytes', { headers: { 'content-type': 'text/plain' } });
-    });
+    const fetch = vi.fn(
+      async (
+        input: string | URL | Request,
+        init?: RequestInit,
+      ): Promise<Response> => {
+        const url = new URL(
+          input instanceof Request ? input.url : String(input),
+        );
+        asked.push(
+          `${input instanceof Request ? input.method : (init?.method ?? 'GET')} ${url.pathname}`,
+        );
+        if (url.pathname === '/bus/subscribe')
+          return new Response(sse.stream, {
+            headers: { 'content-type': 'text/event-stream' },
+          });
+        if (url.pathname === '/bus/emit')
+          return Response.json({ subscribers: 1 });
+        if (url.pathname === '/api/users/me')
+          return Response.json({
+            did: 'did:web:kb.test:users:alice',
+            email: null,
+            name: null,
+            image: null,
+            domain: 'kb.test',
+          });
+        return new Response('the bytes', {
+          headers: { 'content-type': 'text/plain' },
+        });
+      },
+    );
     return { asked, fetch };
   }
 
-  it('sends its stream, its emits, its requests and its content through that fetch, and nothing through the runtime\'s', async () => {
+  it("sends its stream, its emits, its requests and its content through that fetch, and nothing through the runtime's", async () => {
     const given = recordingFetch();
-    const transport = new HttpTransport({ baseUrl: BASE, channels: BRIDGED_CHANNELS, token$: new BehaviorSubject<AccessToken | null>(accessToken('tok')), fetch: given.fetch });
+    const transport = new HttpTransport({
+      baseUrl: BASE,
+      channels: BRIDGED_CHANNELS,
+      token$: new BehaviorSubject<AccessToken | null>(accessToken('tok')),
+      fetch: given.fetch,
+    });
 
-    await vi.waitFor(() => expect(given.asked).toContain('POST /bus/subscribe'));
+    await vi.waitFor(() =>
+      expect(given.asked).toContain('POST /bus/subscribe'),
+    );
     await transport.emit('beckon:hover', { annotationId: annotationId('a-1') });
     await transport.getCurrentUser();
     await new HttpContentTransport(transport).getBinary(resourceId('res-1'));
 
     // The stream's connect is asked first; whether it is asked again is the stream's own business.
-    expect(given.asked.filter((request) => request !== 'POST /bus/subscribe')).toEqual(['POST /bus/emit', 'GET /api/users/me', 'GET /resources/res-1']);
+    expect(
+      given.asked.filter((request) => request !== 'POST /bus/subscribe'),
+    ).toEqual(['POST /bus/emit', 'GET /api/users/me', 'GET /resources/res-1']);
     expect(mockFetch).not.toHaveBeenCalled();
     transport.dispose();
   });

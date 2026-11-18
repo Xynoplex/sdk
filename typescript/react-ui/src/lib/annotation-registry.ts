@@ -47,7 +47,7 @@ export const ANNOTATORS = {
     className: 'annotation-highlight',
     iconEmoji: '🟡',
     matchesAnnotation: (ann: Annotation) => isHighlight(ann),
-    announceOnCreate: 'Highlight created'
+    announceOnCreate: 'Highlight created',
   },
   comment: {
     motivation: 'commenting',
@@ -56,7 +56,7 @@ export const ANNOTATORS = {
     className: 'annotation-comment',
     iconEmoji: '💬',
     matchesAnnotation: (ann: Annotation) => isComment(ann),
-    announceOnCreate: 'Comment created'
+    announceOnCreate: 'Comment created',
   },
   assessment: {
     motivation: 'assessing',
@@ -65,7 +65,7 @@ export const ANNOTATORS = {
     className: 'annotation-assessment',
     iconEmoji: '🔴',
     matchesAnnotation: (ann: Annotation) => ann.motivation === 'assessing',
-    announceOnCreate: 'Assessment created'
+    announceOnCreate: 'Assessment created',
   },
   reference: {
     motivation: 'linking',
@@ -74,7 +74,7 @@ export const ANNOTATORS = {
     className: 'annotation-reference',
     iconEmoji: '🔵',
     matchesAnnotation: (ann: Annotation) => isReference(ann),
-    announceOnCreate: 'Reference created'
+    announceOnCreate: 'Reference created',
   },
   tag: {
     motivation: 'tagging',
@@ -83,8 +83,8 @@ export const ANNOTATORS = {
     className: 'annotation-tag',
     iconEmoji: '🏷️',
     matchesAnnotation: (ann: Annotation) => isTag(ann),
-    announceOnCreate: 'Tag created'
-  }
+    announceOnCreate: 'Tag created',
+  },
 } satisfies Record<string, Annotator>;
 
 /** Keys of the annotator registry — also the annotations panel's tab keys. */
@@ -98,9 +98,11 @@ export type AnnotatorKey = keyof typeof ANNOTATORS;
  * `$ref`), but `panel:open` is not wire-validated at runtime, so loose strings
  * can still arrive — callers at that boundary must handle `undefined`.
  */
-export function annotatorKeyForMotivation(motivation: string): AnnotatorKey | undefined {
-  const entry = (Object.entries(ANNOTATORS) as [AnnotatorKey, Annotator][])
-    .find(([, annotator]) => annotator.motivation === motivation);
+export function annotatorKeyForMotivation(
+  motivation: string,
+): AnnotatorKey | undefined {
+  const entry = (
+    Object.entries(ANNOTATORS) as [AnnotatorKey, Annotator][]
+  ).find(([, annotator]) => annotator.motivation === motivation);
   return entry?.[0];
 }
-

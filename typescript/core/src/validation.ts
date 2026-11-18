@@ -9,7 +9,11 @@
  * Validation result types
  */
 export type ValidationSuccess<T> = { success: true; data: T };
-export type ValidationFailure = { success: false; error: string; details?: string[] };
+export type ValidationFailure = {
+  success: false;
+  error: string;
+  details?: string[];
+};
 export type ValidationResult<T> = ValidationSuccess<T> | ValidationFailure;
 
 /**
@@ -64,7 +68,7 @@ export const JWTTokenSchema = {
  */
 export function validateData<T>(
   schema: { parse(data: unknown): T },
-  data: unknown
+  data: unknown,
 ): ValidationResult<T> {
   try {
     const validated = schema.parse(data);

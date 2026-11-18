@@ -54,24 +54,32 @@ function makeBus(
     failureSubject,
     stateSubject,
     state$: stateSubject.asObservable(),
-    emit: vi.fn(async (
-      channel: keyof EventMap,
-      payload: EventMap[keyof EventMap],
-      envelope?: { correlationId?: string },
-    ) => {
-      bus.emitChannel = channel as string;
-      bus.emitPayload = payload as Record<string, unknown>;
-      bus.emitEnvelope = envelope ?? null;
-      return 1;
-    }) as BusPrimitive['emit'],
+    emit: vi.fn(
+      async (
+        channel: keyof EventMap,
+        payload: EventMap[keyof EventMap],
+        envelope?: { correlationId?: string },
+      ) => {
+        bus.emitChannel = channel as string;
+        bus.emitPayload = payload as Record<string, unknown>;
+        bus.emitEnvelope = envelope ?? null;
+        return 1;
+      },
+    ) as BusPrimitive['emit'],
     stream: vi.fn((channel: keyof EventMap) => {
       if ((channel as string) === resultChannel) {
-        return resultSubject.asObservable() as unknown as Observable<EventMap[keyof EventMap]>;
+        return resultSubject.asObservable() as unknown as Observable<
+          EventMap[keyof EventMap]
+        >;
       }
       if ((channel as string) === failureChannel) {
-        return failureSubject.asObservable() as unknown as Observable<EventMap[keyof EventMap]>;
+        return failureSubject.asObservable() as unknown as Observable<
+          EventMap[keyof EventMap]
+        >;
       }
-      return new Subject<unknown>().asObservable() as unknown as Observable<EventMap[keyof EventMap]>;
+      return new Subject<unknown>().asObservable() as unknown as Observable<
+        EventMap[keyof EventMap]
+      >;
     }) as BusPrimitive['stream'],
     // The default every real transport that delivers everything gives. Tests
     // that exercise a NARROWED set override it per case below.
@@ -82,9 +90,11 @@ function makeBus(
     // The envelope view this double answers from its own scripted subjects.
     frames: vi.fn((channel: keyof EventMap) => {
       const subject =
-        (channel as string) === resultChannel ? resultSubject
-        : (channel as string) === failureChannel ? failureSubject
-        : new Subject<unknown>();
+        (channel as string) === resultChannel
+          ? resultSubject
+          : (channel as string) === failureChannel
+            ? failureSubject
+            : new Subject<unknown>();
       return subject.asObservable();
     }) as BusPrimitive['frames'],
   };
@@ -113,7 +123,10 @@ describe('Bus.request', () => {
     expect(typeof cid).toBe('string');
     expect(cid.length).toBeGreaterThan(0);
 
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
     expect(await promise).toEqual({ cancelled: true });
   });
 
@@ -124,8 +137,14 @@ describe('Bus.request', () => {
     const cid = bus.emitEnvelope!.correlationId as string;
 
     // Wrong correlationId: must be ignored.
-    bus.resultSubject.next({ correlationId: 'somebody-else', payload: { response: { cancelled: true } } });
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: false } } });
+    bus.resultSubject.next({
+      correlationId: 'somebody-else',
+      payload: { response: { cancelled: true } },
+    });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: false } },
+    });
 
     expect(await promise).toEqual({ cancelled: false });
   });
@@ -136,7 +155,10 @@ describe('Bus.request', () => {
     await Promise.resolve();
     const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.failureSubject.next({ correlationId: cid, payload: { message: 'permission denied' } });
+    bus.failureSubject.next({
+      correlationId: cid,
+      payload: { message: 'permission denied' },
+    });
 
     const err = await captured;
     expect(err).toBeInstanceOf(BusRequestError);
@@ -168,7 +190,8 @@ describe('Bus.request', () => {
       correlationId: cid,
       payload: {
         code: 'peer-unavailable',
-        message: 'No subscriber for browse:resources-requested: the service that answers it is not connected',
+        message:
+          'No subscriber for browse:resources-requested: the service that answers it is not connected',
       },
     });
 
@@ -179,25 +202,39 @@ describe('Bus.request', () => {
   });
 
   it.each([
-    ['unauthorized', 'bus.unauthorized', 'job:claim refused: the caller is not a worker for this knowledge base'],
-    ['none-pending', 'bus.none-pending', 'No pending job of the requested types'],
-  ])("promotes the dispatcher's claim verdict '%s' to %s", async (wire, client, message) => {
-    // A worker's claim loop must tell "park until a wake-up" apart from "stop,
-    // this credential can never claim" — and both ride job:claim-failed. As
-    // strings they are indistinguishable except by matching the prose; as
-    // promoted codes the loop branches on `err.code` like every other consumer.
-    const bus = makeBus(RESULT, FAILURE);
-    const captured = new Bus(bus).request(EMIT, {}).catch((e) => e);
-    await Promise.resolve();
-    const cid = bus.emitEnvelope!.correlationId as string;
+    [
+      'unauthorized',
+      'bus.unauthorized',
+      'job:claim refused: the caller is not a worker for this knowledge base',
+    ],
+    [
+      'none-pending',
+      'bus.none-pending',
+      'No pending job of the requested types',
+    ],
+  ])(
+    "promotes the dispatcher's claim verdict '%s' to %s",
+    async (wire, client, message) => {
+      // A worker's claim loop must tell "park until a wake-up" apart from "stop,
+      // this credential can never claim" — and both ride job:claim-failed. As
+      // strings they are indistinguishable except by matching the prose; as
+      // promoted codes the loop branches on `err.code` like every other consumer.
+      const bus = makeBus(RESULT, FAILURE);
+      const captured = new Bus(bus).request(EMIT, {}).catch((e) => e);
+      await Promise.resolve();
+      const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.failureSubject.next({ correlationId: cid, payload: { code: wire, message } });
+      bus.failureSubject.next({
+        correlationId: cid,
+        payload: { code: wire, message },
+      });
 
-    const err = await captured;
-    expect(err).toBeInstanceOf(BusRequestError);
-    expect(err.code).toBe(client);
-    expect(err.message).toBe(message);
-  });
+      const err = await captured;
+      expect(err).toBeInstanceOf(BusRequestError);
+      expect(err.code).toBe(client);
+      expect(err.message).toBe(message);
+    },
+  );
 
   it("promotes 'not-found' — the verdict a caller may act destructively on", async () => {
     // The archivist answers a request for a resource its event log holds no
@@ -210,7 +247,10 @@ describe('Bus.request', () => {
     await Promise.resolve();
     const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.failureSubject.next({ correlationId: cid, payload: { code: 'not-found', message: 'Resource not found' } });
+    bus.failureSubject.next({
+      correlationId: cid,
+      payload: { code: 'not-found', message: 'Resource not found' },
+    });
 
     const err = await captured;
     expect(err).toBeInstanceOf(BusRequestError);
@@ -225,7 +265,10 @@ describe('Bus.request', () => {
     await Promise.resolve();
     const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.failureSubject.next({ correlationId: cid, payload: { message: 'permission denied' } });
+    bus.failureSubject.next({
+      correlationId: cid,
+      payload: { message: 'permission denied' },
+    });
     expect((await captured).code).toBe('bus.rejected');
   });
 
@@ -238,7 +281,10 @@ describe('Bus.request', () => {
     await Promise.resolve();
     const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.failureSubject.next({ correlationId: cid, payload: { code: 'something-from-the-future', message: 'x' } });
+    bus.failureSubject.next({
+      correlationId: cid,
+      payload: { code: 'something-from-the-future', message: 'x' },
+    });
     const err = await captured;
     expect(err).toBeInstanceOf(BusRequestError);
     expect(err).toMatchObject({ code: 'bus.rejected', message: 'x' });
@@ -268,20 +314,30 @@ describe('Bus.request', () => {
   it.each([
     ['no words', {}, 'it has no `message`'],
     ['a code but no words', { code: 'not-found' }, 'it has no `message`'],
-    ['a code that is no text', { message: 'x', code: 7 }, 'its `code` is malformed'],
-  ] as const)('refuses a failure with %s, naming its fault', async (_why, payload, said) => {
-    const bus = makeBus(RESULT, FAILURE);
-    const captured = new Bus(bus).request(EMIT, {}).catch((e) => e);
-    await Promise.resolve();
-    const cid = bus.emitEnvelope!.correlationId as string;
+    [
+      'a code that is no text',
+      { message: 'x', code: 7 },
+      'its `code` is malformed',
+    ],
+  ] as const)(
+    'refuses a failure with %s, naming its fault',
+    async (_why, payload, said) => {
+      const bus = makeBus(RESULT, FAILURE);
+      const captured = new Bus(bus).request(EMIT, {}).catch((e) => e);
+      await Promise.resolve();
+      const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.failureSubject.next({ correlationId: cid, payload });
+      bus.failureSubject.next({ correlationId: cid, payload });
 
-    const err = await captured;
-    expect(err).toBeInstanceOf(XynologError);
-    expect(err).not.toBeInstanceOf(BusRequestError);
-    expect(err).toMatchObject({ code: 'error', message: `a payload on ${FAILURE} is not that channel's: ${said}` });
-  });
+      const err = await captured;
+      expect(err).toBeInstanceOf(XynologError);
+      expect(err).not.toBeInstanceOf(BusRequestError);
+      expect(err).toMatchObject({
+        code: 'error',
+        message: `a payload on ${FAILURE} is not that channel's: ${said}`,
+      });
+    },
+  );
 
   it('rejects with BusRequestError(bus.timeout) when no event arrives in time', async () => {
     vi.useFakeTimers();
@@ -337,8 +393,14 @@ describe('Bus.request', () => {
     await Promise.resolve();
     const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: false } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: false } },
+    });
 
     expect(await promise).toEqual({ cancelled: true });
   });
@@ -362,11 +424,13 @@ describe('Bus.request', () => {
 
     try {
       const bus = makeBus(RESULT, FAILURE);
-      bus.emit = vi.fn(async () => { throw new Error('emit failed'); }) as BusPrimitive['emit'];
+      bus.emit = vi.fn(async () => {
+        throw new Error('emit failed');
+      }) as BusPrimitive['emit'];
 
-      await expect(
-        new Bus(bus).request(EMIT, {}),
-      ).rejects.toThrow('emit failed');
+      await expect(new Bus(bus).request(EMIT, {})).rejects.toThrow(
+        'emit failed',
+      );
 
       // Now complete the result stream, as `xynolog.dispose()` would —
       // the point where a dangling EmptyError would fire.
@@ -396,7 +460,9 @@ describe('Bus.request', () => {
       const bus = makeBus(RESULT, FAILURE);
       // emit never resolves → Bus.request parks at `await bus.emit()`, so its
       // `await resultPromise` is never reached (resultPromise has no awaiter).
-      bus.emit = vi.fn(() => new Promise<number>(() => {})) as BusPrimitive['emit'];
+      bus.emit = vi.fn(
+        () => new Promise<number>(() => {}),
+      ) as BusPrimitive['emit'];
 
       // Fire-and-forget: do NOT await the returned promise.
       void new Bus(bus).request(EMIT, {});
@@ -447,7 +513,10 @@ describe('Bus.request attach gate', () => {
     await vi.waitFor(() => expect(bus.emit).toHaveBeenCalledTimes(1));
 
     const cid = bus.emitEnvelope!.correlationId as string;
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
     expect(await promise).toEqual({ cancelled: true });
   });
 
@@ -468,7 +537,10 @@ describe('Bus.request attach gate', () => {
     await vi.waitFor(() => expect(bus.emit).toHaveBeenCalledTimes(1));
 
     const cid = bus.emitEnvelope!.correlationId as string;
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
     expect(await promise).toEqual({ cancelled: true });
   });
 
@@ -486,7 +558,9 @@ describe('Bus.request attach gate', () => {
       // 30s budget: if the gate "waited out" the timeout instead of failing
       // fast, this test would blow vitest's own deadline, and the elapsed
       // check pins the intent explicitly.
-      await expect(new Bus(bus).request(EMIT, {}, 30_000)).rejects.toMatchObject({
+      await expect(
+        new Bus(bus).request(EMIT, {}, 30_000),
+      ).rejects.toMatchObject({
         code: 'bus.closed',
       });
       expect(Date.now() - started).toBeLessThan(1_000);
@@ -568,7 +642,10 @@ describe('Bus.request attach gate', () => {
     expect(bus.emit).toHaveBeenCalledTimes(1);
 
     const cid = bus.emitEnvelope!.correlationId as string;
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
     expect(await promise).toEqual({ cancelled: true });
   });
 });
@@ -589,7 +666,6 @@ describe('BusRequestError', () => {
     expect(err.details).toBeUndefined();
   });
 });
-
 
 // ── Reply tracking: a reply lost in a connection drop is asked for again ──
 
@@ -635,7 +711,10 @@ describe('Bus.request reply tracking (correlated-reply retention, client side)',
     expect(tracked).toEqual([cid]);
     expect(released).toEqual([]);
 
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
     await promise;
     expect(released).toEqual([cid]);
   });
@@ -646,7 +725,10 @@ describe('Bus.request reply tracking (correlated-reply retention, client side)',
     await Promise.resolve();
     const cid = bus.emitEnvelope!.correlationId as string;
 
-    bus.failureSubject.next({ correlationId: cid, payload: { message: 'nope' } });
+    bus.failureSubject.next({
+      correlationId: cid,
+      payload: { message: 'nope' },
+    });
     await expect(promise).rejects.toMatchObject({ code: 'bus.rejected' });
     expect(tracked).toEqual([cid]);
     expect(released).toEqual([cid]);
@@ -680,21 +762,27 @@ describe('Bus.request reply tracking (correlated-reply retention, client side)',
       throw new Error('emit refused');
     }) as BusPrimitive['emit'];
 
-    await expect(new Bus(bus).request(EMIT, {})).rejects.toThrow('emit refused');
+    await expect(new Bus(bus).request(EMIT, {})).rejects.toThrow(
+      'emit refused',
+    );
     expect(tracked).toHaveLength(1);
     expect(released).toEqual(tracked);
   });
 
   it('never tracks when the bus is closed before emit (gate fast-fail)', async () => {
     const { bus, tracked } = makeTrackingBus('closed');
-    await expect(new Bus(bus).request(EMIT, {})).rejects.toMatchObject({ code: 'bus.closed' });
+    await expect(new Bus(bus).request(EMIT, {})).rejects.toMatchObject({
+      code: 'bus.closed',
+    });
     expect(tracked).toEqual([]);
   });
 
   it("never tracks when the reply machinery settles before the gate opens (the 'settled' race arm)", async () => {
     const { bus, tracked } = makeTrackingBus('connecting');
     // Never opens: the reply timeout settles first, the emit is skipped.
-    await expect(new Bus(bus).request(EMIT, {}, 20)).rejects.toMatchObject({ code: 'bus.timeout' });
+    await expect(new Bus(bus).request(EMIT, {}, 20)).rejects.toMatchObject({
+      code: 'bus.timeout',
+    });
     expect(bus.emit).not.toHaveBeenCalled();
     expect(tracked).toEqual([]);
   });
@@ -718,7 +806,9 @@ describe('Bus.request subscription fail-fast gate', () => {
   it('gates the failure channel too — a lost rejection hangs the caller as surely as a lost result', async () => {
     const bus = makeBus(RESULT, FAILURE);
     bus.isSubscribed = (channel) => channel !== FAILURE;
-    await expect(new Bus(bus).request(EMIT, {})).rejects.toMatchObject({ code: 'bus.unsubscribed' });
+    await expect(new Bus(bus).request(EMIT, {})).rejects.toMatchObject({
+      code: 'bus.unsubscribed',
+    });
     expect(bus.emit).not.toHaveBeenCalled();
   });
 
@@ -727,7 +817,10 @@ describe('Bus.request subscription fail-fast gate', () => {
     const promise = new Bus(bus).request(EMIT, {});
     await Promise.resolve();
     const cid = bus.emitEnvelope!.correlationId as string;
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
     expect(await promise).toEqual({ cancelled: true });
   });
 });
@@ -749,7 +842,7 @@ describe('Bus.request abandoned by its caller', () => {
     return { bus, tracked, released };
   }
 
-  it('rejects with the signal\'s reason, keeps what it sent, and stops tracking the reply', async () => {
+  it("rejects with the signal's reason, keeps what it sent, and stops tracking the reply", async () => {
     const { bus, tracked, released } = tracking();
     const caller = new AbortController();
     const promise = new Bus(bus).request(EMIT, {}, 5_000, caller.signal);
@@ -766,17 +859,23 @@ describe('Bus.request abandoned by its caller', () => {
   it('gives up an emit still in flight: the abandonment aborts the signal the emit was handed', async () => {
     const { bus, tracked, released } = tracking();
     let handed: AbortSignal | undefined;
-    bus.emit = vi.fn((
-      _channel: keyof EventMap,
-      _payload: EventMap[keyof EventMap],
-      _envelope?: { correlationId?: string },
-      signal?: AbortSignal,
-    ) => {
-      handed = signal;
-      return new Promise<number>((_resolve, reject) => {
-        signal?.addEventListener('abort', () => reject(new Error('the emit was given up')), { once: true });
-      });
-    }) as BusPrimitive['emit'];
+    bus.emit = vi.fn(
+      (
+        _channel: keyof EventMap,
+        _payload: EventMap[keyof EventMap],
+        _envelope?: { correlationId?: string },
+        signal?: AbortSignal,
+      ) => {
+        handed = signal;
+        return new Promise<number>((_resolve, reject) => {
+          signal?.addEventListener(
+            'abort',
+            () => reject(new Error('the emit was given up')),
+            { once: true },
+          );
+        });
+      },
+    ) as BusPrimitive['emit'];
     const caller = new AbortController();
     const promise = new Bus(bus).request(EMIT, {}, 5_000, caller.signal);
     await Promise.resolve();
@@ -801,7 +900,10 @@ describe('Bus.request abandoned by its caller', () => {
     await expect(promise).rejects.toBe(caller.signal.reason);
     expect(bus.resultSubject.observed).toBe(false);
     expect(bus.failureSubject.observed).toBe(false);
-    bus.resultSubject.next({ correlationId: cid, payload: { response: { cancelled: true } } });
+    bus.resultSubject.next({
+      correlationId: cid,
+      payload: { response: { cancelled: true } },
+    });
   });
 
   it('sends nothing when abandoned while it waits for the stream to open', async () => {
@@ -822,7 +924,9 @@ describe('Bus.request abandoned by its caller', () => {
     const caller = new AbortController();
     caller.abort();
 
-    await expect(new Bus(bus).request(EMIT, {}, 5_000, caller.signal)).rejects.toBe(caller.signal.reason);
+    await expect(
+      new Bus(bus).request(EMIT, {}, 5_000, caller.signal),
+    ).rejects.toBe(caller.signal.reason);
     expect(bus.emit).not.toHaveBeenCalled();
     expect(bus.frames).not.toHaveBeenCalled();
     expect(tracked).toEqual([]);
@@ -830,13 +934,26 @@ describe('Bus.request abandoned by its caller', () => {
 
   it('a signal that is never used changes nothing: a reply resolves, and a bus that closes still fails as closed', async () => {
     const answered = tracking();
-    const first = new Bus(answered.bus).request(EMIT, {}, 5_000, new AbortController().signal);
+    const first = new Bus(answered.bus).request(
+      EMIT,
+      {},
+      5_000,
+      new AbortController().signal,
+    );
     await Promise.resolve();
-    answered.bus.resultSubject.next({ correlationId: answered.bus.emitEnvelope!.correlationId, payload: { response: { cancelled: true } } });
+    answered.bus.resultSubject.next({
+      correlationId: answered.bus.emitEnvelope!.correlationId,
+      payload: { response: { cancelled: true } },
+    });
     expect(await first).toEqual({ cancelled: true });
 
     const closed = tracking();
-    const second = new Bus(closed.bus).request(EMIT, {}, 5_000, new AbortController().signal);
+    const second = new Bus(closed.bus).request(
+      EMIT,
+      {},
+      5_000,
+      new AbortController().signal,
+    );
     await Promise.resolve();
     closed.bus.resultSubject.complete();
     closed.bus.failureSubject.complete();
@@ -860,39 +977,91 @@ describe('Bus.request holds a result to what its schema requires', () => {
     const bus = makeBus(RESULT, FAILURE);
     const promise = new Bus(bus).request(EMIT, { resourceId: 'res-1' });
     await Promise.resolve();
-    bus.resultSubject.next({ correlationId: bus.emitEnvelope!.correlationId, payload });
+    bus.resultSubject.next({
+      correlationId: bus.emitEnvelope!.correlationId,
+      payload,
+    });
     return promise;
   }
 
-  const resource = { '@context': 'https://schema.org/', '@id': 'res-1', name: 'A resource', representations: [{ mediaType: 'text/plain' }] };
+  const resource = {
+    '@context': 'https://schema.org/',
+    '@id': 'res-1',
+    name: 'A resource',
+    representations: [{ mediaType: 'text/plain' }],
+  };
 
   for (const [why, response, said] of [
     ['no resource', { lastSequence: 1 }, 'it has no `response.resource`'],
-    ['a resource that is null', { resource: null, lastSequence: 1 }, 'it has no `response.resource`'],
-    ['a resource with no name', { resource: { ...resource, name: undefined }, lastSequence: 1 }, 'it has no `response.resource.name`'],
-    ['a resource with no representations', { resource: { ...resource, representations: undefined }, lastSequence: 1 }, 'it has no `response.resource.representations`'],
+    [
+      'a resource that is null',
+      { resource: null, lastSequence: 1 },
+      'it has no `response.resource`',
+    ],
+    [
+      'a resource with no name',
+      { resource: { ...resource, name: undefined }, lastSequence: 1 },
+      'it has no `response.resource.name`',
+    ],
+    [
+      'a resource with no representations',
+      {
+        resource: { ...resource, representations: undefined },
+        lastSequence: 1,
+      },
+      'it has no `response.resource.representations`',
+    ],
     [
       'a representation listed with no media type',
-      { resource: { ...resource, representations: [{ mediaType: 'text/plain' }, { storageUri: 'file://a.txt' }] }, lastSequence: 1 },
+      {
+        resource: {
+          ...resource,
+          representations: [
+            { mediaType: 'text/plain' },
+            { storageUri: 'file://a.txt' },
+          ],
+        },
+        lastSequence: 1,
+      },
       'it has no `response.resource.representations.mediaType`',
     ],
     [
       'one representation, with no media type',
-      { resource: { ...resource, representations: { storageUri: 'file://a.txt' } }, lastSequence: 1 },
+      {
+        resource: {
+          ...resource,
+          representations: { storageUri: 'file://a.txt' },
+        },
+        lastSequence: 1,
+      },
       'it has no `response.resource.representations.mediaType`',
     ],
     [
       'an agent of the type the discriminator names, without what that type requires',
-      { resource: { ...resource, wasAttributedTo: { '@type': 'Organization' } }, lastSequence: 1 },
+      {
+        resource: { ...resource, wasAttributedTo: { '@type': 'Organization' } },
+        lastSequence: 1,
+      },
       'it has no `response.resource.wasAttributedTo.name`',
     ],
     [
       'representations that are neither one representation nor a list of them',
-      { resource: { ...resource, representations: 'text/plain' }, lastSequence: 1 },
+      {
+        resource: { ...resource, representations: 'text/plain' },
+        lastSequence: 1,
+      },
       'its `response.resource.representations` is malformed',
     ],
-    ['a name that is a number', { resource: { ...resource, name: 1998 }, lastSequence: 1 }, 'its `response.resource.name` is malformed'],
-    ['a sequence that is not a whole number', { resource, lastSequence: 1.5 }, 'its `response.lastSequence` is malformed'],
+    [
+      'a name that is a number',
+      { resource: { ...resource, name: 1998 }, lastSequence: 1 },
+      'its `response.resource.name` is malformed',
+    ],
+    [
+      'a sequence that is not a whole number',
+      { resource, lastSequence: 1.5 },
+      'its `response.lastSequence` is malformed',
+    ],
   ] as const) {
     it(`refuses ${why}, naming its fault`, async () => {
       // JSON drops a member that is undefined, as the wire does.
@@ -911,15 +1080,31 @@ describe('Bus.request holds a result to what its schema requires', () => {
 
   it('refuses a result with no response, where its registry entry wraps one', async () => {
     const bus = makeBus('job:cancel-ok', 'job:cancel-failed');
-    const promise = new Bus(bus).request('job:cancel-requested', { jobId: 'job-1' });
+    const promise = new Bus(bus).request('job:cancel-requested', {
+      jobId: 'job-1',
+    });
     await Promise.resolve();
-    bus.resultSubject.next({ correlationId: bus.emitEnvelope!.correlationId, payload: {} });
-    await expect(promise).rejects.toMatchObject({ code: 'error', message: "a payload on job:cancel-ok is not that channel's: it has no `response`" });
+    bus.resultSubject.next({
+      correlationId: bus.emitEnvelope!.correlationId,
+      payload: {},
+    });
+    await expect(promise).rejects.toMatchObject({
+      code: 'error',
+      message:
+        "a payload on job:cancel-ok is not that channel's: it has no `response`",
+    });
   });
 
   it('resolves a result that carries what its schema requires, and leaves what it may leave out', async () => {
-    expect(await answered({ response: { resource, lastSequence: 1 } })).toEqual({ resource, lastSequence: 1 });
-    const attributed = { ...resource, wasAttributedTo: [{ '@type': 'Person' }] };
-    expect(await answered({ response: { resource: attributed, lastSequence: 1 } })).toEqual({ resource: attributed, lastSequence: 1 });
+    expect(await answered({ response: { resource, lastSequence: 1 } })).toEqual(
+      { resource, lastSequence: 1 },
+    );
+    const attributed = {
+      ...resource,
+      wasAttributedTo: [{ '@type': 'Person' }],
+    };
+    expect(
+      await answered({ response: { resource: attributed, lastSequence: 1 } }),
+    ).toEqual({ resource: attributed, lastSequence: 1 });
   });
 });

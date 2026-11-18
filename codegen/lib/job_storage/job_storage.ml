@@ -152,8 +152,8 @@ let typescript t =
   let constant ?(as_const = false) name about value =
     S.const name ~as_const ~about:[ Doc about ] value
   in
-  let str text = S.Str (Double, text) in
-  let words = S.strings ~quote:Double Packed in
+  let str text = S.Str text in
+  let words = S.strings in
   {
     Output.path = "typescript/core/src/job-storage.ts";
     text =

@@ -13,19 +13,33 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, within, waitFor } from '@testing-library/react';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import { EventBus } from '@xynolog/core';
-import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 import { ResourceViewer } from '../ResourceViewer';
 
-vi.mock('../../CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () => <div>cm-mock</div> }));
-vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({ SvgDrawingCanvas: () => <div>svg-mock</div> }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../CodeMirrorRenderer', () => ({
+  CodeMirrorRenderer: () => <div>cm-mock</div>,
+}));
+vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({
+  SvgDrawingCanvas: () => <div>svg-mock</div>,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-function makeResource(mediaType = 'text/plain'): XynologResource & { content: string } {
+function makeResource(
+  mediaType = 'text/plain',
+): XynologResource & { content: string } {
   return {
     '@context': 'https://www.w3.org/ns/activitystreams',
     '@id': 'res-1' as ResourceId,
@@ -38,7 +52,13 @@ function makeResource(mediaType = 'text/plain'): XynologResource & { content: st
   };
 }
 
-const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const annotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 /**
  * Session double. The client is the viewer's only way onto the bus, so every
@@ -51,16 +71,20 @@ function sessionDouble() {
     mark: { delete: vi.fn(), request: vi.fn() },
   };
   // The bus its event hooks read rides beside the spies, out of `emitted`'s sight.
-  const session = { client: { ...client, bus: new EventBus() } } as unknown as XynologSession;
+  const session = {
+    client: { ...client, bus: new EventBus() },
+  } as unknown as XynologSession;
   const emitted = (): string[] =>
     Object.entries(client).flatMap(([namespace, methods]) =>
       Object.entries(methods)
         .filter(([, method]) => method.mock.calls.length > 0)
-        .map(([name]) => `${namespace}.${name}`));
+        .map(([name]) => `${namespace}.${name}`),
+    );
   return { session, emitted };
 }
 
-const isAnnotate = (c: HTMLElement) => !!c.querySelector('.xynolog-annotate-view');
+const isAnnotate = (c: HTMLElement) =>
+  !!c.querySelector('.xynolog-annotate-view');
 const isBrowse = (c: HTMLElement) => !!c.querySelector('.xynolog-browse-view');
 
 /** Open a bar dropdown group by aria-label and click an option in its menu. */
@@ -73,7 +97,11 @@ async function pick(container: HTMLElement, group: string, option: string) {
   });
 }
 
-const PREF_KEYS = ['annotateMode', 'xynolog-toolbar-click', 'xynolog-toolbar-selection'];
+const PREF_KEYS = [
+  'annotateMode',
+  'xynolog-toolbar-click',
+  'xynolog-toolbar-selection',
+];
 let getSpy: ReturnType<typeof vi.spyOn>;
 let setSpy: ReturnType<typeof vi.spyOn>;
 const prefKeyTouched = (spy: ReturnType<typeof vi.spyOn>) =>
@@ -95,45 +123,70 @@ describe('ResourceViewer — toolbar prefs as props', () => {
   });
 
   // ── Keystone: per-instance isolation across three viewers on one session ──
-  it('keystone: three viewers — controlled A/B independent, C uncontrolled; B\'s Mode click fires only B\'s callback', async () => {
+  it("keystone: three viewers — controlled A/B independent, C uncontrolled; B's Mode click fires only B's callback", async () => {
     const { session, emitted } = sessionDouble();
     const onB = vi.fn();
     const a = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations}
-        annotateMode={true} clickAction="follow" onAnnotateModeChange={vi.fn()} onClickActionChange={vi.fn()} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+        annotateMode={true}
+        clickAction="follow"
+        onAnnotateModeChange={vi.fn()}
+        onClickActionChange={vi.fn()}
+      />,
     );
     const b = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations}
-        annotateMode={false} onAnnotateModeChange={onB} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+        annotateMode={false}
+        onAnnotateModeChange={onB}
+      />,
     );
     const c = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+      />,
     );
 
-    expect(isAnnotate(a.container)).toBe(true);   // A renders its controlled mode
+    expect(isAnnotate(a.container)).toBe(true); // A renders its controlled mode
     expect(isBrowse(b.container)).toBe(true);
-    expect(isBrowse(c.container)).toBe(true);     // C: plain default (false)
+    expect(isBrowse(c.container)).toBe(true); // C: plain default (false)
 
     await pick(b.container, 'Mode', 'Annotate');
 
-    expect(onB).toHaveBeenCalledWith(true);                 // B reports intent…
-    expect(isBrowse(b.container)).toBe(true);               // …and does not self-flip
-    expect(isAnnotate(a.container)).toBe(true);             // A unchanged
-    expect(isBrowse(c.container)).toBe(true);               // C unchanged
-    expect(emitted()).toEqual([]);                          // no emit on the shared session
-    expect(prefKeyTouched(getSpy)).toBe(false);             // no localStorage traffic
+    expect(onB).toHaveBeenCalledWith(true); // B reports intent…
+    expect(isBrowse(b.container)).toBe(true); // …and does not self-flip
+    expect(isAnnotate(a.container)).toBe(true); // A unchanged
+    expect(isBrowse(c.container)).toBe(true); // C unchanged
+    expect(emitted()).toEqual([]); // no emit on the shared session
+    expect(prefKeyTouched(getSpy)).toBe(false); // no localStorage traffic
     expect(prefKeyTouched(setSpy)).toBe(false);
   });
 
   // ── Per-pref: mode ──
   it('mode: uncontrolled uses the plain default, not the stored preference', () => {
     localStorage.setItem('annotateMode', 'true'); // the policy layer's key must be IGNORED
-    getSpy.mockClear(); setSpy.mockClear();
+    getSpy.mockClear();
+    setSpy.mockClear();
     const { session } = sessionDouble();
     const u = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+      />,
     );
-    expect(isBrowse(u.container)).toBe(true);      // plain default, not the stored 'true'
+    expect(isBrowse(u.container)).toBe(true); // plain default, not the stored 'true'
     expect(prefKeyTouched(getSpy)).toBe(false);
     expect(prefKeyTouched(setSpy)).toBe(false);
   });
@@ -143,16 +196,24 @@ describe('ResourceViewer — toolbar prefs as props', () => {
     const { session, emitted } = sessionDouble();
     const onChange = vi.fn();
     const v = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations}
-        clickAction="follow" onClickActionChange={onChange} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+        clickAction="follow"
+        onClickActionChange={onChange}
+      />,
     );
-    const bar = v.container.querySelector('.xynolog-annotate-toolbar') as HTMLElement;
-    expect(within(bar).getByText('Follow')).toBeInTheDocument();  // renders the prop value
+    const bar = v.container.querySelector(
+      '.xynolog-annotate-toolbar',
+    ) as HTMLElement;
+    expect(within(bar).getByText('Follow')).toBeInTheDocument(); // renders the prop value
 
     await pick(v.container, 'Click', 'Detail');
-    expect(onChange).toHaveBeenCalledWith('detail');              // reports intent
-    expect(within(bar).getByText('Follow')).toBeInTheDocument();  // does not self-mutate
-    expect(emitted()).toEqual([]);                                // a preference is not a bus signal
+    expect(onChange).toHaveBeenCalledWith('detail'); // reports intent
+    expect(within(bar).getByText('Follow')).toBeInTheDocument(); // does not self-mutate
+    expect(emitted()).toEqual([]); // a preference is not a bus signal
   });
 
   // ── Per-pref: selection motivation (annotate-mode bar) ──
@@ -160,17 +221,26 @@ describe('ResourceViewer — toolbar prefs as props', () => {
     const { session, emitted } = sessionDouble();
     const onChange = vi.fn();
     const v = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()}
-        selectionMotivation="highlighting" onSelectionMotivationChange={onChange} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource()}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+        selectionMotivation="highlighting"
+        onSelectionMotivationChange={onChange}
+      />,
     );
-    const bar = v.container.querySelector('.xynolog-annotate-toolbar') as HTMLElement;
+    const bar = v.container.querySelector(
+      '.xynolog-annotate-toolbar',
+    ) as HTMLElement;
     expect(within(bar).getByText('Highlight')).toBeInTheDocument(); // renders the prop value
 
     await pick(v.container, 'Motivation', 'Comment');
     expect(onChange).toHaveBeenCalledWith('commenting');
 
-    await pick(v.container, 'Motivation', 'Highlight');             // current value → toggles off
+    await pick(v.container, 'Motivation', 'Highlight'); // current value → toggles off
     expect(onChange).toHaveBeenCalledWith(null);
     expect(emitted()).toEqual([]);
   });
@@ -180,16 +250,25 @@ describe('ResourceViewer — toolbar prefs as props', () => {
     const { session, emitted } = sessionDouble();
     const onChange = vi.fn();
     const v = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource('image/png')} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()}
-        shape="circle" onShapeChange={onChange} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={makeResource('image/png')}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+        shape="circle"
+        onShapeChange={onChange}
+      />,
     );
-    const bar = v.container.querySelector('.xynolog-annotate-toolbar') as HTMLElement;
-    expect(within(bar).getByText('Circle')).toBeInTheDocument();    // renders the prop value
+    const bar = v.container.querySelector(
+      '.xynolog-annotate-toolbar',
+    ) as HTMLElement;
+    expect(within(bar).getByText('Circle')).toBeInTheDocument(); // renders the prop value
 
     await pick(v.container, 'Shape', 'Polygon');
     expect(onChange).toHaveBeenCalledWith('polygon');
-    expect(within(bar).getByText('Circle')).toBeInTheDocument();    // does not self-mutate
+    expect(within(bar).getByText('Circle')).toBeInTheDocument(); // does not self-mutate
     expect(emitted()).toEqual([]);
   });
 });

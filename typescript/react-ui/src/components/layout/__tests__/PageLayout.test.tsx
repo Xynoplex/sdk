@@ -3,7 +3,10 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { renderInEnglish } from '../../../test-utils';
 import { PageLayout } from '../PageLayout';
-import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../contexts/RoutingContext';
 import { SkipLinks } from '../SkipLinks';
 
 // No mocks - using real components via composition
@@ -19,7 +22,9 @@ vi.mock('@/hooks/useUI', () => ({
 
 // Mock Link component
 const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
-  <a href={href} {...props}>{children}</a>
+  <a href={href} {...props}>
+    {children}
+  </a>
 );
 
 // Mock routes: the layout links to no resource, and leaves the others to their defaults
@@ -42,7 +47,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Test Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       expect(screen.getByText('Test Content')).toBeInTheDocument();
@@ -57,7 +62,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       // Real UnifiedHeader renders a header element
@@ -69,7 +74,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
       expect(container.querySelector('header')).toBeInTheDocument();
     });
@@ -83,7 +88,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div data-testid="child-content">Child Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       const main = screen.getByRole('main');
@@ -102,7 +107,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       const wrapper = container.firstChild as HTMLElement;
@@ -119,7 +124,7 @@ describe('PageLayout Component', () => {
           className="custom-class"
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       const main = screen.getByRole('main');
@@ -135,7 +140,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       const main = screen.getByRole('main');
@@ -151,7 +156,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       const header = container.querySelector('header');
@@ -169,7 +174,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       expect(container.querySelector('header')).toBeInTheDocument();
@@ -184,7 +189,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       expect(screen.getByRole('main')).toBeInTheDocument();
@@ -199,10 +204,12 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
-      expect(container.querySelector('.xynolog-skip-links')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-skip-links'),
+      ).not.toBeInTheDocument();
     });
 
     it("should render the host's skip link target as its main element", () => {
@@ -217,12 +224,16 @@ describe('PageLayout Component', () => {
           >
             <div>Content</div>
           </PageLayout>
-        </div>
+        </div>,
       );
 
-      const skipLink = screen.getByRole<HTMLAnchorElement>('link', { name: /skip to main content/i });
+      const skipLink = screen.getByRole<HTMLAnchorElement>('link', {
+        name: /skip to main content/i,
+      });
 
-      expect(document.querySelector(skipLink.hash)).toBe(screen.getByRole('main'));
+      expect(document.querySelector(skipLink.hash)).toBe(
+        screen.getByRole('main'),
+      );
     });
 
     it('should maintain proper document structure', () => {
@@ -234,7 +245,7 @@ describe('PageLayout Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       const wrapper = container.firstChild as HTMLElement;
@@ -244,13 +255,13 @@ describe('PageLayout Component', () => {
 
       // Header should come before main
       expect(header?.compareDocumentPosition(main!)).toBe(
-        Node.DOCUMENT_POSITION_FOLLOWING
+        Node.DOCUMENT_POSITION_FOLLOWING,
       );
 
       // Main should come before footer (real Footer component has footer element)
       if (footer) {
         expect(main?.compareDocumentPosition(footer)).toBe(
-          Node.DOCUMENT_POSITION_FOLLOWING
+          Node.DOCUMENT_POSITION_FOLLOWING,
         );
       }
     });
@@ -268,7 +279,7 @@ describe('PageLayout Component', () => {
           <div data-testid="child-1">Child 1</div>
           <div data-testid="child-2">Child 2</div>
           <div data-testid="child-3">Child 3</div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       expect(screen.getByTestId('child-1')).toBeInTheDocument();
@@ -290,7 +301,7 @@ describe('PageLayout Component', () => {
               <p>Paragraph</p>
             </section>
           </div>
-        </PageLayout>
+        </PageLayout>,
       );
 
       expect(screen.getByText('Title')).toBeInTheDocument();

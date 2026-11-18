@@ -4,5 +4,6 @@
  * function, never as a method of something else, which a browser refuses.
  */
 export function fetchOf(given: typeof fetch | undefined): typeof fetch {
-  return (...request: Parameters<typeof fetch>) => (given ?? globalThis.fetch)(...request);
+  return (...request: Parameters<typeof fetch>) =>
+    (given ?? globalThis.fetch)(...request);
 }

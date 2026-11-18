@@ -8,7 +8,8 @@ import './annotations.css';
 import './annotation-entries.css';
 import './references.css';
 
-export type SelectionMotivation = 'linking' | 'highlighting' | 'assessing' | 'commenting' | 'tagging';
+export type SelectionMotivation =
+  'linking' | 'highlighting' | 'assessing' | 'commenting' | 'tagging';
 export type ClickAction = 'detail' | 'follow' | 'jsonld' | 'deleting';
 export type ShapeType = 'rectangle' | 'circle' | 'polygon';
 
@@ -20,7 +21,7 @@ interface AnnotateToolbarProps {
   selectedClick: ClickAction;
   showDeleteButton?: boolean;
   selectedShape?: ShapeType;
-  mediaType?: string | null;  // MIME type to determine supported shapes
+  mediaType?: string | null; // MIME type to determine supported shapes
 
   // Mode props
   annotateMode: boolean;
@@ -108,9 +109,7 @@ function DropdownGroup({
           className="xynolog-dropdown-menu"
         >
           <div className="xynolog-dropdown-content">
-            <div className="xynolog-dropdown-header">
-              {label}
-            </div>
+            <div className="xynolog-dropdown-header">{label}</div>
             {expandedContent}
           </div>
         </div>
@@ -143,7 +142,9 @@ export function AnnotateToolbar({
 
   // Helper to get emoji from annotators by motivation (with fallback for safety)
   const getMotivationEmoji = (motivation: SelectionMotivation): string => {
-    const annotator = Object.values(annotators).find(a => a.motivation === motivation);
+    const annotator = Object.values(annotators).find(
+      (a) => a.motivation === motivation,
+    );
     return annotator?.iconEmoji || '❓';
   };
 
@@ -172,16 +173,32 @@ export function AnnotateToolbar({
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modePinned && modeRef.current && !modeRef.current.contains(event.target as Node)) {
+      if (
+        modePinned &&
+        modeRef.current &&
+        !modeRef.current.contains(event.target as Node)
+      ) {
         setModePinned(false);
       }
-      if (clickPinned && clickRef.current && !clickRef.current.contains(event.target as Node)) {
+      if (
+        clickPinned &&
+        clickRef.current &&
+        !clickRef.current.contains(event.target as Node)
+      ) {
         setClickPinned(false);
       }
-      if (selectionPinned && selectionRef.current && !selectionRef.current.contains(event.target as Node)) {
+      if (
+        selectionPinned &&
+        selectionRef.current &&
+        !selectionRef.current.contains(event.target as Node)
+      ) {
         setSelectionPinned(false);
       }
-      if (shapePinned && shapeRef.current && !shapeRef.current.contains(event.target as Node)) {
+      if (
+        shapePinned &&
+        shapeRef.current &&
+        !shapeRef.current.contains(event.target as Node)
+      ) {
         setShapePinned(false);
       }
     };
@@ -207,7 +224,13 @@ export function AnnotateToolbar({
 
   const handleSelectionClick = (motivation: SelectionMotivation | null) => {
     // If null is clicked, always deselect. Otherwise toggle.
-    onSelectionChange?.(motivation === null ? null : (selectedMotivation === motivation ? null : motivation));
+    onSelectionChange?.(
+      motivation === null
+        ? null
+        : selectedMotivation === motivation
+          ? null
+          : motivation,
+    );
     // Close dropdown after selection
     setSelectionPinned(false);
     setSelectionHovered(false);
@@ -251,7 +274,7 @@ export function AnnotateToolbar({
     label: string,
     isSelected: boolean,
     onClick: () => void,
-    isDelete: boolean = false
+    isDelete: boolean = false,
   ) => {
     return (
       <button
@@ -266,25 +289,40 @@ export function AnnotateToolbar({
         aria-pressed={isSelected}
         aria-label={label}
       >
-        <span className="xynolog-toolbar-menu-icon" aria-hidden="true">{icon}</span>
+        <span className="xynolog-toolbar-menu-icon" aria-hidden="true">
+          {icon}
+        </span>
         <span className="xynolog-toolbar-menu-label">{label}</span>
       </button>
     );
   };
 
   // Click actions data
-  const clickActions: Array<{ action: ClickAction; icon: string; label: string; isDelete?: boolean }> = [
+  const clickActions: Array<{
+    action: ClickAction;
+    icon: string;
+    label: string;
+    isDelete?: boolean;
+  }> = [
     { action: 'detail', icon: '🔍', label: t('detail') },
     { action: 'follow', icon: '➡️', label: t('follow') },
     { action: 'jsonld', icon: '🌐', label: t('jsonld') },
   ];
 
   if (showDeleteButton) {
-    clickActions.push({ action: 'deleting', icon: '🗑️', label: t('deleting'), isDelete: true });
+    clickActions.push({
+      action: 'deleting',
+      icon: '🗑️',
+      label: t('deleting'),
+      isDelete: true,
+    });
   }
 
   // Selection motivations data
-  const selectionMotivations: Array<{ motivation: SelectionMotivation; label: string }> = [
+  const selectionMotivations: Array<{
+    motivation: SelectionMotivation;
+    label: string;
+  }> = [
     { motivation: 'linking', label: t('linking') },
     { motivation: 'highlighting', label: t('highlighting') },
     { motivation: 'assessing', label: t('assessing') },
@@ -293,7 +331,11 @@ export function AnnotateToolbar({
   ];
 
   // Shape types data - filter based on media type
-  const allShapeTypes: Array<{ shape: ShapeType; icon: string; label: string }> = [
+  const allShapeTypes: Array<{
+    shape: ShapeType;
+    icon: string;
+    label: string;
+  }> = [
     { shape: 'rectangle', icon: '▭', label: t('rectangle') },
     { shape: 'circle', icon: '○', label: t('circle') },
     { shape: 'polygon', icon: '⬡', label: t('polygon') },
@@ -301,7 +343,9 @@ export function AnnotateToolbar({
 
   // Filter shapes based on media type (PDF only supports rectangles)
   const supportedShapes = getSupportedShapes(mediaType);
-  const shapeTypes = allShapeTypes.filter(st => supportedShapes.includes(st.shape));
+  const shapeTypes = allShapeTypes.filter((st) =>
+    supportedShapes.includes(st.shape),
+  );
 
   // Part gates (fixed order: click, mode, selection, shape); shape stays media-gated.
   const showClick = parts.includes('clickAction');
@@ -310,38 +354,50 @@ export function AnnotateToolbar({
   const showShape = parts.includes('shape') && shapeTypes.length > 0;
 
   return (
-    <div className={`xynolog-annotate-toolbar${compact ? ' xynolog-annotate-toolbar--compact' : ''}`}>
+    <div
+      className={`xynolog-annotate-toolbar${compact ? ' xynolog-annotate-toolbar--compact' : ''}`}
+    >
       {/* Click Group */}
       {showClick && (
-      <DropdownGroup
-        label={t('clickGroup')}
-        isExpanded={clickExpanded}
-        onHoverChange={setClickHovered}
-        onPin={() => setClickPinned(!clickPinned)}
-        containerRef={clickRef}
-        collapsedContent={
-          <div
-            className="xynolog-dropdown-display"
-            data-delete={clickActions.find(a => a.action === selectedClick)?.isDelete ? 'true' : 'false'}
-          >
-            <span className="xynolog-dropdown-icon">
-              {clickActions.find(a => a.action === selectedClick)?.icon}
-            </span>
-            <span className="xynolog-dropdown-label">
-              {clickActions.find(a => a.action === selectedClick)?.label}
-            </span>
-          </div>
-        }
-        expandedContent={
-          <>
-            {clickActions.map(({ action, icon, label, isDelete }) => (
-              <React.Fragment key={action}>
-                {renderButton(icon, label, selectedClick === action, () => handleClickClick(action), isDelete)}
-              </React.Fragment>
-            ))}
-          </>
-        }
-      />
+        <DropdownGroup
+          label={t('clickGroup')}
+          isExpanded={clickExpanded}
+          onHoverChange={setClickHovered}
+          onPin={() => setClickPinned(!clickPinned)}
+          containerRef={clickRef}
+          collapsedContent={
+            <div
+              className="xynolog-dropdown-display"
+              data-delete={
+                clickActions.find((a) => a.action === selectedClick)?.isDelete
+                  ? 'true'
+                  : 'false'
+              }
+            >
+              <span className="xynolog-dropdown-icon">
+                {clickActions.find((a) => a.action === selectedClick)?.icon}
+              </span>
+              <span className="xynolog-dropdown-label">
+                {clickActions.find((a) => a.action === selectedClick)?.label}
+              </span>
+            </div>
+          }
+          expandedContent={
+            <>
+              {clickActions.map(({ action, icon, label, isDelete }) => (
+                <React.Fragment key={action}>
+                  {renderButton(
+                    icon,
+                    label,
+                    selectedClick === action,
+                    () => handleClickClick(action),
+                    isDelete,
+                  )}
+                </React.Fragment>
+              ))}
+            </>
+          }
+        />
       )}
 
       {/* Separator */}
@@ -349,31 +405,45 @@ export function AnnotateToolbar({
 
       {/* Mode Group */}
       {showMode && (
-      <DropdownGroup
-        label={t('modeGroup')}
-        isExpanded={modeExpanded}
-        onHoverChange={setModeHovered}
-        onPin={() => setModePinned(!modePinned)}
-        containerRef={modeRef}
-        collapsedContent={
-          <div className="xynolog-dropdown-display">
-            <span className="xynolog-dropdown-icon">{annotateMode ? '✏️' : '📖'}</span>
-            <span className="xynolog-dropdown-label">
-              {annotateMode ? t('annotate') : t('browse')}
-            </span>
-          </div>
-        }
-        expandedContent={
-          <>
-            {renderButton('📖', t('browse'), !annotateMode, handleBrowseClick)}
-            {renderButton('✏️', t('annotate'), annotateMode, handleAnnotateClick)}
-          </>
-        }
-      />
+        <DropdownGroup
+          label={t('modeGroup')}
+          isExpanded={modeExpanded}
+          onHoverChange={setModeHovered}
+          onPin={() => setModePinned(!modePinned)}
+          containerRef={modeRef}
+          collapsedContent={
+            <div className="xynolog-dropdown-display">
+              <span className="xynolog-dropdown-icon">
+                {annotateMode ? '✏️' : '📖'}
+              </span>
+              <span className="xynolog-dropdown-label">
+                {annotateMode ? t('annotate') : t('browse')}
+              </span>
+            </div>
+          }
+          expandedContent={
+            <>
+              {renderButton(
+                '📖',
+                t('browse'),
+                !annotateMode,
+                handleBrowseClick,
+              )}
+              {renderButton(
+                '✏️',
+                t('annotate'),
+                annotateMode,
+                handleAnnotateClick,
+              )}
+            </>
+          }
+        />
       )}
 
       {/* Separator */}
-      {showSelection && (showClick || showMode) && <div className="xynolog-toolbar-separator" />}
+      {showSelection && (showClick || showMode) && (
+        <div className="xynolog-toolbar-separator" />
+      )}
 
       {/* Selection Group */}
       {showSelection && (
@@ -385,23 +455,25 @@ export function AnnotateToolbar({
           containerRef={selectionRef}
           collapsedContent={
             <div className="xynolog-dropdown-display">
-              <span className="xynolog-dropdown-icon">{selectedMotivation ? getMotivationEmoji(selectedMotivation) : '—'}</span>
+              <span className="xynolog-dropdown-icon">
+                {selectedMotivation
+                  ? getMotivationEmoji(selectedMotivation)
+                  : '—'}
+              </span>
               <span className="xynolog-dropdown-label">
                 {selectedMotivation
-                  ? selectionMotivations.find(m => m.motivation === selectedMotivation)?.label
-                  : t('none')
-                }
+                  ? selectionMotivations.find(
+                      (m) => m.motivation === selectedMotivation,
+                    )?.label
+                  : t('none')}
               </span>
             </div>
           }
           expandedContent={
             <>
               {/* None option to deselect */}
-              {renderButton(
-                '—',
-                t('none'),
-                selectedMotivation === null,
-                () => handleSelectionClick(null)
+              {renderButton('—', t('none'), selectedMotivation === null, () =>
+                handleSelectionClick(null),
               )}
               {selectionMotivations.map(({ motivation, label }) => (
                 <React.Fragment key={motivation}>
@@ -409,7 +481,7 @@ export function AnnotateToolbar({
                     getMotivationEmoji(motivation),
                     label,
                     selectedMotivation === motivation,
-                    () => handleSelectionClick(motivation)
+                    () => handleSelectionClick(motivation),
                   )}
                 </React.Fragment>
               ))}
@@ -419,7 +491,9 @@ export function AnnotateToolbar({
       )}
 
       {/* Separator */}
-      {showShape && (showClick || showMode || showSelection) && <div className="xynolog-toolbar-separator" />}
+      {showShape && (showClick || showMode || showSelection) && (
+        <div className="xynolog-toolbar-separator" />
+      )}
 
       {/* Shape Group */}
       {showShape && (
@@ -432,10 +506,10 @@ export function AnnotateToolbar({
           collapsedContent={
             <div className="xynolog-dropdown-display">
               <span className="xynolog-dropdown-icon">
-                {shapeTypes.find(s => s.shape === selectedShape)?.icon}
+                {shapeTypes.find((s) => s.shape === selectedShape)?.icon}
               </span>
               <span className="xynolog-dropdown-label">
-                {shapeTypes.find(s => s.shape === selectedShape)?.label}
+                {shapeTypes.find((s) => s.shape === selectedShape)?.label}
               </span>
             </div>
           }
@@ -443,7 +517,9 @@ export function AnnotateToolbar({
             <>
               {shapeTypes.map(({ shape, icon, label }) => (
                 <React.Fragment key={shape}>
-                  {renderButton(icon, label, selectedShape === shape, () => handleShapeClick(shape))}
+                  {renderButton(icon, label, selectedShape === shape, () =>
+                    handleShapeClick(shape),
+                  )}
                 </React.Fragment>
               ))}
             </>

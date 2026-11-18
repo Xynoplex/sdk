@@ -9,7 +9,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import type { AnnotationUIState } from '../../../types/annotation-props';
-import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  createTestXynologWrapper,
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 
 const scrollSpy = vi.hoisted(() => vi.fn());
 vi.mock('../../../lib/scroll-utils', () => ({
@@ -22,7 +26,13 @@ vi.mock('../../CodeMirrorRenderer', () => ({
 import { AnnotateView } from '../AnnotateView';
 import { annotationId, resourceId } from '@xynolog/core';
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 const uiState: AnnotationUIState = {
   selectedMotivation: 'linking',
   selectedClick: 'detail',
@@ -32,7 +42,9 @@ const uiState: AnnotationUIState = {
 };
 
 describe('AnnotateView — beckon:focus scrolls the content', () => {
-  beforeEach(() => { scrollSpy.mockClear(); });
+  beforeEach(() => {
+    scrollSpy.mockClear();
+  });
 
   it('scrolls to the annotation when the session emits beckon:focus', () => {
     const { session, client } = createTestXynologWrapper();
@@ -42,7 +54,7 @@ describe('AnnotateView — beckon:focus scrolls the content', () => {
         translationManager={englishTranslationManager}
         content="hello world"
         mimeType="text/plain"
-        resourceUri={resourceId("res-1")}
+        resourceUri={resourceId('res-1')}
         annotations={emptyAnnotations}
         uiState={uiState}
         session={session}
@@ -50,7 +62,10 @@ describe('AnnotateView — beckon:focus scrolls the content', () => {
       />,
     );
 
-    client.bus.emit('beckon:focus', { resourceId: resourceId('res-1'), annotationId: annotationId('ann-7') });
+    client.bus.emit('beckon:focus', {
+      resourceId: resourceId('res-1'),
+      annotationId: annotationId('ann-7'),
+    });
 
     expect(scrollSpy).toHaveBeenCalledTimes(1);
     expect(scrollSpy.mock.calls[0]?.[0]).toBe('ann-7');
@@ -67,7 +82,9 @@ describe('AnnotateView — beckon:focus scrolls the content', () => {
 // any other resource forward.
 // ─────────────────────────────────────────────────────────────────────
 describe('AnnotateView — beckon:focus is guarded by resourceId', () => {
-  beforeEach(() => { scrollSpy.mockClear(); });
+  beforeEach(() => {
+    scrollSpy.mockClear();
+  });
 
   const renderAt = (resourceUri: string) => {
     const { session, client } = createTestXynologWrapper();
@@ -84,7 +101,9 @@ describe('AnnotateView — beckon:focus is guarded by resourceId', () => {
       />,
     );
     // jsdom lays nothing out and gives an element no scrollTo of its own.
-    const content = container.querySelector<HTMLElement>('.xynolog-annotate-view__content');
+    const content = container.querySelector<HTMLElement>(
+      '.xynolog-annotate-view__content',
+    );
     if (!content) throw new Error('the view rendered no content to scroll');
     const scrollTo = vi.fn();
     content.scrollTo = scrollTo;
@@ -93,20 +112,29 @@ describe('AnnotateView — beckon:focus is guarded by resourceId', () => {
 
   it('ignores a focus aimed at a DIFFERENT resource', () => {
     const { client } = renderAt('res-1');
-    client.bus.emit('beckon:focus', { annotationId: annotationId('ann-7'), resourceId: resourceId('res-2') });
+    client.bus.emit('beckon:focus', {
+      annotationId: annotationId('ann-7'),
+      resourceId: resourceId('res-2'),
+    });
     expect(scrollSpy).not.toHaveBeenCalled();
   });
 
   it('still scrolls when the resource matches', () => {
     const { client } = renderAt('res-1');
-    client.bus.emit('beckon:focus', { annotationId: annotationId('ann-7'), resourceId: resourceId('res-1') });
+    client.bus.emit('beckon:focus', {
+      annotationId: annotationId('ann-7'),
+      resourceId: resourceId('res-1'),
+    });
     expect(scrollSpy).toHaveBeenCalledTimes(1);
   });
 
   it('scrolls its content to the top when the focus names this resource and no annotation', () => {
     const { client, scrollTo } = renderAt('res-1');
     client.bus.emit('beckon:focus', { resourceId: resourceId('res-1') });
-    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 0, behavior: 'smooth' });
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({
+      top: 0,
+      behavior: 'smooth',
+    });
     expect(scrollSpy).not.toHaveBeenCalled();
   });
 

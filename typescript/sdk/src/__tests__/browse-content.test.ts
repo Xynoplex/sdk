@@ -13,8 +13,17 @@
  */
 
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { EventBus, XynologError, resourceId as makeResourceId } from '@xynolog/core';
-import type { AnchoredTextAnswer, IContentTransport, ITransport, ResourceId } from '@xynolog/core';
+import {
+  EventBus,
+  XynologError,
+  resourceId as makeResourceId,
+} from '@xynolog/core';
+import type {
+  AnchoredTextAnswer,
+  IContentTransport,
+  ITransport,
+  ResourceId,
+} from '@xynolog/core';
 import { BrowseNamespace } from '../namespaces/browse';
 import { inMemoryTransport } from './helpers/in-memory-transport';
 
@@ -24,7 +33,9 @@ function inertTransport(): ITransport {
 
 describe('browse content reads — pure pipe', () => {
   let bus: EventBus;
-  afterEach(() => { bus?.destroy(); });
+  afterEach(() => {
+    bus?.destroy();
+  });
 
   function makeBrowse(content: IContentTransport): BrowseNamespace {
     bus = new EventBus();
@@ -102,8 +113,14 @@ describe('browse content reads — pure pipe', () => {
   });
 
   it('resourceAnchoredText reads via the content transport, uncached', async () => {
-    const text: AnchoredTextAnswer = { kind: 'extracted', text: 'hello', method: 'pdf-text-layer', items: [] };
-    const getAnchoredText = vi.fn<IContentTransport['getAnchoredText']>()
+    const text: AnchoredTextAnswer = {
+      kind: 'extracted',
+      text: 'hello',
+      method: 'pdf-text-layer',
+      items: [],
+    };
+    const getAnchoredText = vi
+      .fn<IContentTransport['getAnchoredText']>()
       .mockResolvedValueOnce({ kind: 'not-yet' })
       .mockResolvedValueOnce(text);
     const content = {

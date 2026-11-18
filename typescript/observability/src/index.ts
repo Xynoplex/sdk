@@ -42,7 +42,11 @@ import {
   type Counter,
   type Span,
 } from '@opentelemetry/api';
-import { setBusLogTraceIdProvider, TRACE_FIELD, type TraceCarrier } from '@xynolog/core';
+import {
+  setBusLogTraceIdProvider,
+  TRACE_FIELD,
+  type TraceCarrier,
+} from '@xynolog/core';
 
 // Wire `busLog`'s trace-id provider once at module load. When an OTel
 // SDK is initialized (and a span is active when `busLog` fires), the
@@ -77,7 +81,9 @@ export async function withSpan<T>(
     ...(options?.attrs ? { attributes: options.attrs } : {}),
   });
   try {
-    return await context.with(trace.setSpan(context.active(), span), () => fn(span));
+    return await context.with(trace.setSpan(context.active(), span), () =>
+      fn(span),
+    );
   } catch (err) {
     span.recordException(err as Error);
     span.setStatus({
@@ -114,8 +120,7 @@ export function extractTraceparent<T extends Record<string, unknown>>(
   payload: T,
 ): TraceCarrier | undefined {
   const carrier = (payload as Record<string, unknown>)[TRACE_FIELD] as
-    | TraceCarrier
-    | undefined;
+    TraceCarrier | undefined;
   if (carrier !== undefined) {
     delete (payload as Record<string, unknown>)[TRACE_FIELD];
   }
@@ -133,7 +138,9 @@ export function withTraceparent<T>(
   fn: () => T,
 ): T {
   if (!carrier) return fn();
-  const carrierObj: Record<string, string> = { traceparent: carrier.traceparent };
+  const carrierObj: Record<string, string> = {
+    traceparent: carrier.traceparent,
+  };
   if (carrier.tracestate) carrierObj['tracestate'] = carrier.tracestate;
   const ctx = propagation.extract(context.active(), carrierObj);
   return context.with(ctx, fn);

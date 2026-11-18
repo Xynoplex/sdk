@@ -17,7 +17,11 @@ import { XynologError } from '../errors';
 import type { ResourceDescriptor } from '../graph';
 import { formatErrors, validators } from '../openapi';
 import { faultOf, type Fault } from '../required';
-import { getPrimaryMediaType, getPrimaryRepresentation, getResourceEntityTypes } from '../resource-utils';
+import {
+  getPrimaryMediaType,
+  getPrimaryRepresentation,
+  getResourceEntityTypes,
+} from '../resource-utils';
 import type { components } from '../types';
 
 type Representation = components['schemas']['Representation'];
@@ -40,10 +44,20 @@ interface Refused {
 }
 
 const table: { cases: (Case | Refused)[] } = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/resources/reader-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/resources/reader-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
-const read = table.cases.filter((stated): stated is Case => !('refused' in stated));
-const refused = table.cases.filter((stated): stated is Refused => 'refused' in stated);
+const read = table.cases.filter(
+  (stated): stated is Case => !('refused' in stated),
+);
+const refused = table.cases.filter(
+  (stated): stated is Refused => 'refused' in stated,
+);
 
 /** What every case states, what a case of a resource with a representation states besides, and what a refused case states. */
 const ALWAYS = ['entityTypes', 'resource', 'why'];
@@ -51,7 +65,10 @@ const OF_A_REPRESENTATION = ['primaryMediaType', 'primaryRepresentation'];
 const OF_A_REFUSAL = ['member', 'reason', 'refused', 'resource', 'why'];
 
 /** The reading is refused as the reader's own failure, naming the representations. */
-function refusedNamingRepresentations(reading: () => unknown, why: string): void {
+function refusedNamingRepresentations(
+  reading: () => unknown,
+  why: string,
+): void {
   let refusal: unknown;
   try {
     reading();
@@ -67,8 +84,12 @@ function refusedNamingRepresentations(reading: () => unknown, why: string): void
 
 describe('the readers of a resource (protocol/specs/src/resources/reader-cases.json)', () => {
   it('has cases of a resource with a representation and of one with none, with entity types and with none, and refused ones', () => {
-    expect(read.some((stated) => stated.primaryRepresentation !== undefined)).toBe(true);
-    expect(read.some((stated) => stated.primaryRepresentation === undefined)).toBe(true);
+    expect(
+      read.some((stated) => stated.primaryRepresentation !== undefined),
+    ).toBe(true);
+    expect(
+      read.some((stated) => stated.primaryRepresentation === undefined),
+    ).toBe(true);
     expect(read.some((stated) => stated.entityTypes.length > 0)).toBe(true);
     expect(read.some((stated) => stated.entityTypes.length === 0)).toBe(true);
     expect(refused.some((stated) => stated.reason === 'lacks')).toBe(true);
@@ -79,7 +100,9 @@ describe('the readers of a resource (protocol/specs/src/resources/reader-cases.j
     for (const stated of read) {
       // The representation and its media type are stated together, or neither is.
       const hasOne = OF_A_REPRESENTATION.some((member) => member in stated);
-      const expected = hasOne ? [...ALWAYS, ...OF_A_REPRESENTATION].sort() : ALWAYS;
+      const expected = hasOne
+        ? [...ALWAYS, ...OF_A_REPRESENTATION].sort()
+        : ALWAYS;
       expect(Object.keys(stated).sort(), stated.why).toEqual(expected);
     }
     for (const stated of refused) {
@@ -91,7 +114,10 @@ describe('the readers of a resource (protocol/specs/src/resources/reader-cases.j
   it('holds every resource to its schema, which allows none that is refused', () => {
     for (const { why, resource } of read) {
       const valid = validators.ResourceDescriptor(resource);
-      expect(valid, `${why}: ${formatErrors(validators.ResourceDescriptor.errors)}`).toBe(true);
+      expect(
+        valid,
+        `${why}: ${formatErrors(validators.ResourceDescriptor.errors)}`,
+      ).toBe(true);
     }
     for (const { why, resource } of refused) {
       expect(validators.ResourceDescriptor(resource), why).toBe(false);
@@ -100,14 +126,23 @@ describe('the readers of a resource (protocol/specs/src/resources/reader-cases.j
 
   it('refuses, as a reply is refused, each refused resource for the fault it states, and finds none in any other', () => {
     for (const { why, resource, member, reason } of refused) {
-      expect(faultOf('ResourceDescriptor', resource), why).toEqual({ member, reason });
+      expect(faultOf('ResourceDescriptor', resource), why).toEqual({
+        member,
+        reason,
+      });
     }
     for (const { why, resource } of read) {
       expect(faultOf('ResourceDescriptor', resource), why).toBeUndefined();
     }
   });
 
-  for (const { why, resource, primaryRepresentation, primaryMediaType, entityTypes } of read) {
+  for (const {
+    why,
+    resource,
+    primaryRepresentation,
+    primaryMediaType,
+    entityTypes,
+  } of read) {
     it(why, () => {
       expect(getPrimaryRepresentation(resource)).toEqual(primaryRepresentation);
       expect(getPrimaryMediaType(resource)).toBe(primaryMediaType);
@@ -115,10 +150,19 @@ describe('the readers of a resource (protocol/specs/src/resources/reader-cases.j
     });
   }
 
-  for (const { why, resource } of refused.filter((stated) => stated.member === 'representations' && stated.reason === 'malformed')) {
+  for (const { why, resource } of refused.filter(
+    (stated) =>
+      stated.member === 'representations' && stated.reason === 'malformed',
+  )) {
     it(why, () => {
-      refusedNamingRepresentations(() => getPrimaryRepresentation(resource), `${why}: getPrimaryRepresentation`);
-      refusedNamingRepresentations(() => getPrimaryMediaType(resource), `${why}: getPrimaryMediaType`);
+      refusedNamingRepresentations(
+        () => getPrimaryRepresentation(resource),
+        `${why}: getPrimaryRepresentation`,
+      );
+      refusedNamingRepresentations(
+        () => getPrimaryMediaType(resource),
+        `${why}: getPrimaryMediaType`,
+      );
     });
   }
 });

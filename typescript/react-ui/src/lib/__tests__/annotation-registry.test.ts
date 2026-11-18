@@ -18,7 +18,13 @@ describe('annotation-registry ANNOTATORS', () => {
   describe('structure', () => {
     it('defines highlight, comment, assessment, reference, tag', () => {
       expect(Object.keys(ANNOTATORS)).toEqual(
-        expect.arrayContaining(['highlight', 'comment', 'assessment', 'reference', 'tag'])
+        expect.arrayContaining([
+          'highlight',
+          'comment',
+          'assessment',
+          'reference',
+          'tag',
+        ]),
       );
     });
 
@@ -36,20 +42,30 @@ describe('annotation-registry ANNOTATORS', () => {
 
   describe('matchesAnnotation', () => {
     it('highlight matches highlighting motivation', () => {
-      expect(ANNOTATORS.highlight.matchesAnnotation(withMotivation('highlighting'))).toBe(true);
-      expect(ANNOTATORS.highlight.matchesAnnotation(withMotivation('commenting'))).toBe(false);
+      expect(
+        ANNOTATORS.highlight.matchesAnnotation(withMotivation('highlighting')),
+      ).toBe(true);
+      expect(
+        ANNOTATORS.highlight.matchesAnnotation(withMotivation('commenting')),
+      ).toBe(false);
     });
 
     it('comment matches commenting motivation', () => {
-      expect(ANNOTATORS.comment.matchesAnnotation(withMotivation('commenting'))).toBe(true);
+      expect(
+        ANNOTATORS.comment.matchesAnnotation(withMotivation('commenting')),
+      ).toBe(true);
     });
 
     it('reference matches linking motivation', () => {
-      expect(ANNOTATORS.reference.matchesAnnotation(withMotivation('linking'))).toBe(true);
+      expect(
+        ANNOTATORS.reference.matchesAnnotation(withMotivation('linking')),
+      ).toBe(true);
     });
 
     it('tag matches tagging motivation', () => {
-      expect(ANNOTATORS.tag.matchesAnnotation(withMotivation('tagging'))).toBe(true);
+      expect(ANNOTATORS.tag.matchesAnnotation(withMotivation('tagging'))).toBe(
+        true,
+      );
     });
   });
 

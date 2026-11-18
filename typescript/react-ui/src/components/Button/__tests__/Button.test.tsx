@@ -51,7 +51,7 @@ describe('Button Component', () => {
           data-testid="custom-button"
         >
           Button
-        </Button>
+        </Button>,
       );
 
       const button = screen.getByRole('button');
@@ -64,9 +64,16 @@ describe('Button Component', () => {
   });
 
   describe('Button Variants', () => {
-    const variants = ['primary', 'secondary', 'tertiary', 'danger', 'warning', 'ghost'] as const;
+    const variants = [
+      'primary',
+      'secondary',
+      'tertiary',
+      'danger',
+      'warning',
+      'ghost',
+    ] as const;
 
-    variants.forEach(variant => {
+    variants.forEach((variant) => {
       it(`should render ${variant} variant`, () => {
         render(<Button variant={variant}>Button</Button>);
 
@@ -86,7 +93,7 @@ describe('Button Component', () => {
   describe('Button Sizes', () => {
     const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 
-    sizes.forEach(size => {
+    sizes.forEach((size) => {
       it(`should render ${size} size`, () => {
         render(<Button size={size}>Button</Button>);
 
@@ -106,7 +113,11 @@ describe('Button Component', () => {
   describe('Button States', () => {
     it('should handle disabled state', () => {
       const handleClick = vi.fn();
-      render(<Button disabled onClick={handleClick}>Disabled</Button>);
+      render(
+        <Button disabled onClick={handleClick}>
+          Disabled
+        </Button>,
+      );
 
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
@@ -119,7 +130,11 @@ describe('Button Component', () => {
 
     it('should handle loading state', () => {
       const handleClick = vi.fn();
-      render(<Button loading onClick={handleClick}>Loading</Button>);
+      render(
+        <Button loading onClick={handleClick}>
+          Loading
+        </Button>,
+      );
 
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
@@ -161,7 +176,10 @@ describe('Button Component', () => {
       const iconWrapper = leftIcon.parentElement;
 
       expect(leftIcon).toBeInTheDocument();
-      expect(iconWrapper).toHaveClass('xynolog-button-icon', 'xynolog-button-icon-left');
+      expect(iconWrapper).toHaveClass(
+        'xynolog-button-icon',
+        'xynolog-button-icon-left',
+      );
     });
 
     it('should render right icon', () => {
@@ -172,13 +190,20 @@ describe('Button Component', () => {
       const iconWrapper = rightIcon.parentElement;
 
       expect(rightIcon).toBeInTheDocument();
-      expect(iconWrapper).toHaveClass('xynolog-button-icon', 'xynolog-button-icon-right');
+      expect(iconWrapper).toHaveClass(
+        'xynolog-button-icon',
+        'xynolog-button-icon-right',
+      );
     });
 
     it('should render both icons', () => {
       const leftIcon = <span data-testid="left-icon">←</span>;
       const rightIcon = <span data-testid="right-icon">→</span>;
-      render(<Button leftIcon={leftIcon} rightIcon={rightIcon}>Button</Button>);
+      render(
+        <Button leftIcon={leftIcon} rightIcon={rightIcon}>
+          Button
+        </Button>,
+      );
 
       expect(screen.getByTestId('left-icon')).toBeInTheDocument();
       expect(screen.getByTestId('right-icon')).toBeInTheDocument();
@@ -187,7 +212,11 @@ describe('Button Component', () => {
     it('should hide icons when loading', () => {
       const leftIcon = <span data-testid="left-icon">←</span>;
       const rightIcon = <span data-testid="right-icon">→</span>;
-      render(<Button loading leftIcon={leftIcon} rightIcon={rightIcon}>Button</Button>);
+      render(
+        <Button loading leftIcon={leftIcon} rightIcon={rightIcon}>
+          Button
+        </Button>,
+      );
 
       expect(screen.queryByTestId('left-icon')).not.toBeInTheDocument();
       expect(screen.queryByTestId('right-icon')).not.toBeInTheDocument();
@@ -198,7 +227,7 @@ describe('Button Component', () => {
       render(
         <Button iconOnly>
           <span data-testid="icon">✓</span>
-        </Button>
+        </Button>,
       );
 
       const button = screen.getByRole('button');
@@ -207,7 +236,9 @@ describe('Button Component', () => {
       expect(button).toHaveAttribute('data-icon-only', 'true');
       expect(icon).toBeInTheDocument();
       // Content wrapper should not exist in icon-only mode
-      expect(button.querySelector('.xynolog-button-content')).not.toBeInTheDocument();
+      expect(
+        button.querySelector('.xynolog-button-content'),
+      ).not.toBeInTheDocument();
     });
 
     it('should wrap regular content in span', () => {
@@ -302,7 +333,11 @@ describe('Button Component', () => {
 
   describe('Edge Cases', () => {
     it('should handle loading and disabled simultaneously', () => {
-      render(<Button loading disabled>Both States</Button>);
+      render(
+        <Button loading disabled>
+          Both States
+        </Button>,
+      );
 
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
@@ -326,7 +361,7 @@ describe('ButtonGroup Component', () => {
         <Button>First</Button>
         <Button>Second</Button>
         <Button>Third</Button>
-      </ButtonGroup>
+      </ButtonGroup>,
     );
 
     const group = screen.getByRole('group');
@@ -342,7 +377,7 @@ describe('ButtonGroup Component', () => {
     render(
       <ButtonGroup orientation="horizontal">
         <Button>Button</Button>
-      </ButtonGroup>
+      </ButtonGroup>,
     );
 
     const group = screen.getByRole('group');
@@ -353,7 +388,7 @@ describe('ButtonGroup Component', () => {
     render(
       <ButtonGroup orientation="vertical">
         <Button>Button</Button>
-      </ButtonGroup>
+      </ButtonGroup>,
     );
 
     const group = screen.getByRole('group');
@@ -364,7 +399,7 @@ describe('ButtonGroup Component', () => {
     render(
       <ButtonGroup attached>
         <Button>Button</Button>
-      </ButtonGroup>
+      </ButtonGroup>,
     );
 
     const group = screen.getByRole('group');
@@ -375,11 +410,11 @@ describe('ButtonGroup Component', () => {
   it('should handle spacing when not attached', () => {
     const spacings = ['xs', 'sm', 'md', 'lg'] as const;
 
-    spacings.forEach(spacing => {
+    spacings.forEach((spacing) => {
       const { container } = render(
         <ButtonGroup spacing={spacing} attached={false}>
           <Button>Button</Button>
-        </ButtonGroup>
+        </ButtonGroup>,
       );
 
       const group = container.querySelector('[role="group"]');
@@ -392,7 +427,7 @@ describe('ButtonGroup Component', () => {
     render(
       <ButtonGroup className="custom-group">
         <Button>Button</Button>
-      </ButtonGroup>
+      </ButtonGroup>,
     );
 
     const group = screen.getByRole('group');
@@ -403,7 +438,7 @@ describe('ButtonGroup Component', () => {
     render(
       <ButtonGroup>
         <Button>Button</Button>
-      </ButtonGroup>
+      </ButtonGroup>,
     );
 
     const group = screen.getByRole('group');

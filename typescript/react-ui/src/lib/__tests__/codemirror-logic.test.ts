@@ -14,15 +14,34 @@ import type { TextSegment } from '../codemirror-logic';
 // Mock annotation-registry
 vi.mock('../annotation-registry', () => ({
   ANNOTATORS: {
-    highlight: { className: 'highlight-class', matchesAnnotation: (ann: Annotation) => ann.motivation === 'highlighting' },
-    comment: { className: 'comment-class', matchesAnnotation: (ann: Annotation) => ann.motivation === 'commenting' },
-    reference: { className: 'reference-class', matchesAnnotation: (ann: Annotation) => ann.motivation === 'linking' },
-    assessment: { className: 'assessment-class', matchesAnnotation: (ann: Annotation) => ann.motivation === 'assessing' },
-    tag: { className: 'tag-class', matchesAnnotation: (ann: Annotation) => ann.motivation === 'tagging' },
+    highlight: {
+      className: 'highlight-class',
+      matchesAnnotation: (ann: Annotation) => ann.motivation === 'highlighting',
+    },
+    comment: {
+      className: 'comment-class',
+      matchesAnnotation: (ann: Annotation) => ann.motivation === 'commenting',
+    },
+    reference: {
+      className: 'reference-class',
+      matchesAnnotation: (ann: Annotation) => ann.motivation === 'linking',
+    },
+    assessment: {
+      className: 'assessment-class',
+      matchesAnnotation: (ann: Annotation) => ann.motivation === 'assessing',
+    },
+    tag: {
+      className: 'tag-class',
+      matchesAnnotation: (ann: Annotation) => ann.motivation === 'tagging',
+    },
   },
 }));
 
-function makeAnnotation(id: string, motivation: Annotation['motivation'], body?: Annotation['body']): Annotation {
+function makeAnnotation(
+  id: string,
+  motivation: Annotation['motivation'],
+  body?: Annotation['body'],
+): Annotation {
   return {
     '@context': 'http://www.w3.org/ns/anno.jsonld',
     type: 'Annotation',
@@ -36,10 +55,20 @@ function makeAnnotation(id: string, motivation: Annotation['motivation'], body?:
 
 /** A reference's body: it links to `source`. */
 function linkTo(source: string): Annotation['body'] {
-  return [{ type: 'SpecificResource', source: resourceId(source), purpose: 'linking' }];
+  return [
+    {
+      type: 'SpecificResource',
+      source: resourceId(source),
+      purpose: 'linking',
+    },
+  ];
 }
 
-function makeSegment(start: number, end: number, annotation?: Annotation): TextSegment {
+function makeSegment(
+  start: number,
+  end: number,
+  annotation?: Annotation,
+): TextSegment {
   return {
     exact: 'x'.repeat(end - start),
     start,
@@ -51,7 +80,10 @@ function makeSegment(start: number, end: number, annotation?: Annotation): TextS
 describe('convertSegmentPositions', () => {
   /** Segments at offsets into `content`, placed in CodeMirror's document. */
   const placed = (segments: TextSegment[], content: string): TextSegment[] =>
-    convertSegmentPositions(segments, documentPositions(content, textOffsets(content)));
+    convertSegmentPositions(
+      segments,
+      documentPositions(content, textOffsets(content)),
+    );
 
   it('leaves every position where it is when content has no CRLF', () => {
     const segments = [makeSegment(0, 5), makeSegment(10, 15)];
@@ -88,15 +120,21 @@ describe('convertSegmentPositions', () => {
 
 describe('getAnnotationTooltip', () => {
   it('returns Comment for commenting motivation', () => {
-    expect(getAnnotationTooltip(makeAnnotation('1', 'commenting'))).toBe('Comment');
+    expect(getAnnotationTooltip(makeAnnotation('1', 'commenting'))).toBe(
+      'Comment',
+    );
   });
 
   it('returns Highlight for highlighting motivation', () => {
-    expect(getAnnotationTooltip(makeAnnotation('1', 'highlighting'))).toBe('Highlight');
+    expect(getAnnotationTooltip(makeAnnotation('1', 'highlighting'))).toBe(
+      'Highlight',
+    );
   });
 
   it('returns Assessment for assessing motivation', () => {
-    expect(getAnnotationTooltip(makeAnnotation('1', 'assessing'))).toBe('Assessment');
+    expect(getAnnotationTooltip(makeAnnotation('1', 'assessing'))).toBe(
+      'Assessment',
+    );
   });
 
   it('returns Tag for tagging motivation', () => {
@@ -104,55 +142,82 @@ describe('getAnnotationTooltip', () => {
   });
 
   it('returns Unresolved Reference for linking motivation without body source', () => {
-    expect(getAnnotationTooltip(makeAnnotation('1', 'linking'))).toBe('Unresolved Reference');
+    expect(getAnnotationTooltip(makeAnnotation('1', 'linking'))).toBe(
+      'Unresolved Reference',
+    );
   });
 
   it('returns Resolved Reference for linking with body source', () => {
-    expect(getAnnotationTooltip(makeAnnotation('1', 'linking', linkTo('doc-123')))).toBe('Resolved Reference');
+    expect(
+      getAnnotationTooltip(makeAnnotation('1', 'linking', linkTo('doc-123'))),
+    ).toBe('Resolved Reference');
   });
 
   it('returns Annotation for unknown motivation', () => {
     // @ts-expect-error — a W3C motivation Xynolog does not support, for the fallback
-    expect(getAnnotationTooltip(makeAnnotation('1', 'bookmarking'))).toBe('Annotation');
+    expect(getAnnotationTooltip(makeAnnotation('1', 'bookmarking'))).toBe(
+      'Annotation',
+    );
   });
 });
 
 describe('getAnnotationDecorationMeta', () => {
   it('returns correct className from registry', () => {
-    const meta = getAnnotationDecorationMeta(makeAnnotation('ann-1', 'highlighting'), false);
+    const meta = getAnnotationDecorationMeta(
+      makeAnnotation('ann-1', 'highlighting'),
+      false,
+    );
     expect(meta.className).toBe('highlight-class');
     expect(meta.annotationId).toBe('ann-1');
     expect(meta.annotationType).toBe('highlight');
   });
 
   it('adds sparkle class when isNew', () => {
-    const meta = getAnnotationDecorationMeta(makeAnnotation('ann-1', 'commenting'), true);
+    const meta = getAnnotationDecorationMeta(
+      makeAnnotation('ann-1', 'commenting'),
+      true,
+    );
     expect(meta.className).toBe('comment-class annotation-sparkle');
   });
 
   it('sets annotationType to comment for commenting', () => {
-    const meta = getAnnotationDecorationMeta(makeAnnotation('1', 'commenting'), false);
+    const meta = getAnnotationDecorationMeta(
+      makeAnnotation('1', 'commenting'),
+      false,
+    );
     expect(meta.annotationType).toBe('comment');
   });
 
   it('sets annotationType to reference for linking', () => {
-    const meta = getAnnotationDecorationMeta(makeAnnotation('1', 'linking'), false);
+    const meta = getAnnotationDecorationMeta(
+      makeAnnotation('1', 'linking'),
+      false,
+    );
     expect(meta.annotationType).toBe('reference');
   });
 
   it('sets annotationType to assessment for assessing', () => {
-    const meta = getAnnotationDecorationMeta(makeAnnotation('1', 'assessing'), false);
+    const meta = getAnnotationDecorationMeta(
+      makeAnnotation('1', 'assessing'),
+      false,
+    );
     expect(meta.annotationType).toBe('assessment');
   });
 
   it('sets annotationType to tag for tagging', () => {
-    const meta = getAnnotationDecorationMeta(makeAnnotation('1', 'tagging'), false);
+    const meta = getAnnotationDecorationMeta(
+      makeAnnotation('1', 'tagging'),
+      false,
+    );
     expect(meta.annotationType).toBe('tag');
   });
 
   it('falls back to annotation-highlight for unknown motivation', () => {
-    // @ts-expect-error — a W3C motivation Xynolog does not support, for the fallback
-    const meta = getAnnotationDecorationMeta(makeAnnotation('1', 'bookmarking'), false);
+    const meta = getAnnotationDecorationMeta(
+      // @ts-expect-error — a W3C motivation Xynolog does not support, for the fallback
+      makeAnnotation('1', 'bookmarking'),
+      false,
+    );
     expect(meta.className).toBe('annotation-highlight');
   });
 });
@@ -175,7 +240,9 @@ describe('computeAnnotationDecorations', () => {
   });
 
   it('marks new annotations with sparkle', () => {
-    const segments = [makeSegment(0, 5, makeAnnotation('new-1', 'highlighting'))];
+    const segments = [
+      makeSegment(0, 5, makeAnnotation('new-1', 'highlighting')),
+    ];
     const newIds = new Set(['new-1']);
     const result = computeAnnotationDecorations(segments, newIds);
     expect(result[0]!.meta.className).toContain('annotation-sparkle');
@@ -191,7 +258,8 @@ describe('computeWidgetDecorations', () => {
   it('returns widget metadata for reference annotations', () => {
     const ann = makeAnnotation('ref-1', 'linking', linkTo('doc-abc'));
     const segments = [makeSegment(0, 10, ann)];
-    const getName = (id: string) => id === 'doc-abc' ? 'My Document' : undefined;
+    const getName = (id: string) =>
+      id === 'doc-abc' ? 'My Document' : undefined;
 
     const result = computeWidgetDecorations(segments, null, getName);
     expect(result).toHaveLength(1);

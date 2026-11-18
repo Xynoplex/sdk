@@ -13,7 +13,11 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { EventBus, resourceId as makeResourceId, annotationId } from '@xynolog/core';
+import {
+  EventBus,
+  resourceId as makeResourceId,
+  annotationId,
+} from '@xynolog/core';
 import type {
   EventMetadata,
   EventOfType,
@@ -23,7 +27,10 @@ import type {
   UserId,
 } from '@xynolog/core';
 import { BrowseNamespace } from '../namespaces/browse';
-import { inMemoryTransport, contentTransportSpies } from './helpers/in-memory-transport';
+import {
+  inMemoryTransport,
+  contentTransportSpies,
+} from './helpers/in-memory-transport';
 import { mockResource } from './fixtures/resource';
 
 const flush = () => new Promise<void>((r) => setTimeout(r, 0));
@@ -37,7 +44,9 @@ const flush = () => new Promise<void>((r) => setTimeout(r, 0));
  * fan-out. `failFirstResourceFetchFor` makes the first
  * `browse:resource-requested` emit for that rid reject — the B14 retry path.
  */
-function makeComposingTransport(opts: { failFirstResourceFetchFor?: string } = {}) {
+function makeComposingTransport(
+  opts: { failFirstResourceFetchFor?: string } = {},
+) {
   // One typed bus: the transport streams from it and the test pushes into
   // it, so a reply fixture is checked against the channel's declared payload.
   const bus = new EventBus();
@@ -75,9 +84,13 @@ function makeComposingTransport(opts: { failFirstResourceFetchFor?: string } = {
           pendingFailure = undefined;
           throw new Error(`simulated lost reply for ${rid}`);
         }
-        bus.emit('browse:resource-result', {
-          response: { resource: mockResource(rid), lastSequence: 1 },
-        }, { correlationId: cid });
+        bus.emit(
+          'browse:resource-result',
+          {
+            response: { resource: mockResource(rid), lastSequence: 1 },
+          },
+          { correlationId: cid },
+        );
       }
     },
   });
@@ -117,7 +130,9 @@ function mountLoader(browse: BrowseNamespace, rid: ResourceId) {
   return { state, unmount: () => subs.forEach((s) => s.unsubscribe()) };
 }
 
-function fakeMarkAdded(rid: ResourceId): StoredEvent<EventOfType<'mark:added'>> {
+function fakeMarkAdded(
+  rid: ResourceId,
+): StoredEvent<EventOfType<'mark:added'>> {
   return {
     id: `evt-${rid}`,
     type: 'mark:added',
@@ -157,8 +172,17 @@ describe('N concurrent distinct-rid loaders — all scoped, all fully live', () 
       expect(loader.state.loaded, `loader ${i} starved`).toBe(true);
     }
     // Every resource's scope is held concurrently — the composed matrix.
-    expect([...heldScopes.keys()].sort()).toEqual(['res-1', 'res-2', 'res-3', 'res-4']);
-    expect(warnSpy.mock.calls.map((c) => String(c[0])).filter((w) => w.includes('SCOPE-CONTENTION'))).toEqual([]);
+    expect([...heldScopes.keys()].sort()).toEqual([
+      'res-1',
+      'res-2',
+      'res-3',
+      'res-4',
+    ]);
+    expect(
+      warnSpy.mock.calls
+        .map((c) => String(c[0]))
+        .filter((w) => w.includes('SCOPE-CONTENTION')),
+    ).toEqual([]);
 
     loaders.forEach((l) => l.unmount());
     expect(heldScopes.size).toBe(0); // every release is independent and effective
@@ -179,7 +203,9 @@ describe('N concurrent distinct-rid loaders — all scoped, all fully live', () 
     await flush();
 
     expect(requests).toContain('getAnnotations res-2');
-    expect(requests.filter((r) => r.startsWith('getAnnotations'))).toHaveLength(1);
+    expect(requests.filter((r) => r.startsWith('getAnnotations'))).toHaveLength(
+      1,
+    );
 
     loaders.forEach((l) => l.unmount());
     bus.destroy();
@@ -187,7 +213,9 @@ describe('N concurrent distinct-rid loaders — all scoped, all fully live', () 
 
   it('a loader whose first fetch fails recovers via the bounded SWR retry (B14)', async () => {
     const bus = new EventBus();
-    const { transport, content } = makeComposingTransport({ failFirstResourceFetchFor: 'res-3' });
+    const { transport, content } = makeComposingTransport({
+      failFirstResourceFetchFor: 'res-3',
+    });
     const browse = new BrowseNamespace(transport, bus, content);
 
     const loaders = RIDS.map((rid) => mountLoader(browse, rid));

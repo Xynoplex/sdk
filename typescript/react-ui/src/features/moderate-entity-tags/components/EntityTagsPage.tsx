@@ -9,10 +9,16 @@ import React from 'react';
 import {
   TagIcon,
   PlusIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
-import { COMMON_PANELS, type ToolbarPanelType } from '../../../state/shell-state-unit';
-import { type ToolbarPanelsProps, type ToolbarProps } from '../../../components/Toolbar';
+import {
+  COMMON_PANELS,
+  type ToolbarPanelType,
+} from '../../../state/shell-state-unit';
+import {
+  type ToolbarPanelsProps,
+  type ToolbarProps,
+} from '../../../components/Toolbar';
 export interface EntityTagsPageProps {
   // Data props
   entityTypes: string[];
@@ -60,7 +66,6 @@ export function EntityTagsPage({
   ToolbarPanels,
   Toolbar,
 }: EntityTagsPageProps) {
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onAddTag();
@@ -68,15 +73,15 @@ export function EntityTagsPage({
   };
 
   return (
-    <div className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}>
+    <div
+      className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}
+    >
       {/* Main Content Area */}
       <div className="xynolog-page__content">
         {/* Page Title */}
         <div className="xynolog-page__header">
           <h1 className="xynolog-page__title">{t.pageTitle}</h1>
-          <p className="xynolog-page__subtitle">
-            {t.pageDescription}
-          </p>
+          <p className="xynolog-page__subtitle">{t.pageDescription}</p>
         </div>
 
         {/* Entity Tags Management */}
@@ -146,15 +151,9 @@ export function EntityTagsPage({
 
       {/* Right Sidebar - Panels and Toolbar */}
       <div className="xynolog-page__sidebar">
-        <ToolbarPanels
-          activePanel={activePanel}
-          theme={theme}
-        />
+        <ToolbarPanels activePanel={activePanel} theme={theme} />
 
-        <Toolbar
-          context="simple"
-          activePanel={activePanel}
-        />
+        <Toolbar context="simple" activePanel={activePanel} />
       </div>
     </div>
   );

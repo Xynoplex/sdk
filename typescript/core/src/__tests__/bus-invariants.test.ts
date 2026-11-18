@@ -56,56 +56,104 @@ import { PERSISTED_EVENT_TYPES } from '../persisted-events';
  * (`JOB_CLAIM_CHANNELS` in @xynolog/sdk).
  */
 const FROZEN_BRIDGED = [
-  'browse:resources-result', 'browse:resources-failed',
-  'browse:resource-result', 'browse:resource-failed',
-  'browse:annotation-result', 'browse:annotation-failed',
-  'browse:annotation-history-result', 'browse:annotation-history-failed',
-  'browse:events-result', 'browse:events-failed',
-  'browse:entity-types-result', 'browse:entity-types-failed',
-  'browse:tag-schemas-result', 'browse:tag-schemas-failed',
-  'browse:engines-result', 'browse:engines-failed',
-  'browse:kb-result', 'browse:kb-failed',
-  'browse:profiles-result', 'browse:profiles-failed',
-  'browse:directory-result', 'browse:directory-failed',
-  'mark:delete-ok', 'mark:delete-failed',
-  'mark:create-ok', 'mark:create-failed',
-  'mark:commit-ok', 'mark:commit-failed',
-  'mark:archive-ok', 'mark:archive-failed',
-  'mark:unarchive-ok', 'mark:unarchive-failed',
-  'mark:update-entity-types-ok', 'mark:update-entity-types-failed',
-  'match:search-results', 'match:search-failed',
-  'match:resources-result', 'match:resources-failed',
-  'match:limits-result', 'match:limits-failed',
-  'weave:rebuild-ok', 'weave:rebuild-failed',
-  'smelt:rebuild-anchors-ok', 'smelt:rebuild-anchors-failed',
-  'gather:complete', 'gather:failed',
-  'gather:resource-complete', 'gather:resource-failed',
-  'gather:summary-result', 'gather:summary-failed',
-  'gather:referenced-by-result', 'gather:referenced-by-failed',
-  'gather:limits-result', 'gather:limits-failed',
-  'bind:body-updated', 'bind:body-update-failed',
-  'job:report-progress', 'job:complete', 'job:fail',
+  'browse:resources-result',
+  'browse:resources-failed',
+  'browse:resource-result',
+  'browse:resource-failed',
+  'browse:annotation-result',
+  'browse:annotation-failed',
+  'browse:annotation-history-result',
+  'browse:annotation-history-failed',
+  'browse:events-result',
+  'browse:events-failed',
+  'browse:entity-types-result',
+  'browse:entity-types-failed',
+  'browse:tag-schemas-result',
+  'browse:tag-schemas-failed',
+  'browse:engines-result',
+  'browse:engines-failed',
+  'browse:kb-result',
+  'browse:kb-failed',
+  'browse:profiles-result',
+  'browse:profiles-failed',
+  'browse:directory-result',
+  'browse:directory-failed',
+  'mark:delete-ok',
+  'mark:delete-failed',
+  'mark:create-ok',
+  'mark:create-failed',
+  'mark:commit-ok',
+  'mark:commit-failed',
+  'mark:archive-ok',
+  'mark:archive-failed',
+  'mark:unarchive-ok',
+  'mark:unarchive-failed',
+  'mark:update-entity-types-ok',
+  'mark:update-entity-types-failed',
+  'match:search-results',
+  'match:search-failed',
+  'match:resources-result',
+  'match:resources-failed',
+  'match:limits-result',
+  'match:limits-failed',
+  'weave:rebuild-ok',
+  'weave:rebuild-failed',
+  'smelt:rebuild-anchors-ok',
+  'smelt:rebuild-anchors-failed',
+  'gather:complete',
+  'gather:failed',
+  'gather:resource-complete',
+  'gather:resource-failed',
+  'gather:summary-result',
+  'gather:summary-failed',
+  'gather:referenced-by-result',
+  'gather:referenced-by-failed',
+  'gather:limits-result',
+  'gather:limits-failed',
+  'bind:body-updated',
+  'bind:body-update-failed',
+  'job:report-progress',
+  'job:complete',
+  'job:fail',
   'smelt:settled',
-  'job:status-result', 'job:status-failed',
-  'job:limits-result', 'job:limits-failed',
-  'job:created', 'job:create-failed',
-  'job:claimed', 'job:claim-failed',
-  'job:cancel-ok', 'job:cancel-failed',
-  'yield:create-ok', 'yield:create-failed',
-  'yield:clone-persist-ok', 'yield:clone-persist-failed',
-  'yield:update-ok', 'yield:update-failed',
-  'yield:clone-token-generated', 'yield:clone-token-failed',
-  'yield:clone-resource-result', 'yield:clone-resource-failed',
-  'yield:clone-created', 'yield:clone-create-failed',
-  'frame:entity-type-added', 'frame:tag-schema-added',
+  'job:status-result',
+  'job:status-failed',
+  'job:limits-result',
+  'job:limits-failed',
+  'job:created',
+  'job:create-failed',
+  'job:claimed',
+  'job:claim-failed',
+  'job:cancel-ok',
+  'job:cancel-failed',
+  'yield:create-ok',
+  'yield:create-failed',
+  'yield:clone-persist-ok',
+  'yield:clone-persist-failed',
+  'yield:update-ok',
+  'yield:update-failed',
+  'yield:clone-token-generated',
+  'yield:clone-token-failed',
+  'yield:clone-resource-result',
+  'yield:clone-resource-failed',
+  'yield:clone-created',
+  'yield:clone-create-failed',
+  'frame:entity-type-added',
+  'frame:tag-schema-added',
   // The resource domain events, bridged so a NON-requesting client learns
   // that a resource appeared, changed, was cloned or was renamed. Replies are
   // owner-routed (written only to the client that made the request), so a
   // `yield:*-ok` reply cannot double as a broadcast.
-  'yield:created', 'yield:updated', 'yield:cloned', 'yield:moved',
-  'frame:entity-type-add-ok', 'frame:entity-type-add-failed',
-  'frame:tag-schema-add-ok', 'frame:tag-schema-add-failed',
-  'beckon:focus', 'beckon:sparkle',
+  'yield:created',
+  'yield:updated',
+  'yield:cloned',
+  'yield:moved',
+  'frame:entity-type-add-ok',
+  'frame:entity-type-add-failed',
+  'frame:tag-schema-add-ok',
+  'frame:tag-schema-add-failed',
+  'beckon:focus',
+  'beckon:sparkle',
   'bus:resume-gap',
   // The guided tour's imperative — domain intent, bridged so a launcher emit
   // reaches every watching Browser (nav:* is framework routing and stays
@@ -138,7 +186,10 @@ describe('bus channel-classification invariants', () => {
     // NOT a fire-and-forget local emit whose failure has nowhere to go.
     // Widened to a plain Record so this reads as a runtime registry assertion
     // rather than a compile error on a missing `as const` key.
-    const ops = BUS_OPERATIONS as Record<string, { result: string; failure: string }>;
+    const ops = BUS_OPERATIONS as Record<
+      string,
+      { result: string; failure: string }
+    >;
     expect(ops['mark:update-entity-types']).toEqual({
       result: 'mark:update-entity-types-ok',
       failure: 'mark:update-entity-types-failed',
@@ -158,7 +209,9 @@ describe('bus channel-classification invariants', () => {
     // so every event on it is delivered twice. The `BridgedChannel` *type*
     // can't catch this: a tuple with a repeated literal collapses in the
     // `[number]` union.
-    const dups = BRIDGED_CHANNELS.filter((c, i) => BRIDGED_CHANNELS.indexOf(c) !== i);
+    const dups = BRIDGED_CHANNELS.filter(
+      (c, i) => BRIDGED_CHANNELS.indexOf(c) !== i,
+    );
     expect(dups).toEqual([]);
   });
 
@@ -193,8 +246,12 @@ describe('bus channel-classification invariants', () => {
     const persisted = new Set<string>(PERSISTED_EVENT_TYPES);
     const overlap = BRIDGED_CHANNELS.filter((c) => persisted.has(c)).sort();
     expect(overlap).toEqual([
-      'frame:entity-type-added', 'frame:tag-schema-added',
-      'yield:cloned', 'yield:created', 'yield:moved', 'yield:updated',
+      'frame:entity-type-added',
+      'frame:tag-schema-added',
+      'yield:cloned',
+      'yield:created',
+      'yield:moved',
+      'yield:updated',
     ]);
   });
 });
@@ -204,19 +261,39 @@ describe('bus channel-classification invariants', () => {
  * cannot search, and what refers to a resource is asked of Gather.
  */
 describe('browse is retrieval, never discovery', () => {
-  const schema = (name: string): { properties: Record<string, unknown>; required?: string[] } =>
-    JSON.parse(readFileSync(resolve(__dirname, `../../../../protocol/specs/src/components/schemas/${name}.json`), 'utf8'));
+  const schema = (
+    name: string,
+  ): { properties: Record<string, unknown>; required?: string[] } =>
+    JSON.parse(
+      readFileSync(
+        resolve(
+          __dirname,
+          `../../../../protocol/specs/src/components/schemas/${name}.json`,
+        ),
+        'utf8',
+      ),
+    );
 
   it('no browse channel asks what refers to a resource', () => {
-    expect(Object.keys(CHANNEL_ATTRS).filter((channel) => channel.startsWith('browse:referenced-by'))).toEqual([]);
+    expect(
+      Object.keys(CHANNEL_ATTRS).filter((channel) =>
+        channel.startsWith('browse:referenced-by'),
+      ),
+    ).toEqual([]);
   });
 
   it('a listing request carries no search', () => {
-    expect(Object.keys(schema('BrowseResourcesRequest').properties)).not.toContain('search');
+    expect(
+      Object.keys(schema('BrowseResourcesRequest').properties),
+    ).not.toContain('search');
   });
 
   it('a listing reply says nothing of how it matched: only a search does', () => {
-    expect(Object.keys(schema('ListResourcesResponse').properties)).not.toContain('matchKind');
-    expect(Object.keys(schema('MatchResourcesResponse').properties)).toContain('matchKind');
+    expect(
+      Object.keys(schema('ListResourcesResponse').properties),
+    ).not.toContain('matchKind');
+    expect(Object.keys(schema('MatchResourcesResponse').properties)).toContain(
+      'matchKind',
+    );
   });
 });

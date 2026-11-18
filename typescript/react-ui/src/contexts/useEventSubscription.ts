@@ -1,5 +1,10 @@
 import { useEffect, useRef, useMemo } from 'react';
-import type { EventMap, ResourceId, ResourceScopedChannel, UnscopedChannel } from '@xynolog/core';
+import type {
+  EventMap,
+  ResourceId,
+  ResourceScopedChannel,
+  UnscopedChannel,
+} from '@xynolog/core';
 import { useXynolog } from '../session/XynologProvider';
 import { useObservable } from '../hooks/useObservable';
 import { subscribeChannel } from '../session/channel-subscription';
@@ -37,15 +42,25 @@ export function useEventSubscription<K extends UnscopedChannel>(
   const session = useObservable(xynolog.activeSession$);
 
   const handlerRef = useRef(handler);
-  useEffect(() => { handlerRef.current = handler; });
+  useEffect(() => {
+    handlerRef.current = handler;
+  });
 
   useEffect(() => {
     const unsubs: Array<() => void> = [];
-    unsubs.push(xynolog.on(eventName, (payload) => handlerRef.current(payload)));
+    unsubs.push(
+      xynolog.on(eventName, (payload) => handlerRef.current(payload)),
+    );
     if (session) {
-      unsubs.push(subscribeChannel(session.client, eventName, (payload) => handlerRef.current(payload)));
+      unsubs.push(
+        subscribeChannel(session.client, eventName, (payload) =>
+          handlerRef.current(payload),
+        ),
+      );
     }
-    return () => { for (const u of unsubs) u(); };
+    return () => {
+      for (const u of unsubs) u();
+    };
   }, [eventName, xynolog, session]);
 }
 
@@ -63,16 +78,16 @@ export function useEventSubscription<K extends UnscopedChannel>(
  * });
  * ```
  */
-export function useEventSubscriptions(
-  subscriptions: {
-    [K in UnscopedChannel]?: (payload: EventMap[K]) => void;
-  },
-): void {
+export function useEventSubscriptions(subscriptions: {
+  [K in UnscopedChannel]?: (payload: EventMap[K]) => void;
+}): void {
   const xynolog = useXynolog();
   const session = useObservable(xynolog.activeSession$);
 
   const handlersRef = useRef(subscriptions);
-  useEffect(() => { handlersRef.current = subscriptions; });
+  useEffect(() => {
+    handlersRef.current = subscriptions;
+  });
 
   // Stable key derived from the subscribed event names; re-subscribe
   // only when the set changes, not when handlers change.
@@ -88,14 +103,17 @@ export function useEventSubscriptions(
       const channel = eventName as UnscopedChannel;
       const fan = (payload: EventMap[UnscopedChannel]) => {
         const current = handlersRef.current[channel];
-        if (current) (current as (p: EventMap[UnscopedChannel]) => void)(payload);
+        if (current)
+          (current as (p: EventMap[UnscopedChannel]) => void)(payload);
       };
       unsubs.push(xynolog.on(channel, fan));
       if (session) {
         unsubs.push(subscribeChannel(session.client, channel, fan));
       }
     }
-    return () => { for (const unsub of unsubs) unsub(); };
+    return () => {
+      for (const unsub of unsubs) unsub();
+    };
   }, [eventNames, xynolog, session]);
 }
 
@@ -126,7 +144,9 @@ export function useResourceEventSubscriptions(
   const session = useObservable(xynolog.activeSession$);
 
   const handlersRef = useRef(subscriptions);
-  useEffect(() => { handlersRef.current = subscriptions; });
+  useEffect(() => {
+    handlersRef.current = subscriptions;
+  });
 
   const eventNames = useMemo(
     () => Object.keys(subscriptions).sort(),
@@ -140,14 +160,21 @@ export function useResourceEventSubscriptions(
     // read lives and gives it that resource's frames alone.
     const reads = eventNames.map((eventName) => {
       const channel = eventName as ResourceScopedChannel;
-      return session.client.wire.frames(channel, resourceId).subscribe((heard) => {
-        // A handler is given the channel's events; a refusal of one that is
-        // not the channel's has nothing in it for the handler to act on.
-        if (heard.status === 'refused') return;
-        const current = handlersRef.current[channel];
-        if (current) (current as (p: EventMap[ResourceScopedChannel]) => void)(heard.payload);
-      });
+      return session.client.wire
+        .frames(channel, resourceId)
+        .subscribe((heard) => {
+          // A handler is given the channel's events; a refusal of one that is
+          // not the channel's has nothing in it for the handler to act on.
+          if (heard.status === 'refused') return;
+          const current = handlersRef.current[channel];
+          if (current)
+            (current as (p: EventMap[ResourceScopedChannel]) => void)(
+              heard.payload,
+            );
+        });
     });
-    return () => { for (const read of reads) read.unsubscribe(); };
+    return () => {
+      for (const read of reads) read.unsubscribe();
+    };
   }, [eventNames, resourceId, session]);
 }

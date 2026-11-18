@@ -682,68 +682,68 @@ let typescript =
 /** Why a bus request failed. */
 export type BusRequestErrorCode =
   /** No reply came. */
-  | "bus.timeout"
+  | 'bus.timeout'
   /** The peer refused. */
-  | "bus.rejected"
+  | 'bus.rejected'
   /** Not there. */
-  | "bus.not-found"
+  | 'bus.not-found'
   /** No peer. */
-  | "bus.peer-unavailable";
+  | 'bus.peer-unavailable';
 
 /** The bus code a failure's own wire code (`CommandError.code`) becomes. */
 export const busRequestCodeByWireCode = {
-  "not-found": "bus.not-found",
-  "peer-unavailable": "bus.peer-unavailable",
+  'not-found': 'bus.not-found',
+  'peer-unavailable': 'bus.peer-unavailable',
 } as const;
 
 /** What a failure becomes when it states no code, or one CommandError does not list, which is read as none. */
-export const unrecognizedFailureCode = "bus.rejected" as const;
+export const unrecognizedFailureCode = 'bus.rejected' as const;
 
 /** transport the peer reply peer reply an refused reply a reply answered reply refused peer an closed code transport a closed transport status status reply an peer. */
 export type TransportErrorCode =
   /** Who? */
-  | "unauthorized"
+  | 'unauthorized'
   /** Missing, *\/ even. */
-  | "not-found"
+  | 'not-found'
   /** Down. */
-  | "unavailable"
+  | 'unavailable'
   /** Else. */
-  | "error";
+  | 'error';
 
 /** The transport code an HTTP status becomes. */
 export function transportErrorCodeForStatus(status: number): TransportErrorCode {
   switch (status) {
-    case 401: return "unauthorized";
-    case 404: return "not-found";
+    case 401: return 'unauthorized';
+    case 404: return 'not-found';
   }
-  if (status >= 500) return "unavailable";
-  return "error";
+  if (status >= 500) return 'unavailable';
+  return 'error';
 }
 
 /** an answered peer request gateway the request gateway an request the peer transport status peer status request status peer a status transport failure closed reply peer peer a refused answered answered. */
 export type JobErrorCode =
   /** It failed. */
-  | "job.failed";
+  | 'job.failed';
 
 /** Why a session broke. */
 export type XynologSessionErrorCode =
   /** No auth. */
-  | "session.auth-failed";
+  | 'session.auth-failed';
 
 /** Why a sign-in failed. */
 export type SignInErrorCode =
   /** No issuer. */
-  | "no-issuer";
+  | 'no-issuer';
 
 /** Why an identity is unverified. */
 export type IdentityUnverifiableReason =
   /** Unreachable. */
-  | "unreachable";
+  | 'unreachable';
 
 /** Why a span was refused. */
 export type SpanRefusal =
   /** Out of range. */
-  | "span-out-of-range";
+  | 'span-out-of-range';
 |}
 
 let writers =
@@ -807,7 +807,7 @@ let writers =
              TransportErrorCode {";
             "  switch (status) {";
             "  }";
-            "  return \"error\";";
+            "  return 'error';";
             "}";
           ]
           (around

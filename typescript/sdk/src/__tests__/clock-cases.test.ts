@@ -34,13 +34,22 @@ import { APIError, HttpTransport } from '@xynolog/http-transport';
 import { createCache, type CachePersister } from '../cache';
 import { JOB_CLAIM_CHANNELS, type HeldJob } from '../claims';
 import { XynologClient } from '../client';
-import { subscribeDiscovery, type DiscoveryReadResult, type DiscoveryTransport } from '../discovery';
+import {
+  subscribeDiscovery,
+  type DiscoveryReadResult,
+  type DiscoveryTransport,
+} from '../discovery';
 import { httpKb } from '../session/knowledge-base';
 import { signInWithDeviceGrant } from '../session/oauth';
 import { XynologSession, type UserInfo } from '../session/xynolog-session';
 import { InMemorySessionStorage } from '../session/session-storage';
 import { keptIn, setStoredSession } from '../session/storage';
-import { createTestClient, FaultyTransport, inMemoryContent, refuseUnscriptedOperation } from '../testing';
+import {
+  createTestClient,
+  FaultyTransport,
+  inMemoryContent,
+  refuseUnscriptedOperation,
+} from '../testing';
 import { mockAnnotation } from './fixtures/annotation';
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
@@ -53,11 +62,21 @@ interface Case {
   steps: Json[];
 }
 
-const read = (path: string): unknown => JSON.parse(readFileSync(new URL(`../../../../protocol/specs/src/${path}`, import.meta.url), 'utf8'));
+const read = (path: string): unknown =>
+  JSON.parse(
+    readFileSync(
+      new URL(`../../../../protocol/specs/src/${path}`, import.meta.url),
+      'utf8',
+    ),
+  );
 
 const TABLE = read('client/clock-cases.json') as { cases: Case[] };
 const TIMING = new Map(
-  (read('client/timing.json') as { timing: Array<{ name: string; value: Json }> }).timing.map(({ name, value }) => [name, value]),
+  (
+    read('client/timing.json') as {
+      timing: Array<{ name: string; value: Json }>;
+    }
+  ).timing.map(({ name, value }) => [name, value]),
 );
 
 /**
@@ -70,28 +89,33 @@ const SETTLE_TURNS = 20;
 
 /** Let what is ready run, and what that makes ready, without moving the clock. */
 async function settle(): Promise<void> {
-  for (let turn = 0; turn < SETTLE_TURNS; turn++) await vi.advanceTimersByTimeAsync(0);
+  for (let turn = 0; turn < SETTLE_TURNS; turn++)
+    await vi.advanceTimersByTimeAsync(0);
 }
 
 // ── Reading the table ───────────────────────────────────────────────────
 
 function text(value: Json | undefined, what: string): string {
-  if (typeof value !== 'string') throw new Error(`${what} is not a string: ${JSON.stringify(value)}`);
+  if (typeof value !== 'string')
+    throw new Error(`${what} is not a string: ${JSON.stringify(value)}`);
   return value;
 }
 
 function object(value: Json | undefined, what: string): JsonObject {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${what} is not an object: ${JSON.stringify(value)}`);
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    throw new Error(`${what} is not an object: ${JSON.stringify(value)}`);
   return value;
 }
 
 function count(value: Json | undefined, what: string): number {
-  if (typeof value !== 'number') throw new Error(`${what} is not a number: ${JSON.stringify(value)}`);
+  if (typeof value !== 'number')
+    throw new Error(`${what} is not a number: ${JSON.stringify(value)}`);
   return value;
 }
 
 function strings(value: Json | undefined, what: string): string[] {
-  if (!Array.isArray(value)) throw new Error(`${what} is not a list: ${JSON.stringify(value)}`);
+  if (!Array.isArray(value))
+    throw new Error(`${what} is not a list: ${JSON.stringify(value)}`);
   return value.map((item) => text(item, what));
 }
 
@@ -99,7 +123,10 @@ function strings(value: Json | undefined, what: string): string[] {
 function timingMs(name: string): number {
   const [budget, ...member] = name.split('.');
   const kept = TIMING.get(text(budget, 'a timing'));
-  if (kept === undefined) throw new Error(`${name} is no timing of protocol/specs/src/client/timing.json`);
+  if (kept === undefined)
+    throw new Error(
+      `${name} is no timing of protocol/specs/src/client/timing.json`,
+    );
   if (member.length === 0) return count(kept, name);
   if (member.length > 1) throw new Error(`${name} names a member of a member`);
   return count(object(kept, budget)[text(member[0], 'a member')], name);
@@ -109,20 +136,29 @@ function timingMs(name: string): number {
 function durationMs(value: Json | undefined): number {
   if (typeof value === 'number') return value;
   const stated = object(value, 'a duration');
-  const times = stated['times'] === undefined ? 1 : count(stated['times'], 'times');
-  const plus = stated['plusMs'] === undefined ? 0 : count(stated['plusMs'], 'plusMs');
+  const times =
+    stated['times'] === undefined ? 1 : count(stated['times'], 'times');
+  const plus =
+    stated['plusMs'] === undefined ? 0 : count(stated['plusMs'], 'plusMs');
   const ms = timingMs(text(stated['timing'], 'a timing')) * times + plus;
-  if (!Number.isInteger(ms)) throw new Error(`${JSON.stringify(value)} is not a whole number of milliseconds`);
+  if (!Number.isInteger(ms))
+    throw new Error(
+      `${JSON.stringify(value)} is not a whole number of milliseconds`,
+    );
   return ms;
 }
 
 /** A span of seconds the case's `given` states, when it states one. */
-function givenSeconds(given: JsonObject | undefined, name: string): number | undefined {
+function givenSeconds(
+  given: JsonObject | undefined,
+  name: string,
+): number | undefined {
   const value = given?.[name];
   return value === undefined ? undefined : count(value, `given.${name}`);
 }
 
-const said = (error: unknown): string => (error instanceof Error ? `${error.name}: ${error.message}` : String(error));
+const said = (error: unknown): string =>
+  error instanceof Error ? `${error.name}: ${error.message}` : String(error);
 
 // ── What a case drives ──────────────────────────────────────────────────
 
@@ -157,7 +193,8 @@ class Held {
   /** `values` read for as long as the case goes on, which they are to do. */
   reading(values: Observable<unknown>, what: string): void {
     const reader = values.subscribe({
-      error: (error: unknown) => this.wrong.push(`${what} failed: ${said(error)}`),
+      error: (error: unknown) =>
+        this.wrong.push(`${what} failed: ${said(error)}`),
       complete: () => this.wrong.push(`${what} ended`),
     });
     this.later(() => reader.unsubscribe());
@@ -182,20 +219,34 @@ type GatewayPath = typeof SUBSCRIBE | typeof EMIT | typeof HEALTH;
 type StreamAnswer = 'holds' | 'refuses' | 'never';
 
 /** Where a request goes, and the signal it was made under, however `fetch` was called. */
-function requestOf(input: Parameters<typeof fetch>[0], init: Parameters<typeof fetch>[1]): { url: URL; signal: AbortSignal | null | undefined } {
-  if (input instanceof Request) return { url: new URL(input.url), signal: input.signal };
-  return { url: new URL(input instanceof URL ? input.href : input), signal: init?.signal };
+function requestOf(
+  input: Parameters<typeof fetch>[0],
+  init: Parameters<typeof fetch>[1],
+): { url: URL; signal: AbortSignal | null | undefined } {
+  if (input instanceof Request)
+    return { url: new URL(input.url), signal: input.signal };
+  return {
+    url: new URL(input instanceof URL ? input.href : input),
+    signal: init?.signal,
+  };
 }
 
 /** An answer that never comes: the request waits until its signal is aborted, and fails with why. */
-function neverAnswered(signal: AbortSignal | null | undefined): Promise<Response> {
+function neverAnswered(
+  signal: AbortSignal | null | undefined,
+): Promise<Response> {
   return new Promise((_answer, fail) => {
-    signal?.addEventListener('abort', () => fail(signal.reason), { once: true });
+    signal?.addEventListener('abort', () => fail(signal.reason), {
+      once: true,
+    });
   });
 }
 
 /** The body of a stream a gateway holds open and says nothing on. Its reader closes it by aborting its request. */
-function heldOpen(signal: AbortSignal | null | undefined, closed: () => void): ReadableStream<Uint8Array> {
+function heldOpen(
+  signal: AbortSignal | null | undefined,
+  closed: () => void,
+): ReadableStream<Uint8Array> {
   return new ReadableStream<Uint8Array>({
     start(body) {
       signal?.addEventListener(
@@ -210,8 +261,15 @@ function heldOpen(signal: AbortSignal | null | undefined, closed: () => void): R
   });
 }
 
-const json = (status: number, body: Json, headers: Record<string, string> = {}): Response =>
-  new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
+const json = (
+  status: number,
+  body: Json,
+  headers: Record<string, string> = {},
+): Response =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json', ...headers },
+  });
 
 /**
  * A gateway in this process. It answers each request at once, as the subject has it answer, and counts what it is asked:
@@ -220,7 +278,11 @@ const json = (status: number, body: Json, headers: Record<string, string> = {}):
  */
 class Gateway {
   /** How many requests of each path it has been asked. */
-  readonly asked: Record<GatewayPath, number> = { [SUBSCRIBE]: 0, [EMIT]: 0, [HEALTH]: 0 };
+  readonly asked: Record<GatewayPath, number> = {
+    [SUBSCRIBE]: 0,
+    [EMIT]: 0,
+    [HEALTH]: 0,
+  };
   /** How many of the streams it held open their readers have closed. */
   closed = 0;
 
@@ -233,26 +295,44 @@ class Gateway {
   ) {}
 
   private refusal(): Response {
-    return json(503, { error: 'The gateway is not ready' }, this.retryAfterSeconds === undefined ? {} : { 'retry-after': String(this.retryAfterSeconds) });
+    return json(
+      503,
+      { error: 'The gateway is not ready' },
+      this.retryAfterSeconds === undefined
+        ? {}
+        : { 'retry-after': String(this.retryAfterSeconds) },
+    );
   }
 
-  readonly fetch = async (input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]): Promise<Response> => {
+  readonly fetch = async (
+    input: Parameters<typeof fetch>[0],
+    init?: Parameters<typeof fetch>[1],
+  ): Promise<Response> => {
     const { url, signal } = requestOf(input, init);
     const path = url.pathname;
     if (path !== SUBSCRIBE && path !== EMIT && path !== HEALTH) {
-      this.held.wrong.push(`the gateway was asked ${path}, which this subject does not have it answer`);
+      this.held.wrong.push(
+        `the gateway was asked ${path}, which this subject does not have it answer`,
+      );
       return neverAnswered(signal);
     }
     this.asked[path] += 1;
     if (this.unanswered.has(path)) return neverAnswered(signal);
     if (this.refused.has(path)) return this.refusal();
     if (path !== SUBSCRIBE) {
-      this.held.wrong.push(`the gateway was asked ${path}, which this subject does not have it answer`);
+      this.held.wrong.push(
+        `the gateway was asked ${path}, which this subject does not have it answer`,
+      );
       return neverAnswered(signal);
     }
     switch (this.stream) {
       case 'holds':
-        return new Response(heldOpen(signal, () => { this.closed += 1; }), { status: 200, headers: { 'content-type': 'text/event-stream' } });
+        return new Response(
+          heldOpen(signal, () => {
+            this.closed += 1;
+          }),
+          { status: 200, headers: { 'content-type': 'text/event-stream' } },
+        );
       case 'refuses':
         return this.refusal();
       case 'never':
@@ -264,7 +344,9 @@ class Gateway {
   transport(): HttpTransport {
     const transport = new HttpTransport({
       baseUrl: baseUrl(GATEWAY),
-      token$: watched(new BehaviorSubject<AccessToken | null>(accessToken('a-token'))),
+      token$: watched(
+        new BehaviorSubject<AccessToken | null>(accessToken('a-token')),
+      ),
       channels: BRIDGED_CHANNELS,
       fetch: this.fetch,
     });
@@ -275,20 +357,39 @@ class Gateway {
 
 const RESOURCE = resourceId('res-1');
 
-async function refusedStream(given: JsonObject | undefined, held: Held): Promise<Subject> {
-  const gateway = new Gateway(held, 'refuses', new Set(), givenSeconds(given, 'retryAfterSeconds'));
+async function refusedStream(
+  given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
+  const gateway = new Gateway(
+    held,
+    'refuses',
+    new Set(),
+    givenSeconds(given, 'retryAfterSeconds'),
+  );
   gateway.transport();
   return { counted: () => gateway.asked[SUBSCRIBE] };
 }
 
-async function unansweredStream(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function unansweredStream(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const gateway = new Gateway(held, 'never', new Set());
   gateway.transport();
   return { counted: () => gateway.asked[SUBSCRIBE] };
 }
 
-async function degradedStream(given: JsonObject | undefined, held: Held): Promise<Subject> {
-  const gateway = new Gateway(held, 'refuses', new Set(), givenSeconds(given, 'retryAfterSeconds'));
+async function degradedStream(
+  given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
+  const gateway = new Gateway(
+    held,
+    'refuses',
+    new Set(),
+    givenSeconds(given, 'retryAfterSeconds'),
+  );
   let degraded = 0;
   const watching = gateway.transport().state$.subscribe((state) => {
     if (state === 'degraded') degraded += 1;
@@ -297,7 +398,10 @@ async function degradedStream(given: JsonObject | undefined, held: Held): Promis
   return { counted: () => degraded };
 }
 
-async function scopeTaken(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function scopeTaken(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const gateway = new Gateway(held, 'holds', new Set());
   const transport = gateway.transport();
   return {
@@ -306,7 +410,10 @@ async function scopeTaken(_given: JsonObject | undefined, held: Held): Promise<S
   };
 }
 
-async function scopeLetGo(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function scopeLetGo(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const gateway = new Gateway(held, 'holds', new Set());
   const transport = gateway.transport();
   let state: string | undefined;
@@ -315,12 +422,16 @@ async function scopeLetGo(_given: JsonObject | undefined, held: Held): Promise<S
   });
   held.later(() => watching.unsubscribe());
   await settle();
-  if (state !== 'open') throw new Error(`the stream did not open: it is ${state}`);
+  if (state !== 'open')
+    throw new Error(`the stream did not open: it is ${state}`);
   const letGo = transport.subscribeToResource(RESOURCE);
   return { counted: () => gateway.asked[SUBSCRIBE], act: async () => letGo() };
 }
 
-async function handoffLinger(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function handoffLinger(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const gateway = new Gateway(held, 'holds', new Set());
   const transport = gateway.transport();
   return {
@@ -329,33 +440,63 @@ async function handoffLinger(_given: JsonObject | undefined, held: Held): Promis
   };
 }
 
-async function unansweredRequest(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function unansweredRequest(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const gateway = new Gateway(held, 'holds', new Set([HEALTH]));
   let failed = 0;
-  gateway.transport().healthCheck().then(
-    () => held.wrong.push('the health check was answered'),
-    (error: unknown) => {
-      if (error instanceof APIError && error.status === 0) failed += 1;
-      else held.wrong.push(`the health check failed otherwise: ${said(error)}`);
-    },
-  );
+  gateway
+    .transport()
+    .healthCheck()
+    .then(
+      () => held.wrong.push('the health check was answered'),
+      (error: unknown) => {
+        if (error instanceof APIError && error.status === 0) failed += 1;
+        else
+          held.wrong.push(`the health check failed otherwise: ${said(error)}`);
+      },
+    );
   return { counted: () => failed };
 }
 
-async function unansweredEmit(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function unansweredEmit(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const gateway = new Gateway(held, 'holds', new Set([EMIT]));
-  held.running(gateway.transport().emit('beckon:hover', { annotationId: annotationId('ann-1') }), 'the emit');
+  held.running(
+    gateway
+      .transport()
+      .emit('beckon:hover', { annotationId: annotationId('ann-1') }),
+    'the emit',
+  );
   return { counted: () => gateway.asked[EMIT] };
 }
 
 /** A bus request of a resource's events, made as the case begins, over a gateway that holds its stream open and refuses every emit. */
-function refusedRequest(given: JsonObject | undefined, held: Held): { gateway: Gateway; asked: Promise<unknown> } {
-  const gateway = new Gateway(held, 'holds', new Set(), givenSeconds(given, 'retryAfterSeconds'), new Set([EMIT]));
-  const asked = new Bus(gateway.transport()).request('browse:events-requested', { resourceId: RESOURCE });
+function refusedRequest(
+  given: JsonObject | undefined,
+  held: Held,
+): { gateway: Gateway; asked: Promise<unknown> } {
+  const gateway = new Gateway(
+    held,
+    'holds',
+    new Set(),
+    givenSeconds(given, 'retryAfterSeconds'),
+    new Set([EMIT]),
+  );
+  const asked = new Bus(gateway.transport()).request(
+    'browse:events-requested',
+    { resourceId: RESOURCE },
+  );
   return { gateway, asked };
 }
 
-async function refusedBusRequest(given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function refusedBusRequest(
+  given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const { gateway, asked } = refusedRequest(given, held);
   // How it fails is what timedOutBusRequest counts.
   asked.then(
@@ -365,13 +506,17 @@ async function refusedBusRequest(given: JsonObject | undefined, held: Held): Pro
   return { counted: () => gateway.asked[EMIT] };
 }
 
-async function timedOutBusRequest(given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function timedOutBusRequest(
+  given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const { asked } = refusedRequest(given, held);
   let timedOut = 0;
   asked.then(
     () => held.wrong.push('the request was answered'),
     (error: unknown) => {
-      if (error instanceof BusRequestError && error.code === 'bus.timeout') timedOut += 1;
+      if (error instanceof BusRequestError && error.code === 'bus.timeout')
+        timedOut += 1;
       else held.wrong.push(`the request failed otherwise: ${said(error)}`);
     },
   );
@@ -380,7 +525,12 @@ async function timedOutBusRequest(given: JsonObject | undefined, held: Held): Pr
 
 // ── The issuer ──────────────────────────────────────────────────────────
 
-const KB_TARGET: HttpEndpoint = { kind: 'http', host: 'localhost', port: 4000, protocol: 'http' };
+const KB_TARGET: HttpEndpoint = {
+  kind: 'http',
+  host: 'localhost',
+  port: 4000,
+  protocol: 'http',
+};
 const KB_GATEWAY = 'http://localhost:4000';
 const ISSUER = 'http://issuer.test/realms/xynolog';
 
@@ -401,12 +551,19 @@ class Issuer {
     if (answers.length === 0) throw new Error('the token endpoint has answers');
   }
 
-  readonly fetch = async (input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]): Promise<Response> => {
+  readonly fetch = async (
+    input: Parameters<typeof fetch>[0],
+    init?: Parameters<typeof fetch>[1],
+  ): Promise<Response> => {
     const { url, signal } = requestOf(input, init);
     const where = `${url.origin}${url.pathname}`;
     switch (where) {
       case `${KB_GATEWAY}/.well-known/oauth-protected-resource`:
-        return json(200, { resource: KB_GATEWAY, authorization_servers: [ISSUER], bearer_methods_supported: ['header'] });
+        return json(200, {
+          resource: KB_GATEWAY,
+          authorization_servers: [ISSUER],
+          bearer_methods_supported: ['header'],
+        });
       case `${ISSUER}/.well-known/openid-configuration`:
         return json(200, {
           issuer: ISSUER,
@@ -420,34 +577,69 @@ class Issuer {
           user_code: 'WDJB-MJHT',
           verification_uri: 'http://issuer.test/device',
           expires_in: 900,
-          ...(this.intervalSeconds === undefined ? {} : { interval: this.intervalSeconds }),
+          ...(this.intervalSeconds === undefined
+            ? {}
+            : { interval: this.intervalSeconds }),
         });
       case `${ISSUER}/token`: {
-        const answer = text(this.answers[Math.min(this.tokenAsks, this.answers.length - 1)], 'an answer');
+        const answer = text(
+          this.answers[Math.min(this.tokenAsks, this.answers.length - 1)],
+          'an answer',
+        );
         this.tokenAsks += 1;
         return json(400, { error: answer });
       }
       default:
-        this.held.wrong.push(`the issuer was asked ${where}, which a device grant does not ask`);
+        this.held.wrong.push(
+          `the issuer was asked ${where}, which a device grant does not ask`,
+        );
         return neverAnswered(signal);
     }
   };
 }
 
-async function deviceGrant(given: JsonObject | undefined, held: Held): Promise<Subject> {
-  const issuer = new Issuer(held, givenSeconds(given, 'intervalSeconds'), strings(given?.['answers'], 'given.answers'));
+async function deviceGrant(
+  given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
+  const issuer = new Issuer(
+    held,
+    givenSeconds(given, 'intervalSeconds'),
+    strings(given?.['answers'], 'given.answers'),
+  );
   const abandoned = new AbortController();
   held.later(() => abandoned.abort());
-  held.running(signInWithDeviceGrant({ target: KB_TARGET, onCode: () => {}, signal: abandoned.signal, fetch: issuer.fetch }), 'the sign-in');
+  held.running(
+    signInWithDeviceGrant({
+      target: KB_TARGET,
+      onCode: () => {},
+      signal: abandoned.signal,
+      fetch: issuer.fetch,
+    }),
+    'the sign-in',
+  );
   return { counted: () => issuer.tokenAsks };
 }
 
 // ── A session ───────────────────────────────────────────────────────────
 
-const KB = httpKb({ id: 'kb-alpha', label: 'Alpha', host: 'localhost', port: 4000, protocol: 'http' });
-const ALICE: UserInfo = { did: userId('did:web:example.org:users:alice'), email: 'alice@example.org', name: 'Alice', image: null, domain: 'example.org' };
+const KB = httpKb({
+  id: 'kb-alpha',
+  label: 'Alpha',
+  host: 'localhost',
+  port: 4000,
+  protocol: 'http',
+});
+const ALICE: UserInfo = {
+  did: userId('did:web:example.org:users:alice'),
+  email: 'alice@example.org',
+  name: 'Alice',
+  image: null,
+  domain: 'example.org',
+};
 
-const segment = (value: Json): string => Buffer.from(JSON.stringify(value)).toString('base64url');
+const segment = (value: Json): string =>
+  Buffer.from(JSON.stringify(value)).toString('base64url');
 
 /** A token issued now, by the wall clock, that lives `lifetimeSeconds`, told from every other by `n`. Nothing signs it. */
 function token(lifetimeSeconds: number, n: number): string {
@@ -455,12 +647,21 @@ function token(lifetimeSeconds: number, n: number): string {
   return `${segment({ alg: 'RS256', typ: 'JWT' })}.${segment({ iat: issued, exp: issued + lifetimeSeconds, n })}.${segment('signature')}`;
 }
 
-async function renewal(given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function renewal(
+  given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const lifetime = givenSeconds(given, 'lifetimeSeconds');
-  if (lifetime === undefined) throw new Error("a renewal's case states how long its tokens live");
+  if (lifetime === undefined)
+    throw new Error("a renewal's case states how long its tokens live");
   let renewals = 0;
   const storage = new InMemorySessionStorage();
-  setStoredSession(storage, KB.id, { access: token(lifetime, 0), refresh: 'a-refresh-token', clientId: 'xynolog-cli', tokenEndpoint: `${ISSUER}/token` });
+  setStoredSession(storage, KB.id, {
+    access: token(lifetime, 0),
+    refresh: 'a-refresh-token',
+    clientId: 'xynolog-cli',
+    tokenEndpoint: `${ISSUER}/token`,
+  });
   const { client } = createTestClient();
   const session = new XynologSession({
     kb: KB,
@@ -480,7 +681,9 @@ async function renewal(given: JsonObject | undefined, held: Held): Promise<Subje
 
 // ── A worker's claims ───────────────────────────────────────────────────
 
-const MARK_JOBS: JobFilter[] = [{ jobType: 'mark', params: { motivation: 'highlighting' } }];
+const MARK_JOBS: JobFilter[] = [
+  { jobType: 'mark', params: { motivation: 'highlighting' } },
+];
 
 const CLAIMED: EventMap['job:claimed']['response'] = {
   status: 'running',
@@ -498,18 +701,34 @@ const CLAIMED: EventMap['job:claimed']['response'] = {
 };
 
 /** What a subject's transport answers: each operation `answers` names, and none other, which is told. */
-function answering(held: Held, answers: Partial<Record<BusOperationKey, (payload: Record<string, unknown>) => unknown>>) {
-  return (operation: BusOperationKey, payload: Record<string, unknown>): unknown => {
+function answering(
+  held: Held,
+  answers: Partial<
+    Record<BusOperationKey, (payload: Record<string, unknown>) => unknown>
+  >,
+) {
+  return (
+    operation: BusOperationKey,
+    payload: Record<string, unknown>,
+  ): unknown => {
     const answer = answers[operation];
     if (answer !== undefined) return answer(payload);
-    held.wrong.push(`the transport was asked ${operation}, which this subject does not have it answer`);
+    held.wrong.push(
+      `the transport was asked ${operation}, which this subject does not have it answer`,
+    );
     return refuseUnscriptedOperation(operation);
   };
 }
 
-async function heldJobStall(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function heldJobStall(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   // A worker's transport names what its claims read, and no more.
-  const transport = new FaultyTransport({ channels: JOB_CLAIM_CHANNELS, makeResponse: answering(held, { 'job:claim': () => CLAIMED }) });
+  const transport = new FaultyTransport({
+    channels: JOB_CLAIM_CHANNELS,
+    makeResponse: answering(held, { 'job:claim': () => CLAIMED }),
+  });
   const client = new XynologClient(transport, inMemoryContent());
   held.later(() => client.dispose());
   const claims = client.job.claim({ accepts: MARK_JOBS });
@@ -534,7 +753,13 @@ async function heldJobStall(_given: JsonObject | undefined, held: Held): Promise
 
 // ── Discovery ───────────────────────────────────────────────────────────
 
-const MANAGED: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynolog-launcher', did: 'did:web:example.org:kb-a' };
+const MANAGED: DiscoveredKB = {
+  host: 'localhost',
+  port: 4000,
+  placement: 'local',
+  managedBy: 'xynolog-launcher',
+  did: 'did:web:example.org:kb-a',
+};
 
 /** A launcher's document: one managed knowledge base at the first read, and unchanged at every read after it. */
 class LauncherDocument implements DiscoveryTransport {
@@ -542,20 +767,34 @@ class LauncherDocument implements DiscoveryTransport {
 
   async read(): Promise<DiscoveryReadResult> {
     this.reads += 1;
-    return this.reads === 1 ? { kind: 'managed', kbs: [MANAGED] } : { kind: 'unchanged' };
+    return this.reads === 1
+      ? { kind: 'managed', kbs: [MANAGED] }
+      : { kind: 'unchanged' };
   }
 }
 
-async function discovery(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function discovery(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const document = new LauncherDocument();
-  held.reading(subscribeDiscovery(document, { intervalMs: timingMs('discoveryIntervalMs') }), 'discovery');
+  held.reading(
+    subscribeDiscovery(document, {
+      intervalMs: timingMs('discoveryIntervalMs'),
+    }),
+    'discovery',
+  );
   return { counted: () => document.reads };
 }
 
 // ── A client's queries and caches ───────────────────────────────────────
 
-const asked = (transport: FaultyTransport, operation: BusOperationKey): number =>
-  transport.requestLog.filter((request) => request.channel === operation).length;
+const asked = (
+  transport: FaultyTransport,
+  operation: BusOperationKey,
+): number =>
+  transport.requestLog.filter((request) => request.channel === operation)
+    .length;
 
 const MARK_ADDED: EventMap['mark:added'] = {
   id: 'evt-1',
@@ -568,10 +807,19 @@ const MARK_ADDED: EventMap['mark:added'] = {
   metadata: { sequenceNumber: 1 },
 };
 
-async function invalidationWindow(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function invalidationWindow(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const { client, transport } = createTestClient({
     transport: {
-      makeResponse: answering(held, { 'browse:events-requested': (payload) => ({ events: [], total: 0, resourceId: payload['resourceId'] }) }),
+      makeResponse: answering(held, {
+        'browse:events-requested': (payload) => ({
+          events: [],
+          total: 0,
+          resourceId: payload['resourceId'],
+        }),
+      }),
     },
   });
   held.later(() => client.dispose());
@@ -599,7 +847,10 @@ class Saves implements CachePersister<string, number> {
   }
 }
 
-async function saveDebounce(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function saveDebounce(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const saves = new Saves();
   const cache = createCache<string, number>(
     async (key) => {
@@ -634,12 +885,23 @@ const PROGRESSED: EventMap['job:report-progress'] = {
   progress: { percentage: 10 },
 };
 
-async function jobFollower(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function jobFollower(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const { client, transport } = createTestClient({
-    transport: { makeResponse: answering(held, { 'job:create': () => ({ jobId: 'job-1' }), 'job:status-requested': () => JOB_RUNNING }) },
+    transport: {
+      makeResponse: answering(held, {
+        'job:create': () => ({ jobId: 'job-1' }),
+        'job:status-requested': () => JOB_RUNNING,
+      }),
+    },
   });
   held.later(() => client.dispose());
-  held.reading(client.mark.delegate(RESOURCE, { motivation: 'highlighting' }), "the job's follower");
+  held.reading(
+    client.mark.delegate(RESOURCE, { motivation: 'highlighting' }),
+    "the job's follower",
+  );
   return {
     counted: () => asked(transport, 'job:status-requested'),
     // The test transport hands what it is sent on a channel that is no request to the client's stream, as the wire does another participant's.
@@ -650,15 +912,25 @@ async function jobFollower(_given: JsonObject | undefined, held: Held): Promise<
 }
 
 /** A client's `job.pollUntilComplete` of one job, naming no interval and no limit, over a transport that answers every status ask with the job running. */
-function polling(held: Held): { transport: FaultyTransport; poll: Promise<unknown> } {
+function polling(held: Held): {
+  transport: FaultyTransport;
+  poll: Promise<unknown>;
+} {
   const { client, transport } = createTestClient({
-    transport: { makeResponse: answering(held, { 'job:status-requested': () => JOB_RUNNING }) },
+    transport: {
+      makeResponse: answering(held, {
+        'job:status-requested': () => JOB_RUNNING,
+      }),
+    },
   });
   held.later(() => client.dispose());
   return { transport, poll: client.job.pollUntilComplete(jobId('job-1')) };
 }
 
-async function jobPoll(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function jobPoll(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const { transport, poll } = polling(held);
   // How it ends is what jobPollTimeout counts.
   poll.then(
@@ -668,13 +940,17 @@ async function jobPoll(_given: JsonObject | undefined, held: Held): Promise<Subj
   return { counted: () => asked(transport, 'job:status-requested') };
 }
 
-async function jobPollTimeout(_given: JsonObject | undefined, held: Held): Promise<Subject> {
+async function jobPollTimeout(
+  _given: JsonObject | undefined,
+  held: Held,
+): Promise<Subject> {
   const { poll } = polling(held);
   let timedOut = 0;
   poll.then(
     () => held.wrong.push('the poll ended'),
     (error: unknown) => {
-      if (error instanceof BusRequestError && error.code === 'bus.timeout') timedOut += 1;
+      if (error instanceof BusRequestError && error.code === 'bus.timeout')
+        timedOut += 1;
       else held.wrong.push(`the poll failed otherwise: ${said(error)}`);
     },
   );
@@ -707,7 +983,11 @@ const SUBJECTS: Record<string, Build> = {
 // ── A case, played ──────────────────────────────────────────────────────
 
 /** Perform one step. Returns how far it moved the clock. */
-async function perform(step: Json, subject: Subject, held: Held): Promise<number> {
+async function perform(
+  step: Json,
+  subject: Subject,
+  held: Held,
+): Promise<number> {
   if (step === 'settle') {
     await settle();
     return 0;
@@ -732,7 +1012,8 @@ async function perform(step: Json, subject: Subject, held: Held): Promise<number
     if (held.wrong.length > 0) throw new Error(held.wrong.join('; '));
     const counted = subject.counted();
     const stating = count(stated['counted'], 'counted');
-    if (counted !== stating) throw new Error(`counted ${counted}, not ${stating}`);
+    if (counted !== stating)
+      throw new Error(`counted ${counted}, not ${stating}`);
     return 0;
   }
   throw new Error('no step this runner performs');
@@ -740,7 +1021,8 @@ async function perform(step: Json, subject: Subject, held: Held): Promise<number
 
 async function play(stated: Case): Promise<void> {
   const build = SUBJECTS[stated.subject];
-  if (build === undefined) throw new Error(`this runner builds no ${stated.subject}`);
+  if (build === undefined)
+    throw new Error(`this runner builds no ${stated.subject}`);
   const held = new Held();
   let atMs = 0;
   try {
@@ -749,7 +1031,9 @@ async function play(stated: Case): Promise<void> {
       try {
         atMs += await perform(step, subject, held);
       } catch (broken) {
-        throw new Error(`steps[${at}] ${JSON.stringify(step)}, at ${atMs} ms: ${said(broken)}`);
+        throw new Error(
+          `steps[${at}] ${JSON.stringify(step)}, at ${atMs} ms: ${said(broken)}`,
+        );
       }
     }
   } finally {
@@ -762,7 +1046,15 @@ async function play(stated: Case): Promise<void> {
 describe('the time a client keeps, against protocol/specs/src/client/clock-cases.json', () => {
   beforeEach(() => {
     // The microtasks the test transport answers on stay real; the clock is held.
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] });
+    vi.useFakeTimers({
+      toFake: [
+        'setTimeout',
+        'clearTimeout',
+        'setInterval',
+        'clearInterval',
+        'Date',
+      ],
+    });
     vi.spyOn(Math, 'random').mockReturnValue(0);
   });
   afterEach(() => {
@@ -771,16 +1063,25 @@ describe('the time a client keeps, against protocol/specs/src/client/clock-cases
   });
 
   it('builds every subject the table names, and no other', () => {
-    expect(new Set(Object.keys(SUBJECTS))).toEqual(new Set(TABLE.cases.map((stated) => stated.subject)));
+    expect(new Set(Object.keys(SUBJECTS))).toEqual(
+      new Set(TABLE.cases.map((stated) => stated.subject)),
+    );
   });
 
-  it.each(TABLE.cases.map((stated) => [`${stated.subject}: ${stated.case}`, stated] as const))('%s', async (_name, stated) => {
+  it.each(
+    TABLE.cases.map(
+      (stated) => [`${stated.subject}: ${stated.case}`, stated] as const,
+    ),
+  )('%s', async (_name, stated) => {
     await play(stated);
   });
 
   it('fails a case whose wait ends a millisecond early', async () => {
-    const first = TABLE.cases.find((stated) => stated.subject === 'refusedStream');
-    if (first === undefined) throw new Error('the table has no case of refusedStream');
+    const first = TABLE.cases.find(
+      (stated) => stated.subject === 'refusedStream',
+    );
+    if (first === undefined)
+      throw new Error('the table has no case of refusedStream');
     const told: Case = structuredClone(first);
     // The last millisecond of the first wait: the case is told the stream was opened again in it.
     expect(told.steps[2]).toEqual({ counted: 1 });

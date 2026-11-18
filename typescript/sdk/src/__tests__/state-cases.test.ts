@@ -27,13 +27,39 @@ import {
   type Watched,
 } from '@xynolog/core';
 import type { XynologClient } from '../client';
-import { createTestClient, refuseUnscriptedOperation, type FaultAction, type FaultyTransport, type TestClientOptions } from '../testing';
-import { createBeckonStateUnit, createHoverDwell, type BeckonStateUnit, type HoverDwell } from '../state/flows/beckon-state-unit';
-import { createGatherStateUnit, type GatherStateUnit } from '../state/flows/gather-state-unit';
-import { createMarkStateUnit, type MarkStateUnit } from '../state/flows/mark-state-unit';
-import { createMatchStateUnit, type MatchStateUnit } from '../state/flows/match-state-unit';
-import { createYieldStateUnit, type YieldStateUnit } from '../state/flows/yield-state-unit';
-import { createSearchPipeline, type SearchPipeline } from '../state/lib/search-pipeline';
+import {
+  createTestClient,
+  refuseUnscriptedOperation,
+  type FaultAction,
+  type FaultyTransport,
+  type TestClientOptions,
+} from '../testing';
+import {
+  createBeckonStateUnit,
+  createHoverDwell,
+  type BeckonStateUnit,
+  type HoverDwell,
+} from '../state/flows/beckon-state-unit';
+import {
+  createGatherStateUnit,
+  type GatherStateUnit,
+} from '../state/flows/gather-state-unit';
+import {
+  createMarkStateUnit,
+  type MarkStateUnit,
+} from '../state/flows/mark-state-unit';
+import {
+  createMatchStateUnit,
+  type MatchStateUnit,
+} from '../state/flows/match-state-unit';
+import {
+  createYieldStateUnit,
+  type YieldStateUnit,
+} from '../state/flows/yield-state-unit';
+import {
+  createSearchPipeline,
+  type SearchPipeline,
+} from '../state/lib/search-pipeline';
 import {
   createSessionSignals,
   type KbIdentityConflict,
@@ -59,38 +85,58 @@ interface Case {
   steps: Json[];
 }
 
-const read = (path: string): unknown => JSON.parse(readFileSync(new URL(`../../../../protocol/specs/src/${path}`, import.meta.url), 'utf8'));
+const read = (path: string): unknown =>
+  JSON.parse(
+    readFileSync(
+      new URL(`../../../../protocol/specs/src/${path}`, import.meta.url),
+      'utf8',
+    ),
+  );
 
-const TABLE = read('client/state-units.json') as { fixtures: Record<string, Json>; cases: Case[] };
-const NAMES = read('client/surface.json') as { stateUnits: Array<{ unit: string; absent?: Record<string, string> }> };
+const TABLE = read('client/state-units.json') as {
+  fixtures: Record<string, Json>;
+  cases: Case[];
+};
+const NAMES = read('client/surface.json') as {
+  stateUnits: Array<{ unit: string; absent?: Record<string, string> }>;
+};
 const TIMING = new Map(
-  (read('client/timing.json') as { timing: Array<{ name: string; value: number }> }).timing.map(({ name, value }) => [name, value]),
+  (
+    read('client/timing.json') as {
+      timing: Array<{ name: string; value: number }>;
+    }
+  ).timing.map(({ name, value }) => [name, value]),
 );
 
 // ── Reading the table ───────────────────────────────────────────────────
 
 function text(value: Json | undefined, what: string): string {
-  if (typeof value !== 'string') throw new Error(`${what} is not a string: ${JSON.stringify(value)}`);
+  if (typeof value !== 'string')
+    throw new Error(`${what} is not a string: ${JSON.stringify(value)}`);
   return value;
 }
 
 function object(value: Json | undefined, what: string): JsonObject {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${what} is not an object: ${JSON.stringify(value)}`);
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    throw new Error(`${what} is not an object: ${JSON.stringify(value)}`);
   return value;
 }
 
 function count(value: Json | undefined, what: string): number {
-  if (typeof value !== 'number') throw new Error(`${what} is not a number: ${JSON.stringify(value)}`);
+  if (typeof value !== 'number')
+    throw new Error(`${what} is not a number: ${JSON.stringify(value)}`);
   return value;
 }
 
 function flag(value: Json | undefined, what: string): boolean {
-  if (typeof value !== 'boolean') throw new Error(`${what} is not a boolean: ${JSON.stringify(value)}`);
+  if (typeof value !== 'boolean')
+    throw new Error(`${what} is not a boolean: ${JSON.stringify(value)}`);
   return value;
 }
 
 function strings(value: Json | undefined, what: string): string[] {
-  if (!Array.isArray(value)) throw new Error(`${what} is not a list: ${JSON.stringify(value)}`);
+  if (!Array.isArray(value))
+    throw new Error(`${what} is not a list: ${JSON.stringify(value)}`);
   return value.map((item) => text(item, what));
 }
 
@@ -102,10 +148,13 @@ function resolved(value: Json): Json {
   if (keys.length === 1 && keys[0] === '$fixture') {
     const name = text(value['$fixture'], "a fixture's name");
     const fixture = TABLE.fixtures[name];
-    if (fixture === undefined) throw new Error(`the table has no fixture ${name}`);
+    if (fixture === undefined)
+      throw new Error(`the table has no fixture ${name}`);
     return resolved(fixture);
   }
-  return Object.fromEntries(keys.map((key) => [key, resolved(value[key] as Json)]));
+  return Object.fromEntries(
+    keys.map((key) => [key, resolved(value[key] as Json)]),
+  );
 }
 
 /** A duration as the table states it, in milliseconds: a number, or a timing of protocol/specs/src/client/timing.json scaled and moved. */
@@ -114,9 +163,14 @@ function durationMs(value: Json | undefined): number {
   const stated = object(value, 'a duration');
   const name = text(stated['timing'], 'a timing');
   const base = TIMING.get(name);
-  if (base === undefined) throw new Error(`${name} is no timing of protocol/specs/src/client/timing.json`);
-  const times = stated['times'] === undefined ? 1 : count(stated['times'], 'times');
-  const plus = stated['plusMs'] === undefined ? 0 : count(stated['plusMs'], 'plusMs');
+  if (base === undefined)
+    throw new Error(
+      `${name} is no timing of protocol/specs/src/client/timing.json`,
+    );
+  const times =
+    stated['times'] === undefined ? 1 : count(stated['times'], 'times');
+  const plus =
+    stated['plusMs'] === undefined ? 0 : count(stated['plusMs'], 'plusMs');
   return base * times + plus;
 }
 
@@ -124,7 +178,10 @@ function durationMs(value: Json | undefined): number {
 
 /** What a case's search pipeline searches with: it records each query it is asked, and gives each the answers a step gives it. */
 class Searches {
-  readonly asked: Array<{ query: string; answers: Subject<string[] | undefined> }> = [];
+  readonly asked: Array<{
+    query: string;
+    answers: Subject<string[] | undefined>;
+  }> = [];
 
   search(query: string): Observable<string[] | undefined> {
     const answers = new Subject<string[] | undefined>();
@@ -147,11 +204,19 @@ type Args = JsonObject;
 
 /** A unit's methods by name, each as a case calls it: every public method but `dispose`, which is a step of its own. */
 type Methods<U> = {
-  [M in keyof U as U[M] extends (...args: never[]) => unknown ? (M extends 'dispose' ? never : M) : never]: (args: Args) => void;
+  [
+    M in keyof U as U[M] extends (...args: never[]) => unknown
+      ? M extends 'dispose'
+        ? never
+        : M
+      : never
+  ]: (args: Args) => void;
 };
 
 /** A unit's states by the table's name for each: `<member>$` here. */
-type States<U> = { [M in keyof U as M extends `${infer Stem}$` ? Stem : never]: Watched<unknown> };
+type States<U> = {
+  [M in keyof U as M extends `${infer Stem}$` ? Stem : never]: Watched<unknown>;
+};
 
 /** A unit made for a case: the unit, and its methods and states by the names the table uses. */
 interface Played {
@@ -160,9 +225,14 @@ interface Played {
   states: Readonly<Record<string, Watched<unknown>>>;
 }
 
-type Make = (client: XynologClient, searches: Searches, made: JsonObject) => Played;
+type Make = (
+  client: XynologClient,
+  searches: Searches,
+  made: JsonObject,
+) => Played;
 
-const annotationOf = (args: Args): AnnotationId => annotationId(text(args['annotationId'], 'annotationId'));
+const annotationOf = (args: Args): AnnotationId =>
+  annotationId(text(args['annotationId'], 'annotationId'));
 
 /**
  * How this SDK makes each unit it has, from the client and what the case
@@ -172,36 +242,77 @@ const annotationOf = (args: Args): AnnotationId => annotationId(text(args['annot
 const MAKERS: Record<string, Make> = {
   match: (client) => {
     const unit: MatchStateUnit = createMatchStateUnit(client);
-    return { unit, methods: {} satisfies Methods<MatchStateUnit>, states: {} satisfies States<MatchStateUnit> };
-  },
-  beckon: (client, _searches, made) => {
-    const unit: BeckonStateUnit = createBeckonStateUnit(client, resourceId(text(made['resourceId'], 'a resource')));
     return {
       unit,
-      methods: { focus: (args) => unit.focus(annotationOf(args)) } satisfies Methods<BeckonStateUnit>,
-      states: { hoveredAnnotationId: unit.hoveredAnnotationId$ } satisfies States<BeckonStateUnit>,
+      methods: {} satisfies Methods<MatchStateUnit>,
+      states: {} satisfies States<MatchStateUnit>,
+    };
+  },
+  beckon: (client, _searches, made) => {
+    const unit: BeckonStateUnit = createBeckonStateUnit(
+      client,
+      resourceId(text(made['resourceId'], 'a resource')),
+    );
+    return {
+      unit,
+      methods: {
+        focus: (args) => unit.focus(annotationOf(args)),
+      } satisfies Methods<BeckonStateUnit>,
+      states: {
+        hoveredAnnotationId: unit.hoveredAnnotationId$,
+      } satisfies States<BeckonStateUnit>,
     };
   },
   hoverDwell: (client, _searches, made) => {
-    const unit: HoverDwell = createHoverDwell((hovered) => client.beckon.hover(hovered), durationMs(made['delayMs']));
+    const unit: HoverDwell = createHoverDwell(
+      (hovered) => client.beckon.hover(hovered),
+      durationMs(made['delayMs']),
+    );
     return {
       unit,
-      methods: { enter: (args) => unit.enter(annotationOf(args)), leave: () => unit.leave() } satisfies Methods<HoverDwell>,
+      methods: {
+        enter: (args) => unit.enter(annotationOf(args)),
+        leave: () => unit.leave(),
+      } satisfies Methods<HoverDwell>,
       states: {} satisfies States<HoverDwell>,
     };
   },
   gather: (client, _searches, made) => {
-    const unit: GatherStateUnit = createGatherStateUnit(client, resourceId(text(made['resourceId'], 'a resource')));
+    const unit: GatherStateUnit = createGatherStateUnit(
+      client,
+      resourceId(text(made['resourceId'], 'a resource')),
+    );
     return {
       unit,
       methods: {
         gatherAnnotation: (args) =>
           unit.gatherAnnotation(annotationOf(args), {
-            ...(args['contextWindow'] === undefined ? {} : { contextWindow: count(args['contextWindow'], 'contextWindow') }),
-            ...(args['includeSourceContext'] === undefined ? {} : { includeSourceContext: flag(args['includeSourceContext'], 'includeSourceContext') }),
-            ...(args['includeTargetContext'] === undefined ? {} : { includeTargetContext: flag(args['includeTargetContext'], 'includeTargetContext') }),
+            ...(args['contextWindow'] === undefined
+              ? {}
+              : {
+                  contextWindow: count(args['contextWindow'], 'contextWindow'),
+                }),
+            ...(args['includeSourceContext'] === undefined
+              ? {}
+              : {
+                  includeSourceContext: flag(
+                    args['includeSourceContext'],
+                    'includeSourceContext',
+                  ),
+                }),
+            ...(args['includeTargetContext'] === undefined
+              ? {}
+              : {
+                  includeTargetContext: flag(
+                    args['includeTargetContext'],
+                    'includeTargetContext',
+                  ),
+                }),
           }),
-        gatherResource: (args) => unit.gatherResource(resourceId(text(args['resourceId'], 'resourceId'))),
+        gatherResource: (args) =>
+          unit.gatherResource(
+            resourceId(text(args['resourceId'], 'resourceId')),
+          ),
       } satisfies Methods<GatherStateUnit>,
       states: {
         context: unit.context$,
@@ -215,18 +326,32 @@ const MAKERS: Record<string, Make> = {
     };
   },
   search: (_client, searches, made) => {
-    const unit: SearchPipeline<string> = createSearchPipeline((query) => searches.search(query), {
-      ...(made['debounceMs'] !== undefined ? { debounceMs: durationMs(made['debounceMs']) } : {}),
-      ...(made['initialQuery'] !== undefined ? { initialQuery: text(made['initialQuery'], 'an initial query') } : {}),
-    });
+    const unit: SearchPipeline<string> = createSearchPipeline(
+      (query) => searches.search(query),
+      {
+        ...(made['debounceMs'] !== undefined
+          ? { debounceMs: durationMs(made['debounceMs']) }
+          : {}),
+        ...(made['initialQuery'] !== undefined
+          ? { initialQuery: text(made['initialQuery'], 'an initial query') }
+          : {}),
+      },
+    );
     return {
       unit,
-      methods: { setQuery: (args) => unit.setQuery(text(args['value'], 'value')) } satisfies Methods<SearchPipeline<string>>,
-      states: { query: unit.query$, state: unit.state$ } satisfies States<SearchPipeline<string>>,
+      methods: {
+        setQuery: (args) => unit.setQuery(text(args['value'], 'value')),
+      } satisfies Methods<SearchPipeline<string>>,
+      states: { query: unit.query$, state: unit.state$ } satisfies States<
+        SearchPipeline<string>
+      >,
     };
   },
   yield: (client, _searches, made) => {
-    const unit: YieldStateUnit = createYieldStateUnit(client, text(made['locale'], 'a locale'));
+    const unit: YieldStateUnit = createYieldStateUnit(
+      client,
+      text(made['locale'], 'a locale'),
+    );
     return {
       unit,
       methods: {
@@ -234,7 +359,9 @@ const MAKERS: Record<string, Make> = {
         generate: (args) =>
           unit.generate(
             object(args['params'], 'params') as unknown as GenerationJobParams,
-            args['stallDeadlineMs'] === undefined ? undefined : count(args['stallDeadlineMs'], 'stallDeadlineMs'),
+            args['stallDeadlineMs'] === undefined
+              ? undefined
+              : count(args['stallDeadlineMs'], 'stallDeadlineMs'),
           ),
         dismissProgress: () => unit.dismissProgress(),
       } satisfies Methods<YieldStateUnit>,
@@ -248,12 +375,18 @@ const MAKERS: Record<string, Make> = {
     };
   },
   mark: (client, _searches, made) => {
-    const unit: MarkStateUnit = createMarkStateUnit(client, resourceId(text(made['resourceId'], 'a resource')));
+    const unit: MarkStateUnit = createMarkStateUnit(
+      client,
+      resourceId(text(made['resourceId'], 'a resource')),
+    );
     return {
       unit,
       methods: {
         // The job's parameters are the wire's, as the case writes them.
-        requestDelegate: (args) => unit.requestDelegate(object(args['params'], 'params') as unknown as MarkJobParams),
+        requestDelegate: (args) =>
+          unit.requestDelegate(
+            object(args['params'], 'params') as unknown as MarkJobParams,
+          ),
         cancelPending: () => unit.cancelPending(),
         dismissProgress: () => unit.dismissProgress(),
       } satisfies Methods<MarkStateUnit>,
@@ -272,9 +405,14 @@ const MAKERS: Record<string, Make> = {
     return {
       unit,
       methods: {
-        notifySessionEnded: (args) => unit.notifySessionEnded(text(args['reason'], 'reason') as SessionEndReason),
+        notifySessionEnded: (args) =>
+          unit.notifySessionEnded(
+            text(args['reason'], 'reason') as SessionEndReason,
+          ),
         notifyPermissionDenied: (args) =>
-          unit.notifyPermissionDenied(args['detail'] === null ? null : text(args['detail'], 'detail')),
+          unit.notifyPermissionDenied(
+            args['detail'] === null ? null : text(args['detail'], 'detail'),
+          ),
         notifyKbIdentityConflict: (args) => {
           const conflict = object(args['conflict'], 'conflict');
           const stated: KbIdentityConflict = {
@@ -285,7 +423,8 @@ const MAKERS: Record<string, Make> = {
         },
         acknowledgeSessionEnded: () => unit.acknowledgeSessionEnded(),
         acknowledgePermissionDenied: () => unit.acknowledgePermissionDenied(),
-        acknowledgeKbIdentityConflict: () => unit.acknowledgeKbIdentityConflict(),
+        acknowledgeKbIdentityConflict: () =>
+          unit.acknowledgeKbIdentityConflict(),
       } satisfies Methods<SessionSignals>,
       states: {
         sessionEnded: unit.sessionEnded$,
@@ -296,7 +435,11 @@ const MAKERS: Record<string, Make> = {
   },
 };
 
-const HAS = new Set(NAMES.stateUnits.filter((row) => row.absent?.[SDK] === undefined).map((row) => row.unit));
+const HAS = new Set(
+  NAMES.stateUnits
+    .filter((row) => row.absent?.[SDK] === undefined)
+    .map((row) => row.unit),
+);
 const RUN = TABLE.cases.filter((stated) => HAS.has(stated.unit));
 
 // ── The transport ───────────────────────────────────────────────────────
@@ -321,15 +464,22 @@ function jobs(operation: BusOperationKey): unknown {
 }
 
 /** The transport a case states. Its stream carries what a client's does: the replies and the broadcasts, never the requests. */
-function transportOf(stated: JsonObject): NonNullable<TestClientOptions['transport']> {
+function transportOf(
+  stated: JsonObject,
+): NonNullable<TestClientOptions['transport']> {
   const answers = text(stated['answers'], 'transport.answers');
   const delay = stated['delayMs'];
-  const schedule: FaultAction[] = delay === undefined ? [] : [{ kind: 'delay', ms: durationMs(delay) }];
+  const schedule: FaultAction[] =
+    delay === undefined ? [] : [{ kind: 'delay', ms: durationMs(delay) }];
   switch (answers) {
     case 'never':
-      if (delay !== undefined) throw new Error('a transport that never answers holds no reply');
+      if (delay !== undefined)
+        throw new Error('a transport that never answers holds no reply');
       // The reply this answers with is dropped on its way, and a step answers instead.
-      return { schedule: [{ kind: 'drop-reply' }], makeResponse: () => undefined };
+      return {
+        schedule: [{ kind: 'drop-reply' }],
+        makeResponse: () => undefined,
+      };
     case 'refuses':
       return { schedule };
     case 'jobs':
@@ -343,29 +493,46 @@ function transportOf(stated: JsonObject): NonNullable<TestClientOptions['transpo
 
 /** What a state holds, as the wire writes it. An error is its code and its message. */
 function wire(held: unknown): Json {
-  if (held instanceof XynologError) return { code: held.code, message: held.message };
+  if (held instanceof XynologError)
+    return { code: held.code, message: held.message };
   if (held instanceof Error) return { message: held.message };
-  if (held === undefined) throw new Error('it holds undefined, where none is null');
+  if (held === undefined)
+    throw new Error('it holds undefined, where none is null');
   return JSON.parse(JSON.stringify(held)) as Json;
 }
 
 /** Whether `actual` is what `expected` states: exactly, but where `$has` asks only for some members. */
 function matches(expected: Json, actual: Json): boolean {
-  if (expected !== null && typeof expected === 'object' && !Array.isArray(expected)) {
+  if (
+    expected !== null &&
+    typeof expected === 'object' &&
+    !Array.isArray(expected)
+  ) {
     const keys = Object.keys(expected);
-    if (actual === null || typeof actual !== 'object' || Array.isArray(actual)) return false;
+    if (actual === null || typeof actual !== 'object' || Array.isArray(actual))
+      return false;
     if (keys.length === 1 && keys[0] === '$has') {
       const has = object(expected['$has'], '$has');
-      return Object.keys(has).every((key) => key in actual && matches(has[key] as Json, actual[key] as Json));
+      return Object.keys(has).every(
+        (key) =>
+          key in actual && matches(has[key] as Json, actual[key] as Json),
+      );
     }
     const theirs = Object.keys(actual);
     return (
       keys.length === theirs.length &&
-      keys.every((key) => key in actual && matches(expected[key] as Json, actual[key] as Json))
+      keys.every(
+        (key) =>
+          key in actual && matches(expected[key] as Json, actual[key] as Json),
+      )
     );
   }
   if (Array.isArray(expected)) {
-    return Array.isArray(actual) && expected.length === actual.length && expected.every((one, at) => matches(one, actual[at] as Json));
+    return (
+      Array.isArray(actual) &&
+      expected.length === actual.length &&
+      expected.every((one, at) => matches(one, actual[at] as Json))
+    );
   }
   return expected === actual;
 }
@@ -373,7 +540,10 @@ function matches(expected: Json, actual: Json): boolean {
 /** Whether a state holds what `expected` states. An error is compared on what the case states of it. */
 function holds(expected: Json, held: unknown): boolean {
   if (held instanceof Error) {
-    const stated = object(expected, `the case's statement of an error (${held.message})`);
+    const stated = object(
+      expected,
+      `the case's statement of an error (${held.message})`,
+    );
     const written = object(wire(held), 'an error');
     return Object.keys(stated).every((key) => written[key] === stated[key]);
   }
@@ -387,7 +557,13 @@ function check(condition: boolean, message: () => string): asserts condition {
 /** Whether a reader of `state` ends, as a state's readers do once its unit is disposed. */
 function hasEnded(state: Watched<unknown>): boolean {
   let ended = false;
-  state.subscribe({ complete: () => { ended = true; } }).unsubscribe();
+  state
+    .subscribe({
+      complete: () => {
+        ended = true;
+      },
+    })
+    .unsubscribe();
   return ended;
 }
 
@@ -395,7 +571,8 @@ function hasEnded(state: Watched<unknown>): boolean {
 
 /** Let what is ready run, and what that makes ready, without moving the clock. */
 async function settle(): Promise<void> {
-  for (let turn = 0; turn < SETTLE_TURNS; turn++) await vi.advanceTimersByTimeAsync(0);
+  for (let turn = 0; turn < SETTLE_TURNS; turn++)
+    await vi.advanceTimersByTimeAsync(0);
 }
 
 interface Heard {
@@ -405,18 +582,30 @@ interface Heard {
 }
 
 /** The correlation id the `nth` request sent on a channel carried. */
-function requestId(transport: FaultyTransport, named: JsonObject): string | undefined {
+function requestId(
+  transport: FaultyTransport,
+  named: JsonObject,
+): string | undefined {
   const channel = text(named['sent'], "a request's channel");
   const nth = count(named['nth'], 'nth');
-  const sent = transport.requestLog.filter((entry) => entry.channel === channel);
+  const sent = transport.requestLog.filter(
+    (entry) => entry.channel === channel,
+  );
   const entry = sent[nth];
-  check(entry !== undefined, () => `request #${nth} on ${channel} was not sent`);
+  check(
+    entry !== undefined,
+    () => `request #${nth} on ${channel} was not sent`,
+  );
   return entry.correlationId;
 }
 
 /** An envelope carrying `correlationId`, or none when the step states none. */
-const envelopeOf = (correlation: Json | undefined): { correlationId: string } | undefined =>
-  correlation === undefined ? undefined : { correlationId: text(correlation, 'correlationId') };
+const envelopeOf = (
+  correlation: Json | undefined,
+): { correlationId: string } | undefined =>
+  correlation === undefined
+    ? undefined
+    : { correlationId: text(correlation, 'correlationId') };
 
 interface World {
   client: XynologClient;
@@ -440,7 +629,11 @@ function stateOf(world: World, name: string, member: string): Watched<unknown> {
 }
 
 /** Perform one step. Returns how much of what was heard has been checked. */
-async function perform(step: Json, world: World, told: number): Promise<number> {
+async function perform(
+  step: Json,
+  world: World,
+  told: number,
+): Promise<number> {
   const { client, transport, searches, heard } = world;
   if (step === 'settle') {
     await settle();
@@ -450,29 +643,42 @@ async function perform(step: Json, world: World, told: number): Promise<number> 
   if ('say' in stated) {
     client.bus.emit(
       text(stated['say'], 'a channel') as keyof EventMap,
-      resolved(object(stated['payload'], 'a payload')) as unknown as EventMap[keyof EventMap],
+      resolved(
+        object(stated['payload'], 'a payload'),
+      ) as unknown as EventMap[keyof EventMap],
       envelopeOf(stated['correlationId']),
     );
   } else if ('deliver' in stated) {
     // The test transport hands what it is sent on a channel that is no request to the client's stream, as the wire does another participant's.
     void transport.emit(
       text(stated['deliver'], 'a channel') as keyof EventMap,
-      resolved(object(stated['payload'], 'a payload')) as unknown as EventMap[keyof EventMap],
+      resolved(
+        object(stated['payload'], 'a payload'),
+      ) as unknown as EventMap[keyof EventMap],
       envelopeOf(stated['correlationId']),
     );
   } else if ('answer' in stated) {
-    const asked = requestId(transport, { sent: stated['answer'] ?? null, nth: stated['nth'] ?? null });
+    const asked = requestId(transport, {
+      sent: stated['answer'] ?? null,
+      nth: stated['nth'] ?? null,
+    });
     void transport.emit(
       text(stated['reply'], "a reply's channel") as keyof EventMap,
-      resolved(object(stated['payload'], 'a payload')) as unknown as EventMap[keyof EventMap],
+      resolved(
+        object(stated['payload'], 'a payload'),
+      ) as unknown as EventMap[keyof EventMap],
       asked === undefined ? undefined : { correlationId: asked },
     );
   } else if ('queueReply' in stated) {
-    transport.queueReply(text(stated['queueReply'], 'an operation') as BusOperationKey, resolved(stated['response'] ?? null));
+    transport.queueReply(
+      text(stated['queueReply'], 'an operation') as BusOperationKey,
+      resolved(stated['response'] ?? null),
+    );
   } else if ('invoke' in stated) {
     const name = text(stated['invoke'], 'a method');
     const method = unitOf(world, stated['of']).methods[name];
-    if (method === undefined) throw new Error(`${text(stated['of'], 'a unit')} has no method ${name}`);
+    if (method === undefined)
+      throw new Error(`${text(stated['of'], 'a unit')} has no method ${name}`);
     method(object(resolved(stated['args'] ?? null), 'args'));
   } else if ('pass' in stated) {
     // What is ready runs at the time it became ready, before the clock moves; what falls due runs to its end.
@@ -483,54 +689,110 @@ async function perform(step: Json, world: World, told: number): Promise<number> 
     unitOf(world, stated['dispose']).unit.dispose();
   } else if ('answerSearch' in stated) {
     const results = stated['results'];
-    searches.answer(count(stated['answerSearch'], 'answerSearch'), results === null ? undefined : strings(results, "an answer's results"));
+    searches.answer(
+      count(stated['answerSearch'], 'answerSearch'),
+      results === null ? undefined : strings(results, "an answer's results"),
+    );
   } else if ('searched' in stated) {
     const queries = searches.asked.map((asked) => asked.query);
     const wanted = strings(stated['searched'], 'searched');
-    check(matches(wanted, queries), () => `the search was asked ${JSON.stringify(queries)}`);
+    check(
+      matches(wanted, queries),
+      () => `the search was asked ${JSON.stringify(queries)}`,
+    );
   } else if ('expect' in stated) {
-    for (const [name, members] of Object.entries(object(stated['expect'], 'expect'))) {
-      for (const [member, value] of Object.entries(object(members, `${name}'s members`))) {
+    for (const [name, members] of Object.entries(
+      object(stated['expect'], 'expect'),
+    )) {
+      for (const [member, value] of Object.entries(
+        object(members, `${name}'s members`),
+      )) {
         const held = stateOf(world, name, member).getValue();
-        check(holds(value, held), () => `${name}.${member} holds ${JSON.stringify(held instanceof Error ? wire(held) : held)}, not ${JSON.stringify(value)}`);
+        check(
+          holds(value, held),
+          () =>
+            `${name}.${member} holds ${JSON.stringify(held instanceof Error ? wire(held) : held)}, not ${JSON.stringify(value)}`,
+        );
       }
     }
   } else if ('sent' in stated) {
     const channel = text(stated['sent'], "a request's channel");
-    const sent = transport.requestLog.filter((entry) => entry.channel === channel).map((entry) => wire(entry.payload));
+    const sent = transport.requestLog
+      .filter((entry) => entry.channel === channel)
+      .map((entry) => wire(entry.payload));
     if ('count' in stated) {
-      check(sent.length === count(stated['count'], 'count'), () => `${sent.length} requests were sent on ${channel}, not ${JSON.stringify(stated['count'])}`);
+      check(
+        sent.length === count(stated['count'], 'count'),
+        () =>
+          `${sent.length} requests were sent on ${channel}, not ${JSON.stringify(stated['count'])}`,
+      );
     } else {
-      check(matches(resolved(stated['payloads'] ?? null), sent), () => `sent on ${channel}: ${JSON.stringify(sent)}`);
+      check(
+        matches(resolved(stated['payloads'] ?? null), sent),
+        () => `sent on ${channel}: ${JSON.stringify(sent)}`,
+      );
     }
   } else if ('nothingSent' in stated) {
-    check(transport.requestLog.length === 0, () => `requests were sent: ${JSON.stringify(transport.requestLog.map((entry) => entry.channel))}`);
+    check(
+      transport.requestLog.length === 0,
+      () =>
+        `requests were sent: ${JSON.stringify(transport.requestLog.map((entry) => entry.channel))}`,
+    );
   } else if ('heard' in stated) {
     await settle();
     const frames = heard.slice(told);
-    const got = frames.map((frame) => ({ channel: frame.channel, payload: wire(frame.payload), correlationId: frame.correlationId ?? null }));
+    const got = frames.map((frame) => ({
+      channel: frame.channel,
+      payload: wire(frame.payload),
+      correlationId: frame.correlationId ?? null,
+    }));
     const wanted = stated['heard'];
-    check(Array.isArray(wanted) && wanted.length === frames.length, () => `heard ${JSON.stringify(got)}`);
+    check(
+      Array.isArray(wanted) && wanted.length === frames.length,
+      () => `heard ${JSON.stringify(got)}`,
+    );
     frames.forEach((frame, at) => {
       const one = object(wanted[at], 'a heard entry');
       const correlation = one['correlationId'];
       const expectedId =
-        correlation === undefined ? undefined
-        : correlation !== null && typeof correlation === 'object' && !Array.isArray(correlation) ? requestId(transport, correlation)
-        : text(correlation, 'correlationId');
-      check(frame.channel === one['channel'], () => `heard ${JSON.stringify(got)}`);
-      check(matches(resolved(one['payload'] ?? null), wire(frame.payload)), () => `heard ${JSON.stringify(got)}`);
-      check(frame.correlationId === expectedId, () => `heard ${JSON.stringify(got)}`);
+        correlation === undefined
+          ? undefined
+          : correlation !== null &&
+              typeof correlation === 'object' &&
+              !Array.isArray(correlation)
+            ? requestId(transport, correlation)
+            : text(correlation, 'correlationId');
+      check(
+        frame.channel === one['channel'],
+        () => `heard ${JSON.stringify(got)}`,
+      );
+      check(
+        matches(resolved(one['payload'] ?? null), wire(frame.payload)),
+        () => `heard ${JSON.stringify(got)}`,
+      );
+      check(
+        frame.correlationId === expectedId,
+        () => `heard ${JSON.stringify(got)}`,
+      );
     });
     return heard.length;
   } else if ('ended' in stated) {
-    for (const [name, members] of Object.entries(object(stated['ended'], 'ended'))) {
+    for (const [name, members] of Object.entries(
+      object(stated['ended'], 'ended'),
+    )) {
       for (const member of strings(members, 'ended')) {
-        check(hasEnded(stateOf(world, name, member)), () => `${name}.${member} has not ended`);
+        check(
+          hasEnded(stateOf(world, name, member)),
+          () => `${name}.${member} has not ended`,
+        );
       }
     }
   } else if ('busDestroyed' in stated) {
-    check(client.bus.destroyed === stated['busDestroyed'], () => `the client's bus is${client.bus.destroyed ? '' : ' not'} destroyed`);
+    check(
+      client.bus.destroyed === stated['busDestroyed'],
+      () =>
+        `the client's bus is${client.bus.destroyed ? '' : ' not'} destroyed`,
+    );
   } else {
     throw new Error('no step this runner performs');
   }
@@ -539,20 +801,34 @@ async function perform(step: Json, world: World, told: number): Promise<number> 
 
 async function play(stated: Case): Promise<void> {
   const make = MAKERS[stated.unit];
-  if (make === undefined) throw new Error(`this runner makes no ${stated.unit}`);
-  const { client, transport } = createTestClient({ transport: transportOf(stated.transport) });
-  for (const [operation, responses] of Object.entries(object(stated.transport['replies'] ?? {}, 'transport.replies'))) {
-    if (!Array.isArray(responses)) throw new Error(`the replies to ${operation} are not a list`);
-    transport.queueReply(operation as BusOperationKey, ...responses.map(resolved));
+  if (make === undefined)
+    throw new Error(`this runner makes no ${stated.unit}`);
+  const { client, transport } = createTestClient({
+    transport: transportOf(stated.transport),
+  });
+  for (const [operation, responses] of Object.entries(
+    object(stated.transport['replies'] ?? {}, 'transport.replies'),
+  )) {
+    if (!Array.isArray(responses))
+      throw new Error(`the replies to ${operation} are not a list`);
+    transport.queueReply(
+      operation as BusOperationKey,
+      ...responses.map(resolved),
+    );
   }
   const searches = new Searches();
   const units: Record<string, Played> = {};
-  for (const [name, given] of Object.entries(stated.made)) units[name] = make(client, searches, given);
+  for (const [name, given] of Object.entries(stated.made))
+    units[name] = make(client, searches, given);
   const heard: Heard[] = [];
   // Taken now, before anything runs, so what is said from the moment the units are made is heard.
   const listening = (stated.listen ?? []).map((channel) =>
     client.bus.frames(channel as keyof EventMap).subscribe((frame) => {
-      heard.push({ channel, payload: frame.payload, correlationId: frame.correlationId });
+      heard.push({
+        channel,
+        payload: frame.payload,
+        correlationId: frame.correlationId,
+      });
     }),
   );
   const world: World = { client, transport, searches, units, heard };
@@ -562,7 +838,9 @@ async function play(stated: Case): Promise<void> {
       try {
         told = await perform(step, world, told);
       } catch (broken) {
-        throw new Error(`steps[${at}] ${JSON.stringify(step)}: ${broken instanceof Error ? broken.message : String(broken)}`);
+        throw new Error(
+          `steps[${at}] ${JSON.stringify(step)}: ${broken instanceof Error ? broken.message : String(broken)}`,
+        );
       }
     }
   } finally {
@@ -578,7 +856,15 @@ async function play(stated: Case): Promise<void> {
 describe('the state units against protocol/specs/src/client/state-units.json', () => {
   beforeEach(() => {
     // The microtasks the test transport answers on stay real; the clock is held.
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] });
+    vi.useFakeTimers({
+      toFake: [
+        'setTimeout',
+        'clearTimeout',
+        'setInterval',
+        'clearInterval',
+        'Date',
+      ],
+    });
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -586,15 +872,23 @@ describe('the state units against protocol/specs/src/client/state-units.json', (
 
   it('makes each unit it has cases of, and no other', () => {
     // A unit the table states no case of (the cache, whose behaviour its own tables hold) needs no maker here.
-    expect(new Set(Object.keys(MAKERS))).toEqual(new Set(RUN.map((stated) => stated.unit)));
+    expect(new Set(Object.keys(MAKERS))).toEqual(
+      new Set(RUN.map((stated) => stated.unit)),
+    );
   });
 
   it('runs only cases of units the names table has', () => {
     const named = new Set(NAMES.stateUnits.map((row) => row.unit));
-    expect(TABLE.cases.filter((stated) => !named.has(stated.unit)).map((stated) => stated.unit)).toEqual([]);
+    expect(
+      TABLE.cases
+        .filter((stated) => !named.has(stated.unit))
+        .map((stated) => stated.unit),
+    ).toEqual([]);
   });
 
-  it.each(RUN.map((stated) => [`${stated.unit}: ${stated.case}`, stated] as const))('%s', async (_name, stated) => {
+  it.each(
+    RUN.map((stated) => [`${stated.unit}: ${stated.case}`, stated] as const),
+  )('%s', async (_name, stated) => {
     await play(stated);
   });
 
@@ -603,7 +897,12 @@ describe('the state units against protocol/specs/src/client/state-units.json', (
     if (match === undefined) throw new Error('the table has no case of match');
     const told: Case = structuredClone(match);
     told.steps = told.steps.map((step) =>
-      step !== null && typeof step === 'object' && !Array.isArray(step) && 'heard' in step ? { ...step, heard: [] } : step,
+      step !== null &&
+      typeof step === 'object' &&
+      !Array.isArray(step) &&
+      'heard' in step
+        ? { ...step, heard: [] }
+        : step,
     );
     await expect(play(told)).rejects.toThrow(/heard/);
   });

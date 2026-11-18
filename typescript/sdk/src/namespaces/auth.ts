@@ -7,7 +7,8 @@ import type { ResourceId, components } from '@xynolog/core';
 import type { IGatewayOperations } from '@xynolog/core';
 import type { AuthNamespace as IAuthNamespace, User } from './types';
 
-type ProtectedResourceMetadata = components['schemas']['ProtectedResourceMetadata'];
+type ProtectedResourceMetadata =
+  components['schemas']['ProtectedResourceMetadata'];
 
 export class AuthNamespace implements IAuthNamespace {
   constructor(private readonly gateway: IGatewayOperations) {}

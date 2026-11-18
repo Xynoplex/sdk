@@ -37,7 +37,9 @@ describe('cache persistence (B17)', () => {
     // annotation invisible after an immediate reload. B18 keeps the instant
     // paint and adds the revalidation.
     const fetchFn = vi.fn(async () => 'fetched');
-    const { persister } = spyPersister<string, string>(new Map([['k1', 'rehydrated']]));
+    const { persister } = spyPersister<string, string>(
+      new Map([['k1', 'rehydrated']]),
+    );
 
     const cache = createCache<string, string>(fetchFn, { persister });
 
@@ -47,7 +49,13 @@ describe('cache persistence (B17)', () => {
     expect(fetchFn).not.toHaveBeenCalled();
 
     // Observing it serves the persisted value FIRST…
-    const seen = await firstValueFrom(cache.observe('k1').pipe(filter(isReady), map((s) => s.value), take(1)));
+    const seen = await firstValueFrom(
+      cache.observe('k1').pipe(
+        filter(isReady),
+        map((s) => s.value),
+        take(1),
+      ),
+    );
     expect(seen).toBe('rehydrated');
     // …and starts one revalidation chain (one request here; B14 adds a
     // single retry only on failure), whose result supersedes it.
@@ -100,7 +108,9 @@ describe('cache persistence (B17)', () => {
   });
 
   it('never persists failure state: an exhausted key saves nothing', async () => {
-    const fetchFn = vi.fn(async () => { throw new Error('down'); });
+    const fetchFn = vi.fn(async () => {
+      throw new Error('down');
+    });
     const { persister } = spyPersister<string, string>();
     const cache = createCache<string, string>(fetchFn, { persister });
 

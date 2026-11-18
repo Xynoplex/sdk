@@ -36,7 +36,8 @@ export function isArray(value: unknown): value is unknown[] {
  * empty one, and every `JobResult` requires a member.
  */
 export function isReportedJobResult(
-  result: import('./types').components['schemas']['JobStoredResult'] | undefined,
+  result:
+    import('./types').components['schemas']['JobStoredResult'] | undefined,
 ): result is import('./types').components['schemas']['JobResult'] {
   return result !== undefined && Object.keys(result).length > 0;
 }

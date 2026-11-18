@@ -31,7 +31,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fc from 'fast-check';
 import { InMemorySessionStorage } from '../session/session-storage';
 import { SAVE_DEBOUNCE_MS, resourceId } from '@xynolog/core';
-import { BOOKMARK_KEY, bookmarkSeq, buildRig, persistedAUpTo } from './helpers/persisted-cache-rig';
+import {
+  BOOKMARK_KEY,
+  bookmarkSeq,
+  buildRig,
+  persistedAUpTo,
+} from './helpers/persisted-cache-rig';
 
 /**
  * `arrive`        — the seam as it is: the bus handler invalidates, THEN the
@@ -41,7 +46,13 @@ import { BOOKMARK_KEY, bookmarkSeq, buildRig, persistedAUpTo } from './helpers/p
  *                   ordering the transport pin outlaws.
  * The remaining commands match the C1 model exactly.
  */
-type Command = 'arrive' | 'receiveLegacy' | 'applyLegacy' | 'complete' | 'writeB' | 'settleA';
+type Command =
+  | 'arrive'
+  | 'receiveLegacy'
+  | 'applyLegacy'
+  | 'complete'
+  | 'writeB'
+  | 'settleA';
 
 describe('A1/A4 — reload fidelity across event arrival', () => {
   beforeEach(() => vi.useFakeTimers());
@@ -67,7 +78,7 @@ describe('A1/A4 — reload fidelity across event arrival', () => {
       switch (cmd) {
         case 'arrive':
           serverSeq += 1;
-          rig.invalidateA();                       // apply first…
+          rig.invalidateA(); // apply first…
           rig.saveLastEventId(resourceId('r1'), `p-r1-${serverSeq}`); // …stash second (the seam's order)
           break;
         case 'receiveLegacy':
@@ -76,7 +87,10 @@ describe('A1/A4 — reload fidelity across event arrival', () => {
           rig.saveLastEventId(resourceId('r1'), `p-r1-${serverSeq}`);
           break;
         case 'applyLegacy':
-          if (unapplied > 0) { unapplied -= 1; rig.invalidateA(); }
+          if (unapplied > 0) {
+            unapplied -= 1;
+            rig.invalidateA();
+          }
           break;
         case 'complete':
           rig.resolvers.shift()?.({ upTo: serverSeq });
@@ -108,16 +122,23 @@ describe('A1/A4 — reload fidelity across event arrival', () => {
     // with invalidations the real client never gets. Absent is a real
     // state: while the B17-Q gate holds the bookmark pending, storage has
     // no lastEventId key at all.
-    const resumeFrom = storage.get(BOOKMARK_KEY) !== null ? bookmarkSeq(storage) + 1 : null;
+    const resumeFrom =
+      storage.get(BOOKMARK_KEY) !== null ? bookmarkSeq(storage) + 1 : null;
     if (resumeFrom !== null) {
       for (let seq = resumeFrom; seq <= serverSeq; seq++) rig.invalidateA();
     }
-    while (rig.resolvers.length > 0) rig.resolvers.shift()!({ upTo: serverSeq });
+    while (rig.resolvers.length > 0)
+      rig.resolvers.shift()!({ upTo: serverSeq });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
 
     const rendered = rig.renderedA();
     rig.dispose();
-    return { c1Held, renderedEqualsServer: rendered === serverSeq, rendered, serverSeq };
+    return {
+      c1Held,
+      renderedEqualsServer: rendered === serverSeq,
+      rendered,
+      serverSeq,
+    };
   }
 
   /**
@@ -128,7 +149,9 @@ describe('A1/A4 — reload fidelity across event arrival', () => {
    */
   it('K5: arrive → bystander write → crash-reload renders server truth', async () => {
     const r = await runScenario(['arrive', 'writeB']);
-    expect(r.c1Held, 'C1: persisted content must not trail the bookmark').toBe(true);
+    expect(r.c1Held, 'C1: persisted content must not trail the bookmark').toBe(
+      true,
+    );
     expect(
       r.renderedEqualsServer,
       `A1: after reload the client rendered upTo=${r.rendered} but server truth is ${r.serverSeq}`,
@@ -165,8 +188,10 @@ describe('A1/A4 — reload fidelity across event arrival', () => {
    */
   it('K6 (boundary): arrive → settle → crash-reload renders server truth', async () => {
     const r = await runScenario(['arrive', 'settleA']);
-    expect(r.renderedEqualsServer,
-      `A1: rendered upTo=${r.rendered}, server truth ${r.serverSeq}`).toBe(true);
+    expect(
+      r.renderedEqualsServer,
+      `A1: rendered upTo=${r.rendered}, server truth ${r.serverSeq}`,
+    ).toBe(true);
   });
 
   /**
@@ -204,12 +229,16 @@ describe('A1/A4 — reload fidelity across event arrival', () => {
     const coldStorage = new InMemorySessionStorage();
     const cold = buildRig(coldStorage, true);
     cold.observeA();
-    while (cold.resolvers.length > 0) cold.resolvers.shift()!({ upTo: warm.serverSeq });
+    while (cold.resolvers.length > 0)
+      cold.resolvers.shift()!({ upTo: warm.serverSeq });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
     const coldRendered = cold.renderedA();
     cold.dispose();
 
-    expect(coldRendered, 'cold client is the baseline and must see server truth').toBe(warm.serverSeq);
+    expect(
+      coldRendered,
+      'cold client is the baseline and must see server truth',
+    ).toBe(warm.serverSeq);
     expect(
       warm.rendered,
       `A4: rehydrated client rendered ${warm.rendered}, cold client rendered ${coldRendered}`,

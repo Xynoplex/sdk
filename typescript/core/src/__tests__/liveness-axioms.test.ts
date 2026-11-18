@@ -43,11 +43,15 @@ const OP = 'browse:resource-requested' as const;
  * connection holds any number of them), retries a faulted request once (B14),
  * and surfaces the final rejection as an error notification.
  */
-function compliantQuery(transport: FaultyTransport, rid: string): Observable<unknown> {
+function compliantQuery(
+  transport: FaultyTransport,
+  rid: string,
+): Observable<unknown> {
   return new Observable((subscriber) => {
     transport.subscribeToResource(resourceId(rid));
     const attempt = (retriesLeft: number): void => {
-      new Bus(transport).request(OP, { resourceId: rid }, TIMEOUT_MS)
+      new Bus(transport)
+        .request(OP, { resourceId: rid }, TIMEOUT_MS)
         .then((v) => subscriber.next(v))
         .catch((err: unknown) => {
           if (retriesLeft > 0) attempt(retriesLeft - 1);
@@ -59,19 +63,29 @@ function compliantQuery(transport: FaultyTransport, rid: string): Observable<unk
 }
 
 /** (a) Violates B14: the rejection is swallowed — no retry, no surfaced signal. */
-function swallowingQuery(transport: FaultyTransport, rid: string): Observable<unknown> {
+function swallowingQuery(
+  transport: FaultyTransport,
+  rid: string,
+): Observable<unknown> {
   return new Observable((subscriber) => {
-    new Bus(transport).request(OP, { resourceId: rid }, TIMEOUT_MS)
+    new Bus(transport)
+      .request(OP, { resourceId: rid }, TIMEOUT_MS)
       .then((v) => subscriber.next(v))
-      .catch(() => { /* swallowed */ });
+      .catch(() => {
+        /* swallowed */
+      });
   });
 }
 
 /** (a2) Retry storm: re-issues far past the sanctioned budget, then surfaces. */
-function stormingQuery(transport: FaultyTransport, rid: string): Observable<unknown> {
+function stormingQuery(
+  transport: FaultyTransport,
+  rid: string,
+): Observable<unknown> {
   return new Observable((subscriber) => {
     const attempt = (issued: number): void => {
-      new Bus(transport).request(OP, { resourceId: rid }, TIMEOUT_MS)
+      new Bus(transport)
+        .request(OP, { resourceId: rid }, TIMEOUT_MS)
         .then((v) => subscriber.next(v))
         .catch((err: unknown) => {
           if (issued < 6) attempt(issued + 1);
@@ -85,9 +99,13 @@ function stormingQuery(transport: FaultyTransport, rid: string): Observable<unkn
 /** (a4) Answers, then asks again: once its output has spoken it sends the same
  * request twice more, a macrotask later — after every output has spoken, so
  * only a harness that waits out its whole bound counts them. */
-function lateResendingQuery(transport: FaultyTransport, rid: string): Observable<unknown> {
+function lateResendingQuery(
+  transport: FaultyTransport,
+  rid: string,
+): Observable<unknown> {
   return new Observable((subscriber) => {
-    const ask = (): Promise<unknown> => new Bus(transport).request(OP, { resourceId: rid }, TIMEOUT_MS);
+    const ask = (): Promise<unknown> =>
+      new Bus(transport).request(OP, { resourceId: rid }, TIMEOUT_MS);
     void ask().then((v) => {
       subscriber.next(v);
       setTimeout(() => {
@@ -103,18 +121,23 @@ function lateResendingQuery(transport: FaultyTransport, rid: string): Observable
  * connection) plus a swallow of the contention throw. The second distinct rid
  * never issues its request — that output starves, which is exactly what L1
  * must catch. */
-function makeContentionStarvedQueries(transport: FaultyTransport, rids: readonly string[]): Observable<unknown>[] {
+function makeContentionStarvedQueries(
+  transport: FaultyTransport,
+  rids: readonly string[],
+): Observable<unknown>[] {
   let activeScope: string | null = null; // the one-slot contract, local to the double
-  return rids.map((rid) =>
-    new Observable((subscriber) => {
-      if (activeScope !== null && activeScope !== rid) {
-        return; // contention swallowed; no request is ever issued
-      }
-      activeScope = rid;
-      new Bus(transport).request(OP, { resourceId: rid }, TIMEOUT_MS)
-        .then((v) => subscriber.next(v))
-        .catch((err: unknown) => subscriber.error(err));
-    }),
+  return rids.map(
+    (rid) =>
+      new Observable((subscriber) => {
+        if (activeScope !== null && activeScope !== rid) {
+          return; // contention swallowed; no request is ever issued
+        }
+        activeScope = rid;
+        new Bus(transport)
+          .request(OP, { resourceId: rid }, TIMEOUT_MS)
+          .then((v) => subscriber.next(v))
+          .catch((err: unknown) => subscriber.error(err));
+      }),
   );
 }
 
@@ -127,7 +150,9 @@ function makeContentionStarvedQueries(transport: FaultyTransport, rids: readonly
  * L3 forbids), `duplicate` flushes every event twice (a dedup-failure
  * stand-in).
  */
-function connectionDouble(mode: 'drain' | 'abort' | 'duplicate'): DeliverySubject {
+function connectionDouble(
+  mode: 'drain' | 'abort' | 'duplicate',
+): DeliverySubject {
   const out = new Subject<string>();
   let buffer: string[] = [];
   const flush = (): void => {
@@ -139,40 +164,47 @@ function connectionDouble(mode: 'drain' | 'abort' | 'duplicate'): DeliverySubjec
     }
   };
   return {
-    write: (id) => { buffer.push(id); },
+    write: (id) => {
+      buffer.push(id);
+    },
     transition: () => {
-      if (mode === 'abort') buffer = []; // retire by abort: buffered events die
+      if (mode === 'abort')
+        buffer = []; // retire by abort: buffered events die
       else flush(); // retire by drain
     },
     output$: out.asObservable(),
-    settle: async () => { flush(); }, // a live connection eventually delivers
+    settle: async () => {
+      flush();
+    }, // a live connection eventually delivers
   };
 }
 
 // ── The teeth ─────────────────────────────────────────────────────────────
 
 describe('liveness axioms — the harness has teeth', () => {
-  it(
-    'passes a compliant retry-and-surface composition across generated schedules (does not cry wolf)',
-    async () => {
-      await assertLivenessAxioms({
-        setup: (transport) => ({
-          outputs: ['res-a', 'res-b'].map((rid) => compliantQuery(transport, rid)),
-          // The await path: a caller that surfaces the rejection always settles.
-          settlements: [
-            new Bus(transport).request(OP, { resourceId: 'res-c' }, TIMEOUT_MS).catch(() => 'surfaced'),
-          ],
-        }),
-        timeoutMs: TIMEOUT_MS,
-      });
-    },
-    30_000,
-  );
+  it('passes a compliant retry-and-surface composition across generated schedules (does not cry wolf)', async () => {
+    await assertLivenessAxioms({
+      setup: (transport) => ({
+        outputs: ['res-a', 'res-b'].map((rid) =>
+          compliantQuery(transport, rid),
+        ),
+        // The await path: a caller that surfaces the rejection always settles.
+        settlements: [
+          new Bus(transport)
+            .request(OP, { resourceId: 'res-c' }, TIMEOUT_MS)
+            .catch(() => 'surfaced'),
+        ],
+      }),
+      timeoutMs: TIMEOUT_MS,
+    });
+  }, 30_000);
 
   it('(a) L2: a no-retry double that swallows the rejection is caught', async () => {
     await expect(
       assertLivenessAxioms({
-        setup: (transport) => ({ outputs: [swallowingQuery(transport, 'res-a')] }),
+        setup: (transport) => ({
+          outputs: [swallowingQuery(transport, 'res-a')],
+        }),
         timeoutMs: TIMEOUT_MS,
         scheduleArb: fc.constant([{ kind: 'drop-reply' }] as const),
         numRuns: 3,
@@ -183,7 +215,9 @@ describe('liveness axioms — the harness has teeth', () => {
   it('(a2) L2: an unbounded-retry double exceeds the pinned budget', async () => {
     await expect(
       assertLivenessAxioms({
-        setup: (transport) => ({ outputs: [stormingQuery(transport, 'res-a')] }),
+        setup: (transport) => ({
+          outputs: [stormingQuery(transport, 'res-a')],
+        }),
         timeoutMs: TIMEOUT_MS,
         scheduleArb: fc.constant([{ kind: 'drop-reply' }] as const),
         numRuns: 3,
@@ -197,7 +231,8 @@ describe('liveness axioms — the harness has teeth', () => {
         setup: (transport) => ({
           outputs: [],
           settlements: [
-            new Bus(transport).request(OP, { resourceId: 'res-a' }, TIMEOUT_MS)
+            new Bus(transport)
+              .request(OP, { resourceId: 'res-a' }, TIMEOUT_MS)
               // The forbidden fourth state: the rejection is converted into
               // a promise that never settles.
               .catch(() => new Promise(() => {})),
@@ -213,11 +248,18 @@ describe('liveness axioms — the harness has teeth', () => {
   it('(a4) L2: a request sent again after every output has spoken counts against the budget', async () => {
     await expect(
       assertLivenessAxioms({
-        setup: (transport) => ({ outputs: [lateResendingQuery(transport, 'res-a')] }),
+        setup: (transport) => ({
+          outputs: [lateResendingQuery(transport, 'res-a')],
+        }),
         timeoutMs: TIMEOUT_MS,
         scheduleArb: fc.constant([{ kind: 'deliver' }] as const),
         makeResponse: (_operation, payload) => ({
-          resource: { '@context': 'https://schema.org/', '@id': payload.resourceId, name: 'A resource', representations: [] },
+          resource: {
+            '@context': 'https://schema.org/',
+            '@id': payload.resourceId,
+            name: 'A resource',
+            representations: [],
+          },
           lastSequence: 1,
         }),
         numRuns: 3,
@@ -248,7 +290,10 @@ describe('liveness axioms — the harness has teeth', () => {
     await expect(
       assertExactlyOnceDelivery({
         setup: () => connectionDouble('abort'),
-        opsArb: fc.constant(['write', 'transition'] as const satisfies readonly DeliveryOp[]),
+        opsArb: fc.constant([
+          'write',
+          'transition',
+        ] as const satisfies readonly DeliveryOp[]),
         numRuns: 3,
       }),
     ).rejects.toThrow(/^L3: .*delivered 0 times.*lost across a transition/s);

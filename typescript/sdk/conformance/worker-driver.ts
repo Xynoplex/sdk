@@ -16,11 +16,26 @@
  */
 import { createInterface } from 'node:readline';
 import { BehaviorSubject } from 'rxjs';
-import { XynologError, accessToken, baseUrl, resourceId, type AccessToken, type JobFilter } from '@xynolog/core';
+import {
+  XynologError,
+  accessToken,
+  baseUrl,
+  resourceId,
+  type AccessToken,
+  type JobFilter,
+} from '@xynolog/core';
 import { formatErrors, validators } from '@xynolog/core/openapi';
 import type { TraceCarrier } from '@xynolog/core';
-import { SpanKind, getActiveTraceparent, withSpan, withTraceparent } from '@xynolog/observability';
-import { initObservabilityNode, shutdownObservabilityNode } from '@xynolog/observability/node';
+import {
+  SpanKind,
+  getActiveTraceparent,
+  withSpan,
+  withTraceparent,
+} from '@xynolog/observability';
+import {
+  initObservabilityNode,
+  shutdownObservabilityNode,
+} from '@xynolog/observability/node';
 import manifest from '../package.json' with { type: 'json' };
 import {
   HttpContentTransport,
@@ -59,21 +74,36 @@ function count(args: Arguments, name: string): number {
 
 function object(args: Arguments, name: string): Arguments {
   const value = args[name];
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Misuse(`${name} must be an object`);
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    throw new Misuse(`${name} must be an object`);
   return value as Arguments;
 }
 
 /** A failure as the protocol carries it: the SDK's code, and the status when a server stated one. */
-function failure(error: unknown): { code?: string; status?: number; detail: string } {
-  const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+function failure(error: unknown): {
+  code?: string;
+  status?: number;
+  detail: string;
+} {
+  const detail =
+    error instanceof Error ? `${error.name}: ${error.message}` : String(error);
   if (!(error instanceof XynologError)) return { detail };
   const status = (error as { status?: unknown }).status;
-  return { code: error.code, ...(typeof status === 'number' && status > 0 ? { status } : {}), detail };
+  return {
+    code: error.code,
+    ...(typeof status === 'number' && status > 0 ? { status } : {}),
+    detail,
+  };
 }
 
 /** The entries of protocol/specs/src/client/timing.json this driver can override: the transport's, and a worker's. */
 const TRANSPORT_TIMING = ['reconnectMs', 'lazyRemoveMs', 'lingerMs'] as const;
-const WORKER_TIMING = ['jobClaimTimeoutMs', 'heldJobStallMs', 'heldJobStallCheckMs', 'markCommitTimeoutMs'] as const;
+const WORKER_TIMING = [
+  'jobClaimTimeoutMs',
+  'heldJobStallMs',
+  'heldJobStallCheckMs',
+  'markCommitTimeoutMs',
+] as const;
 
 let transport: HttpTransport | undefined;
 let client: XynologClient | undefined;
@@ -106,7 +136,9 @@ function working<T>(work: (job: HeldJob) => T): T {
 }
 
 /** Settle the held job, and end its span once that is done, however it went. */
-async function settling(settle: (job: HeldJob) => Promise<void>): Promise<void> {
+async function settling(
+  settle: (job: HeldJob) => Promise<void>,
+): Promise<void> {
   const ending = span;
   try {
     await working(settle);
@@ -118,35 +150,67 @@ async function settling(settle: (job: HeldJob) => Promise<void>): Promise<void> 
 /** The checkpoint an operation states, when it states one. */
 function checkpoint(args: Arguments): Partial<JobCheckpoint> {
   const units = args['completedUnits'];
-  if (units !== undefined && (!Array.isArray(units) || !units.every((u): u is string => typeof u === 'string'))) throw new Misuse('completedUnits must be a list of strings');
+  if (
+    units !== undefined &&
+    (!Array.isArray(units) ||
+      !units.every((u): u is string => typeof u === 'string'))
+  )
+    throw new Misuse('completedUnits must be a list of strings');
   return {
     ...(units === undefined ? {} : { completedUnits: units }),
     // A case states a cursor as the wire carries one; the gateway holds it to the schema.
-    ...(args['unitCursors'] === undefined ? {} : { unitCursors: object(args, 'unitCursors') as NonNullable<JobCheckpoint['unitCursors']> }),
+    ...(args['unitCursors'] === undefined
+      ? {}
+      : {
+          unitCursors: object(args, 'unitCursors') as NonNullable<
+            JobCheckpoint['unitCursors']
+          >,
+        }),
   };
 }
 
-const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown> = {
+const operations: Record<
+  string,
+  (args: Arguments) => Promise<unknown> | unknown
+> = {
   open(args) {
     if (transport) throw new Misuse('a transport is already open');
     timing = args['timing'] === undefined ? {} : object(args, 'timing');
     for (const name of Object.keys(timing)) {
-      if (![...TRANSPORT_TIMING, ...WORKER_TIMING].some((known) => known === name)) throw new Misuse(`this driver cannot override ${name}`);
+      if (
+        ![...TRANSPORT_TIMING, ...WORKER_TIMING].some((known) => known === name)
+      )
+        throw new Misuse(`this driver cannot override ${name}`);
     }
     const commits = args['commits'] ?? false;
-    if (typeof commits !== 'boolean') throw new Misuse('commits must be a boolean');
-    const token$ = new BehaviorSubject<AccessToken | null>(accessToken(text(args, 'token')));
+    if (typeof commits !== 'boolean')
+      throw new Misuse('commits must be a boolean');
+    const token$ = new BehaviorSubject<AccessToken | null>(
+      accessToken(text(args, 'token')),
+    );
     transport = new HttpTransport({
       baseUrl: baseUrl(text(args, 'baseUrl')),
       token$,
       // What a worker's stream names for its claims, and for its commits when
       // it will make any, and no more: this worker awaits nothing else.
-      channels: commits ? [...JOB_CLAIM_CHANNELS, ...JOB_COMMIT_CHANNELS] : JOB_CLAIM_CHANNELS,
-      ...(timing['reconnectMs'] === undefined ? {} : { reconnectMs: count(timing, 'reconnectMs') }),
-      ...(timing['lazyRemoveMs'] === undefined ? {} : { lazyRemoveMs: count(timing, 'lazyRemoveMs') }),
-      ...(timing['lingerMs'] === undefined ? {} : { lingerMs: count(timing, 'lingerMs') }),
+      channels: commits
+        ? [...JOB_CLAIM_CHANNELS, ...JOB_COMMIT_CHANNELS]
+        : JOB_CLAIM_CHANNELS,
+      ...(timing['reconnectMs'] === undefined
+        ? {}
+        : { reconnectMs: count(timing, 'reconnectMs') }),
+      ...(timing['lazyRemoveMs'] === undefined
+        ? {}
+        : { lazyRemoveMs: count(timing, 'lazyRemoveMs') }),
+      ...(timing['lingerMs'] === undefined
+        ? {}
+        : { lingerMs: count(timing, 'lingerMs') }),
     });
-    client = new XynologClient(transport, new HttpContentTransport(transport), transport);
+    client = new XynologClient(
+      transport,
+      new HttpContentTransport(transport),
+      transport,
+    );
     transport.state$.subscribe((state) => say({ state }));
     transport.errors$.subscribe((error) => say({ error: failure(error) }));
   },
@@ -164,17 +228,33 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
   claim(args) {
     if (claims) throw new Misuse('the worker is already claiming');
     const accepts = args['accepts'];
-    if (!Array.isArray(accepts)) throw new Misuse('accepts must be a list of filters');
+    if (!Array.isArray(accepts))
+      throw new Misuse('accepts must be a list of filters');
     const worker = opened().job.claim({
       // A case states its filters as the wire carries them; the gateway holds the claim to the schema.
       accepts: accepts as JobFilter[],
-      ...(timing['jobClaimTimeoutMs'] === undefined ? {} : { jobClaimTimeoutMs: count(timing, 'jobClaimTimeoutMs') }),
-      ...(timing['heldJobStallMs'] === undefined ? {} : { heldJobStallMs: count(timing, 'heldJobStallMs') }),
-      ...(timing['heldJobStallCheckMs'] === undefined ? {} : { heldJobStallCheckMs: count(timing, 'heldJobStallCheckMs') }),
-      ...(timing['markCommitTimeoutMs'] === undefined ? {} : { markCommitTimeoutMs: count(timing, 'markCommitTimeoutMs') }),
+      ...(timing['jobClaimTimeoutMs'] === undefined
+        ? {}
+        : { jobClaimTimeoutMs: count(timing, 'jobClaimTimeoutMs') }),
+      ...(timing['heldJobStallMs'] === undefined
+        ? {}
+        : { heldJobStallMs: count(timing, 'heldJobStallMs') }),
+      ...(timing['heldJobStallCheckMs'] === undefined
+        ? {}
+        : { heldJobStallCheckMs: count(timing, 'heldJobStallCheckMs') }),
+      ...(timing['markCommitTimeoutMs'] === undefined
+        ? {}
+        : { markCommitTimeoutMs: count(timing, 'markCommitTimeoutMs') }),
     });
     claims = worker;
-    worker.refused$.subscribe((refusal) => say({ refused: { ...(refusal.code === null ? {} : { code: refusal.code }), detail: refusal.message } }));
+    worker.refused$.subscribe((refusal) =>
+      say({
+        refused: {
+          ...(refusal.code === null ? {} : { code: refusal.code }),
+          detail: refusal.message,
+        },
+      }),
+    );
     worker.stalled$.subscribe((stall) => say({ stalled: stall.jobId }));
     worker.subscribe({
       next: (job) => {
@@ -182,13 +262,29 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
         // Opened here, where the claims hand the job over, and held open until the job is settled.
         void withSpan(
           `job:${job.jobType}`,
-          () => new Promise<void>((end) => {
-            span = { trace: getActiveTraceparent(), end };
-          }),
+          () =>
+            new Promise<void>((end) => {
+              span = { trace: getActiveTraceparent(), end };
+            }),
           { kind: SpanKind.CONSUMER, attrs: { 'job.id': job.jobId } },
         );
-        job.cancelled.addEventListener('abort', () => say({ signalled: job.jobId }), { once: true });
-        say({ claimed: { jobId: job.jobId, jobType: job.jobType, resourceId: job.resourceId, params: job.params, completedUnits: job.completedUnits, unitCursors: job.unitCursors, retryCount: job.retryCount, maxRetries: job.maxRetries } });
+        job.cancelled.addEventListener(
+          'abort',
+          () => say({ signalled: job.jobId }),
+          { once: true },
+        );
+        say({
+          claimed: {
+            jobId: job.jobId,
+            jobType: job.jobType,
+            resourceId: job.resourceId,
+            params: job.params,
+            completedUnits: job.completedUnits,
+            unitCursors: job.unitCursors,
+            retryCount: job.retryCount,
+            maxRetries: job.maxRetries,
+          },
+        });
       },
       error: (error) => say({ error: failure(error) }),
     });
@@ -201,24 +297,43 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
   async progress(args) {
     const percentage = count(args, 'percentage');
     // A case states a progress message as the wire carries one.
-    const message = args['message'] === undefined ? undefined : (object(args, 'message') as Parameters<HeldJob['progress']>[0]['message']);
-    await working((job) => job.progress({ percentage, ...(message === undefined ? {} : { message }) }));
+    const message =
+      args['message'] === undefined
+        ? undefined
+        : (object(args, 'message') as Parameters<
+            HeldJob['progress']
+          >[0]['message']);
+    await working((job) =>
+      job.progress({
+        percentage,
+        ...(message === undefined ? {} : { message }),
+      }),
+    );
   },
 
   async checkpoint(args) {
     const { completedUnits, unitCursors } = checkpoint(args);
-    if (completedUnits === undefined) throw new Misuse('a checkpoint states the units finished');
-    await working((job) => job.checkpoint({ completedUnits, ...(unitCursors === undefined ? {} : { unitCursors }) }));
+    if (completedUnits === undefined)
+      throw new Misuse('a checkpoint states the units finished');
+    await working((job) =>
+      job.checkpoint({
+        completedUnits,
+        ...(unitCursors === undefined ? {} : { unitCursors }),
+      }),
+    );
   },
 
   // The held job commits for itself: it cites its own id, and remembers what
   // the commit observed for its settle.
   async commit(args) {
     const annotations = args['annotations'];
-    if (!Array.isArray(annotations)) throw new Misuse('annotations must be a list of annotations');
+    if (!Array.isArray(annotations))
+      throw new Misuse('annotations must be a list of annotations');
     // A case states an annotation as the wire carries one; the gateway holds the commit to the schema.
     const resource = resourceId(text(args, 'resourceId'));
-    await working((job) => job.commit(resource, annotations as Parameters<HeldJob['commit']>[1]));
+    await working((job) =>
+      job.commit(resource, annotations as Parameters<HeldJob['commit']>[1]),
+    );
   },
 
   // A completion is its verb's, so the verb is narrowed before the result is
@@ -227,15 +342,23 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
   async complete(args) {
     const result = object(args, 'result');
     await settling((job) =>
-      job.jobType === 'mark' ? job.complete(result as Parameters<HeldMarkJob['complete']>[0]) : job.complete(result as Parameters<HeldYieldJob['complete']>[0]),
+      job.jobType === 'mark'
+        ? job.complete(result as Parameters<HeldMarkJob['complete']>[0])
+        : job.complete(result as Parameters<HeldYieldJob['complete']>[0]),
     );
   },
 
   async fail(args) {
     // A class is one the spec names, as its own schema reads it.
     const failureClass = args['failureClass'];
-    if (failureClass !== undefined && !validators.FailureClass(failureClass)) throw new Misuse(`failureClass is no class of a failure: ${formatErrors(validators.FailureClass.errors)}`);
-    const said: JobFailure = { ...checkpoint(args), ...(failureClass === undefined ? {} : { failureClass }) };
+    if (failureClass !== undefined && !validators.FailureClass(failureClass))
+      throw new Misuse(
+        `failureClass is no class of a failure: ${formatErrors(validators.FailureClass.errors)}`,
+      );
+    const said: JobFailure = {
+      ...checkpoint(args),
+      ...(failureClass === undefined ? {} : { failureClass }),
+    };
     const error = text(args, 'error');
     await settling((job) => job.fail(error, said));
   },
@@ -254,7 +377,10 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
 };
 
 async function run(line: string): Promise<void> {
-  const { id, op, ...args } = JSON.parse(line) as { id: number; op: string } & Arguments;
+  const { id, op, ...args } = JSON.parse(line) as {
+    id: number;
+    op: string;
+  } & Arguments;
   const operation = operations[op];
   if (!operation) {
     say({ id, unsupported: true });
@@ -271,7 +397,10 @@ async function run(line: string): Promise<void> {
 
 // Exports only when the suite names an OTLP endpoint in the environment. The
 // driver is the SDK's, so it reports the SDK's version.
-initObservabilityNode({ serviceName: 'xynolog-conformance-driver', serviceVersion: manifest.version });
+initObservabilityNode({
+  serviceName: 'xynolog-conformance-driver',
+  serviceVersion: manifest.version,
+});
 
 const lines = createInterface({ input: process.stdin });
 lines.on('line', (line) => void run(line));

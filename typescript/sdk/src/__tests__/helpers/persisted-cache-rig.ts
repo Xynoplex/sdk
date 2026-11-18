@@ -13,7 +13,11 @@ import { resourceId, type ResourceId, type components } from '@xynolog/core';
 import { coupledLastEventId } from '../../cache-persister';
 import { cacheKey, lastEventIdKey, personKey } from '../../session/storage';
 import type { InMemorySessionStorage } from '../../session/session-storage';
-import { createTestClient, inMemoryContent, refuseUnscriptedOperation } from '../../testing';
+import {
+  createTestClient,
+  inMemoryContent,
+  refuseUnscriptedOperation,
+} from '../../testing';
 import { mockAnnotation } from '../fixtures/annotation';
 
 type GetAnnotationsResponse = components['schemas']['GetAnnotationsResponse'];
@@ -28,11 +32,15 @@ const A_DOC_KEY = cacheKey(KB_ID, PERSON, 'annotations');
 export const BOOKMARK_KEY = lastEventIdKey(KB_ID, PERSON);
 
 /** Content model: "the effect of every event ≤ upTo is present". */
-export interface Content { upTo: number }
+export interface Content {
+  upTo: number;
+}
 
 /** A's value holding the effect of every event ≤ upTo: that many annotations. */
 function annotationsUpTo({ upTo }: Content): GetAnnotationsResponse {
-  const annotations = Array.from({ length: upTo }, (_, i) => mockAnnotation(`ann-${i + 1}`));
+  const annotations = Array.from({ length: upTo }, (_, i) =>
+    mockAnnotation(`ann-${i + 1}`),
+  );
   return { annotations, total: annotations.length };
 }
 
@@ -55,25 +63,34 @@ export interface Rig {
  * places to the client (B17-Q): a place is written only while every kept cache is quiet and the refresher
  * owes nothing. Uncoupled, every cache-document write carries the places noted.
  */
-export function buildRig(storage: InMemorySessionStorage, coupled: boolean): Rig {
+export function buildRig(
+  storage: InMemorySessionStorage,
+  coupled: boolean,
+): Rig {
   const places = coupledLastEventId(storage, BOOKMARK_KEY);
   const resolvers: Array<(c: Content) => void> = [];
   let bAnswers = 0;
   const { client } = createTestClient({
     content: {
       ...inMemoryContent(),
-      getAnnotations: () => new Promise<GetAnnotationsResponse>((resolve) => {
-        resolvers.push((c) => resolve(annotationsUpTo(c)));
-      }),
+      getAnnotations: () =>
+        new Promise<GetAnnotationsResponse>((resolve) => {
+          resolvers.push((c) => resolve(annotationsUpTo(c)));
+        }),
     },
     transport: {
       makeResponse: (operation) => {
-        if (operation !== 'browse:entity-types-requested') return refuseUnscriptedOperation(operation);
+        if (operation !== 'browse:entity-types-requested')
+          return refuseUnscriptedOperation(operation);
         bAnswers += 1;
         return { entityTypes: [`answer-${bAnswers}`] };
       },
     },
-    cachePersistence: { storage: places.storage, kbId: KB_ID, personKey: PERSON },
+    cachePersistence: {
+      storage: places.storage,
+      kbId: KB_ID,
+      personKey: PERSON,
+    },
   });
   if (coupled) places.coupleTo(client);
 
@@ -103,7 +120,9 @@ export function buildRig(storage: InMemorySessionStorage, coupled: boolean): Rig
 export function persistedAUpTo(storage: InMemorySessionStorage): number {
   const raw = storage.get(A_DOC_KEY);
   if (raw === null) return 0;
-  const doc = JSON.parse(raw) as { entries: Array<[string, GetAnnotationsResponse, number]> };
+  const doc = JSON.parse(raw) as {
+    entries: Array<[string, GetAnnotationsResponse, number]>;
+  };
   return doc.entries.find(([k]) => k === A_KEY)?.[1].total ?? 0;
 }
 

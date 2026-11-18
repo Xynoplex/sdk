@@ -8,10 +8,15 @@
  * Whatever reads the answer belongs inside `exchange`: a body read after it
  * has ended has no deadline.
  */
-export async function withinDeadline<T>(ms: number, exchange: (signal: AbortSignal) => Promise<T>): Promise<T> {
+export async function withinDeadline<T>(
+  ms: number,
+  exchange: (signal: AbortSignal) => Promise<T>,
+): Promise<T> {
   const deadline = new AbortController();
   const timer = setTimeout(() => {
-    deadline.abort(new DOMException(`The deadline of ${ms}ms passed`, 'TimeoutError'));
+    deadline.abort(
+      new DOMException(`The deadline of ${ms}ms passed`, 'TimeoutError'),
+    );
   }, ms);
   try {
     return await exchange(deadline.signal);

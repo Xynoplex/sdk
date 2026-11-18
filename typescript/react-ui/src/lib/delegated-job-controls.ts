@@ -15,7 +15,11 @@ class Controls {
   readonly #onCancel: (() => Promise<boolean>) | undefined;
   readonly #onDismiss: (() => void) | undefined;
 
-  constructor(jobId: JobId | null, onCancel: (() => Promise<boolean>) | undefined, onDismiss: (() => void) | undefined) {
+  constructor(
+    jobId: JobId | null,
+    onCancel: (() => Promise<boolean>) | undefined,
+    onDismiss: (() => void) | undefined,
+  ) {
     this.#jobId = jobId;
     this.#onCancel = onCancel;
     this.#onDismiss = onDismiss;
@@ -51,12 +55,14 @@ export function delegatedJobControls(
   jobId: JobId | null,
   onDismiss: (() => void) | undefined,
 ): DelegatedJobControls {
-  const onCancel = session && jobId
-    ? () => session.client.job.cancel(jobId).catch((error: unknown) => {
-        console.error(`Failed to cancel job ${jobId}:`, error);
-        throw error;
-      })
-    : undefined;
+  const onCancel =
+    session && jobId
+      ? () =>
+          session.client.job.cancel(jobId).catch((error: unknown) => {
+            console.error(`Failed to cancel job ${jobId}:`, error);
+            throw error;
+          })
+      : undefined;
   return new Controls(jobId, onCancel, onDismiss);
 }
 
@@ -64,6 +70,10 @@ export function delegatedJobControls(
  * The controls of a `mark` job's display: its dismiss clears the progress
  * of the resource's mark unit.
  */
-export function markJobControls(session: XynologSession | null, mark: MarkStateUnit | undefined, jobId: JobId | null): DelegatedJobControls {
+export function markJobControls(
+  session: XynologSession | null,
+  mark: MarkStateUnit | undefined,
+  jobId: JobId | null,
+): DelegatedJobControls {
   return delegatedJobControls(session, jobId, () => mark?.dismissProgress());
 }

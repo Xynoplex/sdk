@@ -25,7 +25,7 @@ import * as fc from 'fast-check';
 import {
   canvasToPdfCoordinates,
   pdfToCanvasCoordinates,
-  type CanvasRectangle
+  type CanvasRectangle,
 } from '../pdf-coordinates';
 import type { PdfCoordinate } from '@xynolog/core';
 
@@ -45,7 +45,13 @@ describe('PDF Coordinate Transformations', () => {
           const rect: CanvasRectangle = { startX, startY, endX, endY };
 
           // Canvas -> PDF
-          const pdf = canvasToPdfCoordinates(rect, 1, pageWidth, pageHeight, scale);
+          const pdf = canvasToPdfCoordinates(
+            rect,
+            1,
+            pageWidth,
+            pageHeight,
+            scale,
+          );
 
           // PDF -> Canvas
           const canvas = pdfToCanvasCoordinates(pdf, pageHeight, scale);
@@ -59,12 +65,14 @@ describe('PDF Coordinate Transformations', () => {
           expect(Math.abs(canvas.x - originalX)).toBeLessThanOrEqual(3);
           expect(Math.abs(canvas.y - originalY)).toBeLessThanOrEqual(3);
           expect(Math.abs(canvas.width - originalWidth)).toBeLessThanOrEqual(3);
-          expect(Math.abs(canvas.height - originalHeight)).toBeLessThanOrEqual(3);
+          expect(Math.abs(canvas.height - originalHeight)).toBeLessThanOrEqual(
+            3,
+          );
 
           return true;
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -81,15 +89,21 @@ describe('PDF Coordinate Transformations', () => {
         fc.double({ min: 0.5, max: 3.0, noNaN: true }),
         (startX, startY, endX, endY, pageWidth, pageHeight, scale) => {
           const rect: CanvasRectangle = { startX, startY, endX, endY };
-          const pdf = canvasToPdfCoordinates(rect, 1, pageWidth, pageHeight, scale);
+          const pdf = canvasToPdfCoordinates(
+            rect,
+            1,
+            pageWidth,
+            pageHeight,
+            scale,
+          );
 
           expect(pdf.width).toBeGreaterThanOrEqual(0);
           expect(pdf.height).toBeGreaterThanOrEqual(0);
 
           return true;
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -113,19 +127,19 @@ describe('PDF Coordinate Transformations', () => {
             { startX: x1, startY: y2, endX: x2, endY: y1 },
           ];
 
-          const results = rects.map(rect =>
-            canvasToPdfCoordinates(rect, 1, pageWidth, pageHeight, scale)
+          const results = rects.map((rect) =>
+            canvasToPdfCoordinates(rect, 1, pageWidth, pageHeight, scale),
           );
 
           // All should produce identical result
-          results.forEach(result => {
+          results.forEach((result) => {
             expect(result).toEqual(results[0]);
           });
 
           return true;
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -143,17 +157,33 @@ describe('PDF Coordinate Transformations', () => {
         (startX, startY, endX, endY, pageWidth, pageHeight, scale) => {
           const rect: CanvasRectangle = { startX, startY, endX, endY };
 
-          const result1 = canvasToPdfCoordinates(rect, 1, pageWidth, pageHeight, scale);
-          const result2 = canvasToPdfCoordinates(rect, 1, pageWidth, pageHeight, scale * 2);
+          const result1 = canvasToPdfCoordinates(
+            rect,
+            1,
+            pageWidth,
+            pageHeight,
+            scale,
+          );
+          const result2 = canvasToPdfCoordinates(
+            rect,
+            1,
+            pageWidth,
+            pageHeight,
+            scale * 2,
+          );
 
           // Width and height should be halved (with 2px rounding tolerance)
-          expect(Math.abs(result2.width - result1.width / 2)).toBeLessThanOrEqual(2);
-          expect(Math.abs(result2.height - result1.height / 2)).toBeLessThanOrEqual(2);
+          expect(
+            Math.abs(result2.width - result1.width / 2),
+          ).toBeLessThanOrEqual(2);
+          expect(
+            Math.abs(result2.height - result1.height / 2),
+          ).toBeLessThanOrEqual(2);
 
           return true;
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -175,9 +205,9 @@ describe('PDF Coordinate Transformations', () => {
           expect(canvas.y).toBe(expectedCanvasY);
 
           return true;
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

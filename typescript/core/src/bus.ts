@@ -23,16 +23,27 @@
 
 import { Observable, firstValueFrom, merge, race } from 'rxjs';
 import { defaultIfEmpty, filter, map, take } from 'rxjs/operators';
-import { CHANNEL_PAYLOADS, CHANNEL_STAMPS, type EventMap } from './bus-protocol';
+import {
+  CHANNEL_PAYLOADS,
+  CHANNEL_STAMPS,
+  type EventMap,
+} from './bus-protocol';
 import type { BusEnvelope, BusFrame, TraceCarrier } from './event-bus';
 import type { ConnectionState } from './transport';
 import { BUS_OPERATIONS, type BusOperationKey } from './bus-operations';
-import { BusRequestError, classifyFailureCode, type BusReply } from './bus-request';
+import {
+  BusRequestError,
+  classifyFailureCode,
+  type BusReply,
+} from './bus-request';
 import { XynologError } from './errors';
 import { readOfShape, said, within, type Fault, type Shape } from './required';
 import type { components } from './types';
 import { BUS_REQUEST_TIMEOUT_MS } from './client-timing';
-import type { ResourceScopedChannel, UnscopedChannel } from './bridged-channels';
+import type {
+  ResourceScopedChannel,
+  UnscopedChannel,
+} from './bridged-channels';
 import { isResourceScopedChannel } from './bridging';
 import { uuidV4 } from './id-generation';
 import { userId, type ResourceId, type UserId } from './identifiers';
@@ -67,9 +78,13 @@ export interface BusPrimitive {
    * capability-sniffing compatibility layer that a required `isSubscribed`
    * exists to rule out.
    */
-  frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>>;
+  frames<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>>;
   /** The payload view, DERIVED from `frames` so the two cannot disagree. */
-  stream<K extends keyof EventMap>(channel: K): Observable<EventMap[K] | FrameRefusal>;
+  stream<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<EventMap[K] | FrameRefusal>;
   /**
    * Connection state of the stream that carries replies. Required, not
    * optional: a request gates its emit on this — no correlated emit before
@@ -160,7 +175,13 @@ export class FrameRefusal {
   /** The frame's correlation id, when it carried one BusFrame allows: what a request awaiting its reply is told of it by. */
   readonly correlationId?: string;
 
-  constructor(channel: keyof EventMap, member: string, reason: Fault['reason'], payload: unknown, correlationId: string | undefined) {
+  constructor(
+    channel: keyof EventMap,
+    member: string,
+    reason: Fault['reason'],
+    payload: unknown,
+    correlationId: string | undefined,
+  ) {
     this.channel = channel;
     this.member = member;
     this.reason = reason;
@@ -182,15 +203,22 @@ const EMITTED_BY = '_userId';
 function payloadShape(channel: keyof EventMap): Shape {
   const declared = CHANNEL_PAYLOADS[channel];
   if ('payload' in declared) return { ref: declared.payload };
-  if ('response' in declared) return { kinds: ['object'], required: ['response'], members: { response: { ref: declared.response } } };
+  if ('response' in declared)
+    return {
+      kinds: ['object'],
+      required: ['response'],
+      members: { response: { ref: declared.response } },
+    };
   return {};
 }
 
 /** What is said of a payload on `channel` that has `fault`, in every SDK's words. */
-const notTheChannels = (channel: string, fault: Fault): string => `a payload on ${channel} is not that channel's: ${said(fault)}`;
+const notTheChannels = (channel: string, fault: Fault): string =>
+  `a payload on ${channel} is not that channel's: ${said(fault)}`;
 
 /** What is said of a frame refused, in every SDK's words. */
-const notTheFrames = (refusal: FrameRefusal): string => `a frame on ${refusal.channel} is not that channel's: ${said(refusal)}`;
+const notTheFrames = (refusal: FrameRefusal): string =>
+  `a frame on ${refusal.channel} is not that channel's: ${said(refusal)}`;
 
 /**
  * `payload` as `channel` types it, or the first fault it has as that
@@ -200,14 +228,23 @@ const notTheFrames = (refusal: FrameRefusal): string => `a frame on ${refusal.ch
  * So is a member the table reads as absent: a failure's code that is none of
  * CommandError's recognized codes, which is read as a failure that states none.
  */
-function readAs<K extends keyof EventMap>(channel: K, payload: unknown): { readonly payload: EventMap[K] } | { readonly fault: Fault } {
+function readAs<K extends keyof EventMap>(
+  channel: K,
+  payload: unknown,
+): { readonly payload: EventMap[K] } | { readonly fault: Fault } {
   const stamps: readonly string[] = CHANNEL_STAMPS[channel];
   const declared =
     typeof payload === 'object' && payload !== null && !Array.isArray(payload)
-      ? Object.fromEntries(Object.entries(payload).filter(([name]) => !name.startsWith('_') || stamps.includes(name)))
+      ? Object.fromEntries(
+          Object.entries(payload).filter(
+            ([name]) => !name.startsWith('_') || stamps.includes(name),
+          ),
+        )
       : payload;
   const reading = readOfShape(payloadShape(channel), declared);
-  return 'fault' in reading ? reading : { payload: reading.read as EventMap[K] };
+  return 'fault' in reading
+    ? reading
+    : { payload: reading.read as EventMap[K] };
 }
 
 /**
@@ -218,27 +255,45 @@ function readAs<K extends keyof EventMap>(channel: K, payload: unknown): { reado
  * gives one. A refusal, which a transport delivers in place of a frame it
  * refused, a bus it bridged into carries and a relay passes on, is one already.
  */
-export function asDeclared<K extends keyof EventMap>(channel: K, payload: EventMap[K] | FrameRefusal, correlationId: string | undefined): EventMap[K] | FrameRefusal {
+export function asDeclared<K extends keyof EventMap>(
+  channel: K,
+  payload: EventMap[K] | FrameRefusal,
+  correlationId: string | undefined,
+): EventMap[K] | FrameRefusal {
   if (payload instanceof FrameRefusal) return payload;
   const read = readAs(channel, payload);
-  if ('fault' in read) return new FrameRefusal(channel, within('payload', read.fault.member), read.fault.reason, payload, correlationId);
+  if ('fault' in read)
+    return new FrameRefusal(
+      channel,
+      within('payload', read.fault.member),
+      read.fault.reason,
+      payload,
+      correlationId,
+    );
   return read.payload;
 }
 
 /** Whether its transport delivered `frame`, rather than refused it. */
-function isDelivered<T>(frame: BusFrame<T | FrameRefusal>): frame is BusFrame<T> {
+function isDelivered<T>(
+  frame: BusFrame<T | FrameRefusal>,
+): frame is BusFrame<T> {
   return !(frame.payload instanceof FrameRefusal);
 }
 
 /** `frame` as a frame of `channel`, or its refusal when its transport refused it or its payload is not that channel's. */
-function heard<K extends keyof EventMap>(channel: K, frame: BusFrame<EventMap[K] | FrameRefusal>): Heard<EventMap[K]> {
+function heard<K extends keyof EventMap>(
+  channel: K,
+  frame: BusFrame<EventMap[K] | FrameRefusal>,
+): Heard<EventMap[K]> {
   const declared = asDeclared(channel, frame.payload, frame.correlationId);
   if (declared instanceof FrameRefusal) return declared;
   const stamped = (frame.payload as Record<string, unknown>)[EMITTED_BY];
   return {
     status: 'delivered',
     payload: declared,
-    ...(frame.correlationId !== undefined ? { correlationId: frame.correlationId } : {}),
+    ...(frame.correlationId !== undefined
+      ? { correlationId: frame.correlationId }
+      : {}),
     ...(frame.scope !== undefined ? { scope: frame.scope } : {}),
     ...(typeof stamped === 'string' ? { userId: userId(stamped) } : {}),
     ...(frame.trace !== undefined ? { trace: frame.trace } : {}),
@@ -284,18 +339,28 @@ export class Bus {
    * holds that resource's scope until it is unsubscribed, and is given that
    * resource's frames and no other's.
    */
-  frames<K extends ResourceScopedChannel>(channel: K, resourceId: ResourceId): Observable<Heard<EventMap[K]>>;
-  frames<K extends keyof EventMap>(channel: K, resourceId?: ResourceId): Observable<Heard<EventMap[K]>> {
+  frames<K extends ResourceScopedChannel>(
+    channel: K,
+    resourceId: ResourceId,
+  ): Observable<Heard<EventMap[K]>>;
+  frames<K extends keyof EventMap>(
+    channel: K,
+    resourceId?: ResourceId,
+  ): Observable<Heard<EventMap[K]>> {
     if (resourceId === undefined) {
       if (isResourceScopedChannel(channel)) {
         throw new TypeError(
           `${channel} is delivered on a resource's scope, so a read of it names the resource: frames(channel, resourceId)`,
         );
       }
-      return this.#transport.frames(channel).pipe(map((frame) => heard(channel, frame)));
+      return this.#transport
+        .frames(channel)
+        .pipe(map((frame) => heard(channel, frame)));
     }
     if (!isResourceScopedChannel(channel)) {
-      throw new TypeError(`${channel} is no resource's channel: frames(channel)`);
+      throw new TypeError(
+        `${channel} is no resource's channel: frames(channel)`,
+      );
     }
     const transport = this.#transport;
     return new Observable<Heard<EventMap[K]>>((subscriber) => {
@@ -364,7 +429,8 @@ export class Bus {
     const bus = this.#transport;
     signal?.throwIfAborted();
     const correlationId = uuidV4();
-    const { result: resultChannel, failure: failureChannel } = BUS_OPERATIONS[operation];
+    const { result: resultChannel, failure: failureChannel } =
+      BUS_OPERATIONS[operation];
 
     // A transport with a narrowed subscription set (a worker) that is not
     // subscribed to this operation's reply channels can never deliver the
@@ -385,12 +451,22 @@ export class Bus {
     // result or a failure with a fault as its schema's is refused, as every
     // other SDK refuses it, and so is a reply its transport refused, which
     // carries the correlation id in its refusal.
-    const refused$ = merge(bus.frames(resultChannel as keyof EventMap), bus.frames(failureChannel as keyof EventMap)).pipe(
+    const refused$ = merge(
+      bus.frames(resultChannel as keyof EventMap),
+      bus.frames(failureChannel as keyof EventMap),
+    ).pipe(
       map(({ payload }) => payload),
-      filter((payload): payload is FrameRefusal => payload instanceof FrameRefusal && payload.correlationId === correlationId),
+      filter(
+        (payload): payload is FrameRefusal =>
+          payload instanceof FrameRefusal &&
+          payload.correlationId === correlationId,
+      ),
       map((refusal) => ({
         ok: false as const,
-        error: new XynologError(notTheFrames(refusal), 'error', { channel: refusal.channel, correlationId }),
+        error: new XynologError(notTheFrames(refusal), 'error', {
+          channel: refusal.channel,
+          correlationId,
+        }),
       })),
     );
     const settled$ = merge(
@@ -403,12 +479,20 @@ export class Bus {
           return 'fault' in read
             ? {
                 ok: false as const,
-                error: new XynologError(notTheChannels(resultChannel, read.fault), 'error', {
-                  channel: resultChannel,
-                  correlationId,
-                }),
+                error: new XynologError(
+                  notTheChannels(resultChannel, read.fault),
+                  'error',
+                  {
+                    channel: resultChannel,
+                    correlationId,
+                  },
+                ),
               }
-            : { ok: true as const, response: (read.payload as Record<string, unknown>).response as BusReply<Op> };
+            : {
+                ok: true as const,
+                response: (read.payload as Record<string, unknown>)
+                  .response as BusReply<Op>,
+              };
         }),
       ),
       bus.frames(failureChannel as keyof EventMap).pipe(
@@ -419,21 +503,29 @@ export class Bus {
           if ('fault' in read) {
             return {
               ok: false as const,
-              error: new XynologError(notTheChannels(failureChannel, read.fault), 'error', {
-                channel: failureChannel,
-                correlationId,
-              }),
+              error: new XynologError(
+                notTheChannels(failureChannel, read.fault),
+                'error',
+                {
+                  channel: failureChannel,
+                  correlationId,
+                },
+              ),
             };
           }
           // Every failure channel carries a CommandError, or one that extends it.
           const failure = read.payload as components['schemas']['CommandError'];
           return {
             ok: false as const,
-            error: new BusRequestError(failure.message, classifyFailureCode(failure.code), {
-              channel: failureChannel,
-              correlationId,
-              payload: e,
-            }),
+            error: new BusRequestError(
+              failure.message,
+              classifyFailureCode(failure.code),
+              {
+                channel: failureChannel,
+                correlationId,
+                payload: e,
+              },
+            ),
           };
         }),
       ),
@@ -463,15 +555,20 @@ export class Bus {
     const due = new AbortController();
     const dueAt = setTimeout(() => {
       due.abort(
-        new BusRequestError(`Bus request timed out after ${timeoutMs}ms on ${resultChannel}`, 'bus.timeout', {
-          channel: operation,
-          resultChannel,
-          correlationId,
-          timeoutMs,
-        }),
+        new BusRequestError(
+          `Bus request timed out after ${timeoutMs}ms on ${resultChannel}`,
+          'bus.timeout',
+          {
+            channel: operation,
+            resultChannel,
+            correlationId,
+            timeoutMs,
+          },
+        ),
       );
     }, timeoutMs);
-    const ended = signal === undefined ? due.signal : AbortSignal.any([due.signal, signal]);
+    const ended =
+      signal === undefined ? due.signal : AbortSignal.any([due.signal, signal]);
 
     // Subscribe before emitting so we don't miss an instantaneous reply
     // (which can happen with an in-process bus).
@@ -497,19 +594,25 @@ export class Bus {
     // `'closed'` fails fast — a request against a closed bus should not burn a
     // timeout.
     const closedBeforeEmit = () =>
-      new BusRequestError(`Bus closed before emit on ${operation}`, 'bus.closed', {
-        channel: operation,
-        correlationId,
-      });
+      new BusRequestError(
+        `Bus closed before emit on ${operation}`,
+        'bus.closed',
+        {
+          channel: operation,
+          correlationId,
+        },
+      );
 
     // Synchronous fast path: `state$` is BehaviorSubject-backed (see the
     // interface contract), so the current state lands during subscribe.
     // Already `'open'` → fall straight through to the emit with zero added
     // microtasks — the gate can only remove latency, never add it.
     let currentState: ConnectionState | undefined;
-    bus.state$.subscribe((s) => {
-      currentState = s;
-    }).unsubscribe();
+    bus.state$
+      .subscribe((s) => {
+        currentState = s;
+      })
+      .unsubscribe();
 
     if (currentState === 'closed') {
       throw closedBeforeEmit();
@@ -563,7 +666,12 @@ export class Bus {
       try {
         // The key goes on the ENVELOPE. A responder reads it from there and
         // echoes it back on one; no channel's domain type ever carries it.
-        await bus.emit(operation as keyof EventMap, payload as EventMap[keyof EventMap], { correlationId }, ended);
+        await bus.emit(
+          operation as keyof EventMap,
+          payload as EventMap[keyof EventMap],
+          { correlationId },
+          ended,
+        );
       } catch (emitError) {
         releaseTracking?.();
         releaseTracking = undefined;

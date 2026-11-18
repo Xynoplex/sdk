@@ -26,9 +26,15 @@ export interface FilterableJob {
 
 function states(stated: unknown, actual: unknown): boolean {
   if (!isObject(stated)) return stated === actual;
-  return isObject(actual) && Object.entries(stated).every(([name, value]) => states(value, actual[name]));
+  return (
+    isObject(actual) &&
+    Object.entries(stated).every(([name, value]) => states(value, actual[name]))
+  );
 }
 
-export function jobMatchesFilter(filter: JobFilter, job: FilterableJob): boolean {
+export function jobMatchesFilter(
+  filter: JobFilter,
+  job: FilterableJob,
+): boolean {
   return states(filter, job);
 }

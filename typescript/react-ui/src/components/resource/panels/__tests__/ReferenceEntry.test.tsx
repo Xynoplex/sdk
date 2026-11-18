@@ -6,7 +6,10 @@ import type { ResourceDescriptor } from '@xynolog/core';
 import { getResourceIcon } from '../../../../lib/resource-utils';
 import '@testing-library/jest-dom';
 import type { ComponentProps } from 'react';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 import { BindNamespace } from '@xynolog/sdk';
 
@@ -26,11 +29,13 @@ vi.mock('@xynolog/core', async () => {
   const actual = await vi.importActual('@xynolog/core');
   return {
     ...actual,
-    getAnnotationExactText: (...args: unknown[]) => mockGetAnnotationExactText(...args),
+    getAnnotationExactText: (...args: unknown[]) =>
+      mockGetAnnotationExactText(...args),
     isBodyResolved: (...args: unknown[]) => mockIsBodyResolved(...args),
     getEntityTypes: (...args: unknown[]) => mockGetEntityTypes(...args),
     getBodySource: (...args: unknown[]) => mockGetBodySource(...args),
-    getFragmentSelector: (...args: unknown[]) => mockGetFragmentSelector(...args),
+    getFragmentSelector: (...args: unknown[]) =>
+      mockGetFragmentSelector(...args),
     getSvgSelector: (...args: unknown[]) => mockGetSvgSelector(...args),
     getTargetSelector: (...args: unknown[]) => mockGetTargetSelector(...args),
   };
@@ -74,7 +79,9 @@ describe('ReferenceEntry', () => {
   let session: ReturnType<typeof createTestXynologWrapper>['session'];
   let eventBus: ReturnType<typeof createTestXynologWrapper>['eventBus'];
 
-  const renderEntry = (props: Partial<ComponentProps<typeof ReferenceEntry>> = {}) =>
+  const renderEntry = (
+    props: Partial<ComponentProps<typeof ReferenceEntry>> = {},
+  ) =>
     renderWithProviders(
       <ReferenceEntry
         session={session}
@@ -84,19 +91,31 @@ describe('ReferenceEntry', () => {
       />,
     );
 
-  const descriptor = (name: string, mediaType = 'text/plain'): ResourceDescriptor => ({
-    '@id': 'linked-doc',
-    name,
-    representations: [{ mediaType, checksum: 'c', byteSize: 1 }],
-  }) as unknown as ResourceDescriptor;
+  const descriptor = (
+    name: string,
+    mediaType = 'text/plain',
+  ): ResourceDescriptor =>
+    ({
+      '@id': 'linked-doc',
+      name,
+      representations: [{ mediaType, checksum: 'c', byteSize: 1 }],
+    }) as unknown as ResourceDescriptor;
 
-  const ready = (value: ResourceDescriptor): CacheState<ResourceDescriptor> =>
-    ({ status: 'ready', value });
+  const ready = (
+    value: ResourceDescriptor,
+  ): CacheState<ResourceDescriptor> => ({ status: 'ready', value });
 
   /** Point the session's resource cache at a controlled stream for the link target. */
-  const mockLinkTarget = (state: CacheState<ResourceDescriptor> | BehaviorSubject<CacheState<ResourceDescriptor>>) => {
-    const source$ = state instanceof BehaviorSubject ? state : new BehaviorSubject(state);
-    return vi.spyOn(session!.client.browse, 'resource').mockReturnValue(source$ as never);
+  const mockLinkTarget = (
+    state:
+      | CacheState<ResourceDescriptor>
+      | BehaviorSubject<CacheState<ResourceDescriptor>>,
+  ) => {
+    const source$ =
+      state instanceof BehaviorSubject ? state : new BehaviorSubject(state);
+    return vi
+      .spyOn(session!.client.browse, 'resource')
+      .mockReturnValue(source$ as never);
   };
 
   beforeEach(() => {
@@ -119,13 +138,17 @@ describe('ReferenceEntry', () => {
     it('carries the sparkle animation on the icon when sparkle is set', () => {
       const { container } = renderEntry({ sparkle: true });
 
-      expect(container.querySelector('.xynolog-reference-icon')).toHaveClass('annotation-sparkle');
+      expect(container.querySelector('.xynolog-reference-icon')).toHaveClass(
+        'annotation-sparkle',
+      );
     });
 
     it('does not sparkle by default', () => {
       const { container } = renderEntry();
 
-      expect(container.querySelector('.xynolog-reference-icon')).not.toHaveClass('annotation-sparkle');
+      expect(
+        container.querySelector('.xynolog-reference-icon'),
+      ).not.toHaveClass('annotation-sparkle');
     });
   });
 
@@ -142,7 +165,9 @@ describe('ReferenceEntry', () => {
 
       renderEntry();
 
-      expect(screen.getByText(new RegExp(`"${'A'.repeat(100)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'A'.repeat(100)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
@@ -177,7 +202,10 @@ describe('ReferenceEntry', () => {
 
     it('should show Fragment annotation for fragment selectors', () => {
       mockGetAnnotationExactText.mockReturnValue('');
-      mockGetFragmentSelector.mockReturnValue({ type: 'FragmentSelector', value: 'xywh=0,0,100,100' });
+      mockGetFragmentSelector.mockReturnValue({
+        type: 'FragmentSelector',
+        value: 'xywh=0,0,100,100',
+      });
 
       renderEntry();
 
@@ -186,7 +214,10 @@ describe('ReferenceEntry', () => {
 
     it('should show Image annotation for SVG selectors', () => {
       mockGetAnnotationExactText.mockReturnValue('');
-      mockGetSvgSelector.mockReturnValue({ type: 'SvgSelector', value: '<svg/>' });
+      mockGetSvgSelector.mockReturnValue({
+        type: 'SvgSelector',
+        value: '<svg/>',
+      });
 
       renderEntry();
 
@@ -215,11 +246,17 @@ describe('ReferenceEntry', () => {
       mockGetBodySource.mockReturnValue('gen-doc');
       mockLinkTarget(ready(descriptor('generated from Cedar County, Iowa')));
 
-      renderEntry({ reference: createMockReference({ target: { source: resourceId('resource-1') } }) });
+      renderEntry({
+        reference: createMockReference({
+          target: { source: resourceId('resource-1') },
+        }),
+      });
 
       expect(screen.getByText('ReferencesPanel.derived')).toBeInTheDocument();
       expect(screen.queryByText('Annotation')).not.toBeInTheDocument();
-      expect(screen.getByText(/generated from Cedar County, Iowa/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/generated from Cedar County, Iowa/),
+      ).toBeInTheDocument();
     });
   });
 
@@ -238,7 +275,9 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry();
 
-      expect(container.querySelector('.xynolog-annotation-entry__tags')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-annotation-entry__tags'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -339,18 +378,27 @@ describe('ReferenceEntry', () => {
       mockIsBodyResolved.mockReturnValue(true);
       mockGetBodySource.mockReturnValue('linked-doc');
 
-      const bindSpy = vi.spyOn(BindNamespace.prototype, 'body').mockResolvedValue(undefined);
+      const bindSpy = vi
+        .spyOn(BindNamespace.prototype, 'body')
+        .mockResolvedValue(undefined);
 
       const { container } = renderEntry({ annotateMode: true });
 
-      const unlinkButton = container.querySelector('.xynolog-reference-unlink')!;
+      const unlinkButton = container.querySelector(
+        '.xynolog-reference-unlink',
+      )!;
       await userEvent.click(unlinkButton);
 
-      expect(bindSpy).toHaveBeenCalledWith(
-        'resource-1',
-        'ref-1',
-        [{ op: 'remove', item: { type: 'SpecificResource', source: 'linked-doc', purpose: 'linking' } }],
-      );
+      expect(bindSpy).toHaveBeenCalledWith('resource-1', 'ref-1', [
+        {
+          op: 'remove',
+          item: {
+            type: 'SpecificResource',
+            source: 'linked-doc',
+            purpose: 'linking',
+          },
+        },
+      ]);
 
       bindSpy.mockRestore();
     });
@@ -362,15 +410,22 @@ describe('ReferenceEntry', () => {
       mockIsBodyResolved.mockReturnValue(true);
       mockGetBodySource.mockReturnValue('linked-doc');
 
-      const bindSpy = vi.spyOn(BindNamespace.prototype, 'body').mockRejectedValue(new Error('link is load-bearing'));
+      const bindSpy = vi
+        .spyOn(BindNamespace.prototype, 'body')
+        .mockRejectedValue(new Error('link is load-bearing'));
       const errors: unknown[] = [];
-      eventBus.on('bind:body-error').subscribe(e => errors.push(e));
+      eventBus.on('bind:body-error').subscribe((e) => errors.push(e));
 
       const { container } = renderEntry({ annotateMode: true });
-      await userEvent.click(container.querySelector('.xynolog-reference-unlink')!);
+      await userEvent.click(
+        container.querySelector('.xynolog-reference-unlink')!,
+      );
 
       await vi.waitFor(() => expect(errors).toHaveLength(1));
-      expect(errors[0]).toEqual({ resourceId: 'resource-1', message: 'link is load-bearing' });
+      expect(errors[0]).toEqual({
+        resourceId: 'resource-1',
+        message: 'link is load-bearing',
+      });
 
       bindSpy.mockRestore();
     });
@@ -384,7 +439,9 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ annotateMode: true });
 
-      const subscription = eventBus.on('bind:initiate').subscribe(initiateHandler);
+      const subscription = eventBus
+        .on('bind:initiate')
+        .subscribe(initiateHandler);
 
       const icon = container.querySelector('.xynolog-reference-icon')!;
       await userEvent.click(icon);
@@ -423,7 +480,9 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ annotateMode: false });
 
-      const subscription = eventBus.on('bind:initiate').subscribe(initiateHandler);
+      const subscription = eventBus
+        .on('bind:initiate')
+        .subscribe(initiateHandler);
 
       const icon = container.querySelector('.xynolog-reference-icon')!;
       await userEvent.click(icon);
@@ -450,7 +509,9 @@ describe('ReferenceEntry', () => {
     it('shows name and media-type icon for a pure W3C annotation, sourced from browse.resource', () => {
       mockIsBodyResolved.mockReturnValue(true);
       mockGetBodySource.mockReturnValue('linked-doc');
-      const spy = mockLinkTarget(ready(descriptor('My Linked Document', 'text/markdown')));
+      const spy = mockLinkTarget(
+        ready(descriptor('My Linked Document', 'text/markdown')),
+      );
 
       renderEntry();
 
@@ -462,7 +523,9 @@ describe('ReferenceEntry', () => {
     it('the name FOLLOWS the resource — a renamed descriptor re-renders the entry', () => {
       mockIsBodyResolved.mockReturnValue(true);
       mockGetBodySource.mockReturnValue('linked-doc');
-      const state$ = new BehaviorSubject<CacheState<ResourceDescriptor>>(ready(descriptor('Old Name')));
+      const state$ = new BehaviorSubject<CacheState<ResourceDescriptor>>(
+        ready(descriptor('Old Name')),
+      );
       mockLinkTarget(state$);
 
       renderEntry();
@@ -478,9 +541,17 @@ describe('ReferenceEntry', () => {
       mockGetAnnotationExactText.mockReturnValue('');
       mockIsBodyResolved.mockReturnValue(true);
       mockGetBodySource.mockReturnValue('gen-doc');
-      mockLinkTarget(new BehaviorSubject<CacheState<ResourceDescriptor>>({ status: 'pending' }));
+      mockLinkTarget(
+        new BehaviorSubject<CacheState<ResourceDescriptor>>({
+          status: 'pending',
+        }),
+      );
 
-      renderEntry({ reference: createMockReference({ target: { source: resourceId('resource-1') } }) });
+      renderEntry({
+        reference: createMockReference({
+          target: { source: resourceId('resource-1') },
+        }),
+      });
 
       expect(screen.getByText('ReferencesPanel.derived')).toBeInTheDocument();
       expect(screen.queryByText('Annotation')).not.toBeInTheDocument();

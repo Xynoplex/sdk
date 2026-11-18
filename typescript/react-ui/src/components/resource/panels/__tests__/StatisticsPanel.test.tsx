@@ -69,19 +69,28 @@ describe('StatisticsPanel', () => {
     it('should render correct highlight count', () => {
       const props = {
         ...emptyProps,
-        highlights: [createMockAnnotation({ id: 'h1' as AnnotationId }), createMockAnnotation({ id: 'h2' as AnnotationId }), createMockAnnotation({ id: 'h3' as AnnotationId })],
+        highlights: [
+          createMockAnnotation({ id: 'h1' as AnnotationId }),
+          createMockAnnotation({ id: 'h2' as AnnotationId }),
+          createMockAnnotation({ id: 'h3' as AnnotationId }),
+        ],
       };
 
       renderWithProviders(<StatisticsPanel {...props} />);
 
-      expect(screen.getByText('StatisticsPanel.highlights')).toBeInTheDocument();
+      expect(
+        screen.getByText('StatisticsPanel.highlights'),
+      ).toBeInTheDocument();
       expect(screen.getByText('3')).toBeInTheDocument();
     });
 
     it('should render correct comment count', () => {
       const props = {
         ...emptyProps,
-        comments: [createMockAnnotation({ id: 'c1' as AnnotationId }), createMockAnnotation({ id: 'c2' as AnnotationId })],
+        comments: [
+          createMockAnnotation({ id: 'c1' as AnnotationId }),
+          createMockAnnotation({ id: 'c2' as AnnotationId }),
+        ],
       };
 
       renderWithProviders(<StatisticsPanel {...props} />);
@@ -98,7 +107,9 @@ describe('StatisticsPanel', () => {
 
       renderWithProviders(<StatisticsPanel {...props} />);
 
-      expect(screen.getByText('StatisticsPanel.assessments')).toBeInTheDocument();
+      expect(
+        screen.getByText('StatisticsPanel.assessments'),
+      ).toBeInTheDocument();
       expect(screen.getByText('1')).toBeInTheDocument();
     });
 
@@ -120,14 +131,25 @@ describe('StatisticsPanel', () => {
     });
 
     it('should render correct total reference count', () => {
-      const refs = [createMockAnnotation({ id: 'r1' as AnnotationId }), createMockAnnotation({ id: 'r2' as AnnotationId })];
+      const refs = [
+        createMockAnnotation({ id: 'r1' as AnnotationId }),
+        createMockAnnotation({ id: 'r2' as AnnotationId }),
+      ];
 
-      renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
+      renderWithProviders(
+        <StatisticsPanel {...emptyProps} references={refs} />,
+      );
 
-      expect(screen.getByText('StatisticsPanel.references')).toBeInTheDocument();
+      expect(
+        screen.getByText('StatisticsPanel.references'),
+      ).toBeInTheDocument();
       // The references item has the total count as its direct .xynolog-statistics-panel__value child
-      const referencesItem = screen.getByText('StatisticsPanel.references').closest('.xynolog-statistics-panel__item');
-      const totalValue = referencesItem!.querySelector(':scope > .xynolog-statistics-panel__value');
+      const referencesItem = screen
+        .getByText('StatisticsPanel.references')
+        .closest('.xynolog-statistics-panel__item');
+      const totalValue = referencesItem!.querySelector(
+        ':scope > .xynolog-statistics-panel__value',
+      );
       expect(totalValue!.textContent).toBe('2');
     });
   });
@@ -148,14 +170,16 @@ describe('StatisticsPanel', () => {
 
       // Make first call return true, rest false
       mockIsBodyResolved
-        .mockReturnValueOnce(true)  // r1 stub check
+        .mockReturnValueOnce(true) // r1 stub check
         .mockReturnValueOnce(false) // r2 stub check
         .mockReturnValueOnce(false) // r3 stub check
-        .mockReturnValueOnce(true)  // r1 resolved check
+        .mockReturnValueOnce(true) // r1 resolved check
         .mockReturnValueOnce(false) // r2 resolved check
         .mockReturnValueOnce(false); // r3 resolved check
 
-      renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
+      renderWithProviders(
+        <StatisticsPanel {...emptyProps} references={refs} />,
+      );
 
       expect(screen.getByText('StatisticsPanel.stub')).toBeInTheDocument();
       expect(screen.getByText('StatisticsPanel.resolved')).toBeInTheDocument();
@@ -169,7 +193,9 @@ describe('StatisticsPanel', () => {
 
       mockIsBodyResolved.mockReturnValue(true);
 
-      renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
+      renderWithProviders(
+        <StatisticsPanel {...emptyProps} references={refs} />,
+      );
 
       // stub count = 0, resolved count = 2
       expect(screen.getByText('StatisticsPanel.stub')).toBeInTheDocument();
@@ -184,7 +210,9 @@ describe('StatisticsPanel', () => {
 
       mockIsBodyResolved.mockReturnValue(false);
 
-      renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
+      renderWithProviders(
+        <StatisticsPanel {...emptyProps} references={refs} />,
+      );
 
       expect(screen.getByText('StatisticsPanel.stub')).toBeInTheDocument();
       expect(screen.getByText('StatisticsPanel.resolved')).toBeInTheDocument();
@@ -195,9 +223,13 @@ describe('StatisticsPanel', () => {
     it('should not render entity types section when no entity types exist', () => {
       mockGetEntityTypes.mockReturnValue([]);
 
-      const { container } = renderWithProviders(<StatisticsPanel {...emptyProps} />);
+      const { container } = renderWithProviders(
+        <StatisticsPanel {...emptyProps} />,
+      );
 
-      expect(container.querySelector('.xynolog-statistics-panel__entity-types')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-statistics-panel__entity-types'),
+      ).not.toBeInTheDocument();
     });
 
     it('should render entity types with counts', () => {
@@ -212,9 +244,13 @@ describe('StatisticsPanel', () => {
         .mockReturnValueOnce(['Person'])
         .mockReturnValueOnce(['Location']);
 
-      renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
+      renderWithProviders(
+        <StatisticsPanel {...emptyProps} references={refs} />,
+      );
 
-      expect(screen.getByText('StatisticsPanel.entityTypes')).toBeInTheDocument();
+      expect(
+        screen.getByText('StatisticsPanel.entityTypes'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Person')).toBeInTheDocument();
       expect(screen.getByText('Organization')).toBeInTheDocument();
       expect(screen.getByText('Location')).toBeInTheDocument();
@@ -233,14 +269,24 @@ describe('StatisticsPanel', () => {
         .mockReturnValueOnce(['Person'])
         .mockReturnValueOnce(['Person', 'Location']);
 
-      const { container } = renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
+      const { container } = renderWithProviders(
+        <StatisticsPanel {...emptyProps} references={refs} />,
+      );
 
-      const entityItems = container.querySelectorAll('.xynolog-statistics-panel__entity-item');
+      const entityItems = container.querySelectorAll(
+        '.xynolog-statistics-panel__entity-item',
+      );
       expect(entityItems.length).toBe(2);
 
       // First should be Person (count 3), second Location (count 1)
-      expect(entityItems[0].querySelector('.xynolog-statistics-panel__entity-name')!.textContent).toBe('Person');
-      expect(entityItems[1].querySelector('.xynolog-statistics-panel__entity-name')!.textContent).toBe('Location');
+      expect(
+        entityItems[0].querySelector('.xynolog-statistics-panel__entity-name')!
+          .textContent,
+      ).toBe('Person');
+      expect(
+        entityItems[1].querySelector('.xynolog-statistics-panel__entity-name')!
+          .textContent,
+      ).toBe('Location');
     });
   });
 
@@ -248,19 +294,35 @@ describe('StatisticsPanel', () => {
     it('should render all categories with their respective counts simultaneously', () => {
       const props = {
         highlights: [createMockAnnotation({ id: 'h1' as AnnotationId })],
-        comments: [createMockAnnotation({ id: 'c1' as AnnotationId }), createMockAnnotation({ id: 'c2' as AnnotationId })],
-        assessments: [createMockAnnotation({ id: 'a1' as AnnotationId }), createMockAnnotation({ id: 'a2' as AnnotationId }), createMockAnnotation({ id: 'a3' as AnnotationId })],
+        comments: [
+          createMockAnnotation({ id: 'c1' as AnnotationId }),
+          createMockAnnotation({ id: 'c2' as AnnotationId }),
+        ],
+        assessments: [
+          createMockAnnotation({ id: 'a1' as AnnotationId }),
+          createMockAnnotation({ id: 'a2' as AnnotationId }),
+          createMockAnnotation({ id: 'a3' as AnnotationId }),
+        ],
         references: [createMockAnnotation({ id: 'r1' as AnnotationId })],
-        tags: [createMockAnnotation({ id: 't1' as AnnotationId }), createMockAnnotation({ id: 't2' as AnnotationId })],
+        tags: [
+          createMockAnnotation({ id: 't1' as AnnotationId }),
+          createMockAnnotation({ id: 't2' as AnnotationId }),
+        ],
       };
 
       renderWithProviders(<StatisticsPanel {...props} />);
 
       // Check that labels are present
-      expect(screen.getByText('StatisticsPanel.highlights')).toBeInTheDocument();
+      expect(
+        screen.getByText('StatisticsPanel.highlights'),
+      ).toBeInTheDocument();
       expect(screen.getByText('StatisticsPanel.comments')).toBeInTheDocument();
-      expect(screen.getByText('StatisticsPanel.assessments')).toBeInTheDocument();
-      expect(screen.getByText('StatisticsPanel.references')).toBeInTheDocument();
+      expect(
+        screen.getByText('StatisticsPanel.assessments'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('StatisticsPanel.references'),
+      ).toBeInTheDocument();
       expect(screen.getByText('StatisticsPanel.tags')).toBeInTheDocument();
     });
   });

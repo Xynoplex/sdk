@@ -26,7 +26,9 @@ export function useSessionEventSubscriptions(
   },
 ): void {
   const handlersRef = useRef(subscriptions);
-  useEffect(() => { handlersRef.current = subscriptions; });
+  useEffect(() => {
+    handlersRef.current = subscriptions;
+  });
 
   // Stable key derived from the subscribed event names; re-subscribe only when
   // the set changes, not when handlers change.
@@ -43,10 +45,13 @@ export function useSessionEventSubscriptions(
       const channel = eventName as UnscopedChannel;
       const fan = (payload: EventMap[UnscopedChannel]) => {
         const current = handlersRef.current[channel];
-        if (current) (current as (p: EventMap[UnscopedChannel]) => void)(payload);
+        if (current)
+          (current as (p: EventMap[UnscopedChannel]) => void)(payload);
       };
       unsubs.push(subscribeChannel(session.client, channel, fan));
     }
-    return () => { for (const unsub of unsubs) unsub(); };
+    return () => {
+      for (const unsub of unsubs) unsub();
+    };
   }, [eventNames, session]);
 }

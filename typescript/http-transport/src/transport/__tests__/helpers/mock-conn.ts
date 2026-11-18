@@ -32,16 +32,36 @@ export function createSSEStream() {
   let controller!: ReadableStreamDefaultController<Uint8Array>;
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
-    start(c) { controller = c; },
+    start(c) {
+      controller = c;
+    },
   });
   return {
     stream,
     // Swallow enqueue/close after the stream has errored or closed. Aborting a
     // connection errors its stream; a test may go on to push to the retired
     // connection, and that should be a no-op rather than a throw.
-    push: (text: string) => { try { controller.enqueue(encoder.encode(text)); } catch { /* errored/closed */ } },
-    close: () => { try { controller.close(); } catch { /* already errored/closed */ } },
-    error: (e: unknown) => { try { controller.error(e); } catch { /* already errored/closed */ } },
+    push: (text: string) => {
+      try {
+        controller.enqueue(encoder.encode(text));
+      } catch {
+        /* errored/closed */
+      }
+    },
+    close: () => {
+      try {
+        controller.close();
+      } catch {
+        /* already errored/closed */
+      }
+    },
+    error: (e: unknown) => {
+      try {
+        controller.error(e);
+      } catch {
+        /* already errored/closed */
+      }
+    },
   };
 }
 
@@ -69,21 +89,27 @@ export function mockConn({ defer = false }: { defer?: boolean } = {}) {
   const sse = createSSEStream();
   let capturedSignal: AbortSignal | undefined;
   let resolveFetch!: (r: unknown) => void;
-  const fetchPromise = new Promise((res) => { resolveFetch = res; });
-  const response = { ok: true, status: 200, body: sse.stream };
-  mockFetch.mockImplementationOnce((_url: string, opts: { signal?: AbortSignal }) => {
-    capturedSignal = opts.signal;
-    if (capturedSignal) {
-      capturedSignal.addEventListener('abort', () =>
-        sse.error(new DOMException('Aborted', 'AbortError')),
-      );
-    }
-    if (!defer) resolveFetch(response);
-    return fetchPromise;
+  const fetchPromise = new Promise((res) => {
+    resolveFetch = res;
   });
+  const response = { ok: true, status: 200, body: sse.stream };
+  mockFetch.mockImplementationOnce(
+    (_url: string, opts: { signal?: AbortSignal }) => {
+      capturedSignal = opts.signal;
+      if (capturedSignal) {
+        capturedSignal.addEventListener('abort', () =>
+          sse.error(new DOMException('Aborted', 'AbortError')),
+        );
+      }
+      if (!defer) resolveFetch(response);
+      return fetchPromise;
+    },
+  );
   return {
     sse,
     open: () => resolveFetch(response),
-    get aborted() { return capturedSignal?.aborted ?? false; },
+    get aborted() {
+      return capturedSignal?.aborted ?? false;
+    },
   };
 }
