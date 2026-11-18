@@ -413,7 +413,7 @@
     "generated/Xynolog/Internal/Generated/TimingSettings.hs": "6b19e592fb7a733ff6d44dcc211d72e343ba2f70c7d1c8e2f70d3b47a9db3ca5",
     "generated/Xynolog/Internal/Generated/UnicodeCase.hs": "591ccb07b6a197882dbe614812ca1b7daece498898ce9af63254c70ea6c77b88",
     "generated/Xynolog/Internal/Generated/WorkerChannels.hs": "aa242bdc59042f12472ded21a6fc2ab1675743d457f103a03cc256f8c7f48e64",
-    "generated/Xynolog/Internal/Generated/xynolog_store_policy.h": "7fc7d435400bedc75845cf370d24bf7331d6a9f66b020cd885b51b474a0e9ced",
+    "generated/Xynolog/Internal/Generated/xynolog_store_policy.h": "1f5f2245c151f2352dd0358b3e75655155008bf6887af071665ee11c3c1de2af",
     "generated/Xynolog/Worker/Types.hs": "ca01ba1672cf17140c018f02583a15729fe7dd1de156d3160ed21f797fdfc8db",
     "internal/Xynolog/Internal/Annotations/Id.hs": "657d5080241e31a0ea7c2f04a1be46d4841137967bf51e7f0b1a17924eb9ea91",
     "internal/Xynolog/Internal/Annotations/Pdf.hs": "890fcdb0edf4aa58c2847090fcd9fde4b9e043fffa4d9eb2a3a9925cfa411952",
