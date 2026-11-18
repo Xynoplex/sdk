@@ -339,25 +339,29 @@ let referred component (reference : Decode.reference) =
     problem "a payload schema refers to %S, which names no component schema"
       target
 
-let rec stamps component (schema : Schema.t) =
-  let read =
-    match schema with
-    | Schema { ref_ = Some reference; _ } -> referred component reference
-    | schema -> schema
-  in
-  match read with
-  | Boolean_schema _ -> []
-  | Schema s ->
-      let own =
+(* The properties [schema] states that begin with "_", and those of each
+   schema it is composed of; a schema that refers to a component is read as
+   that component. *)
+let stamps component (schema : Schema.t) =
+  let rec stamped (schema : Schema.t) =
+    Schema.para
+      ~boolean:(fun _ () -> [])
+      ~schema:(fun s () ->
         List.filter
           (fun name -> String.starts_with ~prefix:"_" name)
           (List.map fst (Option.value s.properties ~default:[]))
-      in
-      own
-      @ List.concat_map (stamps component)
-          (List.concat_map
-             (fun members -> Option.value members ~default:[])
-             [ s.all_of; s.one_of; s.any_of ])
+        @ List.concat_map read
+            (List.concat_map
+               (fun members -> Option.value members ~default:[])
+               [ s.all_of; s.one_of; s.any_of ]))
+      schema
+  and read (part, own) =
+    match part with
+    | Schema.Schema { ref_ = Some reference; _ } ->
+        stamped (referred component reference) ()
+    | _ -> own ()
+  in
+  read (schema, stamped schema)
 
 let required (schema : Schema.t) =
   match schema with

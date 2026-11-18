@@ -89,3 +89,8 @@
  (name swift_sdk)
  (modules swift_sdk)
  (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name schema)
+ (modules schema)
+ (libraries xynolog_codegen alcotest))

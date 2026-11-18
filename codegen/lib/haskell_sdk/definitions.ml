@@ -26,11 +26,11 @@ exception Unresolved of string
 (* [schema] as the models compare and name it: a reference by what it names,
    rewritten by [rewrite] if that names it otherwise, and members in order of
    name. *)
-let rec canonical ~rewrite : Schema.t -> Schema.t = function
-  | Boolean_schema b -> Boolean_schema b
-  | Schema s ->
-      let s = Schema.map (canonical ~rewrite) s in
-      Schema
+let canonical ~rewrite : Schema.t -> Schema.t =
+  Schema.cata
+    ~boolean:(fun b -> Schema.Boolean_schema b)
+    ~schema:(fun s ->
+      Schema.Schema
         {
           s with
           ref_ =
@@ -42,7 +42,7 @@ let rec canonical ~rewrite : Schema.t -> Schema.t = function
               (List.sort (fun (a, _) (b, _) -> String.compare a b))
               s.properties;
           example = Option.map Yojson.Safe.sort s.example;
-        }
+        })
 
 let unchanged (r : Decode.reference) = r.target
 
