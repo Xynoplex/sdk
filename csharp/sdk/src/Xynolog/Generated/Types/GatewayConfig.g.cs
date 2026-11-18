@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(GatewayConfigJsonConverter))]
 public sealed record GatewayConfig
 {
-    public required global::Xynolog.Types.GatewayConfigArchivist Archivist { get; init; }
+    public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
     public required global::Xynolog.Types.GatewayConfigCapacity Capacity { get; init; }
     public required global::Xynolog.Types.GatewayConfigIdentity Identity { get; init; }
     public required global::Xynolog.Types.KbIdentity Kb { get; init; }
@@ -27,7 +27,7 @@ internal sealed class GatewayConfigJsonConverter : global::System.Text.Json.Seri
         global::Xynolog.Serialization.WireJson.Validate("GatewayConfig", root);
         return new GatewayConfig
         {
-            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatewayConfigArchivist>(root, "archivist", options),
+            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceAddress>(root, "archivist", options),
             Capacity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatewayConfigCapacity>(root, "capacity", options),
             Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatewayConfigIdentity>(root, "identity", options),
             Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),

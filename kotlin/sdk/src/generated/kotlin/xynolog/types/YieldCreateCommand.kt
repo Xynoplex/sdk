@@ -83,7 +83,7 @@ public data class YieldCreateCommand(
      * The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job.
      */
     @SerialName("generator")
-    public val generator: YieldCreateCommandGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
 ) {
     /** How Java makes a `YieldCreateCommand`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -101,7 +101,7 @@ public data class YieldCreateCommand(
         private var isDraft: Boolean? = null
         private var generatedFrom: YieldCreateCommandGeneratedFrom? = null
         private var generationPrompt: String? = null
-        private var generator: YieldCreateCommandGenerator? = null
+        private var generator: OneOrMoreAgents? = null
 
         @JvmExposeBoxed
         public fun userId(userId: UserId?): Builder {
@@ -145,7 +145,7 @@ public data class YieldCreateCommand(
             return this
         }
 
-        public fun generator(generator: YieldCreateCommandGenerator?): Builder {
+        public fun generator(generator: OneOrMoreAgents?): Builder {
             this.generator = generator
             return this
         }

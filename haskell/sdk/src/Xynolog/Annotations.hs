@@ -92,7 +92,7 @@ built wall resource motivation anchor target generator body = do
   instant <- wall
   let created=Text.pack (formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%3QZ" instant)
   pure (Annotation AnnotationU40_contextHttpU3a_U2f_U2f_wwwU2e_w3U2e_orgU2f_nsU2f_annoU2e_jsonld body created Nothing
-    (AnnotationGeneratorBranch1 <$> generator) identity Nothing motivation (AnnotationTargetInlineBranch2 target) AnnotationTypeAnnotation Nothing mempty)
+    (OneOrMoreAgentsBranch1 <$> generator) identity Nothing motivation (AnnotationTargetInlineBranch2 target) AnnotationTypeAnnotation Nothing mempty)
 
 annotationOfResource :: IO UTCTime -> ResourceId -> Motivation -> Maybe Agent -> Maybe AnnotationBodies -> IO Annotation
 annotationOfResource wall resource motivation generator body =

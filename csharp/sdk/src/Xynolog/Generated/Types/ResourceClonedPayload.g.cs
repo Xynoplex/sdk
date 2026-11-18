@@ -16,7 +16,7 @@ public sealed record ResourceClonedPayload
     public required string Name { get; init; }
     public required global::Xynolog.Identifiers.ResourceId ParentResourceId { get; init; }
     public string? StorageUri { get; init; }
-    public global::Xynolog.Types.ResourceClonedPayloadWasAttributedTo? WasAttributedTo { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
 }
 
 internal sealed class ResourceClonedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceClonedPayload>
@@ -37,7 +37,7 @@ internal sealed class ResourceClonedPayloadJsonConverter : global::System.Text.J
             Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
             ParentResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "parentResourceId", options),
             StorageUri = root.TryGetProperty("storageUri", out var p8) ? global::Xynolog.Serialization.WireJson.Read<string>(p8, options) : null,
-            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p9) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ResourceClonedPayloadWasAttributedTo>(p9, options) : null,
+            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p9) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p9, options) : null,
         };
     }
 

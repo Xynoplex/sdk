@@ -14,13 +14,13 @@ public sealed record ResourceCreatedPayload
     public required string Format { get; init; }
     public global::Xynolog.Types.ResourceCreatedPayloadGeneratedFrom? GeneratedFrom { get; init; }
     public string? GenerationPrompt { get; init; }
-    public global::Xynolog.Types.ResourceCreatedPayloadGenerator? Generator { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
     public bool? IsDraft { get; init; }
     public global::Xynolog.Identifiers.JobId? JobId { get; init; }
     public string? Language { get; init; }
     public required string Name { get; init; }
     public string? StorageUri { get; init; }
-    public global::Xynolog.Types.ResourceCreatedPayloadWasAttributedTo? WasAttributedTo { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
 }
 
 internal sealed class ResourceCreatedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceCreatedPayload>
@@ -39,13 +39,13 @@ internal sealed class ResourceCreatedPayloadJsonConverter : global::System.Text.
             Format = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "format", options),
             GeneratedFrom = root.TryGetProperty("generatedFrom", out var p5) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ResourceCreatedPayloadGeneratedFrom>(p5, options) : null,
             GenerationPrompt = root.TryGetProperty("generationPrompt", out var p6) ? global::Xynolog.Serialization.WireJson.Read<string>(p6, options) : null,
-            Generator = root.TryGetProperty("generator", out var p7) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ResourceCreatedPayloadGenerator>(p7, options) : null,
+            Generator = root.TryGetProperty("generator", out var p7) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p7, options) : null,
             IsDraft = root.TryGetProperty("isDraft", out var p8) ? global::Xynolog.Serialization.WireJson.Read<bool>(p8, options) : null,
             JobId = root.TryGetProperty("jobId", out var p9) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.JobId>(p9, options) : null,
             Language = root.TryGetProperty("language", out var p10) ? global::Xynolog.Serialization.WireJson.Read<string>(p10, options) : null,
             Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
             StorageUri = root.TryGetProperty("storageUri", out var p12) ? global::Xynolog.Serialization.WireJson.Read<string>(p12, options) : null,
-            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p13) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ResourceCreatedPayloadWasAttributedTo>(p13, options) : null,
+            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p13) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p13, options) : null,
         };
     }
 

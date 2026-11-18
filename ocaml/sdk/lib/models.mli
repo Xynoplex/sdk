@@ -47,6 +47,7 @@ val bind_body_operation : [ `BindBodyOperation ] descriptor
 val bind_body_updated : [ `BindBodyUpdated ] descriptor
 val bind_initiate_command : [ `BindInitiateCommand ] descriptor
 val bind_update_body_command : [ `BindUpdateBodyCommand ] descriptor
+val body_operation : [ `BodyOperation ] descriptor
 val body_operation_add : [ `BodyOperationAdd ] descriptor
 val body_operation_remove : [ `BodyOperationRemove ] descriptor
 val body_operation_replace : [ `BodyOperationReplace ] descriptor
@@ -123,6 +124,8 @@ val error_response : [ `ErrorResponse ] descriptor
 val event_metadata : [ `EventMetadata ] descriptor
 val extracted_text : [ `ExtractedText ] descriptor
 val extraction_declined : [ `ExtractionDeclined ] descriptor
+val extraction_declined_reason : [ `ExtractionDeclinedReason ] descriptor
+val extraction_method : [ `ExtractionMethod ] descriptor
 val extraction_outcome : [ `ExtractionOutcome ] descriptor
 val failure_class : [ `FailureClass ] descriptor
 val file_entry : [ `FileEntry ] descriptor
@@ -264,7 +267,12 @@ val motivation : [ `Motivation ] descriptor
 val neo4j_graph_config : [ `Neo4jGraphConfig ] descriptor
 val neptune_graph_config : [ `NeptuneGraphConfig ] descriptor
 val new_knowledge_base : [ `NewKnowledgeBase ] descriptor
+val ocr_confidence : [ `OcrConfidence ] descriptor
 val ollama_embedding_config : [ `OllamaEmbeddingConfig ] descriptor
+val one_or_more_agents : [ `OneOrMoreAgents ] descriptor
+val one_or_more_strings : [ `OneOrMoreStrings ] descriptor
+val one_or_more_uris : [ `OneOrMoreUris ] descriptor
+val pdf_class : [ `PdfClass ] descriptor
 val pdf_text_item : [ `PdfTextItem ] descriptor
 val persisted_event_id : [ `PersistedEventId ] descriptor
 val principal_profile_command : [ `PrincipalProfileCommand ] descriptor
@@ -293,6 +301,8 @@ val resource_view : [ `ResourceView ] descriptor
 val scored_resource : [ `ScoredResource ] descriptor
 val selector : [ `Selector ] descriptor
 val semantic_match : [ `SemanticMatch ] descriptor
+val service_address : [ `ServiceAddress ] descriptor
+val service_identity : [ `ServiceIdentity ] descriptor
 val session_joined_event : [ `SessionJoinedEvent ] descriptor
 val session_left_event : [ `SessionLeftEvent ] descriptor
 val settings_hover_delay_changed_event : [ `SettingsHoverDelayChangedEvent ] descriptor
@@ -346,3 +356,4 @@ val yield_job_queued_event : [ `YieldJobQueuedEvent ] descriptor
 val yield_job_result : [ `YieldJobResult ] descriptor
 val yield_update_command : [ `YieldUpdateCommand ] descriptor
 val yield_update_ok : [ `YieldUpdateOk ] descriptor
+val yielded_resource : [ `YieldedResource ] descriptor

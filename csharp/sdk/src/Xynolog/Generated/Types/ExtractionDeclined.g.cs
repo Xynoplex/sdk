@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(ExtractionDeclinedJsonConverter))]
 public sealed record ExtractionDeclined
 {
-    public required global::Xynolog.Types.ExtractionDeclinedDeclined Declined { get; init; }
+    public required global::Xynolog.Types.ExtractionDeclinedReason Declined { get; init; }
     public string Kind => "declined";
 }
 
@@ -20,7 +20,7 @@ internal sealed class ExtractionDeclinedJsonConverter : global::System.Text.Json
         global::Xynolog.Serialization.WireJson.Validate("ExtractionDeclined", root);
         return new ExtractionDeclined
         {
-            Declined = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ExtractionDeclinedDeclined>(root, "declined", options),
+            Declined = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ExtractionDeclinedReason>(root, "declined", options),
         };
     }
 

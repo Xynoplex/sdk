@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextDeclinedEntryJsonConverter))]
 public sealed record AnchoredTextDeclinedEntry
 {
-    public required global::Xynolog.Types.AnchoredTextDeclinedEntryDeclined Declined { get; init; }
+    public required global::Xynolog.Types.ExtractionDeclinedReason Declined { get; init; }
     public required string Stamp { get; init; }
     public required long V { get; init; }
 }
@@ -21,7 +21,7 @@ internal sealed class AnchoredTextDeclinedEntryJsonConverter : global::System.Te
         global::Xynolog.Serialization.WireJson.Validate("AnchoredTextDeclinedEntry", root);
         return new AnchoredTextDeclinedEntry
         {
-            Declined = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnchoredTextDeclinedEntryDeclined>(root, "declined", options),
+            Declined = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ExtractionDeclinedReason>(root, "declined", options),
             Stamp = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "stamp", options),
             V = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "v", options),
         };

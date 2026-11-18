@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(UpdateAnnotationBodyRequestJsonConverter))]
 public sealed record UpdateAnnotationBodyRequest
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.UpdateAnnotationBodyRequestOperationsItem> Operations { get; init; }
+    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation> Operations { get; init; }
     public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }
 
@@ -20,7 +20,7 @@ internal sealed class UpdateAnnotationBodyRequestJsonConverter : global::System.
         global::Xynolog.Serialization.WireJson.Validate("UpdateAnnotationBodyRequest", root);
         return new UpdateAnnotationBodyRequest
         {
-            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.UpdateAnnotationBodyRequestOperationsItem>>(root, "operations", options),
+            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation>>(root, "operations", options),
             ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
         };
     }

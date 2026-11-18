@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(YieldCloneCreatedJsonConverter))]
 public sealed record YieldCloneCreated
 {
-    public required global::Xynolog.Types.YieldCloneCreatedResponse Response { get; init; }
+    public required global::Xynolog.Types.YieldedResource Response { get; init; }
 }
 
 internal sealed class YieldCloneCreatedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<YieldCloneCreated>
@@ -19,7 +19,7 @@ internal sealed class YieldCloneCreatedJsonConverter : global::System.Text.Json.
         global::Xynolog.Serialization.WireJson.Validate("YieldCloneCreated", root);
         return new YieldCloneCreated
         {
-            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.YieldCloneCreatedResponse>(root, "response", options),
+            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.YieldedResource>(root, "response", options),
         };
     }
 

@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(YieldCreateOkJsonConverter))]
 public sealed record YieldCreateOk
 {
-    public required global::Xynolog.Types.YieldCreateOkResponse Response { get; init; }
+    public required global::Xynolog.Types.YieldedResource Response { get; init; }
 }
 
 internal sealed class YieldCreateOkJsonConverter : global::System.Text.Json.Serialization.JsonConverter<YieldCreateOk>
@@ -19,7 +19,7 @@ internal sealed class YieldCreateOkJsonConverter : global::System.Text.Json.Seri
         global::Xynolog.Serialization.WireJson.Validate("YieldCreateOk", root);
         return new YieldCreateOk
         {
-            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.YieldCreateOkResponse>(root, "response", options),
+            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.YieldedResource>(root, "response", options),
         };
     }
 

@@ -747,26 +747,37 @@ module Event_metadata = struct
   let of_model model = project (object_fields (Models.json model))
 end
 module Extracted_text = struct
-  type t = { text : string; items : Yojson.Raw.t; kind : string; method_ : string; pdf_class : string Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
+  type t = { text : string; items : Yojson.Raw.t; kind : string; method_ : Yojson.Raw.t; pdf_class : Yojson.Raw.t Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
   let project fields =
     {
       text = required string "text" fields;
       items = required identity "items" fields;
       kind = required string "kind" fields;
-      method_ = required string "method" fields;
-      pdf_class = optional string "pdfClass" fields;
+      method_ = required identity "method" fields;
+      pdf_class = optional identity "pdfClass" fields;
       ocr_confidence = optional identity "ocrConfidence" fields;
       unread_pages = optional identity "unreadPages" fields;
       extra = extra ["text"; "items"; "kind"; "method"; "pdfClass"; "ocrConfidence"; "unreadPages"] fields;
     }
   let of_model model = project (object_fields (Models.json model))
 end
+module Ocr_confidence = struct
+  type t = { mean : Yojson.Raw.t; low_confidence_words : Yojson.Raw.t; total_words : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+  let project fields =
+    {
+      mean = required identity "mean" fields;
+      low_confidence_words = required identity "lowConfidenceWords" fields;
+      total_words = required identity "totalWords" fields;
+      extra = extra ["mean"; "lowConfidenceWords"; "totalWords"] fields;
+    }
+  let of_model model = project (object_fields (Models.json model))
+end
 module Extraction_declined = struct
-  type t = { kind : string; declined : string; extra : (string * Yojson.Raw.t) list }
+  type t = { kind : string; declined : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   let project fields =
     {
       kind = required string "kind" fields;
-      declined = required string "declined" fields;
+      declined = required identity "declined" fields;
       extra = extra ["kind"; "declined"] fields;
     }
   let of_model model = project (object_fields (Models.json model))
@@ -2397,6 +2408,15 @@ module Yield_update_ok = struct
     }
   let of_model model = project (object_fields (Models.json model))
 end
+module Yielded_resource = struct
+  type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+  let project fields =
+    {
+      resource_id = required identity "resourceId" fields;
+      extra = extra ["resourceId"] fields;
+    }
+  let of_model model = project (object_fields (Models.json model))
+end
 module Bus_event_message = struct
   type t = { event : string; id : Yojson.Raw.t; data : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   let project fields =
@@ -3130,6 +3150,25 @@ module Archivist_config = struct
     }
   let of_model model = project (object_fields (Models.json model))
 end
+module Service_identity = struct
+  type t = { issuer : string; extra : (string * Yojson.Raw.t) list }
+  let project fields =
+    {
+      issuer = required string "issuer" fields;
+      extra = extra ["issuer"] fields;
+    }
+  let of_model model = project (object_fields (Models.json model))
+end
+module Service_address = struct
+  type t = { host : string; port : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+  let project fields =
+    {
+      host = required string "host" fields;
+      port = required identity "port" fields;
+      extra = extra ["host"; "port"] fields;
+    }
+  let of_model model = project (object_fields (Models.json model))
+end
 module Resource_annotations = struct
   type t = { resource_id : Yojson.Raw.t; annotations : Yojson.Raw.t; version : Yojson.Raw.t; updated_at : string; extra : (string * Yojson.Raw.t) list }
   let project fields =
@@ -3201,15 +3240,15 @@ module Storage_uri_entry = struct
   let of_model model = project (object_fields (Models.json model))
 end
 module Anchored_text_extracted_entry = struct
-  type t = { v : Yojson.Raw.t; stamp : string; text : string; lines : Yojson.Raw.t; method_ : string; pdf_class : string Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
+  type t = { v : Yojson.Raw.t; stamp : string; text : string; lines : Yojson.Raw.t; method_ : Yojson.Raw.t; pdf_class : Yojson.Raw.t Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
   let project fields =
     {
       v = required identity "v" fields;
       stamp = required string "stamp" fields;
       text = required string "text" fields;
       lines = required identity "lines" fields;
-      method_ = required string "method" fields;
-      pdf_class = optional string "pdfClass" fields;
+      method_ = required identity "method" fields;
+      pdf_class = optional identity "pdfClass" fields;
       ocr_confidence = optional identity "ocrConfidence" fields;
       unread_pages = optional identity "unreadPages" fields;
       extra = extra ["v"; "stamp"; "text"; "lines"; "method"; "pdfClass"; "ocrConfidence"; "unreadPages"] fields;
@@ -3217,12 +3256,12 @@ module Anchored_text_extracted_entry = struct
   let of_model model = project (object_fields (Models.json model))
 end
 module Anchored_text_declined_entry = struct
-  type t = { v : Yojson.Raw.t; stamp : string; declined : string; extra : (string * Yojson.Raw.t) list }
+  type t = { v : Yojson.Raw.t; stamp : string; declined : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   let project fields =
     {
       v = required identity "v" fields;
       stamp = required string "stamp" fields;
-      declined = required string "declined" fields;
+      declined = required identity "declined" fields;
       extra = extra ["v"; "stamp"; "declined"] fields;
     }
   let of_model model = project (object_fields (Models.json model))

@@ -280,11 +280,15 @@ module Event_metadata : sig
   val of_model : [ `EventMetadata ] Models.t -> t
 end
 module Extracted_text : sig
-  type t = { text : string; items : Yojson.Raw.t; kind : string; method_ : string; pdf_class : string Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
+  type t = { text : string; items : Yojson.Raw.t; kind : string; method_ : Yojson.Raw.t; pdf_class : Yojson.Raw.t Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `ExtractedText ] Models.t -> t
 end
+module Ocr_confidence : sig
+  type t = { mean : Yojson.Raw.t; low_confidence_words : Yojson.Raw.t; total_words : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+  val of_model : [ `OcrConfidence ] Models.t -> t
+end
 module Extraction_declined : sig
-  type t = { kind : string; declined : string; extra : (string * Yojson.Raw.t) list }
+  type t = { kind : string; declined : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `ExtractionDeclined ] Models.t -> t
 end
 module File_entry : sig
@@ -831,6 +835,10 @@ module Yield_update_ok : sig
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `YieldUpdateOk ] Models.t -> t
 end
+module Yielded_resource : sig
+  type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+  val of_model : [ `YieldedResource ] Models.t -> t
+end
 module Bus_event_message : sig
   type t = { event : string; id : Yojson.Raw.t; data : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `BusEventMessage ] Models.t -> t
@@ -1059,6 +1067,14 @@ module Archivist_config : sig
   type t = { gateway_url : string; identity : Yojson.Raw.t; root : string; state_home : string; anchored_text_dir : string; engines : Yojson.Raw.t; port : Yojson.Raw.t; skip_rebuild : bool; staging : Yojson.Raw.t; log_level : Yojson.Raw.t; log_format : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `ArchivistConfig ] Models.t -> t
 end
+module Service_identity : sig
+  type t = { issuer : string; extra : (string * Yojson.Raw.t) list }
+  val of_model : [ `ServiceIdentity ] Models.t -> t
+end
+module Service_address : sig
+  type t = { host : string; port : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+  val of_model : [ `ServiceAddress ] Models.t -> t
+end
 module Resource_annotations : sig
   type t = { resource_id : Yojson.Raw.t; annotations : Yojson.Raw.t; version : Yojson.Raw.t; updated_at : string; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `ResourceAnnotations ] Models.t -> t
@@ -1088,11 +1104,11 @@ module Storage_uri_entry : sig
   val of_model : [ `StorageUriEntry ] Models.t -> t
 end
 module Anchored_text_extracted_entry : sig
-  type t = { v : Yojson.Raw.t; stamp : string; text : string; lines : Yojson.Raw.t; method_ : string; pdf_class : string Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
+  type t = { v : Yojson.Raw.t; stamp : string; text : string; lines : Yojson.Raw.t; method_ : Yojson.Raw.t; pdf_class : Yojson.Raw.t Types.presence; ocr_confidence : Yojson.Raw.t Types.presence; unread_pages : Yojson.Raw.t Types.presence; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `AnchoredTextExtractedEntry ] Models.t -> t
 end
 module Anchored_text_declined_entry : sig
-  type t = { v : Yojson.Raw.t; stamp : string; declined : string; extra : (string * Yojson.Raw.t) list }
+  type t = { v : Yojson.Raw.t; stamp : string; declined : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
   val of_model : [ `AnchoredTextDeclinedEntry ] Models.t -> t
 end
 module Anchored_text_entries : sig

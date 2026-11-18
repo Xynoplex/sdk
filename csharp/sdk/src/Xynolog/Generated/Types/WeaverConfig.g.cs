@@ -7,11 +7,11 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(WeaverConfigJsonConverter))]
 public sealed record WeaverConfig
 {
-    public required global::Xynolog.Types.WeaverConfigArchivist Archivist { get; init; }
+    public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
     public required string CursorsPath { get; init; }
     public required string GatewayUrl { get; init; }
     public required global::Xynolog.Types.GraphConfig Graph { get; init; }
-    public required global::Xynolog.Types.WeaverConfigIdentity Identity { get; init; }
+    public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
     public required global::Xynolog.Types.KbIdentity Kb { get; init; }
     public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
     public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
@@ -27,11 +27,11 @@ internal sealed class WeaverConfigJsonConverter : global::System.Text.Json.Seria
         global::Xynolog.Serialization.WireJson.Validate("WeaverConfig", root);
         return new WeaverConfig
         {
-            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.WeaverConfigArchivist>(root, "archivist", options),
+            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceAddress>(root, "archivist", options),
             CursorsPath = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "cursorsPath", options),
             GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
             Graph = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GraphConfig>(root, "graph", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.WeaverConfigIdentity>(root, "identity", options),
+            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceIdentity>(root, "identity", options),
             Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
             LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
             LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),

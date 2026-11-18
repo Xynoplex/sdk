@@ -7,12 +7,12 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(SmelterConfigJsonConverter))]
 public sealed record SmelterConfig
 {
-    public required global::Xynolog.Types.SmelterConfigArchivist Archivist { get; init; }
+    public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
     public required global::Xynolog.Types.SmelterConfigChunking Chunking { get; init; }
     public required string CursorsPath { get; init; }
     public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
     public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.SmelterConfigIdentity Identity { get; init; }
+    public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
     public required global::Xynolog.Types.KbIdentity Kb { get; init; }
     public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
     public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
@@ -30,12 +30,12 @@ internal sealed class SmelterConfigJsonConverter : global::System.Text.Json.Seri
         global::Xynolog.Serialization.WireJson.Validate("SmelterConfig", root);
         return new SmelterConfig
         {
-            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SmelterConfigArchivist>(root, "archivist", options),
+            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceAddress>(root, "archivist", options),
             Chunking = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SmelterConfigChunking>(root, "chunking", options),
             CursorsPath = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "cursorsPath", options),
             Embedding = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.EmbeddingConfig>(root, "embedding", options),
             GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SmelterConfigIdentity>(root, "identity", options),
+            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceIdentity>(root, "identity", options),
             Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
             LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
             LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),

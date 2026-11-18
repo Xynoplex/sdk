@@ -75,14 +75,14 @@ public data class ResourceCreatedPayload(
     @SerialName("generationPrompt")
     public val generationPrompt: String? = null,
     @SerialName("generator")
-    public val generator: ResourceCreatedPayloadGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
     @SerialName("creator")
     public val creator: Agent? = null,
     /**
      * PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
      */
     @SerialName("wasAttributedTo")
-    public val wasAttributedTo: ResourceCreatedPayloadWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
 ) {
     /** How Java makes a `ResourceCreatedPayload`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -98,9 +98,9 @@ public data class ResourceCreatedPayload(
         private var jobId: JobId? = null
         private var generatedFrom: ResourceCreatedPayloadGeneratedFrom? = null
         private var generationPrompt: String? = null
-        private var generator: ResourceCreatedPayloadGenerator? = null
+        private var generator: OneOrMoreAgents? = null
         private var creator: Agent? = null
-        private var wasAttributedTo: ResourceCreatedPayloadWasAttributedTo? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
 
         public fun contentByteSize(contentByteSize: Long?): Builder {
             this.contentByteSize = contentByteSize
@@ -143,7 +143,7 @@ public data class ResourceCreatedPayload(
             return this
         }
 
-        public fun generator(generator: ResourceCreatedPayloadGenerator?): Builder {
+        public fun generator(generator: OneOrMoreAgents?): Builder {
             this.generator = generator
             return this
         }
@@ -153,7 +153,7 @@ public data class ResourceCreatedPayload(
             return this
         }
 
-        public fun wasAttributedTo(wasAttributedTo: ResourceCreatedPayloadWasAttributedTo?): Builder {
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder {
             this.wasAttributedTo = wasAttributedTo
             return this
         }

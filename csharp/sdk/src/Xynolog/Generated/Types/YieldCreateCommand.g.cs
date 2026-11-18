@@ -15,7 +15,7 @@ public sealed record YieldCreateCommand
     public required string Format { get; init; }
     public global::Xynolog.Types.YieldCreateCommandGeneratedFrom? GeneratedFrom { get; init; }
     public string? GenerationPrompt { get; init; }
-    public global::Xynolog.Types.YieldCreateCommandGenerator? Generator { get; init; }
+    public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
     public bool? IsDraft { get; init; }
     public global::Xynolog.Identifiers.JobId? JobId { get; init; }
     public string? Language { get; init; }
@@ -40,7 +40,7 @@ internal sealed class YieldCreateCommandJsonConverter : global::System.Text.Json
             Format = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "format", options),
             GeneratedFrom = root.TryGetProperty("generatedFrom", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.YieldCreateCommandGeneratedFrom>(p6, options) : null,
             GenerationPrompt = root.TryGetProperty("generationPrompt", out var p7) ? global::Xynolog.Serialization.WireJson.Read<string>(p7, options) : null,
-            Generator = root.TryGetProperty("generator", out var p8) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.YieldCreateCommandGenerator>(p8, options) : null,
+            Generator = root.TryGetProperty("generator", out var p8) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p8, options) : null,
             IsDraft = root.TryGetProperty("isDraft", out var p9) ? global::Xynolog.Serialization.WireJson.Read<bool>(p9, options) : null,
             JobId = root.TryGetProperty("jobId", out var p10) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.JobId>(p10, options) : null,
             Language = root.TryGetProperty("language", out var p11) ? global::Xynolog.Serialization.WireJson.Read<string>(p11, options) : null,

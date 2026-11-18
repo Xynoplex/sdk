@@ -54,7 +54,7 @@ public data class ScoredResource(
      * Type(s) of the resource (IRIs/CURIEs via @context).
      */
     @SerialName("@type")
-    public val type: ScoredResourceType? = null,
+    public val type: OneOrMoreStrings? = null,
     @SerialName("name")
     public val name: String,
     @SerialName("description")
@@ -68,7 +68,7 @@ public data class ScoredResource(
      * Topics (IRIs or strings).
      */
     @SerialName("about")
-    public val about: ScoredResourceAbout? = null,
+    public val about: OneOrMoreStrings? = null,
     /**
      * Equivalent/authoritative references.
      */
@@ -95,17 +95,17 @@ public data class ScoredResource(
      * W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
      */
     @SerialName("wasAttributedTo")
-    public val wasAttributedTo: ScoredResourceWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
     /**
      * Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
      */
     @SerialName("generator")
-    public val generator: ScoredResourceGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
     /**
      * Profile/shape URI this resource description conforms to.
      */
     @SerialName("conformsTo")
-    public val conformsTo: ScoredResourceConformsTo? = null,
+    public val conformsTo: OneOrMoreUris? = null,
     /**
      * Convenience set summarizing media types across representations.
      */
@@ -166,10 +166,10 @@ public data class ScoredResource(
         private val name: String,
         private val representations: ScoredResourceRepresentations,
     ) {
-        private var type: ScoredResourceType? = null
+        private var type: OneOrMoreStrings? = null
         private var description: String? = null
         private var identifier: ScoredResourceIdentifier? = null
-        private var about: ScoredResourceAbout? = null
+        private var about: OneOrMoreStrings? = null
         private var sameAs: kotlin.collections.List<String>? = null
         private var isPartOf: kotlin.collections.List<String>? = null
         private var hasPart: kotlin.collections.List<String>? = null
@@ -178,9 +178,9 @@ public data class ScoredResource(
         private var dateCreated: String? = null
         private var dateModified: String? = null
         private var wasDerivedFrom: ScoredResourceWasDerivedFrom? = null
-        private var wasAttributedTo: ScoredResourceWasAttributedTo? = null
-        private var generator: ScoredResourceGenerator? = null
-        private var conformsTo: ScoredResourceConformsTo? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
+        private var generator: OneOrMoreAgents? = null
+        private var conformsTo: OneOrMoreUris? = null
         private var availableFormats: kotlin.collections.List<String>? = null
         private var archived: Boolean? = null
         private var entityTypes: kotlin.collections.List<String>? = null
@@ -191,7 +191,7 @@ public data class ScoredResource(
         private var score: Double? = null
         private var matchReason: String? = null
 
-        public fun type(type: ScoredResourceType?): Builder {
+        public fun type(type: OneOrMoreStrings?): Builder {
             this.type = type
             return this
         }
@@ -206,7 +206,7 @@ public data class ScoredResource(
             return this
         }
 
-        public fun about(about: ScoredResourceAbout?): Builder {
+        public fun about(about: OneOrMoreStrings?): Builder {
             this.about = about
             return this
         }
@@ -251,17 +251,17 @@ public data class ScoredResource(
             return this
         }
 
-        public fun wasAttributedTo(wasAttributedTo: ScoredResourceWasAttributedTo?): Builder {
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder {
             this.wasAttributedTo = wasAttributedTo
             return this
         }
 
-        public fun generator(generator: ScoredResourceGenerator?): Builder {
+        public fun generator(generator: OneOrMoreAgents?): Builder {
             this.generator = generator
             return this
         }
 
-        public fun conformsTo(conformsTo: ScoredResourceConformsTo?): Builder {
+        public fun conformsTo(conformsTo: OneOrMoreUris?): Builder {
             this.conformsTo = conformsTo
             return this
         }

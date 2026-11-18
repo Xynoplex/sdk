@@ -40,16 +40,14 @@ public data class BodyOperationReplace(
     @EncodeDefault
     public val op: BodyOperationReplaceOp = BodyOperationReplaceOp.Replace,
     @SerialName("oldItem")
-    public val oldItem: BodyOperationReplaceOldItem,
+    public val oldItem: AnnotationBody,
     @SerialName("newItem")
-    public val newItem: BodyOperationReplaceNewItem,
-) : AnnotationBodyUpdatedPayloadOperationsItem,
-    MarkUpdateBodyCommandOperationsItem,
-    UpdateAnnotationBodyRequestOperationsItem {
+    public val newItem: AnnotationBody,
+) : BodyOperation {
     /** How Java makes a `BodyOperationReplace`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val oldItem: BodyOperationReplaceOldItem,
-        private val newItem: BodyOperationReplaceNewItem,
+        private val oldItem: AnnotationBody,
+        private val newItem: AnnotationBody,
     ) {
         public fun build(): BodyOperationReplace = BodyOperationReplace(oldItem = oldItem, newItem = newItem)
     }
@@ -57,6 +55,6 @@ public data class BodyOperationReplace(
     public companion object {
         /** A builder of a `BodyOperationReplace` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(oldItem: BodyOperationReplaceOldItem, newItem: BodyOperationReplaceNewItem): Builder = Builder(oldItem, newItem)
+        public fun builder(oldItem: AnnotationBody, newItem: AnnotationBody): Builder = Builder(oldItem, newItem)
     }
 }

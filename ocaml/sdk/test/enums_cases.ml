@@ -42,6 +42,28 @@ let () =
   Alcotest.(check string) "Durability_evidence encode" "probe-unreachable" (Model.to_string Model.Probe_unreachable);
   Alcotest.(check bool) "Durability_evidence decode" true (Model.of_string "probe-unreachable" = Some Model.Probe_unreachable);
   Alcotest.(check bool) "Durability_evidence rejects unknown values" true (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Extraction_declined_reason in
+  Alcotest.(check string) "Extraction_declined_reason encode" "no-text-layer" (Model.to_string Model.No_text_layer);
+  Alcotest.(check bool) "Extraction_declined_reason decode" true (Model.of_string "no-text-layer" = Some Model.No_text_layer);
+  Alcotest.(check string) "Extraction_declined_reason encode" "encrypted" (Model.to_string Model.Encrypted);
+  Alcotest.(check bool) "Extraction_declined_reason decode" true (Model.of_string "encrypted" = Some Model.Encrypted);
+  Alcotest.(check string) "Extraction_declined_reason encode" "corrupt" (Model.to_string Model.Corrupt);
+  Alcotest.(check bool) "Extraction_declined_reason decode" true (Model.of_string "corrupt" = Some Model.Corrupt);
+  Alcotest.(check string) "Extraction_declined_reason encode" "too-large" (Model.to_string Model.Too_large);
+  Alcotest.(check bool) "Extraction_declined_reason decode" true (Model.of_string "too-large" = Some Model.Too_large);
+  Alcotest.(check bool) "Extraction_declined_reason rejects unknown values" true (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Extraction_method in
+  Alcotest.(check string) "Extraction_method encode" "text-passthrough" (Model.to_string Model.Text_passthrough);
+  Alcotest.(check bool) "Extraction_method decode" true (Model.of_string "text-passthrough" = Some Model.Text_passthrough);
+  Alcotest.(check string) "Extraction_method encode" "pdf-text-layer" (Model.to_string Model.Pdf_text_layer);
+  Alcotest.(check bool) "Extraction_method decode" true (Model.of_string "pdf-text-layer" = Some Model.Pdf_text_layer);
+  Alcotest.(check string) "Extraction_method encode" "table" (Model.to_string Model.Table);
+  Alcotest.(check bool) "Extraction_method decode" true (Model.of_string "table" = Some Model.Table);
+  Alcotest.(check string) "Extraction_method encode" "form" (Model.to_string Model.Form);
+  Alcotest.(check bool) "Extraction_method decode" true (Model.of_string "form" = Some Model.Form);
+  Alcotest.(check string) "Extraction_method encode" "ocr" (Model.to_string Model.Ocr);
+  Alcotest.(check bool) "Extraction_method decode" true (Model.of_string "ocr" = Some Model.Ocr);
+  Alcotest.(check bool) "Extraction_method rejects unknown values" true (Model.of_string "" = None);
   let module Model = Xynolog.Enums.Failure_class in
   Alcotest.(check string) "Failure_class encode" "transient" (Model.to_string Model.Transient);
   Alcotest.(check bool) "Failure_class decode" true (Model.of_string "transient" = Some Model.Transient);
@@ -86,6 +108,22 @@ let () =
   Alcotest.(check string) "Motivation encode" "tagging" (Model.to_string Model.Tagging);
   Alcotest.(check bool) "Motivation decode" true (Model.of_string "tagging" = Some Model.Tagging);
   Alcotest.(check bool) "Motivation rejects unknown values" true (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Pdf_class in
+  Alcotest.(check string) "Pdf_class encode" "A" (Model.to_string Model.A);
+  Alcotest.(check bool) "Pdf_class decode" true (Model.of_string "A" = Some Model.A);
+  Alcotest.(check string) "Pdf_class encode" "B" (Model.to_string Model.B);
+  Alcotest.(check bool) "Pdf_class decode" true (Model.of_string "B" = Some Model.B);
+  Alcotest.(check string) "Pdf_class encode" "C" (Model.to_string Model.C);
+  Alcotest.(check bool) "Pdf_class decode" true (Model.of_string "C" = Some Model.C);
+  Alcotest.(check string) "Pdf_class encode" "D" (Model.to_string Model.D);
+  Alcotest.(check bool) "Pdf_class decode" true (Model.of_string "D" = Some Model.D);
+  Alcotest.(check string) "Pdf_class encode" "E" (Model.to_string Model.E);
+  Alcotest.(check bool) "Pdf_class decode" true (Model.of_string "E" = Some Model.E);
+  Alcotest.(check string) "Pdf_class encode" "F" (Model.to_string Model.F);
+  Alcotest.(check bool) "Pdf_class decode" true (Model.of_string "F" = Some Model.F);
+  Alcotest.(check string) "Pdf_class encode" "G" (Model.to_string Model.G);
+  Alcotest.(check bool) "Pdf_class decode" true (Model.of_string "G" = Some Model.G);
+  Alcotest.(check bool) "Pdf_class rejects unknown values" true (Model.of_string "" = None);
   let module Model = Xynolog.Enums.Supported_media_type in
   Alcotest.(check string) "Supported_media_type encode" "text/plain" (Model.to_string Model.Text_plain);
   Alcotest.(check bool) "Supported_media_type decode" true (Model.of_string "text/plain" = Some Model.Text_plain);

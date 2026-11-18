@@ -40,11 +40,11 @@ import xynolog.identifiers.UserId
 @JsonIgnoreUnknownKeys
 public data class YieldCloneCreated(
     @SerialName("response")
-    public val response: YieldCloneCreatedResponse,
+    public val response: YieldedResource,
 ) {
     /** How Java makes a `YieldCloneCreated`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val response: YieldCloneCreatedResponse,
+        private val response: YieldedResource,
     ) {
         public fun build(): YieldCloneCreated = YieldCloneCreated(response = response)
     }
@@ -52,6 +52,6 @@ public data class YieldCloneCreated(
     public companion object {
         /** A builder of a `YieldCloneCreated` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(response: YieldCloneCreatedResponse): Builder = Builder(response)
+        public fun builder(response: YieldedResource): Builder = Builder(response)
     }
 }

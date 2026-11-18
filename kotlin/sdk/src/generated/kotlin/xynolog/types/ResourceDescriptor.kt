@@ -53,7 +53,7 @@ public data class ResourceDescriptor(
      * Type(s) of the resource (IRIs/CURIEs via @context).
      */
     @SerialName("@type")
-    public val type: ResourceDescriptorType? = null,
+    public val type: OneOrMoreStrings? = null,
     @SerialName("name")
     public val name: String,
     @SerialName("description")
@@ -67,7 +67,7 @@ public data class ResourceDescriptor(
      * Topics (IRIs or strings).
      */
     @SerialName("about")
-    public val about: ResourceDescriptorAbout? = null,
+    public val about: OneOrMoreStrings? = null,
     /**
      * Equivalent/authoritative references.
      */
@@ -94,17 +94,17 @@ public data class ResourceDescriptor(
      * W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
      */
     @SerialName("wasAttributedTo")
-    public val wasAttributedTo: ResourceDescriptorWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
     /**
      * Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
      */
     @SerialName("generator")
-    public val generator: ResourceDescriptorGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
     /**
      * Profile/shape URI this resource description conforms to.
      */
     @SerialName("conformsTo")
-    public val conformsTo: ResourceDescriptorConformsTo? = null,
+    public val conformsTo: OneOrMoreUris? = null,
     /**
      * Convenience set summarizing media types across representations.
      */
@@ -157,10 +157,10 @@ public data class ResourceDescriptor(
         private val name: String,
         private val representations: ResourceDescriptorRepresentations,
     ) {
-        private var type: ResourceDescriptorType? = null
+        private var type: OneOrMoreStrings? = null
         private var description: String? = null
         private var identifier: ResourceDescriptorIdentifier? = null
-        private var about: ResourceDescriptorAbout? = null
+        private var about: OneOrMoreStrings? = null
         private var sameAs: kotlin.collections.List<String>? = null
         private var isPartOf: kotlin.collections.List<String>? = null
         private var hasPart: kotlin.collections.List<String>? = null
@@ -169,9 +169,9 @@ public data class ResourceDescriptor(
         private var dateCreated: String? = null
         private var dateModified: String? = null
         private var wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = null
-        private var wasAttributedTo: ResourceDescriptorWasAttributedTo? = null
-        private var generator: ResourceDescriptorGenerator? = null
-        private var conformsTo: ResourceDescriptorConformsTo? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
+        private var generator: OneOrMoreAgents? = null
+        private var conformsTo: OneOrMoreUris? = null
         private var availableFormats: kotlin.collections.List<String>? = null
         private var archived: Boolean? = null
         private var entityTypes: kotlin.collections.List<String>? = null
@@ -181,7 +181,7 @@ public data class ResourceDescriptor(
         private var originatedFrom: String? = null
         private var rest: JsonObject = JsonObject(emptyMap())
 
-        public fun type(type: ResourceDescriptorType?): Builder {
+        public fun type(type: OneOrMoreStrings?): Builder {
             this.type = type
             return this
         }
@@ -196,7 +196,7 @@ public data class ResourceDescriptor(
             return this
         }
 
-        public fun about(about: ResourceDescriptorAbout?): Builder {
+        public fun about(about: OneOrMoreStrings?): Builder {
             this.about = about
             return this
         }
@@ -241,17 +241,17 @@ public data class ResourceDescriptor(
             return this
         }
 
-        public fun wasAttributedTo(wasAttributedTo: ResourceDescriptorWasAttributedTo?): Builder {
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder {
             this.wasAttributedTo = wasAttributedTo
             return this
         }
 
-        public fun generator(generator: ResourceDescriptorGenerator?): Builder {
+        public fun generator(generator: OneOrMoreAgents?): Builder {
             this.generator = generator
             return this
         }
 
-        public fun conformsTo(conformsTo: ResourceDescriptorConformsTo?): Builder {
+        public fun conformsTo(conformsTo: OneOrMoreUris?): Builder {
             this.conformsTo = conformsTo
             return this
         }
@@ -324,7 +324,7 @@ public data class ResourceDescriptor(
          * Type(s) of the resource (IRIs/CURIEs via @context).
          */
         @SerialName("@type")
-        public val type: ResourceDescriptorType? = null,
+        public val type: OneOrMoreStrings? = null,
         @SerialName("name")
         public val name: String,
         @SerialName("description")
@@ -338,7 +338,7 @@ public data class ResourceDescriptor(
          * Topics (IRIs or strings).
          */
         @SerialName("about")
-        public val about: ResourceDescriptorAbout? = null,
+        public val about: OneOrMoreStrings? = null,
         /**
          * Equivalent/authoritative references.
          */
@@ -365,17 +365,17 @@ public data class ResourceDescriptor(
          * W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
          */
         @SerialName("wasAttributedTo")
-        public val wasAttributedTo: ResourceDescriptorWasAttributedTo? = null,
+        public val wasAttributedTo: OneOrMoreAgents? = null,
         /**
          * Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
          */
         @SerialName("generator")
-        public val generator: ResourceDescriptorGenerator? = null,
+        public val generator: OneOrMoreAgents? = null,
         /**
          * Profile/shape URI this resource description conforms to.
          */
         @SerialName("conformsTo")
-        public val conformsTo: ResourceDescriptorConformsTo? = null,
+        public val conformsTo: OneOrMoreUris? = null,
         /**
          * Convenience set summarizing media types across representations.
          */

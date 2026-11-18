@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::System.Text.Json.Serialization.JsonConverter(typeof(BodyOperationAddJsonConverter))]
 public sealed record BodyOperationAdd
 {
-    public required global::Xynolog.Types.BodyOperationAddItem Item { get; init; }
+    public required global::Xynolog.Types.AnnotationBody Item { get; init; }
     public string Op => "add";
 }
 
@@ -20,7 +20,7 @@ internal sealed class BodyOperationAddJsonConverter : global::System.Text.Json.S
         global::Xynolog.Serialization.WireJson.Validate("BodyOperationAdd", root);
         return new BodyOperationAdd
         {
-            Item = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.BodyOperationAddItem>(root, "item", options),
+            Item = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationBody>(root, "item", options),
         };
     }
 

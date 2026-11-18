@@ -8,10 +8,10 @@ namespace Xynolog.Types;
 public sealed record Representation
 {
     public string? Id { get; init; }
-    public global::Xynolog.Types.RepresentationType? Type { get; init; }
+    public global::Xynolog.Types.OneOrMoreStrings? Type { get; init; }
     public long? ByteSize { get; init; }
     public string? Checksum { get; init; }
-    public global::Xynolog.Types.RepresentationConformsTo? ConformsTo { get; init; }
+    public global::Xynolog.Types.OneOrMoreUris? ConformsTo { get; init; }
     public string? Created { get; init; }
     public double? Duration { get; init; }
     public string? Encoding { get; init; }
@@ -37,10 +37,10 @@ internal sealed class RepresentationJsonConverter : global::System.Text.Json.Ser
         return new Representation
         {
             Id = root.TryGetProperty("@id", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Type = root.TryGetProperty("@type", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.RepresentationType>(p1, options) : null,
+            Type = root.TryGetProperty("@type", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreStrings>(p1, options) : null,
             ByteSize = root.TryGetProperty("byteSize", out var p2) ? global::Xynolog.Serialization.WireJson.Read<long>(p2, options) : null,
             Checksum = root.TryGetProperty("checksum", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-            ConformsTo = root.TryGetProperty("conformsTo", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.RepresentationConformsTo>(p4, options) : null,
+            ConformsTo = root.TryGetProperty("conformsTo", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreUris>(p4, options) : null,
             Created = root.TryGetProperty("created", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
             Duration = root.TryGetProperty("duration", out var p6) ? global::Xynolog.Serialization.WireJson.Read<double>(p6, options) : null,
             Encoding = root.TryGetProperty("encoding", out var p7) ? global::Xynolog.Serialization.WireJson.Read<string>(p7, options) : null,

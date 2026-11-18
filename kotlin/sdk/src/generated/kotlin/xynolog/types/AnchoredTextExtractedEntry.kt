@@ -62,17 +62,17 @@ public data class AnchoredTextExtractedEntry(
      * How the text was extracted.
      */
     @SerialName("method")
-    public val method: AnchoredTextExtractedEntryMethod,
+    public val method: ExtractionMethod,
     /**
      * PDF classification, when the source was a PDF.
      */
     @SerialName("pdfClass")
-    public val pdfClass: AnchoredTextExtractedEntryPdfClass? = null,
+    public val pdfClass: PdfClass? = null,
     /**
      * How well the engine read the pixels, when any of this text came from OCR.
      */
     @SerialName("ocrConfidence")
-    public val ocrConfidence: AnchoredTextExtractedEntryOcrConfidence? = null,
+    public val ocrConfidence: OcrConfidence? = null,
     /**
      * 1-indexed pages this extraction could not read — present only for partially covered documents (class C).
      */
@@ -85,18 +85,18 @@ public data class AnchoredTextExtractedEntry(
         private val stamp: String,
         private val text: String,
         private val lines: kotlin.collections.List<AnchoredTextExtractedEntryLinesItem>,
-        private val method: AnchoredTextExtractedEntryMethod,
+        private val method: ExtractionMethod,
     ) {
-        private var pdfClass: AnchoredTextExtractedEntryPdfClass? = null
-        private var ocrConfidence: AnchoredTextExtractedEntryOcrConfidence? = null
+        private var pdfClass: PdfClass? = null
+        private var ocrConfidence: OcrConfidence? = null
         private var unreadPages: kotlin.collections.List<Long>? = null
 
-        public fun pdfClass(pdfClass: AnchoredTextExtractedEntryPdfClass?): Builder {
+        public fun pdfClass(pdfClass: PdfClass?): Builder {
             this.pdfClass = pdfClass
             return this
         }
 
-        public fun ocrConfidence(ocrConfidence: AnchoredTextExtractedEntryOcrConfidence?): Builder {
+        public fun ocrConfidence(ocrConfidence: OcrConfidence?): Builder {
             this.ocrConfidence = ocrConfidence
             return this
         }
@@ -112,6 +112,6 @@ public data class AnchoredTextExtractedEntry(
     public companion object {
         /** A builder of a `AnchoredTextExtractedEntry` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(v: Long, stamp: String, text: String, lines: kotlin.collections.List<AnchoredTextExtractedEntryLinesItem>, method: AnchoredTextExtractedEntryMethod): Builder = Builder(v, stamp, text, lines, method)
+        public fun builder(v: Long, stamp: String, text: String, lines: kotlin.collections.List<AnchoredTextExtractedEntryLinesItem>, method: ExtractionMethod): Builder = Builder(v, stamp, text, lines, method)
     }
 }

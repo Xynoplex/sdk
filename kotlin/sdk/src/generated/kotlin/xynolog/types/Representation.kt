@@ -47,7 +47,7 @@ public data class Representation(
      * Type(s), e.g., schema:MediaObject.
      */
     @SerialName("@type")
-    public val type: RepresentationType? = null,
+    public val type: OneOrMoreStrings? = null,
     /**
      * MIME/media type (e.g., text/markdown, image/png).
      */
@@ -103,7 +103,7 @@ public data class Representation(
      * Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
      */
     @SerialName("conformsTo")
-    public val conformsTo: RepresentationConformsTo? = null,
+    public val conformsTo: OneOrMoreUris? = null,
     @SerialName("tags")
     public val tags: kotlin.collections.List<String>? = null,
     /**
@@ -120,7 +120,7 @@ public data class Representation(
         private val mediaType: String,
     ) {
         private var id: String? = null
-        private var type: RepresentationType? = null
+        private var type: OneOrMoreStrings? = null
         private var storageUri: String? = null
         private var filename: String? = null
         private var byteSize: Long? = null
@@ -132,7 +132,7 @@ public data class Representation(
         private var duration: Double? = null
         private var created: String? = null
         private var modified: String? = null
-        private var conformsTo: RepresentationConformsTo? = null
+        private var conformsTo: OneOrMoreUris? = null
         private var tags: kotlin.collections.List<String>? = null
         private var rel: RepresentationRel? = null
         private var rest: JsonObject = JsonObject(emptyMap())
@@ -142,7 +142,7 @@ public data class Representation(
             return this
         }
 
-        public fun type(type: RepresentationType?): Builder {
+        public fun type(type: OneOrMoreStrings?): Builder {
             this.type = type
             return this
         }
@@ -202,7 +202,7 @@ public data class Representation(
             return this
         }
 
-        public fun conformsTo(conformsTo: RepresentationConformsTo?): Builder {
+        public fun conformsTo(conformsTo: OneOrMoreUris?): Builder {
             this.conformsTo = conformsTo
             return this
         }
@@ -242,7 +242,7 @@ public data class Representation(
          * Type(s), e.g., schema:MediaObject.
          */
         @SerialName("@type")
-        public val type: RepresentationType? = null,
+        public val type: OneOrMoreStrings? = null,
         /**
          * MIME/media type (e.g., text/markdown, image/png).
          */
@@ -298,7 +298,7 @@ public data class Representation(
          * Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
          */
         @SerialName("conformsTo")
-        public val conformsTo: RepresentationConformsTo? = null,
+        public val conformsTo: OneOrMoreUris? = null,
         @SerialName("tags")
         public val tags: kotlin.collections.List<String>? = null,
         /**

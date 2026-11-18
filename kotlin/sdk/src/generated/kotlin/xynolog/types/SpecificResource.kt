@@ -50,11 +50,7 @@ public data class SpecificResource(
      */
     @SerialName("purpose")
     public val purpose: BodyPurpose? = null,
-) : AnnotationBody,
-    BodyOperationAddItem,
-    BodyOperationRemoveItem,
-    BodyOperationReplaceNewItem,
-    BodyOperationReplaceOldItem {
+) : AnnotationBody {
     /** How Java makes a `SpecificResource`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val source: ResourceId,

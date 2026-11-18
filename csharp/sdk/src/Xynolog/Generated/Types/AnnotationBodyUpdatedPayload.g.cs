@@ -8,7 +8,7 @@ namespace Xynolog.Types;
 public sealed record AnnotationBodyUpdatedPayload
 {
     public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnnotationBodyUpdatedPayloadOperationsItem> Operations { get; init; }
+    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation> Operations { get; init; }
 }
 
 internal sealed class AnnotationBodyUpdatedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnnotationBodyUpdatedPayload>
@@ -21,7 +21,7 @@ internal sealed class AnnotationBodyUpdatedPayloadJsonConverter : global::System
         return new AnnotationBodyUpdatedPayload
         {
             AnnotationId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "annotationId", options),
-            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnnotationBodyUpdatedPayloadOperationsItem>>(root, "operations", options),
+            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation>>(root, "operations", options),
         };
     }
 

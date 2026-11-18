@@ -43,11 +43,11 @@ public data class YieldClonePersistOk(
      * The clone's identity — a new resource, distinct from its parent.
      */
     @SerialName("response")
-    public val response: YieldClonePersistOkResponse,
+    public val response: YieldedResource,
 ) {
     /** How Java makes a `YieldClonePersistOk`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val response: YieldClonePersistOkResponse,
+        private val response: YieldedResource,
     ) {
         public fun build(): YieldClonePersistOk = YieldClonePersistOk(response = response)
     }
@@ -55,6 +55,6 @@ public data class YieldClonePersistOk(
     public companion object {
         /** A builder of a `YieldClonePersistOk` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(response: YieldClonePersistOkResponse): Builder = Builder(response)
+        public fun builder(response: YieldedResource): Builder = Builder(response)
     }
 }

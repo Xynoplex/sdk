@@ -52,13 +52,13 @@ public data class AnchoredTextDeclinedEntry(
      * Why extraction yielded nothing, by class.
      */
     @SerialName("declined")
-    public val declined: AnchoredTextDeclinedEntryDeclined,
+    public val declined: ExtractionDeclinedReason,
 ) : AnchoredTextEntry {
     /** How Java makes a `AnchoredTextDeclinedEntry`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val v: Long,
         private val stamp: String,
-        private val declined: AnchoredTextDeclinedEntryDeclined,
+        private val declined: ExtractionDeclinedReason,
     ) {
         public fun build(): AnchoredTextDeclinedEntry = AnchoredTextDeclinedEntry(v = v, stamp = stamp, declined = declined)
     }
@@ -66,6 +66,6 @@ public data class AnchoredTextDeclinedEntry(
     public companion object {
         /** A builder of a `AnchoredTextDeclinedEntry` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(v: Long, stamp: String, declined: AnchoredTextDeclinedEntryDeclined): Builder = Builder(v, stamp, declined)
+        public fun builder(v: Long, stamp: String, declined: ExtractionDeclinedReason): Builder = Builder(v, stamp, declined)
     }
 }
