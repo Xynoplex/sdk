@@ -8,6 +8,7 @@
   schema_shape
   schema_shapes
   schema_codec
+  selector_codec
   http_facts
   telemetry_facts
   live_facts

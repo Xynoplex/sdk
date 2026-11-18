@@ -64,7 +64,6 @@ let let_in name value body =
 let let_star pattern value body =
   Exp.letop (Exp.binding_op (named "let*") pattern value Location.none) [] body
 
-let try_ value cases = Exp.try_ value cases
 let field value name = Exp.field value (lid name)
 
 (* [body] with [name] bound to the module at [path]. *)
@@ -183,8 +182,16 @@ let type_declaration ?(params = []) ?manifest name kind =
 
 (** {1 Items} *)
 
-let let_ name value =
-  Str.value Asttypes.Nonrecursive [ Vb.mk (Pat.var (named name)) value ]
+(* [let name = value], or [let name : type_ = value]. *)
+let let_ ?type_ name value =
+  let value_constraint =
+    Option.map
+      (fun typ ->
+        Parsetree.Pvc_constraint { locally_abstract_univars = []; typ })
+      type_
+  in
+  Str.value Asttypes.Nonrecursive
+    [ Vb.mk ?value_constraint (Pat.var (named name)) value ]
 
 (* [let () = value]: a module's effect when it loads. *)
 let let_unit value =

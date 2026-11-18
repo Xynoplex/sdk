@@ -49,7 +49,7 @@ case "${1:-}" in
       bash react-ui/scripts/audit-toolbar-pref-storage.sh
       for package in core observability http-transport sdk react-ui; do
         npm test --workspace="@xynolog/$package"
-      done'
+      done' --memory 4g
     ;;
   test-python)
     bash "$ROOT/scripts/bundle-protocol.sh"
@@ -153,7 +153,9 @@ case "${1:-}" in
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/codegen
       dune build @all @opam
-      find bin lib test -name "*.ml*" | sort | xargs dune exec -- ocamlformat --check
+      # ocamlformat --check names no file it fails, so each is checked alone.
+      unformatted="$(dune exec -- sh -c "for file; do ocamlformat --check \"\$file\" || echo \"\$file\"; done" sh $(find bin lib test -name "*.ml*" | sort))"
+      if [ -n "$unformatted" ]; then echo "not as ocamlformat lays them out:"; echo "$unformatted"; exit 1; fi
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
       dune exec -- xynolog-codegen read ..
