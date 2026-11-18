@@ -46,33 +46,12 @@ configurations.matching { it.name.startsWith("kotlin") }.configureEach {
     resolutionStrategy.deactivateDependencyLocking()
 }
 
-// The generator of the SDK's protocol types: Kotlin of its own, compiled
-// first and run over protocol/specs/src and the SDK's copies of the table of
-// what each component schema requires and of Unicode's Cased and
-// Case_Ignorable properties, whose output is compiled with the SDK's own
-// sources. Nothing it writes is committed.
-val codegen: SourceSet = sourceSets.create("codegen")
-val generated = layout.buildDirectory.dir("generated/xynolog/main/kotlin")
-val generate = tasks.register<JavaExec>("generate") {
-    description = "Writes the SDK's protocol types from protocol/specs/src."
-    group = LifecycleBasePlugin.BUILD_GROUP
-    val specs = layout.projectDirectory.dir("../../protocol/specs/src")
-    val required = layout.projectDirectory.file("src/codegen/required-schemas.json")
-    val unicodeCase = layout.projectDirectory.file("src/codegen/unicode-case.json")
-    inputs.dir(specs).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file(required).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file(unicodeCase).withPathSensitivity(PathSensitivity.RELATIVE)
-    outputs.dir(generated)
-    classpath = codegen.runtimeClasspath
-    mainClass = "xynolog.codegen.GenerateKt"
-    args(specs.asFile.path, generated.get().asFile.path, required.asFile.path, unicodeCase.asFile.path)
-}
+// The SDK's protocol types and the code of the spec's tables, which the
+// repository's generator (codegen/) writes from protocol/specs/src and
+// make check-generated holds to what it writes: compiled with the SDK's own
+// sources.
 kotlin.sourceSets.named("main") {
-    kotlin.srcDir(files(generated).builtBy(generate))
-}
-// The generator's tests read what is internal to it.
-kotlin.target.compilations.named("test") {
-    associateWith(kotlin.target.compilations.getByName("codegen"))
+    kotlin.srcDir("src/generated/kotlin")
 }
 
 // The SDK as a Java program calls it: Java alone, over the SDK's classes and
@@ -96,7 +75,6 @@ dependencies {
     implementation(libs.opentelemetry.api)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.opentelemetry.sdk)
-    "codegenImplementation"(libs.kotlinx.serialization.json)
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
@@ -123,14 +101,10 @@ jacoco {
     toolVersion = libs.versions.jacoco.get()
 }
 
-// The generator is measured as it runs over the spec, as well as by its tests.
-generate.configure { jacoco.applyTo(this) }
-
-// What runs is measured: the SDK's own code, and the generator's.
+// What runs is measured: the SDK's own code.
 tasks.jacocoTestReport {
     // The tasks themselves: given as providers they are read as their outputs, every file of them.
-    executionData(tasks.test.get(), javaTestRun.get(), generate.get())
-    sourceSets(codegen)
+    executionData(tasks.test.get(), javaTestRun.get())
     reports {
         xml.required = true
     }
@@ -183,7 +157,7 @@ abstract class Census : DefaultTask() {
                 if (Regex("""@(?:file:)?Suppress(?:Warnings)?\b""").containsMatchIn(line)) {
                     failures += "$at suppresses a warning: every warning is an error, so fix what it warns of"
                 }
-                if (path.startsWith("main/")) {
+                if (path.startsWith("main/") || path.startsWith("generated/")) {
                     for (read in Regex("""\bgetenv\s*\(([^)]*)\)""").findAll(line)) {
                         if (read.groupValues[1].trim() != "\"XYNOLOG_BUS_LOG\"") {
                             failures += "$at reads the environment (${read.value}): the SDK reads XYNOLOG_BUS_LOG and nothing else, and is handed the rest by the application"
