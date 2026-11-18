@@ -63,7 +63,7 @@ let oauth_clients (t : Tables.Session_oauth.t) =
        t.clients)
 
 let sign_in_scope (t : Tables.Session_oauth.t) =
-  let ({ value; docs } : Tables.Session_oauth.scope) = t.scope in
+  let ({ value; docs } : Tables.Session_oauth.scopes) = t.scopes in
   `Assoc [ ("value", string value); ("docs", string docs) ]
 
 let directory_mode (t : Tables.Sign_in_store_owner_only.t) =
@@ -162,7 +162,7 @@ let all (tables : Spec.tables) =
       "oauthClients",
       oauth_clients tables.session_oauth );
     ( "session/oauth.json",
-      "scope",
+      "scopes",
       "signInScope",
       sign_in_scope tables.session_oauth );
     ( "sign-in-store/owner-only.json",

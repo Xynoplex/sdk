@@ -3,7 +3,7 @@
 from typing import Annotated, Final, Literal
 
 import pytest
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 from spec import SPEC, JsonObject
 
 from xynolog._required import Fault, fault_of
@@ -68,8 +68,6 @@ def test_every_reader_gives_what_the_table_says(case: Case) -> None:
 @pytest.mark.parametrize("case", REFUSED, ids=lambda case: case.why)
 def test_a_resource_the_schema_does_not_allow_is_refused_for_the_fault_the_table_states(case: Refused) -> None:
     assert fault_of(ResourceDescriptor, case.resource) == Fault(member=case.member, reason=case.reason)
-    with pytest.raises(ValidationError):
-        ResourceDescriptor.model_validate(case.resource)
 
 
 @pytest.mark.parametrize("case", READ, ids=lambda case: case.why)

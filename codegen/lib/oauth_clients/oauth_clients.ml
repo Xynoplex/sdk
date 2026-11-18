@@ -71,7 +71,7 @@ let go (t : T.t) =
             List.map
               (fun (c : T.client) -> constant (name c) c.docs c.id)
               t.clients
-            @ [ constant "SignInScope" t.scope.docs t.scope.value ];
+            @ [ constant "SignInScope" t.scopes.docs t.scopes.value ];
         };
   }
 
@@ -109,7 +109,7 @@ let python (t : T.t) =
             :: List.map
                  (fun (c : T.client) -> constant (name c) c.docs c.id)
                  t.clients
-            @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ];
+            @ [ constant "SIGN_IN_SCOPE" t.scopes.docs t.scopes.value ];
         };
   }
 
@@ -132,7 +132,7 @@ let typescript (t : T.t) =
                   (String.uppercase_ascii c.name ^ "_CLIENT_ID")
                   c.docs c.id)
               t.clients
-            @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ];
+            @ [ constant "SIGN_IN_SCOPE" t.scopes.docs t.scopes.value ];
         };
   }
 
@@ -143,7 +143,7 @@ let ocaml (t : T.t) =
   O.implementation ~path:"ocaml/sdk/lib/oauth_facts.ml"
     ~banner:(Banner.ocaml ~from_:file __FILE__)
     (List.map (fun (c : T.client) -> O.let_ c.name (O.string c.id)) t.clients
-    @ [ O.let_ "scope" (O.string t.scope.value) ])
+    @ [ O.let_ "scope" (O.string t.scopes.value) ])
 
 let rust (t : T.t) =
   let module R = Rust_syntax in
@@ -168,7 +168,7 @@ let rust (t : T.t) =
            (fun (c : T.client) ->
              constant (String.uppercase_ascii c.name ^ "_CLIENT_ID") c.docs c.id)
            t.clients
-        @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ]);
+        @ [ constant "SIGN_IN_SCOPE" t.scopes.docs t.scopes.value ]);
   }
 
 (* The clients and the scope as the Haskell SDK names them
@@ -190,7 +190,7 @@ let haskell (t : T.t) =
               (fun (c : T.client) ->
                 H.value (c.name ^ "ClientId") (T_name "Text") (Str c.id))
               t.clients
-            @ [ H.value "signInScope" (T_name "Text") (Str t.scope.value) ];
+            @ [ H.value "signInScope" (T_name "Text") (Str t.scopes.value) ];
         };
   }
 

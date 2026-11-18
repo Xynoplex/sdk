@@ -16117,7 +16117,7 @@ internal enum CacheRefreshReach: String, Codable, Sendable, CaseIterable {
 /// event's payload to the keys a `subject` row reaches, and `carries` the way to the value
 /// it writes: each the names of the members it is within, and its own.
 internal struct CacheRefreshRow: Sendable {
-  let on: CacheRefreshTrigger
+  let trigger: CacheRefreshTrigger
   let when: CacheRefreshWhen?
   let reach: CacheRefreshReach
   let resource: [String]?
@@ -16129,68 +16129,69 @@ internal struct CacheRefreshRow: Sendable {
 }
 internal let cacheRefresh: [CacheRefreshRow] = [
   CacheRefreshRow(
-    on: .reopened, when: nil, reach: .held, resource: nil, annotation: nil, carries: nil,
+    trigger: .reopened, when: nil, reach: .held, resource: nil, annotation: nil, carries: nil,
     refetches: [.resources, .matchedResources, .resource, .entityTypes, .tagSchemas, .engines],
     writes: [], removes: []),
   CacheRefreshRow(
-    on: .unreadable, when: nil, reach: .held, resource: nil, annotation: nil, carries: nil,
+    trigger: .unreadable, when: nil, reach: .held, resource: nil, annotation: nil, carries: nil,
     refetches: [
       .resource, .annotations, .annotation, .events, .referencedBy, .resources, .matchedResources,
       .entityTypes, .tagSchemas, .engines,
     ], writes: [], removes: []),
   CacheRefreshRow(
-    on: .busResumeGap, when: nil, reach: .subject, resource: ["scope"], annotation: nil,
+    trigger: .busResumeGap, when: nil, reach: .subject, resource: ["scope"], annotation: nil,
     carries: nil, refetches: [.annotations, .annotation, .resource, .events, .referencedBy],
     writes: [], removes: []),
   CacheRefreshRow(
-    on: .markAdded, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    trigger: .markAdded, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
     carries: nil, refetches: [.annotations, .events], writes: [], removes: []),
   CacheRefreshRow(
-    on: .markRemoved, when: nil, reach: .subject, resource: ["resourceId"],
+    trigger: .markRemoved, when: nil, reach: .subject, resource: ["resourceId"],
     annotation: ["payload", "annotationId"], carries: nil, refetches: [.annotations, .events],
     writes: [], removes: [.annotation]),
   CacheRefreshRow(
-    on: .markDeleteOk, when: nil, reach: .subject, resource: nil,
+    trigger: .markDeleteOk, when: nil, reach: .subject, resource: nil,
     annotation: ["response", "annotationId"], carries: nil, refetches: [], writes: [],
     removes: [.annotation]),
   CacheRefreshRow(
-    on: .markBodyUpdated, when: .enriched, reach: .subject, resource: ["resourceId"],
+    trigger: .markBodyUpdated, when: .enriched, reach: .subject, resource: ["resourceId"],
     annotation: ["annotation", "id"], carries: ["annotation"], refetches: [.events],
     writes: [.annotations, .annotation], removes: []),
   CacheRefreshRow(
-    on: .markBodyUpdated, when: .unenriched, reach: .subject, resource: ["resourceId"],
+    trigger: .markBodyUpdated, when: .unenriched, reach: .subject, resource: ["resourceId"],
     annotation: ["payload", "annotationId"], carries: nil,
     refetches: [.annotations, .annotation, .events], writes: [], removes: []),
   CacheRefreshRow(
-    on: .markEntityTagAdded, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
-    carries: nil, refetches: [.annotations, .resource, .events], writes: [], removes: []),
-  CacheRefreshRow(
-    on: .markEntityTagRemoved, when: nil, reach: .subject, resource: ["resourceId"],
+    trigger: .markEntityTagAdded, when: nil, reach: .subject, resource: ["resourceId"],
     annotation: nil, carries: nil, refetches: [.annotations, .resource, .events], writes: [],
     removes: []),
   CacheRefreshRow(
-    on: .markArchived, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    trigger: .markEntityTagRemoved, when: nil, reach: .subject, resource: ["resourceId"],
+    annotation: nil, carries: nil, refetches: [.annotations, .resource, .events], writes: [],
+    removes: []),
+  CacheRefreshRow(
+    trigger: .markArchived, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
     carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
   CacheRefreshRow(
-    on: .markUnarchived, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    trigger: .markUnarchived, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
     carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
   CacheRefreshRow(
-    on: .yieldCreated, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    trigger: .yieldCreated, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
     carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
   CacheRefreshRow(
-    on: .yieldUpdated, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    trigger: .yieldUpdated, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
     carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
   CacheRefreshRow(
-    on: .yieldCloned, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    trigger: .yieldCloned, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
     carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
   CacheRefreshRow(
-    on: .yieldMoved, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    trigger: .yieldMoved, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
     carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
   CacheRefreshRow(
-    on: .frameEntityTypeAdded, when: nil, reach: .subject, resource: nil, annotation: nil,
+    trigger: .frameEntityTypeAdded, when: nil, reach: .subject, resource: nil, annotation: nil,
     carries: nil, refetches: [.entityTypes], writes: [], removes: []),
   CacheRefreshRow(
-    on: .frameTagSchemaAdded, when: nil, reach: .subject, resource: nil, annotation: nil,
+    trigger: .frameTagSchemaAdded, when: nil, reach: .subject, resource: nil, annotation: nil,
     carries: nil, refetches: [.tagSchemas], writes: [], removes: []),
 ]
 /// The triggers that are channels of the bus, with the stamps each payload declares.

@@ -6,7 +6,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -47,8 +46,9 @@ private fun keptAs(query: String): KeptQuery<*, *> = PERSISTED_QUERIES.single { 
 /** What a case keeps under its key: `stored`'s JSON text, or `storedText` as it is. */
 private fun textOf(case: JsonObject): String = if ("stored" in case) case.getValue("stored").toString() else case.getValue("storedText").jsonPrimitive.content
 
-/** Pairs of a key and a value, as a map. */
-private fun pairs(listed: JsonElement): Map<JsonElement, JsonElement> = listed.jsonArray.associate { it.jsonArray[0] to it.jsonArray[1] }
+/** The table's entries, each its `key` and its `value`, as a map. */
+private fun entriesOf(listed: JsonElement): Map<JsonElement, JsonElement> =
+    listed.jsonArray.map { it.jsonObject }.associate { it.getValue("key") to it.getValue("value") }
 
 private fun assertSameEntries(expected: Map<JsonElement, JsonElement>, actual: Map<JsonElement, JsonElement>) {
     assertEquals(expected.keys, actual.keys)
@@ -66,7 +66,7 @@ private fun assertWrittenAsTheTableSays(expected: JsonObject, document: JsonObje
         val at = stamp.content.toBigDecimalOrNull()?.stripTrailingZeros()
         assertTrue(!stamp.isString && at != null && at.scale() <= 0 && at.signum() >= 0, "$stamp is no whole number of at least 0")
     }
-    assertSameEntries(pairs(expected.getValue("entries")), pairs(JsonArray(entries)))
+    assertSameEntries(entriesOf(expected.getValue("entries")), entries.associate { it[0] to it[1] })
 }
 
 /** What `kept`'s persister keeps of the document in `storage`, each key and value as the wire has it. Nothing kept is none. */
@@ -77,7 +77,9 @@ private fun <K : Any, V : Any> loaded(kept: KeptQuery<K, V>, storage: SessionSto
 
 /** What a case's cache is answered for each key it holds: `held`, read as `kept`'s keys and values. */
 private fun <K : Any, V : Any> answersOf(kept: KeptQuery<K, V>, held: JsonElement): Map<K, V> =
-    held.jsonArray.associate { wireJson.decodeFromJsonElement(kept.key, it.jsonArray[0]) to wireJson.decodeFromJsonElement(kept.value, it.jsonArray[1]) }
+    held.jsonArray.map { it.jsonObject }.associate {
+        wireJson.decodeFromJsonElement(kept.key, it.getValue("key")) to wireJson.decodeFromJsonElement(kept.value, it.getValue("value"))
+    }
 
 /** The document `kept`'s cache writes when it has fetched `held` and is closed. */
 private fun <K : Any, V : Any> written(kept: KeptQuery<K, V>, held: JsonElement): JsonObject {
@@ -161,7 +163,7 @@ class CacheCasesTest {
             val query = case.getValue("query").jsonPrimitive.content
             val storage = MemoryStorage()
             storage.set(documentKey(query), textOf(case))
-            assertSameEntries(pairs(case.getValue("kept")), loaded(keptAs(query), storage))
+            assertSameEntries(entriesOf(case.getValue("kept")), loaded(keptAs(query), storage))
         }
     }
 

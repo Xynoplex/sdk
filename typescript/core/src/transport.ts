@@ -23,7 +23,7 @@
 
 import type { Observable } from 'rxjs';
 
-import type { components, paths } from './types';
+import type { components } from './types';
 import type { AccessToken, BaseUrl, ContentFormat } from './branded-types';
 import type { AnnotationId, ResourceId } from './identifiers';
 import type { EventMap } from './bus-protocol';
@@ -74,28 +74,14 @@ export type ConnectionState =
   | 'unauthenticated'
   | 'closed';
 
-// ── Response type helpers (shape-equivalent to the OpenAPI surface) ─────
+// ── Response types: the schemas the gateway's routes answer with ─────
 
 type ProtectedResourceMetadata =
   components['schemas']['ProtectedResourceMetadata'];
 
-type ResponseContent<T> = T extends {
-  responses: { 200: { content: { 'application/json': infer R } } };
-}
-  ? R
-  : T extends {
-        responses: { 201: { content: { 'application/json': infer R } } };
-      }
-    ? R
-    : T extends {
-          responses: { 202: { content: { 'application/json': infer R } } };
-        }
-      ? R
-      : never;
-
-export type HealthCheckResponse = ResponseContent<paths['/api/health']['get']>;
-export type StatusResponse = ResponseContent<paths['/api/status']['get']>;
-export type UserResponse = ResponseContent<paths['/api/users/me']['get']>;
+export type HealthCheckResponse = components['schemas']['HealthResponse'];
+export type StatusResponse = components['schemas']['StatusResponse'];
+export type UserResponse = components['schemas']['UserResponse'];
 
 // ── ITransport ──────────────────────────────────────────────────────────
 

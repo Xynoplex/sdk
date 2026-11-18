@@ -148,9 +148,9 @@ let query ?per ?(persisted = true) ?(members = []) ~component name :
     value = { component; members; type_ = Text };
   }
 
-let held on kind : Refresh.trigger =
+let held name kind : Refresh.trigger =
   {
-    on;
+    name;
     kind;
     docs = "";
     rows =

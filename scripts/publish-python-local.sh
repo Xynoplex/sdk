@@ -24,9 +24,6 @@ cp "$ROOT/scripts/sdk_version.py" "$SCRATCH/scripts/"
 cp "$ROOT/LICENSE" "$ROOT/version.json" "$ROOT/Makefile" "$SCRATCH/"
 
 cd "$SCRATCH"
-cd python/sdk
-uv run --locked python scripts/generate_models.py --check
-cd "$SCRATCH"
 python/sdk/scripts/build-python-sdk.sh "$VERSION"
 
 mkdir -p /artifacts

@@ -34,7 +34,7 @@ let file (table : T.t) =
         in
         O.tuple
           [
-            O.string r.on;
+            O.string (T.trigger_name r.trigger);
             (match r.when_ with
             | None -> O.none
             | Some Enriched -> O.some (O.string "enriched")

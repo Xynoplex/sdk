@@ -2,11 +2,12 @@
  * @xynolog/core
  *
  * Core domain logic and utilities for the Xynolog semantic knowledge platform.
- * OpenAPI types are generated here and exported for use across the monorepo.
+ * The spec's component schemas are generated here as types and exported for
+ * use across the monorepo.
  */
 
-// OpenAPI-generated types (source of truth for API schemas)
-export type { components, paths, operations } from './types';
+// The spec's component schemas as types (the source of truth for the API's)
+export type { components } from './types';
 
 // Branded types (compile-time type safety)
 export type {
@@ -388,7 +389,7 @@ export { privateKeyFromPem } from './client-assertion';
 export { SignInError } from './sign-in-error';
 export { UnansweredError, jsonOf, whyUnanswered } from './unanswered';
 export { withinDeadline } from './deadline';
-export { faultOf, said, type Fault } from './required';
+export { faultOf, isSchemaName, said, type Fault } from './required';
 
 // Knowledge-graph view derivation — pure fn over the KnowledgeGraph type,
 // run by @xynolog/react-ui.

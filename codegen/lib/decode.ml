@@ -229,19 +229,6 @@ let enum cases cursor =
   | Some value -> value
   | None -> refuse cursor (Printf.sprintf "%S is none of %s" text (names cases))
 
-let wrong_length count cursor =
-  match cursor.json with
-  | `List items ->
-      refuse cursor
-        (Printf.sprintf "expected %d elements, found %d" count
-           (List.length items))
-  | _ -> expected cursor "an array"
-
-let pair first second cursor =
-  match cursor.json with
-  | `List [ a; b ] -> (first (child cursor "0" a), second (child cursor "1" b))
-  | _ -> wrong_length 2 cursor
-
 type nothing = |
 
 let nothing cursor = refuse cursor "a value where the model knows none"

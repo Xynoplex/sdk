@@ -55,6 +55,18 @@ let discriminant (s : D.t) =
       List.find_map (fun (_, p) -> only_value p) ps
   | _ -> None
 
+(* What [s] says of itself, or, when it only admits null beside another
+   schema, what that schema says: never what a schema its [allOf] names says,
+   which the view gives a schema that states one. *)
+let description (s : D.t) =
+  let own (n : D.node) =
+    if List.mem "description" n.keys then n.description else None
+  in
+  match s with
+  | D.Node n when own n <> None -> own n
+  | D.Node { any_of = Some [ D.Null; D.Node inner ]; _ } -> own inner
+  | _ -> None
+
 (* [s], or the component schema it names. *)
 let resolved (definitions : D.definitions) (s : D.t) =
   match reference s with Some name -> definitions.schema name | None -> s

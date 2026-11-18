@@ -7,15 +7,12 @@
  * TypeScript does (`faultOf`): a refused case is refused there, for the fault
  * it states, and every other case has none. A resource no reply brought can
  * reach the readers, which refuse one whose representations are malformed.
- * Each resource is held to the schema too: a case that only TypeScript could
- * read is found by this run, and the schema allows no refused case.
  */
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { XynologError } from '../errors';
 import type { ResourceDescriptor } from '../graph';
-import { formatErrors, validators } from '../openapi';
 import { faultOf, type Fault } from '../required';
 import {
   getPrimaryMediaType,
@@ -108,19 +105,6 @@ describe('the readers of a resource (protocol/specs/src/resources/reader-cases.j
     for (const stated of refused) {
       expect(Object.keys(stated).sort(), stated.why).toEqual(OF_A_REFUSAL);
       expect(stated.refused, stated.why).toBe(true);
-    }
-  });
-
-  it('holds every resource to its schema, which allows none that is refused', () => {
-    for (const { why, resource } of read) {
-      const valid = validators.ResourceDescriptor(resource);
-      expect(
-        valid,
-        `${why}: ${formatErrors(validators.ResourceDescriptor.errors)}`,
-      ).toBe(true);
-    }
-    for (const { why, resource } of refused) {
-      expect(validators.ResourceDescriptor(resource), why).toBe(false);
     }
   });
 

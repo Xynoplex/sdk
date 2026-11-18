@@ -70,7 +70,7 @@ type persistedCases struct {
 		Untouched *bool   `json:"untouched"`
 	} `json:"startup"`
 	CrossTab   []changedSignInRow `json:"crossTab"`
-	Holder     []changedSignInRow `json:"holder"`
+	InProcess  []changedSignInRow `json:"inProcess"`
 	ResumeFrom []struct {
 		Why string `json:"why"`
 		// Frames is the id of each event delivered on res-1's scope, in order.
@@ -79,7 +79,7 @@ type persistedCases struct {
 	} `json:"resumeFrom"`
 }
 
-// changedSignInRow is a row of crossTab or holder: what kb-a's stored sign-in
+// changedSignInRow is a row of crossTab or inProcess: what kb-a's stored sign-in
 // becomes while its client holds a value it has not written, and whether the
 // value is written.
 type changedSignInRow struct {
@@ -100,7 +100,7 @@ func readPersistedCases(t *testing.T) persistedCases {
 	decoder.DisallowUnknownFields()
 	var table persistedCases
 	must(t, decoder.Decode(&table))
-	if len(table.People) == 0 || len(table.Keys) == 0 || len(table.Forget) == 0 || len(table.Startup) == 0 || len(table.CrossTab) == 0 || len(table.Holder) == 0 || len(table.ResumeFrom) == 0 {
+	if len(table.People) == 0 || len(table.Keys) == 0 || len(table.Forget) == 0 || len(table.Startup) == 0 || len(table.CrossTab) == 0 || len(table.InProcess) == 0 || len(table.ResumeFrom) == 0 {
 		t.Fatal("a part of the persisted cases has no rows")
 	}
 	return table
@@ -198,7 +198,7 @@ func TestThePersistedCases(t *testing.T) {
 	t.Run("forget", func(t *testing.T) { runPersistedForget(t, table) })
 	t.Run("startup", func(t *testing.T) { runPersistedStartup(t, table) })
 	t.Run("crossTab", func(t *testing.T) { runPersistedCrossTab(t, table) })
-	t.Run("holder", func(t *testing.T) { runPersistedHolder(t, table) })
+	t.Run("inProcess", func(t *testing.T) { runPersistedInProcess(t, table) })
 	t.Run("resumeFrom", func(t *testing.T) { runPersistedResumeFrom(t, table) })
 }
 
@@ -640,14 +640,14 @@ func runPersistedCrossTab(t *testing.T, table persistedCases) {
 	}
 }
 
-// runPersistedHolder has a script's session, made by SessionFromKept over a
+// runPersistedInProcess has a script's session, made by SessionFromKept over a
 // memory sign-in that names jo, keep its caches in a storage of their own, the
 // gateway naming jo; the sign-in is changed through the memory sign-in:
 // forgotten, a new one kept in its place, or renewed with other tokens.
-func runPersistedHolder(t *testing.T, table persistedCases) {
+func runPersistedInProcess(t *testing.T, table persistedCases) {
 	jo := personOf(t, table, "jo").PersonKey
 	resource := keyOf(t, table, kbA, jo, "resource")
-	for _, row := range table.Holder {
+	for _, row := range table.InProcess {
 		t.Run(row.Why, func(t *testing.T) {
 			s := newStage(t)
 			s.mu.Lock()

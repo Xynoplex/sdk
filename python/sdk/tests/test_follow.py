@@ -10,10 +10,11 @@ from typing import assert_never
 import pytest
 from aio import pass_time, run, soon, turns
 from kb import refusing, silent
-from pydantic import JsonValue, TypeAdapter, ValidationError
+from pydantic import JsonValue
 from shown import CARRIED, parts_of, printed
 from spec import JsonObject
 
+from xynolog._required import fault_of
 from xynolog.channels import BRIDGED_CHANNELS
 from xynolog.client import ClientTiming, XynologClient
 from xynolog.errors import BusRequestError, JobError, TransportError, XynologError
@@ -561,9 +562,6 @@ def test_a_failure_that_is_final_ends_the_follower_and_one_that_does_not_say_is_
     run(scenario())
 
 
-_PARAMS = TypeAdapter[MarkJobParams](MarkJobParams)
-
-
 @pytest.mark.parametrize(
     "params",
     [
@@ -592,9 +590,8 @@ _PARAMS = TypeAdapter[MarkJobParams](MarkJobParams)
     ],
 )
 def test_a_job_its_worker_could_not_run_cannot_be_described(params: JsonObject) -> None:
-    # Nothing here refuses it by hand: the parameters of each motivation are the spec's own shapes, and those say what a job needs.
-    with pytest.raises(ValidationError):
-        _PARAMS.validate_python(params)
+    # Nothing here refuses it by hand: the parameters of each motivation are the spec's own shapes, and the table says what each needs.
+    assert fault_of(MarkJobParams, params) is not None
 
 
 def test_an_option_of_a_job_given_as_nothing_is_not_sent() -> None:

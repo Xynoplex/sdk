@@ -210,7 +210,7 @@ struct LiveQueries: Sendable {
     else { throw Unreadable() }
     let payload = JSONValue.object(read)
     let row: CacheRefreshRow
-    if let enriched = cacheRefresh.first(where: { $0.on == trigger && $0.when == .enriched }) {
+    if let enriched = cacheRefresh.first(where: { $0.trigger == trigger && $0.when == .enriched }) {
       let written = try member(enriched.carries, of: payload, as: Annotation.self)
       row = refreshRow(trigger, written == nil ? .unenriched : .enriched)
     } else {
@@ -321,7 +321,7 @@ private struct Unreadable: Error {}
 private func refreshRow(_ trigger: CacheRefreshTrigger, _ when: CacheRefreshWhen?)
   -> CacheRefreshRow
 {
-  guard let row = cacheRefresh.first(where: { $0.on == trigger && $0.when == when }) else {
+  guard let row = cacheRefresh.first(where: { $0.trigger == trigger && $0.when == when }) else {
     preconditionFailure("The refresh table has no row for \(trigger.rawValue)")
   }
   return row

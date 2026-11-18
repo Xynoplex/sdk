@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { deriveViews, type GraphViews } from '../knowledge-graph-views';
-import { validators, formatErrors } from '../openapi';
+import { faultOf, said } from '../required';
 import type { components } from '../types';
 
 type KnowledgeGraph = components['schemas']['KnowledgeGraph'];
@@ -44,13 +44,9 @@ describe('the views read off a knowledge graph (protocol/specs/src/librarian/der
   });
 
   it('states only graphs the spec accepts', () => {
-    const validate = validators.KnowledgeGraph;
     for (const stated of table.cases) {
-      // A validator may write to what it reads, so it is given a copy.
-      const refused = validate(structuredClone(stated.graph))
-        ? null
-        : formatErrors(validate.errors);
-      expect(refused, stated.why).toBeNull();
+      const fault = faultOf('KnowledgeGraph', stated.graph);
+      expect(fault === undefined ? null : said(fault), stated.why).toBeNull();
     }
   });
 

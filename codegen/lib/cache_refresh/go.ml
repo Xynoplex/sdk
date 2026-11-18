@@ -120,7 +120,7 @@ let text (t : Table.t) =
     List.filter_map
       (fun (trigger : Table.trigger) ->
         match trigger.kind with
-        | Channel { scoped } -> Some (trigger.on, scoped)
+        | Channel { scoped } -> Some (trigger.name, scoped)
         | Reopened | Unreadable -> None)
       t.triggers
   in
@@ -190,7 +190,8 @@ let text (t : Table.t) =
               specs =
                 List.map
                   (fun (tr : Table.trigger) ->
-                    G.spec ~type_:trigger (trigger_const tr.on) (G.Quoted tr.on))
+                    G.spec ~type_:trigger (trigger_const tr.name)
+                      (G.Quoted tr.name))
                   t.triggers;
             };
           G.Var
@@ -214,7 +215,7 @@ let text (t : Table.t) =
                   (List.map
                      (fun (tr : Table.trigger) ->
                        G.element ~about:(G.prose tr.docs)
-                         ~key:(G.Name (trigger_const tr.on))
+                         ~key:(G.Name (trigger_const tr.name))
                          (G.lines (List.map (fun r -> G.item (row r)) tr.rows)))
                      t.triggers)));
           G.Var

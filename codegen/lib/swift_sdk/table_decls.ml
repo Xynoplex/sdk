@@ -876,12 +876,11 @@ let cache_refresh (refresh : Tables.Client_refresh.t) ~channels =
   let rows =
     List.map
       (fun (row : Tables.Client_refresh.refresh_item) ->
-        let trigger = row.on in
-        if
-          not
-            (List.mem trigger [ "reopened"; "unreadable" ]
-            || List.mem trigger channels)
-        then refuse "unknown cache refresh trigger %s" trigger;
+        let trigger = Tables.Client_refresh.trigger_name row.trigger in
+        (match row.trigger with
+        | On channel when not (List.mem channel channels) ->
+            refuse "unknown cache refresh trigger %s" channel
+        | On _ | Stream _ -> ());
         if not (List.mem trigger !triggers) then
           triggers := !triggers @ [ trigger ];
         let names =
@@ -902,7 +901,7 @@ let cache_refresh (refresh : Tables.Client_refresh.t) ~channels =
         in
         labelled (name "CacheRefreshRow")
           [
-            arg "on" (case trigger);
+            arg "trigger" (case trigger);
             arg "when"
               (match row.when_ with
               | None -> S.Nil
@@ -957,7 +956,7 @@ let cache_refresh (refresh : Tables.Client_refresh.t) ~channels =
              layout = S.Lines;
              members =
                [
-                 field "on" (S.Named "CacheRefreshTrigger");
+                 field "trigger" (S.Named "CacheRefreshTrigger");
                  field "when" (S.Optional (S.Named "CacheRefreshWhen"));
                  field "reach" (S.Named "CacheRefreshReach");
                  field "resource" ways;

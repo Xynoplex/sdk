@@ -7,7 +7,7 @@
 //! the session the HTTP session factory builds, over a stand-in gateway that
 //! names the person, or nobody, once the test lets it; `crossTab` against a
 //! registry whose stored sign-in another context deletes or replaces;
-//! `holder` against a registry whose stored sign-in this process forgets,
+//! `inProcess` against a registry whose stored sign-in this process forgets,
 //! replaces or renews through the storage's functions, which are what holds
 //! a registry session's sign-in; `resumeFrom` against the session the HTTP
 //! session factory builds, over a stand-in gateway whose stream delivers
@@ -136,7 +136,7 @@ fn the_table_states_only_what_this_runner_reads() {
         "startupStorage",
         "startup",
         "crossTab",
-        "holder",
+        "inProcess",
         "resumeFrom",
     ];
     for part in object(&cases, "the table").keys() {
@@ -175,7 +175,7 @@ fn the_table_states_only_what_this_runner_reads() {
             ],
         ),
         ("crossTab", &["why", "stored", "saved"]),
-        ("holder", &["why", "stored", "saved"]),
+        ("inProcess", &["why", "stored", "saved"]),
         ("resumeFrom", &["why", "frames", "resumes"]),
     ];
     for (part, read) in members {
@@ -1052,7 +1052,7 @@ enum Changed {
     /// By another context, writing the storage (`crossTab`).
     Elsewhere,
     /// In this process, through what holds the registry session's sign-in:
-    /// the storage's functions (`holder`). Forgotten by the public clear,
+    /// the storage's functions (`inProcess`). Forgotten by the public clear,
     /// replaced by the save of a new sign-in, renewed by a write of the
     /// stored session that keeps its person.
     ThroughTheHolder,
@@ -1067,7 +1067,7 @@ fn written_over(
     storage.set(&session_key(KB), &signed_in.written())
 }
 
-/// How one row of `crossTab` or `holder` is not what the registry's client
+/// How one row of `crossTab` or `inProcess` is not what the registry's client
 /// wrote.
 ///
 /// In the table's order: the client is given res-1 and owes its save, the
@@ -1144,13 +1144,13 @@ async fn cross_tab() {
     assert!(wrong.is_empty(), "{}", wrong.join("\n"));
 }
 
-// ── holder ──────────────────────────────────────────────────────────────
+// ── inProcess ───────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn holder() {
+async fn in_process() {
     let cases = table();
     let mut wrong = Vec::new();
-    for row in rows(&cases, "holder") {
+    for row in rows(&cases, "inProcess") {
         let why = text(row, "why");
         wrong.extend(
             across(&cases, row, Changed::ThroughTheHolder)

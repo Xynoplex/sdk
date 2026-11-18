@@ -235,7 +235,7 @@ let text (t : Table.t) =
             (T.rows
                (List.map
                   (fun (trigger : Table.trigger) ->
-                    T.entry ~about:[ Doc trigger.docs ] (Quoted trigger.on)
+                    T.entry ~about:[ Doc trigger.docs ] (Quoted trigger.name)
                       (T.array (List.map row trigger.rows)))
                   t.triggers));
           T.type_alias "CacheRefreshTrigger"
@@ -245,7 +245,7 @@ let text (t : Table.t) =
             (List.filter_map
                (fun (trigger : Table.trigger) ->
                  match trigger.kind with
-                 | Channel _ -> Some trigger.on
+                 | Channel _ -> Some trigger.name
                  | Reopened | Unreadable -> None)
                t.triggers);
         ];
