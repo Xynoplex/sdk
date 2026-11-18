@@ -180,3 +180,27 @@
  (name ocaml_syntax)
  (modules ocaml_syntax)
  (libraries xynolog_codegen compiler-libs.common ocamlformat-lib alcotest))
+
+; Run with the checkout's root, which is outside this project:
+; dune exec test/boundary_census.exe -- ..
+(executable
+ (name boundary_census)
+ (modules boundary_census)
+ (libraries xynolog_codegen))
+
+; Run with the checkout's root and Protocol's, which are outside this project:
+; dune exec test/protocol_paths_census.exe -- .. ../protocol
+(executable
+ (name protocol_paths_census)
+ (modules protocol_paths_census)
+ (libraries xynolog_codegen))
+
+(test
+ (name boundary)
+ (modules boundary)
+ (libraries xynolog_codegen alcotest))
+
+(test
+ (name protocol_paths)
+ (modules protocol_paths)
+ (libraries xynolog_codegen alcotest))
