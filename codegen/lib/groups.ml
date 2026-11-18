@@ -32,4 +32,6 @@ let all =
     { name = "rust-types"; files = Rust_types.files };
     { name = "swift-sdk"; files = Swift_sdk.files };
     { name = "haskell-sdk"; files = Haskell_sdk.files };
+    { name = "kotlin-sdk"; files = Kotlin_sdk.files };
+    { name = "csharp-sdk"; files = Csharp_sdk.files };
   ]

@@ -35,12 +35,15 @@ per language it writes:
   `Bus.Registry` holds the registry to the bus's rules and derives what the
   languages share; `Bus.Typescript`, `Bus.Go` and `Bus.Python` write
   `typescript/core/src`'s bus files, `go/bus`'s `_gen.go` files and
-  `python/sdk/src/xynolog`'s `channels.py` and `operations.py`.
+  `python/sdk/src/xynolog`'s `channels.py` and `operations.py`, and
+  `Bus.Csharp` C#'s `BusDescriptors.g.cs`.
 - `required`: what each component schema requires of a value, the table
   every SDK holds a reply to before it reads it. `Required.Shape` derives it
-  and states its rules. `Required.Table` writes it as JSON for Kotlin, C#
-  and Go, and `Required.Typescript`, `Required.Python` and
-  `Required.Haskell` write it for theirs, Haskell's with each bus channel's
+  and states its rules. `Required.Table` writes it as JSON for Go, and
+  `Required.Typescript`, `Required.Python`, `Required.Rust`,
+  `Required.Kotlin`, `Required.Csharp` and `Required.Haskell` write it for
+  theirs, C#'s with each payload type the bus registry makes, Haskell's with
+  each bus channel's
   payload and each HTTP operation's reply, which `Required.Event` derives
   for every reader of a channel's events. `Required.Go` holds it to the
   types `go/api` declares.
@@ -48,8 +51,8 @@ per language it writes:
   Case_Ignorable property, for the C#, Kotlin and Go SDKs, whose runtimes
   give neither. `Ucd` reads them from Unicode's own
   `DerivedCoreProperties.txt`, which [`ucd/`](ucd) holds;
-  `Unicode_case.Json` writes C#'s and Kotlin's copy, and `Unicode_case.Go`
-  Go's range tables.
+  `Unicode_case.Kotlin`, `Unicode_case.Csharp` and `Unicode_case.Go` write
+  Kotlin's, C#'s and Go's range tables.
 - `encodings`: the Encoding Standard's labels, its single-byte encodings and
   the encodings whose labels are refused, from `text/encoding-cases.json`,
   for the readers of a resource's text whose platform lacks them.
@@ -181,6 +184,23 @@ per language it writes:
   `cache-refresh`, `oauth-clients`, `sign-in`, `media-types`, `stored`,
   `client-types`, `testing`, `required` and `unicode-case` groups each write
   the Haskell SDK's module of their own table.
+- `csharp-sdk`: the C# SDK's models of the component schemas and of the
+  schemas it reads beside them, each with its converter
+  (`Csharp_sdk.Models`), every schema they are made from as the SDK
+  validates a value against it, the code each of the wire's failure codes
+  becomes, and the tables the SDK reads as Protocol writes them. The `bus`,
+  `required`, `unicode-case` and `identifiers` groups each write the C#
+  SDK's file of their own table. `Csharp_syntax` is the C# they are built
+  of, laid out as `dotnet format` leaves it.
+- `kotlin-sdk`: the Kotlin SDK's types of the component schemas and of the
+  sign-in store's entry, a file each under `xynolog/types`, and the kinds of
+  id in `xynolog/identifiers` (`Kotlin_sdk.Types`), in
+  `kotlin/sdk/src/generated/kotlin`; a file there that no schema writes is
+  refused. The `bus`, `required`, `unicode-case`, `encodings`,
+  `error-codes`, `timing`, `cache-refresh`, `oauth-clients`, `telemetry`,
+  `sign-in` and `media-types` groups each write the Kotlin SDK's file of
+  their own table. `Kotlin_syntax` is the Kotlin they are built of, laid out
+  as ktlint leaves it.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal

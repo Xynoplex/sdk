@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
+import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
 import xynolog.retry.RetryPolicy
 import xynolog.transport.ConnectionState

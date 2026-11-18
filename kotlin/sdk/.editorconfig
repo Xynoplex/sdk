@@ -1,0 +1,10 @@
+root = true
+
+[*.{kt,kts}]
+ktlint_code_style = intellij_idea
+# With no line length to fit, this rule only joins a signature its author broke: the break is the author's.
+ktlint_standard_function-signature = disabled
+# A when's branches are a table, a line each: a blank line between two would split it.
+ktlint_standard_blank-line-between-when-conditions = disabled
+# A file's name is the Java class its top-level functions are reached through (Connect.kt's are ConnectKt's), so it is the API's, not ktlint's.
+ktlint_standard_filename = disabled

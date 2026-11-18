@@ -1,9 +1,9 @@
 package xynolog.live
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
@@ -330,7 +330,9 @@ internal class Watcher<T : Any>(query: Cached<T>, scope: CoroutineScope) {
  * watcher lags, and when it catches up it is given only the latest state. What
  * runs here runs on `beneath`, the test's dispatcher, once it is let go.
  */
-internal class Lagging(private val beneath: CoroutineDispatcher) : CoroutineDispatcher(), AutoCloseable {
+internal class Lagging(private val beneath: CoroutineDispatcher) :
+    CoroutineDispatcher(),
+    AutoCloseable {
     private val waiting = ArrayDeque<Pair<CoroutineContext, Runnable>>()
     private var busy = false
     val scope = CoroutineScope(SupervisorJob() + this)

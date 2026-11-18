@@ -33,12 +33,12 @@ import xynolog.JobProgressed
 import xynolog.JobRefused
 import xynolog.Recording
 import xynolog.Running
-import xynolog.XynologClient
 import xynolog.Timings
+import xynolog.XynologClient
 import xynolog.errors.BusRequestError
 import xynolog.errors.JobError
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
+import xynolog.errors.XynologError
 import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
 import xynolog.transport.Broadcast

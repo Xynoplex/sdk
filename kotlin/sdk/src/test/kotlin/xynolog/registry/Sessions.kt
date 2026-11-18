@@ -78,12 +78,15 @@ internal class Behind {
             if (resource in failing) throw TransportError(TransportErrorCode.Error, "$resource could not be read")
             val representations = mediaTypes[resource]?.let { JsonArray(listOf(buildJsonObject { put("mediaType", it) })) } ?: JsonArray(emptyList())
             buildJsonObject {
-                put("resource", buildJsonObject {
-                    put("@context", "https://schema.org")
-                    put("@id", resource)
-                    put("name", "name-$resource")
-                    put("representations", representations)
-                })
+                put(
+                    "resource",
+                    buildJsonObject {
+                        put("@context", "https://schema.org")
+                        put("@id", resource)
+                        put("name", "name-$resource")
+                        put("representations", representations)
+                    },
+                )
                 put("lastSequence", 1)
             }
         }

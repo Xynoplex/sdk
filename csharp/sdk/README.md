@@ -465,9 +465,9 @@ the maximum, and never shorter than the wait the failure stated. Its optional
 
 ## IDs and protocol types
 
-The incremental generator reads `protocol/specs/src` as compiler additional files. It emits sealed
-records, closed record unions, wire enums, and checked identifier structs. Unknown schema
-keywords fail compilation with `SEMGEN001`. Generated code is not checked in.
+`make generate` writes the models from `protocol/specs/src` into `src/Xynolog/Generated`
+(`codegen/lib/csharp_sdk`): sealed records, closed record unions, wire enums, and checked
+identifier structs. A schema keyword the models do not read fails generation.
 
 Use `Xynolog.Types` for models and `Xynolog.Identifiers` for identifier kinds. Optional
 nullable members use `Stated<T>` to distinguish absence from explicit null. Open objects

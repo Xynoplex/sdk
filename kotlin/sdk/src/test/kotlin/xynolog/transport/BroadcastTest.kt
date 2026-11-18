@@ -36,6 +36,7 @@ class BroadcastTest {
         val broadcasts = List(CLOSES) { Broadcast<Int>() }
         val listening = broadcasts.map { it.listen() }
         val arrived = AtomicInteger()
+
         // Both threads spin until both have come to the round, so they leave it within the same moment.
         fun meet(round: Int) {
             arrived.incrementAndGet()

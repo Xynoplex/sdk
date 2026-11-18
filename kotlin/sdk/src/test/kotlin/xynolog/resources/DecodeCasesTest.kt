@@ -12,8 +12,8 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import xynolog.Recording
-import xynolog.XynologClient
 import xynolog.Spec
+import xynolog.XynologClient
 import xynolog.errors.TransportError
 import xynolog.identifiers.ResourceId
 import xynolog.mediatypes.textSourceOf

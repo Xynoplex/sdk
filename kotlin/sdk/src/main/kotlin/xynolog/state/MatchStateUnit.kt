@@ -1,7 +1,7 @@
 package xynolog.state
 
-import xynolog.XynologClient
 import xynolog.StateUnit
+import xynolog.XynologClient
 import xynolog.channels.Channels
 import xynolog.errors.XynologError
 import xynolog.namespaces.SEARCH_LIMIT

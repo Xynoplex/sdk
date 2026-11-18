@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import xynolog.cache.CacheState
 import xynolog.cache.PERSISTED_QUERIES
-import xynolog.errors.XynologError
 import xynolog.errors.SessionError
 import xynolog.errors.SessionErrorCode
+import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
 import xynolog.live.RESOURCE
 import xynolog.live.recorded

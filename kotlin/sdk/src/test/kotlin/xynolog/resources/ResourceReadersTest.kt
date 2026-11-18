@@ -78,7 +78,13 @@ class ResourceReadersTest {
             assertEquals(Fault(member, reason), faultOf(ResourceDescriptor.serializer().descriptor, case.getValue("resource")))
             val result = Operations.BROWSE_RESOURCE_REQUESTED.result
             val reply = buildJsonObject {
-                put("response", buildJsonObject { put("resource", case.getValue("resource")); put("lastSequence", 1) })
+                put(
+                    "response",
+                    buildJsonObject {
+                        put("resource", case.getValue("resource"))
+                        put("lastSequence", 1)
+                    },
+                )
             }
             val refusal = assertThrows(TransportError::class.java) { decoded(result, reply) }
             val within = listOf("response.resource", member).filter { it.isNotEmpty() }.joinToString(".")

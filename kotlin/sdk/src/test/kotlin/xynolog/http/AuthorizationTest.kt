@@ -145,11 +145,14 @@ class AuthorizationTest {
             val asking = "${realm.origin}/authorize?prompt=login"
             realm.script(
                 "/.well-known/openid-configuration",
-                Said(200, buildJsonObject {
-                    put("issuer", realm.origin)
-                    put("authorization_endpoint", asking)
-                    put("token_endpoint", "${realm.origin}/token")
-                }),
+                Said(
+                    200,
+                    buildJsonObject {
+                        put("issuer", realm.origin)
+                        put("authorization_endpoint", asking)
+                        put("token_endpoint", "${realm.origin}/token")
+                    },
+                ),
             )
             val address = beginAuthorization(BeginAuthorizationOptions(endpointOf(realm), REDIRECT), MemoryStorage())
             assertTrue(address.startsWith("$asking&"), address)
@@ -254,10 +257,16 @@ class AuthorizationTest {
         Realm().use { realm ->
             val storage = MemoryStorage()
             val record = begun(realm, storage)
-            realm.script("/token", Said(400, buildJsonObject {
-                put("error", "invalid_grant")
-                put("error_description", "Code not valid")
-            }))
+            realm.script(
+                "/token",
+                Said(
+                    400,
+                    buildJsonObject {
+                        put("error", "invalid_grant")
+                        put("error_description", "Code not valid")
+                    },
+                ),
+            )
             val refused = assertThrows(SignInError::class.java) { runBlocking { completeAuthorization("$REDIRECT?state=${record.state}&code=the-code", storage) } }
             assertEquals(SignInErrorCode.Exchange to 400, refused.reason to refused.status)
             assertEquals("The issuer refused the token request (invalid_grant: Code not valid)", refused.message)

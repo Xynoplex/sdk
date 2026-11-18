@@ -36,7 +36,9 @@ import kotlin.coroutines.CoroutineContext
  * `java.util.concurrent.Flow.Publisher`. Closing it stops the listening:
  * nothing more is kept for it, and its reading is over.
  */
-public class Events<T : Any> internal constructor(private val source: Flow<T>, private val stop: () -> Unit) : Flow<T>, AutoCloseable {
+public class Events<T : Any> internal constructor(private val source: Flow<T>, private val stop: () -> Unit) :
+    Flow<T>,
+    AutoCloseable {
     @Volatile
     private var closed = false
 
@@ -364,7 +366,8 @@ public data class FrameRefusal @JvmExposeBoxed constructor(
     /** The resource whose scope it was delivered on. */
     @get:JvmExposeBoxed
     public val scope: ResourceId?,
-) : Heard<Nothing>, Carried {
+) : Heard<Nothing>,
+    Carried {
     override val status: String get() = "refused"
 }
 

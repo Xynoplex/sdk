@@ -32,8 +32,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import xynolog.ClientTiming
 import xynolog.Recording
-import xynolog.XynologClient
 import xynolog.Timings
+import xynolog.XynologClient
 import xynolog.channels.Channels
 import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
@@ -459,7 +459,14 @@ class ClaimsTest {
         assertTrue(job.cancelled.value)
         job.cancel()
         // Settled, it is told no more, and its readers end.
-        assertEquals(listOf(true), launch { job.cancelled.collect {} }.let { runCurrent(); assertTrue(it.isCompleted); listOf(job.cancelled.value) })
+        assertEquals(
+            listOf(true),
+            launch { job.cancelled.collect {} }.let {
+                runCurrent()
+                assertTrue(it.isCompleted)
+                listOf(job.cancelled.value)
+            },
+        )
         claims.stop()
         w.over()
     }
@@ -666,6 +673,7 @@ class ClaimsTest {
         val jobs = List(Timings.ERRORS_KEPT_FOR_FIRST_READER_COUNT.toInt() + beyond + 1) { "job-$it" }
         jobs.forEach { w.desk.offered += running(it) }
         val claims = w.client.job.claim(EVERYTHING, heldJobStallMs = 400, heldJobStallCheckMs = 100)
+
         // Each job is held, stalls and is settled, and nobody reads the stalls.
         suspend fun stallsAndIsSettled() {
             val job = held(claims)
