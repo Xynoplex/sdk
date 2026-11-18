@@ -18,51 +18,85 @@ let channel_types = [ "Channel"; "ScopedChannel"; "Response"; "Empty" ]
 
 (* What a channel carries, in Kotlin: its type, that type's serializer, the
    component schemas it names and the types of xynolog.channels it names. *)
-type carried = { type_ : K.type_; serializer : K.expr; components : string list; own : string list }
+type carried = {
+  type_ : K.type_;
+  serializer : K.expr;
+  components : string list;
+  own : string list;
+}
 
 let serializer_of name = K.call (K.Member (K.Name name, "serializer")) []
 
 let carried ~(types : Types.spec) (c : R.channel) =
   let component name =
     if List.mem name channel_types then
-      Names.refuse "%s carries %s, which xynolog.channels names a type of its own" c.channel name;
+      Names.refuse
+        "%s carries %s, which xynolog.channels names a type of its own"
+        c.channel name;
     if not (List.mem_assoc name types.definitions) then
       Names.refuse "%s carries %s, which is no component schema" c.channel name
   in
-  (match c.payload with Stored_event { payload; _ } -> component payload | _ -> ());
+  (match c.payload with
+  | Stored_event { payload; _ } -> component payload
+  | _ -> ());
   match Registry.carried c with
   | Component name ->
       component name;
-      { type_ = K.Type name; serializer = serializer_of name; components = [ name ]; own = [] }
+      {
+        type_ = K.Type name;
+        serializer = serializer_of name;
+        components = [ name ];
+        own = [];
+      }
   | Response name ->
       component name;
       {
         type_ = K.Generic ("Response", [ K.Type name ]);
-        serializer = K.call (K.Member (K.Name "Response", "serializer")) [ serializer_of name ];
+        serializer =
+          K.call
+            (K.Member (K.Name "Response", "serializer"))
+            [ serializer_of name ];
         components = [ name ];
         own = [ "Response" ];
       }
-  | Nothing -> { type_ = K.Type "Empty"; serializer = serializer_of "Empty"; components = []; own = [ "Empty" ] }
+  | Nothing ->
+      {
+        type_ = K.Type "Empty";
+        serializer = serializer_of "Empty";
+        components = [];
+        own = [ "Empty" ];
+      }
 
 (* The stamps a channel's payload declares: those of the component it
    carries. *)
 let stamps ~component (c : R.channel) =
   match Registry.carried c with
   | Component name -> (
-      match Registry.stamps component ~of_:name (Registry.named component name) with
+      match
+        Registry.stamps component ~of_:name (Registry.named component name)
+      with
       | stamps -> List.sort_uniq String.compare stamps
-      | exception Registry.Problem message -> Names.refuse "%s: %s" c.channel message)
+      | exception Registry.Problem message ->
+          Names.refuse "%s: %s" c.channel message)
   | Response _ | Nothing -> []
 
 let constant = Names.constant_name
 let strings list = K.call (K.Name "listOf") (List.map (fun s -> K.Str s) list)
 
 let imports ~types carried =
-  List.sort_uniq String.compare (List.concat_map (fun c -> List.concat_map (fun n -> Types.imports_of types (K.Type n)) c.components) carried)
+  List.sort_uniq String.compare
+    (List.concat_map
+       (fun c ->
+         List.concat_map
+           (fun n -> Types.imports_of types (K.Type n))
+           c.components)
+       carried)
 
 let channels_file ~component ~types (bus : Registry.t) =
   let reg = bus.registry in
-  let rows = List.map (fun (c : R.channel) -> (c, carried ~types c)) reg.channels in
+  let rows =
+    List.map (fun (c : R.channel) -> (c, carried ~types c)) reg.channels
+  in
   let scoped (c : R.channel) = List.mem c.channel reg.audience.scoped in
   let member ((c : R.channel), carried) =
     let kind = if scoped c then "ScopedChannel" else "Channel" in
@@ -75,7 +109,10 @@ let channels_file ~component ~types (bus : Registry.t) =
       ~annotations:[ K.annotation "JvmField" ]
       ~visibility:K.Public
       ~type_:(K.Generic (kind, [ carried.type_ ]))
-      ~value:(K.Same_line (K.call (K.Name kind) [ K.Str c.channel; carried.serializer; stamps ]))
+      ~value:
+        (K.Same_line
+           (K.call (K.Name kind)
+              [ K.Str c.channel; carried.serializer; stamps ]))
       (constant c.channel)
   in
   let names ?(visibility = K.Public) ~about name list =
@@ -86,47 +123,72 @@ let channels_file ~component ~types (bus : Registry.t) =
       ~value:(K.Same_line (strings list))
       name
   in
-  let replies = List.concat_map (fun (o : R.operation) -> [ o.result; o.failure ]) reg.operations in
+  let replies =
+    List.concat_map
+      (fun (o : R.operation) -> [ o.result; o.failure ])
+      reg.operations
+  in
   let bridged =
-    List.fold_left (fun seen ch -> if List.mem ch seen then seen else seen @ [ ch ]) [] (reg.audience.everyone @ replies)
+    List.fold_left
+      (fun seen ch -> if List.mem ch seen then seen else seen @ [ ch ])
+      []
+      (reg.audience.everyone @ replies)
   in
   let persisted =
-    List.filter_map (fun (c : R.channel) -> match c.payload with Stored_event { event; _ } -> Some event | _ -> None) reg.channels
+    List.filter_map
+      (fun (c : R.channel) ->
+        match c.payload with
+        | Stored_event { event; _ } -> Some event
+        | _ -> None)
+      reg.channels
   in
-  Kotlin_sdk.table ~from_:Registry.file __FILE__ ~package:"xynolog.channels" ~name:"Channels"
+  Kotlin_sdk.table ~from_:Registry.file __FILE__ ~package:"xynolog.channels"
+    ~name:"Channels"
     ~imports:("xynolog.Generated" :: imports ~types (List.map snd rows))
     [
       K.property
-        ~about:(K.Block "The field of a relayed frame's payload its trace rides in (the bus registry's `trace`).")
-        ~annotations:[ generated ] ~visibility:K.Public ~const:true ~type_:(K.Type "String")
-        ~value:(K.Same_line (K.Str reg.trace.field))
+        ~about:
+          (K.Block
+             "The field of a relayed frame's payload its trace rides in (the \
+              bus registry's `trace`).")
+        ~annotations:[ generated ] ~visibility:K.Public ~const:true
+        ~type_:(K.Type "String") ~value:(K.Same_line (K.Str reg.trace.field))
         "TRACE_FIELD";
       K.class_
         ~about:
           (K.Doc
-             "Every channel of the bus, by name, each typed by the payload a frame on it carries; a channel a \
-              resource's scope carries is a `ScopedChannel`.")
+             "Every channel of the bus, by name, each typed by the payload a \
+              frame on it carries; a channel a resource's scope carries is a \
+              `ScopedChannel`.")
         ~annotations:[ generated ] ~visibility:K.Public
-        ~members:(List.map member rows)
-        K.Object "Channels";
-      names ~about:"Every channel's name, in the registry's order." "CHANNEL_NAMES"
+        ~members:(List.map member rows) K.Object "Channels";
+      names ~about:"Every channel's name, in the registry's order."
+        "CHANNEL_NAMES"
         (List.map (fun (c : R.channel) -> c.channel) reg.channels);
       names
         ~about:
-          "What a full client gives its transport to name on no scope: the channels every client hears, and every \
-           operation's reply channels."
+          "What a full client gives its transport to name on no scope: the \
+           channels every client hears, and every operation's reply channels."
         "BRIDGED_CHANNELS" bridged;
-      names ~about:"The channels a resource's scope carries." "RESOURCE_SCOPED_CHANNELS" reg.audience.scoped;
-      names ~visibility:K.Internal ~about:"The type of every event of the record." "PERSISTED" persisted;
+      names ~about:"The channels a resource's scope carries."
+        "RESOURCE_SCOPED_CHANNELS" reg.audience.scoped;
+      names ~visibility:K.Internal
+        ~about:"The type of every event of the record." "PERSISTED" persisted;
     ]
 
 let operations_file ~types (bus : Registry.t) =
   let reg = bus.registry in
   let carried name = carried ~types (bus.channel name) in
-  let channels (o : R.operation) = List.map carried [ o.request; o.result; o.failure ] in
-  let operation_type o = K.Generic ("Operation", List.map (fun c -> c.type_) (channels o)) in
+  let channels (o : R.operation) =
+    List.map carried [ o.request; o.result; o.failure ]
+  in
+  let operation_type o =
+    K.Generic ("Operation", List.map (fun c -> c.type_) (channels o))
+  in
   let channel name = K.Name ("Channels." ^ constant name) in
-  let operation (o : R.operation) = K.Name ("Operations." ^ constant o.request) in
+  let operation (o : R.operation) =
+    K.Name ("Operations." ^ constant o.request)
+  in
   let member (o : R.operation) =
     let names =
       match List.assoc o.request bus.reply_names with
@@ -136,55 +198,84 @@ let operations_file ~types (bus : Registry.t) =
     K.property
       ~annotations:[ K.annotation "JvmField" ]
       ~visibility:K.Public ~type_:(operation_type o)
-      ~value:(K.Below (K.call (K.Name "Operation") [ channel o.request; channel o.result; channel o.failure; names ]))
+      ~value:
+        (K.Below
+           (K.call (K.Name "Operation")
+              [ channel o.request; channel o.result; channel o.failure; names ]))
       (constant o.request)
   in
   let first, rest = bus.limits in
   let all = List.concat_map channels reg.operations in
-  Kotlin_sdk.table ~from_:Registry.file __FILE__ ~package:"xynolog.bus" ~name:"Operations"
+  Kotlin_sdk.table ~from_:Registry.file __FILE__ ~package:"xynolog.bus"
+    ~name:"Operations"
     ~imports:
       ([ "xynolog.Generated"; "xynolog.channels.Channels" ]
-      @ List.map (fun n -> "xynolog.channels." ^ n) (List.sort_uniq String.compare (List.concat_map (fun c -> c.own) all))
+      @ List.map
+          (fun n -> "xynolog.channels." ^ n)
+          (List.sort_uniq String.compare (List.concat_map (fun c -> c.own) all))
       @ imports ~types all)
     [
       K.class_
         ~about:
           (K.Doc
-             "Every operation of the registry, named for its request's channel, each typed by what it sends and what \
-              each reply carries.")
+             "Every operation of the registry, named for its request's \
+              channel, each typed by what it sends and what each reply \
+              carries.")
         ~annotations:[ generated ] ~visibility:K.Public
         ~members:(List.map member reg.operations)
         K.Object "Operations";
-      K.property ~about:(K.Doc "Each operation of the registry, by its request's channel.")
+      K.property
+        ~about:
+          (K.Doc "Each operation of the registry, by its request's channel.")
         ~annotations:[ generated ] ~visibility:K.Public
-        ~type_:(K.Generic ("Map", [ K.Type "String"; K.Generic ("Operation", [ K.Star; K.Star; K.Star ]) ]))
+        ~type_:
+          (K.Generic
+             ( "Map",
+               [
+                 K.Type "String";
+                 K.Generic ("Operation", [ K.Star; K.Star; K.Star ]);
+               ] ))
         ~value:
           (K.Same_line
              (K.call ~layout:K.Lines (K.Name "mapOf")
-                (List.map (fun (o : R.operation) -> K.Binary (K.Str o.request, K.To, operation o)) reg.operations)))
+                (List.map
+                   (fun (o : R.operation) ->
+                     K.Binary (K.Str o.request, K.To, operation o))
+                   reg.operations)))
         "OPERATIONS";
       K.property
-        ~about:(K.Doc "The operations that report the limits of the models a service holds credentials for.")
+        ~about:
+          (K.Doc
+             "The operations that report the limits of the models a service \
+              holds credentials for.")
         ~annotations:[ generated ] ~visibility:K.Public
         ~type_:(K.Generic ("List", [ operation_type first ]))
-        ~value:(K.Same_line (K.call (K.Name "listOf") (List.map operation (first :: rest))))
+        ~value:
+          (K.Same_line
+             (K.call (K.Name "listOf") (List.map operation (first :: rest))))
         "LIMITS_OPERATIONS";
     ]
 
 let credentials_file (log : Tables.Bus_log_cases.t) =
   let names = log.names in
-  if names = [] || List.length (List.sort_uniq String.compare names) <> List.length names then
-    Names.refuse "the bus log's names are none, or one is named twice";
-  Kotlin_sdk.table ~from_:log_cases_file __FILE__ ~package:"xynolog.bus" ~name:"Credentials" ~imports:[]
+  if
+    names = []
+    || List.length (List.sort_uniq String.compare names) <> List.length names
+  then Names.refuse "the bus log's names are none, or one is named twice";
+  Kotlin_sdk.table ~from_:log_cases_file __FILE__ ~package:"xynolog.bus"
+    ~name:"Credentials" ~imports:[]
     [
       K.property
         ~about:
           (K.Doc
-             ("The names a credential goes by: a bus log line shows `[withheld]` for the value of a member under any \
-               of them (protocol/specs/src/" ^ log_cases_file ^ ")."))
+             ("The names a credential goes by: a bus log line shows \
+               `[withheld]` for the value of a member under any of them \
+               (protocol/specs/src/" ^ log_cases_file ^ ")."))
         ~visibility:K.Internal
         ~type_:(K.Generic ("Set", [ K.Type "String" ]))
-        ~value:(K.Same_line (K.call (K.Name "setOf") (List.map (fun s -> K.Str s) names)))
+        ~value:
+          (K.Same_line
+             (K.call (K.Name "setOf") (List.map (fun s -> K.Str s) names)))
         "CREDENTIAL_NAMES";
     ]
 
@@ -193,5 +284,7 @@ let files ~component ~types ~log_cases bus =
     (Kotlin_sdk.written ~from_:Registry.file (fun () ->
          [ channels_file ~component ~types bus; operations_file ~types bus ]))
     (fun registry ->
-      Result.map (fun credentials -> registry @ [ credentials ])
-        (Kotlin_sdk.written ~from_:log_cases_file (fun () -> credentials_file log_cases)))
+      Result.map
+        (fun credentials -> registry @ [ credentials ])
+        (Kotlin_sdk.written ~from_:log_cases_file (fun () ->
+             credentials_file log_cases)))

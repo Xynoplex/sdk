@@ -18,7 +18,9 @@ let sign_in_file = "sign-in-store/SignIn.json"
 let spec_of (spec : Spec.t) : (Types.spec, string) result =
   let schema_of file = List.assoc_opt file spec.schemas in
   let components =
-    List.map (fun (name, reference) -> (name, fst (Decode.resolve reference))) spec.gateway.components.schemas
+    List.map
+      (fun (name, reference) -> (name, fst (Decode.resolve reference)))
+      spec.gateway.components.schemas
   in
   let* definitions =
     List.fold_right
@@ -26,31 +28,43 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
         let* rest = rest in
         match schema_of file with
         | Some schema -> Ok ((name, schema) :: rest)
-        | None -> Error ("the component " ^ name ^ " names " ^ file ^ ", which the model has not read"))
+        | None ->
+            Error
+              ("the component " ^ name ^ " names " ^ file
+             ^ ", which the model has not read"))
       components (Ok [])
   in
   let* sign_in =
-    match schema_of sign_in_file with Some s -> Ok s | None -> Error (sign_in_file ^ " is not in the spec")
+    match schema_of sign_in_file with
+    | Some s -> Ok s
+    | None -> Error (sign_in_file ^ " is not in the spec")
   in
-  if List.mem_assoc "SignIn" definitions then Error "the API's components name a SignIn, which is the sign-in store's"
+  if List.mem_assoc "SignIn" definitions then
+    Error "the API's components name a SignIn, which is the sign-in store's"
   else
     Ok
       {
         Types.definitions = definitions @ [ ("SignIn", sign_in) ];
         identifiers =
-          List.map (fun (k : Tables.Identifiers_kinds.kind) -> k.schema) spec.tables.identifiers_kinds.kinds;
-        component_of_file = List.map (fun (name, file) -> (file, name)) components;
+          List.map
+            (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+            spec.tables.identifiers_kinds.kinds;
+        component_of_file =
+          List.map (fun (name, file) -> (file, name)) components;
       }
 
 (* [spec_of], its refusal one of the gateway's document's. *)
-let refused message = [ { Decode.file = "openapi.json"; pointer = ""; message } ]
+let refused message =
+  [ { Decode.file = "openapi.json"; pointer = ""; message } ]
+
 let types_of spec = Result.map_error refused (spec_of spec)
 
 let opt_in =
   K.annotation
     ~args:
       [
-        K.arg (K.Class_literal "kotlinx.serialization.ExperimentalSerializationApi");
+        K.arg
+          (K.Class_literal "kotlinx.serialization.ExperimentalSerializationApi");
         K.arg (K.Class_literal "kotlin.ExperimentalStdlibApi");
       ]
     "OptIn"
@@ -58,31 +72,41 @@ let opt_in =
 let file ~package ~imports decls =
   K.text
     {
-      banner = Banner.kotlin_lines ~from_:"the component schemas in protocol/specs/src" __FILE__;
+      banner =
+        Banner.kotlin_lines ~from_:"the component schemas in protocol/specs/src"
+          __FILE__;
       file_annotations = [ opt_in ];
       package;
       imports = Types.imported @ imports;
       decls;
     }
 
-let path package name = directory ^ "/" ^ String.map (function '.' -> '/' | c -> c) package ^ "/" ^ name ^ ".kt"
+let path package name =
+  directory ^ "/"
+  ^ String.map (function '.' -> '/' | c -> c) package
+  ^ "/" ^ name ^ ".kt"
 
 (* A file of data, opening with [banner]: no opt-in, and the imports and
    declarations it is given. *)
 let data_file ~banner ~package ~name ~imports decls =
-  { Output.path = path package name; text = K.text { banner; file_annotations = []; package; imports; decls } }
+  {
+    Output.path = path package name;
+    text = K.text { banner; file_annotations = []; package; imports; decls };
+  }
 
 (* A table's file, which [writer] (its [__FILE__]) writes from Protocol's
    [from_]. *)
 let table ~from_ writer =
-  data_file ~banner:(Banner.kotlin_lines ~from_:("protocol/specs/src/" ^ from_) writer)
+  data_file
+    ~banner:(Banner.kotlin_lines ~from_:("protocol/specs/src/" ^ from_) writer)
 
 (* What [write] writes, or the refusal it raises, made one of Protocol's
    [from_]. *)
 let written ~from_ write =
   match write () with
   | written -> Ok written
-  | exception Names.Refused message -> Error [ { Decode.file = from_; pointer = ""; message } ]
+  | exception Names.Refused message ->
+      Error [ { Decode.file = from_; pointer = ""; message } ]
 
 (* A file in the types' directory that no run writes: refused rather than
    removed, so the run that drops a schema names the file to delete with
@@ -93,8 +117,14 @@ let stale ~root written =
     | names -> List.sort String.compare (Array.to_list names)
     | exception Sys_error _ -> []
   in
-  match List.find_opt (fun name -> not (List.mem (types_directory ^ "/" ^ name) written)) on_disk with
-  | Some name -> Error ("a generated file no schema writes: " ^ types_directory ^ "/" ^ name)
+  match
+    List.find_opt
+      (fun name -> not (List.mem (types_directory ^ "/" ^ name) written))
+      on_disk
+  with
+  | Some name ->
+      Error
+        ("a generated file no schema writes: " ^ types_directory ^ "/" ^ name)
   | None -> Ok ()
 
 let generate (spec : Spec.t) =
@@ -102,15 +132,24 @@ let generate (spec : Spec.t) =
   match Types.generate types_spec with
   | exception Names.Refused message -> Error message
   | generated ->
-      let kinds = List.map (fun kind -> Types.identifiers_package ^ "." ^ kind) types_spec.identifiers in
+      let kinds =
+        List.map
+          (fun kind -> Types.identifiers_package ^ "." ^ kind)
+          types_spec.identifiers
+      in
       Ok
         ({
            Output.path = path Types.identifiers_package "Identifiers";
-           text = file ~package:Types.identifiers_package ~imports:[] generated.identifier_decls;
+           text =
+             file ~package:Types.identifiers_package ~imports:[]
+               generated.identifier_decls;
          }
         :: List.map
              (fun (name, decls) ->
-               { Output.path = path Types.types_package name; text = file ~package:Types.types_package ~imports:kinds decls })
+               {
+                 Output.path = path Types.types_package name;
+                 text = file ~package:Types.types_package ~imports:kinds decls;
+               })
              generated.types)
 
 let files ~root (spec : Spec.t) =

@@ -23,4 +23,6 @@ let files ~root:_ (spec : Spec.t) =
     Kotlin_sdk.written ~from_:Table.file (fun () ->
         Kotlin.file ~types ~wire_codes t)
   in
-  Ok ([ Go.file t; Python.file t; Typescript.file t; ocaml; kotlin ] @ Haskell.files t)
+  Ok
+    ([ Go.file t; Python.file t; Typescript.file t; ocaml; kotlin ]
+    @ Haskell.files t)

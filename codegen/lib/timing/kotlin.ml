@@ -7,7 +7,9 @@ module K = Kotlin_syntax
 let member (e : Table.entry) =
   let name = Kotlin_sdk.Names.camel_constant e.name in
   match e.value with
-  | Duration n | Count n -> K.property ~const:true ~type_:(K.Type "Long") ~value:(K.Same_line (K.Int n)) name
+  | Duration n | Count n ->
+      K.property ~const:true ~type_:(K.Type "Long")
+        ~value:(K.Same_line (K.Int n)) name
   | Budget { attempts; initial_delay_ms; max_delay_ms } ->
       K.property ~type_:(K.Type "RetryPolicy")
         ~value:
@@ -25,7 +27,10 @@ let file (t : Table.t) =
     ~imports:[ "xynolog.retry.RetryPolicy" ]
     [
       K.class_
-        ~about:(K.Doc ("The timing a client keeps (protocol/specs/src/" ^ Table.file ^ ")."))
+        ~about:
+          (K.Doc
+             ("The timing a client keeps (protocol/specs/src/" ^ Table.file
+            ^ ")."))
         ~visibility:K.Internal
         ~members:[ K.Packed (List.map member t) ]
         K.Object "Timings";

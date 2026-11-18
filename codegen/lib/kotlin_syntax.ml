@@ -27,7 +27,19 @@ type type_ =
   | Star
   | Function_type of type_ list * type_
 
-type binary = Or | And | Eq | Ne | Ge | In | Not_in | Range | Plus | Elvis | To
+type binary =
+  | Or
+  | And
+  | Eq
+  | Ne
+  | Ge
+  | In
+  | Not_in
+  | Range
+  | Plus
+  | Elvis
+  | To
+
 type layout = Inline | Lines
 
 type expr =
@@ -77,7 +89,11 @@ type stmt =
 type visibility = Public | Internal | Private | Default
 
 (* [@target:name(args)]; [args] [None] writes no parentheses. *)
-type annotation = { target : string option; name : string; args : arg list option }
+type annotation = {
+  target : string option;
+  name : string;
+  args : arg list option;
+}
 
 type binding = Plain | Bound of { visibility : visibility; mutable_ : bool }
 
@@ -104,13 +120,20 @@ type kind =
   | Companion_object
 
 type super = { super : type_; super_args : arg list option }
-type entry = { entry_about : doc option; entry_annotations : annotation list; entry : string; entry_args : arg list }
+
+type entry = {
+  entry_about : doc option;
+  entry_annotations : annotation list;
+  entry : string;
+  entry_args : arg list;
+}
 
 type constructor = {
   constructor_annotations : annotation list;
   constructor_visibility : visibility;
   params : param list;
-  params_layout : layout;  (** [Inline]: no parameter is documented or annotated. *)
+  params_layout : layout;
+      (** [Inline]: no parameter is documented or annotated. *)
 }
 
 type decl =
@@ -146,7 +169,12 @@ type decl =
       entries : entry list;
       members : decl list;
     }
-  | Typealias of { about : doc option; visibility : visibility; name : string; type_ : type_ }
+  | Typealias of {
+      about : doc option;
+      visibility : visibility;
+      name : string;
+      type_ : type_;
+    }
   | Init of stmt list
   | Packed of decl list  (** Members with no blank line between. *)
 
@@ -159,6 +187,7 @@ type file = {
 }
 
 let arg ?label value = { label; value }
+
 let call ?(types = []) ?(layout = Inline) ?lambda callee args =
   Call { callee; types; args = List.map arg args; layout; lambda }
 
@@ -174,20 +203,50 @@ let named_call ?(types = []) ?(layout = Inline) callee args =
 
 let annotation ?target ?args name = { target; name; args }
 
-let property ?about ?(annotations = []) ?(visibility = Default) ?(override = false)
-    ?(const = false) ?(mutable_ = false) ?type_ ?value name =
-  Property { about; annotations; visibility; override; const; mutable_; name; type_; value }
+let property ?about ?(annotations = []) ?(visibility = Default)
+    ?(override = false) ?(const = false) ?(mutable_ = false) ?type_ ?value name
+    =
+  Property
+    {
+      about;
+      annotations;
+      visibility;
+      override;
+      const;
+      mutable_;
+      name;
+      type_;
+      value;
+    }
 
-let function_ ?about ?(annotations = []) ?(visibility = Default) ?(override = false)
-    ?(params = []) ?returns name body =
-  Function { about; annotations; visibility; override; name; params; returns; body }
+let function_ ?about ?(annotations = []) ?(visibility = Default)
+    ?(override = false) ?(params = []) ?returns name body =
+  Function
+    { about; annotations; visibility; override; name; params; returns; body }
 
-let class_ ?about ?(annotations = []) ?(visibility = Default) ?constructor ?(supers = [])
-    ?(entries = []) ?(members = []) kind name =
-  Class_decl { about; annotations; visibility; kind; name; constructor; supers; entries; members }
+let class_ ?about ?(annotations = []) ?(visibility = Default) ?constructor
+    ?(supers = []) ?(entries = []) ?(members = []) kind name =
+  Class_decl
+    {
+      about;
+      annotations;
+      visibility;
+      kind;
+      name;
+      constructor;
+      supers;
+      entries;
+      members;
+    }
 
-let constructor ?(annotations = []) ?(visibility = Default) ?(layout = Lines) params =
-  { constructor_annotations = annotations; constructor_visibility = visibility; params; params_layout = layout }
+let constructor ?(annotations = []) ?(visibility = Default) ?(layout = Lines)
+    params =
+  {
+    constructor_annotations = annotations;
+    constructor_visibility = visibility;
+    params;
+    params_layout = layout;
+  }
 
 let param ?about ?(annotations = []) ?(binding = Plain) ?default name type_ =
   { about; annotations; binding; name; type_; default }
@@ -195,22 +254,57 @@ let param ?about ?(annotations = []) ?(binding = Plain) ?default name type_ =
 let super ?args type_ = { super = type_; super_args = args }
 
 let entry ?about ?(annotations = []) ?(args = []) name =
-  { entry_about = about; entry_annotations = annotations; entry = name; entry_args = List.map arg args }
+  {
+    entry_about = about;
+    entry_annotations = annotations;
+    entry = name;
+    entry_args = List.map arg args;
+  }
 
-let fail fmt = Printf.ksprintf (fun m -> invalid_arg ("Kotlin_syntax: " ^ m)) fmt
+let fail fmt =
+  Printf.ksprintf (fun m -> invalid_arg ("Kotlin_syntax: " ^ m)) fmt
 
 (* Kotlin's hard keywords: a name that is one is written in backquotes. *)
 let keywords =
   [
-    "as"; "break"; "class"; "continue"; "do"; "else"; "false"; "for"; "fun"; "if"; "in";
-    "interface"; "is"; "null"; "object"; "package"; "return"; "super"; "this"; "throw";
-    "true"; "try"; "typealias"; "typeof"; "val"; "var"; "when"; "while";
+    "as";
+    "break";
+    "class";
+    "continue";
+    "do";
+    "else";
+    "false";
+    "for";
+    "fun";
+    "if";
+    "in";
+    "interface";
+    "is";
+    "null";
+    "object";
+    "package";
+    "return";
+    "super";
+    "this";
+    "throw";
+    "true";
+    "try";
+    "typealias";
+    "typeof";
+    "val";
+    "var";
+    "when";
+    "while";
   ]
 
-let is_word = function 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' -> true | _ -> false
+let is_word = function
+  | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' -> true
+  | _ -> false
 
 let identifier name =
-  name <> "" && (match name.[0] with '0' .. '9' -> false | _ -> true) && String.for_all is_word name
+  name <> ""
+  && (match name.[0] with '0' .. '9' -> false | _ -> true)
+  && String.for_all is_word name
 
 let simple name =
   if not (identifier name) then fail "%S is no name" name
@@ -218,7 +312,8 @@ let simple name =
   else name
 
 (* A name, or one qualified by what it is within, each part checked. *)
-let checked name = String.concat "." (List.map simple (String.split_on_char '.' name))
+let checked name =
+  String.concat "." (List.map simple (String.split_on_char '.' name))
 
 (* [text] as a Kotlin string's contents: a backslash, a quote, a [$] and the
    control characters escaped, every other character as itself. *)
@@ -232,7 +327,8 @@ let escaped text =
       | '\n' -> Buffer.add_string out "\\n"
       | '\r' -> Buffer.add_string out "\\r"
       | '\t' -> Buffer.add_string out "\\t"
-      | c when Char.code c < 0x20 -> Buffer.add_string out (Printf.sprintf "\\u%04x" (Char.code c))
+      | c when Char.code c < 0x20 ->
+          Buffer.add_string out (Printf.sprintf "\\u%04x" (Char.code c))
       | c -> Buffer.add_char out c)
     text;
   "\"" ^ Buffer.contents out ^ "\""
@@ -274,34 +370,39 @@ let indentation depth = String.make (4 * depth) ' '
 (* A comment's text, with neither of a block comment's markers written as
    itself: a block comment nests in Kotlin. *)
 let comment_text text =
-  if String.contains text '\r' then fail "a comment %S holds a carriage return" text;
-  Text.replace_all ~sub:"/*" ~by:"&#47;*" (Text.replace_all ~sub:"*/" ~by:"*&#47;" text)
+  if String.contains text '\r' then
+    fail "a comment %S holds a carriage return" text;
+  Text.replace_all ~sub:"/*" ~by:"&#47;*"
+    (Text.replace_all ~sub:"*/" ~by:"*&#47;" text)
 
-let is_blank line = String.for_all (function ' ' | '\t' -> true | _ -> false) line
+let is_blank line =
+  String.for_all (function ' ' | '\t' -> true | _ -> false) line
 
 let rec trim_end text =
   let n = String.length text in
-  if n > 0 && (match text.[n - 1] with ' ' | '\t' | '\n' -> true | _ -> false) then
-    trim_end (String.sub text 0 (n - 1))
+  if n > 0 && match text.[n - 1] with ' ' | '\t' | '\n' -> true | _ -> false
+  then trim_end (String.sub text 0 (n - 1))
   else text
 
 let doc_lines ~depth = function
   | Doc text ->
-      if String.contains text '\n' then fail "a one-line doc %S is two lines" text;
+      if String.contains text '\n' then
+        fail "a one-line doc %S is two lines" text;
       [ indentation depth ^ "/** " ^ comment_text text ^ " */" ]
   | Block text ->
       let at = indentation depth in
-      ((at ^ "/**")
+      (at ^ "/**")
       :: List.map
            (fun l -> if is_blank l then at ^ " *" else at ^ " * " ^ l)
-           (String.split_on_char '\n' (comment_text (trim_end text))))
+           (String.split_on_char '\n' (comment_text (trim_end text)))
       @ [ at ^ " */" ]
 
 let about_lines ~depth = function None -> [] | Some d -> doc_lines ~depth d
 
 let rec type_ = function
   | Type name -> checked name
-  | Generic (name, args) -> checked name ^ "<" ^ String.concat ", " (List.map type_ args) ^ ">"
+  | Generic (name, args) ->
+      checked name ^ "<" ^ String.concat ", " (List.map type_ args) ^ ">"
   | Nullable t -> type_ t ^ "?"
   | Star -> "*"
   | Function_type (params, result) ->
@@ -356,24 +457,32 @@ let rec expr ~depth e =
   | Ascii text -> ascii text
   | Int n -> string_of_int n
   | Char c -> char_literal c
-  | Call { callee; types; args; layout; lambda } ->
+  | Call { callee; types; args; layout; lambda } -> (
       receiver ~depth callee
-      ^ (match types with [] -> "" | ts -> "<" ^ String.concat ", " (List.map type_ ts) ^ ">")
-      ^ (match (args, lambda) with [], Some _ -> "" | _ -> arguments ~depth layout args)
-      ^ (match lambda with None -> "" | Some l -> " " ^ expr ~depth l)
+      ^ (match types with
+        | [] -> ""
+        | ts -> "<" ^ String.concat ", " (List.map type_ ts) ^ ">")
+      ^ (match (args, lambda) with
+        | [], Some _ -> ""
+        | _ -> arguments ~depth layout args)
+      ^ match lambda with None -> "" | Some l -> " " ^ expr ~depth l)
   | Member (e, name) -> receiver ~depth e ^ "." ^ simple name
   | Safe (e, name) -> receiver ~depth e ^ "?." ^ simple name
   | Not e -> "!" ^ bound ~depth ~least:11 e
   | Binary (a, op, b) ->
       (* A range is written close, as ktlint has it; every other operator spaced. *)
       let spaced = if op = Range then binary op else " " ^ binary op ^ " " in
-      bound ~depth ~least:(rank op) a ^ spaced ^ right ~depth ~least:(rank op + 1) b
+      bound ~depth ~least:(rank op) a
+      ^ spaced
+      ^ right ~depth ~least:(rank op + 1) b
   | As_safe (e, t) -> bound ~depth ~least:10 e ^ " as? " ^ type_ t
   | Class_literal name -> checked name ^ "::class"
   | Reference (owner, name) -> checked owner ^ "::" ^ simple name
   | Lambda ([], body) -> "{ " ^ expr ~depth body ^ " }"
   | Lambda (params, body) ->
-      "{ " ^ String.concat ", " (List.map simple params) ^ " -> " ^ expr ~depth body ^ " }"
+      "{ "
+      ^ String.concat ", " (List.map simple params)
+      ^ " -> " ^ expr ~depth body ^ " }"
   | When { subject; branches } ->
       let at = indentation (depth + 1) in
       "when "
@@ -392,7 +501,9 @@ let rec expr ~depth e =
                             | Equal e -> expr ~depth:(depth + 1) e
                             | Is t -> "is " ^ type_ t)
                           cs))
-               ^ " -> " ^ expr ~depth:(depth + 1) result ^ "\n")
+               ^ " -> "
+               ^ expr ~depth:(depth + 1) result
+               ^ "\n")
              branches)
       ^ indentation depth ^ "}"
   | If (c, a, b) ->
@@ -400,9 +511,12 @@ let rec expr ~depth e =
   | Throw e -> "throw " ^ expr ~depth e
   | Try { body; caught = name, t; handler } ->
       let inner = indentation (depth + 1) in
-      "try {\n" ^ inner ^ expr ~depth:(depth + 1) body ^ "\n" ^ indentation depth ^ "} catch ("
-      ^ simple name ^ ": " ^ type_ t ^ ") {\n" ^ inner ^ expr ~depth:(depth + 1) handler ^ "\n"
-      ^ indentation depth ^ "}"
+      "try {\n" ^ inner
+      ^ expr ~depth:(depth + 1) body
+      ^ "\n" ^ indentation depth ^ "} catch (" ^ simple name ^ ": " ^ type_ t
+      ^ ") {\n" ^ inner
+      ^ expr ~depth:(depth + 1) handler
+      ^ "\n" ^ indentation depth ^ "}"
 
 (* [e] as an operand that must bind at least [least]: in parentheses where
    it binds less. *)
@@ -420,7 +534,8 @@ and receiver ~depth e = bound ~depth ~least:postfix_rank e
 
 and arguments ~depth layout args =
   let one ~depth { label; value } =
-    (match label with None -> "" | Some l -> simple l ^ " = ") ^ expr ~depth value
+    (match label with None -> "" | Some l -> simple l ^ " = ")
+    ^ expr ~depth value
   in
   match (layout, args) with
   | _, [] -> "()"
@@ -428,7 +543,10 @@ and arguments ~depth layout args =
   | Lines, _ ->
       "(\n"
       ^ String.concat ""
-          (List.map (fun a -> indentation (depth + 1) ^ one ~depth:(depth + 1) a ^ ",\n") args)
+          (List.map
+             (fun a ->
+               indentation (depth + 1) ^ one ~depth:(depth + 1) a ^ ",\n")
+             args)
       ^ indentation depth ^ ")"
 
 let rec stmt ~depth = function
@@ -461,15 +579,20 @@ let body_text ~depth = function
   | Block stmts ->
       " {\n"
       ^ String.concat ""
-          (List.map (fun s -> indentation (depth + 1) ^ stmt ~depth:(depth + 1) s ^ "\n") stmts)
+          (List.map
+             (fun s ->
+               indentation (depth + 1) ^ stmt ~depth:(depth + 1) s ^ "\n")
+             stmts)
       ^ indentation depth ^ "}"
 
-let param_text ~depth { about; annotations; binding; name; type_ = t; default } =
+let param_text ~depth { about; annotations; binding; name; type_ = t; default }
+    =
   lines_text (about_lines ~depth about @ annotation_lines ~depth annotations)
   ^ indentation depth
   ^ (match binding with
     | Plain -> ""
-    | Bound { visibility = v; mutable_ } -> visibility v ^ if mutable_ then "var " else "val ")
+    | Bound { visibility = v; mutable_ } ->
+        visibility v ^ if mutable_ then "var " else "val ")
   ^ simple name ^ ": " ^ type_ t
   ^ (match default with None -> "" | Some d -> " = " ^ expr ~depth d)
   ^ ",\n"
@@ -486,7 +609,11 @@ let kind_text = function
   | Companion_object -> "companion object"
 
 let super_text ~depth { super = t; super_args } =
-  type_ t ^ match super_args with None -> "" | Some args -> arguments ~depth Inline args
+  type_ t
+  ^
+  match super_args with
+  | None -> ""
+  | Some args -> arguments ~depth Inline args
 
 (* A member is annotated or documented: ktlint sets it a blank line apart,
    so a writer may not pack it. *)
@@ -501,7 +628,18 @@ let marked = function
 let rec decl ~depth d =
   let at = indentation depth in
   match d with
-  | Property { about; annotations; visibility = v; override; const; mutable_; name; type_ = t; value } ->
+  | Property
+      {
+        about;
+        annotations;
+        visibility = v;
+        override;
+        const;
+        mutable_;
+        name;
+        type_ = t;
+        value;
+      } ->
       lines_text (about_lines ~depth about @ annotation_lines ~depth annotations)
       ^ at ^ visibility v
       ^ (if override then "override " else "")
@@ -511,33 +649,66 @@ let rec decl ~depth d =
       ^ (match t with None -> "" | Some t -> ": " ^ type_ t)
       ^ (match value with
         | None -> ""
-        | Some (Block _) -> fail "the property %s has a block for its value" name
+        | Some (Block _) ->
+            fail "the property %s has a block for its value" name
         | Some b -> body_text ~depth b)
       ^ "\n"
-  | Function { about; annotations; visibility = v; override; name; params; returns; body } ->
+  | Function
+      {
+        about;
+        annotations;
+        visibility = v;
+        override;
+        name;
+        params;
+        returns;
+        body;
+      } ->
       lines_text (about_lines ~depth about @ annotation_lines ~depth annotations)
       ^ at ^ visibility v
       ^ (if override then "override " else "")
       ^ "fun " ^ simple name ^ "("
-      ^ String.concat ", " (List.map (fun (p, t) -> simple p ^ ": " ^ type_ t) params)
+      ^ String.concat ", "
+          (List.map (fun (p, t) -> simple p ^ ": " ^ type_ t) params)
       ^ ")"
       ^ (match returns with None -> "" | Some t -> ": " ^ type_ t)
       ^ body_text ~depth body ^ "\n"
-  | Class_decl { about; annotations; visibility = v; kind; name; constructor; supers; entries; members } ->
-      let head = at ^ visibility v ^ kind_text kind ^ (if kind = Companion_object then "" else " " ^ simple name) in
+  | Class_decl
+      {
+        about;
+        annotations;
+        visibility = v;
+        kind;
+        name;
+        constructor;
+        supers;
+        entries;
+        members;
+      } ->
+      let head =
+        at ^ visibility v ^ kind_text kind
+        ^ if kind = Companion_object then "" else " " ^ simple name
+      in
       let constructor_text, multi_line =
         match constructor with
         | None -> ("", false)
-        | Some { constructor_annotations; constructor_visibility; params; params_layout } ->
+        | Some
+            {
+              constructor_annotations;
+              constructor_visibility;
+              params;
+              params_layout;
+            } -> (
             let keyword =
               match (constructor_annotations, constructor_visibility) with
               | [], Default -> ""
               | annotations, v ->
                   " "
-                  ^ String.concat "" (List.map (fun a -> annotation_text a ^ " ") annotations)
+                  ^ String.concat ""
+                      (List.map (fun a -> annotation_text a ^ " ") annotations)
                   ^ visibility v ^ "constructor"
             in
-            (match (params, params_layout) with
+            match (params, params_layout) with
             | [], _ -> (keyword ^ "()", false)
             | params, Inline ->
                 ( keyword ^ "("
@@ -545,7 +716,10 @@ let rec decl ~depth d =
                       (List.map
                          (fun p ->
                            if p.about <> None || p.annotations <> [] then
-                             fail "the inline parameter %s is annotated or documented" p.name;
+                             fail
+                               "the inline parameter %s is annotated or \
+                                documented"
+                               p.name;
                            let line = param_text ~depth:0 p in
                            String.sub line 0 (String.length line - 2))
                          params)
@@ -553,7 +727,8 @@ let rec decl ~depth d =
                   false )
             | params, Lines ->
                 ( keyword ^ "(\n"
-                  ^ String.concat "" (List.map (param_text ~depth:(depth + 1)) params)
+                  ^ String.concat ""
+                      (List.map (param_text ~depth:(depth + 1)) params)
                   ^ at ^ ")",
                   true ))
       in
@@ -564,11 +739,17 @@ let rec decl ~depth d =
         | first :: rest when multi_line ->
             " : " ^ super_text ~depth first
             ^ String.concat ""
-                (List.map (fun s -> ",\n" ^ indentation (depth + 1) ^ super_text ~depth s) rest)
+                (List.map
+                   (fun s ->
+                     ",\n" ^ indentation (depth + 1) ^ super_text ~depth s)
+                   rest)
         | several ->
             " :"
             ^ String.concat ","
-                (List.map (fun s -> "\n" ^ indentation (depth + 1) ^ super_text ~depth s) several)
+                (List.map
+                   (fun s ->
+                     "\n" ^ indentation (depth + 1) ^ super_text ~depth s)
+                   several)
       in
       let entries_text =
         List.mapi
@@ -578,28 +759,39 @@ let rec decl ~depth d =
             ^ lines_text
                 (about_lines ~depth:(depth + 1) entry_about
                 @ annotation_lines ~depth:(depth + 1) entry_annotations)
-            ^ indentation (depth + 1) ^ simple entry
-            ^ (match entry_args with [] -> "" | args -> arguments ~depth:(depth + 1) Inline args)
+            ^ indentation (depth + 1)
+            ^ simple entry
+            ^ (match entry_args with
+              | [] -> ""
+              | args -> arguments ~depth:(depth + 1) Inline args)
             ^ ",\n")
           entries
       in
-      if kind <> Enum_class && entries <> [] then fail "%s has entries and is no enum" name;
-      if kind = Enum_class && members <> [] then fail "the enum %s has members" name;
+      if kind <> Enum_class && entries <> [] then
+        fail "%s has entries and is no enum" name;
+      if kind = Enum_class && members <> [] then
+        fail "the enum %s has members" name;
       lines_text (about_lines ~depth about @ annotation_lines ~depth annotations)
       ^ head ^ constructor_text ^ supers_text
       ^ (match (entries_text, members) with
         | [], [] -> ""
         | entries, [] -> " {\n" ^ String.concat "" entries ^ at ^ "}"
-        | _, members -> " {\n" ^ members_text ~depth:(depth + 1) members ^ at ^ "}")
+        | _, members ->
+            " {\n" ^ members_text ~depth:(depth + 1) members ^ at ^ "}")
       ^ "\n"
   | Typealias { about; visibility = v; name; type_ = t } ->
-      lines_text (about_lines ~depth about) ^ at ^ visibility v ^ "typealias " ^ simple name ^ " = " ^ type_ t ^ "\n"
+      lines_text (about_lines ~depth about)
+      ^ at ^ visibility v ^ "typealias " ^ simple name ^ " = " ^ type_ t ^ "\n"
   | Init stmts -> at ^ "init" ^ body_text ~depth (Block stmts) ^ "\n"
   | Packed members ->
-      List.iter (fun m -> if marked m then fail "a packed member is annotated or documented") members;
+      List.iter
+        (fun m ->
+          if marked m then fail "a packed member is annotated or documented")
+        members;
       String.concat "" (List.map (decl ~depth) members)
 
-and members_text ~depth members = String.concat "\n" (List.map (decl ~depth) members)
+and members_text ~depth members =
+  String.concat "\n" (List.map (decl ~depth) members)
 
 (* The imports in ktlint's order: every other first, then [java], [javax]
    and [kotlin]'s, each run in the order of their names. *)
@@ -612,7 +804,8 @@ let import_order imports =
   in
   let sorted = List.sort (fun a b -> compare (run a, a) (run b, b)) imports in
   let rec distinct = function
-    | a :: (b :: _ as rest) -> if a = b then fail "%s is imported twice" a else distinct rest
+    | a :: (b :: _ as rest) ->
+        if a = b then fail "%s is imported twice" a else distinct rest
     | _ -> ()
   in
   distinct sorted;
@@ -620,9 +813,15 @@ let import_order imports =
 
 let text { banner; file_annotations; package; imports; decls } =
   lines_text (List.map (fun l -> if l = "" then "//" else "// " ^ l) banner)
-  ^ lines_text (List.map (fun a -> annotation_text { a with target = Some "file" }) file_annotations)
+  ^ lines_text
+      (List.map
+         (fun a -> annotation_text { a with target = Some "file" })
+         file_annotations)
   ^ "\npackage " ^ checked package ^ "\n\n"
   ^ (match imports with
     | [] -> ""
-    | imports -> lines_text (List.map (fun i -> "import " ^ checked i) (import_order imports)) ^ "\n")
+    | imports ->
+        lines_text
+          (List.map (fun i -> "import " ^ checked i) (import_order imports))
+        ^ "\n")
   ^ String.concat "\n" (List.map (decl ~depth:0) decls)

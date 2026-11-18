@@ -181,5 +181,12 @@ let haskell (t : T.t) =
 let files ~root:_ (spec : Spec.t) =
   Result.map
     (fun t ->
-      [ go t; python t; typescript t; ocaml t; haskell t; Kotlin.file ~from_:file t ])
+      [
+        go t;
+        python t;
+        typescript t;
+        ocaml t;
+        haskell t;
+        Kotlin.file ~from_:file t;
+      ])
     (derive spec.tables.session_oauth)

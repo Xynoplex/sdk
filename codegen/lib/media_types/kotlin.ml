@@ -6,13 +6,18 @@
 module K = Kotlin_syntax
 module T = Tables.Media_types_registry
 
-let source word = K.Member (K.Name "TextSource", Kotlin_sdk.Names.variant_of word)
+let source word =
+  K.Member (K.Name "TextSource", Kotlin_sdk.Names.variant_of word)
 
 let file ~from_ (t : T.t) =
-  Kotlin_sdk.table ~from_ __FILE__ ~package:"xynolog.mediatypes" ~name:"MediaTypesTable" ~imports:[]
+  Kotlin_sdk.table ~from_ __FILE__ ~package:"xynolog.mediatypes"
+    ~name:"MediaTypesTable" ~imports:[]
     [
       K.class_
-        ~about:(K.Doc "Where a type's text comes from: decoded from its own bytes, derived by reading them, or nowhere.")
+        ~about:
+          (K.Doc
+             "Where a type's text comes from: decoded from its own bytes, \
+              derived by reading them, or nowhere.")
         ~visibility:K.Internal
         ~constructor:
           (K.constructor
@@ -23,11 +28,15 @@ let file ~from_ (t : T.t) =
              ])
         ~entries:
           (List.map
-             (fun word -> K.entry ~args:[ K.Str word ] (Kotlin_sdk.Names.variant_of word))
+             (fun word ->
+               K.entry ~args:[ K.Str word ] (Kotlin_sdk.Names.variant_of word))
              t.text_source)
         K.Enum_class "TextSource";
       K.property
-        ~about:(K.Doc (Printf.sprintf "The registry, in its own order: %d media types." (List.length t.media_types)))
+        ~about:
+          (K.Doc
+             (Printf.sprintf "The registry, in its own order: %d media types."
+                (List.length t.media_types)))
         ~visibility:K.Internal
         ~type_:(K.Generic ("List", [ K.Type "MediaType" ]))
         ~value:

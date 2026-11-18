@@ -535,8 +535,7 @@ let files ~root:_ (spec : Spec.t) =
       Result.map
         (fun kotlin ->
           [ go t; python t; typescript t; haskell t e; ocaml t; kotlin ])
-        (Kotlin_sdk.written ~from_:file (fun () ->
-             Kotlin.file ~from_:file t))
+        (Kotlin_sdk.written ~from_:file (fun () -> Kotlin.file ~from_:file t))
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in
       Error (errors registry @ errors encodings)

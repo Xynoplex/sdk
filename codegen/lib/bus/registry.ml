@@ -372,9 +372,7 @@ let rec stamps component ~of_ (schema : Schema.t) =
                frame is"
               of_
               (String.concat "; "
-                 (List.map
-                    (fun one -> "[" ^ String.concat ", " one ^ "]")
-                    each))
+                 (List.map (fun one -> "[" ^ String.concat ", " one ^ "]") each))
       in
       own
       @ List.concat_map (stamps component ~of_)

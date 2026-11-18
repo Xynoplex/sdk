@@ -17,8 +17,8 @@ let files ~root:_ spec =
   | Ok bus -> (
       let kotlin =
         Result.bind (Kotlin_sdk.types_of spec) (fun types ->
-            Kotlin.files ~component ~types
-              ~log_cases:spec.tables.bus_log_cases bus)
+            Kotlin.files ~component ~types ~log_cases:spec.tables.bus_log_cases
+              bus)
       in
       match (Go.files bus, Python.files bus, kotlin) with
       | Ok go, Ok python, Ok kotlin ->

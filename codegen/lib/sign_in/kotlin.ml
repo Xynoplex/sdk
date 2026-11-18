@@ -16,12 +16,14 @@ let permissions octal =
        (List.init (String.length octal) (String.get octal)))
 
 let mode name (m : Owner_only.mode) =
-  K.property ~about:(K.Block m.docs) ~visibility:K.Internal ~const:true ~type_:(K.Type "String")
+  K.property ~about:(K.Block m.docs) ~visibility:K.Internal ~const:true
+    ~type_:(K.Type "String")
     ~value:(K.Same_line (K.Str (permissions m.octal)))
     name
 
 let file (o : Owner_only.t) =
-  Kotlin_sdk.table ~from_:Owner_only.file __FILE__ ~package:"xynolog.signin" ~name:"OwnerOnlyTable" ~imports:[]
+  Kotlin_sdk.table ~from_:Owner_only.file __FILE__ ~package:"xynolog.signin"
+    ~name:"OwnerOnlyTable" ~imports:[]
     [
       mode "OWNER_ONLY_DIRECTORY_PERMISSIONS" o.directory;
       mode "OWNER_ONLY_FILE_PERMISSIONS" o.file;
@@ -30,5 +32,7 @@ let file (o : Owner_only.t) =
         ~returns:(K.Type "String") "ownerOnlyAccessList"
         (K.Same_line
            (K.Binary
-              (K.Binary (K.Str o.access_list.before, K.Plus, K.Name "owner"), K.Plus, K.Str o.access_list.after)));
+              ( K.Binary (K.Str o.access_list.before, K.Plus, K.Name "owner"),
+                K.Plus,
+                K.Str o.access_list.after )));
     ]
