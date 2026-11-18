@@ -32,7 +32,10 @@ class RunningTest {
     @Test
     fun nothingIsDoneUntilItIsFirstAwaitedOrCollected() = runBlocking {
         var started = false
-        val running = Running(scope) { started = true; "done" }
+        val running = Running(scope) {
+            started = true
+            "done"
+        }
         delay(50)
         assertFalse(started)
         assertEquals("done", running.await())
@@ -122,7 +125,10 @@ class RunningTest {
     fun workItsClientEndedFailsAsClosed() = runBlocking {
         val client = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val running = Running<String>(client) { awaitCancellation() }
-        val outcome = scope.launch { delay(50); client.cancel() }
+        val outcome = scope.launch {
+            delay(50)
+            client.cancel()
+        }
         val refused = assertThrows(BusRequestError::class.java) { runBlocking { running.await() } }
         outcome.join()
         assertEquals(BusRequestErrorCode.Closed, refused.reason)

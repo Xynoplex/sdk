@@ -23,15 +23,6 @@ let refusal name message =
 
 let ( let* ) = Result.bind
 
-let all results =
-  List.fold_right
-    (fun result rest ->
-      match (result, rest) with
-      | Ok x, Ok xs -> Ok (x :: xs)
-      | Error e, Ok _ | Ok _, Error e -> Error e
-      | Error a, Error b -> Error (a @ b))
-    results (Ok [])
-
 let found ~shape name =
   match shape name with
   | Some s -> Ok s
@@ -53,7 +44,7 @@ let adapter name =
            })
   | Fields members ->
       let* properties =
-        all
+        Spec.all
           (List.map
              (fun m ->
                match m.held with
@@ -94,7 +85,7 @@ let adapter name =
 
 (* The client types the Haskell SDK models, each by its name. *)
 let adapters ~shape =
-  all
+  Spec.all
     (List.map
        (fun name ->
          let* s = found ~shape name in
@@ -145,7 +136,7 @@ let record_module ~shape name =
   in
   let variable = "value" in
   let* fields =
-    all
+    Spec.all
       (List.map
          (fun m ->
            let field t = Ok (accessor name m.name, t) in
@@ -320,10 +311,10 @@ let report ~shape ~native ~prefix name =
           [ refusal name (branch ^ "'s " ^ m.name ^ " is no report member") ]
   in
   let* rows =
-    all
+    Spec.all
       (List.map
          (fun (word, members) ->
-           let* fields = all (List.map (held word) members) in
+           let* fields = Spec.all (List.map (held word) members) in
            Ok (word, prefix ^ String.capitalize_ascii word, members, fields))
          branches)
   in
@@ -439,7 +430,7 @@ let service_proof ~grant_type (form : member list) =
     Error [ { Decode.file = Model.form; pointer = ""; message } ]
   in
   let* pairs =
-    all
+    Spec.all
       (List.map
          (fun (m : member) ->
            match (m.name, m.held) with

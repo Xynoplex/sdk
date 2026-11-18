@@ -14,11 +14,11 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import xynolog.Recording
 import xynolog.XynologClient
-import xynolog.errors.XynologError
 import xynolog.errors.SessionError
 import xynolog.errors.SignInError
 import xynolog.errors.SignInErrorCode
 import xynolog.errors.TransportError
+import xynolog.errors.XynologError
 import xynolog.signin.HeldSignIn
 import xynolog.signin.MemorySignIn
 import xynolog.signin.SCRIPT_CLIENT_ID
@@ -40,11 +40,13 @@ internal fun jwt(claims: JsonObject): String {
 /** A token that lives `lifetime` seconds from now, the `n`th of its kind. */
 internal fun token(lifetime: Long, n: Int): String {
     val now = System.currentTimeMillis() / 1000
-    return jwt(buildJsonObject {
-        put("iat", now)
-        put("exp", now + lifetime)
-        put("jti", "token-$n")
-    })
+    return jwt(
+        buildJsonObject {
+            put("iat", now)
+            put("exp", now + lifetime)
+            put("jti", "token-$n")
+        },
+    )
 }
 
 internal fun expired(): String = token(-3600, 99)

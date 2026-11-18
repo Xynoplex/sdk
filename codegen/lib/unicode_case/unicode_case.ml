@@ -10,9 +10,10 @@
      property.
    All are read from Unicode's own files (codegen/ucd), of one version. *)
 
-module Json = Json
 module Go = Go
 module Haskell = Haskell
+module Kotlin = Kotlin
+module Csharp = Csharp
 
 let derived_core = "codegen/ucd/DerivedCoreProperties.txt"
 let prop_list = "codegen/ucd/PropList.txt"
@@ -153,15 +154,19 @@ let derive ~root =
     }
 
 let files ~root (_ : Spec.t) =
-  Result.map
-    (fun t ->
-      Json.files ~version:t.version ~notice:t.notice ~cased:t.cased
-        ~case_ignorable:t.case_ignorable
-      @ [
-          Go.file ~version:t.version ~notice:t.notice ~cased:t.cased
-            ~case_ignorable:t.case_ignorable;
-          Haskell.file ~version:t.version ~notice:t.notice ~cased:t.cased
-            ~case_ignorable:t.case_ignorable ~white_space:t.white_space
-            ~lowercase:t.lowercase ~final_lowercase:t.final_lowercase;
-        ])
-    (derive ~root)
+  Result.bind (derive ~root) (fun t ->
+      Result.map
+        (fun kotlin ->
+          [
+            Go.file ~version:t.version ~notice:t.notice ~cased:t.cased
+              ~case_ignorable:t.case_ignorable;
+            Haskell.file ~version:t.version ~notice:t.notice ~cased:t.cased
+              ~case_ignorable:t.case_ignorable ~white_space:t.white_space
+              ~lowercase:t.lowercase ~final_lowercase:t.final_lowercase;
+            kotlin;
+            Csharp.file ~version:t.version ~notice:t.notice ~cased:t.cased
+              ~case_ignorable:t.case_ignorable;
+          ])
+        (Kotlin_sdk.written ~from_:derived_core (fun () ->
+             Kotlin.file ~version:t.version ~notice:t.notice ~cased:t.cased
+               ~case_ignorable:t.case_ignorable)))

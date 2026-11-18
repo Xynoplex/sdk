@@ -16,8 +16,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import xynolog.errors.JobError
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
+import xynolog.errors.XynologError
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.io.PrintStream

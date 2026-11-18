@@ -43,6 +43,7 @@ private fun ready(value: Int): CacheState<Int> = CacheState.Ready(value)
 private class Service {
     /** The key of each request, in the order they were made. */
     val asked = mutableListOf<String>()
+
     /** Each request's answer, a failure among them as a value: an awaited failure is rethrown as a copy of what the test gave. */
     private val waiting = mutableListOf<CompletableDeferred<Result<Int>>>()
 

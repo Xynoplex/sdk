@@ -1,7 +1,7 @@
 package xynolog.bus
 
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -20,8 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
 /*
  * The first fault of a value as one of the protocol's shapes. Every SDK holds
  * what it reads to the table of what each component schema requires
- * (REQUIRED_SCHEMAS, which the generator writes from the SDK's copy of it,
- * src/codegen/required-schemas.json, by the rules of
+ * (REQUIRED_SCHEMAS, which codegen/lib/required writes by the rules of
  * codegen/lib/required/shape.ml) before it decodes it, and
  * names the first fault it finds the same way: a member the value lacks, or
  * one that is not what its schema allows. What the decoder refuses that the

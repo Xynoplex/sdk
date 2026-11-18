@@ -26,27 +26,10 @@ impl<'de> serde::Deserialize<'de> for Agent {
     }
 }
 
-impl From<AgentPerson> for Agent {
-    fn from(member: AgentPerson) -> Self {
-        Agent::Person(member)
-    }
-}
-
-impl From<AgentOrganization> for Agent {
-    fn from(member: AgentOrganization) -> Self {
-        Agent::Organization(member)
-    }
-}
-
-impl From<AgentSoftware> for Agent {
-    fn from(member: AgentSoftware) -> Self {
-        Agent::Software(member)
-    }
-}
-
-impl Schema for Agent {
-    const NAME: &'static str = "Agent";
-}
+member!(Agent::Person(AgentPerson));
+member!(Agent::Organization(AgentOrganization));
+member!(Agent::Software(AgentSoftware));
+schema!(Agent);
 
 /// An organization — the Organization branch of Agent.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -77,9 +60,7 @@ impl AgentOrganization {
     }
 }
 
-impl Schema for AgentOrganization {
-    const NAME: &'static str = "AgentOrganization";
-}
+schema!(AgentOrganization);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -145,9 +126,7 @@ impl AgentPerson {
     }
 }
 
-impl Schema for AgentPerson {
-    const NAME: &'static str = "AgentPerson";
-}
+schema!(AgentPerson);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -213,9 +192,7 @@ impl AgentSoftware {
     }
 }
 
-impl Schema for AgentSoftware {
-    const NAME: &'static str = "AgentSoftware";
-}
+schema!(AgentSoftware);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -243,9 +220,7 @@ pub struct AnchoredText {
     pub items: Vec<PdfTextItem>,
 }
 
-impl Schema for AnchoredText {
-    const NAME: &'static str = "AnchoredText";
-}
+schema!(AnchoredText);
 
 /// There is no coordinate map to serve, and WHY — the distinction a bare null could not carry.
 ///
@@ -262,9 +237,7 @@ pub struct AnchoredTextAbsent {
     pub kind: AnchoredTextAbsentKind,
 }
 
-impl Schema for AnchoredTextAbsent {
-    const NAME: &'static str = "AnchoredTextAbsent";
-}
+schema!(AnchoredTextAbsent);
 
 /// Discriminant, sharing the `kind` field with the ExtractedText/ExtractionDeclined members so the whole answer is one flat union.
 ///
@@ -309,27 +282,10 @@ pub enum AnchoredTextAnswer {
     AnchoredTextAbsent(AnchoredTextAbsent),
 }
 
-impl From<ExtractedText> for AnchoredTextAnswer {
-    fn from(member: ExtractedText) -> Self {
-        AnchoredTextAnswer::ExtractedText(member)
-    }
-}
-
-impl From<ExtractionDeclined> for AnchoredTextAnswer {
-    fn from(member: ExtractionDeclined) -> Self {
-        AnchoredTextAnswer::ExtractionDeclined(member)
-    }
-}
-
-impl From<AnchoredTextAbsent> for AnchoredTextAnswer {
-    fn from(member: AnchoredTextAbsent) -> Self {
-        AnchoredTextAnswer::AnchoredTextAbsent(member)
-    }
-}
-
-impl Schema for AnchoredTextAnswer {
-    const NAME: &'static str = "AnchoredTextAnswer";
-}
+member!(AnchoredTextAnswer::ExtractedText(ExtractedText));
+member!(AnchoredTextAnswer::ExtractionDeclined(ExtractionDeclined));
+member!(AnchoredTextAnswer::AnchoredTextAbsent(AnchoredTextAbsent));
+schema!(AnchoredTextAnswer);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Annotation {
@@ -384,9 +340,7 @@ impl Annotation {
     }
 }
 
-impl Schema for Annotation {
-    const NAME: &'static str = "Annotation";
-}
+schema!(Annotation);
 
 /// Payload for mark:added domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -408,9 +362,7 @@ impl AnnotationAddedPayload {
     }
 }
 
-impl Schema for AnnotationAddedPayload {
-    const NAME: &'static str = "AnnotationAddedPayload";
-}
+schema!(AnnotationAddedPayload);
 
 /// What an annotation's `body` holds: one body, or a non-empty list of them. There is no empty list: an annotation with nothing to say has no `body`.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -420,15 +372,8 @@ pub enum AnnotationBodies {
     List(Vec<AnnotationBody>),
 }
 
-impl From<AnnotationBody> for AnnotationBodies {
-    fn from(member: AnnotationBody) -> Self {
-        AnnotationBodies::AnnotationBody(member)
-    }
-}
-
-impl Schema for AnnotationBodies {
-    const NAME: &'static str = "AnnotationBodies";
-}
+member!(AnnotationBodies::AnnotationBody(AnnotationBody));
+schema!(AnnotationBodies);
 
 /// An annotation's body: a TextualBody carries text the annotation states (entity tags, descriptions, comments), a SpecificResource points at what it links to. Tell them apart by `type`, which is required on both and single-valued — a consumer never has to probe for which fields happen to be present.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
@@ -456,21 +401,9 @@ impl<'de> serde::Deserialize<'de> for AnnotationBody {
     }
 }
 
-impl From<TextualBody> for AnnotationBody {
-    fn from(member: TextualBody) -> Self {
-        AnnotationBody::TextualBody(member)
-    }
-}
-
-impl From<SpecificResource> for AnnotationBody {
-    fn from(member: SpecificResource) -> Self {
-        AnnotationBody::SpecificResource(member)
-    }
-}
-
-impl Schema for AnnotationBody {
-    const NAME: &'static str = "AnnotationBody";
-}
+member!(AnnotationBody::TextualBody(TextualBody));
+member!(AnnotationBody::SpecificResource(SpecificResource));
+schema!(AnnotationBody);
 
 /// Payload for mark:body-updated domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -480,9 +413,7 @@ pub struct AnnotationBodyUpdatedPayload {
     pub operations: Vec<AnnotationBodyUpdatedPayloadOperationsItem>,
 }
 
-impl Schema for AnnotationBodyUpdatedPayload {
-    const NAME: &'static str = "AnnotationBodyUpdatedPayload";
-}
+schema!(AnnotationBodyUpdatedPayload);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -492,23 +423,15 @@ pub enum AnnotationBodyUpdatedPayloadOperationsItem {
     Replace(BodyOperationReplace),
 }
 
-impl From<BodyOperationAdd> for AnnotationBodyUpdatedPayloadOperationsItem {
-    fn from(member: BodyOperationAdd) -> Self {
-        AnnotationBodyUpdatedPayloadOperationsItem::Add(member)
-    }
-}
-
-impl From<BodyOperationRemove> for AnnotationBodyUpdatedPayloadOperationsItem {
-    fn from(member: BodyOperationRemove) -> Self {
-        AnnotationBodyUpdatedPayloadOperationsItem::Remove(member)
-    }
-}
-
-impl From<BodyOperationReplace> for AnnotationBodyUpdatedPayloadOperationsItem {
-    fn from(member: BodyOperationReplace) -> Self {
-        AnnotationBodyUpdatedPayloadOperationsItem::Replace(member)
-    }
-}
+member!(AnnotationBodyUpdatedPayloadOperationsItem::Add(
+    BodyOperationAdd,
+));
+member!(AnnotationBodyUpdatedPayloadOperationsItem::Remove(
+    BodyOperationRemove,
+));
+member!(AnnotationBodyUpdatedPayloadOperationsItem::Replace(
+    BodyOperationReplace,
+));
 
 /// W3C Web Annotation JSON-LD context
 #[derive(
@@ -536,11 +459,7 @@ pub enum AnnotationGenerator {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for AnnotationGenerator {
-    fn from(member: Agent) -> Self {
-        AnnotationGenerator::Agent(member)
-    }
-}
+member!(AnnotationGenerator::Agent(Agent));
 
 /// An annotation's id: a name, never the annotation's URI. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
 #[derive(
@@ -634,9 +553,7 @@ impl PartialEq<&str> for AnnotationId {
     }
 }
 
-impl Schema for AnnotationId {
-    const NAME: &'static str = "AnnotationId";
-}
+schema!(AnnotationId);
 
 /// Payload for mark:removed domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -645,9 +562,7 @@ pub struct AnnotationRemovedPayload {
     pub annotation_id: AnnotationId,
 }
 
-impl Schema for AnnotationRemovedPayload {
-    const NAME: &'static str = "AnnotationRemovedPayload";
-}
+schema!(AnnotationRemovedPayload);
 
 /// What a target's `selector` holds: one W3C selector, or several of the same segment.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -657,15 +572,8 @@ pub enum AnnotationSelector {
     List(Vec<Selector>),
 }
 
-impl From<Selector> for AnnotationSelector {
-    fn from(member: Selector) -> Self {
-        AnnotationSelector::Selector(member)
-    }
-}
-
-impl Schema for AnnotationSelector {
-    const NAME: &'static str = "AnnotationSelector";
-}
+member!(AnnotationSelector::Selector(Selector));
+schema!(AnnotationSelector);
 
 /// W3C Web Annotation target object - source is required, selector is optional
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -691,9 +599,7 @@ impl AnnotationTarget {
     }
 }
 
-impl Schema for AnnotationTarget {
-    const NAME: &'static str = "AnnotationTarget";
-}
+schema!(AnnotationTarget);
 
 /// Stated by the annotation of a span: the target is a part of its source, which the selector picks out. An annotation of a resource as a whole states none.
 #[derive(
@@ -721,11 +627,7 @@ pub enum AnnotationTargetValue {
     AnnotationTarget(AnnotationTarget),
 }
 
-impl From<AnnotationTarget> for AnnotationTargetValue {
-    fn from(member: AnnotationTarget) -> Self {
-        AnnotationTargetValue::AnnotationTarget(member)
-    }
-}
+member!(AnnotationTargetValue::AnnotationTarget(AnnotationTarget));
 
 /// W3C Annotation type
 #[derive(
@@ -753,11 +655,7 @@ pub enum AnnotationWasAttributedTo {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for AnnotationWasAttributedTo {
-    fn from(member: Agent) -> Self {
-        AnnotationWasAttributedTo::Agent(member)
-    }
-}
+member!(AnnotationWasAttributedTo::Agent(Agent));
 
 /// What an assessing job takes: passages of the resource are marked, each with an assessment the model writes.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -802,9 +700,7 @@ impl AssessingJobParams {
     }
 }
 
-impl Schema for AssessingJobParams {
-    const NAME: &'static str = "AssessingJobParams";
-}
+schema!(AssessingJobParams);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -901,9 +797,7 @@ impl AttributedEvent {
     }
 }
 
-impl Schema for AttributedEvent {
-    const NAME: &'static str = "AttributedEvent";
-}
+schema!(AttributedEvent);
 
 /// Emitted to draw attention to a resource: to one of its annotations, or, with no annotation, to the resource as a whole. The resource is always named. A focus on an annotation scrolls a viewer showing that resource to it, and a viewer showing a different resource ignores it — a deliberate ignore rather than a silent no-op. A focus on the resource as a whole brings that resource forward, opened if it is not open, at its top.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -926,9 +820,7 @@ impl BeckonFocusEvent {
     }
 }
 
-impl Schema for BeckonFocusEvent {
-    const NAME: &'static str = "BeckonFocusEvent";
-}
+schema!(BeckonFocusEvent);
 
 /// Emitted when an annotation is hovered over for beckoning
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -937,9 +829,7 @@ pub struct BeckonHoverEvent {
     pub annotation_id: Option<AnnotationId>,
 }
 
-impl Schema for BeckonHoverEvent {
-    const NAME: &'static str = "BeckonHoverEvent";
-}
+schema!(BeckonHoverEvent);
 
 /// Emitted when a sparkle effect is triggered on an annotation
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -948,9 +838,7 @@ pub struct BeckonSparkleEvent {
     pub annotation_id: AnnotationId,
 }
 
-impl Schema for BeckonSparkleEvent {
-    const NAME: &'static str = "BeckonSparkleEvent";
-}
+schema!(BeckonSparkleEvent);
 
 /// One edit to a linking annotation's body list: add or remove a body item, or replace an existing one.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -979,9 +867,7 @@ impl BindBodyOperation {
     }
 }
 
-impl Schema for BindBodyOperation {
-    const NAME: &'static str = "BindBodyOperation";
-}
+schema!(BindBodyOperation);
 
 /// The type of body operation
 #[derive(
@@ -1011,9 +897,7 @@ impl BindBodyOperationOp {
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BindBodyUpdated {}
 
-impl Schema for BindBodyUpdated {
-    const NAME: &'static str = "BindBodyUpdated";
-}
+schema!(BindBodyUpdated);
 
 /// Command payload sent on the bind:initiate bus channel to start a bind flow.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1032,9 +916,7 @@ pub struct BindInitiateCommand {
     pub entity_types: Vec<String>,
 }
 
-impl Schema for BindInitiateCommand {
-    const NAME: &'static str = "BindInitiateCommand";
-}
+schema!(BindInitiateCommand);
 
 /// Command payload sent on the bind:update-body bus channel to modify annotation bodies.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1069,9 +951,7 @@ impl BindUpdateBodyCommand {
     }
 }
 
-impl Schema for BindUpdateBodyCommand {
-    const NAME: &'static str = "BindUpdateBodyCommand";
-}
+schema!(BindUpdateBodyCommand);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BodyOperationAdd {
@@ -1089,9 +969,7 @@ impl BodyOperationAdd {
     }
 }
 
-impl Schema for BodyOperationAdd {
-    const NAME: &'static str = "BodyOperationAdd";
-}
+schema!(BodyOperationAdd);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -1100,17 +978,8 @@ pub enum BodyOperationAddItem {
     SpecificResource(SpecificResource),
 }
 
-impl From<TextualBody> for BodyOperationAddItem {
-    fn from(member: TextualBody) -> Self {
-        BodyOperationAddItem::TextualBody(member)
-    }
-}
-
-impl From<SpecificResource> for BodyOperationAddItem {
-    fn from(member: SpecificResource) -> Self {
-        BodyOperationAddItem::SpecificResource(member)
-    }
-}
+member!(BodyOperationAddItem::TextualBody(TextualBody));
+member!(BodyOperationAddItem::SpecificResource(SpecificResource));
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1145,9 +1014,7 @@ impl BodyOperationRemove {
     }
 }
 
-impl Schema for BodyOperationRemove {
-    const NAME: &'static str = "BodyOperationRemove";
-}
+schema!(BodyOperationRemove);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -1156,17 +1023,8 @@ pub enum BodyOperationRemoveItem {
     SpecificResource(SpecificResource),
 }
 
-impl From<TextualBody> for BodyOperationRemoveItem {
-    fn from(member: TextualBody) -> Self {
-        BodyOperationRemoveItem::TextualBody(member)
-    }
-}
-
-impl From<SpecificResource> for BodyOperationRemoveItem {
-    fn from(member: SpecificResource) -> Self {
-        BodyOperationRemoveItem::SpecificResource(member)
-    }
-}
+member!(BodyOperationRemoveItem::TextualBody(TextualBody));
+member!(BodyOperationRemoveItem::SpecificResource(SpecificResource));
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1208,9 +1066,7 @@ impl BodyOperationReplace {
     }
 }
 
-impl Schema for BodyOperationReplace {
-    const NAME: &'static str = "BodyOperationReplace";
-}
+schema!(BodyOperationReplace);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -1219,17 +1075,10 @@ pub enum BodyOperationReplaceNewItem {
     SpecificResource(SpecificResource),
 }
 
-impl From<TextualBody> for BodyOperationReplaceNewItem {
-    fn from(member: TextualBody) -> Self {
-        BodyOperationReplaceNewItem::TextualBody(member)
-    }
-}
-
-impl From<SpecificResource> for BodyOperationReplaceNewItem {
-    fn from(member: SpecificResource) -> Self {
-        BodyOperationReplaceNewItem::SpecificResource(member)
-    }
-}
+member!(BodyOperationReplaceNewItem::TextualBody(TextualBody));
+member!(BodyOperationReplaceNewItem::SpecificResource(
+    SpecificResource,
+));
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -1238,17 +1087,10 @@ pub enum BodyOperationReplaceOldItem {
     SpecificResource(SpecificResource),
 }
 
-impl From<TextualBody> for BodyOperationReplaceOldItem {
-    fn from(member: TextualBody) -> Self {
-        BodyOperationReplaceOldItem::TextualBody(member)
-    }
-}
-
-impl From<SpecificResource> for BodyOperationReplaceOldItem {
-    fn from(member: SpecificResource) -> Self {
-        BodyOperationReplaceOldItem::SpecificResource(member)
-    }
-}
+member!(BodyOperationReplaceOldItem::TextualBody(TextualBody));
+member!(BodyOperationReplaceOldItem::SpecificResource(
+    SpecificResource,
+));
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1321,9 +1163,7 @@ impl BodyPurpose {
     }
 }
 
-impl Schema for BodyPurpose {
-    const NAME: &'static str = "BodyPurpose";
-}
+schema!(BodyPurpose);
 
 /// Request to browse the history of an annotation
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1334,9 +1174,7 @@ pub struct BrowseAnnotationHistoryRequest {
     pub annotation_id: AnnotationId,
 }
 
-impl Schema for BrowseAnnotationHistoryRequest {
-    const NAME: &'static str = "BrowseAnnotationHistoryRequest";
-}
+schema!(BrowseAnnotationHistoryRequest);
 
 /// Result of browsing annotation history
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1344,9 +1182,7 @@ pub struct BrowseAnnotationHistoryResult {
     pub response: GetAnnotationHistoryResponse,
 }
 
-impl Schema for BrowseAnnotationHistoryResult {
-    const NAME: &'static str = "BrowseAnnotationHistoryResult";
-}
+schema!(BrowseAnnotationHistoryResult);
 
 /// Request to browse a single annotation
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1357,9 +1193,7 @@ pub struct BrowseAnnotationRequest {
     pub annotation_id: AnnotationId,
 }
 
-impl Schema for BrowseAnnotationRequest {
-    const NAME: &'static str = "BrowseAnnotationRequest";
-}
+schema!(BrowseAnnotationRequest);
 
 /// Result of browsing a single annotation
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1367,9 +1201,7 @@ pub struct BrowseAnnotationResult {
     pub response: GetAnnotationResponse,
 }
 
-impl Schema for BrowseAnnotationResult {
-    const NAME: &'static str = "BrowseAnnotationResult";
-}
+schema!(BrowseAnnotationResult);
 
 /// An annotation was clicked — open it: the viewer selects its entry in the annotations panel and relays a focus signal to scroll to it. The annotation id is the whole address; it identifies exactly one annotation on exactly one resource, so no resource field is carried and none is needed to scope the event. Motivation is NOT on the wire either: the viewer derives it from the annotation the id names, so the wire states the fact once. A viewer that has not loaded that annotation finds nothing and does nothing. Emitted locally by every clickable annotation surface, and over the wire by a driver opening an annotation on another participant's screen.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1378,9 +1210,7 @@ pub struct BrowseClickEvent {
     pub annotation_id: AnnotationId,
 }
 
-impl Schema for BrowseClickEvent {
-    const NAME: &'static str = "BrowseClickEvent";
-}
+schema!(BrowseClickEvent);
 
 /// The payload of `browse:directory-failed`: a CommandError that names the directory that could not be read.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1409,9 +1239,7 @@ impl BrowseDirectoryFailed {
     }
 }
 
-impl Schema for BrowseDirectoryFailed {
-    const NAME: &'static str = "BrowseDirectoryFailed";
-}
+schema!(BrowseDirectoryFailed);
 
 /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
 #[derive(
@@ -1458,9 +1286,7 @@ impl BrowseDirectoryRequest {
     }
 }
 
-impl Schema for BrowseDirectoryRequest {
-    const NAME: &'static str = "BrowseDirectoryRequest";
-}
+schema!(BrowseDirectoryRequest);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1491,9 +1317,7 @@ pub struct BrowseDirectoryResult {
     pub response: BrowseDirectoryResultResponse,
 }
 
-impl Schema for BrowseDirectoryResult {
-    const NAME: &'static str = "BrowseDirectoryResult";
-}
+schema!(BrowseDirectoryResult);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BrowseDirectoryResultResponse {
@@ -1501,17 +1325,13 @@ pub struct BrowseDirectoryResultResponse {
     pub entries: Vec<DirectoryEntry>,
 }
 
-impl Schema for BrowseDirectoryResultResponse {
-    const NAME: &'static str = "BrowseDirectoryResultResponse";
-}
+schema!(BrowseDirectoryResultResponse);
 
 /// Request for the knowledge base's engines: those its Inference document names
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BrowseEnginesRequest {}
 
-impl Schema for BrowseEnginesRequest {
-    const NAME: &'static str = "BrowseEnginesRequest";
-}
+schema!(BrowseEnginesRequest);
 
 /// The knowledge base's engines: those its Inference document names, and the jobs it has each used for
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1519,9 +1339,7 @@ pub struct BrowseEnginesResult {
     pub response: BrowseEnginesResultResponse,
 }
 
-impl Schema for BrowseEnginesResult {
-    const NAME: &'static str = "BrowseEnginesResult";
-}
+schema!(BrowseEnginesResult);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BrowseEnginesResultResponse {
@@ -1535,17 +1353,13 @@ pub struct BrowseEntityTypeClickedEvent {
     pub entity_type: String,
 }
 
-impl Schema for BrowseEntityTypeClickedEvent {
-    const NAME: &'static str = "BrowseEntityTypeClickedEvent";
-}
+schema!(BrowseEntityTypeClickedEvent);
 
 /// Request to browse available entity types
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BrowseEntityTypesRequest {}
 
-impl Schema for BrowseEntityTypesRequest {
-    const NAME: &'static str = "BrowseEntityTypesRequest";
-}
+schema!(BrowseEntityTypesRequest);
 
 /// Result of browsing entity types
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1553,9 +1367,7 @@ pub struct BrowseEntityTypesResult {
     pub response: GetEntityTypesResponse,
 }
 
-impl Schema for BrowseEntityTypesResult {
-    const NAME: &'static str = "BrowseEntityTypesResult";
-}
+schema!(BrowseEntityTypesResult);
 
 /// Request to browse events for a resource
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1583,9 +1395,7 @@ impl BrowseEventsRequest {
     }
 }
 
-impl Schema for BrowseEventsRequest {
-    const NAME: &'static str = "BrowseEventsRequest";
-}
+schema!(BrowseEventsRequest);
 
 /// Result of browsing events for a resource
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1593,9 +1403,7 @@ pub struct BrowseEventsResult {
     pub response: GetEventsResponse,
 }
 
-impl Schema for BrowseEventsResult {
-    const NAME: &'static str = "BrowseEventsResult";
-}
+schema!(BrowseEventsResult);
 
 /// Emitted when navigation to an external URL is requested
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1616,17 +1424,13 @@ impl BrowseExternalNavigateEvent {
     }
 }
 
-impl Schema for BrowseExternalNavigateEvent {
-    const NAME: &'static str = "BrowseExternalNavigateEvent";
-}
+schema!(BrowseExternalNavigateEvent);
 
 /// Request for the knowledge base's description of itself
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BrowseKbRequest {}
 
-impl Schema for BrowseKbRequest {
-    const NAME: &'static str = "BrowseKbRequest";
-}
+schema!(BrowseKbRequest);
 
 /// Result of browse:kb-requested
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1634,9 +1438,7 @@ pub struct BrowseKbResult {
     pub response: KbDescription,
 }
 
-impl Schema for BrowseKbResult {
-    const NAME: &'static str = "BrowseKbResult";
-}
+schema!(BrowseKbResult);
 
 /// Emitted when a link is clicked in the browse panel
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1656,9 +1458,7 @@ impl BrowseLinkClickedEvent {
     }
 }
 
-impl Schema for BrowseLinkClickedEvent {
-    const NAME: &'static str = "BrowseLinkClickedEvent";
-}
+schema!(BrowseLinkClickedEvent);
 
 /// Emitted when a browse panel is opened
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1682,9 +1482,7 @@ impl BrowsePanelOpenEvent {
     }
 }
 
-impl Schema for BrowsePanelOpenEvent {
-    const NAME: &'static str = "BrowsePanelOpenEvent";
-}
+schema!(BrowsePanelOpenEvent);
 
 /// Emitted when a browse panel is toggled
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1692,9 +1490,7 @@ pub struct BrowsePanelToggleEvent {
     pub panel: String,
 }
 
-impl Schema for BrowsePanelToggleEvent {
-    const NAME: &'static str = "BrowsePanelToggleEvent";
-}
+schema!(BrowsePanelToggleEvent);
 
 /// Request for the profiles of some principals: the DIDs a reply mentions. Bounded by the question: a reader that has more asks in parts.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1704,9 +1500,7 @@ pub struct BrowseProfilesRequest {
     pub dids: Vec<UserId>,
 }
 
-impl Schema for BrowseProfilesRequest {
-    const NAME: &'static str = "BrowseProfilesRequest";
-}
+schema!(BrowseProfilesRequest);
 
 /// The profiles of the principals asked after: each that has one, keyed by DID. A DID with no profile is absent, and is named by no one.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1714,9 +1508,7 @@ pub struct BrowseProfilesResult {
     pub response: BrowseProfilesResultResponse,
 }
 
-impl Schema for BrowseProfilesResult {
-    const NAME: &'static str = "BrowseProfilesResult";
-}
+schema!(BrowseProfilesResult);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -1732,9 +1524,7 @@ pub struct BrowseResourceCloseEvent {
     pub resource_id: ResourceId,
 }
 
-impl Schema for BrowseResourceCloseEvent {
-    const NAME: &'static str = "BrowseResourceCloseEvent";
-}
+schema!(BrowseResourceCloseEvent);
 
 /// Domain intent to open a resource in the viewer: emitted locally by in-app link handlers and remotely by the launcher's tour verbs; the viewer translates it to host routing (nav:push), which never crosses the wire. Deliberately not named 'navigate' — that word and the nav:* prefix belong to the host-local framework layer.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1743,9 +1533,7 @@ pub struct BrowseResourceOpenEvent {
     pub resource_id: ResourceId,
 }
 
-impl Schema for BrowseResourceOpenEvent {
-    const NAME: &'static str = "BrowseResourceOpenEvent";
-}
+schema!(BrowseResourceOpenEvent);
 
 /// Emitted when resources are reordered in the browse panel
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1756,9 +1544,7 @@ pub struct BrowseResourceReorderEvent {
     pub new_index: i64,
 }
 
-impl Schema for BrowseResourceReorderEvent {
-    const NAME: &'static str = "BrowseResourceReorderEvent";
-}
+schema!(BrowseResourceReorderEvent);
 
 /// Request to browse a single resource
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1767,9 +1553,7 @@ pub struct BrowseResourceRequest {
     pub resource_id: ResourceId,
 }
 
-impl Schema for BrowseResourceRequest {
-    const NAME: &'static str = "BrowseResourceRequest";
-}
+schema!(BrowseResourceRequest);
 
 /// A resource's descriptor, and the sequence number of the last of its events the descriptor reflects. Its annotations are not here: their number follows the document's, so they are read over HTTP (`GET /resources/{id}/annotations`).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1777,9 +1561,7 @@ pub struct BrowseResourceResult {
     pub response: BrowseResourceResultResponse,
 }
 
-impl Schema for BrowseResourceResult {
-    const NAME: &'static str = "BrowseResourceResult";
-}
+schema!(BrowseResourceResult);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -1797,9 +1579,7 @@ pub struct BrowseResourceViewedEvent {
     pub resource_id: ResourceId,
 }
 
-impl Schema for BrowseResourceViewedEvent {
-    const NAME: &'static str = "BrowseResourceViewedEvent";
-}
+schema!(BrowseResourceViewedEvent);
 
 /// Request to browse resources with optional filtering and pagination
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1817,9 +1597,7 @@ pub struct BrowseResourcesRequest {
     pub limit: Option<u64>,
 }
 
-impl Schema for BrowseResourcesRequest {
-    const NAME: &'static str = "BrowseResourcesRequest";
-}
+schema!(BrowseResourcesRequest);
 
 /// Result of browsing resources
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1827,9 +1605,7 @@ pub struct BrowseResourcesResult {
     pub response: ListResourcesResponse,
 }
 
-impl Schema for BrowseResourcesResult {
-    const NAME: &'static str = "BrowseResourcesResult";
-}
+schema!(BrowseResourcesResult);
 
 /// Emitted when the browse panel requests a router navigation
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1849,17 +1625,13 @@ impl BrowseRouterPushEvent {
     }
 }
 
-impl Schema for BrowseRouterPushEvent {
-    const NAME: &'static str = "BrowseRouterPushEvent";
-}
+schema!(BrowseRouterPushEvent);
 
 /// Request to browse registered tag schemas
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BrowseTagSchemasRequest {}
 
-impl Schema for BrowseTagSchemasRequest {
-    const NAME: &'static str = "BrowseTagSchemasRequest";
-}
+schema!(BrowseTagSchemasRequest);
 
 /// Result of browsing tag schemas
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1867,9 +1639,7 @@ pub struct BrowseTagSchemasResult {
     pub response: GetTagSchemasResponse,
 }
 
-impl Schema for BrowseTagSchemasResult {
-    const NAME: &'static str = "BrowseTagSchemasResult";
-}
+schema!(BrowseTagSchemasResult);
 
 /// Result of publishing one event. `subscribers` is the number of observers attached to the target subject at dispatch — the GLOBAL subject for an unscoped emit, the scoped one when `scope` is set. Zero means the signal reached nobody: /bus/subscribe enforces no channel allowlist and the emit handler publishes unconditionally, so a client can emit a channel no participant subscribes to and otherwise receive a clean 202 with no way to tell. Deliberately NOT named `delivered`: this is the count at dispatch, and a subscriber may still drop the frame downstream, so the field is named after what the server can actually observe.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1879,9 +1649,7 @@ pub struct BusEmitAccepted {
     pub subscribers: Option<u64>,
 }
 
-impl Schema for BusEmitAccepted {
-    const NAME: &'static str = "BusEmitAccepted";
-}
+schema!(BusEmitAccepted);
 
 /// One event for the bus. `channel` names a channel of the bus registry (specs/src/bus/registry.json) and `payload` must match the schema the registry's `validate` names for it. `scope` publishes a resource-bound broadcast to that resource's subscribers only; everything else is unscoped. `clientId` and `correlationId` are routing facts beside the payload, never inside it.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1919,9 +1687,7 @@ impl BusEmitRequest {
     }
 }
 
-impl Schema for BusEmitRequest {
-    const NAME: &'static str = "BusEmitRequest";
-}
+schema!(BusEmitRequest);
 
 /// A bus frame on the stream: `event: bus-event`, an `id:` line, and one `data:` line holding the JSON-serialised BusFrame. This schema describes the message with `data` already parsed.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -1943,9 +1709,7 @@ impl BusEventMessage {
     }
 }
 
-impl Schema for BusEventMessage {
-    const NAME: &'static str = "BusEventMessage";
-}
+schema!(BusEventMessage);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1996,9 +1760,7 @@ impl BusFrame {
     }
 }
 
-impl Schema for BusFrame {
-    const NAME: &'static str = "BusFrame";
-}
+schema!(BusFrame);
 
 /// The heartbeat: `event: ping` with an empty `data:` line. The first is written once the stream has caught up (after any replay), then one every `x-xynolog-limits.heartbeatSeconds`. It carries no id, so it never disturbs a client's last-seen ids.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2018,9 +1780,7 @@ impl BusPingMessage {
     }
 }
 
-impl Schema for BusPingMessage {
-    const NAME: &'static str = "BusPingMessage";
-}
+schema!(BusPingMessage);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -2052,9 +1812,7 @@ pub struct BusResumeGap {
     pub reason: BusResumeGapReason,
 }
 
-impl Schema for BusResumeGap {
-    const NAME: &'static str = "BusResumeGap";
-}
+schema!(BusResumeGap);
 
 /// `unparseable-last-event-id`: the watermark is not a PersistedEventId. `scope-mismatch`: it names another scope. `retention-exceeded`: the record no longer holds the events after it (what it still holds is replayed first). `query-error`: the record could not be read.
 #[derive(
@@ -2091,21 +1849,9 @@ pub enum BusStreamMessage {
     PingMessage(BusPingMessage),
 }
 
-impl From<BusEventMessage> for BusStreamMessage {
-    fn from(member: BusEventMessage) -> Self {
-        BusStreamMessage::EventMessage(member)
-    }
-}
-
-impl From<BusPingMessage> for BusStreamMessage {
-    fn from(member: BusPingMessage) -> Self {
-        BusStreamMessage::PingMessage(member)
-    }
-}
-
-impl Schema for BusStreamMessage {
-    const NAME: &'static str = "BusStreamMessage";
-}
+member!(BusStreamMessage::EventMessage(BusEventMessage));
+member!(BusStreamMessage::PingMessage(BusPingMessage));
+schema!(BusStreamMessage);
 
 /// Subscription matrix for the bus stream. `global` channels are delivered unscoped; each `scoped` entry subscribes the connection to one resource scope's channels, optionally resuming from that scope's last-seen persisted event id. At least one global channel or one scoped entry is required, and no scope may appear in two entries.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2138,9 +1884,7 @@ impl BusSubscribeRequest {
     }
 }
 
-impl Schema for BusSubscribeRequest {
-    const NAME: &'static str = "BusSubscribeRequest";
-}
+schema!(BusSubscribeRequest);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -2176,9 +1920,7 @@ pub struct CloneResourceWithTokenResponse {
     pub resource: ResourceDescriptor,
 }
 
-impl Schema for CloneResourceWithTokenResponse {
-    const NAME: &'static str = "CloneResourceWithTokenResponse";
-}
+schema!(CloneResourceWithTokenResponse);
 
 /// Error response for failed bus commands. Replaces native Error objects on the EventBus so payloads are serializable and OpenAPI-typed.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2204,9 +1946,7 @@ impl CommandError {
     }
 }
 
-impl Schema for CommandError {
-    const NAME: &'static str = "CommandError";
-}
+schema!(CommandError);
 
 /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
 #[derive(
@@ -2278,9 +2018,7 @@ impl CommentingJobParams {
     }
 }
 
-impl Schema for CommentingJobParams {
-    const NAME: &'static str = "CommentingJobParams";
-}
+schema!(CommentingJobParams);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -2338,9 +2076,7 @@ pub struct ContextualSummaryResponse {
     pub context: ContextualSummaryResponseContext,
 }
 
-impl Schema for ContextualSummaryResponse {
-    const NAME: &'static str = "ContextualSummaryResponse";
-}
+schema!(ContextualSummaryResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct ContextualSummaryResponseContext {
@@ -2394,9 +2130,7 @@ impl CreateAnnotationRequest {
     }
 }
 
-impl Schema for CreateAnnotationRequest {
-    const NAME: &'static str = "CreateAnnotationRequest";
-}
+schema!(CreateAnnotationRequest);
 
 /// The id of the resource an upload created. The Archivist answers it (200) once it has stored the bytes and recorded the resource, and the gateway forwards it (202), so the id is the one the record minted and its creation event is persisted. What remains asynchronous is downstream projection: graph, views and vectors settle afterwards.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2406,9 +2140,7 @@ pub struct CreateResourceResponse {
     pub resource_id: ResourceId,
 }
 
-impl Schema for CreateResourceResponse {
-    const NAME: &'static str = "CreateResourceResponse";
-}
+schema!(CreateResourceResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -2434,9 +2166,7 @@ impl DirEntry {
     }
 }
 
-impl Schema for DirEntry {
-    const NAME: &'static str = "DirEntry";
-}
+schema!(DirEntry);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -2479,21 +2209,9 @@ impl<'de> serde::Deserialize<'de> for DirectoryEntry {
     }
 }
 
-impl From<FileEntry> for DirectoryEntry {
-    fn from(member: FileEntry) -> Self {
-        DirectoryEntry::FileEntry(member)
-    }
-}
-
-impl From<DirEntry> for DirectoryEntry {
-    fn from(member: DirEntry) -> Self {
-        DirectoryEntry::DirEntry(member)
-    }
-}
-
-impl Schema for DirectoryEntry {
-    const NAME: &'static str = "DirectoryEntry";
-}
+member!(DirectoryEntry::FileEntry(FileEntry));
+member!(DirectoryEntry::DirEntry(DirEntry));
+schema!(DirectoryEntry);
 
 /// One knowledge base the Xynolog launcher manages on this machine, as published in the discovery document (see DiscoveryDocument). Endpoints and identity only — never credentials; login remains the consumer's per-KB business.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2539,9 +2257,7 @@ impl DiscoveredKB {
     }
 }
 
-impl Schema for DiscoveredKB {
-    const NAME: &'static str = "DiscoveredKB";
-}
+schema!(DiscoveredKB);
 
 /// Where the stack actually runs. "local": containers on this machine. "codespace": a GitHub-hosted VM whose KB is port-forwarded here.
 #[derive(
@@ -2573,9 +2289,7 @@ pub struct DiscoveryDocument {
     pub kbs: Vec<DiscoveredKB>,
 }
 
-impl Schema for DiscoveryDocument {
-    const NAME: &'static str = "DiscoveryDocument";
-}
+schema!(DiscoveryDocument);
 
 /// How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.
 #[derive(
@@ -2604,9 +2318,7 @@ impl DurabilityEvidence {
     }
 }
 
-impl Schema for DurabilityEvidence {
-    const NAME: &'static str = "DurabilityEvidence";
-}
+schema!(DurabilityEvidence);
 
 /// An object with no properties.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Deserialize, serde::Serialize)]
@@ -2623,9 +2335,7 @@ pub struct Engine {
     pub model: String,
 }
 
-impl Schema for Engine {
-    const NAME: &'static str = "Engine";
-}
+schema!(Engine);
 
 /// One of the knowledge base's engines: a provider and a model its Inference document names, and the jobs the document has it used for. An engine is not a principal: whichever worker claims a job does it, under its own account, and names on each write the engine it used, if any. Carries no inference limits: the services that hold the inference credentials report those (InferenceLimitsResult).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2644,9 +2354,7 @@ impl EngineEntry {
     }
 }
 
-impl Schema for EngineEntry {
-    const NAME: &'static str = "EngineEntry";
-}
+schema!(EngineEntry);
 
 /// The discovered limits of one engine.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2656,9 +2364,7 @@ pub struct EngineLimits {
     pub limits: InferenceLimits,
 }
 
-impl Schema for EngineLimits {
-    const NAME: &'static str = "EngineLimits";
-}
+schema!(EngineLimits);
 
 /// The inference provider: who serves the model. `anthropic`, `google`, `openai` and `together` are those companies' own APIs. `llamacpp`, `ollama` and `vllm` are servers a deployment runs or reaches, each named for the server's software.
 #[derive(
@@ -2747,9 +2453,7 @@ impl EnrichedResourceEvent {
     }
 }
 
-impl Schema for EnrichedResourceEvent {
-    const NAME: &'static str = "EnrichedResourceEvent";
-}
+schema!(EnrichedResourceEvent);
 
 /// Payload for mark:entity-tag-added and mark:entity-tag-removed domain events
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2758,9 +2462,7 @@ pub struct EntityTagChangedPayload {
     pub entity_type: String,
 }
 
-impl Schema for EntityTagChangedPayload {
-    const NAME: &'static str = "EntityTagChangedPayload";
-}
+schema!(EntityTagChangedPayload);
 
 /// Payload for frame:entity-type-added domain event (system-level, no resourceId — fan-out is global)
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2769,9 +2471,7 @@ pub struct EntityTypeAddedPayload {
     pub entity_type: String,
 }
 
-impl Schema for EntityTypeAddedPayload {
-    const NAME: &'static str = "EntityTypeAddedPayload";
-}
+schema!(EntityTypeAddedPayload);
 
 /// The body of every error the gateway answers, whatever the status and whatever the route — including a path it does not serve.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2800,9 +2500,7 @@ impl ErrorResponse {
     }
 }
 
-impl Schema for ErrorResponse {
-    const NAME: &'static str = "ErrorResponse";
-}
+schema!(ErrorResponse);
 
 /// Metadata added at persistence time. Part of every StoredEvent. Integrity is provided by git at the commit level (when gitSync is enabled), not by in-event metadata fields.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2812,9 +2510,7 @@ pub struct EventMetadata {
     pub sequence_number: i64,
 }
 
-impl Schema for EventMetadata {
-    const NAME: &'static str = "EventMetadata";
-}
+schema!(EventMetadata);
 
 /// A successful extraction: the anchored text plus its provenance. The 'extracted' member of ExtractionOutcome, the record the anchored-text store holds.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2860,9 +2556,7 @@ impl ExtractedText {
     }
 }
 
-impl Schema for ExtractedText {
-    const NAME: &'static str = "ExtractedText";
-}
+schema!(ExtractedText);
 
 /// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `method`.
 #[derive(
@@ -2979,9 +2673,7 @@ impl ExtractionDeclined {
     }
 }
 
-impl Schema for ExtractionDeclined {
-    const NAME: &'static str = "ExtractionDeclined";
-}
+schema!(ExtractionDeclined);
 
 /// Why extraction yielded nothing, by class.
 #[derive(
@@ -3052,9 +2744,7 @@ impl FailureClass {
     }
 }
 
-impl Schema for FailureClass {
-    const NAME: &'static str = "FailureClass";
-}
+schema!(FailureClass);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -3111,9 +2801,7 @@ impl FileEntry {
     }
 }
 
-impl Schema for FileEntry {
-    const NAME: &'static str = "FileEntry";
-}
+schema!(FileEntry);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -3155,9 +2843,7 @@ impl FragmentSelector {
     }
 }
 
-impl Schema for FragmentSelector {
-    const NAME: &'static str = "FragmentSelector";
-}
+schema!(FragmentSelector);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -3196,9 +2882,7 @@ impl FrameAddEntityTypeCommand {
     }
 }
 
-impl Schema for FrameAddEntityTypeCommand {
-    const NAME: &'static str = "FrameAddEntityTypeCommand";
-}
+schema!(FrameAddEntityTypeCommand);
 
 /// Bus command to register a tag schema with the KB's runtime registry. Carried on the `frame:add-tag-schema` channel — Frame is the schema-layer flow that owns vocabulary writes. Most-recent registration of a given `schema.id` wins; the projection reflects the latest content. Identical re-registrations are silent; differing content overwrites and logs a warning.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3220,9 +2904,7 @@ impl FrameAddTagSchemaCommand {
     }
 }
 
-impl Schema for FrameAddTagSchemaCommand {
-    const NAME: &'static str = "FrameAddTagSchemaCommand";
-}
+schema!(FrameAddTagSchemaCommand);
 
 /// Completion payload emitted on the gather:annotation-complete bus channel when annotation context gathering finishes.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3234,9 +2916,7 @@ pub struct GatherAnnotationComplete {
     pub response: GatheredContext,
 }
 
-impl Schema for GatherAnnotationComplete {
-    const NAME: &'static str = "GatherAnnotationComplete";
-}
+schema!(GatherAnnotationComplete);
 
 /// Optional configuration for an annotation-focus gather, which windows text around a mark. Distinct from the resource-focus options (depth / maxResources / includeContent / includeSummary), which traverse the resource graph.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3255,9 +2935,7 @@ pub struct GatherAnnotationOptions {
     pub context_window: Option<u16>,
 }
 
-impl Schema for GatherAnnotationOptions {
-    const NAME: &'static str = "GatherAnnotationOptions";
-}
+schema!(GatherAnnotationOptions);
 
 /// Request payload sent on the gather:requested bus channel to gather context for an annotation.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3283,9 +2961,7 @@ impl GatherAnnotationRequest {
     }
 }
 
-impl Schema for GatherAnnotationRequest {
-    const NAME: &'static str = "GatherAnnotationRequest";
-}
+schema!(GatherAnnotationRequest);
 
 /// The payload of `gather:failed`: a CommandError that names the annotation whose context could not be gathered.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3315,9 +2991,7 @@ impl GatherFailed {
     }
 }
 
-impl Schema for GatherFailed {
-    const NAME: &'static str = "GatherFailed";
-}
+schema!(GatherFailed);
 
 /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
 #[derive(
@@ -3366,9 +3040,7 @@ impl GatherReferencedByRequest {
     }
 }
 
-impl Schema for GatherReferencedByRequest {
-    const NAME: &'static str = "GatherReferencedByRequest";
-}
+schema!(GatherReferencedByRequest);
 
 /// The annotations elsewhere that refer to a resource
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3376,9 +3048,7 @@ pub struct GatherReferencedByResult {
     pub response: GetReferencedByResponse,
 }
 
-impl Schema for GatherReferencedByResult {
-    const NAME: &'static str = "GatherReferencedByResult";
-}
+schema!(GatherReferencedByResult);
 
 /// Completion payload emitted on the gather:resource-complete bus channel when resource context gathering finishes.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3390,9 +3060,7 @@ pub struct GatherResourceComplete {
     pub response: GatheredContext,
 }
 
-impl Schema for GatherResourceComplete {
-    const NAME: &'static str = "GatherResourceComplete";
-}
+schema!(GatherResourceComplete);
 
 /// The payload of `gather:resource-failed`: a CommandError that names the resource whose context could not be gathered.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3422,9 +3090,7 @@ impl GatherResourceFailed {
     }
 }
 
-impl Schema for GatherResourceFailed {
-    const NAME: &'static str = "GatherResourceFailed";
-}
+schema!(GatherResourceFailed);
 
 /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
 #[derive(
@@ -3462,9 +3128,7 @@ pub struct GatherResourceRequest {
     pub options: GatherResourceRequestOptions,
 }
 
-impl Schema for GatherResourceRequest {
-    const NAME: &'static str = "GatherResourceRequest";
-}
+schema!(GatherResourceRequest);
 
 /// Gathering configuration
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3504,9 +3168,7 @@ impl GatherResourceRequestOptions {
     }
 }
 
-impl Schema for GatherResourceRequestOptions {
-    const NAME: &'static str = "GatherResourceRequestOptions";
-}
+schema!(GatherResourceRequestOptions);
 
 /// Request to generate an AI summary of an annotation
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3517,9 +3179,7 @@ pub struct GatherSummaryRequest {
     pub resource_id: ResourceId,
 }
 
-impl Schema for GatherSummaryRequest {
-    const NAME: &'static str = "GatherSummaryRequest";
-}
+schema!(GatherSummaryRequest);
 
 /// Context gathered for a gather.* call — consumed by yield.* (generation) and the matcher. A shared base (graph, semanticContext, metadata, inferredRelationshipSummary) plus a discriminated `focus` that names the anchor: an annotation or a whole resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3557,9 +3217,7 @@ impl GatheredContext {
     }
 }
 
-impl Schema for GatheredContext {
-    const NAME: &'static str = "GatheredContext";
-}
+schema!(GatheredContext);
 
 /// The gather anchor. Discriminated on `kind`.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3838,9 +3496,7 @@ impl GenerationJobParams {
     }
 }
 
-impl Schema for GenerationJobParams {
-    const NAME: &'static str = "GenerationJobParams";
-}
+schema!(GenerationJobParams);
 
 /// What a `yield` job is asked to make: every parameter of GenerationJobParams but its `context`, the input the resource is made from. It is what an announcement of the job carries.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3906,9 +3562,7 @@ impl GenerationJobRequest {
     }
 }
 
-impl Schema for GenerationJobRequest {
-    const NAME: &'static str = "GenerationJobRequest";
-}
+schema!(GenerationJobRequest);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetAnnotationHistoryResponse {
@@ -3920,9 +3574,7 @@ pub struct GetAnnotationHistoryResponse {
     pub resource_id: ResourceId,
 }
 
-impl Schema for GetAnnotationHistoryResponse {
-    const NAME: &'static str = "GetAnnotationHistoryResponse";
-}
+schema!(GetAnnotationHistoryResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetAnnotationResponse {
@@ -3932,9 +3584,7 @@ pub struct GetAnnotationResponse {
     pub resolved_resource: Option<ResourceDescriptor>,
 }
 
-impl Schema for GetAnnotationResponse {
-    const NAME: &'static str = "GetAnnotationResponse";
-}
+schema!(GetAnnotationResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetAnnotationsResponse {
@@ -3960,9 +3610,7 @@ impl GetAnnotationsResponse {
     }
 }
 
-impl Schema for GetAnnotationsResponse {
-    const NAME: &'static str = "GetAnnotationsResponse";
-}
+schema!(GetAnnotationsResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetEntityTypesResponse {
@@ -3970,9 +3618,7 @@ pub struct GetEntityTypesResponse {
     pub entity_types: Vec<String>,
 }
 
-impl Schema for GetEntityTypesResponse {
-    const NAME: &'static str = "GetEntityTypesResponse";
-}
+schema!(GetEntityTypesResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetEventsResponse {
@@ -3982,9 +3628,7 @@ pub struct GetEventsResponse {
     pub resource_id: ResourceId,
 }
 
-impl Schema for GetEventsResponse {
-    const NAME: &'static str = "GetEventsResponse";
-}
+schema!(GetEventsResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetReferencedByResponse {
@@ -3992,9 +3636,7 @@ pub struct GetReferencedByResponse {
     pub referenced_by: Vec<GetReferencedByResponseReferencedByItem>,
 }
 
-impl Schema for GetReferencedByResponse {
-    const NAME: &'static str = "GetReferencedByResponse";
-}
+schema!(GetReferencedByResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetReferencedByResponseReferencedByItem {
@@ -4018,9 +3660,7 @@ impl GetReferencedByResponseReferencedByItem {
     }
 }
 
-impl Schema for GetReferencedByResponseReferencedByItem {
-    const NAME: &'static str = "GetReferencedByResponseReferencedByItem";
-}
+schema!(GetReferencedByResponseReferencedByItem);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetReferencedByResponseReferencedByItemTarget {
@@ -4044,9 +3684,7 @@ pub struct GetResourceByTokenResponse {
     pub expires_at: String,
 }
 
-impl Schema for GetResourceByTokenResponse {
-    const NAME: &'static str = "GetResourceByTokenResponse";
-}
+schema!(GetResourceByTokenResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetResourceResponse {
@@ -4055,9 +3693,7 @@ pub struct GetResourceResponse {
     pub annotations: Vec<Annotation>,
 }
 
-impl Schema for GetResourceResponse {
-    const NAME: &'static str = "GetResourceResponse";
-}
+schema!(GetResourceResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GetTagSchemasResponse {
@@ -4065,9 +3701,7 @@ pub struct GetTagSchemasResponse {
     pub tag_schemas: Vec<TagSchema>,
 }
 
-impl Schema for GetTagSchemasResponse {
-    const NAME: &'static str = "GetTagSchemasResponse";
-}
+schema!(GetTagSchemasResponse);
 
 /// An annotation's graph presence. The node IS the annotation, so the full W3C object is required — selectors and body included, which is what lets a client place context annotations without a second fetch. Citations ride here too: an inbound reference is its linking annotation, anchored by an `annotation-of` edge to the resource it lives on and a `cites` edge to the focal resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4100,9 +3734,7 @@ impl GraphAnnotationNode {
     }
 }
 
-impl Schema for GraphAnnotationNode {
-    const NAME: &'static str = "GraphAnnotationNode";
-}
+schema!(GraphAnnotationNode);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -4150,9 +3782,7 @@ impl GraphResourceNode {
     }
 }
 
-impl Schema for GraphResourceNode {
-    const NAME: &'static str = "GraphResourceNode";
-}
+schema!(GraphResourceNode);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -4180,9 +3810,7 @@ pub struct HealthResponse {
     pub timestamp: String,
 }
 
-impl Schema for HealthResponse {
-    const NAME: &'static str = "HealthResponse";
-}
+schema!(HealthResponse);
 
 /// What a highlighting job takes: passages of the resource worth a reader's attention are marked, with no text of the job's own.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4219,9 +3847,7 @@ impl HighlightingJobParams {
     }
 }
 
-impl Schema for HighlightingJobParams {
-    const NAME: &'static str = "HighlightingJobParams";
-}
+schema!(HighlightingJobParams);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -4265,9 +3891,7 @@ impl HttpEndpoint {
     }
 }
 
-impl Schema for HttpEndpoint {
-    const NAME: &'static str = "HttpEndpoint";
-}
+schema!(HttpEndpoint);
 
 /// Discriminant: the endpoint is a gateway reached over HTTP.
 #[derive(
@@ -4334,17 +3958,13 @@ impl InferenceLimits {
     }
 }
 
-impl Schema for InferenceLimits {
-    const NAME: &'static str = "InferenceLimits";
-}
+schema!(InferenceLimits);
 
 /// Request for the inference limits of the engines one service holds a client for. Answered on job:limits-requested by the worker, and on gather:limits-requested and match:limits-requested by the librarian: each service that holds an inference credential reports for its own engines, so no other service needs one.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct InferenceLimitsRequest {}
 
-impl Schema for InferenceLimitsRequest {
-    const NAME: &'static str = "InferenceLimitsRequest";
-}
+schema!(InferenceLimitsRequest);
 
 /// The inference limits one service discovered for the engines it holds a client for. An engine whose discovery is currently unavailable is absent.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4352,9 +3972,7 @@ pub struct InferenceLimitsResult {
     pub response: InferenceLimitsResultResponse,
 }
 
-impl Schema for InferenceLimitsResult {
-    const NAME: &'static str = "InferenceLimitsResult";
-}
+schema!(InferenceLimitsResult);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct InferenceLimitsResultResponse {
@@ -4391,39 +4009,12 @@ impl<'de> serde::Deserialize<'de> for Job {
     }
 }
 
-impl From<JobPending> for Job {
-    fn from(member: JobPending) -> Self {
-        Job::Pending(member)
-    }
-}
-
-impl From<JobRunning> for Job {
-    fn from(member: JobRunning) -> Self {
-        Job::Running(member)
-    }
-}
-
-impl From<JobComplete> for Job {
-    fn from(member: JobComplete) -> Self {
-        Job::Complete(member)
-    }
-}
-
-impl From<JobFailed> for Job {
-    fn from(member: JobFailed) -> Self {
-        Job::Failed(member)
-    }
-}
-
-impl From<JobCancelled> for Job {
-    fn from(member: JobCancelled) -> Self {
-        Job::Cancelled(member)
-    }
-}
-
-impl Schema for Job {
-    const NAME: &'static str = "Job";
-}
+member!(Job::Pending(JobPending));
+member!(Job::Running(JobRunning));
+member!(Job::Complete(JobComplete));
+member!(Job::Failed(JobFailed));
+member!(Job::Cancelled(JobCancelled));
+schema!(Job);
 
 /// Bus command the dispatcher emits, under its own service identity, immediately after it accepts a job:claim — the correlated job:claimed reply is unchanged. The Stower persists it as job:assigned. It is the one fact only the dispatcher can vouch for: which holder took which job, and who requested it. A later write citing `jobId` is checked against the holder and its `creator` derived from the requester by reading the resource's own log, with nothing outside the record.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4465,9 +4056,7 @@ impl JobAssignCommand {
     }
 }
 
-impl Schema for JobAssignCommand {
-    const NAME: &'static str = "JobAssignCommand";
-}
+schema!(JobAssignCommand);
 
 /// Payload for job:assigned — the dispatcher's own record that it accepted a claim. Emitted by the dispatcher under its service identity after a successful job:claim (the correlated job:claimed reply is unchanged). This is the one fact only the dispatcher can vouch for: which holder took which job, and who requested it. The Stower persists it beside job:started so that a write citing `jobId` can be checked against the holder and its `creator` derived from the requester with no read outside the event log.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4485,9 +4074,7 @@ pub struct JobAssignedPayload {
     pub requester: UserId,
 }
 
-impl Schema for JobAssignedPayload {
-    const NAME: &'static str = "JobAssignedPayload";
-}
+schema!(JobAssignedPayload);
 
 /// A worker's settling of a running job it holds whose work it has stopped for a cancellation — the queue moves the job to cancelled/. Distinct from JobCancelRequest (the client→worker REQUEST to stop): this is the worker announcing it did, so the running job is never yanked to cancelled/ out from under a live worker (the roach-motel race).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4531,9 +4118,7 @@ impl JobCancelCommand {
     }
 }
 
-impl Schema for JobCancelCommand {
-    const NAME: &'static str = "JobCancelCommand";
-}
+schema!(JobCancelCommand);
 
 /// Request to cancel one job, named by its id. A pending job is cancelled immediately by the dispatcher. A running job is cancelled only by the worker that holds it: the worker stops its work and settles the job with `job:cancel` (JobCancelCommand). The queue is never made to yank a running job out from under a live worker.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4542,9 +4127,7 @@ pub struct JobCancelRequest {
     pub job_id: JobId,
 }
 
-impl Schema for JobCancelRequest {
-    const NAME: &'static str = "JobCancelRequest";
-}
+schema!(JobCancelRequest);
 
 /// What a cancel did, in the `response` of `job:cancel-ok`: whether the queue acted on the job it named. A pending job is cancelled outright; a running one is left to its worker, so for it true means accepted, not stopped.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4553,9 +4136,7 @@ pub struct JobCancelResult {
     pub cancelled: bool,
 }
 
-impl Schema for JobCancelResult {
-    const NAME: &'static str = "JobCancelResult";
-}
+schema!(JobCancelResult);
 
 /// A job cancelled before it concluded.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4586,9 +4167,7 @@ impl JobCancelled {
     }
 }
 
-impl Schema for JobCancelled {
-    const NAME: &'static str = "JobCancelled";
-}
+schema!(JobCancelled);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -4637,9 +4216,7 @@ impl JobCheckpointCommand {
     }
 }
 
-impl Schema for JobCheckpointCommand {
-    const NAME: &'static str = "JobCheckpointCommand";
-}
+schema!(JobCheckpointCommand);
 
 /// Claim the NEXT pending job that matches one of `accepts` (atomic: pending → running). A job:queued announcement is a WAKE-UP, not a reservation: the claimed job may differ from the announced one, and two claims after one announcement both succeed on different jobs instead of racing for one. job:claimed carries the claimed job; job:claim-failed reports that nothing matching is pending.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4666,9 +4243,7 @@ impl JobClaimCommand {
     }
 }
 
-impl Schema for JobClaimCommand {
-    const NAME: &'static str = "JobClaimCommand";
-}
+schema!(JobClaimCommand);
 
 /// The reply to a successful `job:claim`: the claimed job, now running under the claimant.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4677,9 +4252,7 @@ pub struct JobClaimedResult {
     pub response: JobRunning,
 }
 
-impl Schema for JobClaimedResult {
-    const NAME: &'static str = "JobClaimedResult";
-}
+schema!(JobClaimedResult);
 
 /// A job its worker completed.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4717,9 +4290,7 @@ impl JobComplete {
     }
 }
 
-impl Schema for JobComplete {
-    const NAME: &'static str = "JobComplete";
-}
+schema!(JobComplete);
 
 /// A job's worker says the job is complete. The result it carries is its verb's: a `mark` job's counts or the resource a `yield` job made, or a decline from either. A completion whose result is the other verb's is refused where the command is admitted.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
@@ -4749,21 +4320,13 @@ impl<'de> serde::Deserialize<'de> for JobCompleteCommand {
     }
 }
 
-impl From<MarkJobCompleteCommand> for JobCompleteCommand {
-    fn from(member: MarkJobCompleteCommand) -> Self {
-        JobCompleteCommand::MarkJobCompleteCommand(member)
-    }
-}
-
-impl From<YieldJobCompleteCommand> for JobCompleteCommand {
-    fn from(member: YieldJobCompleteCommand) -> Self {
-        JobCompleteCommand::YieldJobCompleteCommand(member)
-    }
-}
-
-impl Schema for JobCompleteCommand {
-    const NAME: &'static str = "JobCompleteCommand";
-}
+member!(JobCompleteCommand::MarkJobCompleteCommand(
+    MarkJobCompleteCommand,
+));
+member!(JobCompleteCommand::YieldJobCompleteCommand(
+    YieldJobCompleteCommand,
+));
+schema!(JobCompleteCommand);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -4836,9 +4399,7 @@ impl JobCompletedPayload {
     }
 }
 
-impl Schema for JobCompletedPayload {
-    const NAME: &'static str = "JobCompletedPayload";
-}
+schema!(JobCompletedPayload);
 
 /// Create a job. A job description is its `jobType` and enough parameters to be well formed: a `mark` job names its resource and, in its parameters, its motivation; a `yield` job names its context.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
@@ -4868,21 +4429,11 @@ impl<'de> serde::Deserialize<'de> for JobCreateCommand {
     }
 }
 
-impl From<MarkJobCreateCommand> for JobCreateCommand {
-    fn from(member: MarkJobCreateCommand) -> Self {
-        JobCreateCommand::MarkJobCreateCommand(member)
-    }
-}
-
-impl From<YieldJobCreateCommand> for JobCreateCommand {
-    fn from(member: YieldJobCreateCommand) -> Self {
-        JobCreateCommand::YieldJobCreateCommand(member)
-    }
-}
-
-impl Schema for JobCreateCommand {
-    const NAME: &'static str = "JobCreateCommand";
-}
+member!(JobCreateCommand::MarkJobCreateCommand(MarkJobCreateCommand));
+member!(JobCreateCommand::YieldJobCreateCommand(
+    YieldJobCreateCommand,
+));
+schema!(JobCreateCommand);
 
 /// Result of a job:create command
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4890,9 +4441,7 @@ pub struct JobCreatedResult {
     pub response: JobCreatedResultResponse,
 }
 
-impl Schema for JobCreatedResult {
-    const NAME: &'static str = "JobCreatedResult";
-}
+schema!(JobCreatedResult);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct JobCreatedResultResponse {
@@ -4900,9 +4449,7 @@ pub struct JobCreatedResultResponse {
     pub job_id: JobId,
 }
 
-impl Schema for JobCreatedResultResponse {
-    const NAME: &'static str = "JobCreatedResultResponse";
-}
+schema!(JobCreatedResultResponse);
 
 /// Result of a job that completed without doing its work because the resource could not be read. Distinct from a failure: nothing went wrong, there was simply no text to work with — an encrypted or damaged PDF, a scan whose text could not be recognized, or a document that yielded nothing. The reasons are the extraction vocabulary the Smelter reports on `smelt:settled`, MINUS `no-extractor`: a media type that can never yield text (a zip, an image) is a bad request rather than a decline, so a worker asked to detect over one throws and the job reports `job:fail`. Everything here is a resource-specific outcome — the same media type would have succeeded on a different document.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -4914,9 +4461,7 @@ pub struct JobDeclined {
     pub reason: JobDeclinedReason,
 }
 
-impl Schema for JobDeclined {
-    const NAME: &'static str = "JobDeclined";
-}
+schema!(JobDeclined);
 
 /// Why the resource could not be read. A CODE, not a sentence: the client owns the wording, so a browser renders it in the user's language and the CLI renders English terminal copy from the same value. A prose `message` composed server-side would be English everywhere.
 #[derive(
@@ -5013,9 +4558,7 @@ impl JobFailCommand {
     }
 }
 
-impl Schema for JobFailCommand {
-    const NAME: &'static str = "JobFailCommand";
-}
+schema!(JobFailCommand);
 
 /// A job that failed and will not be retried.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5058,9 +4601,7 @@ impl JobFailed {
     }
 }
 
-impl Schema for JobFailed {
-    const NAME: &'static str = "JobFailed";
-}
+schema!(JobFailed);
 
 /// Payload for the job:failed domain event — a permanent fact of the resource, not operational state. It carries the judgments the worker COMPUTED, not just its message: at the log they are otherwise unrecoverable, the only remaining witness being a flattened English string.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5104,9 +4645,7 @@ impl JobFailedPayload {
     }
 }
 
-impl Schema for JobFailedPayload {
-    const NAME: &'static str = "JobFailedPayload";
-}
+schema!(JobFailedPayload);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5149,21 +4688,9 @@ impl<'de> serde::Deserialize<'de> for JobFilter {
     }
 }
 
-impl From<MarkJobFilter> for JobFilter {
-    fn from(member: MarkJobFilter) -> Self {
-        JobFilter::MarkJobFilter(member)
-    }
-}
-
-impl From<YieldJobFilter> for JobFilter {
-    fn from(member: YieldJobFilter) -> Self {
-        JobFilter::YieldJobFilter(member)
-    }
-}
-
-impl Schema for JobFilter {
-    const NAME: &'static str = "JobFilter";
-}
+member!(JobFilter::MarkJobFilter(MarkJobFilter));
+member!(JobFilter::YieldJobFilter(YieldJobFilter));
+schema!(JobFilter);
 
 /// A job's id. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
 #[derive(
@@ -5257,9 +4784,7 @@ impl PartialEq<&str> for JobId {
     }
 }
 
-impl Schema for JobId {
-    const NAME: &'static str = "JobId";
-}
+schema!(JobId);
 
 /// What the dispatcher records about a job beside its parameters. `completedUnits` and `unitCursors` appear once a worker has checkpointed. `retryCount` counts the times the queue has put the job back to pending after a failure it classes as transient.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5311,9 +4836,7 @@ impl JobMetadata {
     }
 }
 
-impl Schema for JobMetadata {
-    const NAME: &'static str = "JobMetadata";
-}
+schema!(JobMetadata);
 
 /// A job's parameters as the Dispatcher holds them: the `params` of its `job:create`, and what the Dispatcher adds. It adds `resourceId`, the resource the job is about: a `mark` job's own, and for a `yield` job the one its context focuses on. For a tagging job it adds `schema`, the tag schema its `schemaId` names, so that whoever holds the job needs no registry. Nothing the caller sent is changed or removed.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5339,9 +4862,7 @@ impl JobParams {
     }
 }
 
-impl Schema for JobParams {
-    const NAME: &'static str = "JobParams";
-}
+schema!(JobParams);
 
 /// A job waiting for a worker to claim it.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5363,9 +4884,7 @@ impl JobPending {
     }
 }
 
-impl Schema for JobPending {
-    const NAME: &'static str = "JobPending";
-}
+schema!(JobPending);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5445,9 +4964,7 @@ impl JobProgress {
     }
 }
 
-impl Schema for JobProgress {
-    const NAME: &'static str = "JobProgress";
-}
+schema!(JobProgress);
 
 /// Analyzing the content.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5470,9 +4987,7 @@ impl JobProgressAnalyzing {
     }
 }
 
-impl Schema for JobProgressAnalyzing {
-    const NAME: &'static str = "JobProgressAnalyzing";
-}
+schema!(JobProgressAnalyzing);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5512,9 +5027,7 @@ impl JobProgressAnalyzingTags {
     }
 }
 
-impl Schema for JobProgressAnalyzingTags {
-    const NAME: &'static str = "JobProgressAnalyzingTags";
-}
+schema!(JobProgressAnalyzingTags);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5554,9 +5067,7 @@ impl JobProgressCompleteCreated {
     }
 }
 
-impl Schema for JobProgressCompleteCreated {
-    const NAME: &'static str = "JobProgressCompleteCreated";
-}
+schema!(JobProgressCompleteCreated);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5593,9 +5104,7 @@ impl JobProgressCompleteGenerated {
     }
 }
 
-impl Schema for JobProgressCompleteGenerated {
-    const NAME: &'static str = "JobProgressCompleteGenerated";
-}
+schema!(JobProgressCompleteGenerated);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5672,9 +5181,7 @@ impl JobProgressCreatingAnnotations {
     }
 }
 
-impl Schema for JobProgressCreatingAnnotations {
-    const NAME: &'static str = "JobProgressCreatingAnnotations";
-}
+schema!(JobProgressCreatingAnnotations);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5714,9 +5221,7 @@ impl JobProgressCreatingResource {
     }
 }
 
-impl Schema for JobProgressCreatingResource {
-    const NAME: &'static str = "JobProgressCreatingResource";
-}
+schema!(JobProgressCreatingResource);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5753,9 +5258,7 @@ impl JobProgressCreatingTagAnnotations {
     }
 }
 
-impl Schema for JobProgressCreatingTagAnnotations {
-    const NAME: &'static str = "JobProgressCreatingTagAnnotations";
-}
+schema!(JobProgressCreatingTagAnnotations);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5825,9 +5328,7 @@ impl JobProgressDetectingEntities {
     }
 }
 
-impl Schema for JobProgressDetectingEntities {
-    const NAME: &'static str = "JobProgressDetectingEntities";
-}
+schema!(JobProgressDetectingEntities);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5867,9 +5368,7 @@ impl JobProgressGeneratingResource {
     }
 }
 
-impl Schema for JobProgressGeneratingResource {
-    const NAME: &'static str = "JobProgressGeneratingResource";
-}
+schema!(JobProgressGeneratingResource);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5909,9 +5408,7 @@ impl JobProgressLoading {
     }
 }
 
-impl Schema for JobProgressLoading {
-    const NAME: &'static str = "JobProgressLoading";
-}
+schema!(JobProgressLoading);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -5986,69 +5483,31 @@ impl<'de> serde::Deserialize<'de> for JobProgressMessage {
     }
 }
 
-impl From<JobProgressLoading> for JobProgressMessage {
-    fn from(member: JobProgressLoading) -> Self {
-        JobProgressMessage::Loading(member)
-    }
-}
-
-impl From<JobProgressAnalyzing> for JobProgressMessage {
-    fn from(member: JobProgressAnalyzing) -> Self {
-        JobProgressMessage::Analyzing(member)
-    }
-}
-
-impl From<JobProgressAnalyzingTags> for JobProgressMessage {
-    fn from(member: JobProgressAnalyzingTags) -> Self {
-        JobProgressMessage::AnalyzingTags(member)
-    }
-}
-
-impl From<JobProgressGeneratingResource> for JobProgressMessage {
-    fn from(member: JobProgressGeneratingResource) -> Self {
-        JobProgressMessage::GeneratingResource(member)
-    }
-}
-
-impl From<JobProgressCreatingResource> for JobProgressMessage {
-    fn from(member: JobProgressCreatingResource) -> Self {
-        JobProgressMessage::CreatingResource(member)
-    }
-}
-
-impl From<JobProgressCompleteGenerated> for JobProgressMessage {
-    fn from(member: JobProgressCompleteGenerated) -> Self {
-        JobProgressMessage::CompleteGenerated(member)
-    }
-}
-
-impl From<JobProgressDetectingEntities> for JobProgressMessage {
-    fn from(member: JobProgressDetectingEntities) -> Self {
-        JobProgressMessage::DetectingEntities(member)
-    }
-}
-
-impl From<JobProgressCreatingAnnotations> for JobProgressMessage {
-    fn from(member: JobProgressCreatingAnnotations) -> Self {
-        JobProgressMessage::CreatingAnnotations(member)
-    }
-}
-
-impl From<JobProgressCreatingTagAnnotations> for JobProgressMessage {
-    fn from(member: JobProgressCreatingTagAnnotations) -> Self {
-        JobProgressMessage::CreatingTagAnnotations(member)
-    }
-}
-
-impl From<JobProgressCompleteCreated> for JobProgressMessage {
-    fn from(member: JobProgressCompleteCreated) -> Self {
-        JobProgressMessage::CompleteCreated(member)
-    }
-}
-
-impl Schema for JobProgressMessage {
-    const NAME: &'static str = "JobProgressMessage";
-}
+member!(JobProgressMessage::Loading(JobProgressLoading));
+member!(JobProgressMessage::Analyzing(JobProgressAnalyzing));
+member!(JobProgressMessage::AnalyzingTags(JobProgressAnalyzingTags));
+member!(JobProgressMessage::GeneratingResource(
+    JobProgressGeneratingResource,
+));
+member!(JobProgressMessage::CreatingResource(
+    JobProgressCreatingResource,
+));
+member!(JobProgressMessage::CompleteGenerated(
+    JobProgressCompleteGenerated,
+));
+member!(JobProgressMessage::DetectingEntities(
+    JobProgressDetectingEntities,
+));
+member!(JobProgressMessage::CreatingAnnotations(
+    JobProgressCreatingAnnotations,
+));
+member!(JobProgressMessage::CreatingTagAnnotations(
+    JobProgressCreatingTagAnnotations,
+));
+member!(JobProgressMessage::CompleteCreated(
+    JobProgressCompleteCreated,
+));
+schema!(JobProgressMessage);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct JobProgressRequestParamsItem {
@@ -6109,21 +5568,9 @@ impl<'de> serde::Deserialize<'de> for JobQueuedEvent {
     }
 }
 
-impl From<MarkJobQueuedEvent> for JobQueuedEvent {
-    fn from(member: MarkJobQueuedEvent) -> Self {
-        JobQueuedEvent::MarkJobQueuedEvent(member)
-    }
-}
-
-impl From<YieldJobQueuedEvent> for JobQueuedEvent {
-    fn from(member: YieldJobQueuedEvent) -> Self {
-        JobQueuedEvent::YieldJobQueuedEvent(member)
-    }
-}
-
-impl Schema for JobQueuedEvent {
-    const NAME: &'static str = "JobQueuedEvent";
-}
+member!(JobQueuedEvent::MarkJobQueuedEvent(MarkJobQueuedEvent));
+member!(JobQueuedEvent::YieldJobQueuedEvent(YieldJobQueuedEvent));
+schema!(JobQueuedEvent);
 
 /// Command to report progress on a job
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6166,9 +5613,7 @@ impl JobReportProgressCommand {
     }
 }
 
-impl Schema for JobReportProgressCommand {
-    const NAME: &'static str = "JobReportProgressCommand";
-}
+schema!(JobReportProgressCommand);
 
 /// What a job reports when it concludes without failing: a `mark` job's counts, the resource a `yield` job made, or a decline from either. A result has no discriminant of its own: the job description beside it says which job it answers, and the three share no member, so each is told from the others by what it alone carries.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6179,27 +5624,10 @@ pub enum JobResult {
     JobDeclined(JobDeclined),
 }
 
-impl From<MarkJobDone> for JobResult {
-    fn from(member: MarkJobDone) -> Self {
-        JobResult::MarkJobDone(member)
-    }
-}
-
-impl From<YieldJobDone> for JobResult {
-    fn from(member: YieldJobDone) -> Self {
-        JobResult::YieldJobDone(member)
-    }
-}
-
-impl From<JobDeclined> for JobResult {
-    fn from(member: JobDeclined) -> Self {
-        JobResult::JobDeclined(member)
-    }
-}
-
-impl Schema for JobResult {
-    const NAME: &'static str = "JobResult";
-}
+member!(JobResult::MarkJobDone(MarkJobDone));
+member!(JobResult::YieldJobDone(YieldJobDone));
+member!(JobResult::JobDeclined(JobDeclined));
+schema!(JobResult);
 
 /// A job a worker has claimed and not yet concluded.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6232,9 +5660,7 @@ impl JobRunning {
     }
 }
 
-impl Schema for JobRunning {
-    const NAME: &'static str = "JobRunning";
-}
+schema!(JobRunning);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -6289,9 +5715,7 @@ impl JobStartCommand {
     }
 }
 
-impl Schema for JobStartCommand {
-    const NAME: &'static str = "JobStartCommand";
-}
+schema!(JobStartCommand);
 
 /// Payload for job:started domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6321,9 +5745,7 @@ impl JobStartedPayload {
     }
 }
 
-impl Schema for JobStartedPayload {
-    const NAME: &'static str = "JobStartedPayload";
-}
+schema!(JobStartedPayload);
 
 /// Request to check the status of a job
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6332,9 +5754,7 @@ pub struct JobStatusRequest {
     pub job_id: JobId,
 }
 
-impl Schema for JobStatusRequest {
-    const NAME: &'static str = "JobStatusRequest";
-}
+schema!(JobStatusRequest);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct JobStatusResponse {
@@ -6387,9 +5807,7 @@ impl JobStatusResponse {
     }
 }
 
-impl Schema for JobStatusResponse {
-    const NAME: &'static str = "JobStatusResponse";
-}
+schema!(JobStatusResponse);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -6426,9 +5844,7 @@ pub struct JobStatusResult {
     pub response: JobStatusResponse,
 }
 
-impl Schema for JobStatusResult {
-    const NAME: &'static str = "JobStatusResult";
-}
+schema!(JobStatusResult);
 
 /// A running job's progress as the dispatcher stores it: the last JobProgress its worker reported with `job:report-progress`, or an empty object before the first report.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6438,15 +5854,8 @@ pub enum JobStoredProgress {
     Empty(EmptyObject),
 }
 
-impl From<JobProgress> for JobStoredProgress {
-    fn from(member: JobProgress) -> Self {
-        JobStoredProgress::JobProgress(member)
-    }
-}
-
-impl Schema for JobStoredProgress {
-    const NAME: &'static str = "JobStoredProgress";
-}
+member!(JobStoredProgress::JobProgress(JobProgress));
+schema!(JobStoredProgress);
 
 /// A completed job's result as the dispatcher stores it: the result its worker reported with `job:complete`, or an empty object when it reported none.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6456,15 +5865,8 @@ pub enum JobStoredResult {
     Empty(EmptyObject),
 }
 
-impl From<JobResult> for JobStoredResult {
-    fn from(member: JobResult) -> Self {
-        JobStoredResult::JobResult(member)
-    }
-}
-
-impl Schema for JobStoredResult {
-    const NAME: &'static str = "JobStoredResult";
-}
+member!(JobStoredResult::JobResult(JobResult));
+schema!(JobStoredResult);
 
 /// What a job does, as the verb that asks for it: `mark` annotates a resource, `yield` makes one. A job description is its `jobType` and the parameters that verb takes; a `mark` job's parameters state its motivation.
 #[derive(
@@ -6487,9 +5889,7 @@ impl JobType {
     }
 }
 
-impl Schema for JobType {
-    const NAME: &'static str = "JobType";
-}
+schema!(JobType);
 
 /// What a knowledge base says about itself, answered by the Archivist from the committed .xynolog/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6515,9 +5915,7 @@ impl KbDescription {
     }
 }
 
-impl Schema for KbDescription {
-    const NAME: &'static str = "KbDescription";
-}
+schema!(KbDescription);
 
 /// How a knowledge base is reached: a gateway over HTTP, or a knowledge base the host process has loaded. Told apart by `kind`. Only what builds a transport, or signs in at an issuer, reads it.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
@@ -6543,21 +5941,9 @@ impl<'de> serde::Deserialize<'de> for KbEndpoint {
     }
 }
 
-impl From<HttpEndpoint> for KbEndpoint {
-    fn from(member: HttpEndpoint) -> Self {
-        KbEndpoint::HttpEndpoint(member)
-    }
-}
-
-impl From<LocalEndpoint> for KbEndpoint {
-    fn from(member: LocalEndpoint) -> Self {
-        KbEndpoint::LocalEndpoint(member)
-    }
-}
-
-impl Schema for KbEndpoint {
-    const NAME: &'static str = "KbEndpoint";
-}
+member!(KbEndpoint::HttpEndpoint(HttpEndpoint));
+member!(KbEndpoint::LocalEndpoint(LocalEndpoint));
+schema!(KbEndpoint);
 
 /// When a knowledge base last described itself, and what it said beyond its name. A client shows it as current only while a session to the knowledge base is live, and as of `at` otherwise.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6580,9 +5966,7 @@ impl KbRead {
     }
 }
 
-impl Schema for KbRead {
-    const NAME: &'static str = "KbRead";
-}
+schema!(KbRead);
 
 /// Where to connect to a knowledge base: an endpoint, and the labels a client keeps of it. It carries no identity: which knowledge base answers at an address is known only once it has been reached with a token and asked, so a target is what every caller can build before then, and a session's whole input. A client keeps it locally; it is never sent.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6594,9 +5978,7 @@ pub struct KbTarget {
     pub endpoint: KbEndpoint,
 }
 
-impl Schema for KbTarget {
-    const NAME: &'static str = "KbTarget";
-}
+schema!(KbTarget);
 
 /// A registered knowledge base: a target, and what registering it took, the identity the knowledge base reported of itself when it was reached (`did`) among it. What a client's list of knowledge bases holds. A did says which knowledge base, not which running copy: a clone and a codespace of one repository are one knowledge base at two addresses and report one did. So an entry is looked up by its endpoint, and its did is what an answer is verified against; nothing selects by did. Its `label` and `lastRead` are written only from an answer that carried its did.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6632,9 +6014,7 @@ impl KnowledgeBase {
     }
 }
 
-impl Schema for KnowledgeBase {
-    const NAME: &'static str = "KnowledgeBase";
-}
+schema!(KnowledgeBase);
 
 /// Knowledge graph gathered for an LLM context — a shared backbone in which resources AND annotations are typed nodes, connected by typed (optionally bidirectional) edges. Flattened views the matcher/generation read (connections, citedBy, siblings) are derived from these nodes/edges.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6657,9 +6037,7 @@ impl KnowledgeGraph {
     }
 }
 
-impl Schema for KnowledgeGraph {
-    const NAME: &'static str = "KnowledgeGraph";
-}
+schema!(KnowledgeGraph);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct KnowledgeGraphEdgesItem {
@@ -6718,17 +6096,8 @@ impl<'de> serde::Deserialize<'de> for KnowledgeGraphNodesItem {
     }
 }
 
-impl From<GraphResourceNode> for KnowledgeGraphNodesItem {
-    fn from(member: GraphResourceNode) -> Self {
-        KnowledgeGraphNodesItem::ResourceNode(member)
-    }
-}
-
-impl From<GraphAnnotationNode> for KnowledgeGraphNodesItem {
-    fn from(member: GraphAnnotationNode) -> Self {
-        KnowledgeGraphNodesItem::AnnotationNode(member)
-    }
-}
+member!(KnowledgeGraphNodesItem::ResourceNode(GraphResourceNode));
+member!(KnowledgeGraphNodesItem::AnnotationNode(GraphAnnotationNode));
 
 /// An ErrorResponse that names, in `code`, the limit the request met.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6756,9 +6125,7 @@ impl LimitRefusal {
     }
 }
 
-impl Schema for LimitRefusal {
-    const NAME: &'static str = "LimitRefusal";
-}
+schema!(LimitRefusal);
 
 /// `streams`: the principal already holds as many streams as its coefficient of `x-xynolog-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynolog-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (contract/TRANSPORT-CONTRACT.md § A refused credential).
 #[derive(
@@ -6824,9 +6191,7 @@ impl LinkingJobParams {
     }
 }
 
-impl Schema for LinkingJobParams {
-    const NAME: &'static str = "LinkingJobParams";
-}
+schema!(LinkingJobParams);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -6853,9 +6218,7 @@ pub struct ListResourcesResponse {
     pub limit: f64,
 }
 
-impl Schema for ListResourcesResponse {
-    const NAME: &'static str = "ListResourcesResponse";
-}
+schema!(ListResourcesResponse);
 
 /// A knowledge base the host process has loaded and reaches through a transport with no wire.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6877,9 +6240,7 @@ impl LocalEndpoint {
     }
 }
 
-impl Schema for LocalEndpoint {
-    const NAME: &'static str = "LocalEndpoint";
-}
+schema!(LocalEndpoint);
 
 /// Discriminant: the endpoint is in the host process.
 #[derive(
@@ -6920,9 +6281,7 @@ impl LogFormat {
     }
 }
 
-impl Schema for LogFormat {
-    const NAME: &'static str = "LogFormat";
-}
+schema!(LogFormat);
 
 /// How much a service logs: the least severe level it writes, from error, the most severe, to debug.
 #[derive(
@@ -6954,9 +6313,7 @@ impl LogLevel {
     }
 }
 
-impl Schema for LogLevel {
-    const NAME: &'static str = "LogLevel";
-}
+schema!(LogLevel);
 
 /// Bus command to archive a resource and optionally remove its file.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6988,9 +6345,7 @@ impl MarkArchiveCommand {
     }
 }
 
-impl Schema for MarkArchiveCommand {
-    const NAME: &'static str = "MarkArchiveCommand";
-}
+schema!(MarkArchiveCommand);
 
 /// Bus command to persist a detection unit's annotations as one acknowledged batch. It is answered only after every annotation is in the event log, so a worker can gate unit completion on durability rather than on emission. The batch is the unit: a partial commit is reported as a failure, and the worker retries the whole unit, which is safe because annotation ids are deterministic: content-addressed, so re-emitting one is a no-op.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7026,9 +6381,7 @@ impl MarkCommitCommand {
     }
 }
 
-impl Schema for MarkCommitCommand {
-    const NAME: &'static str = "MarkCommitCommand";
-}
+schema!(MarkCommitCommand);
 
 /// Durability acknowledgement for a mark:commit batch: every annotation named by the command is in the event log at the moment this is emitted.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7037,9 +6390,7 @@ pub struct MarkCommitOk {
     pub response: MarkCommitOkResponse,
 }
 
-impl Schema for MarkCommitOk {
-    const NAME: &'static str = "MarkCommitOk";
-}
+schema!(MarkCommitOk);
 
 /// What the commit persisted.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7057,9 +6408,7 @@ pub struct MarkCreateOk {
     pub response: MarkCreateOkResponse,
 }
 
-impl Schema for MarkCreateOk {
-    const NAME: &'static str = "MarkCreateOk";
-}
+schema!(MarkCreateOk);
 
 /// The created annotation's identity.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7068,9 +6417,7 @@ pub struct MarkCreateOkResponse {
     pub annotation_id: AnnotationId,
 }
 
-impl Schema for MarkCreateOkResponse {
-    const NAME: &'static str = "MarkCreateOkResponse";
-}
+schema!(MarkCreateOkResponse);
 
 /// Raw annotation creation intent — bus handler assembles the W3C annotation
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7080,9 +6427,7 @@ pub struct MarkCreateRequest {
     pub request: CreateAnnotationRequest,
 }
 
-impl Schema for MarkCreateRequest {
-    const NAME: &'static str = "MarkCreateRequest";
-}
+schema!(MarkCreateRequest);
 
 /// The payload of `mark:delegate-timeout`, a client-local signal: a delegated job went silent past its deadline, with no progress, no completion and no `job:fail`. A real job failure arrives as `job:fail` and never produces this.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7093,9 +6438,7 @@ pub struct MarkDelegateTimeoutEvent {
     pub motivation: Motivation,
 }
 
-impl Schema for MarkDelegateTimeoutEvent {
-    const NAME: &'static str = "MarkDelegateTimeoutEvent";
-}
+schema!(MarkDelegateTimeoutEvent);
 
 /// Bus command to delete an annotation.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7122,9 +6465,7 @@ impl MarkDeleteCommand {
     }
 }
 
-impl Schema for MarkDeleteCommand {
-    const NAME: &'static str = "MarkDeleteCommand";
-}
+schema!(MarkDeleteCommand);
 
 /// Success reply after deleting an annotation, matched to the originating command by correlationId.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7133,9 +6474,7 @@ pub struct MarkDeleteOk {
     pub response: MarkDeleteOkResponse,
 }
 
-impl Schema for MarkDeleteOk {
-    const NAME: &'static str = "MarkDeleteOk";
-}
+schema!(MarkDeleteOk);
 
 /// The deleted annotation's identity.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7181,9 +6520,7 @@ impl MarkJobCompleteCommand {
     }
 }
 
-impl Schema for MarkJobCompleteCommand {
-    const NAME: &'static str = "MarkJobCompleteCommand";
-}
+schema!(MarkJobCompleteCommand);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -7234,9 +6571,7 @@ impl MarkJobCreateCommand {
     }
 }
 
-impl Schema for MarkJobCreateCommand {
-    const NAME: &'static str = "MarkJobCreateCommand";
-}
+schema!(MarkJobCreateCommand);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -7294,9 +6629,7 @@ impl MarkJobDone {
     }
 }
 
-impl Schema for MarkJobDone {
-    const NAME: &'static str = "MarkJobDone";
-}
+schema!(MarkJobDone);
 
 /// `mark` jobs of one motivation.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7317,9 +6650,7 @@ impl MarkJobFilter {
     }
 }
 
-impl Schema for MarkJobFilter {
-    const NAME: &'static str = "MarkJobFilter";
-}
+schema!(MarkJobFilter);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -7393,39 +6724,12 @@ impl MarkJobParams {
     }
 }
 
-impl From<HighlightingJobParams> for MarkJobParams {
-    fn from(member: HighlightingJobParams) -> Self {
-        MarkJobParams::HighlightingJobParams(member)
-    }
-}
-
-impl From<CommentingJobParams> for MarkJobParams {
-    fn from(member: CommentingJobParams) -> Self {
-        MarkJobParams::CommentingJobParams(member)
-    }
-}
-
-impl From<AssessingJobParams> for MarkJobParams {
-    fn from(member: AssessingJobParams) -> Self {
-        MarkJobParams::AssessingJobParams(member)
-    }
-}
-
-impl From<LinkingJobParams> for MarkJobParams {
-    fn from(member: LinkingJobParams) -> Self {
-        MarkJobParams::LinkingJobParams(member)
-    }
-}
-
-impl From<TaggingJobParams> for MarkJobParams {
-    fn from(member: TaggingJobParams) -> Self {
-        MarkJobParams::TaggingJobParams(member)
-    }
-}
-
-impl Schema for MarkJobParams {
-    const NAME: &'static str = "MarkJobParams";
-}
+member!(MarkJobParams::HighlightingJobParams(HighlightingJobParams));
+member!(MarkJobParams::CommentingJobParams(CommentingJobParams));
+member!(MarkJobParams::AssessingJobParams(AssessingJobParams));
+member!(MarkJobParams::LinkingJobParams(LinkingJobParams));
+member!(MarkJobParams::TaggingJobParams(TaggingJobParams));
+schema!(MarkJobParams);
 
 /// A pending `mark` job, announced with its parameters as it was created.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7461,9 +6765,7 @@ impl MarkJobQueuedEvent {
     }
 }
 
-impl Schema for MarkJobQueuedEvent {
-    const NAME: &'static str = "MarkJobQueuedEvent";
-}
+schema!(MarkJobQueuedEvent);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -7490,21 +6792,9 @@ pub enum MarkJobResult {
     JobDeclined(JobDeclined),
 }
 
-impl From<MarkJobDone> for MarkJobResult {
-    fn from(member: MarkJobDone) -> Self {
-        MarkJobResult::MarkJobDone(member)
-    }
-}
-
-impl From<JobDeclined> for MarkJobResult {
-    fn from(member: JobDeclined) -> Self {
-        MarkJobResult::JobDeclined(member)
-    }
-}
-
-impl Schema for MarkJobResult {
-    const NAME: &'static str = "MarkJobResult";
-}
+member!(MarkJobResult::MarkJobDone(MarkJobDone));
+member!(MarkJobResult::JobDeclined(JobDeclined));
+schema!(MarkJobResult);
 
 /// Emitted when the user requests a new mark (annotation) on a resource
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7516,9 +6806,7 @@ pub struct MarkRequestedEvent {
     pub motivation: Motivation,
 }
 
-impl Schema for MarkRequestedEvent {
-    const NAME: &'static str = "MarkRequestedEvent";
-}
+schema!(MarkRequestedEvent);
 
 /// Emitted when a mark is submitted with its annotation body
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7545,9 +6833,7 @@ impl MarkSubmitEvent {
     }
 }
 
-impl Schema for MarkSubmitEvent {
-    const NAME: &'static str = "MarkSubmitEvent";
-}
+schema!(MarkSubmitEvent);
 
 /// Bus command to unarchive a previously archived resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7575,9 +6861,7 @@ impl MarkUnarchiveCommand {
     }
 }
 
-impl Schema for MarkUnarchiveCommand {
-    const NAME: &'static str = "MarkUnarchiveCommand";
-}
+schema!(MarkUnarchiveCommand);
 
 /// Bus command to update an annotation's body with patch operations.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7609,9 +6893,7 @@ impl MarkUpdateBodyCommand {
     }
 }
 
-impl Schema for MarkUpdateBodyCommand {
-    const NAME: &'static str = "MarkUpdateBodyCommand";
-}
+schema!(MarkUpdateBodyCommand);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -7621,23 +6903,13 @@ pub enum MarkUpdateBodyCommandOperationsItem {
     Replace(BodyOperationReplace),
 }
 
-impl From<BodyOperationAdd> for MarkUpdateBodyCommandOperationsItem {
-    fn from(member: BodyOperationAdd) -> Self {
-        MarkUpdateBodyCommandOperationsItem::Add(member)
-    }
-}
-
-impl From<BodyOperationRemove> for MarkUpdateBodyCommandOperationsItem {
-    fn from(member: BodyOperationRemove) -> Self {
-        MarkUpdateBodyCommandOperationsItem::Remove(member)
-    }
-}
-
-impl From<BodyOperationReplace> for MarkUpdateBodyCommandOperationsItem {
-    fn from(member: BodyOperationReplace) -> Self {
-        MarkUpdateBodyCommandOperationsItem::Replace(member)
-    }
-}
+member!(MarkUpdateBodyCommandOperationsItem::Add(BodyOperationAdd));
+member!(MarkUpdateBodyCommandOperationsItem::Remove(
+    BodyOperationRemove,
+));
+member!(MarkUpdateBodyCommandOperationsItem::Replace(
+    BodyOperationReplace,
+));
 
 /// Bus command to replace the entity types on a resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7670,9 +6942,7 @@ impl MarkUpdateEntityTypesCommand {
     }
 }
 
-impl Schema for MarkUpdateEntityTypesCommand {
-    const NAME: &'static str = "MarkUpdateEntityTypesCommand";
-}
+schema!(MarkUpdateEntityTypesCommand);
 
 /// Request to search the knowledge base's resources by text. The Librarian answers: it matches the text lexically, and when nothing matches, by meaning.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7705,9 +6975,7 @@ impl MatchResourcesRequest {
     }
 }
 
-impl Schema for MatchResourcesRequest {
-    const NAME: &'static str = "MatchResourcesRequest";
-}
+schema!(MatchResourcesRequest);
 
 /// One page of the resources a text search found, and which kind of answer it is.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7724,9 +6992,7 @@ pub struct MatchResourcesResponse {
     pub match_kind: MatchResourcesResponseMatchKind,
 }
 
-impl Schema for MatchResourcesResponse {
-    const NAME: &'static str = "MatchResourcesResponse";
-}
+schema!(MatchResourcesResponse);
 
 /// What kind of answer this is: 'lexical' — the resources matched the query text; 'semantic' — no lexical match existed, and these resources discuss the query per the vector index. Required so every producer labels its answer; a UI can render semantic results as a different kind of page ('no title matches, but these documents discuss it').
 #[derive(
@@ -7755,9 +7021,7 @@ pub struct MatchResourcesResult {
     pub response: MatchResourcesResponse,
 }
 
-impl Schema for MatchResourcesResult {
-    const NAME: &'static str = "MatchResourcesResult";
-}
+schema!(MatchResourcesResult);
 
 /// The payload of `match:search-failed`: a CommandError that names the reference whose candidates could not be searched for.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7787,9 +7051,7 @@ impl MatchSearchFailed {
     }
 }
 
-impl Schema for MatchSearchFailed {
-    const NAME: &'static str = "MatchSearchFailed";
-}
+schema!(MatchSearchFailed);
 
 /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
 #[derive(
@@ -7855,9 +7117,7 @@ impl MatchSearchRequest {
     }
 }
 
-impl Schema for MatchSearchRequest {
-    const NAME: &'static str = "MatchSearchRequest";
-}
+schema!(MatchSearchRequest);
 
 /// Search results payload emitted on match:search-results SSE channel.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7868,9 +7128,7 @@ pub struct MatchSearchResult {
     pub response: Vec<ScoredResource>,
 }
 
-impl Schema for MatchSearchResult {
-    const NAME: &'static str = "MatchSearchResult";
-}
+schema!(MatchSearchResult);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct MediaTokenRequest {
@@ -7879,9 +7137,7 @@ pub struct MediaTokenRequest {
     pub resource_id: ResourceId,
 }
 
-impl Schema for MediaTokenRequest {
-    const NAME: &'static str = "MediaTokenRequest";
-}
+schema!(MediaTokenRequest);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct MediaTokenResponse {
@@ -7889,9 +7145,7 @@ pub struct MediaTokenResponse {
     pub token: String,
 }
 
-impl Schema for MediaTokenResponse {
-    const NAME: &'static str = "MediaTokenResponse";
-}
+schema!(MediaTokenResponse);
 
 /// Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 #[derive(
@@ -7923,9 +7177,7 @@ impl Motivation {
     }
 }
 
-impl Schema for Motivation {
-    const NAME: &'static str = "Motivation";
-}
+schema!(Motivation);
 
 /// What registering a knowledge base takes: everything a registered one holds but its id, which the client's list makes. It has a did, because registering follows a sign-in: the knowledge base has already said what it is.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7953,9 +7205,7 @@ impl NewKnowledgeBase {
     }
 }
 
-impl Schema for NewKnowledgeBase {
-    const NAME: &'static str = "NewKnowledgeBase";
-}
+schema!(NewKnowledgeBase);
 
 /// One positioned text run. Coordinates are PDF points with the origin at the bottom-left of the page, Y increasing upward; the flip to canvas pixels happens in the browser.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7972,9 +7222,7 @@ pub struct PdfTextItem {
     pub height: f64,
 }
 
-impl Schema for PdfTextItem {
-    const NAME: &'static str = "PdfTextItem";
-}
+schema!(PdfTextItem);
 
 /// Bus command saying what a principal is called. The gateway emits it when a principal ACTS, carrying the display name it just verified on its token; a principal may also emit it itself, for itself, which is how an agent, whose token carries no name, says what it is called. Either way the gateway stamps `_userId` with the sender's verified DID, so a principal names only itself. The Stower persists it as principal:profiled, and only when the name differs from the latest one recorded for that DID — so the log holds one line per name a principal has had, not one per act. A name is a fact ABOUT an identity, never part of the record of an act: no artifact carries it, and readers resolve it from the profiles projection. Emitted for a person and for an agent alike; never for a request that merely reads.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7997,9 +7245,7 @@ impl PrincipalProfileCommand {
     }
 }
 
-impl Schema for PrincipalProfileCommand {
-    const NAME: &'static str = "PrincipalProfileCommand";
-}
+schema!(PrincipalProfileCommand);
 
 /// Payload for principal:profiled — what this principal is called, as the issuer's verified `name` claim said or as the principal said of itself, recorded once per change (system-level, no resourceId). The event's `userId` is the principal's DID; this payload is the fact about it. Provenance never reads it: every artifact joins on the DID alone, and this is projected into profiles.json for readers to resolve against. Two lines for one DID mean the name changed, and the timestamps say when — which is why no artifact ever had to freeze a copy.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8008,9 +7254,7 @@ pub struct PrincipalProfiledPayload {
     pub name: String,
 }
 
-impl Schema for PrincipalProfiledPayload {
-    const NAME: &'static str = "PrincipalProfiledPayload";
-}
+schema!(PrincipalProfiledPayload);
 
 /// What a principal last said it is called, and when: the profile a `principal:profiled` event gives.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8022,9 +7266,7 @@ pub struct Profile {
     pub since: String,
 }
 
-impl Schema for Profile {
-    const NAME: &'static str = "Profile";
-}
+schema!(Profile);
 
 /// OAuth 2.0 Protected Resource Metadata (RFC 9728): which authorization server this knowledge base trusts, served at /.well-known/oauth-protected-resource so a client — the Browser, an MCP client — learns where to send a user to sign in without configuration. A 401 from any protected route points here in its WWW-Authenticate challenge.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8057,9 +7299,7 @@ impl ProtectedResourceMetadata {
     }
 }
 
-impl Schema for ProtectedResourceMetadata {
-    const NAME: &'static str = "ProtectedResourceMetadata";
-}
+schema!(ProtectedResourceMetadata);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -8164,9 +7404,7 @@ impl Representation {
     }
 }
 
-impl Schema for Representation {
-    const NAME: &'static str = "Representation";
-}
+schema!(Representation);
 
 /// Payload for yield:representation-added domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8174,9 +7412,7 @@ pub struct RepresentationAddedPayload {
     pub representation: Representation,
 }
 
-impl Schema for RepresentationAddedPayload {
-    const NAME: &'static str = "RepresentationAddedPayload";
-}
+schema!(RepresentationAddedPayload);
 
 /// Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8226,9 +7462,7 @@ pub struct RepresentationRemovedPayload {
     pub checksum: String,
 }
 
-impl Schema for RepresentationRemovedPayload {
-    const NAME: &'static str = "RepresentationRemovedPayload";
-}
+schema!(RepresentationRemovedPayload);
 
 /// Type(s), e.g., schema:MediaObject.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8245,9 +7479,7 @@ pub struct ResourceArchivedPayload {
     pub reason: Option<String>,
 }
 
-impl Schema for ResourceArchivedPayload {
-    const NAME: &'static str = "ResourceArchivedPayload";
-}
+schema!(ResourceArchivedPayload);
 
 /// Payload for yield:cloned domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8301,9 +7533,7 @@ impl ResourceClonedPayload {
     }
 }
 
-impl Schema for ResourceClonedPayload {
-    const NAME: &'static str = "ResourceClonedPayload";
-}
+schema!(ResourceClonedPayload);
 
 /// PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8313,11 +7543,7 @@ pub enum ResourceClonedPayloadWasAttributedTo {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for ResourceClonedPayloadWasAttributedTo {
-    fn from(member: Agent) -> Self {
-        ResourceClonedPayloadWasAttributedTo::Agent(member)
-    }
-}
+member!(ResourceClonedPayloadWasAttributedTo::Agent(Agent));
 
 /// Payload for yield:created domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8389,9 +7615,7 @@ impl ResourceCreatedPayload {
     }
 }
 
-impl Schema for ResourceCreatedPayload {
-    const NAME: &'static str = "ResourceCreatedPayload";
-}
+schema!(ResourceCreatedPayload);
 
 /// What this resource was generated from: the resource, and the annotation on it when the generation was for one. The resource's descriptor names the resource as `wasDerivedFrom`.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8420,11 +7644,7 @@ pub enum ResourceCreatedPayloadGenerator {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for ResourceCreatedPayloadGenerator {
-    fn from(member: Agent) -> Self {
-        ResourceCreatedPayloadGenerator::Agent(member)
-    }
-}
+member!(ResourceCreatedPayloadGenerator::Agent(Agent));
 
 /// PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8434,11 +7654,7 @@ pub enum ResourceCreatedPayloadWasAttributedTo {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for ResourceCreatedPayloadWasAttributedTo {
-    fn from(member: Agent) -> Self {
-        ResourceCreatedPayloadWasAttributedTo::Agent(member)
-    }
-}
+member!(ResourceCreatedPayloadWasAttributedTo::Agent(Agent));
 
 /// Metadata about a resource (1:1 with its URI). JSON-LD subject is @id. Link to concrete bytes via representations.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8571,9 +7787,7 @@ impl ResourceDescriptor {
     }
 }
 
-impl Schema for ResourceDescriptor {
-    const NAME: &'static str = "ResourceDescriptor";
-}
+schema!(ResourceDescriptor);
 
 /// Topics (IRIs or strings).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8615,11 +7829,7 @@ pub enum ResourceDescriptorGenerator {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for ResourceDescriptorGenerator {
-    fn from(member: Agent) -> Self {
-        ResourceDescriptorGenerator::Agent(member)
-    }
-}
+member!(ResourceDescriptorGenerator::Agent(Agent));
 
 /// Persistent identifiers (e.g., DOI, URN).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8652,11 +7862,9 @@ pub enum ResourceDescriptorRepresentations {
     List(Vec<Representation>),
 }
 
-impl From<Representation> for ResourceDescriptorRepresentations {
-    fn from(member: Representation) -> Self {
-        ResourceDescriptorRepresentations::Representation(member)
-    }
-}
+member!(ResourceDescriptorRepresentations::Representation(
+    Representation,
+));
 
 /// Type(s) of the resource (IRIs/CURIEs via @context).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8674,11 +7882,7 @@ pub enum ResourceDescriptorWasAttributedTo {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for ResourceDescriptorWasAttributedTo {
-    fn from(member: Agent) -> Self {
-        ResourceDescriptorWasAttributedTo::Agent(member)
-    }
-}
+member!(ResourceDescriptorWasAttributedTo::Agent(Agent));
 
 /// W3C PROV: the resource, or resources, this one was derived from, each by its id
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8698,9 +7902,7 @@ pub struct ResourceErrorEvent {
     pub message: String,
 }
 
-impl Schema for ResourceErrorEvent {
-    const NAME: &'static str = "ResourceErrorEvent";
-}
+schema!(ResourceErrorEvent);
 
 /// A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
 #[derive(
@@ -8794,9 +7996,7 @@ impl PartialEq<&str> for ResourceId {
     }
 }
 
-impl Schema for ResourceId {
-    const NAME: &'static str = "ResourceId";
-}
+schema!(ResourceId);
 
 /// Payload for yield:moved domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8809,17 +8009,13 @@ pub struct ResourceMovedPayload {
     pub to_uri: String,
 }
 
-impl Schema for ResourceMovedPayload {
-    const NAME: &'static str = "ResourceMovedPayload";
-}
+schema!(ResourceMovedPayload);
 
 /// Payload for mark:unarchived domain event (empty payload)
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct ResourceUnarchivedPayload {}
 
-impl Schema for ResourceUnarchivedPayload {
-    const NAME: &'static str = "ResourceUnarchivedPayload";
-}
+schema!(ResourceUnarchivedPayload);
 
 /// Payload for yield:updated domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8842,9 +8038,7 @@ impl ResourceUpdatedPayload {
     }
 }
 
-impl Schema for ResourceUpdatedPayload {
-    const NAME: &'static str = "ResourceUpdatedPayload";
-}
+schema!(ResourceUpdatedPayload);
 
 /// A resource returned by a search, carrying its relevance score and the reason it matched.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8982,9 +8176,7 @@ impl ScoredResource {
     }
 }
 
-impl Schema for ScoredResource {
-    const NAME: &'static str = "ScoredResource";
-}
+schema!(ScoredResource);
 
 /// Topics (IRIs or strings).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9026,11 +8218,7 @@ pub enum ScoredResourceGenerator {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for ScoredResourceGenerator {
-    fn from(member: Agent) -> Self {
-        ScoredResourceGenerator::Agent(member)
-    }
-}
+member!(ScoredResourceGenerator::Agent(Agent));
 
 /// Persistent identifiers (e.g., DOI, URN).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9063,11 +8251,9 @@ pub enum ScoredResourceRepresentations {
     List(Vec<Representation>),
 }
 
-impl From<Representation> for ScoredResourceRepresentations {
-    fn from(member: Representation) -> Self {
-        ScoredResourceRepresentations::Representation(member)
-    }
-}
+member!(ScoredResourceRepresentations::Representation(
+    Representation,
+));
 
 /// Type(s) of the resource (IRIs/CURIEs via @context).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9085,11 +8271,7 @@ pub enum ScoredResourceWasAttributedTo {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for ScoredResourceWasAttributedTo {
-    fn from(member: Agent) -> Self {
-        ScoredResourceWasAttributedTo::Agent(member)
-    }
-}
+member!(ScoredResourceWasAttributedTo::Agent(Agent));
 
 /// W3C PROV: the resource, or resources, this one was derived from, each by its id
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9133,33 +8315,11 @@ impl<'de> serde::Deserialize<'de> for Selector {
     }
 }
 
-impl From<TextPositionSelector> for Selector {
-    fn from(member: TextPositionSelector) -> Self {
-        Selector::TextPositionSelector(member)
-    }
-}
-
-impl From<TextQuoteSelector> for Selector {
-    fn from(member: TextQuoteSelector) -> Self {
-        Selector::TextQuoteSelector(member)
-    }
-}
-
-impl From<SvgSelector> for Selector {
-    fn from(member: SvgSelector) -> Self {
-        Selector::SvgSelector(member)
-    }
-}
-
-impl From<FragmentSelector> for Selector {
-    fn from(member: FragmentSelector) -> Self {
-        Selector::FragmentSelector(member)
-    }
-}
-
-impl Schema for Selector {
-    const NAME: &'static str = "Selector";
-}
+member!(Selector::TextPositionSelector(TextPositionSelector));
+member!(Selector::TextQuoteSelector(TextQuoteSelector));
+member!(Selector::SvgSelector(SvgSelector));
+member!(Selector::FragmentSelector(FragmentSelector));
+schema!(Selector);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct SemanticMatch {
@@ -9207,9 +8367,7 @@ impl SemanticMatch {
     }
 }
 
-impl Schema for SemanticMatch {
-    const NAME: &'static str = "SemanticMatch";
-}
+schema!(SemanticMatch);
 
 /// A participant opened a live connection to this KB — an SSE stream on /bus/subscribe. Presence is CONNECTION lifecycle, not login: a token can be minted and sit unused, so what this reports is that someone is WATCHING. One person with two tabs produces two of these, which is why connectionId is required — the DID alone cannot tell two connections apart, and a consumer that counts DIDs will undercount viewers.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9221,9 +8379,7 @@ pub struct SessionJoinedEvent {
     pub connection_id: String,
 }
 
-impl Schema for SessionJoinedEvent {
-    const NAME: &'static str = "SessionJoinedEvent";
-}
+schema!(SessionJoinedEvent);
 
 /// A participant's live connection to this KB ended — the SSE stream aborted. Carries the same connectionId as the session:joined that opened it, so a consumer tracking who is present can retire the right connection rather than assuming one per participant.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9235,9 +8391,7 @@ pub struct SessionLeftEvent {
     pub connection_id: String,
 }
 
-impl Schema for SessionLeftEvent {
-    const NAME: &'static str = "SessionLeftEvent";
-}
+schema!(SessionLeftEvent);
 
 /// Emitted when the hover delay setting changes
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9246,9 +8400,7 @@ pub struct SettingsHoverDelayChangedEvent {
     pub hover_delay_ms: i64,
 }
 
-impl Schema for SettingsHoverDelayChangedEvent {
-    const NAME: &'static str = "SettingsHoverDelayChangedEvent";
-}
+schema!(SettingsHoverDelayChangedEvent);
 
 /// Emitted when the UI locale setting changes
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9256,9 +8408,7 @@ pub struct SettingsLocaleChangedEvent {
     pub locale: String,
 }
 
-impl Schema for SettingsLocaleChangedEvent {
-    const NAME: &'static str = "SettingsLocaleChangedEvent";
-}
+schema!(SettingsLocaleChangedEvent);
 
 /// Emitted when the UI theme setting changes
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9266,9 +8416,7 @@ pub struct SettingsThemeChangedEvent {
     pub theme: SettingsThemeChangedEventTheme,
 }
 
-impl Schema for SettingsThemeChangedEvent {
-    const NAME: &'static str = "SettingsThemeChangedEvent";
-}
+schema!(SettingsThemeChangedEvent);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -9306,9 +8454,7 @@ pub struct SmeltRebuildAnchorsCommand {
     pub _user_id: Option<UserId>,
 }
 
-impl Schema for SmeltRebuildAnchorsCommand {
-    const NAME: &'static str = "SmeltRebuildAnchorsCommand";
-}
+schema!(SmeltRebuildAnchorsCommand);
 
 /// The payload of `smelt:settled`: the Smelter's decision for one resource's content, keyed by the checksum of the bytes it inspected. `indexed`: the content is in the vector index. `skipped`: it declined, and `reason` says why.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9341,9 +8487,7 @@ impl SmeltSettled {
     }
 }
 
-impl Schema for SmeltSettled {
-    const NAME: &'static str = "SmeltSettled";
-}
+schema!(SmeltSettled);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -9419,9 +8563,7 @@ impl SpecificResource {
     }
 }
 
-impl Schema for SpecificResource {
-    const NAME: &'static str = "SpecificResource";
-}
+schema!(SpecificResource);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -9469,9 +8611,7 @@ impl StatusResponse {
     }
 }
 
-impl Schema for StatusResponse {
-    const NAME: &'static str = "StatusResponse";
-}
+schema!(StatusResponse);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct StatusResponseFeatures {
@@ -9527,9 +8667,7 @@ impl StoredEventResponse {
     }
 }
 
-impl Schema for StoredEventResponse {
-    const NAME: &'static str = "StoredEventResponse";
-}
+schema!(StoredEventResponse);
 
 /// Base MIME types (no parameters) admitted by Xynolog. Membership is the create/yield gate — every member is storable, nameable, and uploadable. What more the system can do with a type (render, annotate, extract text, author) is curated per type in @xynolog/core's media-type registry, which is keyed by this enum.
 #[derive(
@@ -9735,9 +8873,7 @@ impl SupportedMediaType {
     }
 }
 
-impl Schema for SupportedMediaType {
-    const NAME: &'static str = "SupportedMediaType";
-}
+schema!(SupportedMediaType);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct SvgSelector {
@@ -9756,9 +8892,7 @@ impl SvgSelector {
     }
 }
 
-impl Schema for SvgSelector {
-    const NAME: &'static str = "SvgSelector";
-}
+schema!(SvgSelector);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -9785,9 +8919,7 @@ pub struct TagCategory {
     pub examples: Vec<String>,
 }
 
-impl Schema for TagCategory {
-    const NAME: &'static str = "TagCategory";
-}
+schema!(TagCategory);
 
 /// A structural-analysis schema (e.g. legal-irac, scientific-imrad, argument-toulmin). Defines a methodology framework as an id, name, description, domain hint, and an ordered list of categories. KBs and their skills register schemas with the runtime registry via `frame.addTagSchema(...)` at session start.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9800,9 +8932,7 @@ pub struct TagSchema {
     pub tags: Vec<TagCategory>,
 }
 
-impl Schema for TagSchema {
-    const NAME: &'static str = "TagSchema";
-}
+schema!(TagSchema);
 
 /// Payload for frame:tag-schema-added domain event (system-level, no resourceId — fan-out is global to the KB).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9810,9 +8940,7 @@ pub struct TagSchemaAddedPayload {
     pub schema: TagSchema,
 }
 
-impl Schema for TagSchemaAddedPayload {
-    const NAME: &'static str = "TagSchemaAddedPayload";
-}
+schema!(TagSchemaAddedPayload);
 
 /// What a tagging job takes: passages of the resource are marked with categories of one tag schema.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9846,9 +8974,7 @@ impl TaggingJobParams {
     }
 }
 
-impl Schema for TaggingJobParams {
-    const NAME: &'static str = "TaggingJobParams";
-}
+schema!(TaggingJobParams);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -9887,9 +9013,7 @@ impl TextPositionSelector {
     }
 }
 
-impl Schema for TextPositionSelector {
-    const NAME: &'static str = "TextPositionSelector";
-}
+schema!(TextPositionSelector);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -9930,9 +9054,7 @@ impl TextQuoteSelector {
     }
 }
 
-impl Schema for TextQuoteSelector {
-    const NAME: &'static str = "TextQuoteSelector";
-}
+schema!(TextQuoteSelector);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -9980,9 +9102,7 @@ impl TextualBody {
     }
 }
 
-impl Schema for TextualBody {
-    const NAME: &'static str = "TextualBody";
-}
+schema!(TextualBody);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -10020,9 +9140,7 @@ pub struct UnitCursor {
     pub errors: u64,
 }
 
-impl Schema for UnitCursor {
-    const NAME: &'static str = "UnitCursor";
-}
+schema!(UnitCursor);
 
 /// The identity of whoever did something, a person or a software agent alike: a DID (`did:web:<domain>:users:<subject>`, `did:web:<domain>:agents:<subject>`), with no whitespace in it. Never a name, an address, or a row in a table. What follows `did:` is not constrained further: a subject is the issuer's, percent-encoded, and that encoding leaves some punctuation as it is.
 #[derive(
@@ -10116,9 +9234,7 @@ impl PartialEq<&str> for UserId {
     }
 }
 
-impl Schema for UserId {
-    const NAME: &'static str = "UserId";
-}
+schema!(UserId);
 
 /// The authenticated principal, as this knowledge base names it.
 ///
@@ -10137,9 +9253,7 @@ pub struct UserResponse {
     pub domain: String,
 }
 
-impl Schema for UserResponse {
-    const NAME: &'static str = "UserResponse";
-}
+schema!(UserResponse);
 
 /// The payload of `weave:applied`: the Weaver has applied a resource's events to the graph up to this sequence number. Emitted after applying an event, or a batch's last event.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10152,9 +9266,7 @@ pub struct WeaveApplied {
     pub sequence_number: i64,
 }
 
-impl Schema for WeaveApplied {
-    const NAME: &'static str = "WeaveApplied";
-}
+schema!(WeaveApplied);
 
 /// Bus command to rebuild the graph projection from the event log — the whole graph when resourceId is absent, one resource when present. Served by the Weaver; replaces direct rebuild access, which does not survive the Weaver's container split.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10169,9 +9281,7 @@ pub struct WeaveRebuildCommand {
     pub _user_id: Option<UserId>,
 }
 
-impl Schema for WeaveRebuildCommand {
-    const NAME: &'static str = "WeaveRebuildCommand";
-}
+schema!(WeaveRebuildCommand);
 
 /// Bus command to create a cloned resource from a clone token. Bytes are stored by the upload path BEFORE this command is emitted, because bytes travel over HTTP and never over the bus — the command carries the storage coordinates, never content.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10218,9 +9328,7 @@ impl YieldCloneCreateCommand {
     }
 }
 
-impl Schema for YieldCloneCreateCommand {
-    const NAME: &'static str = "YieldCloneCreateCommand";
-}
+schema!(YieldCloneCreateCommand);
 
 /// Success response after creating a cloned resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10228,9 +9336,7 @@ pub struct YieldCloneCreated {
     pub response: YieldCloneCreatedResponse,
 }
 
-impl Schema for YieldCloneCreated {
-    const NAME: &'static str = "YieldCloneCreated";
-}
+schema!(YieldCloneCreated);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct YieldCloneCreatedResponse {
@@ -10295,9 +9401,7 @@ impl YieldClonePersistCommand {
     }
 }
 
-impl Schema for YieldClonePersistCommand {
-    const NAME: &'static str = "YieldClonePersistCommand";
-}
+schema!(YieldClonePersistCommand);
 
 /// Success reply after cloning a resource, matched to the originating command by correlationId.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10306,9 +9410,7 @@ pub struct YieldClonePersistOk {
     pub response: YieldClonePersistOkResponse,
 }
 
-impl Schema for YieldClonePersistOk {
-    const NAME: &'static str = "YieldClonePersistOk";
-}
+schema!(YieldClonePersistOk);
 
 /// The clone's identity — a new resource, distinct from its parent.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10323,9 +9425,7 @@ pub struct YieldCloneResourceRequest {
     pub token: String,
 }
 
-impl Schema for YieldCloneResourceRequest {
-    const NAME: &'static str = "YieldCloneResourceRequest";
-}
+schema!(YieldCloneResourceRequest);
 
 /// Bus command to request a clone token for a resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10334,9 +9434,7 @@ pub struct YieldCloneTokenRequest {
     pub resource_id: ResourceId,
 }
 
-impl Schema for YieldCloneTokenRequest {
-    const NAME: &'static str = "YieldCloneTokenRequest";
-}
+schema!(YieldCloneTokenRequest);
 
 /// Bus command to create a yielded resource in the knowledge base.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10408,9 +9506,7 @@ impl YieldCreateCommand {
     }
 }
 
-impl Schema for YieldCreateCommand {
-    const NAME: &'static str = "YieldCreateCommand";
-}
+schema!(YieldCreateCommand);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct YieldCreateCommandGeneratedFrom {
@@ -10430,11 +9526,7 @@ pub enum YieldCreateCommandGenerator {
     List(Vec<Agent>),
 }
 
-impl From<Agent> for YieldCreateCommandGenerator {
-    fn from(member: Agent) -> Self {
-        YieldCreateCommandGenerator::Agent(member)
-    }
-}
+member!(YieldCreateCommandGenerator::Agent(Agent));
 
 /// Success reply after creating a yielded resource, matched to the originating command by correlationId.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10443,9 +9535,7 @@ pub struct YieldCreateOk {
     pub response: YieldCreateOkResponse,
 }
 
-impl Schema for YieldCreateOk {
-    const NAME: &'static str = "YieldCreateOk";
-}
+schema!(YieldCreateOk);
 
 /// The created resource's identity.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10496,9 +9586,7 @@ impl YieldJobCompleteCommand {
     }
 }
 
-impl Schema for YieldJobCompleteCommand {
-    const NAME: &'static str = "YieldJobCompleteCommand";
-}
+schema!(YieldJobCompleteCommand);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -10545,9 +9633,7 @@ impl YieldJobCreateCommand {
     }
 }
 
-impl Schema for YieldJobCreateCommand {
-    const NAME: &'static str = "YieldJobCreateCommand";
-}
+schema!(YieldJobCreateCommand);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -10580,9 +9666,7 @@ pub struct YieldJobDone {
     pub truncated: bool,
 }
 
-impl Schema for YieldJobDone {
-    const NAME: &'static str = "YieldJobDone";
-}
+schema!(YieldJobDone);
 
 /// `yield` jobs.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10607,9 +9691,7 @@ impl YieldJobFilter {
     }
 }
 
-impl Schema for YieldJobFilter {
-    const NAME: &'static str = "YieldJobFilter";
-}
+schema!(YieldJobFilter);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -10662,9 +9744,7 @@ impl YieldJobQueuedEvent {
     }
 }
 
-impl Schema for YieldJobQueuedEvent {
-    const NAME: &'static str = "YieldJobQueuedEvent";
-}
+schema!(YieldJobQueuedEvent);
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -10691,21 +9771,9 @@ pub enum YieldJobResult {
     JobDeclined(JobDeclined),
 }
 
-impl From<YieldJobDone> for YieldJobResult {
-    fn from(member: YieldJobDone) -> Self {
-        YieldJobResult::YieldJobDone(member)
-    }
-}
-
-impl From<JobDeclined> for YieldJobResult {
-    fn from(member: JobDeclined) -> Self {
-        YieldJobResult::JobDeclined(member)
-    }
-}
-
-impl Schema for YieldJobResult {
-    const NAME: &'static str = "YieldJobResult";
-}
+member!(YieldJobResult::YieldJobDone(YieldJobDone));
+member!(YieldJobResult::JobDeclined(JobDeclined));
+schema!(YieldJobResult);
 
 /// Bus command to update a yielded resource's storage content.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10743,9 +9811,7 @@ impl YieldUpdateCommand {
     }
 }
 
-impl Schema for YieldUpdateCommand {
-    const NAME: &'static str = "YieldUpdateCommand";
-}
+schema!(YieldUpdateCommand);
 
 /// Success reply after updating a yielded resource, matched to the originating command by correlationId.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -10754,9 +9820,7 @@ pub struct YieldUpdateOk {
     pub response: YieldUpdateOkResponse,
 }
 
-impl Schema for YieldUpdateOk {
-    const NAME: &'static str = "YieldUpdateOk";
-}
+schema!(YieldUpdateOk);
 
 /// The updated resource's identity.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]

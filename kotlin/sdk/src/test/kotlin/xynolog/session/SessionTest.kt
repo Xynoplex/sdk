@@ -29,12 +29,12 @@ import org.junit.jupiter.api.Test
 import xynolog.Timings
 import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
-import xynolog.errors.XynologError
 import xynolog.errors.SessionError
 import xynolog.errors.SessionErrorCode
 import xynolog.errors.SignInError
 import xynolog.errors.SignInErrorCode
 import xynolog.errors.TransportError
+import xynolog.errors.XynologError
 import xynolog.signin.HeldSignIn
 import xynolog.signin.MemorySignIn
 import xynolog.signin.SCRIPT_CLIENT_ID

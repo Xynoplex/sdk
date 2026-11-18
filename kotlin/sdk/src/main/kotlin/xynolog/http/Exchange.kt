@@ -1,6 +1,5 @@
 package xynolog.http
 
-import xynolog.telemetry.Telemetry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.jdk9.asFlow
@@ -12,12 +11,13 @@ import kotlinx.serialization.SerializationException
 import xynolog.Timings
 import xynolog.bus.UNDECODED
 import xynolog.bus.faultIn
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.retry.RetryFacts
 import xynolog.retry.TRANSPORT
 import xynolog.retry.retryAfterMs
+import xynolog.telemetry.Telemetry
 import xynolog.transport.Broadcast
 import xynolog.types.ErrorResponse
 import xynolog.types.LimitRefusal

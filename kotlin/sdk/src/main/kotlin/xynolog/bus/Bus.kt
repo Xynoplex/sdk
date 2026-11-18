@@ -21,9 +21,9 @@ import xynolog.channels.Channel
 import xynolog.channels.ScopedChannel
 import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
 import xynolog.identifiers.UserId
 import xynolog.telemetry.futureOf
@@ -238,7 +238,8 @@ public class Typed<P> internal constructor(
     private val frames: Events<Carried>,
     private val resource: ResourceId?,
     private val hold: ResourceHold?,
-) : Flow<Heard<P>>, AutoCloseable {
+) : Flow<Heard<P>>,
+    AutoCloseable {
     override suspend fun collect(collector: FlowCollector<Heard<P>>) {
         try {
             frames.collect { carried ->

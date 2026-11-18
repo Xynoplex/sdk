@@ -145,18 +145,30 @@ internal class Realm(trustsAnIssuer: Boolean = true) : AutoCloseable {
                     onEmit(emit)
                 }
                 path == "/.well-known/oauth-protected-resource" && !trustsAnIssuer -> answer(exchange, Said(404, buildJsonObject { put("error", "not found") }))
-                path == "/.well-known/oauth-protected-resource" -> answer(exchange, Said(200, buildJsonObject {
-                    put("resource", origin)
-                    put("authorization_servers", buildJsonArray { add(JsonPrimitive(origin)) })
-                    put("bearer_methods_supported", buildJsonArray { add(JsonPrimitive("header")) })
-                }))
-                path == "/.well-known/openid-configuration" -> answer(exchange, Said(200, buildJsonObject {
-                    put("issuer", origin)
-                    put("authorization_endpoint", "$origin/authorize")
-                    put("token_endpoint", "$origin/token")
-                    put("device_authorization_endpoint", "$origin/device")
-                    put("revocation_endpoint", "$origin/revoke")
-                }))
+                path == "/.well-known/oauth-protected-resource" -> answer(
+                    exchange,
+                    Said(
+                        200,
+                        buildJsonObject {
+                            put("resource", origin)
+                            put("authorization_servers", buildJsonArray { add(JsonPrimitive(origin)) })
+                            put("bearer_methods_supported", buildJsonArray { add(JsonPrimitive("header")) })
+                        },
+                    ),
+                )
+                path == "/.well-known/openid-configuration" -> answer(
+                    exchange,
+                    Said(
+                        200,
+                        buildJsonObject {
+                            put("issuer", origin)
+                            put("authorization_endpoint", "$origin/authorize")
+                            put("token_endpoint", "$origin/token")
+                            put("device_authorization_endpoint", "$origin/device")
+                            put("revocation_endpoint", "$origin/revoke")
+                        },
+                    ),
+                )
                 else -> answer(exchange, Said(500, buildJsonObject { put("error", "nothing scripted for $path") }))
             }
         }
@@ -226,31 +238,39 @@ private fun jwt(claims: JsonObject): String {
 
 internal fun tokenFor(name: String, lifetimeSeconds: Long = 3600): String {
     val now = System.currentTimeMillis() / 1000
-    return jwt(buildJsonObject {
-        put("email", "alice@example.org")
-        put("iss", "issuer")
-        put("iat", now)
-        put("exp", now + lifetimeSeconds)
-        put("jti", name)
-    })
+    return jwt(
+        buildJsonObject {
+            put("email", "alice@example.org")
+            put("iss", "issuer")
+            put("iat", now)
+            put("exp", now + lifetimeSeconds)
+            put("jti", name)
+        },
+    )
 }
 
-internal fun issued(access: String, refresh: String? = null): Said = Said(200, buildJsonObject {
-    put("access_token", access)
-    put("token_type", "Bearer")
-    refresh?.let { put("refresh_token", it) }
-})
+internal fun issued(access: String, refresh: String? = null): Said = Said(
+    200,
+    buildJsonObject {
+        put("access_token", access)
+        put("token_type", "Bearer")
+        refresh?.let { put("refresh_token", it) }
+    },
+)
 
 private fun error(code: String, status: Int = 400): Said = Said(status, buildJsonObject { put("error", code) })
 
 /** The gateway's answer to `GET /api/users/me` for an agent's account: its DID, and no address, name or image. */
-private fun named(did: String): Said = Said(200, buildJsonObject {
-    put("did", did)
-    put("email", JsonNull)
-    put("name", JsonNull)
-    put("image", JsonNull)
-    put("domain", "kb.example")
-})
+private fun named(did: String): Said = Said(
+    200,
+    buildJsonObject {
+        put("did", did)
+        put("email", JsonNull)
+        put("name", JsonNull)
+        put("image", JsonNull)
+        put("domain", "kb.example")
+    },
+)
 
 private const val AGENT_DID = "did:web:kb.example:agents:worker"
 
@@ -268,13 +288,16 @@ class SignInTest {
         return KbTarget(id = "local", label = "Local", endpoint = HttpEndpoint(host = "127.0.0.1", port = port, protocol = HttpEndpointProtocol.Http))
     }
 
-    private val devicesCode = Said(200, buildJsonObject {
-        put("device_code", "device-1")
-        put("user_code", "ABCD-EFGH")
-        put("verification_uri", "https://issuer.example/device")
-        put("expires_in", 600)
-        put("interval", 0)
-    })
+    private val devicesCode = Said(
+        200,
+        buildJsonObject {
+            put("device_code", "device-1")
+            put("user_code", "ABCD-EFGH")
+            put("verification_uri", "https://issuer.example/device")
+            put("expires_in", 600)
+            put("interval", 0)
+        },
+    )
 
     @Test
     fun aDeviceSignInIsKeptOnceThePersonApproves() = runBlocking {
@@ -356,7 +379,16 @@ class SignInTest {
     @Test
     fun aRefusedGrantNamesTheClientAndNeverTheSecret() = runBlocking {
         val realm = realm()
-        realm.script("/token", Said(401, buildJsonObject { put("error", "invalid_client"); put("echo", "the-secret") }))
+        realm.script(
+            "/token",
+            Said(
+                401,
+                buildJsonObject {
+                    put("error", "invalid_client")
+                    put("echo", "the-secret")
+                },
+            ),
+        )
         val refused = assertThrows(SignInError::class.java) { runBlocking { ServiceToken(SecretCredential(realm.origin, "worker", "the-secret")).authorization() } }
         assertEquals(401, refused.status)
         assertTrue(refused.message.contains("worker") && !refused.message.contains("the-secret"), refused.message)
@@ -447,7 +479,17 @@ class SignInTest {
     @Test
     fun anIssuerThatDescribesAnotherIsNoIssuerToSignInAt() = runBlocking {
         val realm = realm()
-        realm.script("/.well-known/openid-configuration", Said(200, buildJsonObject { put("issuer", "https://elsewhere.example"); put("token_endpoint", "x"); put("authorization_endpoint", "y") }))
+        realm.script(
+            "/.well-known/openid-configuration",
+            Said(
+                200,
+                buildJsonObject {
+                    put("issuer", "https://elsewhere.example")
+                    put("token_endpoint", "x")
+                    put("authorization_endpoint", "y")
+                },
+            ),
+        )
         assertEquals(SignInErrorCode.Discovery, signInFails(realm).reason)
     }
 
@@ -470,7 +512,17 @@ class SignInTest {
     @Test
     fun anIssuerWithNoDeviceEndpointHasNoDeviceGrant() = runBlocking {
         val realm = realm()
-        realm.script("/.well-known/openid-configuration", Said(200, buildJsonObject { put("issuer", realm.origin); put("token_endpoint", "${realm.origin}/token"); put("authorization_endpoint", "${realm.origin}/authorize") }))
+        realm.script(
+            "/.well-known/openid-configuration",
+            Said(
+                200,
+                buildJsonObject {
+                    put("issuer", realm.origin)
+                    put("token_endpoint", "${realm.origin}/token")
+                    put("authorization_endpoint", "${realm.origin}/authorize")
+                },
+            ),
+        )
         val failed = signInFails(realm)
         assertEquals(SignInErrorCode.Discovery, failed.reason)
         assertTrue(failed.message.contains("device"), failed.message)
@@ -516,7 +568,16 @@ class SignInTest {
     @Test
     fun aRenewalTheIssuerRefusesOutrightSaysSoInItsWords() = runBlocking {
         val realm = realm()
-        realm.script("/token", Said(400, buildJsonObject { put("error", "invalid_grant"); put("error_description", "the refresh token was revoked") }))
+        realm.script(
+            "/token",
+            Said(
+                400,
+                buildJsonObject {
+                    put("error", "invalid_grant")
+                    put("error_description", "the refresh token was revoked")
+                },
+            ),
+        )
         val failed = assertThrows(SignInError::class.java) { runBlocking { renewKept(kept(realm, tokenFor("access-1")), tokenFor("access-1")) } }
         assertEquals(400, failed.status)
         assertTrue(failed.message.contains("invalid_grant: the refresh token was revoked"), failed.message)
@@ -551,7 +612,16 @@ class SignInTest {
     @Test
     fun aTokenThatSaysNoExpiryIsKeptForTheLifetimeItsGrantStated() = runBlocking {
         val realm = realm()
-        realm.script("/token", Said(200, buildJsonObject { put("access_token", "opaque-1"); put("expires_in", 3600) }))
+        realm.script(
+            "/token",
+            Said(
+                200,
+                buildJsonObject {
+                    put("access_token", "opaque-1")
+                    put("expires_in", 3600)
+                },
+            ),
+        )
         val token = ServiceToken(SecretCredential(realm.origin, "worker", "s"))
         assertEquals("Bearer opaque-1", token.authorization())
         assertEquals("Bearer opaque-1", token.authorizationFuture().get())

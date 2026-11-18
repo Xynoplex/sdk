@@ -13,9 +13,9 @@ import xynolog.JobCreated
 import xynolog.JobEvent
 import xynolog.JobProgressed
 import xynolog.JobRefused
-import xynolog.XynologClient
 import xynolog.StateUnit
 import xynolog.Timings
+import xynolog.XynologClient
 import xynolog.bus.heard
 import xynolog.channels.Channels
 import xynolog.errors.XynologError

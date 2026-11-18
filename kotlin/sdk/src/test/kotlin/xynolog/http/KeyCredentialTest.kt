@@ -92,7 +92,13 @@ class KeyCredentialTest {
             val sent = asked.form
             assertEquals(grantType to JWT_BEARER, sent["grant_type"] to sent["client_assertion_type"])
             val (header, claims) = checked(sent.getValue("client_assertion"), pair.public)
-            assertEquals(buildJsonObject { put("alg", "RS256"); put("kid", thumbprint(key.modulus, key.publicExponent)) }, header)
+            assertEquals(
+                buildJsonObject {
+                    put("alg", "RS256")
+                    put("kid", thumbprint(key.modulus, key.publicExponent))
+                },
+                header,
+            )
             assertEquals(listOf(CLIENT, CLIENT, "${realm.origin}/token"), listOf("iss", "sub", "aud").map { claims.getValue(it).jsonPrimitive.content })
             val issuedAt = claims.getValue("iat").jsonPrimitive.long
             assertEquals(ASSERTION_LIFETIME_SECONDS, claims.getValue("exp").jsonPrimitive.long - issuedAt)
@@ -124,7 +130,16 @@ class KeyCredentialTest {
         assertFalse(said.contains(Base64.getEncoder().encodeToString(key.encoded)), said)
 
         // An error body can echo what it was sent: the status is said, never the body.
-        realm.script("/token", Said(401, buildJsonObject { put("error", "invalid_client"); put("error_description", "echo") }))
+        realm.script(
+            "/token",
+            Said(
+                401,
+                buildJsonObject {
+                    put("error", "invalid_client")
+                    put("error_description", "echo")
+                },
+            ),
+        )
         val refused = assertThrows(SignInError::class.java) { runBlocking { ServiceToken(credential).authorization() } }
         assertEquals(401, refused.status)
         val message = checkNotNull(refused.message)

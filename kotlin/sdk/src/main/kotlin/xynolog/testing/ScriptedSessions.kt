@@ -19,8 +19,8 @@ import xynolog.registry.StoredSession
 import xynolog.registry.keptIn
 import xynolog.session.OpenedSession
 import xynolog.session.XynologSession
-import xynolog.types.KbTarget
 import xynolog.telemetry.futureOf
+import xynolog.types.KbTarget
 import xynolog.types.UserResponse
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext

@@ -116,7 +116,10 @@ private fun utf8(data: ByteArray, from: Int): String = buildString {
         if (needed == 0) {
             when (byte) {
                 in 0x00..0x7f -> append(byte.toChar())
-                in 0xc2..0xdf -> { needed = 1; codePoint = byte and 0x1f }
+                in 0xc2..0xdf -> {
+                    needed = 1
+                    codePoint = byte and 0x1f
+                }
                 in 0xe0..0xef -> {
                     if (byte == 0xe0) lower = 0xa0
                     if (byte == 0xed) upper = 0x9f

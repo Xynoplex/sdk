@@ -21,16 +21,16 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import kotlinx.serialization.serializer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
-import xynolog.bus.decoded
 import xynolog.bus.Typed
+import xynolog.bus.decoded
 import xynolog.channels.Channel
 import xynolog.channels.Channels
 import xynolog.errors.XynologError
@@ -55,7 +55,6 @@ import xynolog.transport.ResourceHold
 import xynolog.transport.Transport
 import xynolog.transport.Upload
 import xynolog.transport.Watched
-import xynolog.types.JobFilter
 import xynolog.types.AnchoredTextAnswer
 import xynolog.types.AnnotationSelector
 import xynolog.types.BindBodyOperation
@@ -67,6 +66,7 @@ import xynolog.types.GenerationJobParams
 import xynolog.types.GetAnnotationsResponse
 import xynolog.types.GetResourceResponse
 import xynolog.types.HealthResponse
+import xynolog.types.JobFilter
 import xynolog.types.MarkJobParams
 import xynolog.types.MarkSubmitEvent
 import xynolog.types.MatchSearchRequest

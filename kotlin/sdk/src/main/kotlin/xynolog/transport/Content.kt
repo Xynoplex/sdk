@@ -4,8 +4,8 @@ package xynolog.transport
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.jdk9.asPublisher
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.JobId

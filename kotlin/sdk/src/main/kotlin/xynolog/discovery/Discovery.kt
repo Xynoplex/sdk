@@ -171,7 +171,11 @@ private fun diffOf(last: DiscoveryState?, now: DiscoveryState): DiscoveryDiff? {
         claimed[at] = claims
         if (claims == 2) duplicated += at
         val was = before[at]
-        if (was == null) added += kb else if (was != kb) updated += kb
+        if (was == null) {
+            added += kb
+        } else if (was != kb) {
+            updated += kb
+        }
     }
     val removed = kbsOf(last).filter { addressOf(it) !in after }
     val stateChanged = when {
