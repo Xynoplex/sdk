@@ -1,7 +1,8 @@
 (* The Rust SDK's protocol types (rust/sdk/src/types.rs): the body of every
    request and response the gateway declares but the ones a service only
    passes through, every channel's payload, the schemas the SDK holds beside
-   them, and every kind of id, with every schema they reach; and an entry of
+   them, every kind of id, and the records Protocol states in its tables
+   ([Table_records]), with every schema they reach; and an entry of
    the store [xynolog login] keeps (rust/sdk/src/sign_in_store.rs). *)
 
 module Generate = Generate
@@ -27,6 +28,12 @@ let beside =
     "KnowledgeBase";
     "NewKnowledgeBase";
   ]
+
+(* The client types (protocol/specs/src/client/types) the SDK generates. The
+   rest wait on Protocol: an object among them states no additionalProperties,
+   which the types read as open, and AnchorMethod is held with
+   ReconciledSpan's shape. *)
+let client_types = [ "FrameRefusalReason"; "MatchQuality" ]
 
 (* A body that is not JSON: an upload is a multipart form, whose fields
    [xynolog::transport::PutBinaryRequest] carries. *)
@@ -57,7 +64,8 @@ let types (spec : Spec.t) =
     List.sort_uniq String.compare
       (payloads spec
       @ List.filter (fun b -> not (List.mem b passed_through)) bundle.bodies
-      @ beside @ identifiers)
+      @ beside @ identifiers @ client_types
+      @ List.map (fun (_, name, _) -> name) (Definitions.records spec))
   in
   {
     Output.path = "rust/sdk/src/generated/types.rs";
@@ -83,8 +91,31 @@ let sign_in (spec : Spec.t) =
            { roots = [ "SignIn" ]; identifiers = []; accessors = [] });
   }
 
+(* Why a client that read a launcher's discovery document found no launcher
+   (rust/sdk/src/discovery.rs): an enumeration of the reasons. *)
+let discovery_absent (spec : Spec.t) =
+  let reasons =
+    List.map
+      (fun (r : Tables.Client_discovery_absent.reason) ->
+        Schema.String_literal r.reason)
+      spec.tables.client_discovery_absent.reasons
+  in
+  {
+    Output.path = "rust/sdk/src/generated/discovery_absent.rs";
+    text =
+      Rust_syntax.text
+        ~header:(regenerate "protocol/specs/src/client/discovery-absent.json")
+        (Generate.enumeration "DiscoveryAbsentReason"
+           {
+             (Definitions.node [ "type"; "enum" ]) with
+             type_ = Some (One String);
+             enum = Some reasons;
+           }
+           [ "Why no launcher was found." ]);
+  }
+
 let files ~root:_ (spec : Spec.t) =
-  match [ types spec; sign_in spec ] with
+  match [ types spec; sign_in spec; discovery_absent spec ] with
   | files -> Ok files
   | exception Definitions.Refused message ->
       Error [ { Decode.file = "openapi.json"; pointer = ""; message } ]

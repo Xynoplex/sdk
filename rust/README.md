@@ -2,16 +2,16 @@
 
 [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust)](https://app.codecov.io/gh/xynolog/sdk/components)
 
-The first four are how a Rust program uses Xynolog. The last three are what the Rust services share, and are built into their binaries. A service's own crates are beside its binary in [images/](../../images/README.md).
+The first four are how a Rust program uses Xynolog. The last three are what the Rust services share, and are built into their binaries. A service's own crates are beside its binary in [images/](https://github.com/xynolog/images/blob/main/README.md).
 
 | Crate | Published | Coverage | What it is |
 |---|---|---|---|
 | [xynolog](./sdk/README.md) | [![crates.io](https://img.shields.io/crates/v/xynolog.svg)](https://crates.io/crates/xynolog) | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-sdk)](https://app.codecov.io/gh/xynolog/sdk/components) | The Rust SDK: the client of a knowledge base, the protocol's types, sessions and state units |
 | [xynolog-http-transport](./http-transport/README.md) | [![crates.io](https://img.shields.io/crates/v/xynolog-http-transport.svg)](https://crates.io/crates/xynolog-http-transport) | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-http-transport)](https://app.codecov.io/gh/xynolog/sdk/components) | The SDK's transport over a gateway, and signing a person or a service in |
 | [xynolog-telemetry](./telemetry/README.md) | [![crates.io](https://img.shields.io/crates/v/xynolog-telemetry.svg)](https://crates.io/crates/xynolog-telemetry) | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-telemetry)](https://app.codecov.io/gh/xynolog/sdk/components) | The SDK's spans and counts, reported to whatever OpenTelemetry the application installed. It exports nothing |
-| [xynolog-core](./core/README.md) | Not published | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-core)](https://app.codecov.io/gh/xynolog/sdk/components) | What the Rust services share and no client needs: the embedded spec and its validators, the configuration documents, the reach to the messaging broker |
-| [xynolog-http-service](./http-service/README.md) | Not published | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-http-service)](https://app.codecov.io/gh/xynolog/sdk/components) | What the Rust services that serve HTTP share: connections a service can close from its side, the bearer credential, and the verifier of tokens from the trusted issuer |
-| [xynolog-observability](./observability/README.md) | Not published | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-observability)](https://app.codecov.io/gh/xynolog/sdk/components) | What a Rust service writes about itself: telemetry exported over OTLP, and log lines |
+| [xynolog-core](https://github.com/xynolog/images/blob/main/packages/rust/core/README.md) | Not published | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-core)](https://app.codecov.io/gh/xynolog/sdk/components) | What the Rust services share and no client needs: the embedded spec and its validators, the configuration documents, the reach to the messaging broker |
+| [xynolog-http-service](https://github.com/xynolog/images/blob/main/packages/rust/http-service/README.md) | Not published | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-http-service)](https://app.codecov.io/gh/xynolog/sdk/components) | What the Rust services that serve HTTP share: connections a service can close from its side, the bearer credential, and the verifier of tokens from the trusted issuer |
+| [xynolog-observability](https://github.com/xynolog/images/blob/main/packages/rust/observability/README.md) | Not published | [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-observability)](https://app.codecov.io/gh/xynolog/sdk/components) | What a Rust service writes about itself: telemetry exported over OTLP, and log lines |
 
 ## Where things are
 

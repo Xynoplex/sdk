@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 	"github.com/xynolog/sdk/go/registry"
 )
 
@@ -68,12 +69,12 @@ func TestWhatARegistryKeepsIsTheTables(t *testing.T) {
 	members := slices.Sorted(maps.Keys(table.StoredSession.Properties))
 	storage := xynolog.NewMemoryStorage()
 	person := xynolog.PersonKey("did:web:example.org:users:alice")
-	must(t, registry.StoreSession(storage, "kb-a", registry.StoredSession{
+	must(t, registry.StoreSession(storage, "kb-a", api.StoredSession{
 		Access:             "a",
 		Refresh:            "r",
-		ClientID:           "xynolog-browser",
+		ClientId:           "xynolog-browser",
 		TokenEndpoint:      "https://issuer.test/token",
-		RevocationEndpoint: "https://issuer.test/revoke",
+		RevocationEndpoint: new("https://issuer.test/revoke"),
 		PersonKey:          &person,
 	}))
 	stored, _ := storage.Get(registry.SessionKey("kb-a"))
@@ -164,13 +165,13 @@ func TestAStoredValueThatLacksAMemberOfASessionIsNone(t *testing.T) {
 		t.Error("a session with no client is read")
 	}
 	must(t, storage.Set(registry.SessionKey("kb-a"), `{"access":"a","refresh":"r","clientId":"xynolog-browser","tokenEndpoint":"https://issuer.test/token"}`))
-	if stored, ok := registry.StoredSessionOf(storage, "kb-a"); !ok || stored.RevocationEndpoint != "" || stored.PersonKey != nil {
+	if stored, ok := registry.StoredSessionOf(storage, "kb-a"); !ok || stored.RevocationEndpoint != nil || stored.PersonKey != nil {
 		t.Errorf("a session with no revocation endpoint and no person reads as %+v, %v", stored, ok)
 	}
 	// Written without them, as read.
 	stored, _ := registry.StoredSessionOf(storage, "kb-a")
 	must(t, registry.StoreSession(storage, "kb-a", stored))
-	if written, _ := storage.Get(registry.SessionKey("kb-a")); written != `{"access":"a","refresh":"r","clientId":"xynolog-browser","tokenEndpoint":"https://issuer.test/token"}` {
+	if written, _ := storage.Get(registry.SessionKey("kb-a")); written != `{"access":"a","clientId":"xynolog-browser","refresh":"r","tokenEndpoint":"https://issuer.test/token"}` {
 		t.Errorf("a session with no revocation endpoint and no person is written as %s", written)
 	}
 }
@@ -262,7 +263,7 @@ func TestANewSignInKeptOverOneNamingItsPersonDeletesWhatWasKeptOfThem(t *testing
 				must(t, storage.Set(key, "kept"))
 			}
 			if over.stored {
-				must(t, registry.StoreSession(storage, "kb-a", registry.StoredSession{Access: "a1", Refresh: "r1", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token", PersonKey: over.personKey}))
+				must(t, registry.StoreSession(storage, "kb-a", api.StoredSession{Access: "a1", Refresh: "r1", ClientId: "xynolog-browser", TokenEndpoint: "https://issuer.test/token", PersonKey: over.personKey}))
 			}
 			kept := registry.KeptIn(storage, "kb-a")
 

@@ -56,14 +56,13 @@ use xynolog::claims::{ClaimOptions, JOB_CLAIM_CHANNELS};
 use xynolog::client::XynologClient;
 use xynolog::discovery::{DiscoveryRead, DiscoveryState, DiscoveryTransport, subscribe_discovery};
 use xynolog::errors::{BusRequestErrorCode, XynologError};
-use xynolog::session::{
-    StoredSession, XynologSession, XynologSessionConfig, kept_in, store_session,
-};
+use xynolog::session::{XynologSession, XynologSessionConfig, kept_in, store_session};
 use xynolog::storage::InMemorySessionStorage;
 use xynolog::testing::{FaultyTransport, TestClientOptions, as_id, create_test_client};
 use xynolog::transport::{
     BoxFuture, ConnectionState, Envelope, Frame, GatewayOperations, ResourceHold, Transport,
 };
+use xynolog::types::StoredSession;
 use xynolog::types::{
     DiscoveredKB, HighlightingJobParams, HttpEndpoint, HttpEndpointProtocol, JobFilter,
     JobProgress, JobStatusResponse, KbTarget, UserResponse,

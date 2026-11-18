@@ -13,8 +13,6 @@ package xynolog_test
 // client's own bus. A call that waits is run on a goroutine of its own, and
 // what it returns is not this test's to judge: a case holds what the call
 // did, not what it was answered.
-//
-// Signatures are read by .github/scripts/checks/check-client-surface.mjs.
 
 import (
 	"context"

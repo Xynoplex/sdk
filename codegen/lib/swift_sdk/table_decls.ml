@@ -529,7 +529,7 @@ let shape_table n entries =
 let rec stamps models ?(seen = []) raw =
   let s, _ = M.nonnull raw in
   match s with
-  | D.Ref r ->
+  | D.Ref { name = r; _ } ->
       if List.mem r seen then []
       else stamps models ~seen:(r :: seen) (M.schema models r)
   | D.Node { one_of = Some members; _ } | D.Node { any_of = Some members; _ }
@@ -1148,9 +1148,6 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
 let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes
     ~wire_codes =
   let tables = spec.tables in
-  ignore
-    (M.inline models ~modifiers:[ "public" ] "" "HeldSignIn"
-       (view tables.session_stored.stored_session));
   (match M.schema models "GatherResourceRequestOptions" with
   | D.Node n ->
       ignore

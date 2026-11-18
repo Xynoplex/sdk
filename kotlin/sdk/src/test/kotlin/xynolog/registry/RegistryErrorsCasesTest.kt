@@ -22,12 +22,13 @@ import xynolog.errors.TransportErrorCode
 import xynolog.errors.XynologError
 import xynolog.http.tokenFor
 import xynolog.session.OpenedSession
-import xynolog.session.PermissionDenied
 import xynolog.session.SessionSignals
 import xynolog.session.XynologSession
 import xynolog.testing.FaultyTransport
 import xynolog.testing.TestClient
 import xynolog.types.KbTarget
+import xynolog.types.PermissionDenied
+import xynolog.types.StoredSession
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.random.Random
 

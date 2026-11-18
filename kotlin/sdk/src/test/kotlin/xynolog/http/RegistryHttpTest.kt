@@ -23,7 +23,6 @@ import xynolog.errors.SignInError
 import xynolog.errors.SignInErrorCode
 import xynolog.identifiers.ResourceId
 import xynolog.live.recorded
-import xynolog.registry.StoredSession
 import xynolog.registry.XynologBrowser
 import xynolog.registry.XynologBrowserConfig
 import xynolog.registry.lastEventIdKey
@@ -38,6 +37,7 @@ import xynolog.types.HttpEndpoint
 import xynolog.types.HttpEndpointProtocol
 import xynolog.types.KnowledgeBase
 import xynolog.types.LocalEndpoint
+import xynolog.types.StoredSession
 import java.net.URI
 import java.net.URLDecoder
 

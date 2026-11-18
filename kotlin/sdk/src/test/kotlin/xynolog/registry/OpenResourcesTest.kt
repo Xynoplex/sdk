@@ -8,6 +8,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DynamicTest
@@ -17,8 +18,14 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import xynolog.Spec
 import xynolog.identifiers.ResourceId
-import xynolog.session.KbIdentityConflict
 import xynolog.storage.SessionStorage
+import xynolog.types.KbIdentityConflict
+import xynolog.types.KbReadVerdictConflict
+import xynolog.types.KbReadVerdictNoVerdict
+import xynolog.types.KbReadVerdictRecorded
+import xynolog.types.TabCheckGone
+import xynolog.types.TabCheckReady
+import xynolog.types.TabCheckUnknown
 import java.io.IOException
 
 private val openResourceCases = Spec.read("session/open-resource-cases.json").jsonObject.getValue("cases").jsonArray.map { it.jsonObject }
@@ -55,9 +62,9 @@ class OpenResourcesTest {
     @Test
     fun onlyAResourceTheKnowledgeBaseSaysIsGoneIsDropped() {
         val checks = mapOf(
-            ResourceId("gone") to TabCheck(TabVerdict.Gone),
-            ResourceId("found") to TabCheck(TabVerdict.Ready, "Its name now"),
-            ResourceId("unknown") to TabCheck(TabVerdict.Unknown),
+            ResourceId("gone") to TabCheckGone(),
+            ResourceId("found") to TabCheckReady(name = "Its name now"),
+            ResourceId("unknown") to TabCheckUnknown(),
         )
         val kept = applyTabChecks(listOf(tab("gone", 1, 0), tab("found", 2, 1), tab("unknown", 3, 2), tab("opened-meanwhile", 4, 3)), checks)
         assertEquals(listOf("found", "unknown", "opened-meanwhile"), kept.map { it.id.value })
@@ -395,7 +402,7 @@ class OpenResourcesTest {
             assertEquals(listOf("a1"), shown(browser))
             assertNull(conflict(browser))
             assertEquals(kbOfA(), browser.kbs.value[0])
-            assertEquals(KbReadVerdict(KbReadKind.NoVerdict), browser.readActiveKb())
+            assertEquals(KbReadVerdictNoVerdict(), browser.readActiveKb())
         }
     }
 
@@ -407,7 +414,7 @@ class OpenResourcesTest {
             live(browser)
             eventually("the session's arrival asked who it is") { world.factory.askedWho(KB_A) == 1 }
             world.factory.says(KB_A, description("KB A", "example.org:kb-a"))
-            assertEquals(KbReadVerdict(KbReadKind.Recorded), browser.readActiveKb())
+            assertEquals(KbReadVerdictRecorded(), browser.readActiveKb())
             assertEquals(2, world.factory.askedWho(KB_A))
             // A tree that is on no branch is recorded as on none.
             assertNull(checkNotNull(browser.kbs.value[0].lastRead).gitBranch)
@@ -427,7 +434,7 @@ class OpenResourcesTest {
             world.factory.says(KB_A, description("KB B", "example.org:kb-b"))
             val verdict = browser.readActiveKb()
 
-            assertEquals(KbReadVerdict(KbReadKind.Conflict, DID_B, "KB B"), verdict)
+            assertEquals(KbReadVerdictConflict(observedDid = DID_B, observedName = "KB B"), verdict)
             // Asking is not activating: nothing is voided, and nothing is raised.
             assertEquals(listOf("a1"), shown(browser))
             assertEquals(ResourceId("a1"), browser.lastViewedResource.value)
@@ -444,13 +451,13 @@ class OpenResourcesTest {
             live(browser)
             eventually("the conflict is raised") { conflict(browser) != null }
             checkNotNull(browser.activeSignals.value).acknowledgeKbIdentityConflict()
-            assertEquals(KbReadKind.Conflict, browser.readActiveKb().kind)
+            assertInstanceOf(KbReadVerdictConflict::class.java, browser.readActiveKb())
             assertNull(conflict(browser))
         }
     }
 
     @Test
     fun withNoSessionThereIsNothingToAsk() = runBlocking {
-        World().browser().use { browser -> assertEquals(KbReadVerdict(KbReadKind.NoVerdict), browser.readActiveKb()) }
+        World().browser().use { browser -> assertEquals(KbReadVerdictNoVerdict(), browser.readActiveKb()) }
     }
 }

@@ -41,20 +41,7 @@ const VERSION: i64 = 1;
 /// How often a launcher's document is read again, unless told otherwise.
 pub const DISCOVERY_INTERVAL: Duration = crate::timing::DISCOVERY_INTERVAL;
 
-/// Why no launcher was found.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DiscoveryAbsentReason {
-    /// There is no document there.
-    NotFound,
-    /// There is one, and it is not JSON.
-    NotJson,
-    /// It is JSON, and not a discovery document.
-    Invalid,
-    /// It is of a version this client does not speak.
-    UnsupportedVersion,
-    /// It could not be read at all.
-    Unreadable,
-}
+include!("generated/discovery_absent.rs");
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DiscoveryState {

@@ -46,9 +46,9 @@ import Testing
             "exp": .number(now + (expired.contains(name) ? -3600 : 3600)),
           ]))
       }
-      func held(_ value: JSONValue) throws -> HeldSignIn {
+      func held(_ value: JSONValue) throws -> StoredSession {
         let entry = try value.object
-        return try HeldSignIn(
+        return try StoredSession(
           access: access(required(entry, "token").text), clientId: scriptClientID,
           refresh: required(entry, "refreshToken").text, tokenEndpoint: "http://issuer/token")
       }
@@ -61,7 +61,7 @@ import Testing
       } else {
         before = false
       }
-      let replacement: HeldSignIn?
+      let replacement: StoredSession?
       if case .object(let event) = meantime, let theirs = event["theirs"] {
         replacement = try held(theirs)
       } else {
@@ -113,7 +113,7 @@ import Testing
   let entry = store.entry("local:test")
   let token = try jwt(.object(["iss": .string("https://issuer"), "exp": .number(1_900_000_000)]))
   try await entry.keep(
-    HeldSignIn(
+    StoredSession(
       access: token, clientId: scriptClientID, refresh: "refresh",
       tokenEndpoint: "http://issuer/token"))
   #expect(try store.read()["future"] == .array([.null, .bool(true)]))

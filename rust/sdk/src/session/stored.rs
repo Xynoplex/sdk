@@ -12,11 +12,10 @@ use super::token_expiry;
 use crate::refresh::CacheQuery;
 use crate::storage::SessionStorage;
 use crate::transport::BoxFuture;
-use crate::types::KnowledgeBase;
+use crate::types::{KnowledgeBase, StoredSession};
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use ring::digest::{SHA256, digest};
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::sync::Arc;
 use std::time::SystemTime;
@@ -59,25 +58,6 @@ pub fn last_event_id_key(kb_id: &str, person_key: &str) -> String {
 /// person whose key is `person_key`.
 pub fn cache_key(kb_id: &str, person_key: &str, query: CacheQuery) -> String {
     format!("{CACHE_PREFIX}{kb_id}.{person_key}.{}", query.name())
-}
-
-/// What is kept of a sign-in: the tokens an issuer issued, the client they
-/// were issued to, and the issuer's endpoints a renewal and a sign-out need,
-/// learned once at sign-in so no session asks again.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StoredSession {
-    pub access: String,
-    pub refresh: String,
-    pub client_id: String,
-    pub token_endpoint: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub revocation_endpoint: Option<String>,
-    /// The key (`person_key`) of the person the gateway said this sign-in's
-    /// token is; none until it has said. A renewal keeps it, and a new
-    /// sign-in names nobody.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub person_key: Option<String>,
 }
 
 impl StoredSession {

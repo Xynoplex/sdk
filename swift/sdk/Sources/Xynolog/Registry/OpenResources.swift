@@ -19,22 +19,6 @@ public struct OpenResource: Codable, Sendable {
   }
 }
 
-public enum TabVerdict: String, Codable, Sendable {
-  case gone, ready, unknown
-}
-
-public struct TabCheck: Codable, Sendable {
-  public let verdict: TabVerdict
-  public let name: String?
-  public let mediaType: String?
-
-  public init(_ verdict: TabVerdict, name: String? = nil, mediaType: String? = nil) {
-    self.verdict = verdict
-    self.name = name
-    self.mediaType = mediaType
-  }
-}
-
 public func sortOpenResources(_ resources: [OpenResource]) -> [OpenResource] {
   resources.sorted { ($0.order, $0.openedAt) < ($1.order, $1.openedAt) }
 }
@@ -44,13 +28,13 @@ public func applyTabChecks(
 ) -> [OpenResource] {
   resources.compactMap { resource in
     guard let check = checks[resource.id] else { return resource }
-    switch check.verdict {
+    switch check {
     case .gone: return nil
     case .unknown: return resource
-    case .ready:
+    case .ready(let ready):
       var refreshed = resource
-      if let name = check.name { refreshed.name = name }
-      if let mediaType = check.mediaType, !mediaType.isEmpty { refreshed.mediaType = mediaType }
+      refreshed.name = ready.name
+      if let mediaType = ready.mediaType, !mediaType.isEmpty { refreshed.mediaType = mediaType }
       return refreshed
     }
   }
@@ -59,10 +43,10 @@ public func applyTabChecks(
 func checkOpenResource(_ client: XynologClient, id: ResourceId) async -> TabCheck {
   do {
     let descriptor = try await client.browse.resource(id).fresh()
-    return TabCheck(.ready, name: descriptor.name, mediaType: primaryMediaType(descriptor))
+    return .ready(TabCheckReady(mediaType: primaryMediaType(descriptor), name: descriptor.name))
   } catch let error as BusRequestError where error.reason == .busNotFound {
-    return TabCheck(.gone)
+    return .gone(TabCheckGone())
   } catch {
-    return TabCheck(.unknown)
+    return .unknown(TabCheckUnknown())
   }
 }

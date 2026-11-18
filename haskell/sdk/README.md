@@ -205,7 +205,7 @@ refuses further reads.
 ## Eight verbs
 
 The Haskell client implements the
-[client surface](../../../protocol/specs/src/client/surface.json), with typed
+[client surface](https://github.com/xynolog/protocol/blob/main/specs/src/client/surface.json), with typed
 channel and operation descriptors in `Xynolog.Channels`.
 All methods of Frame, Bind, Beckon, Browse, Gather, Match, Mark, Yield, Job,
 Auth and System are available. See the
@@ -320,7 +320,7 @@ through `Browse.resourceAnchoredText`, and binary content through
 
 Persisted query documents and replay bookmarks share the application storage.
 Query behavior follows the
-[cache contract](../../../protocol/contract/CACHE-SEMANTICS.md).
+[cache contract](https://github.com/xynolog/protocol/blob/main/contract/CACHE-SEMANTICS.md).
 
 ## State units
 
@@ -507,7 +507,7 @@ dropped. `trace`
 exposes the carrier that handed over the job; a host exporting telemetry uses
 that carrier as the parent of its own job span. Claims start outside the trace
 of the previous job. The shared
-[worker contract](../../../protocol/contract/WORKER-CONTRACT.md) states these
+[worker contract](https://github.com/xynolog/protocol/blob/main/contract/WORKER-CONTRACT.md) states these
 lifetimes and observations.
 
 ## Several knowledge bases
@@ -732,7 +732,7 @@ out as ormolu lays it out. Ormolu and what it is built from are pinned by
 
 The target builds `conformance/bin/xynolog-haskell-wire-driver` and
 `conformance/bin/xynolog-haskell-live-driver`. The shared
-[SDK conformance suite](../../../protocol/conformance/sdk/README.md) drives them
+[SDK conformance suite](https://github.com/xynolog/protocol/blob/main/conformance/sdk/README.md) drives them
 through the public SDK against the real gateway on both signal planes, including
 OTLP export. Worker conformance uses the wire driver. CI transfers both tested
 drivers to the corresponding conformance jobs.
@@ -756,8 +756,7 @@ generated modules are. Refresh
 `public-api.json` after library source changes;
 GHC supplies the reachable types, constructors, and signatures through the
 public Cabal modules, including re-exports. The census checks source
-freshness; the Haskell job compares actual compiled exports. All shared
-client-surface sections include Haskell.
+freshness; the Haskell job compares actual compiled exports.
 
 ### What the checks cover
 
@@ -777,9 +776,8 @@ polling, delegation, invalidation windows and held-job stalls. Every shared
 session startup/refusal case also runs, including recovery after an unanswered
 renewal. Issuer tests use byte-level HTTP connections for discovery, PKCE,
 one-shot callbacks, atomic grant rotation and revocation.
-`npm run lint:haskell-complete` rejects any remaining Haskell table exemption,
-missing census reader or missing parity conformance driver. CI runs it as
-**Haskell SDK Completion**, separately from checks of the implemented surface.
+`make test-codegen`'s coverage census holds every case table to a Haskell
+test that names it, or to the reason Haskell runs none.
 
 Runtime tests also cover atomic publication of raw replies before request
 continuations, channel/correlation matching, tracking cleanup on cancellation,

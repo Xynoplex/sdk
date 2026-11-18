@@ -155,7 +155,8 @@ let known_keywords =
 
 let node_of = function
   | D.Node n -> n
-  | D.Ref r -> refuse "expected a schema, found a reference to %s" r
+  | D.Ref { name = r; _ } ->
+      refuse "expected a schema, found a reference to %s" r
   | D.Null -> refuse "expected a schema, found null"
   | D.Bool b -> refuse "expected a schema, found %b" b
 
@@ -183,7 +184,7 @@ let is_type kind = function
   | _ -> false
 
 let single_ref = function
-  | D.Node { all_of = Some [ D.Ref r ]; _ } -> Some r
+  | D.Node { all_of = Some [ D.Ref { name = r; _ } ]; _ } -> Some r
   | _ -> None
 
 let is_empty = function D.Node { keys = []; _ } -> true | _ -> false
@@ -209,7 +210,7 @@ and type_ t owner part raw =
   validate raw;
   let s, _ = nonnull raw in
   match s with
-  | D.Ref r -> named t r
+  | D.Ref { name = r; _ } -> named t r
   | _ when is_empty s -> json_value
   | _ when single_ref s <> None -> named t (Option.get (single_ref s))
   | D.Node { one_of = Some _; _ }
@@ -261,7 +262,7 @@ and declaration_with t ~modifiers n raw =
 and plain_declaration t ~modifiers ~owner n s =
   let alias type_ = decl modifiers (S.Typealias { name = n; type_ }) in
   match s with
-  | D.Ref r -> alias (named t r)
+  | D.Ref { name = r; _ } -> alias (named t r)
   | D.Node { one_of = Some members; _ } | D.Node { any_of = Some members; _ } ->
       union t ~modifiers n members s
   | D.Node { enum = Some values; _ } -> enumeration ~modifiers n values s
@@ -600,7 +601,8 @@ and union t ~modifiers n members s =
     List.mapi
       (fun index raw ->
         let resolved =
-          D.meant (match raw with D.Ref r -> schema t r | m -> m)
+          D.meant
+            (match raw with D.Ref { name = r; _ } -> schema t r | m -> m)
         in
         let tag =
           match discriminator with
@@ -613,7 +615,7 @@ and union t ~modifiers n members s =
         in
         let part =
           match (raw, tag) with
-          | D.Ref r, _ -> r
+          | D.Ref { name = r; _ }, _ -> r
           | _, Some tag -> Text.pascal tag
           | _ when is_type Schema.String resolved -> "Text"
           | _ when is_type Schema.Array resolved -> "List"

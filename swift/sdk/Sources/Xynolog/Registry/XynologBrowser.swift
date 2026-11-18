@@ -20,59 +20,6 @@ public struct XynologBrowserConfig: Sendable {
   }
 }
 
-public struct SignedIn: Sendable {
-  public let endpoint: KbEndpoint
-  public let description: KbDescription
-  public let session: HeldSignIn
-  public let kbId: String?
-  public let expectedDid: String?
-  public let expectedName: String?
-
-  public init(
-    endpoint: KbEndpoint, description: KbDescription, session: HeldSignIn, kbId: String? = nil,
-    expectedDid: String? = nil, expectedName: String? = nil
-  ) {
-    self.endpoint = endpoint
-    self.description = description
-    self.session = session
-    self.kbId = kbId
-    self.expectedDid = expectedDid
-    self.expectedName = expectedName
-  }
-}
-
-public struct Expected: Sendable {
-  public let did: String
-  public let name: String?
-}
-
-public struct SignInOutcome: Sendable {
-  public let kb: KnowledgeBase
-  public let expected: Expected?
-}
-
-public enum KbReadKind: String, Codable, Sendable {
-  case recorded, conflict
-  case noVerdict = "no-verdict"
-}
-
-public struct KbReadVerdict: Sendable {
-  public let kind: KbReadKind
-  public let observedDid: String?
-  public let observedName: String?
-
-  init(_ kind: KbReadKind, observedDid: String? = nil, observedName: String? = nil) {
-    self.kind = kind
-    self.observedDid = observedDid
-    self.observedName = observedName
-  }
-}
-
-public enum KbSessionStatus: String, Sendable {
-  case authenticated, expired
-  case signedOut = "signed-out"
-}
-
 private enum RegistryTask {
   @TaskLocal static var id: UUID?
 }
@@ -234,7 +181,9 @@ public actor XynologBrowser {
     knowledgeBases.set(try loadKnowledgeBases(storage))
   }
 
-  public func addKb(_ input: NewKnowledgeBase, session: HeldSignIn) async throws -> KnowledgeBase {
+  public func addKb(
+    _ input: NewKnowledgeBase, session: StoredSession
+  ) async throws -> KnowledgeBase {
     try requireOpen()
     let kb = KnowledgeBase(
       did: input.did, endpoint: input.endpoint, id: UUID().uuidString, label: input.label,
@@ -295,7 +244,7 @@ public actor XynologBrowser {
     activate()
   }
 
-  public func signIn(_ id: String, session: HeldSignIn) async throws {
+  public func signIn(_ id: String, session: StoredSession) async throws {
     try requireOpen()
     guard knowledgeBases.value.contains(where: { $0.id == id }) else {
       throw BusRequestError(.busNotFound, "The knowledge base is not registered")
@@ -313,7 +262,7 @@ public actor XynologBrowser {
   /// Forgets what was kept on the knowledge base `kbId` for the person `old`, the saved sign-in it
   /// just replaced or cleared, named: once kbId's session, when it is the active one, has closed,
   /// its client and then itself, so that nothing it was writing, or writes as it closes, is left.
-  private func forgetAfterClosing(_ old: HeldSignIn?, kbId: String) async throws {
+  private func forgetAfterClosing(_ old: StoredSession?, kbId: String) async throws {
     forgetting.insert(kbId)
     defer { forgetting.remove(kbId) }
     if activeKbId.value == kbId { await deactivate()?.closed() }
@@ -368,7 +317,7 @@ public actor XynologBrowser {
           label: signed.description.name, lastRead: read)
         bases.append(kb)
       }
-      result.withLock { $0 = SignInOutcome(kb: kb, expected: expected) }
+      result.withLock { $0 = SignInOutcome(expected: expected, kb: kb) }
     }
     guard let outcome = result.withLock({ $0 }) else {
       throw BusRequestError(.busRejected, "Storage did not register the signed-in knowledge base")
@@ -480,12 +429,12 @@ public actor XynologBrowser {
       try projectResources()
       let read = try await readActiveKb()
       guard !closed, !Task.isCancelled, activeSession.value === opened else { return }
-      if read.kind == .conflict, let observedDid = read.observedDid,
+      if case .conflict(let conflict) = read,
         let expected = knowledgeBases.value.first(where: { $0.id == opened.session.kb.id })?.did
       {
         try forgetResources(opened.session.kb.id)
         signals.notifyKbIdentityConflict(
-          KbIdentityConflict(expectedDid: expected, observedDid: observedDid))
+          KbIdentityConflict(expectedDid: expected, observedDid: conflict.observedDid))
       } else {
         try await checkResources(opened)
       }
@@ -498,16 +447,16 @@ public actor XynologBrowser {
     try requireOpen()
     guard let opened = activeSession.value,
       let kb = knowledgeBases.value.first(where: { $0.id == opened.session.kb.id })
-    else { return KbReadVerdict(.noVerdict) }
+    else { return .noVerdict(KbReadVerdictNoVerdict()) }
     let description = try? await opened.client.browse.kb()
     guard !closed, !Task.isCancelled, activeSession.value === opened,
       let description, let did = try? kbDid(description.domain).value
-    else { return KbReadVerdict(.noVerdict) }
+    else { return .noVerdict(KbReadVerdictNoVerdict()) }
     guard did == kb.did else {
-      return KbReadVerdict(.conflict, observedDid: did, observedName: description.name)
+      return .conflict(KbReadVerdictConflict(observedDid: did, observedName: description.name))
     }
     try updateKb(kb.id, label: description.name, lastRead: lastRead(description))
-    return KbReadVerdict(.recorded)
+    return .recorded(KbReadVerdictRecorded())
   }
 
   private var liveKbId: String? { activeSession.value?.session.kb.id }
@@ -713,6 +662,7 @@ public func completeSignIn(
     random: browser.random)
   return try await browser.signedIn(
     SignedIn(
-      endpoint: .httpEndpoint(pending.target), description: identity.description, session: session,
-      kbId: pending.kbId, expectedDid: pending.expectedDid, expectedName: pending.expectedName))
+      description: identity.description, endpoint: .httpEndpoint(pending.target),
+      expectedDid: pending.expectedDid, expectedName: pending.expectedName, kbId: pending.kbId,
+      session: session))
 }

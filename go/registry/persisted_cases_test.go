@@ -871,7 +871,7 @@ func TestASaveBeingWrittenDoesNotLandAfterTheSessionForgetsItsSignIn(t *testing.
 	case <-ctx.Done():
 		t.Fatal("the write never finished")
 	}
-	if told := signals.SessionEnded().Value(); told == nil || told.Reason != xynolog.SessionEndExpired {
+	if told := signals.SessionEnded().Value(); told == nil || told.Reason != api.SessionEndReasonExpired {
 		t.Fatalf("the session ended as %+v; its sign-in was not forgotten by an expiry", told)
 	}
 	ended()

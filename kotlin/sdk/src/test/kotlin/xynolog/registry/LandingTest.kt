@@ -12,10 +12,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import xynolog.types.Expected
 import xynolog.types.HttpEndpoint
 import xynolog.types.KbDescription
 import xynolog.types.KbRead
+import xynolog.types.KbSessionStatus
 import xynolog.types.KnowledgeBase
+import xynolog.types.SignedIn
 import xynolog.types.wireJson
 import java.util.Collections
 

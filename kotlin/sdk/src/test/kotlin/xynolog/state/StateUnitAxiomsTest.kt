@@ -19,8 +19,6 @@ import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.ResourceId
-import xynolog.session.KbIdentityConflict
-import xynolog.session.SessionEndReason
 import xynolog.session.SessionSignals
 import xynolog.session.TARGET
 import xynolog.session.XynologSession
@@ -28,6 +26,8 @@ import xynolog.signin.MemorySignIn
 import xynolog.types.GatheredContext
 import xynolog.types.GenerationJobParams
 import xynolog.types.HighlightingJobParams
+import xynolog.types.KbIdentityConflict
+import xynolog.types.SessionEndReason
 import xynolog.types.wireJson
 import java.nio.file.Files
 import java.nio.file.Path
@@ -53,7 +53,7 @@ private object Signals : AxiomSubject<SessionSignals>() {
     override fun surfaces(unit: SessionSignals): List<Flow<*>> = listOf(unit.sessionEnded, unit.permissionDenied, unit.kbIdentityConflict)
 
     override fun invocations(unit: SessionSignals): List<() -> Unit> = listOf(
-        { unit.notifySessionEnded(SessionEndReason.REFUSED) },
+        { unit.notifySessionEnded(SessionEndReason.Refused) },
         { unit.notifyPermissionDenied("no") },
         { unit.notifyKbIdentityConflict(KbIdentityConflict("did:web:kb.example.org", "did:web:other.example.org")) },
         unit::acknowledgeSessionEnded,

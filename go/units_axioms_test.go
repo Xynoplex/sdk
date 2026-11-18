@@ -73,7 +73,7 @@ func TestASessionKeepsTheStateUnitAxiomsAndNeverClosesItsClient(t *testing.T) {
 }
 
 func TestTheSessionSignalsKeepTheStateUnitAxioms(t *testing.T) {
-	conflict := xynolog.KbIdentityConflict{ExpectedDid: "did:web:kb.example.org", ObservedDid: "did:web:other.example.org"}
+	conflict := api.KbIdentityConflict{ExpectedDid: "did:web:kb.example.org", ObservedDid: "did:web:other.example.org"}
 	detail := "no"
 	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*xynolog.SessionSignals]{
 		Setup: func(*testing.T) xynologtest.Fresh[*xynolog.SessionSignals] {
@@ -88,7 +88,7 @@ func TestTheSessionSignalsKeepTheStateUnitAxioms(t *testing.T) {
 		},
 		Invocations: func(unit *xynolog.SessionSignals) []func() {
 			return []func(){
-				func() { unit.NotifySessionEnded(xynolog.SessionEndRefused) },
+				func() { unit.NotifySessionEnded(api.SessionEndReasonRefused) },
 				func() { unit.NotifyPermissionDenied(&detail) },
 				func() { unit.NotifyKbIdentityConflict(conflict) },
 				unit.AcknowledgeSessionEnded,
@@ -130,10 +130,10 @@ func TestASecondOccurrenceIsToldEvenWhenItSaysTheSame(t *testing.T) {
 			t.Fatal("a reader was not first given what is raised now")
 		}
 		for occurrence := 2; occurrence <= 3; occurrence++ {
-			signals.NotifySessionEnded(xynolog.SessionEndExpired)
+			signals.NotifySessionEnded(api.SessionEndReasonExpired)
 			signals.NotifyPermissionDenied(nil)
 			told, refused := ended(), denied()
-			if len(told) != occurrence || told[occurrence-1] == nil || told[occurrence-1].Reason != xynolog.SessionEndExpired {
+			if len(told) != occurrence || told[occurrence-1] == nil || told[occurrence-1].Reason != api.SessionEndReasonExpired {
 				t.Fatalf("occurrence %d of the session's end was not told: %v", occurrence, told)
 			}
 			if len(refused) != occurrence || refused[occurrence-1] == nil || refused[occurrence-1].Detail != nil {

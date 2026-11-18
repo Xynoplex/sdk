@@ -28,8 +28,10 @@ import xynolog.session.OpenedSession
 import xynolog.storage.MemoryStorage
 import xynolog.testing.ScriptedSessions
 import xynolog.types.KbRead
+import xynolog.types.KbSessionStatus
 import xynolog.types.KnowledgeBase
 import xynolog.types.NewKnowledgeBase
+import xynolog.types.StoredSession
 import java.util.Collections
 
 /**

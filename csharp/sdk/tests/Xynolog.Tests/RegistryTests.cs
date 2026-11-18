@@ -381,7 +381,7 @@ public sealed partial class TransportTests
         var signals = Assert.IsType<SessionSignals>(browser.State.ActiveSignals);
         await foreach (var notice in signals.KbIdentityConflict.WithCancellation(deadline.Token))
             if (notice is not null) break;
-        Assert.Equal(new KbIdentityConflict(one.Did, "did:web:different.test"), signals.KbIdentityConflict.Value);
+        Assert.Equal(new KbIdentityConflict { ExpectedDid = one.Did, ObservedDid = "did:web:different.test" }, signals.KbIdentityConflict.Value);
         Assert.Empty(browser.State.OpenResources);
         Assert.Null(browser.State.LastViewedResource);
         var otherTabs = RegistryStorage.Read<Dictionary<string, OpenResource[]>>(store.Get(RegistryStorage.OpenResourcesByKbKey));
@@ -426,7 +426,7 @@ public sealed partial class TransportTests
         var entry = browser.State.Kbs.Single();
         Assert.Equal(kb.Label, entry.Label);
         Assert.Null(entry.LastRead);
-        Assert.Equal(new KbReadVerdict(KbReadKind.NoVerdict), await browser.ReadActiveKbAsync(deadline.Token));
+        Assert.Equal(new KbReadVerdict.NoVerdictCase(new KbReadVerdictNoVerdict()), await browser.ReadActiveKbAsync(deadline.Token));
     }
 
     [Fact]

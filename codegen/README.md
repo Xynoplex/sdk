@@ -188,8 +188,9 @@ writes:
   `cache-refresh`, `oauth-clients`, `sign-in`, `media-types`, `stored`,
   `client-types`, `testing`, `required` and `unicode-case` groups each write
   the Haskell SDK's module of their own table.
-- `csharp-sdk`: the C# SDK's models of the component schemas and of the
-  schemas it reads beside them, each with its converter
+- `csharp-sdk`: the C# SDK's models of the component schemas, of the
+  schemas it reads beside them and of the records Protocol states in its
+  tables (`Table_records`), each with its converter
   (`Csharp_sdk.Models`), every schema they are made from as the SDK
   validates a value against it, the code each of the wire's failure codes
   becomes, and the tables the SDK reads as Protocol writes them. The `bus`,
@@ -206,8 +207,9 @@ writes:
   their own table. `Kotlin_syntax` is the Kotlin they are built of, laid out
   as ktlint leaves it.
 - `go-types`: the Go SDK's package `api` (`go/api/types_gen.go`), a type for
-  every component schema and every schema it reaches but the kinds of id,
-  which `identifiers` writes. A union embeds the hand-written generic
+  every component schema, every record Protocol states in its tables
+  (`Table_records`), and every schema they reach but the kinds of id, which
+  `identifiers` writes. A union embeds the hand-written generic
   `union` (`go/api/union.go`); `Go_syntax` is the Go it is built of, laid out
   as gofmt leaves it. It reads the schemas as Rust's types do, through `View`
   (a `$ref`'s schema, a union's members) and `Definitions.meant` (an `allOf`

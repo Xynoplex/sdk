@@ -2,7 +2,7 @@
 //! what is a function of a list of them and nothing else: their order, and
 //! what checking them against their knowledge base keeps and drops.
 
-use crate::types::ResourceId;
+use crate::types::{ResourceId, TabCheck, TabCheckReady};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -22,23 +22,6 @@ pub struct OpenResource {
     pub storage_uri: Option<String>,
 }
 
-/// What checking one open resource against its knowledge base concluded.
-///
-/// `Gone` is the only verdict that removes, and it means the knowledge base
-/// said the resource does not exist, not that the check failed. A transport
-/// failure, a timeout and a peer that is down are all `Unknown`, and an
-/// unknown resource stays open: closing everything because a service was
-/// briefly down would be worse than the stale entries this removes.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TabCheck {
-    Gone,
-    Ready {
-        name: String,
-        media_type: Option<String>,
-    },
-    Unknown,
-}
-
 /// Apply each verdict to `list`: drop what is gone, take the name and media
 /// type of what was found, and leave everything else as it was. One with no
 /// verdict is left: it was opened while the checks were in flight.
@@ -48,13 +31,15 @@ pub fn apply_tab_checks(
 ) -> Vec<OpenResource> {
     list.into_iter()
         .filter_map(|tab| match checks.get(&tab.id) {
-            Some(TabCheck::Gone) => None,
-            Some(TabCheck::Ready { name, media_type }) => Some(OpenResource {
+            Some(TabCheck::Gone(_)) => None,
+            Some(TabCheck::Ready(TabCheckReady {
+                name, media_type, ..
+            })) => Some(OpenResource {
                 name: name.clone(),
                 media_type: media_type.clone().or(tab.media_type.clone()),
                 ..tab
             }),
-            Some(TabCheck::Unknown) | None => Some(tab),
+            Some(TabCheck::Unknown(_)) | None => Some(tab),
         })
         .collect()
 }
@@ -69,6 +54,7 @@ pub fn sort_open_resources(mut resources: Vec<OpenResource>) -> Vec<OpenResource
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::types::{TabCheckGone, TabCheckUnknown};
 
     fn id(text: &str) -> ResourceId {
         text.parse().expect("a test names an id")
@@ -103,15 +89,12 @@ mod tests {
     #[test]
     fn only_a_resource_the_knowledge_base_says_is_gone_is_dropped() {
         let checks = HashMap::from([
-            (id("gone"), TabCheck::Gone),
+            (id("gone"), TabCheck::Gone(TabCheckGone::new())),
             (
                 id("found"),
-                TabCheck::Ready {
-                    name: "Its name now".to_owned(),
-                    media_type: None,
-                },
+                TabCheck::Ready(TabCheckReady::new("Its name now")),
             ),
-            (id("unknown"), TabCheck::Unknown),
+            (id("unknown"), TabCheck::Unknown(TabCheckUnknown::new())),
         ]);
         let kept = apply_tab_checks(
             vec![

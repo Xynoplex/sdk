@@ -25,32 +25,43 @@ func BeginSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog.Is
 // when the grant failed, and a *xynolog.IdentityUnverifiableError when it
 // succeeded and the knowledge base could not say who it is; then nothing is
 // registered, and nothing is stored.
-func CompleteSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog.Issuer, callbackURL string) (SignInOutcome, error) {
+func CompleteSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog.Issuer, callbackURL string) (api.SignInOutcome, error) {
 	pending, tokens, err := xynolog.CompleteAuthorization(ctx, issuer, callbackURL, browser.Storage())
 	if err != nil {
-		return SignInOutcome{}, err
+		return api.SignInOutcome{}, err
 	}
 	identity, err := xynolog.DescribeConnection(ctx, pending.Target, tokens.Access, issuer.HTTP, issuer.Timing, issuer.Random)
 	if err != nil {
-		return SignInOutcome{}, err
+		return api.SignInOutcome{}, err
 	}
 	var endpoint api.KbEndpoint
 	if err := endpoint.From(pending.Target); err != nil {
 		// An endpoint read back from the pending record writes as it was read.
 		panic(err)
 	}
-	return browser.SignedIn(SignedIn{
+	signedIn := api.SignedIn{
 		Endpoint:    endpoint,
 		Description: identity.Description,
-		Session: StoredSession{
-			Access:             tokens.Access,
-			Refresh:            tokens.Refresh,
-			ClientID:           xynolog.BrowserClientID,
-			TokenEndpoint:      pending.Issuer.Token,
-			RevocationEndpoint: pending.Issuer.Revocation,
+		Session: api.StoredSession{
+			Access:        tokens.Access,
+			Refresh:       tokens.Refresh,
+			ClientId:      xynolog.BrowserClientID,
+			TokenEndpoint: pending.Issuer.Token,
 		},
-		KbID:         pending.KbID,
-		ExpectedDid:  pending.ExpectedDid,
-		ExpectedName: pending.ExpectedName,
-	})
+	}
+	// The pending sign-in holds "" for what the issuer offers none of, and
+	// for what the person named none of.
+	if pending.Issuer.Revocation != "" {
+		signedIn.Session.RevocationEndpoint = &pending.Issuer.Revocation
+	}
+	if pending.KbID != "" {
+		signedIn.KbId = &pending.KbID
+	}
+	if pending.ExpectedDid != "" {
+		signedIn.ExpectedDid = &pending.ExpectedDid
+	}
+	if pending.ExpectedName != "" {
+		signedIn.ExpectedName = &pending.ExpectedName
+	}
+	return browser.SignedIn(signedIn)
 }

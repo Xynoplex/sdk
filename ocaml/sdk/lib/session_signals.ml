@@ -1,14 +1,10 @@
-type session_ended = { reason : string }
-type permission_denied = { detail : string option }
-type kb_identity_conflict = { expected_did : string; observed_did : string }
-
 type t = {
-  ended : session_ended option State_value.t;
-  ended_writer : session_ended option State_value.writer;
-  denied : permission_denied option State_value.t;
-  denied_writer : permission_denied option State_value.writer;
-  conflict : kb_identity_conflict option State_value.t;
-  conflict_writer : kb_identity_conflict option State_value.writer;
+  ended : Records.Session_ended.t option State_value.t;
+  ended_writer : Records.Session_ended.t option State_value.writer;
+  denied : Records.Permission_denied.t option State_value.t;
+  denied_writer : Records.Permission_denied.t option State_value.writer;
+  conflict : Records.Kb_identity_conflict.t option State_value.t;
+  conflict_writer : Records.Kb_identity_conflict.t option State_value.writer;
 }
 
 let make () =
@@ -22,10 +18,12 @@ let permission_denied t = t.denied
 let kb_identity_conflict t = t.conflict
 
 let notify_session_ended t ~reason =
-  State_value.set ~repeat:true t.ended_writer (Some { reason })
+  State_value.set ~repeat:true t.ended_writer
+    (Some { Records.Session_ended.reason })
 
 let notify_permission_denied t ~detail =
-  State_value.set ~repeat:true t.denied_writer (Some { detail })
+  State_value.set ~repeat:true t.denied_writer
+    (Some { Records.Permission_denied.detail })
 
 let notify_kb_identity_conflict t conflict =
   State_value.set ~repeat:true t.conflict_writer (Some conflict)

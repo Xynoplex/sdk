@@ -502,7 +502,7 @@ See [TESTING.md](TESTING.md) for details.
 - Invalidation is implicit — bus events drive cache refreshes, so there are no
   manual invalidation calls in component code
 
-See [CACHE-SEMANTICS.md](../../../../protocol/contract/CACHE-SEMANTICS.md) for the full cache contract.
+See [CACHE-SEMANTICS.md](https://github.com/xynolog/protocol/blob/main/contract/CACHE-SEMANTICS.md) for the full cache contract.
 
 ### Code Splitting
 
@@ -762,4 +762,3 @@ See [STYLES.md](STYLES.md) for comprehensive CSS architecture and conventions.
 - [API-INTEGRATION.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/API-INTEGRATION.md) - API architecture
 - [TESTING.md](TESTING.md) - Testing architecture
 - [STYLES.md](STYLES.md) - CSS architecture and conventions
-- [CONTRIBUTING.md](../../../../CONTRIBUTING.md) - Project-wide code standards

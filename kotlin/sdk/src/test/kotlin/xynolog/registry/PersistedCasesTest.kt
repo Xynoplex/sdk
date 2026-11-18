@@ -52,6 +52,7 @@ import xynolog.types.HttpEndpointProtocol
 import xynolog.types.KbTarget
 import xynolog.types.KnowledgeBase
 import xynolog.types.ResourceDescriptor
+import xynolog.types.StoredSession
 import xynolog.types.UserResponse
 import xynolog.types.wireJson
 import java.net.URI

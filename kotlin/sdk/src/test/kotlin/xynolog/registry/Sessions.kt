@@ -32,6 +32,7 @@ import xynolog.types.HttpEndpoint
 import xynolog.types.HttpEndpointProtocol
 import xynolog.types.KbRead
 import xynolog.types.KnowledgeBase
+import xynolog.types.StoredSession
 import xynolog.types.UserResponse
 import xynolog.types.wireJson
 

@@ -87,12 +87,15 @@ type null_form = Not_null | Typed_null | Wrapped
 type node =
   | Bool_node of bool
   | Null_type  (** [{type: null}], a [Wrapped] node's first member. *)
-  | Ref of Decode.reference
+  | Ref of { reference : Decode.reference; description : string option }
   | Node of { s : Schema.schema; null_form : null_form }
 
 let node : Schema.t -> node = function
   | Boolean_schema b -> Bool_node b
-  | Schema { ref_ = Some r; _ } -> Ref r
+  | Schema ({ ref_ = Some reference; _ } as s) -> (
+      match Definitions.said_of_reference s reference with
+      | Ok description -> Ref { reference; description }
+      | Error message -> Names.refuse "%s" message)
   | Schema s when s.nullable = Some true -> (
       let s = { s with nullable = None } in
       match s.type_ with
@@ -113,7 +116,11 @@ let type_name = function
   | _ -> None
 
 let enum = field (fun s -> s.enum)
-let description = field (fun s -> s.description)
+
+let description = function
+  | Ref { description; _ } -> description
+  | n -> field (fun s -> s.description) n
+
 let properties = field (fun (s : Schema.schema) -> s.properties)
 
 let required n =
@@ -180,21 +187,21 @@ let refuse_const what n =
       what
 
 (* What a generation reads: the schemas it writes, by name, the kinds of id
-   among them, and the component each schema file is. *)
+   among them, and the name of each schema a [$ref] names, by where it points
+   ([Table_records.key]). *)
 type spec = {
   definitions : (string * Schema.t) list;
   identifiers : string list;
-  component_of_file : (string * string) list;
+  name_of_key : (string * string) list;
 }
 
 let component spec (r : Decode.reference) =
-  match Decode.resolve r with
-  | file, "" when List.mem_assoc file spec.component_of_file ->
-      List.assoc file spec.component_of_file
-  | _ -> refuse "$ref %s is not a component schema" r.target
+  match List.assoc_opt (Table_records.key r) spec.name_of_key with
+  | Some name -> name
+  | None -> refuse "$ref %s names no schema the types write" r.target
 
 let reference spec = function
-  | Ref r -> Some (component spec r)
+  | Ref { reference; _ } -> Some (component spec reference)
   | Bool_node _ | Null_type | Node _ -> None
 
 let schema spec name =

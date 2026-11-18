@@ -91,7 +91,7 @@ import XynologTesting
   let second = try jwt(.object(["exp": .number(hour), "name": .string("second")]))
   let jo = personKey(try UserId("did:web:kb.example.org:users:jo%40example.org"))
   let ann = personKey(try UserId("did:web:kb.example.org:users:ann%40example.org"))
-  let signedIn = HeldSignIn(
+  let signedIn = StoredSession(
     access: first, clientId: scriptClientID, refresh: "refresh",
     tokenEndpoint: "http://issuer.test/token")
   let storage = MemorySessionStorage()
@@ -121,8 +121,8 @@ import XynologTesting
   let hour = Date().timeIntervalSince1970 + 3600
   let jo = personKey(try UserId("did:web:kb.example.org:users:jo%40example.org"))
   let ann = personKey(try UserId("did:web:kb.example.org:users:ann%40example.org"))
-  func signIn(_ tokens: String, personKey: String?) throws -> HeldSignIn {
-    HeldSignIn(
+  func signIn(_ tokens: String, personKey: String?) throws -> StoredSession {
+    StoredSession(
       access: try jwt(.object(["exp": .number(hour), "name": .string(tokens)])),
       clientId: scriptClientID, personKey: personKey, refresh: tokens + "-refresh",
       tokenEndpoint: "http://issuer.test/token")
@@ -133,7 +133,7 @@ import XynologTesting
     lastEventIdKey("kb-b", jo),
   ]
   // The sign-in kb-a holds before the new one is kept, and whether jo's keys there go.
-  let befores: [(String, HeldSignIn?, Bool)] = try [
+  let befores: [(String, StoredSession?, Bool)] = try [
     ("over a sign-in naming jo", signIn("old", personKey: jo), true),
     ("over a sign-in naming nobody", signIn("old", personKey: nil), false),
     ("over nothing", nil, false),
@@ -319,9 +319,9 @@ private func hold(_ query: CacheQuery, in live: LiveQueries) async throws {
     let token = try jwt(.object(["exp": .number(Date().timeIntervalSince1970 + 3600)]))
     let signedIn = try await browser.signedIn(
       SignedIn(
-        endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
         description: KbDescription(domain: "example.org", name: "KB"),
-        session: HeldSignIn(
+        endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
+        session: StoredSession(
           access: token, clientId: "browser", refresh: "refresh", tokenEndpoint: "issuer")))
     let kbId = signedIn.kb.id
     try await withinTestDeadline {
@@ -372,9 +372,9 @@ private func openedBeforeActivation(
     let token = try jwt(.object(["exp": .number(Date().timeIntervalSince1970 + 3600)]))
     let signedIn = try await browser.signedIn(
       SignedIn(
-        endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
         description: KbDescription(domain: "example.org", name: "KB"),
-        session: HeldSignIn(
+        endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
+        session: StoredSession(
           access: token, clientId: "browser", refresh: "refresh", tokenEndpoint: "issuer")))
     let kbId = signedIn.kb.id
     try await withinTestDeadline {

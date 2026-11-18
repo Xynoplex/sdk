@@ -54,7 +54,8 @@ let lower name =
 (* A schema's description, after the name Go's doc comments open with. *)
 let doc_of name (s : D.t) =
   match s with
-  | D.Node { description = Some d; _ } -> G.prose (name ^ " " ^ String.trim d)
+  | D.Node { description = Some d; _ } | D.Ref { description = Some d; _ } ->
+      G.prose (name ^ " " ^ String.trim d)
   | _ -> []
 
 let marker union = "memberOf" ^ union
@@ -102,7 +103,7 @@ and empty st =
 and type_of st owner property (s : D.t) =
   let what = owner ^ "." ^ property in
   match s with
-  | D.Ref name -> named_type st name
+  | D.Ref { name; _ } -> named_type st name
   | D.Node { keys = []; _ } -> any
   | _ -> (
       View.refuse_const what s;
@@ -460,7 +461,7 @@ and union_declaration st name members (s : D.t) doc =
       (fun acc member ->
         let t =
           match member with
-          | D.Ref target ->
+          | D.Ref { name = target; _ } ->
               if
                 View.is_string st.definitions member
                 && not (List.mem target st.identifiers)

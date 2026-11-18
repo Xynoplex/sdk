@@ -521,7 +521,7 @@ func Watch(ctx context.Context, client *xynolog.Client, resource api.ResourceId)
   (`ClientConfig.Persistence`, a `CachePersistence` over a `SessionStorage`
   the application supplies, for one knowledge base and one person,
   `PersonKey(did)`): the queries `PersistedCacheQueries` names, those
-  [`refresh.json`](../../../protocol/specs/src/client/refresh.json) marks
+  [`refresh.json`](https://github.com/xynolog/protocol/blob/main/specs/src/client/refresh.json) marks
   `persisted`, each one document under its own key that a client of any SDK
   reads and writes alike. The next client of the same knowledge base and
   person shows them at once and asks for each anew the first time it is
@@ -735,7 +735,7 @@ and [its conformance suite][worker-conformance] holds this module to it.
 
 Package `annotations` is what reads an annotation and what builds one, as
 every SDK reads and builds them, case for case
-([`protocol/specs/src/annotations`](../../../protocol/specs/src/annotations)).
+([`protocol/specs/src/annotations`](https://github.com/xynolog/protocol/tree/main/specs/src/annotations)).
 
 - **The readers** take an `api.Annotation` apart: what kind it is
   (`IsHighlight`, `IsComment`, `IsTag`, `IsReference`, `IsAssessment`), the
@@ -778,7 +778,7 @@ made again over the same storage picks up where the last one was.
   the code, asks the knowledge base who it is, and registers it under what it
   says. Its did is what an entry is matched by, never the address a person
   typed or the row they clicked; what they believed is said back
-  (`SignInOutcome.Expected`) for the application to set against it. The grant
+  (`api.SignInOutcome`'s `Expected`) for the application to set against it. The grant
   itself is the root package's: `BeginAuthorization` and
   `CompleteAuthorization`, the authorization-code grant with PKCE, and
   `DescribeConnection`, the question a completed sign-in asks.
@@ -1127,15 +1127,15 @@ log keeps) is written as `[withheld]`.
 
 | Package | Holds | Generated from |
 |---|---|---|
-| `xynolog` | The client (`Client`, `NewClient`) and its eleven namespaces; `Cached`, `Running`, `Delegation` and `Upload`; the cache, its refresher and what it keeps (`Cache`, `CachePersistence`, `SessionStorage`, `MemoryStorage`, `CoupledBookmarks`); `Claims` and the held jobs; `HTTPTransport`, `HTTPContentTransport`, `Wire` and the client's own `EventBus`; signing in (`SessionFromKept`, `ResumeSession`, `SignInWithDevice`, `SignOut`, `SignInAgent`, `NewServiceToken`, with a `SecretCredential` or a `KeyCredential`) and `Session`; a person's sign-in by a page redirect (`BeginAuthorization`, `CompleteAuthorization`, `DescribeConnection`); the sign-in store (`SignInStore`, `StateDir`); `SessionSignals`, `StateUnit`, `Variable` and `Watched`; the readers of a resource (`PrimaryRepresentation`, `PrimaryMediaType`, `ResourceEntityTypes`, `DecodeRepresentation`); how a knowledge base and its principals are named (`KbDid`, `PersonDid`, `AgentDid` and the rest); `GatewayURL`; the retry rules; and the generated tables: the failure codes (`errorcodes_gen.go`), the timing (`timing_gen.go`), the refresh table (`refresh_gen.go`), the telemetry names (`telemetry_gen.go`), the sign-in store's entry (`signin_gen.go`), the modes and the directory's and a file's access lists that keep the store and the launcher's state home to their owner (`owneronly_gen.go`: `OwnerOnlyDirMode`, `OwnerOnlyFileMode`, `OwnerOnlyDirAccessList`, `OwnerOnlyFileAccessList`), the OAuth clients (`oauthclients_gen.go`) and the Encoding Standard's labels (`encodings_gen.go`) | hand-written; [`protocol/specs/src/errors/codes.json`][codes]; [`protocol/specs/src/client/timing.json`](../../../protocol/specs/src/client/timing.json); [`protocol/specs/src/client/refresh.json`][refresh]; [`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry]; [`protocol/specs/src/sign-in-store/SignIn.json`](../../../protocol/specs/src/sign-in-store/SignIn.json); [`protocol/specs/src/sign-in-store/owner-only.json`](../../../protocol/specs/src/sign-in-store/owner-only.json); [`protocol/specs/src/session/oauth.json`](../../../protocol/specs/src/session/oauth.json) |
-| `api` | `types_gen.go`: a Go type for every component schema of the spec; each type that holds a list its schema requires writes it as `[]` where Go holds it as nil, so a caller may leave an empty list nil. `ids_gen.go`: the kinds of id, each a type made only through its kind's rule (`ParseResourceId` and the others). `union.go` and `written.go`: how a union and an object that keeps the members its schema does not name are read and written | [`protocol/specs/src/openapi.json`](../../../protocol/specs/src/openapi.json), bundled; [`protocol/specs/src/identifiers/kinds.json`](../../../protocol/specs/src/identifiers/kinds.json); each component schema's `required` |
-| `bus` | The bus's channels, each typed by its payload, its request and reply operations, and the channels a transport delivers | [`protocol/specs/src/bus/registry.json`](../../../protocol/specs/src/bus/registry.json) |
+| `xynolog` | The client (`Client`, `NewClient`) and its eleven namespaces; `Cached`, `Running`, `Delegation` and `Upload`; the cache, its refresher and what it keeps (`Cache`, `CachePersistence`, `SessionStorage`, `MemoryStorage`, `CoupledBookmarks`); `Claims` and the held jobs; `HTTPTransport`, `HTTPContentTransport`, `Wire` and the client's own `EventBus`; signing in (`SessionFromKept`, `ResumeSession`, `SignInWithDevice`, `SignOut`, `SignInAgent`, `NewServiceToken`, with a `SecretCredential` or a `KeyCredential`) and `Session`; a person's sign-in by a page redirect (`BeginAuthorization`, `CompleteAuthorization`, `DescribeConnection`); the sign-in store (`SignInStore`, `StateDir`); `SessionSignals`, `StateUnit`, `Variable` and `Watched`; the readers of a resource (`PrimaryRepresentation`, `PrimaryMediaType`, `ResourceEntityTypes`, `DecodeRepresentation`); how a knowledge base and its principals are named (`KbDid`, `PersonDid`, `AgentDid` and the rest); `GatewayURL`; the retry rules; and the generated tables: the failure codes (`errorcodes_gen.go`), the timing (`timing_gen.go`), the refresh table (`refresh_gen.go`), the telemetry names (`telemetry_gen.go`), the sign-in store's entry (`signin_gen.go`), the modes and the directory's and a file's access lists that keep the store and the launcher's state home to their owner (`owneronly_gen.go`: `OwnerOnlyDirMode`, `OwnerOnlyFileMode`, `OwnerOnlyDirAccessList`, `OwnerOnlyFileAccessList`), the OAuth clients (`oauthclients_gen.go`) and the Encoding Standard's labels (`encodings_gen.go`) | hand-written; [`protocol/specs/src/errors/codes.json`][codes]; [`protocol/specs/src/client/timing.json`](https://github.com/xynolog/protocol/blob/main/specs/src/client/timing.json); [`protocol/specs/src/client/refresh.json`][refresh]; [`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry]; [`protocol/specs/src/sign-in-store/SignIn.json`](https://github.com/xynolog/protocol/blob/main/specs/src/sign-in-store/SignIn.json); [`protocol/specs/src/sign-in-store/owner-only.json`](https://github.com/xynolog/protocol/blob/main/specs/src/sign-in-store/owner-only.json); [`protocol/specs/src/session/oauth.json`](https://github.com/xynolog/protocol/blob/main/specs/src/session/oauth.json) |
+| `api` | `types_gen.go`: a Go type for every component schema of the spec, and for every record Protocol states in its tables: a registry's types (`SignedIn`, `SignInOutcome`, `KbReadVerdict`, `TabCheck`, `KbSessionStatus` and the rest), the state units' notices (`SessionEnded`, `PermissionDenied`, `KbIdentityConflict`), why a session ended (`SessionEndReason`) and the stored session (`StoredSession`); each type that holds a list its schema requires writes it as `[]` where Go holds it as nil, so a caller may leave an empty list nil. `ids_gen.go`: the kinds of id, each a type made only through its kind's rule (`ParseResourceId` and the others). `union.go` and `written.go`: how a union and an object that keeps the members its schema does not name are read and written | [`protocol/specs/src/openapi.json`](https://github.com/xynolog/protocol/blob/main/specs/src/openapi.json), bundled; [`protocol/specs/src/identifiers/kinds.json`](https://github.com/xynolog/protocol/blob/main/specs/src/identifiers/kinds.json); each component schema's `required`; the records of [`protocol/specs/src/client/registry.json`](https://github.com/xynolog/protocol/blob/main/specs/src/client/registry.json), [`protocol/specs/src/client/state-units.json`][state-units-cases], [`protocol/specs/src/session/cases.json`][session-cases] and [`protocol/specs/src/session/stored.json`](https://github.com/xynolog/protocol/blob/main/specs/src/session/stored.json) |
+| `bus` | The bus's channels, each typed by its payload, its request and reply operations, and the channels a transport delivers | [`protocol/specs/src/bus/registry.json`](https://github.com/xynolog/protocol/blob/main/specs/src/bus/registry.json) |
 | `state` | The state units a client's bus moves | hand-written |
 | `annotations` | Reading an annotation, building one of a span or of a resource, and `Reconcile`; and the generated table of Unicode's Cased and Case_Ignorable properties (`unicodecase_gen.go`), which decide whether a capital sigma ends a word | hand-written; Unicode's [`DerivedCoreProperties.txt`](../codegen/ucd/DerivedCoreProperties.txt), by [`codegen/lib/unicode_case`](../codegen/lib/unicode_case) |
 | `registry` | Several knowledge bases: `XynologBrowser`, its storage and its keys, `HttpSessionFactory`, and a person's sign-in landing on the knowledge base that answered | hand-written |
-| `discovery` | The document a launcher publishes of the knowledge bases it manages, read and followed | [`protocol/specs/src/discovery/DiscoveryDocument.json`](../../../protocol/specs/src/discovery/DiscoveryDocument.json), through `api` |
+| `discovery` | The document a launcher publishes of the knowledge bases it manages, read and followed | [`protocol/specs/src/discovery/DiscoveryDocument.json`](https://github.com/xynolog/protocol/blob/main/specs/src/discovery/DiscoveryDocument.json), through `api` |
 | `xynologtest` | What a consumer's tests are built on: `NewTestClient`, a real client over `FaultyTransport`, `InMemoryContent` and `StubGateway`; `NewTestSession`; `ScriptedSessions` and `SharedStorage`, for a registry; `AssertStateUnitAxioms`; and the liveness axioms | hand-written |
-| `mediatypes` | The media types a knowledge base admits, and `ForExtension` | [`protocol/specs/src/media-types/registry.json`](../../../protocol/specs/src/media-types/registry.json) |
+| `mediatypes` | The media types a knowledge base admits, and `ForExtension` | [`protocol/specs/src/media-types/registry.json`](https://github.com/xynolog/protocol/blob/main/specs/src/media-types/registry.json) |
 | `internal/readme` | The programs this page shows, each run by its tests. It is internal, so no program outside the module can import it | hand-written |
 
 Everything generated is committed, as the monorepo's other generated
@@ -1177,7 +1177,7 @@ compiler checks them, and its tests run each one.
 
 ## License
 
-Apache-2.0. See [LICENSE](../../../LICENSE).
+Apache-2.0. See [LICENSE](../LICENSE).
 
 [xynolog]: https://github.com/xynolog/sdk
 [pkg-go-dev]: https://pkg.go.dev/github.com/xynolog/sdk/go
@@ -1185,29 +1185,29 @@ Apache-2.0. See [LICENSE](../../../LICENSE).
 [quick-start]: https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md
 [developer-guide]: https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md
 [skills]: https://github.com/xynolog/docs/tree/main/builder/skills
-[flows]: ../../../protocol/contract/flows/README.md
+[flows]: https://github.com/xynolog/protocol/blob/main/contract/flows/README.md
 [reactive-model]: https://github.com/xynolog/docs/blob/main/builder/REACTIVE-MODEL.md
-[protocol]: ../../../protocol/contract/README.md
-[transport-contract]: ../../../protocol/contract/TRANSPORT-CONTRACT.md
-[transport-http]: ../../../protocol/contract/TRANSPORT-HTTP.md
-[cache-semantics]: ../../../protocol/contract/CACHE-SEMANTICS.md
-[conformance]: ../../../protocol/conformance/sdk/README.md
-[worker-contract]: ../../../protocol/contract/WORKER-CONTRACT.md
-[worker-conformance]: ../../../protocol/conformance/worker/README.md
-[sdk-typescript]: ../../typescript/sdk/README.md
-[sdk-rust]: ../../rust/sdk/README.md
-[sdk-python]: ../../python/sdk/README.md
-[sdk-kotlin]: ../../kotlin/sdk/README.md
-[launcher]: ../../../apps/launcher/README.md
-[surface]: ../../../protocol/specs/src/client/surface.json
-[refresh]: ../../../protocol/specs/src/client/refresh.json
-[codes]: ../../../protocol/specs/src/errors/codes.json
-[session-cases]: ../../../protocol/specs/src/session/cases.json
-[resource-text]: ../../../protocol/contract/W3C-SELECTORS.md#the-text-of-a-resource
-[sign-in-store]: ../../../protocol/specs/src/sign-in-store/README.md
-[telemetry]: ../../../protocol/specs/src/sdk-telemetry/telemetry.json
-[bus-log]: ../../../protocol/contract/EVENT-BUS.md#wire-format-the-bus-log
+[protocol]: https://github.com/xynolog/protocol/blob/main/contract/README.md
+[transport-contract]: https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-CONTRACT.md
+[transport-http]: https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-HTTP.md
+[cache-semantics]: https://github.com/xynolog/protocol/blob/main/contract/CACHE-SEMANTICS.md
+[conformance]: https://github.com/xynolog/protocol/blob/main/conformance/sdk/README.md
+[worker-contract]: https://github.com/xynolog/protocol/blob/main/contract/WORKER-CONTRACT.md
+[worker-conformance]: https://github.com/xynolog/protocol/blob/main/conformance/worker/README.md
+[sdk-typescript]: ../typescript/sdk/README.md
+[sdk-rust]: ../rust/sdk/README.md
+[sdk-python]: ../python/sdk/README.md
+[sdk-kotlin]: ../kotlin/sdk/README.md
+[launcher]: https://github.com/xynolog/cli/blob/main/README.md
+[surface]: https://github.com/xynolog/protocol/blob/main/specs/src/client/surface.json
+[refresh]: https://github.com/xynolog/protocol/blob/main/specs/src/client/refresh.json
+[codes]: https://github.com/xynolog/protocol/blob/main/specs/src/errors/codes.json
+[session-cases]: https://github.com/xynolog/protocol/blob/main/specs/src/session/cases.json
+[resource-text]: https://github.com/xynolog/protocol/blob/main/contract/W3C-SELECTORS.md#the-text-of-a-resource
+[sign-in-store]: https://github.com/xynolog/protocol/blob/main/specs/src/sign-in-store/README.md
+[telemetry]: https://github.com/xynolog/protocol/blob/main/specs/src/sdk-telemetry/telemetry.json
+[bus-log]: https://github.com/xynolog/protocol/blob/main/contract/EVENT-BUS.md#wire-format-the-bus-log
 [package]: .
 [testing]: https://github.com/xynolog/docs/blob/main/contributor/TESTING.md
 [state-units]: https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md
-[state-units-cases]: ../../../protocol/specs/src/client/state-units.json
+[state-units-cases]: https://github.com/xynolog/protocol/blob/main/specs/src/client/state-units.json

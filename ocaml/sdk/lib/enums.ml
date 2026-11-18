@@ -1,4 +1,4 @@
-(* Generated from string enums in protocol/specs/src/components/schemas. Do not edit.
+(* Generated from string enums in protocol/specs/src/components/schemas and in Protocol's tables. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/enums.ml) *)
 
 module Body_purpose = struct
@@ -406,5 +406,31 @@ module Supported_media_type = struct
     | "font/woff2" -> Some Font_woff2
     | "font/ttf" -> Some Font_ttf
     | "font/otf" -> Some Font_otf
+    | _ -> None
+end
+
+module Kb_session_status = struct
+  type t = Authenticated | Expired | Signed_out
+
+  let to_string = function
+    | Authenticated -> "authenticated"
+    | Expired -> "expired"
+    | Signed_out -> "signed-out"
+
+  let of_string = function
+    | "authenticated" -> Some Authenticated
+    | "expired" -> Some Expired
+    | "signed-out" -> Some Signed_out
+    | _ -> None
+end
+
+module Session_end_reason = struct
+  type t = Expired | Refused
+
+  let to_string = function Expired -> "expired" | Refused -> "refused"
+
+  let of_string = function
+    | "expired" -> Some Expired
+    | "refused" -> Some Refused
     | _ -> None
 end

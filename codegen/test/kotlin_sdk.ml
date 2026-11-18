@@ -21,7 +21,7 @@ let spec ?(identifiers = []) schemas : T.spec =
   {
     definitions = List.map decoded schemas;
     identifiers;
-    component_of_file = List.map (fun (name, _) -> (file name, name)) schemas;
+    name_of_key = List.map (fun (name, _) -> (file name, name)) schemas;
   }
 
 let generated ?identifiers schemas =
@@ -97,21 +97,27 @@ let cases =
           code;
         if contains code "typealias ThingId" then
           Alcotest.failf "an alias: %s" code);
-    case
-      "what is said beside a $ref is not read, as the bundle writes the \
-       reference alone" (fun () ->
+    case "a description beside a $ref is what is said of the member" (fun () ->
         let code =
           generated
             [
               ( "A",
-                {|{"type":"object","properties":{"b":{"$ref":"./B.json","description":"Said beside.","nullable":true}}}|}
+                {|{"type":"object","properties":{"b":{"$ref":"./B.json","description":"Said beside."}}}|}
               );
               ("B", {|{"type":"string"}|});
             ]
         in
         says ~what:"code" "public val b: B? = null" code;
-        if contains code "Said beside." then
-          Alcotest.failf "read beside a $ref: %s" code);
+        says ~what:"code" "Said beside." code);
+    case "a constraint beside a $ref is refused: it is an allOf" (fun () ->
+        says ~what:"refusal" "has nullable beside it"
+          (refused
+             [
+               ( "A",
+                 {|{"type":"object","properties":{"b":{"$ref":"./B.json","nullable":true}}}|}
+               );
+               ("B", {|{"type":"string"}|});
+             ]));
   ]
 
 let () = Alcotest.run "kotlin_sdk" [ ("the types", cases) ]

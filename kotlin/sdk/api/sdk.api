@@ -679,21 +679,6 @@ public final class xynolog/http/ConnectKt {
 	public static synthetic fun describeConnectionFuture$default (Lxynolog/types/HttpEndpoint;Ljava/lang/String;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
 }
 
-public final class xynolog/http/ConnectionIdentity {
-	public synthetic fun <init> (Ljava/lang/String;Lxynolog/types/KbDescription;Lkotlin/jvm/internal/BoxingConstructorMarker;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lxynolog/identifiers/UserId;Lxynolog/types/KbDescription;)V
-	public final fun component1-tcVePhc ()Ljava/lang/String;
-	public final fun component2 ()Lxynolog/types/KbDescription;
-	public final fun copy-0N-5PGo (Ljava/lang/String;Lxynolog/types/KbDescription;)Lxynolog/http/ConnectionIdentity;
-	public static synthetic fun copy-0N-5PGo$default (Lxynolog/http/ConnectionIdentity;Ljava/lang/String;Lxynolog/types/KbDescription;ILjava/lang/Object;)Lxynolog/http/ConnectionIdentity;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDescription ()Lxynolog/types/KbDescription;
-	public final fun getDid ()Lxynolog/identifiers/UserId;
-	public final fun getDid-tcVePhc ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public abstract interface class xynolog/http/Credential {
 	public abstract fun getClientId ()Ljava/lang/String;
 	public abstract fun getIssuer ()Ljava/lang/String;
@@ -756,8 +741,8 @@ public final class xynolog/http/HttpSessionFactory : xynolog/registry/SessionFac
 	public fun <init> (Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;)V
 	public fun <init> (Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;)V
 	public synthetic fun <init> (Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun revoke (Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun revokeFuture (Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public fun revoke (Lxynolog/types/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun revokeFuture (Lxynolog/types/StoredSession;)Ljava/util/concurrent/CompletableFuture;
 	public fun session (Lxynolog/registry/SessionFactoryOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sessionFuture (Lxynolog/registry/SessionFactoryOptions;)Ljava/util/concurrent/CompletableFuture;
 }
@@ -1338,64 +1323,13 @@ public final class xynolog/namespaces/YieldNamespace {
 	public final fun resource (Lxynolog/transport/PutBinaryRequest;)Lxynolog/transport/Upload;
 }
 
-public final class xynolog/registry/Expected {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lxynolog/registry/Expected;
-	public static synthetic fun copy$default (Lxynolog/registry/Expected;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/registry/Expected;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDid ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/registry/KbReadKind : java/lang/Enum {
-	public static final field Conflict Lxynolog/registry/KbReadKind;
-	public static final field NoVerdict Lxynolog/registry/KbReadKind;
-	public static final field Recorded Lxynolog/registry/KbReadKind;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getWire ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/registry/KbReadKind;
-	public static fun values ()[Lxynolog/registry/KbReadKind;
-}
-
-public final class xynolog/registry/KbReadVerdict {
-	public fun <init> (Lxynolog/registry/KbReadKind;)V
-	public fun <init> (Lxynolog/registry/KbReadKind;Ljava/lang/String;)V
-	public fun <init> (Lxynolog/registry/KbReadKind;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Lxynolog/registry/KbReadKind;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lxynolog/registry/KbReadKind;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Lxynolog/registry/KbReadKind;Ljava/lang/String;Ljava/lang/String;)Lxynolog/registry/KbReadVerdict;
-	public static synthetic fun copy$default (Lxynolog/registry/KbReadVerdict;Lxynolog/registry/KbReadKind;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/registry/KbReadVerdict;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getKind ()Lxynolog/registry/KbReadKind;
-	public final fun getObservedDid ()Ljava/lang/String;
-	public final fun getObservedName ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/registry/KbSessionStatus : java/lang/Enum {
-	public static final field Authenticated Lxynolog/registry/KbSessionStatus;
-	public static final field Expired Lxynolog/registry/KbSessionStatus;
-	public static final field SignedOut Lxynolog/registry/KbSessionStatus;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getWire ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/registry/KbSessionStatus;
-	public static fun values ()[Lxynolog/registry/KbSessionStatus;
-}
-
 public final class xynolog/registry/KeepingKt {
 	public static final fun clearStoredSession (Lxynolog/storage/SessionStorage;Ljava/lang/String;)V
 	public static final fun keptIn (Lxynolog/storage/SessionStorage;Ljava/lang/String;)Lxynolog/signin/SignInKept;
 	public static final fun loadKnowledgeBases (Lxynolog/storage/SessionStorage;)Ljava/util/List;
 	public static final fun saveKnowledgeBases (Lxynolog/storage/SessionStorage;Ljava/util/List;)V
-	public static final fun storeSession (Lxynolog/storage/SessionStorage;Ljava/lang/String;Lxynolog/registry/StoredSession;)V
-	public static final fun storedSession (Lxynolog/storage/SessionStorage;Ljava/lang/String;)Lxynolog/registry/StoredSession;
+	public static final fun storeSession (Lxynolog/storage/SessionStorage;Ljava/lang/String;Lxynolog/types/StoredSession;)V
+	public static final fun storedSession (Lxynolog/storage/SessionStorage;Ljava/lang/String;)Lxynolog/types/StoredSession;
 }
 
 public final class xynolog/registry/OpenKt {
@@ -1444,14 +1378,14 @@ public final class xynolog/registry/OpenResource$Companion {
 }
 
 public abstract interface class xynolog/registry/SessionFactory {
-	public abstract fun revoke (Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun revokeFuture (Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun revoke (Lxynolog/types/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun revokeFuture (Lxynolog/types/StoredSession;)Ljava/util/concurrent/CompletableFuture;
 	public abstract fun session (Lxynolog/registry/SessionFactoryOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sessionFuture (Lxynolog/registry/SessionFactoryOptions;)Ljava/util/concurrent/CompletableFuture;
 }
 
 public final class xynolog/registry/SessionFactory$DefaultImpls {
-	public static fun revokeFuture (Lxynolog/registry/SessionFactory;Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public static fun revokeFuture (Lxynolog/registry/SessionFactory;Lxynolog/types/StoredSession;)Ljava/util/concurrent/CompletableFuture;
 	public static fun sessionFuture (Lxynolog/registry/SessionFactory;Lxynolog/registry/SessionFactoryOptions;)Ljava/util/concurrent/CompletableFuture;
 }
 
@@ -1460,44 +1394,6 @@ public final class xynolog/registry/SessionFactoryOptions {
 	public final fun getKb ()Lxynolog/types/KnowledgeBase;
 	public final fun getSignals ()Lxynolog/session/SessionSignals;
 	public final fun getStorage ()Lxynolog/storage/SessionStorage;
-}
-
-public final class xynolog/registry/SignInOutcome {
-	public fun <init> (Lxynolog/types/KnowledgeBase;Lxynolog/registry/Expected;)V
-	public final fun component1 ()Lxynolog/types/KnowledgeBase;
-	public final fun component2 ()Lxynolog/registry/Expected;
-	public final fun copy (Lxynolog/types/KnowledgeBase;Lxynolog/registry/Expected;)Lxynolog/registry/SignInOutcome;
-	public static synthetic fun copy$default (Lxynolog/registry/SignInOutcome;Lxynolog/types/KnowledgeBase;Lxynolog/registry/Expected;ILjava/lang/Object;)Lxynolog/registry/SignInOutcome;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getExpected ()Lxynolog/registry/Expected;
-	public final fun getKb ()Lxynolog/types/KnowledgeBase;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/registry/SignedIn {
-	public fun <init> (Lxynolog/types/KbEndpoint;Lxynolog/types/KbDescription;Lxynolog/registry/StoredSession;)V
-	public fun <init> (Lxynolog/types/KbEndpoint;Lxynolog/types/KbDescription;Lxynolog/registry/StoredSession;Ljava/lang/String;)V
-	public fun <init> (Lxynolog/types/KbEndpoint;Lxynolog/types/KbDescription;Lxynolog/registry/StoredSession;Ljava/lang/String;Ljava/lang/String;)V
-	public fun <init> (Lxynolog/types/KbEndpoint;Lxynolog/types/KbDescription;Lxynolog/registry/StoredSession;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Lxynolog/types/KbEndpoint;Lxynolog/types/KbDescription;Lxynolog/registry/StoredSession;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lxynolog/types/KbEndpoint;
-	public final fun component2 ()Lxynolog/types/KbDescription;
-	public final fun component3 ()Lxynolog/registry/StoredSession;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun copy (Lxynolog/types/KbEndpoint;Lxynolog/types/KbDescription;Lxynolog/registry/StoredSession;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lxynolog/registry/SignedIn;
-	public static synthetic fun copy$default (Lxynolog/registry/SignedIn;Lxynolog/types/KbEndpoint;Lxynolog/types/KbDescription;Lxynolog/registry/StoredSession;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/registry/SignedIn;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDescription ()Lxynolog/types/KbDescription;
-	public final fun getEndpoint ()Lxynolog/types/KbEndpoint;
-	public final fun getExpectedDid ()Ljava/lang/String;
-	public final fun getExpectedName ()Ljava/lang/String;
-	public final fun getKbId ()Ljava/lang/String;
-	public final fun getSession ()Lxynolog/registry/StoredSession;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/registry/StoredKt {
@@ -1511,76 +1407,10 @@ public final class xynolog/registry/StoredKt {
 	public static final fun sessionKey (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class xynolog/registry/StoredSession {
-	public static final field Companion Lxynolog/registry/StoredSession$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lxynolog/registry/StoredSession;
-	public static synthetic fun copy$default (Lxynolog/registry/StoredSession;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/registry/StoredSession;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAccess ()Ljava/lang/String;
-	public final fun getClientId ()Ljava/lang/String;
-	public final fun getPersonKey ()Ljava/lang/String;
-	public final fun getRefresh ()Ljava/lang/String;
-	public final fun getRevocationEndpoint ()Ljava/lang/String;
-	public final fun getTokenEndpoint ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final synthetic class xynolog/registry/StoredSession$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lxynolog/registry/StoredSession$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lxynolog/registry/StoredSession;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lxynolog/registry/StoredSession;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class xynolog/registry/StoredSession$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class xynolog/registry/TabCheck {
-	public fun <init> (Lxynolog/registry/TabVerdict;)V
-	public fun <init> (Lxynolog/registry/TabVerdict;Ljava/lang/String;)V
-	public fun <init> (Lxynolog/registry/TabVerdict;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Lxynolog/registry/TabVerdict;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lxynolog/registry/TabVerdict;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Lxynolog/registry/TabVerdict;Ljava/lang/String;Ljava/lang/String;)Lxynolog/registry/TabCheck;
-	public static synthetic fun copy$default (Lxynolog/registry/TabCheck;Lxynolog/registry/TabVerdict;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/registry/TabCheck;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getMediaType ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getVerdict ()Lxynolog/registry/TabVerdict;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/registry/TabVerdict : java/lang/Enum {
-	public static final field Gone Lxynolog/registry/TabVerdict;
-	public static final field Ready Lxynolog/registry/TabVerdict;
-	public static final field Unknown Lxynolog/registry/TabVerdict;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getWire ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/registry/TabVerdict;
-	public static fun values ()[Lxynolog/registry/TabVerdict;
-}
-
 public final class xynolog/registry/XynologBrowser : java/lang/AutoCloseable {
 	public fun <init> (Lxynolog/registry/XynologBrowserConfig;)V
-	public final fun addKb (Lxynolog/types/NewKnowledgeBase;Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun addKbFuture (Lxynolog/types/NewKnowledgeBase;Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public final fun addKb (Lxynolog/types/NewKnowledgeBase;Lxynolog/types/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun addKbFuture (Lxynolog/types/NewKnowledgeBase;Lxynolog/types/StoredSession;)Ljava/util/concurrent/CompletableFuture;
 	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;)V
 	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
@@ -1600,7 +1430,7 @@ public final class xynolog/registry/XynologBrowser : java/lang/AutoCloseable {
 	public final fun getOpenResources ()Lxynolog/transport/Watched;
 	public final fun getSessionActivating ()Lxynolog/transport/Watched;
 	public final fun getStorage ()Lxynolog/storage/SessionStorage;
-	public final fun kbSessionStatus (Ljava/lang/String;)Lxynolog/registry/KbSessionStatus;
+	public final fun kbSessionStatus (Ljava/lang/String;)Lxynolog/types/KbSessionStatus;
 	public final fun readActiveKb (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun readActiveKbFuture ()Ljava/util/concurrent/CompletableFuture;
 	public final fun removeKb (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1613,12 +1443,12 @@ public final class xynolog/registry/XynologBrowser : java/lang/AutoCloseable {
 	public final fun setIdentityToken (Ljava/lang/String;)V
 	public final fun setLastViewedResource (Lxynolog/identifiers/ResourceId;)V
 	public final fun setLastViewedResource-n-VWWI8 (Ljava/lang/String;)V
-	public final fun signIn (Ljava/lang/String;Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun signInFuture (Ljava/lang/String;Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public final fun signIn (Ljava/lang/String;Lxynolog/types/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun signInFuture (Ljava/lang/String;Lxynolog/types/StoredSession;)Ljava/util/concurrent/CompletableFuture;
 	public final fun signOut (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun signOutFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun signedIn (Lxynolog/registry/SignedIn;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun signedInFuture (Lxynolog/registry/SignedIn;)Ljava/util/concurrent/CompletableFuture;
+	public final fun signedIn (Lxynolog/types/SignedIn;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun signedInFuture (Lxynolog/types/SignedIn;)Ljava/util/concurrent/CompletableFuture;
 	public final fun updateKb (Ljava/lang/String;)V
 	public final fun updateKb (Ljava/lang/String;Ljava/lang/String;)V
 	public final fun updateKb (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/KbRead;)V
@@ -1704,54 +1534,10 @@ public final class xynolog/retry/RetryRule {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class xynolog/session/KbIdentityConflict {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lxynolog/session/KbIdentityConflict;
-	public static synthetic fun copy$default (Lxynolog/session/KbIdentityConflict;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/session/KbIdentityConflict;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getExpectedDid ()Ljava/lang/String;
-	public final fun getObservedDid ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class xynolog/session/OpenedSession : java/lang/AutoCloseable {
 	public fun close ()V
 	public final fun getClient ()Lxynolog/XynologClient;
 	public final fun getSession ()Lxynolog/session/XynologSession;
-}
-
-public final class xynolog/session/PermissionDenied {
-	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lxynolog/session/PermissionDenied;
-	public static synthetic fun copy$default (Lxynolog/session/PermissionDenied;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/session/PermissionDenied;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDetail ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/session/SessionEndReason : java/lang/Enum {
-	public static final field EXPIRED Lxynolog/session/SessionEndReason;
-	public static final field REFUSED Lxynolog/session/SessionEndReason;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getWire ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/session/SessionEndReason;
-	public static fun values ()[Lxynolog/session/SessionEndReason;
-}
-
-public final class xynolog/session/SessionEnded {
-	public fun <init> (Lxynolog/session/SessionEndReason;)V
-	public final fun component1 ()Lxynolog/session/SessionEndReason;
-	public final fun copy (Lxynolog/session/SessionEndReason;)Lxynolog/session/SessionEnded;
-	public static synthetic fun copy$default (Lxynolog/session/SessionEnded;Lxynolog/session/SessionEndReason;ILjava/lang/Object;)Lxynolog/session/SessionEnded;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getReason ()Lxynolog/session/SessionEndReason;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/session/SessionSignals : xynolog/StateUnit {
@@ -1763,9 +1549,9 @@ public final class xynolog/session/SessionSignals : xynolog/StateUnit {
 	public final fun getKbIdentityConflict ()Lxynolog/transport/Watched;
 	public final fun getPermissionDenied ()Lxynolog/transport/Watched;
 	public final fun getSessionEnded ()Lxynolog/transport/Watched;
-	public final fun notifyKbIdentityConflict (Lxynolog/session/KbIdentityConflict;)V
+	public final fun notifyKbIdentityConflict (Lxynolog/types/KbIdentityConflict;)V
 	public final fun notifyPermissionDenied (Ljava/lang/String;)V
-	public final fun notifySessionEnded (Lxynolog/session/SessionEndReason;)V
+	public final fun notifySessionEnded (Lxynolog/types/SessionEndReason;)V
 }
 
 public final class xynolog/session/TokensKt {
@@ -2323,8 +2109,8 @@ public final class xynolog/testing/ScriptedSessions : xynolog/registry/SessionFa
 	public final fun queueRenewals ([Ljava/lang/String;)V
 	public final fun refuseToBuild (Ljava/lang/String;)V
 	public final fun refuseWhen (Lxynolog/testing/Refusal;)V
-	public fun revoke (Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun revokeFuture (Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public fun revoke (Lxynolog/types/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun revokeFuture (Lxynolog/types/StoredSession;)Ljava/util/concurrent/CompletableFuture;
 	public final fun saysWho (Lxynolog/types/UserResponse;)V
 	public fun session (Lxynolog/registry/SessionFactoryOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sessionFuture (Lxynolog/registry/SessionFactoryOptions;)Ljava/util/concurrent/CompletableFuture;

@@ -67,14 +67,14 @@ private struct StoreEntry: SignInKept {
     guard let value else { return nil }
     return try? JSONDecoder().decode(SignIn.self, from: JSONEncoder().encode(value))
   }
-  func held() async throws -> HeldSignIn? {
+  func held() async throws -> StoredSession? {
     try await spawnDetached { try self.heldNow() }.value
   }
-  private func heldNow() throws -> HeldSignIn? {
+  private func heldNow() throws -> StoredSession? {
     guard let entry = try decoded(store.read()[key]), let refresh = entry.refreshToken,
       !refresh.isEmpty
     else { return nil }
-    return HeldSignIn(
+    return StoredSession(
       access: entry.token, clientId: scriptClientID, refresh: refresh,
       revocationEndpoint: entry.revocationEndpoint, tokenEndpoint: entry.tokenEndpoint)
   }
@@ -88,7 +88,7 @@ private struct StoreEntry: SignInKept {
     }
     return try JSONDecoder().decode(JSONValue.self, from: JSONEncoder().encode(entry))
   }
-  func keep(_ signIn: HeldSignIn) async throws {
+  func keep(_ signIn: StoredSession) async throws {
     guard signIn.clientId == scriptClientID else {
       throw SignInError(.exchange, "The sign-in store requires the script OAuth client")
     }
@@ -107,7 +107,7 @@ private struct StoreEntry: SignInKept {
       }
     }.value
   }
-  func renewed(read: HeldSignIn, access: String, refresh: String) async throws -> String? {
+  func renewed(read: StoredSession, access: String, refresh: String) async throws -> String? {
     try await spawnDetached {
       try store.change { document -> (String?, Bool) in
         guard let before = try decoded(document[key]) else { return (nil, false) }

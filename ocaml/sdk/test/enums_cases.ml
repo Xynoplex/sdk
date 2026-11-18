@@ -1,4 +1,4 @@
-(* Generated from string enums in protocol/specs/src/components/schemas. Do not edit.
+(* Generated from string enums in protocol/specs/src/components/schemas and in Protocol's tables. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/enums.ml) *)
 
 let () =
@@ -532,5 +532,31 @@ let () =
     (Model.of_string "font/otf" = Some Model.Font_otf);
   Alcotest.check Alcotest.bool "Supported_media_type rejects unknown values"
     true
+    (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Kb_session_status in
+  Alcotest.check Alcotest.string "Kb_session_status encode" "authenticated"
+    (Model.to_string Model.Authenticated);
+  Alcotest.check Alcotest.bool "Kb_session_status decode" true
+    (Model.of_string "authenticated" = Some Model.Authenticated);
+  Alcotest.check Alcotest.string "Kb_session_status encode" "expired"
+    (Model.to_string Model.Expired);
+  Alcotest.check Alcotest.bool "Kb_session_status decode" true
+    (Model.of_string "expired" = Some Model.Expired);
+  Alcotest.check Alcotest.string "Kb_session_status encode" "signed-out"
+    (Model.to_string Model.Signed_out);
+  Alcotest.check Alcotest.bool "Kb_session_status decode" true
+    (Model.of_string "signed-out" = Some Model.Signed_out);
+  Alcotest.check Alcotest.bool "Kb_session_status rejects unknown values" true
+    (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Session_end_reason in
+  Alcotest.check Alcotest.string "Session_end_reason encode" "expired"
+    (Model.to_string Model.Expired);
+  Alcotest.check Alcotest.bool "Session_end_reason decode" true
+    (Model.of_string "expired" = Some Model.Expired);
+  Alcotest.check Alcotest.string "Session_end_reason encode" "refused"
+    (Model.to_string Model.Refused);
+  Alcotest.check Alcotest.bool "Session_end_reason decode" true
+    (Model.of_string "refused" = Some Model.Refused);
+  Alcotest.check Alcotest.bool "Session_end_reason rejects unknown values" true
     (Model.of_string "" = None);
   ()

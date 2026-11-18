@@ -34,14 +34,12 @@ import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
 import xynolog.live.RESOURCE
 import xynolog.live.recorded
-import xynolog.registry.StoredSession
 import xynolog.registry.answersFresh
 import xynolog.registry.cacheKey
 import xynolog.registry.keptIn
 import xynolog.registry.lastEventIdKey
 import xynolog.registry.personKey
 import xynolog.registry.storeSession
-import xynolog.session.SessionEndReason
 import xynolog.signin.HeldSignIn
 import xynolog.signin.MemorySignIn
 import xynolog.signin.SCRIPT_CLIENT_ID
@@ -53,6 +51,8 @@ import xynolog.types.HttpEndpoint
 import xynolog.types.HttpEndpointProtocol
 import xynolog.types.KbTarget
 import xynolog.types.LocalEndpoint
+import xynolog.types.SessionEndReason
+import xynolog.types.StoredSession
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit

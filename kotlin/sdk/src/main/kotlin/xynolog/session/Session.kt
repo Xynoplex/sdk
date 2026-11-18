@@ -36,19 +36,11 @@ import xynolog.transport.Events
 import xynolog.transport.Variable
 import xynolog.transport.Watched
 import xynolog.types.KbTarget
+import xynolog.types.SessionEndReason
 import xynolog.types.UserResponse
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.random.Random
-
-/** Why a session ended: its issuer refused to renew its token (`EXPIRED`), or the gateway refused a token its issuer had just issued (`REFUSED`). */
-public enum class SessionEndReason(
-    /** The reason as every SDK spells it. */
-    public val wire: String,
-) {
-    EXPIRED("expired"),
-    REFUSED("refused"),
-}
 
 private const val JUST_ISSUED_AND_REFUSED = "The gateway refused a token its issuer had just issued"
 
@@ -235,7 +227,7 @@ public class XynologSession internal constructor(
                 // Only a token the session still holds ends it: one replaced meanwhile is no longer the session's to be refused.
                 val renewedRefused = refusal is TransportError && refusal.reason == TransportErrorCode.Unauthorized
                 if (renewedRefused && !closing && tokens.value == renewed) {
-                    signedOut(SessionEndReason.REFUSED, SessionError(SessionErrorCode.CredentialRefused, JUST_ISSUED_AND_REFUSED, kb.id))
+                    signedOut(SessionEndReason.Refused, SessionError(SessionErrorCode.CredentialRefused, JUST_ISSUED_AND_REFUSED, kb.id))
                 }
             }
             if (closing) null else tokens.value
@@ -341,7 +333,7 @@ public class XynologSession internal constructor(
             unanswered.value = true
             say(notRenewed)
         } else {
-            signedOut(SessionEndReason.EXPIRED, notRenewed)
+            signedOut(SessionEndReason.Expired, notRenewed)
         }
     }
 
@@ -395,7 +387,7 @@ public class XynologSession internal constructor(
             }
             if (closing) return
             if (justIssued) {
-                signedOut(SessionEndReason.REFUSED, SessionError(SessionErrorCode.CredentialRefused, JUST_ISSUED_AND_REFUSED, kb.id))
+                signedOut(SessionEndReason.Refused, SessionError(SessionErrorCode.CredentialRefused, JUST_ISSUED_AND_REFUSED, kb.id))
                 return
             }
             // Seen, and renewed, under the lock a refusal is answered under: a renewal `refresh` makes meanwhile is seen here,

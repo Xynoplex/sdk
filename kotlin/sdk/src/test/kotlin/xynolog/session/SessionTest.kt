@@ -39,6 +39,7 @@ import xynolog.signin.HeldSignIn
 import xynolog.signin.MemorySignIn
 import xynolog.signin.SCRIPT_CLIENT_ID
 import xynolog.testing.TestClient
+import xynolog.types.SessionEndReason
 import xynolog.types.UserResponse
 import kotlin.random.Random
 
@@ -205,7 +206,7 @@ class SessionTest {
             assertEquals(renewed, refreshing.await())
             assertEquals(listOf(access, renewed), gateway.asked)
             assertEquals(1, world.renewed)
-            assertEquals(listOf(SessionEndReason.REFUSED), world.told)
+            assertEquals(listOf(SessionEndReason.Refused), world.told)
             assertEquals(listOf("session.credential-refused"), world.errors.map { it.code })
             assertNull(session.token.value)
         }
@@ -355,7 +356,7 @@ class SessionTest {
             assertNull(session.token.value)
             // The dead credential is not kept to be used again.
             assertFalse(world.isKept())
-            assertEquals(listOf(SessionEndReason.EXPIRED), world.told)
+            assertEquals(listOf(SessionEndReason.Expired), world.told)
             assertEquals(listOf("session.refresh-exhausted" to "Token refresh failed"), world.said())
             // What follows finds nothing kept, and is quiet.
             assertNull(session.refresh(session.token.value))
@@ -371,7 +372,7 @@ class SessionTest {
             session.ready()
             assertNull(session.refresh(session.token.value))
             assertFalse(world.isKept())
-            assertEquals(listOf(SessionEndReason.EXPIRED), world.told)
+            assertEquals(listOf(SessionEndReason.Expired), world.told)
             assertEquals(listOf("session.refresh-exhausted" to "Token refresh failed: ${refusedByTheIssuer().message}"), world.said())
         }
     }
@@ -476,7 +477,7 @@ class SessionTest {
             runCurrent()
             assertEquals(2, world.renewed)
             assertFalse(world.isKept())
-            assertEquals(listOf(SessionEndReason.EXPIRED), world.told)
+            assertEquals(listOf(SessionEndReason.Expired), world.told)
             advanceTimeBy(2 * 60 * 60 * 1000L)
             runCurrent()
             assertEquals(2, world.renewed)

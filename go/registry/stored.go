@@ -41,31 +41,14 @@ func SessionKey(kbID string) string { return sessionPrefix + kbID }
 // is no session's key.
 func KbOfSessionKey(key string) (string, bool) { return strings.CutPrefix(key, sessionPrefix) }
 
-// StoredSession is what is kept of a sign-in: the tokens an issuer issued,
-// the client they were issued to, and the issuer's endpoints a renewal and a
-// sign-out need, learned once at sign-in so no session asks again.
-type StoredSession struct {
-	Access        string `json:"access"`
-	Refresh       string `json:"refresh"`
-	ClientID      string `json:"clientId"`
-	TokenEndpoint string `json:"tokenEndpoint"`
-	// RevocationEndpoint is "" when the issuer has none.
-	RevocationEndpoint string `json:"revocationEndpoint,omitempty"`
-	// PersonKey is who the gateway said the sign-in's person is, as the key
-	// what is kept of them is kept under (xynolog.PersonKey): nil until it
-	// has said. A renewal keeps it; a new sign-in has none; forgetting the
-	// saved sign-in, however it is forgotten, a new sign-in kept in its place
-	// among the ways, deletes what is kept under it.
-	PersonKey *string `json:"personKey,omitempty"`
-}
-
 // readStoredSession is a stored value as a session; false for one that is
 // not a session, which lacks a member a session has.
-func readStoredSession(stored string) (StoredSession, bool) {
-	return required.ReadAs[StoredSession]([]byte(stored))
+func readStoredSession(stored string) (api.StoredSession, bool) {
+	return required.ReadAs[api.StoredSession]([]byte(stored))
 }
 
-func (s StoredSession) written() string {
+// writtenSession is s as it is stored.
+func writtenSession(s api.StoredSession) string {
 	written, err := json.Marshal(s)
 	if err != nil {
 		// A struct of strings always encodes.
@@ -74,20 +57,29 @@ func (s StoredSession) written() string {
 	return string(written)
 }
 
-func (s StoredSession) held() xynolog.HeldSignIn {
-	return xynolog.HeldSignIn{Access: s.Access, Refresh: s.Refresh, ClientID: s.ClientID, TokenEndpoint: s.TokenEndpoint, RevocationEndpoint: s.RevocationEndpoint, PersonKey: s.PersonKey}
+// heldOf is a stored session as a session holds it.
+func heldOf(s api.StoredSession) xynolog.HeldSignIn {
+	var revocation string
+	if s.RevocationEndpoint != nil {
+		revocation = *s.RevocationEndpoint
+	}
+	return xynolog.HeldSignIn{Access: s.Access, Refresh: s.Refresh, ClientID: s.ClientId, TokenEndpoint: s.TokenEndpoint, RevocationEndpoint: revocation, PersonKey: s.PersonKey}
 }
 
-func storedOf(held xynolog.HeldSignIn) StoredSession {
-	return StoredSession{Access: held.Access, Refresh: held.Refresh, ClientID: held.ClientID, TokenEndpoint: held.TokenEndpoint, RevocationEndpoint: held.RevocationEndpoint, PersonKey: held.PersonKey}
+func storedOf(held xynolog.HeldSignIn) api.StoredSession {
+	var revocation *string
+	if held.RevocationEndpoint != "" {
+		revocation = &held.RevocationEndpoint
+	}
+	return api.StoredSession{Access: held.Access, Refresh: held.Refresh, ClientId: held.ClientID, TokenEndpoint: held.TokenEndpoint, RevocationEndpoint: revocation, PersonKey: held.PersonKey}
 }
 
 // StoredSessionOf is the session stored for a knowledge base; false when
 // none is.
-func StoredSessionOf(storage xynolog.SessionStorage, kbID string) (StoredSession, bool) {
+func StoredSessionOf(storage xynolog.SessionStorage, kbID string) (api.StoredSession, bool) {
 	stored, ok := storage.Get(SessionKey(kbID))
 	if !ok {
-		return StoredSession{}, false
+		return api.StoredSession{}, false
 	}
 	return readStoredSession(stored)
 }
@@ -97,7 +89,7 @@ func StoredSessionOf(storage xynolog.SessionStorage, kbID string) (StoredSession
 // named (forgetKept): a new sign-in names nobody until its gateway names
 // them, whoever they turn out to be, so keeping one forgets the saved sign-in
 // it replaces. The error when the storage could not.
-func StoreSession(storage xynolog.SessionStorage, kbID string, session StoredSession) error {
+func StoreSession(storage xynolog.SessionStorage, kbID string, session api.StoredSession) error {
 	return replaceStoredSession(storage, kbID, &session)
 }
 
@@ -111,7 +103,7 @@ func ClearStoredSession(storage xynolog.SessionStorage, kbID string) error {
 // replaceStoredSession puts next in place of a knowledge base's stored
 // session, or nothing for nil, then forgets what was kept of the person the
 // one it replaced named (forgetKept).
-func replaceStoredSession(storage xynolog.SessionStorage, kbID string, next *StoredSession) error {
+func replaceStoredSession(storage xynolog.SessionStorage, kbID string, next *api.StoredSession) error {
 	replaced, _, err := swapStoredSession(storage, kbID, next)
 	if err != nil {
 		return err
@@ -191,7 +183,7 @@ type keptIn struct {
 
 func (k keptIn) Held(context.Context) (xynolog.HeldSignIn, bool, error) {
 	stored, ok := StoredSessionOf(k.storage, k.kbID)
-	return stored.held(), ok, nil
+	return heldOf(stored), ok, nil
 }
 
 func (k keptIn) Keep(_ context.Context, signIn xynolog.HeldSignIn) error {
@@ -213,7 +205,7 @@ func (k keptIn) Renewed(_ context.Context, read xynolog.HeldSignIn, access, refr
 		}
 		session.Access, session.Refresh = access, refresh
 		current = access
-		return session.written(), true
+		return writtenSession(session), true
 	})
 	return current, kept, err
 }
@@ -233,7 +225,7 @@ func (k keptIn) RecordPersonKey(_ context.Context, access, personKey string) (bo
 			return stored, true
 		}
 		session.PersonKey, names = &personKey, true
-		return session.written(), true
+		return writtenSession(session), true
 	})
 	return names, err
 }
@@ -248,8 +240,8 @@ func (k keptIn) Forget(context.Context) error {
 // swapStoredSession puts next in place of a knowledge base's stored session,
 // or nothing for nil, as one step with reading what was stored: the session
 // it replaced, and false when nothing was.
-func swapStoredSession(storage xynolog.SessionStorage, kbID string, next *StoredSession) (StoredSession, bool, error) {
-	var replaced StoredSession
+func swapStoredSession(storage xynolog.SessionStorage, kbID string, next *api.StoredSession) (api.StoredSession, bool, error) {
+	var replaced api.StoredSession
 	var was bool
 	err := storage.Update(SessionKey(kbID), func(stored string, has bool) (string, bool) {
 		if has {
@@ -258,7 +250,7 @@ func swapStoredSession(storage xynolog.SessionStorage, kbID string, next *Stored
 		if next == nil {
 			return "", false
 		}
-		return next.written(), true
+		return writtenSession(*next), true
 	})
 	return replaced, was, err
 }
@@ -278,16 +270,3 @@ func forgetKept(storage xynolog.SessionStorage, kbID string, personKey *string) 
 	}
 	return errors.Join(failed...)
 }
-
-// KbSessionStatus is what the credential stored for a knowledge base says,
-// read without asking anyone.
-type KbSessionStatus string
-
-const (
-	// KbSessionAuthenticated: a token is stored and has not expired.
-	KbSessionAuthenticated KbSessionStatus = "authenticated"
-	// KbSessionExpired: a token is stored and has expired.
-	KbSessionExpired KbSessionStatus = "expired"
-	// KbSessionSignedOut: nothing is stored.
-	KbSessionSignedOut KbSessionStatus = "signed-out"
-)

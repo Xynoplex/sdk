@@ -14,8 +14,8 @@ use xynolog::claims::{ClaimOptions, Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMI
 use xynolog::client::XynologClient;
 use xynolog::errors::XynologError;
 use xynolog::session::{
-    SessionFactory, SessionFactoryOptions, StoredSession, XynologBrowser, XynologBrowserConfig,
-    XynologSession, save_knowledge_bases,
+    SessionFactory, SessionFactoryOptions, XynologBrowser, XynologBrowserConfig, XynologSession,
+    save_knowledge_bases,
 };
 use xynolog::state::{MarkStateUnit, PendingAnnotation};
 use xynolog::storage::SessionStorage;
@@ -26,6 +26,7 @@ use xynolog::testing::{
     TestClientOptions, create_test_client,
 };
 use xynolog::transport::{BoxFuture, Envelope, Frame, PutBinaryRequest};
+use xynolog::types::StoredSession;
 use xynolog::types::{
     Agent, GatherResourceRequestOptions, GenerationJobParams, HighlightingJobParams, HttpEndpoint,
     HttpEndpointProtocol, InvalidIdentifier, JobCompleteCommand, KbEndpoint, KnowledgeBase,

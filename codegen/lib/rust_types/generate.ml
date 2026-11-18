@@ -76,7 +76,9 @@ let doc_of description =
         (lines d)
 
 let describe (s : D.t) =
-  match s with D.Node n -> doc_of n.description | _ -> []
+  match s with
+  | D.Node { description; _ } | D.Ref { description; _ } -> doc_of description
+  | _ -> []
 
 let type_is t (s : D.t) =
   match s with D.Node { type_ = Some (D.One t'); _ } -> t = t' | _ -> false
@@ -316,7 +318,7 @@ and empty st =
 and type_of st owner property (s : D.t) =
   let what = owner ^ "." ^ property in
   match s with
-  | D.Ref name -> named st name
+  | D.Ref { name; _ } -> named st name
   | D.Node { keys = []; _ } -> R.named "serde_json::Value"
   | _ -> (
       View.refuse_const what s;
@@ -873,7 +875,7 @@ and union_declaration st name members told_apart doc =
       (fun acc member ->
         let variant, rust_type =
           match member with
-          | D.Ref target ->
+          | D.Ref { name = target; _ } ->
               let rust_type = named st target in
               let short =
                 if String.starts_with ~prefix target then

@@ -43,7 +43,8 @@ use crate::errors::{
     TransportErrorCode, XynologError,
 };
 use crate::running::{Reporter, Running};
-use crate::transport::{BoxFuture, FrameRefusal, FrameRefusalReason};
+use crate::transport::{BoxFuture, FrameRefusal};
+use crate::types::FrameRefusalReason;
 use crate::types::{
     FailureClass, JobCancelRequest, JobCompleteCommand, JobCreateCommand, JobCreatedResult,
     JobCreatedResultResponse, JobFailCommand, JobId, JobProgress, JobReportProgressCommand,

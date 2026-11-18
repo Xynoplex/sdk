@@ -14,6 +14,7 @@ import xynolog.identifiers.AnnotationId
 public data class JobProgress(
     /** Completion percentage (0-100) */
     public val percentage: Double,
+    /** What the job is doing right now, as a code plus typed params; the client renders the sentence. Optional: pure percentage heartbeats carry none, and consumers render nothing message-shaped when it is absent. */
     public val message: JobProgressMessage? = null,
     /** Annotation this job is attached to, when applicable. Echoed inside JobProgress (in addition to the outer command envelope) so consumers that only see the inner progress object (e.g. what `yield.delegate` returns) can still route visual feedback to a specific annotation. */
     @get:JvmExposeBoxed

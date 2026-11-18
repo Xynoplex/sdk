@@ -203,13 +203,13 @@ func jwt(expiresIn time.Duration) string {
 	return encode([]byte(`{"alg":"none"}`)) + "." + encode(marshal(map[string]int64{"iat": now, "exp": now + int64(expiresIn/time.Second)})) + ".sig"
 }
 
-func tokens(refresh string) registry.StoredSession {
-	return registry.StoredSession{
+func tokens(refresh string) api.StoredSession {
+	return api.StoredSession{
 		Access:             jwt(time.Hour),
 		Refresh:            refresh,
-		ClientID:           "xynolog-browser",
+		ClientId:           "xynolog-browser",
 		TokenEndpoint:      "https://issuer.test/token",
-		RevocationEndpoint: "https://issuer.test/revoke",
+		RevocationEndpoint: new("https://issuer.test/revoke"),
 	}
 }
 
@@ -505,7 +505,7 @@ func TestAStoredCredentialSaysWhetherItIsGoodExpiredOrNotThere(t *testing.T) {
 		must(t, registry.StoreSession(w.storage, kbB, expired))
 		browser := w.browser()
 
-		for kbID, want := range map[string]registry.KbSessionStatus{kbA: registry.KbSessionAuthenticated, kbB: registry.KbSessionExpired, "another": registry.KbSessionSignedOut} {
+		for kbID, want := range map[string]api.KbSessionStatus{kbA: api.KbSessionStatusAuthenticated, kbB: api.KbSessionStatusExpired, "another": api.KbSessionStatusSignedOut} {
 			if got := browser.KbSessionStatus(kbID); got != want {
 				t.Errorf("%s: %s, not %s", kbID, got, want)
 			}

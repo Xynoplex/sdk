@@ -145,7 +145,7 @@ func (f keepingSessions) Session(ctx context.Context, options registry.SessionFa
 	})
 }
 
-func (keepingSessions) Revoke(context.Context, registry.StoredSession) {}
+func (keepingSessions) Revoke(context.Context, api.StoredSession) {}
 
 // stagedRegistry is a registry of kb-a at the stage, its sessions built by
 // factory, closed when the test ends.
@@ -350,7 +350,7 @@ func hearRegistry(ctx context.Context, browser *registry.XynologBrowser) *hearin
 // signals of a registry's live session, from when they are watched.
 type permissionRefusals struct {
 	mu   sync.Mutex
-	told []xynolog.PermissionDenied
+	told []api.PermissionDenied
 }
 
 func watchPermissionRefusals(ctx context.Context, t *testing.T, browser *registry.XynologBrowser) *permissionRefusals {
@@ -374,21 +374,21 @@ func watchPermissionRefusals(ctx context.Context, t *testing.T, browser *registr
 	return refusals
 }
 
-func (r *permissionRefusals) said() []xynolog.PermissionDenied {
+func (r *permissionRefusals) said() []api.PermissionDenied {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	return slices.Clone(r.told)
 }
 
 // detailed is whether a refusal's detail is detail.
-func detailed(detail string) func(xynolog.PermissionDenied) bool {
-	return func(refusal xynolog.PermissionDenied) bool { return refusal.Detail != nil && *refusal.Detail == detail }
+func detailed(detail string) func(api.PermissionDenied) bool {
+	return func(refusal api.PermissionDenied) bool { return refusal.Detail != nil && *refusal.Detail == detail }
 }
 
 // holdSaid holds what the case says the registry made of what its session
 // said, once the last of it had its effect: codes, said on the registry's
 // errors, and refusals, said through the session's signals.
-func holdSaid(t *testing.T, c registryErrorsCase, codes []xynolog.SessionErrorCode, refusals []xynolog.PermissionDenied) {
+func holdSaid(t *testing.T, c registryErrorsCase, codes []xynolog.SessionErrorCode, refusals []api.PermissionDenied) {
 	t.Helper()
 	if !slices.Equal(codes, c.RegistryErrors) {
 		t.Errorf("the registry said %v on its errors; the case's are %v", codes, c.RegistryErrors)

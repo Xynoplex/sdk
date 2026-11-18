@@ -315,13 +315,14 @@ let kept_renewal_runs_to_its_end () =
         factory = (fun _ -> assert false);
       }
   in
-  let credential : Registry.stored_session =
+  let credential : Records.Stored_session.t =
     {
       access = "original";
       refresh = "refresh";
       client_id = "browser";
       token_endpoint = "https://issuer.example/token";
       revocation_endpoint = None;
+      person_key = None;
     }
   in
   ignore
@@ -372,7 +373,7 @@ let kept_renewal_runs_to_its_end () =
     "the kept sign-in holds the refresh token the renewal brought"
     (Some "rotated")
     (Option.map
-       (fun (held : Registry.stored_session) -> held.refresh)
+       (fun (held : Records.Stored_session.t) -> held.refresh)
        (kept.held ()));
   Alcotest.(check (option string))
     "the closed session takes no token from it" None
@@ -429,13 +430,14 @@ let lifecycle phase row =
     if stored = "expired" then token {|{"iat":-100,"exp":-1}|} else "original"
   in
   let kept = Registry.kept_in storage "kb" in
-  let credential : Registry.stored_session =
+  let credential : Records.Stored_session.t =
     {
       access = original;
       refresh = "refresh";
       client_id = "browser";
       token_endpoint = "https://issuer.example/token";
       revocation_endpoint = None;
+      person_key = None;
     }
   in
   let registered =
@@ -473,7 +475,7 @@ let lifecycle phase row =
       ~sw ~clock
       ~initial_token:
         (Option.map
-           (fun (session : Registry.stored_session) -> session.access)
+           (fun (session : Records.Stored_session.t) -> session.access)
            (kept.held ()))
       ~renew:(fun ~holding ->
         handed := holding :: !handed;
@@ -506,11 +508,7 @@ let lifecycle phase row =
   let told = ref None in
   let session =
     S.make ~id:"kb" ~kb:registered.kb client ~on_auth_failed:(fun reason ->
-        told :=
-          Some
-            (match reason with
-            | S.Expired -> "expired"
-            | S.Refused -> "refused"))
+        told := Some (Enums.Session_end_reason.to_string reason))
   in
   let reported = ref None in
   let _release =

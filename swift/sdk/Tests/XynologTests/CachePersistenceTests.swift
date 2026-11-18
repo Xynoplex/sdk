@@ -155,7 +155,7 @@ private func saved(
   let storage = MemorySessionStorage()
   let jo = try joKey()
   let kept = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: "access", clientId: scriptClientID, personKey: jo, refresh: "refresh",
       tokenEndpoint: "http://issuer.test/token"))
   let resource = try ResourceId("res-1")

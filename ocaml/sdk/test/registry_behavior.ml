@@ -601,13 +601,14 @@ let sign_in () =
                client_id = "script";
                token_endpoint = "https://issuer.example/token";
                revocation_endpoint = None;
+               person_key = None;
              };
            kb_id = Some "kb-1";
            expected_did = Some "did:web:one.example";
            expected_name = None;
          })
   in
-  let id (outcome : R.sign_in_outcome) =
+  let id (outcome : Records.Sign_in_outcome.t) =
     (Records.Knowledge_base.of_model outcome.kb).id
   in
   assert (id (sign 4010 "one.example" "first") = "kb-1");
@@ -748,13 +749,14 @@ let session_unit startup () =
     decode Models.kb_description
       (Yojson.Safe.from_string {|{"name":"Actual","domain":"kb.example"}|})
   in
-  let stored : R.stored_session =
+  let stored : Records.Stored_session.t =
     {
       access = "original";
       refresh = "initial-refresh";
       client_id = "browser";
       token_endpoint = "https://issuer.example/token";
       revocation_endpoint = None;
+      person_key = None;
     }
   in
   let registered =
@@ -1104,7 +1106,7 @@ let errors_kb =
              ] );
        ])
 
-let errors_identity : R.connection_identity =
+let errors_identity : Records.Connection_identity.t =
   {
     did = "did:web:kb.example.org:kb-a";
     description =
@@ -1214,8 +1216,7 @@ let registry_errors_case row () =
     (why ^ ": said through the signals as a refusal for lack of permission")
     (Option.map Option.some (J.to_string_option (field "permissionDenied" row)))
     (Option.map
-       (fun (denied : State_units.Session_signals.permission_denied) ->
-         denied.detail)
+       (fun (denied : Records.Permission_denied.t) -> denied.detail)
        (State_value.get (State_units.Session_signals.permission_denied signals)));
   R.close browser;
   Client.await_closed (State_units.Session.client session)

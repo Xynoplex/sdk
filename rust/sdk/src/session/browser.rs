@@ -43,13 +43,12 @@
 //! `close` is the graceful end. A browser is built inside a Tokio runtime.
 
 use super::factory::{SessionFactory, SessionFactoryOptions};
-use super::knowledge_base::KbSessionStatus;
-use super::open_resource::{OpenResource, TabCheck, apply_tab_checks, sort_open_resources};
-use super::signals::{KbIdentityConflict, SessionSignals};
+use super::open_resource::{OpenResource, apply_tab_checks, sort_open_resources};
+use super::signals::SessionSignals;
 use super::stored::{
-    ACTIVE_KEY, LAST_VIEWED_RESOURCE_BY_KB_KEY, OPEN_RESOURCES_BY_KB_KEY, StoredSession,
-    forget_kept, is_token_expired, load_knowledge_bases, replace_stored_session,
-    save_knowledge_bases, store_session, stored_session,
+    ACTIVE_KEY, LAST_VIEWED_RESOURCE_BY_KB_KEY, OPEN_RESOURCES_BY_KB_KEY, forget_kept,
+    is_token_expired, load_knowledge_bases, replace_stored_session, save_knowledge_bases,
+    store_session, stored_session,
 };
 use super::xynolog_session::XynologSession;
 use crate::errors::{BusRequestErrorCode, SessionError, TransportErrorCode, XynologError};
@@ -62,7 +61,10 @@ use crate::storage::{SessionStorage, StorageSubscription};
 use crate::timing::CHECKS_AT_ONCE_COUNT;
 use crate::transport::Events;
 use crate::types::{
-    KbDescription, KbEndpoint, KbRead, KnowledgeBase, NewKnowledgeBase, ResourceId,
+    Expected, KbEndpoint, KbIdentityConflict, KbRead, KbReadVerdict, KbReadVerdictConflict,
+    KbReadVerdictNoVerdict, KbReadVerdictRecorded, KbSessionStatus, KnowledgeBase,
+    NewKnowledgeBase, ResourceId, SignInOutcome, SignedIn, StoredSession, TabCheck, TabCheckGone,
+    TabCheckReady, TabCheckUnknown,
 };
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -76,54 +78,6 @@ pub struct XynologBrowserConfig {
     pub storage: Arc<dyn SessionStorage>,
     /// What builds a knowledge base's session.
     pub session_factory: Arc<dyn SessionFactory>,
-}
-
-/// What a completed sign-in learned: where it was, who the knowledge base
-/// there says it is, the tokens, and what the person believed they were
-/// signing in to.
-#[derive(Debug, Clone, PartialEq)]
-pub struct SignedIn {
-    pub endpoint: KbEndpoint,
-    /// What the knowledge base said of itself, asked with the new token.
-    pub description: KbDescription,
-    pub session: StoredSession,
-    /// The registered entry the person re-authenticated, when it was one.
-    pub kb_id: Option<String>,
-    /// The did and the name of a row the person clicked, when it was one.
-    pub expected_did: Option<String>,
-    pub expected_name: Option<String>,
-}
-
-/// What a person believed they were signing in to.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Expected {
-    pub did: String,
-    pub name: Option<String>,
-}
-
-/// The entry a sign-in landed on, and what the person believed, so a host
-/// can set the two against each other and say when they differ. The sign-in
-/// stands either way: the knowledge base that answered is the one reached.
-#[derive(Debug, Clone, PartialEq)]
-pub struct SignInOutcome {
-    pub kb: KnowledgeBase,
-    pub expected: Option<Expected>,
-}
-
-/// What a knowledge base said when it was asked to describe itself, read
-/// against the entry it was asked as.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum KbReadVerdict {
-    /// It answered as that entry, and its name and branch are on it now.
-    Recorded,
-    /// A different knowledge base answered. Its did and the name it gave
-    /// itself are here and nowhere else: the entry is as it was.
-    Conflict {
-        observed_did: String,
-        observed_name: String,
-    },
-    /// It did not answer, or could not say who it is. Evidence of nothing.
-    NoVerdict,
 }
 
 /// What the browser keeps in memory of what its storage holds.
@@ -585,7 +539,7 @@ impl XynologBrowser {
         let inner = &self.inner;
         match (inner.active_session.now(), inner.active_kb_id.now()) {
             (Some(session), Some(kb_id)) => inner.read_kb(&session, &kb_id).await,
-            _ => Ok(KbReadVerdict::NoVerdict),
+            _ => Ok(KbReadVerdict::NoVerdict(KbReadVerdictNoVerdict::new())),
         }
     }
 
@@ -1104,7 +1058,8 @@ impl Inner {
         // Who it is, first: if a different knowledge base is answering,
         // every answer about a resource would be an answer to a question
         // asked of the wrong one.
-        if let KbReadVerdict::Conflict { observed_did, .. } = self.read_kb(&session, &kb_id).await?
+        if let KbReadVerdict::Conflict(KbReadVerdictConflict { observed_did, .. }) =
+            self.read_kb(&session, &kb_id).await?
         {
             // The read was of this session's knowledge base: what it voids
             // is the active one's, so only while this is still the active one.
@@ -1170,27 +1125,27 @@ impl Inner {
             .find(|kb| kb.id == kb_id)
             .map(|kb| kb.did)
         else {
-            return Ok(KbReadVerdict::NoVerdict);
+            return Ok(KbReadVerdict::NoVerdict(KbReadVerdictNoVerdict::new()));
         };
         let Ok(description) = session.client().browse.kb().await else {
-            return Ok(KbReadVerdict::NoVerdict);
+            return Ok(KbReadVerdict::NoVerdict(KbReadVerdictNoVerdict::new()));
         };
         let observed_did = crate::identity::kb_did(&description.domain);
         if observed_did != expected_did {
-            return Ok(KbReadVerdict::Conflict {
+            return Ok(KbReadVerdict::Conflict(KbReadVerdictConflict::new(
                 observed_did,
-                observed_name: description.name,
-            });
+                description.name,
+            )));
         }
         if self.closed() {
-            return Ok(KbReadVerdict::NoVerdict);
+            return Ok(KbReadVerdict::NoVerdict(KbReadVerdictNoVerdict::new()));
         }
         self.update_kb(
             kb_id,
             Some(&description.name),
             Some(KbRead::of(&description, SystemTime::now())),
         )?;
-        Ok(KbReadVerdict::Recorded)
+        Ok(KbReadVerdict::Recorded(KbReadVerdictRecorded::new()))
     }
 
     /// What an activation does when a different knowledge base answered for
@@ -1229,20 +1184,20 @@ impl Inner {
 /// answered in the client's cache, where a viewer reads it.
 async fn check_open_resource(session: &XynologSession, id: &ResourceId) -> TabCheck {
     match session.client().browse.resource(id).fresh().await {
-        Ok(descriptor) => TabCheck::Ready {
+        Ok(descriptor) => TabCheck::Ready(TabCheckReady {
             media_type: primary_media_type(&descriptor).map(str::to_owned),
-            name: descriptor.name,
-        },
+            ..TabCheckReady::new(descriptor.name)
+        }),
         Err(failure)
             if matches!(
                 failure.downcast_ref::<XynologError>(),
                 Some(XynologError::Bus(answer)) if answer.code == BusRequestErrorCode::NotFound
             ) =>
         {
-            TabCheck::Gone
+            TabCheck::Gone(TabCheckGone::new())
         }
         // Anything else is a symptom, not a verdict.
-        Err(_) => TabCheck::Unknown,
+        Err(_) => TabCheck::Unknown(TabCheckUnknown::new()),
     }
 }
 

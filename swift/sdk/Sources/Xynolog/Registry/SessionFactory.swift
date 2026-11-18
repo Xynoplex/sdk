@@ -8,7 +8,7 @@ public struct SessionFactoryOptions: Sendable {
 
 public protocol SessionFactory: Sendable {
   func session(_ options: SessionFactoryOptions) async throws -> OpenedSession
-  func revoke(_ session: HeldSignIn) async
+  func revoke(_ session: StoredSession) async
 }
 
 public struct HttpSessionFactory: SessionFactory {
@@ -34,7 +34,7 @@ public struct HttpSessionFactory: SessionFactory {
       random: random)
   }
 
-  public func revoke(_ session: HeldSignIn) async {
+  public func revoke(_ session: StoredSession) async {
     guard let url = session.revocationEndpoint else { return }
     _ = try? await issuerAnswer(
       url, http: httpClient, clock: clock,

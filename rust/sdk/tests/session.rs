@@ -22,8 +22,8 @@ use xynolog::errors::{
     SessionError, SessionErrorCode, SignInError, SignInErrorCode, TransportError, XynologError,
 };
 use xynolog::session::{
-    OpenedSession, SessionEndReason, SessionSignals, SignInKept, StoredSession, XynologSession,
-    XynologSessionConfig, kept_in, store_session, stored_session,
+    OpenedSession, SessionSignals, SignInKept, XynologSession, XynologSessionConfig, kept_in,
+    store_session, stored_session,
 };
 use xynolog::state_unit::StateUnit;
 use xynolog::testing::axioms::{
@@ -36,6 +36,7 @@ use xynolog::testing::{
 use xynolog::timing::{MAX_RECONNECT, RECONNECT};
 use xynolog::transport::{BoxFuture, Events};
 use xynolog::types::{HttpEndpointProtocol, KbTarget, UserResponse};
+use xynolog::types::{SessionEndReason, StoredSession};
 
 const KB: &str = "kb-alpha";
 
@@ -1680,12 +1681,6 @@ async fn a_session_closed_while_renewing_gives_the_refusal_no_token_and_keeps_th
 }
 
 // ── What a host shows about a session ───────────────────────────────────
-
-#[test]
-fn a_reason_is_named_as_the_table_names_it() {
-    assert_eq!(SessionEndReason::Expired.as_str(), "expired");
-    assert_eq!(SessionEndReason::Refused.as_str(), "refused");
-}
 
 #[test]
 fn a_second_occurrence_is_told_even_when_it_says_the_same() {

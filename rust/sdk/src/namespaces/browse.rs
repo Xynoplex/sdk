@@ -1064,8 +1064,9 @@ mod tests {
     //! under the one lock the client's persisted caches write under.
 
     use super::*;
-    use crate::session::{MemorySignIn, SignInKept, StoredSession, person_key};
+    use crate::session::{MemorySignIn, SignInKept, person_key};
     use crate::storage::{InMemorySessionStorage, SessionStorage};
+    use crate::types::StoredSession;
     use std::error::Error;
 
     const ALICE: &str = "did:web:example.org:users:alice";

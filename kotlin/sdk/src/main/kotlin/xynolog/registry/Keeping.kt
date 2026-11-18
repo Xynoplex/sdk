@@ -6,6 +6,7 @@ import xynolog.signin.HeldSignIn
 import xynolog.signin.SignInKept
 import xynolog.storage.SessionStorage
 import xynolog.types.KnowledgeBase
+import xynolog.types.StoredSession
 import xynolog.types.wireJson
 
 /** A stored value as a session; null when it lacks a member a session has. */

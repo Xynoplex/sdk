@@ -4,12 +4,12 @@
 //! knowing which.
 
 use super::signals::SessionSignals;
-use super::stored::StoredSession;
 use super::xynolog_session::XynologSession;
 use crate::errors::SessionError;
 use crate::storage::SessionStorage;
 use crate::transport::BoxFuture;
 use crate::types::KnowledgeBase;
+use crate::types::StoredSession;
 use std::sync::Arc;
 
 pub struct SessionFactoryOptions {

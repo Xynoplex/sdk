@@ -1,5 +1,6 @@
-(* The kotlin-sdk group: Kotlin's types of the component schemas, a file
-   each under xynolog/types, and the kinds of id in xynolog/identifiers, in
+(* The kotlin-sdk group: Kotlin's types of the component schemas and of the
+   records Protocol states in its tables, a file each under xynolog/types,
+   and the kinds of id in xynolog/identifiers, in
    kotlin/sdk/src/generated/kotlin. *)
 
 module Names = Names
@@ -13,8 +14,9 @@ let types_directory = directory ^ "/xynolog/types"
 let sign_in_file = "sign-in-store/SignIn.json"
 
 (* The schemas a generation writes: every component schema of the gateway's
-   document, and the sign-in store's entry, which is the store's own schema
-   and no component of the API. *)
+   document, the records Protocol states in its tables ([Table_records]), and
+   the sign-in store's entry, which is the store's own schema and no
+   component of the API. *)
 let spec_of (spec : Spec.t) : (Types.spec, string) result =
   let schema_of file = List.assoc_opt file spec.schemas in
   let components =
@@ -22,6 +24,7 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
       (fun (name, reference) -> (name, fst (Decode.resolve reference)))
       spec.gateway.components.schemas
   in
+  let* records = Table_records.all spec in
   let* definitions =
     List.fold_right
       (fun (name, file) rest ->
@@ -39,19 +42,33 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
     | Some s -> Ok s
     | None -> Error (sign_in_file ^ " is not in the spec")
   in
-  if List.mem_assoc "SignIn" definitions then
-    Error "the API's components name a SignIn, which is the sign-in store's"
-  else
-    Ok
-      {
-        Types.definitions = definitions @ [ ("SignIn", sign_in) ];
-        identifiers =
-          List.map
-            (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
-            spec.tables.identifiers_kinds.kinds;
-        component_of_file =
-          List.map (fun (name, file) -> (file, name)) components;
-      }
+  let definitions =
+    definitions
+    @ List.map (fun (_, name, s) -> (name, s)) records
+    @ [ ("SignIn", sign_in) ]
+  in
+  match
+    List.find_opt
+      (fun (name, _) ->
+        List.length (List.filter (fun (n, _) -> n = name) definitions) > 1)
+      definitions
+  with
+  | Some (name, _) ->
+      Error
+        ("two schemas the types write are named " ^ name
+       ^ ": a component, a table's record or the sign-in store's entry")
+  | None ->
+      Ok
+        {
+          Types.definitions;
+          identifiers =
+            List.map
+              (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+              spec.tables.identifiers_kinds.kinds;
+          name_of_key =
+            List.map (fun (name, file) -> (file, name)) components
+            @ List.map (fun (key, name, _) -> (key, name)) records;
+        }
 
 (* [spec_of], its refusal one of the gateway's document's. *)
 let refused message =

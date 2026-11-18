@@ -15,12 +15,12 @@ import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
 import xynolog.registry.SessionFactory
 import xynolog.registry.SessionFactoryOptions
-import xynolog.registry.StoredSession
 import xynolog.registry.keptIn
 import xynolog.session.OpenedSession
 import xynolog.session.XynologSession
 import xynolog.telemetry.futureOf
 import xynolog.types.KbTarget
+import xynolog.types.StoredSession
 import xynolog.types.UserResponse
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext

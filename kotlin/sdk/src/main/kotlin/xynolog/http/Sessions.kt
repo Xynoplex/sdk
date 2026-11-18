@@ -26,15 +26,11 @@ import xynolog.errors.SessionErrorCode
 import xynolog.errors.SignInError
 import xynolog.registry.SessionFactory
 import xynolog.registry.SessionFactoryOptions
-import xynolog.registry.SignInOutcome
-import xynolog.registry.SignedIn
-import xynolog.registry.StoredSession
 import xynolog.registry.XynologBrowser
 import xynolog.registry.keptIn
 import xynolog.registry.lastEventIdKey
 import xynolog.registry.personKey
 import xynolog.session.OpenedSession
-import xynolog.session.SessionEndReason
 import xynolog.session.XynologSession
 import xynolog.signin.BROWSER_CLIENT_ID
 import xynolog.signin.SignInKept
@@ -46,6 +42,10 @@ import xynolog.transport.Broadcast
 import xynolog.types.HttpEndpoint
 import xynolog.types.KbTarget
 import xynolog.types.LocalEndpoint
+import xynolog.types.SessionEndReason
+import xynolog.types.SignInOutcome
+import xynolog.types.SignedIn
+import xynolog.types.StoredSession
 import xynolog.types.UserResponse
 import java.net.http.HttpClient
 import java.util.concurrent.CompletableFuture

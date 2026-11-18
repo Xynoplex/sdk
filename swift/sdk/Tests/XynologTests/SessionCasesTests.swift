@@ -69,10 +69,10 @@ private func status(_ session: XynologSession) -> String {
           "iss": .string("issuer"), "name": .string("alice"),
           "exp": .number(Date().timeIntervalSince1970 + (stored == "expired" ? -3600 : 3600)),
         ]))
-      let held: HeldSignIn? =
+      let held: StoredSession? =
         stored == "none"
         ? nil
-        : HeldSignIn(
+        : StoredSession(
           access: access, clientId: scriptClientID, refresh: "refresh",
           tokenEndpoint: "http://issuer/token")
       let kept = MemorySignIn(held)
@@ -178,8 +178,8 @@ private func status(_ session: XynologSession) -> String {
   let token = try jwt(
     .object(["iss": .string("issuer"), "exp": .number(Date().timeIntervalSince1970 + 3600)]))
   let kept = MemorySignIn(
-    HeldSignIn(access: token, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer")
-  )
+    StoredSession(
+      access: token, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer"))
   let calls = Mutex(0)
   let renewing = Watched(false)
   let answered = Watched(false)
@@ -231,7 +231,7 @@ private func status(_ session: XynologSession) -> String {
   let access = try jwt(.object(["exp": .number(Date().timeIntervalSince1970 + 3600)]))
   let rotated = "rotated-access"
   let kept = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: access, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer"))
   let renewals = Mutex(0)
   let entered = Watched(false)
@@ -290,10 +290,10 @@ private func status(_ session: XynologSession) -> String {
 }
 private struct RefusedWrite: Error, Equatable {}
 private struct UnwritableSignIn: SignInKept {
-  let entry: HeldSignIn
-  func held() async -> HeldSignIn? { entry }
-  func keep(_ value: HeldSignIn) async throws { throw RefusedWrite() }
-  func renewed(read: HeldSignIn, access: String, refresh: String) async throws -> String? {
+  let entry: StoredSession
+  func held() async -> StoredSession? { entry }
+  func keep(_ value: StoredSession) async throws { throw RefusedWrite() }
+  func renewed(read: StoredSession, access: String, refresh: String) async throws -> String? {
     throw RefusedWrite()
   }
   func recordPersonKey(holding access: String, _ personKey: String) async throws -> Bool {
@@ -304,7 +304,7 @@ private struct UnwritableSignIn: SignInKept {
 @Test func aQuietStartupForgetStillRaisesTheStoresFailure() async throws {
   let access = try jwt(.object(["exp": .number(1)]))
   let kept = UnwritableSignIn(
-    entry: HeldSignIn(
+    entry: StoredSession(
       access: access, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer"))
   let session = XynologSession(
     kb: target(),
@@ -321,7 +321,7 @@ private struct UnwritableSignIn: SignInKept {
 @Test func aRefusalBeforeTheSessionIsInstalledIsAnsweredAfterInstallation() async throws {
   let access = try jwt(.object(["exp": .number(Date().timeIntervalSince1970 + 3600)]))
   let kept = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: access, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer"))
   let session = XynologSession(
     kb: target(),
@@ -344,7 +344,8 @@ private struct UnwritableSignIn: SignInKept {
 @Test func startupDoesNotPublishTheIdentityOfATokenReplacedWhileItWasAskedAbout() async throws {
   let old = try jwt(.object(["exp": .number(Date().timeIntervalSince1970 + 3600)]))
   let kept = MemorySignIn(
-    HeldSignIn(access: old, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer"))
+    StoredSession(
+      access: old, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer"))
   let asked = Watched(false)
   let release = Watched(false)
   let session = XynologSession(
@@ -392,7 +393,7 @@ private func errorsOf(_ session: XynologSession) -> (Watched<[String]>, Task<Voi
 {
   let access = try jwt(.object(["exp": .number(Date().timeIntervalSince1970 + 3600)]))
   let kept = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: access, clientId: scriptClientID, refresh: "refresh", tokenEndpoint: "issuer"))
   let gate = SessionGate()
   let asks = Mutex(0)
@@ -456,7 +457,7 @@ private final class ReadLimitedSignIn: SignInKept {
     reads.withLock { reads in reads.readable = value ? nil : reads.made }
   }
 
-  func held() async throws -> HeldSignIn? {
+  func held() async throws -> StoredSession? {
     let refused = reads.withLock { reads in
       reads.made += 1
       guard let readable = reads.readable else { return false }
@@ -465,8 +466,8 @@ private final class ReadLimitedSignIn: SignInKept {
     if refused { throw UnreadableStore() }
     return await memory.held()
   }
-  func keep(_ signIn: HeldSignIn) async { await memory.keep(signIn) }
-  func renewed(read: HeldSignIn, access: String, refresh: String) async -> String? {
+  func keep(_ signIn: StoredSession) async { await memory.keep(signIn) }
+  func renewed(read: StoredSession, access: String, refresh: String) async -> String? {
     await memory.renewed(read: read, access: access, refresh: refresh)
   }
   func recordPersonKey(holding access: String, _ personKey: String) async -> Bool {
@@ -500,7 +501,7 @@ private func renewsOverAnUnreadableSignIn(_ when: Renews) async throws {
     ? ["exp": .number(now - 3600)] : ["exp": .number(now + 20), "iat": .number(now)]
   let stored = try jwt(.object(claims))
   let memory = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: stored, clientId: scriptClientID, refresh: "refresh",
       tokenEndpoint: "http://issuer/token"))
   // The start reads the sign-in once; at the start, the renewal's read is the next.
@@ -582,7 +583,7 @@ private func renewsOverAnUnreadableSignIn(_ when: Renews) async throws {
   let renewed = try jwt(
     .object(["exp": .number(Date().timeIntervalSince1970 + 3600), "name": .string("renewed")]))
   let kept = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: stored, clientId: scriptClientID, refresh: "refresh",
       tokenEndpoint: "http://issuer/token"))
   let clock = TestClock()
@@ -646,7 +647,7 @@ private func renewsOverAnUnreadableSignIn(_ when: Renews) async throws {
   let stored = try jwt(.object(["exp": .number(now + 20), "iat": .number(now)]))
   let renewed = try jwt(.object(["exp": .number(now + 3600), "name": .string("renewed")]))
   let kept = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: stored, clientId: scriptClientID, refresh: "refresh",
       tokenEndpoint: "http://issuer/token"))
   let clock = TestClock()

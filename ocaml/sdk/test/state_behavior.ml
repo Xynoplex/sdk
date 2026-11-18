@@ -418,7 +418,11 @@ let run_case row =
           (fun name args ->
             match name with
             | "notifySessionEnded" ->
-                N.notify_session_ended unit ~reason:(string "reason" args)
+                N.notify_session_ended unit
+                  ~reason:
+                    (Option.get
+                       (Enums.Session_end_reason.of_string
+                          (string "reason" args)))
             | "notifyPermissionDenied" ->
                 N.notify_permission_denied unit
                   ~detail:(option J.to_string (field "detail" args))
@@ -426,7 +430,8 @@ let run_case row =
                 let row = field "conflict" args in
                 N.notify_kb_identity_conflict unit
                   {
-                    expected_did = string "expectedDid" row;
+                    Records.Kb_identity_conflict.expected_did =
+                      string "expectedDid" row;
                     observed_did = string "observedDid" row;
                   }
             | "acknowledgeSessionEnded" -> N.acknowledge_session_ended unit
@@ -437,17 +442,23 @@ let run_case row =
             | _ -> assert false),
           [
             watch "sessionEnded" (N.session_ended unit)
-              (nullable (fun value -> assoc [ ("reason", text value.N.reason) ]));
-            watch "permissionDenied" (N.permission_denied unit)
-              (nullable (fun value ->
-                   assoc [ ("detail", nullable text value.N.detail) ]));
-            watch "kbIdentityConflict"
-              (N.kb_identity_conflict unit)
-              (nullable (fun value ->
+              (nullable (fun (value : Records.Session_ended.t) ->
                    assoc
                      [
-                       ("expectedDid", text value.N.expected_did);
-                       ("observedDid", text value.N.observed_did);
+                       ( "reason",
+                         text (Enums.Session_end_reason.to_string value.reason)
+                       );
+                     ]));
+            watch "permissionDenied" (N.permission_denied unit)
+              (nullable (fun (value : Records.Permission_denied.t) ->
+                   assoc [ ("detail", nullable text value.detail) ]));
+            watch "kbIdentityConflict"
+              (N.kb_identity_conflict unit)
+              (nullable (fun (value : Records.Kb_identity_conflict.t) ->
+                   assoc
+                     [
+                       ("expectedDid", text value.expected_did);
+                       ("observedDid", text value.observed_did);
                      ]));
           ] )
     | _ -> assert false

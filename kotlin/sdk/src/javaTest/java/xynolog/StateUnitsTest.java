@@ -30,10 +30,7 @@ import xynolog.http.HttpTransport;
 import xynolog.identifiers.AnnotationId;
 import xynolog.identifiers.ResourceId;
 import xynolog.errors.XynologError;
-import xynolog.session.KbIdentityConflict;
-import xynolog.session.PermissionDenied;
 import xynolog.session.XynologSession;
-import xynolog.session.SessionEndReason;
 import xynolog.session.SessionSignals;
 import xynolog.state.BeckonStateUnit;
 import xynolog.state.GatherStateUnit;
@@ -52,6 +49,10 @@ import xynolog.transport.Events;
 import xynolog.types.GatheredContext;
 import xynolog.types.GenerationJobParams;
 import xynolog.types.HighlightingJobParams;
+import xynolog.types.KbIdentityConflict;
+import xynolog.types.PermissionDenied;
+import xynolog.types.SessionEndReason;
+import xynolog.types.SessionEnded;
 
 /**
  * The state units as a Java program uses them: each made and moved from Java,
@@ -119,12 +120,12 @@ final class StateUnitsTest {
 
     @Test
     void theSessionsSignalsAreRaisedReadAndClosedFromJava() throws Exception {
-        Reading<Optional<xynolog.session.SessionEnded>> ended;
+        Reading<Optional<SessionEnded>> ended;
         try (SessionSignals signals = new SessionSignals()) {
             ended = new Reading<>(signals.getSessionEnded().asPublisher());
             assertEquals(Optional.empty(), ended.next());
-            signals.notifySessionEnded(SessionEndReason.EXPIRED);
-            assertEquals(SessionEndReason.EXPIRED, ended.next().orElseThrow().getReason());
+            signals.notifySessionEnded(SessionEndReason.Expired);
+            assertEquals(SessionEndReason.Expired, ended.next().orElseThrow().getReason());
         }
         ended.ended.get(10, SECONDS);
     }

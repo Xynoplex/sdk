@@ -90,8 +90,8 @@ private func accessToken(_ tokens: String, expired: Bool) throws -> String {
 /// A sign-in naming `personKey`, whose tokens are `tokens`' and are renewed at `tokenEndpoint`.
 private func signIn(
   personKey: String?, tokens: String = "kept", expired: Bool, tokenEndpoint: String
-) throws -> HeldSignIn {
-  HeldSignIn(
+) throws -> StoredSession {
+  StoredSession(
     access: try accessToken(tokens, expired: expired), clientId: scriptClientID,
     personKey: personKey,
     refresh: tokens + "-refresh", tokenEndpoint: tokenEndpoint)
@@ -232,7 +232,7 @@ private final class ClosingWrites: SessionFactory {
     return opened
   }
 
-  func revoke(_ session: HeldSignIn) async { await scripted.revoke(session) }
+  func revoke(_ session: StoredSession) async { await scripted.revoke(session) }
 }
 
 @Test func forgettingAStoredSignInDeletesWhatTheCaseTableSays() async throws {
@@ -803,7 +803,7 @@ private enum SignInChange: Sendable {
   }
 
   /// The sign-in a `keep` keeps.
-  static func kept(_ personKey: String?) throws -> HeldSignIn {
+  static func kept(_ personKey: String?) throws -> StoredSession {
     try signIn(
       personKey: personKey, tokens: "another", expired: false, tokenEndpoint: unaskedIssuer)
   }
@@ -929,12 +929,12 @@ private final class UnreadableSignIn: SignInKept {
 
   func setReadable(_ value: Bool) { readable.withLock { $0 = value } }
 
-  func held() async throws -> HeldSignIn? {
+  func held() async throws -> StoredSession? {
     guard readable.withLock({ $0 }) else { throw UnreadableSignInStore() }
     return await memory.held()
   }
-  func keep(_ signIn: HeldSignIn) async { await memory.keep(signIn) }
-  func renewed(read: HeldSignIn, access: String, refresh: String) async -> String? {
+  func keep(_ signIn: StoredSession) async { await memory.keep(signIn) }
+  func renewed(read: StoredSession, access: String, refresh: String) async -> String? {
     await memory.renewed(read: read, access: access, refresh: refresh)
   }
   func recordPersonKey(holding access: String, _ personKey: String) async -> Bool {
@@ -1078,9 +1078,9 @@ private final class UnrecordingSignIn: SignInKept {
 
   init(_ memory: MemorySignIn) { self.memory = memory }
 
-  func held() async -> HeldSignIn? { await memory.held() }
-  func keep(_ signIn: HeldSignIn) async { await memory.keep(signIn) }
-  func renewed(read: HeldSignIn, access: String, refresh: String) async -> String? {
+  func held() async -> StoredSession? { await memory.held() }
+  func keep(_ signIn: StoredSession) async { await memory.keep(signIn) }
+  func renewed(read: StoredSession, access: String, refresh: String) async -> String? {
     await memory.renewed(read: read, access: access, refresh: refresh)
   }
   func recordPersonKey(holding access: String, _ personKey: String) async throws -> Bool {
