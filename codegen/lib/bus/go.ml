@@ -39,12 +39,13 @@ let typed (bus : Registry.t) channel =
 
 (* A channel's typed value: what it carries, and whether it is emitted, read
    for a resource, or of the record. A scoped channel is a stored event. *)
-let value (bus : Registry.t) (c : R.channel) =
+let value (bus : Registry.t) (c : R.channels_item) =
   let type_ = type_of (Registry.carried c) in
-  match c.payload with
+  match c with
   | Stored_event { payload; _ } ->
       G.Generic
-        ( (if List.mem c.channel bus.registry.audience.scoped then "Scoped"
+        ( (if List.mem (Registry.name c) bus.registry.audience.scoped then
+             "Scoped"
            else "Recorded"),
           [ type_; api payload ] )
   | _ ->
@@ -56,7 +57,9 @@ let quoted channels = List.map (fun c -> G.item (G.Quoted c)) channels
 
 let channels (bus : Registry.t) =
   let reg = bus.registry in
-  let requests = List.map (fun (o : R.operation) -> o.request) reg.operations in
+  let requests =
+    List.map (fun (o : R.operations_item) -> o.request) reg.operations
+  in
   G.text
     {
       header;
@@ -75,12 +78,14 @@ let channels (bus : Registry.t) =
               spacing = G.Packed;
               specs =
                 List.filter_map
-                  (fun (c : R.channel) ->
-                    if List.mem c.channel requests then None
+                  (fun (c : R.channels_item) ->
+                    if List.mem (Registry.name c) requests then None
                     else
                       Some
-                        (G.spec (name c.channel)
-                           (G.inline ~of_:(value bus c) (quoted [ c.channel ]))))
+                        (G.spec
+                           (name (Registry.name c))
+                           (G.inline ~of_:(value bus c)
+                              (quoted [ Registry.name c ]))))
                   reg.channels;
             };
           G.Const
@@ -92,7 +97,7 @@ let channels (bus : Registry.t) =
 
 let operations (bus : Registry.t) =
   let reg = bus.registry in
-  let shape (o : R.operation) =
+  let shape (o : R.operations_item) =
     G.Generic
       ("Operation", List.map (typed bus) [ o.request; o.result; o.failure ])
   in
@@ -114,7 +119,7 @@ let operations (bus : Registry.t) =
               spacing = G.Packed;
               specs =
                 List.map
-                  (fun (o : R.operation) ->
+                  (fun (o : R.operations_item) ->
                     G.spec (name o.request)
                       (G.inline ~of_:(shape o)
                          (quoted [ o.request; o.result; o.failure ])))
@@ -134,7 +139,8 @@ let operations (bus : Registry.t) =
                (G.lines
                   ~of_:(G.Slice (shape first))
                   (List.map
-                     (fun (o : R.operation) -> G.item (G.Name (name o.request)))
+                     (fun (o : R.operations_item) ->
+                       G.item (G.Name (name o.request)))
                      (first :: rest))));
           G.Var
             (G.spec
@@ -150,7 +156,7 @@ let operations (bus : Registry.t) =
                (G.lines
                   ~of_:(G.Map (G.Named "Channel", G.Named "Replies"))
                   (List.map
-                     (fun (o : R.operation) ->
+                     (fun (o : R.operations_item) ->
                        G.element ~key:(G.Quoted o.request)
                          (G.inline
                             ([
@@ -217,8 +223,8 @@ let bridged (bus : Registry.t) =
              repairs a passing frame)."
             "PersistedEventTypes"
             (List.filter_map
-               (fun (c : R.channel) ->
-                 if Registry.is_recorded c then Some c.channel else None)
+               (fun (c : R.channels_item) ->
+                 if Registry.is_recorded c then Some (Registry.name c) else None)
                reg.channels);
         ];
     }
@@ -227,8 +233,8 @@ let bridged (bus : Registry.t) =
 let collisions (bus : Registry.t) =
   let seen = Hashtbl.create 256 in
   List.filter_map
-    (fun (c : R.channel) ->
-      let go = name c.channel in
+    (fun (c : R.channels_item) ->
+      let go = name (Registry.name c) in
       match Hashtbl.find_opt seen go with
       | Some other ->
           Some
@@ -237,10 +243,10 @@ let collisions (bus : Registry.t) =
               pointer = "/channels";
               message =
                 Printf.sprintf "%S and %S would both be the Go name %s" other
-                  c.channel go;
+                  (Registry.name c) go;
             }
       | None ->
-          Hashtbl.replace seen go c.channel;
+          Hashtbl.replace seen go (Registry.name c);
           None)
     bus.registry.channels
 

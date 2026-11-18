@@ -22,7 +22,7 @@
 //!
 //! What the table may say is held by its schema,
 //! `protocol/specs/src/client/ClientClockCases.json`, which
-//! `protocol/scripts/checks/specs/check-tables.mjs` holds it to.
+//! Protocol's reader, `protocol/reader`, holds it to.
 
 use axum::Json;
 use axum::Router;

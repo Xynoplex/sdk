@@ -43,7 +43,7 @@ let file ~from_ (t : T.t) =
           (K.Same_line
              (K.call ~layout:K.Lines (K.Name "listOf")
                 (List.map
-                   (fun (row : T.media_type) ->
+                   (fun (row : T.media_types_item) ->
                      K.call (K.Name "MediaType")
                        [
                          K.Str row.media_type;

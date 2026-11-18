@@ -1,6 +1,7 @@
-(* census.exe SPECS: the model reads every file the pinned Protocol has, and
-   refuses a copy of it that has what the model does not know or lacks what it
-   names. SPECS is Protocol's specs/src. *)
+(* census.exe SPECS: the pinned Protocol reads, Swift's table values are its
+   own, and swift-sdk refuses a copy of it whose failure channels Swift cannot
+   model. SPECS is Protocol's specs/src; that the reader refuses a copy of it
+   with what it does not know is Protocol's own census. *)
 
 open Xynolog_codegen
 
@@ -22,19 +23,6 @@ let write path text =
 let messages = function
   | Ok _ -> []
   | Error errors -> List.map Decode.error_to_string errors
-
-(* A copy of the specs, changed, must be refused with this refusal among
-   those it gives. *)
-let refused specs ~why change expected =
-  let copied = Filename.concat (Filename.temp_dir "census" "") "src" in
-  copy specs copied;
-  change copied;
-  let found = messages (Spec.load copied) in
-  if not (List.mem expected found) then (
-    Printf.eprintf "A copy that %s was not refused with:\n  %s\nbut with:\n" why
-      expected;
-    List.iter (Printf.eprintf "  %s\n") found;
-    exit 1)
 
 (* A copy of the specs, changed, that the model reads must be refused by the
    swift-sdk group with this refusal. *)
@@ -95,29 +83,6 @@ let () =
       Printf.eprintf "The pinned Protocol has %d refusals\n"
         (List.length errors);
       exit 1);
-  refused specs ~why:"has a file the model does not know"
-    (fun copied -> write (Filename.concat copied "retry/notes.txt") "")
-    "retry/notes.txt: /: a file the model does not know";
-  refused specs ~why:"lacks a table the model names"
-    (fun copied -> Sys.remove (Filename.concat copied "retry/cases.json"))
-    "retry/cases.json: /: the model reads this file, and Protocol has none";
-  refused specs ~why:"has a reference naming nothing"
-    (fun copied ->
-      write
-        (Filename.concat copied "components/schemas/Dangling.json")
-        {|{"$ref":"Nowhere.json"}|})
-    "components/schemas/Dangling.json: /$ref: names Nowhere.json, which \
-     Protocol does not have";
-  refused specs ~why:"has a schema with a keyword the model does not know"
-    (fun copied ->
-      write
-        (Filename.concat copied "components/schemas/Unknown.json")
-        {|{"type":"string","contentEncoding":"base64"}|})
-    "components/schemas/Unknown.json: /contentEncoding: an unknown member";
-  refused specs ~why:"lacks a path item a document names"
-    (fun copied -> Sys.remove (Filename.concat copied "paths/api_health.json"))
-    "openapi.json: /paths/~1api~1health/$ref: names paths/api_health.json, \
-     which Protocol does not have";
   let command_error copied change =
     rewrite
       (Filename.concat copied "components/schemas/CommandError.json")
@@ -172,7 +137,5 @@ let () =
           | member -> member)))
     "openapi.json: /: failure message must be a required string";
   print_endline
-    "The model reads every file of the pinned Protocol, and refuses a copy \
-     with a stray file, a missing table, a dangling reference, an unknown \
-     keyword or a missing path item; Swift's table values are Protocol's, and \
+    "The pinned Protocol reads; Swift's table values are Protocol's, and \
      swift-sdk refuses a failure channel without a required string message"

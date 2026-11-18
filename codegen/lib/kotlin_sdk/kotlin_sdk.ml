@@ -63,7 +63,7 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
           Types.definitions;
           identifiers =
             List.map
-              (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+              (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
               spec.tables.identifiers_kinds.kinds;
           name_of_key =
             List.map (fun (name, file) -> (file, name)) components

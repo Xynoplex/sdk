@@ -12,7 +12,7 @@ let empty = "EmptyBusPayload"
 let envelope schema = schema ^ "BusEnvelope"
 
 (* The type a frame on [c] carries. *)
-let payload (c : R.channel) =
+let payload (c : R.channels_item) =
   match Registry.carried c with
   | Component name -> name
   | Response schema -> envelope schema
@@ -24,9 +24,9 @@ let payload (c : R.channel) =
 let made (reg : R.t) =
   let enveloped =
     List.fold_left
-      (fun found (c : R.channel) ->
-        match c.payload with
-        | Envelope { schema } when not (List.mem schema found) ->
+      (fun found (c : R.channels_item) ->
+        match c with
+        | Envelope { schema; _ } when not (List.mem schema found) ->
             found @ [ schema ]
         | _ -> found)
       [] reg.channels
@@ -104,9 +104,9 @@ let readings (reg : R.t) =
            Some
              (Keyed
                 (List.map
-                   (fun (c : R.channel) ->
+                   (fun (c : R.channels_item) ->
                      let t = C.T (payload c) in
-                     ( C.Str c.channel,
+                     ( C.Str (Registry.name c),
                        C.Lambda
                          ( "carried",
                            C.Is
@@ -122,25 +122,25 @@ let readings (reg : R.t) =
 
 let channels (reg : R.t) =
   List.map
-    (fun (c : R.channel) ->
+    (fun (c : R.channels_item) ->
       property ~modifiers:[ Public; Static ]
         (C.Generic ("BusChannel", [ C.T (payload c) ]))
-        (member c.channel)
+        (member (Registry.name c))
         (C.New
            {
              type_ = None;
              args =
                Some
                  [
-                   Arg (Str c.channel);
-                   Arg (Bool (List.mem c.channel reg.audience.scoped));
+                   Arg (Str (Registry.name c));
+                   Arg (Bool (List.mem (Registry.name c) reg.audience.scoped));
                  ];
              init = None;
            }))
     reg.channels
   @ [ readings reg ]
 
-let operation_type (bus : Registry.t) (o : R.operation) =
+let operation_type (bus : Registry.t) (o : R.operations_item) =
   C.Generic
     ( "BusOperation",
       List.map
@@ -150,7 +150,7 @@ let operation_type (bus : Registry.t) (o : R.operation) =
 let operations (bus : Registry.t) =
   let first, rest = bus.limits in
   List.map
-    (fun (o : R.operation) ->
+    (fun (o : R.operations_item) ->
       property ~modifiers:[ Public; Static ] (operation_type bus o)
         (member o.request)
         (C.New
@@ -172,7 +172,7 @@ let operations (bus : Registry.t) =
         "Limits"
         (C.Collection
            (List.map
-              (fun (o : R.operation) -> C.Name (member o.request))
+              (fun (o : R.operations_item) -> C.Name (member o.request))
               (first :: rest)));
       C.Method
         {

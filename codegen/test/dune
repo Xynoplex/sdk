@@ -1,59 +1,54 @@
 (test
- (name strict)
- (modules strict)
- (libraries xynolog_codegen yojson alcotest))
-
-(test
  (name groups)
  (modules groups)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name required)
  (modules required)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name unicode_case)
  (modules unicode_case)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name encodings)
  (modules encodings)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name error_codes)
  (modules error_codes)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name timing)
  (modules timing)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name registries)
  (modules registries)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name python_layout)
  (modules python_layout)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (test
  (name cache_refresh)
  (modules cache_refresh cache_refresh_texts)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 ; Run with Protocol's specs/src, which is outside this project:
 ; dune exec test/census.exe -- ../protocol/specs/src
 (executable
  (name census)
  (modules census)
- (libraries xynolog_codegen yojson))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson))
 
 ; Run with the checkout's root, which is outside this project:
 ; dune exec test/cli_groups.exe -- ..
@@ -67,109 +62,110 @@
 (executable
  (name coverage_census)
  (modules coverage_sdk case_coverage surface_coverage coverage_census)
- (libraries xynolog_codegen))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema))
 
 (test
  (name typescript_syntax)
  (modules typescript_syntax)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (test
  (name haskell_syntax)
  (modules haskell_syntax)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (test
  (name client_types)
  (modules client_types)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name kotlin_syntax)
  (modules kotlin_syntax)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (test
  (name kotlin_sdk)
  (modules kotlin_sdk)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name kotlin_tables)
  (modules kotlin_tables)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name csharp_syntax)
  (modules csharp_syntax)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (test
  (name csharp_sdk)
  (modules csharp_sdk)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name rust_syntax)
  (modules rust_syntax)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (library
  (name fixture)
  (modules fixture)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name rust_types)
  (modules rust_types)
- (libraries xynolog_codegen fixture yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema fixture yojson alcotest))
 
 (test
  (name go_types)
  (modules go_types)
- (libraries xynolog_codegen fixture yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema fixture yojson alcotest))
 
 (test
  (name typescript_types)
  (modules typescript_types)
- (libraries xynolog_codegen fixture yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema fixture yojson alcotest))
 
 (test
  (name python_types)
  (modules python_types)
- (libraries xynolog_codegen fixture yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema fixture yojson alcotest))
 
 (test
  (name go_syntax)
  (modules go_syntax)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (test
  (name swift_syntax)
  (modules swift_syntax)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest))
 
 (test
  (name swift_sdk)
  (modules swift_sdk)
- (libraries xynolog_codegen yojson alcotest))
-
-(test
- (name schema)
- (modules schema)
- (libraries xynolog_codegen alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name merge_laws)
  (modules merge_laws)
- (libraries xynolog_codegen alcotest qcheck-core qcheck-alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema alcotest qcheck-core qcheck-alcotest))
 
 (test
  (name merges)
  (modules merges)
- (libraries xynolog_codegen yojson alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
 
 (test
  (name ocaml_syntax)
  (modules ocaml_syntax)
- (libraries xynolog_codegen compiler-libs.common ocamlformat-lib alcotest))
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema compiler-libs.common ocamlformat-lib alcotest))
+
+; The reader's libraries, opened as the generator opens them.
+(env
+ (_
+  (flags
+   (:standard -open Xynolog_protocol_schema -open Xynolog_protocol))))

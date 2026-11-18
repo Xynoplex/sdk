@@ -37,12 +37,14 @@ let files (table : T.t) =
   in
   let refused =
     List.filter_map
-      (fun (c : T.case) ->
-        match c.kind with Refused -> Some c.encoding | _ -> None)
+      (fun (c : T.cases_item) ->
+        match c with Refused _ -> Some (Table.encoding c) | _ -> None)
       table.cases
   in
   match
-    List.find_opt (fun (c : T.case) -> c.encoding = "utf-8") table.cases
+    List.find_opt
+      (fun (c : T.cases_item) -> Table.encoding c = "utf-8")
+      table.cases
   with
   | None -> refuse "states no case of utf-8"
   | Some _ when not (List.mem "replacement" refused) ->
@@ -52,7 +54,7 @@ let files (table : T.t) =
         [
           constant ~path:"rust/sdk/src/generated/utf8_labels.rs"
             ~doc:"Every label of UTF-8 in the Encoding Standard, in lower case."
-            "UTF_8_LABELS" utf8.labels;
+            "UTF_8_LABELS" (Table.labels utf8);
           constant ~path:"rust/sdk/src/generated/refused_encodings.rs"
             ~doc:
               "Every encoding of the Encoding Standard whose labels are \

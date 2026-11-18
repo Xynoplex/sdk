@@ -42,6 +42,8 @@ let bus_codes =
     entry ~docs:"The peer refused." "bus.rejected";
     entry ~docs:"Not there." ~wire:"not-found" "bus.not-found";
     entry ~docs:"No peer." ~wire:"peer-unavailable" "bus.peer-unavailable";
+    entry ~docs:"Not allowed." ~wire:"unauthorized" "bus.unauthorized";
+    entry ~docs:"Nothing waits." ~wire:"none-pending" "bus.none-pending";
   ]
 
 let transport_codes =
@@ -73,8 +75,6 @@ let table ?(bus = bus_codes) ?(unrecognized = "bus.rejected")
        [ entry ~docs:"Out of range." "span-out-of-range" ])
     (plain "Control." [ entry ~docs:"Failed." "control.failed" ])
 
-let wire_codes = [ "not-found"; "peer-unavailable" ]
-
 let decode text =
   Decode.run ~file (Yojson.Safe.from_string text) Tables.Errors_codes.decode
 
@@ -83,18 +83,17 @@ let model text =
   | Ok (t, _) -> t
   | Error error -> Alcotest.fail (Decode.error_to_string error)
 
-let derive ?(wire_codes = wire_codes) text =
-  Error_codes.Table.derive ~wire_codes (model text)
+let derive text = Error_codes.Table.derive (model text)
 
-let derived ?wire_codes text =
-  match derive ?wire_codes text with
+let derived text =
+  match derive text with
   | Ok t -> t
   | Error errors ->
       Alcotest.fail
         (String.concat "\n" (List.map Decode.error_to_string errors))
 
-let refuses ?wire_codes text expected () =
-  match derive ?wire_codes text with
+let refuses text expected () =
+  match derive text with
   | Ok _ ->
       Alcotest.failf "expected the refusals\n  %s\nand none came"
         (String.concat "\n  " expected)
@@ -103,36 +102,6 @@ let refuses ?wire_codes text expected () =
         "refusals"
         (List.map (fun e -> file ^ ": " ^ e) expected)
         (List.map Decode.error_to_string errors)
-
-let model_refuses text expected () =
-  match decode text with
-  | Ok _ -> Alcotest.failf "expected the refusal\n  %s\nand none came" expected
-  | Error error ->
-      Alcotest.(check string)
-        "refusal"
-        (file ^ ": " ^ expected)
-        (Decode.error_to_string error)
-
-let the_model =
-  [
-    case "a status and a statusFrom both is refused"
-      (model_refuses
-         (table
-            ~transport:[ entry ~status:401 ~status_from:500 "x"; entry "error" ]
-            ())
-         "/transport/codes/0: states both a status and a statusFrom");
-    case "a code with no docs is refused"
-      (model_refuses
-         (table ~session:[ {|{"code":"session.auth-failed"}|} ] ())
-         "/session/codes/0: lacks the member \"docs\"");
-    case "a code with empty docs is refused"
-      (model_refuses
-         (table ~session:[ entry ~docs:"" "session.auth-failed" ] ())
-         "/session/codes/0/docs: expected a non-empty string");
-    case "a vocabulary of no codes is refused"
-      (model_refuses (table ~session:[] ())
-         "/session/codes: expected a non-empty array");
-  ]
 
 let code = Alcotest.(pair string string)
 
@@ -145,6 +114,8 @@ let rules =
           [
             ("not-found", "bus.not-found");
             ("peer-unavailable", "bus.peer-unavailable");
+            ("unauthorized", "bus.unauthorized");
+            ("none-pending", "bus.none-pending");
           ]
           (List.map
              (fun (wire, (c : Error_codes.Table.code)) -> (wire, c.code))
@@ -185,6 +156,8 @@ let rules =
             "BusRequestErrorCodeRejected";
             "BusRequestErrorCodeNotFound";
             "BusRequestErrorCodePeerUnavailable";
+            "BusRequestErrorCodeUnauthorized";
+            "BusRequestErrorCodeNonePending";
           ]
           (List.map (fun (c : Error_codes.Table.code) -> c.go) t.bus.codes));
     case "a code's Go constant, from its part after its last dot" (fun () ->
@@ -201,23 +174,15 @@ let rules =
         let t = derived (table ~transport:[ entry "error" ] ()) in
         Alcotest.(check int) "exact" 0 (List.length t.exact);
         Alcotest.(check bool) "from" true (t.from = None));
-    case "a wire code CommandError does not declare is refused"
-      (refuses
-         (table
-            ~bus:(entry ~wire:"timed-out" "bus.timeout" :: List.tl bus_codes)
-            ())
-         [
-           "/busRequest/codes/0/wire: is timed-out, which CommandError.code \
-            does not declare";
-         ]);
     case "a wire code no bus code restates is refused"
       (refuses
          (table
             ~bus:
-              [
-                entry "bus.rejected";
-                entry ~wire:"peer-unavailable" "bus.peer-unavailable";
-              ]
+              (List.filter
+                 (fun e ->
+                   e
+                   <> entry ~docs:"Not there." ~wire:"not-found" "bus.not-found")
+                 bus_codes)
             ())
          [
            "/busRequest/codes: restates no code as CommandError.code's \
@@ -227,7 +192,7 @@ let rules =
       (refuses
          (table ~bus:(bus_codes @ [ entry ~wire:"not-found" "bus.closed" ]) ())
          [
-           "/busRequest/codes/4/wire: is not-found, which bus.not-found \
+           "/busRequest/codes/6/wire: is not-found, which bus.not-found \
             restates already";
          ]);
     case "a code stated twice is refused"
@@ -333,61 +298,6 @@ let rules =
          ]);
   ]
 
-let schema text =
-  match
-    Decode.run ~file:"s.json" (Yojson.Safe.from_string text) Schema.decode
-  with
-  | Ok (s, _) -> s
-  | Error error -> Alcotest.fail (Decode.error_to_string error)
-
-let wire =
-  let errors = Result.map_error (List.map Decode.error_to_string) in
-  [
-    case "CommandError's codes" (fun () ->
-        Alcotest.(check (result (list string) (list string)))
-          "codes"
-          (Ok [ "not-found"; "unauthorized" ])
-          (errors
-             (Error_codes.Table.wire_codes_of
-                (schema
-                   {|{"type":"object","properties":{"code":{"type":"string","enum":["not-found","unauthorized"]}}}|}))));
-    case "a CommandError whose code enumerates nothing is refused" (fun () ->
-        Alcotest.(check (result (list string) (list string)))
-          "codes"
-          (Error
-             [
-               "components/schemas/CommandError.json: /properties/code: \
-                enumerates no codes";
-             ])
-          (errors
-             (Error_codes.Table.wire_codes_of
-                (schema
-                   {|{"type":"object","properties":{"code":{"type":"string"}}}|}))));
-    case "a CommandError with no code is refused" (fun () ->
-        Alcotest.(check (result (list string) (list string)))
-          "codes"
-          (Error
-             [
-               "components/schemas/CommandError.json: /properties: has no code";
-             ])
-          (errors
-             (Error_codes.Table.wire_codes_of
-                (schema
-                   {|{"type":"object","properties":{"message":{"type":"string"}}}|}))));
-    case "a CommandError code that is no string is refused" (fun () ->
-        Alcotest.(check (result (list string) (list string)))
-          "codes"
-          (Error
-             [
-               "components/schemas/CommandError.json: /properties/code/enum: \
-                holds a member that is no string";
-             ])
-          (errors
-             (Error_codes.Table.wire_codes_of
-                (schema
-                   {|{"type":"object","properties":{"code":{"enum":["a",1]}}}|}))));
-  ]
-
 (* A tab, in the expected texts below, is written as a tilde. *)
 let tabs = Text.replace_all ~sub:"~" ~by:"\t"
 
@@ -414,6 +324,10 @@ const (
 ~BusRequestErrorCodeNotFound BusRequestErrorCode = "bus.not-found"
 ~// No peer.
 ~BusRequestErrorCodePeerUnavailable BusRequestErrorCode = "bus.peer-unavailable"
+~// Not allowed.
+~BusRequestErrorCodeUnauthorized BusRequestErrorCode = "bus.unauthorized"
+~// Nothing waits.
+~BusRequestErrorCodeNonePending BusRequestErrorCode = "bus.none-pending"
 )
 
 // BusRequestErrorCodeOfWire is the code a failure's own code
@@ -431,6 +345,10 @@ func BusRequestErrorCodeOfWire(code *api.CommandErrorCode) BusRequestErrorCode {
 ~~return BusRequestErrorCodeNotFound
 ~case api.CommandErrorCodePeerUnavailable:
 ~~return BusRequestErrorCodePeerUnavailable
+~case api.CommandErrorCodeUnauthorized:
+~~return BusRequestErrorCodeUnauthorized
+~case api.CommandErrorCodeNonePending:
+~~return BusRequestErrorCodeNonePending
 ~default:
 ~~panic("a failure's code \"" + string(*code) + "\" is none of CommandErrorCode's: the required table recognizes a code CommandError does not list")
 ~}
@@ -445,6 +363,10 @@ func (c BusRequestErrorCode) Wire() (code api.CommandErrorCode, ok bool) {
 ~~return api.CommandErrorCodeNotFound, true
 ~case BusRequestErrorCodePeerUnavailable:
 ~~return api.CommandErrorCodePeerUnavailable, true
+~case BusRequestErrorCodeUnauthorized:
+~~return api.CommandErrorCodeUnauthorized, true
+~case BusRequestErrorCodeNonePending:
+~~return api.CommandErrorCodeNonePending, true
 ~default:
 ~~return "", false
 ~}
@@ -568,6 +490,10 @@ type BusRequestErrorCode = Literal[
     "bus.not-found",
     # No peer.
     "bus.peer-unavailable",
+    # Not allowed.
+    "bus.unauthorized",
+    # Nothing waits.
+    "bus.none-pending",
 ]
 
 BUS_REQUEST_ERROR_CODES: Final[tuple[BusRequestErrorCode, ...]] = (
@@ -575,6 +501,8 @@ BUS_REQUEST_ERROR_CODES: Final[tuple[BusRequestErrorCode, ...]] = (
     "bus.rejected",
     "bus.not-found",
     "bus.peer-unavailable",
+    "bus.unauthorized",
+    "bus.none-pending",
 )
 
 
@@ -589,6 +517,10 @@ def bus_request_code_for_wire_code(code: CommandErrorCode | None) -> BusRequestE
             return "bus.not-found"
         case "peer-unavailable":
             return "bus.peer-unavailable"
+        case "unauthorized":
+            return "bus.unauthorized"
+        case "none-pending":
+            return "bus.none-pending"
         case None:
             return "bus.rejected"
         case _:
@@ -688,12 +620,18 @@ export type BusRequestErrorCode =
   /** Not there. */
   | 'bus.not-found'
   /** No peer. */
-  | 'bus.peer-unavailable';
+  | 'bus.peer-unavailable'
+  /** Not allowed. */
+  | 'bus.unauthorized'
+  /** Nothing waits. */
+  | 'bus.none-pending';
 
 /** The bus code a failure's own wire code (`CommandError.code`) becomes. */
 export const busRequestCodeByWireCode = {
   'not-found': 'bus.not-found',
   'peer-unavailable': 'bus.peer-unavailable',
+  'unauthorized': 'bus.unauthorized',
+  'none-pending': 'bus.none-pending',
 } as const;
 
 /** What a failure becomes when it states no code, or one CommandError does not list, which is read as none. */
@@ -817,10 +755,4 @@ let writers =
   ]
 
 let () =
-  Alcotest.run "error-codes"
-    [
-      ("the model", the_model);
-      ("the rules", rules);
-      ("the wire's codes", wire);
-      ("the writers", writers);
-    ]
+  Alcotest.run "error-codes" [ ("the rules", rules); ("the writers", writers) ]

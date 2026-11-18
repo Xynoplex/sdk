@@ -6,7 +6,7 @@ module R = Tables.Bus_registry
 (* What a channel's payload must be. A channel that carries a component is
    held to it; an envelope is an object holding only its response; an empty
    or void payload is an object with no members. *)
-let channel ~known (c : R.channel) =
+let channel ~known (c : R.channels_item) =
   let named name =
     if known name then Ok (Shape.Ref name)
     else
@@ -15,14 +15,16 @@ let channel ~known (c : R.channel) =
           Decode.file = Bus.Registry.file;
           pointer = "/channels";
           message =
-            Printf.sprintf "%S carries %s, which is no component" c.channel name;
+            Printf.sprintf "%S carries %s, which is no component"
+              (Bus.Registry.name c) name;
         }
   in
-  match c.payload with
+  match c with
   | Schema { schema; _ } -> named schema
   | Stored_event { enriched; _ } ->
-      named (Bus.Registry.stored_event_component ~enriched)
-  | Envelope { schema } ->
+      named
+        (Bus.Registry.stored_event_component ~enriched:(enriched = Some true))
+  | Envelope { schema; _ } ->
       Result.map
         (fun response ->
           Shape.Shape
@@ -34,7 +36,7 @@ let channel ~known (c : R.channel) =
               closed = Some [ "response" ];
             })
         (named schema)
-  | Void | Empty ->
+  | Void _ | Empty _ ->
       Ok
         (Shape.Shape
            { Shape.empty with kinds = Some [ Object ]; closed = Some [] })

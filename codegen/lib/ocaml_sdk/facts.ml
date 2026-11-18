@@ -52,7 +52,7 @@ let files (spec : Spec.t) =
           file "ocaml/sdk/lib/registry_facts.ml"
             ~from_:("session/stored.json and " ^ discovery)
             (List.map
-               (fun (k : Tables.Session_stored.key) ->
+               (fun (k : Tables.Session_stored.keys_item) ->
                  O.let_ (Text.snake k.member) (O.string k.key))
                stored.keys
             @ [
@@ -71,14 +71,15 @@ let files (spec : Spec.t) =
               O.let_ "cases"
                 (O.list
                    (List.map
-                      (fun (c : Tables.Text_offset_cases.case) ->
+                      (fun (c : Tables.Text_offset_cases.cases_item) ->
                         O.tuple
                           [
                             O.string c.text;
                             O.int c.code_points;
                             O.list
                               (List.map
-                                 (fun (s : Tables.Text_offset_cases.span) ->
+                                 (fun (s : Tables.Text_offset_cases.spans_item)
+                                    ->
                                    O.tuple
                                      [
                                        O.string s.exact;

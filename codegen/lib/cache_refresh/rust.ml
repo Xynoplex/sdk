@@ -95,7 +95,8 @@ let cache_refresh (table : T.t) (t : Table.t) =
     String.concat " "
       (List.filter_map
          (fun (item : T.refresh_item) ->
-           if T.trigger_name item.trigger = on then Some item.docs else None)
+           if Table.trigger_name item = on then Some (Table.docs_of item)
+           else None)
          table.refresh)
   in
   let persisted =

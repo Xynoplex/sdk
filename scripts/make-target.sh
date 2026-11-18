@@ -17,11 +17,10 @@ in_container() {
 $script"
 }
 
-# The OCaml toolchain's image, which the SDK and the generator build on.
+# The OCaml toolchain's image, which the SDK and the generator build on, each
+# held to build-tools' pins.
 ocaml_toolchain_image() {
-  python3 "$ROOT/ocaml/check-toolchain.py"
-  "$RUNTIME" build --build-arg "BASE_IMAGE=$(python3 "$ROOT/ocaml/check-toolchain.py" --base-image)" \
-    --tag xynolog-ocaml-toolchain --file "$ROOT/ocaml/Dockerfile" "$ROOT/ocaml"
+  bash "$ROOT/build-tools/ocaml/toolchain-image.sh" "$ROOT/ocaml/sdk" "$ROOT/codegen"
 }
 
 case "${1:-}" in
@@ -148,8 +147,8 @@ case "${1:-}" in
       dune runtest' --memory 4g
     ;;
   test-codegen)
-    # The generator's model reads every file of the pinned Protocol, and
-    # refuses a copy of it that has what the model does not know. Every case
+    # The pinned Protocol reads through its reader, and Swift's table values
+    # are its own. Every case
     # table is run by a named test of each SDK, or absent from it for a
     # reason, and every surface item an SDK lacks is one Protocol has, with a
     # reason. Every sdk path the pinned Protocol names is one this checkout
@@ -193,7 +192,7 @@ case "${1:-}" in
     "$RUNTIME" run --rm --volume "$target:/sdk" --volume "$work:/work" --workdir /tmp --memory 4g \
       xynolog-ocaml-toolchain bash -euc '
         set -o pipefail
-        cp -a /sdk/codegen /tmp/codegen
+        cp -a /sdk/codegen /sdk/protocol /tmp/
         cd /tmp/codegen
         dune build ./bin/main.exe
         dune exec -- xynolog-codegen generate sdk /sdk | tee /work/written'

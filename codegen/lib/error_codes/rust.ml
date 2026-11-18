@@ -63,7 +63,7 @@ let vocabulary ~name (v : Table.vocabulary) =
     R.Blank;
   ]
 
-let file ~wire_codes (t : Table.t) =
+let file (t : Table.t) =
   let bus c = R.Path [ "BusRequestErrorCode"; variant c ] in
   let transport c = R.Path [ "TransportErrorCode"; variant c ] in
   let names : Table.vocabulary -> string = fun v -> v.go_name in
@@ -105,7 +105,7 @@ let file ~wire_codes (t : Table.t) =
                                     (fun wire ->
                                       ( some (wire_variant wire),
                                         bus (List.assoc wire t.wire) ))
-                                    wire_codes
+                                    Table.wire_codes
                                   @ [ (R.p "None", bus t.unrecognized) ] ));
                          ]);
                     R.I_blank;

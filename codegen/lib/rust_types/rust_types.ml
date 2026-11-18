@@ -46,18 +46,18 @@ let regenerate from_ = Banner.lines ~from_ __FILE__
 
 let payloads (spec : Spec.t) =
   List.filter_map
-    (fun (c : Tables.Bus_registry.channel) ->
-      match c.payload with
-      | Schema { schema; _ } | Envelope { schema } -> Some schema
+    (fun (c : Tables.Bus_registry.channels_item) ->
+      match c with
+      | Schema { schema; _ } | Envelope { schema; _ } -> Some schema
       | Stored_event { payload; _ } -> Some payload
-      | Void | Empty -> None)
+      | Void _ | Empty _ -> None)
     spec.tables.bus_registry.channels
 
 let types (spec : Spec.t) =
   let bundle = Definitions.bundle spec in
   let identifiers =
     List.map
-      (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+      (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
       spec.tables.identifiers_kinds.kinds
   in
   let roots =
@@ -96,7 +96,7 @@ let sign_in (spec : Spec.t) =
 let discovery_absent (spec : Spec.t) =
   let reasons =
     List.map
-      (fun (r : Tables.Client_discovery_absent.reason) ->
+      (fun (r : Tables.Client_discovery_absent.reasons_item) ->
         Schema.String_literal r.reason)
       spec.tables.client_discovery_absent.reasons
   in

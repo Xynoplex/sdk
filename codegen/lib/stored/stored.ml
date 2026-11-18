@@ -29,10 +29,17 @@ type field = {
 
 type kept = { query : string; keyed_by : string option; value : string }
 
+(* A type an embedded schema names, and what it says of it. *)
+type named = { title : string; description : string }
+
 type t = {
   table : T.t;
   session : Sign_in.Flat.t;
+  open_resource_type : named;
   open_resource : field list;
+  places : named;  (** lastEventIds' type. *)
+  version : int;  (** The cache document's version. *)
+  version_description : string;
   scope : string;
   place : string;
   kinds : string list;
@@ -47,7 +54,7 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
   in
   if table.keys = [] then refuse "/keys" "states none";
   List.iteri
-    (fun i (k : T.key) ->
+    (fun i (k : T.keys_item) ->
       let at = Printf.sprintf "/keys/%d" i in
       if
         not
@@ -58,7 +65,9 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
           (Printf.sprintf "is %S, not a constant's name ending in Key" k.member);
       if k.key = "" then refuse (at ^ "/key") "is empty";
       if k.docs = "" then refuse (at ^ "/docs") "is empty";
-      match List.find_index (fun (o : T.key) -> o.key = k.key) table.keys with
+      match
+        List.find_index (fun (o : T.keys_item) -> o.key = k.key) table.keys
+      with
       | Some j when j < i ->
           refuse (at ^ "/key")
             (Printf.sprintf "is %s, which /keys/%d states already" k.key j)
@@ -69,7 +78,7 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
       if prefix = "" then refuse ("/" ^ member ^ "/prefix") "is empty";
       if docs = "" then refuse ("/" ^ member ^ "/docs") "is empty";
       List.iter
-        (fun (k : T.key) ->
+        (fun (k : T.keys_item) ->
           if prefix <> "" && String.starts_with ~prefix k.key then
             refuse
               ("/" ^ member ^ "/prefix")
@@ -128,60 +137,80 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
       "")
     else name
   in
-  let o = table.open_resource in
+  (* The embedded schemas, read through Schema: a property the group reads
+     and the schema lacks is refused, and read on as one that states
+     nothing. *)
+  let layer : Schema.t -> Schema.schema = function
+    | Schema s -> s
+    | Boolean_schema _ -> Schema.empty
+  in
+  let property at name (s : Schema.schema) =
+    match Option.bind s.properties (List.assoc_opt name) with
+    | Some property -> layer property
+    | None ->
+        refuse at (Printf.sprintf "lacks the property %s" name);
+        Schema.empty
+  in
+  let said = function Some text -> text <> "" | None -> false in
+  let named_type (s : Schema.schema) =
+    match s.title with Some t -> Sign_in.Flat.is_type_name t | None -> false
+  in
+  let referred : Schema.t option -> string = function
+    | Some (Schema { ref_ = Some r; _ }) -> r.target
+    | _ -> ""
+  in
+  let o = layer table.open_resource in
   let at_open = "/openResource" in
-  if o.type_ <> "object" then refuse (at_open ^ "/type") "is not object";
-  if not (Sign_in.Flat.is_type_name o.title) then
-    refuse (at_open ^ "/title") "names no type";
-  if o.description = "" then refuse (at_open ^ "/description") "is empty";
-  if o.required = [] then refuse (at_open ^ "/required") "requires nothing";
-  let p = o.properties in
+  if o.type_ <> Some [ Object ] then refuse (at_open ^ "/type") "is not object";
+  if not (named_type o) then refuse (at_open ^ "/title") "names no type";
+  if not (said o.description) then refuse (at_open ^ "/description") "is empty";
+  let required = Option.value ~default:[] o.required in
+  if required = [] then refuse (at_open ^ "/required") "requires nothing";
+  let p name = property (at_open ^ "/properties") name o in
   (* A member of text or a whole number states the JSON type it is; a kind
      of id is its kind's. *)
-  let field name ~description ~type_ ?kind ?least ?stated () =
+  let field name ~(schema : Schema.schema) ~type_ ?kind ?(least = false) () =
     let at = at_open ^ "/properties/" ^ name in
-    if description = "" then refuse (at ^ "/description") "is empty";
-    (match stated with
-    | Some stated when stated <> if type_ = "int" then "integer" else "string"
-      ->
+    if not (said schema.description) then
+      refuse (at ^ "/description") "is empty";
+    (match schema.type_ with
+    | Some [ stated ]
+      when stated <> if type_ = "int" then Schema.Integer else Schema.String ->
         refuse (at ^ "/type")
-          (Printf.sprintf "is %S, which this member is not" stated)
+          (Printf.sprintf "is %S, which this member is not"
+             (Schema.type_word stated))
     | _ -> ());
     {
       name;
-      description;
-      required = List.mem name o.required;
+      description = Option.value ~default:"" schema.description;
+      required = List.mem name required;
       type_;
       kind;
-      least;
+      least = (if least then Option.map int_of_float schema.minimum else None);
     }
   in
   let id =
     let at = at_open ^ "/properties/id/allOf" in
-    match p.id.all_of with
-    | [ (only : T.id_all_of_item) ] ->
-        let kind = component (at ^ "/0/$ref") only.ref in
+    let schema = p "id" in
+    match schema.all_of with
+    | Some [ Schema { ref_ = Some only; _ } ] ->
+        let kind = component (at ^ "/0/$ref") only.target in
         if kind <> "" && not (List.mem kind kinds) then
           refuse (at ^ "/0/$ref")
             (Printf.sprintf "names %s, which is no kind of id" kind);
-        field "id" ~description:p.id.description ~type_:kind ~kind ()
+        field "id" ~schema ~type_:kind ~kind ()
     | _ ->
         refuse at "is not one kind of id";
-        field "id" ~description:p.id.description ~type_:"" ()
+        field "id" ~schema ~type_:"" ()
   in
   let open_resource =
     [
       id;
-      field "name" ~description:p.name.description ~type_:"str"
-        ~stated:p.name.type_ ();
-      field "openedAt" ~description:p.opened_at.description ~type_:"int"
-        ~least:p.opened_at.minimum ~stated:p.opened_at.type_ ();
-      field "order" ~description:p.order.description ~type_:"int"
-        ~least:p.order.minimum ~stated:p.order.type_ ();
-      field "mediaType" ~description:p.media_type.description ~type_:"str"
-        ~stated:p.media_type.type_ ();
-      field "storageUri" ~description:p.storage_uri.description ~type_:"str"
-        ~stated:p.storage_uri.type_ ();
+      field "name" ~schema:(p "name") ~type_:"str" ();
+      field "openedAt" ~schema:(p "openedAt") ~type_:"int" ~least:true ();
+      field "order" ~schema:(p "order") ~type_:"int" ~least:true ();
+      field "mediaType" ~schema:(p "mediaType") ~type_:"str" ();
+      field "storageUri" ~schema:(p "storageUri") ~type_:"str" ();
     ]
   in
   List.iteri
@@ -190,15 +219,14 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
         refuse
           (Printf.sprintf "%s/required/%d" at_open i)
           (Printf.sprintf "is %s, which is not a property" name))
-    o.required;
-  let l = table.last_event_ids in
+    required;
+  let l = layer table.last_event_ids in
   let at_last = "/lastEventIds" in
-  if l.type_ <> "object" then refuse (at_last ^ "/type") "is not object";
-  if not (Sign_in.Flat.is_type_name l.title) then
-    refuse (at_last ^ "/title") "names no type";
-  if l.description = "" then refuse (at_last ^ "/description") "is empty";
+  if l.type_ <> Some [ Object ] then refuse (at_last ^ "/type") "is not object";
+  if not (named_type l) then refuse (at_last ^ "/title") "names no type";
+  if not (said l.description) then refuse (at_last ^ "/description") "is empty";
   let scope =
-    component (at_last ^ "/propertyNames/$ref") l.property_names.ref
+    component (at_last ^ "/propertyNames/$ref") (referred l.property_names)
   in
   if scope <> "" && not (List.mem scope kinds) then
     refuse
@@ -207,35 +235,48 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
   let place =
     component
       (at_last ^ "/additionalProperties/$ref")
-      l.additional_properties.ref
+      (referred l.additional_properties)
   in
   if table.whole_key.docs = "" then refuse "/wholeKey/docs" "is empty";
-  if table.cache_document.properties.version.description = "" then
-    refuse "/cacheDocument/properties/version/description" "is empty";
   (* A cache document is a version and its entries, each a key, a value and a
-     whole-number stamp; Haskell's reads it as no more than that. *)
-  let d = table.cache_document in
-  if d.type_ <> "object" then refuse "/cacheDocument/type" "is not object";
-  if d.required <> [ "version"; "entries" ] then
+     whole-number stamp; Haskell's reads it as no more than that. Its schema
+     is JSON here, for prefixItems is no keyword Schema reads. *)
+  let d pointer = Decode.at_pointer pointer table.cache_document in
+  let is pointer (json : Yojson.Safe.t) = d pointer = Some json in
+  (match d "/properties/version/description" with
+  | Some (`String text) when text <> "" -> ()
+  | _ -> refuse "/cacheDocument/properties/version/description" "is empty");
+  if not (is "/type" (`String "object")) then
+    refuse "/cacheDocument/type" "is not object";
+  if not (is "/required" (`List [ `String "version"; `String "entries" ])) then
     refuse "/cacheDocument/required"
       "is not the version, then the entries, which is all a cache document is";
-  let e = d.properties.entries in
-  if e.type_ <> "array" then
+  if not (is "/properties/entries/type" (`String "array")) then
     refuse "/cacheDocument/properties/entries/type" "is not array";
   let at_entry = "/cacheDocument/properties/entries/items" in
-  if e.items.type_ <> "array" then refuse (at_entry ^ "/type") "is not array";
-  if e.items.min_items <> 3 || e.items.max_items <> 3 then
-    refuse at_entry "is not exactly three items: a key, a value and a stamp";
-  (match e.items.prefix_items with
-  | [ key; value; stamp ] ->
+  let entry = "/properties/entries/items" in
+  if not (is (entry ^ "/type") (`String "array")) then
+    refuse (at_entry ^ "/type") "is not array";
+  if not (is (entry ^ "/minItems") (`Int 3) && is (entry ^ "/maxItems") (`Int 3))
+  then refuse at_entry "is not exactly three items: a key, a value and a stamp";
+  (match d (entry ^ "/prefixItems") with
+  | Some (`List [ key; value; stamp ]) ->
+      let has member (json : Yojson.Safe.t) =
+        match json with
+        | `Assoc members -> List.assoc_opt member members
+        | _ -> None
+      in
       List.iteri
-        (fun i (p : T.prefix_item) ->
-          if p.type_ <> None || p.minimum <> None then
+        (fun i item ->
+          if has "type" item <> None || has "minimum" item <> None then
             refuse
               (Printf.sprintf "%s/prefixItems/%d" at_entry i)
               "states a type, but an entry's key and value are any JSON")
         [ key; value ];
-      if stamp.type_ <> Some "integer" || stamp.minimum <> Some 0 then
+      if
+        has "type" stamp <> Some (`String "integer")
+        || has "minimum" stamp <> Some (`Int 0)
+      then
         refuse
           (at_entry ^ "/prefixItems/2")
           "is not a whole number of at least 0"
@@ -267,9 +308,41 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
     refuse ""
       (Cache_refresh.Table.file
      ^ " marks no query persisted, so a client keeps none");
+  let named (s : Schema.schema) =
+    {
+      title = Option.value ~default:"" s.title;
+      description = Option.value ~default:"" s.description;
+    }
+  in
+  let version =
+    match d "/properties/version/const" with
+    | Some (`Int version) -> version
+    | _ ->
+        refuse "/cacheDocument/properties/version/const"
+          "is no whole number, which a cache document's version is";
+        0
+  in
+  let version_description =
+    match d "/properties/version/description" with
+    | Some (`String text) -> text
+    | _ -> ""
+  in
   match (List.rev !refusals, session) with
   | [], Some session ->
-      Ok { table; session; open_resource; scope; place; kinds; kept }
+      Ok
+        {
+          table;
+          session;
+          open_resource_type = named o;
+          open_resource;
+          places = named l;
+          version;
+          version_description;
+          scope;
+          place;
+          kinds;
+          kept;
+        }
   | errors, _ -> Error errors
 
 let python t =
@@ -331,7 +404,7 @@ let python t =
   in
   let constants =
     List.map
-      (fun (k : T.key) -> (Text.upper_snake k.member, k.key, k.docs))
+      (fun (k : T.keys_item) -> (Text.upper_snake k.member, k.key, k.docs))
       table.keys
   in
   let exported =
@@ -348,8 +421,8 @@ let python t =
     @ List.sort compare
         [
           t.session.title;
-          table.open_resource.title;
-          table.last_event_ids.title;
+          t.open_resource_type.title;
+          t.places.title;
           "KeptQuery";
           "WholeKey";
         ]
@@ -409,8 +482,8 @@ let python t =
                   "LAST_EVENT_ID_KEY_PREFIX"
                   (P.Str table.last_event_id_key_prefix.prefix);
                 P.alias
-                  ~about:[ Prose table.last_event_ids.description ]
-                  table.last_event_ids.title
+                  ~about:[ Prose t.places.description ]
+                  t.places.title
                   (P.sub "dict"
                      [ P.item (P.Name t.scope); P.item (P.Name t.place) ]);
                 constant ~about:table.cache_key_prefix.docs "CACHE_KEY_PREFIX"
@@ -450,13 +523,12 @@ let python t =
                       ~annotation:(P.sub "Final" [ P.item (P.Name "WholeKey") ])
                       ~value:whole;
                   ];
-                constant
-                  ~about:table.cache_document.properties.version.description
-                  "CACHE_DOCUMENT_VERSION"
-                  (P.Int table.cache_document.properties.version.const);
+                constant ~about:t.version_description "CACHE_DOCUMENT_VERSION"
+                  (P.Int t.version);
                 model t.session.title t.session.description
                   (List.map session_field t.session.fields);
-                model table.open_resource.title table.open_resource.description
+                model t.open_resource_type.title
+                  t.open_resource_type.description
                   (List.map field t.open_resource);
               ];
         };
@@ -508,8 +580,7 @@ let haskell t =
               H.value "wholeKey" (T_name "Text")
                 ~about:[ t.table.whole_key.docs ] (Str t.table.whole_key.key);
               H.value "cacheDocumentVersion" (T_name "Integer")
-                ~about:[ t.table.cache_document.properties.version.description ]
-                (Int t.table.cache_document.properties.version.const);
+                ~about:[ t.version_description ] (Int t.version);
             ];
         };
   }
@@ -530,7 +601,8 @@ let haskell_keys (table : T.t) =
           imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
           body =
             List.map
-              (fun (k : T.key) -> H.value k.member (T_name "Text") (Str k.key))
+              (fun (k : T.keys_item) ->
+                H.value k.member (T_name "Text") (Str k.key))
               table.keys
             @ List.map
                 (fun (name, prefix) ->

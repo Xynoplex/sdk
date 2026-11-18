@@ -2,7 +2,7 @@
    an enum per vocabulary, named as Go names its type, each value as the wire
    spells it; the transport code each HTTP status becomes; and the bus code
    each of the wire's own codes (CommandError.code, in its enum's order,
-   [wire_codes]) becomes, as an exhaustive [when] over the type the Kotlin
+   [Table.wire_codes]) becomes, as an exhaustive [when] over the type the Kotlin
    types give CommandError's code. *)
 
 module K = Kotlin_syntax
@@ -40,7 +40,7 @@ let vocabulary ~docs (v : Table.vocabulary) =
 
 let member type_ (c : Table.code) = K.Member (K.Name type_, variant c.code)
 
-let file ~(types : Kotlin_sdk.Types.spec) ~wire_codes (t : Table.t) =
+let file ~(types : Kotlin_sdk.Types.spec) (t : Table.t) =
   let code_type =
     Kotlin_sdk.Types.value_type_of types ~component:"CommandError"
       ~member:(Some "code")
@@ -123,7 +123,7 @@ let file ~(types : Kotlin_sdk.Types.spec) ~wire_codes (t : Table.t) =
                             ];
                           result = member bus (List.assoc wire t.wire);
                         })
-                      wire_codes;
+                      Table.wire_codes;
                 }));
         K.property
           ~about:

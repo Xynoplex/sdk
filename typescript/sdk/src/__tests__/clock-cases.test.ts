@@ -8,7 +8,7 @@
  * so a wait ends at the instant it was set to end, or the case fails. What the
  * table may say is held by its schema,
  * protocol/specs/src/client/ClientClockCases.json, which
- * protocol/scripts/checks/specs/check-tables.mjs holds it to.
+ * Protocol's reader, protocol/reader, holds it to.
  */
 
 import { readFileSync } from 'node:fs';

@@ -15,7 +15,7 @@ let file ~from_ (t : T.t) =
   Kotlin_sdk.table ~from_ __FILE__ ~package:"xynolog.signin"
     ~name:"OAuthClients" ~imports:[ "xynolog.Generated" ]
     (List.map
-       (fun (c : T.client) ->
+       (fun (c : T.clients_item) ->
          constant ~docs:c.docs
            (Kotlin_sdk.Names.constant_name c.name ^ "_CLIENT_ID")
            c.id)
