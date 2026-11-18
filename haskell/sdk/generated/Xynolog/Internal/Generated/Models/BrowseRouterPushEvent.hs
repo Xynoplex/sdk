@@ -1,15 +1,21 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.BrowseRouterPushEvent (BrowseRouterPushEvent(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import qualified Data.Aeson.KeyMap as KM
+
+module Xynolog.Internal.Generated.Models.BrowseRouterPushEvent (BrowseRouterPushEvent (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
+import Data.Aeson.KeyMap qualified as KM
 import Data.Text (Text)
 import Xynolog.Internal.Codec
+
 data BrowseRouterPushEvent = BrowseRouterPushEvent
-  { browseRouterPushEventPath :: Text
-  , browseRouterPushEventReason :: Maybe Text
-  , browseRouterPushEventAdditionalProperties :: KM.KeyMap Value
-  } deriving (Eq, Show)
+  { browseRouterPushEventPath :: Text,
+    browseRouterPushEventReason :: Maybe Text,
+    browseRouterPushEventAdditionalProperties :: KM.KeyMap Value
+  }
+  deriving (Eq, Show)
+
 instance FromJSON BrowseRouterPushEvent where parseJSON = checked "BrowseRouterPushEvent" $ withObject "BrowseRouterPushEvent" (\fields -> BrowseRouterPushEvent <$> (fields .: "path") <*> optional fields "reason" <*> traverse parseJSON (withoutFields ["path", "reason"] fields))
+
 instance ToJSON BrowseRouterPushEvent where toJSON value = Object (KM.fromList (concat [[("path", toJSON (browseRouterPushEventPath value))], optionalPair "reason" (browseRouterPushEventReason value)]) <> fmap toJSON (withoutFields ["path", "reason"] (browseRouterPushEventAdditionalProperties value)))

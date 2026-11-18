@@ -1,31 +1,44 @@
 module Xynolog.Internal.Broadcast
-  ( Broadcast, Subscription, newEvents, newKeptEvents, newState, withSubscription, next, relay, publish, close
-  ) where
+  ( Broadcast,
+    Subscription,
+    newEvents,
+    newKeptEvents,
+    newState,
+    withSubscription,
+    next,
+    relay,
+    publish,
+    close,
+  )
+where
 
 import Control.Concurrent.STM
 import Control.Exception (bracket)
 import Control.Monad (unless)
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict qualified as Map
 import Data.Sequence (Seq, (|>))
-import qualified Data.Sequence as Seq
+import Data.Sequence qualified as Seq
 import Xynolog.Timing (errorsKeptForFirstReaderCount)
 
 data Broadcast value = Broadcast (TVar (Contents value))
+
 data Contents value = Contents
-  { nextKey :: Integer
-  , readers :: Map.Map Integer (value -> STM ())
-  -- ^ How each reader takes what is published: into its subscription's
-  -- queue, or, for a relay, on within the transaction that publishes it.
-  , latest :: !(Maybe value)
-  , unread :: !(Unread value)
-  -- ^ Both strict, as the parts of 'Unread' are: what a publication replaces
-  -- or drops is let go as it is published, and not held by what replaced it.
-  , stopped :: Bool
+  { nextKey :: Integer,
+    -- | How each reader takes what is published: into its subscription's
+    -- queue, or, for a relay, on within the transaction that publishes it.
+    readers :: Map.Map Integer (value -> STM ()),
+    latest :: !(Maybe value),
+    -- | Both strict, as the parts of 'Unread' are: what a publication replaces
+    -- or drops is let go as it is published, and not held by what replaced it.
+    unread :: !(Unread value),
+    stopped :: Bool
   }
+
 -- | What is kept for the first reader while none has subscribed: the latest
 -- published, oldest first, at most the count; nothing once one has or the
 -- broadcast has closed, and nothing ever for events that keep nothing for one.
 data Unread value = Keeping !Int !(Seq value) | Unkept
+
 data Subscription value = Subscription (Broadcast value) Integer (TQueue value) (TVar Bool)
 
 newEvents :: STM (Broadcast value)
@@ -48,14 +61,21 @@ admit (Broadcast cell) hand = do
   current <- readTVar cell
   let key = nextKey current
   mapM_ hand (latest current)
-  case unread current of Keeping _ kept -> mapM_ hand kept; Unkept -> pure ()
-  writeTVar cell current { unread = Unkept }
-  unless (stopped current) $ modifyTVar' cell (\held -> held
-    { nextKey = key + 1, readers = Map.insert key hand (readers held) })
+  case unread current of { Keeping _ kept -> mapM_ hand kept; Unkept -> pure () }
+  writeTVar cell current {unread = Unkept}
+  unless (stopped current) $
+    modifyTVar'
+      cell
+      ( \held ->
+          held
+            { nextKey = key + 1,
+              readers = Map.insert key hand (readers held)
+            }
+      )
   pure key
 
 leave :: Broadcast value -> Integer -> STM ()
-leave (Broadcast cell) key = modifyTVar' cell (\current -> current { readers = Map.delete key (readers current) })
+leave (Broadcast cell) key = modifyTVar' cell (\current -> current {readers = Map.delete key (readers current)})
 
 subscribe :: Broadcast value -> STM (Subscription value)
 subscribe broadcast = do
@@ -76,13 +96,15 @@ withSubscription broadcast = bracket (atomically (subscribe broadcast)) (atomica
 next :: Subscription value -> STM (Maybe value)
 next (Subscription (Broadcast cell) _ queue cancelled) = do
   abandoned <- readTVar cancelled
-  if abandoned then pure Nothing else do
-    queued <- tryReadTQueue queue
-    case queued of
-      Just value -> pure (Just value)
-      Nothing -> do
-        current <- readTVar cell
-        if stopped current then pure Nothing else retry
+  if abandoned
+    then pure Nothing
+    else do
+      queued <- tryReadTQueue queue
+      case queued of
+        Just value -> pure (Just value)
+        Nothing -> do
+          current <- readTVar cell
+          if stopped current then pure Nothing else retry
 
 -- | Hands @hand@ what a new subscriber is given, and then each value
 -- published, within the transaction that publishes it: before whoever
@@ -95,7 +117,7 @@ publish :: Broadcast value -> value -> STM ()
 publish (Broadcast cell) value = do
   current <- readTVar cell
   unless (stopped current) $ do
-    writeTVar cell current { latest = replacing value (latest current), unread = keep value (unread current) }
+    writeTVar cell current {latest = replacing value (latest current), unread = keep value (unread current)}
     mapM_ ($ value) (readers current)
 
 -- | @value@ in place of the latest, for broadcasts that keep one.
@@ -112,4 +134,4 @@ keep _ Unkept = Unkept
 -- who subscribes after is handed the latest, for state, and nothing kept for
 -- a first reader.
 close :: Broadcast value -> STM ()
-close (Broadcast cell) = modifyTVar' cell (\current -> current { stopped = True, readers = Map.empty, unread = Unkept })
+close (Broadcast cell) = modifyTVar' cell (\current -> current {stopped = True, readers = Map.empty, unread = Unkept})

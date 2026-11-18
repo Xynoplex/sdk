@@ -2,4 +2,4 @@
 
 (library
  (name xynolog_codegen)
- (libraries yojson))
+ (libraries yojson compiler-libs.common ocamlformat-lib))

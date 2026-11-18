@@ -1,14 +1,20 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.MediaTokenRequest (MediaTokenRequest(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import qualified Data.Aeson.KeyMap as KM
+
+module Xynolog.Internal.Generated.Models.MediaTokenRequest (MediaTokenRequest (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
+import Data.Aeson.KeyMap qualified as KM
 import Xynolog.Internal.Codec
 import Xynolog.Internal.Generated.Models.ResourceId
+
 data MediaTokenRequest = MediaTokenRequest
-  { mediaTokenRequestResourceId :: ResourceId
-  , mediaTokenRequestAdditionalProperties :: KM.KeyMap Value
-  } deriving (Eq, Show)
+  { mediaTokenRequestResourceId :: ResourceId,
+    mediaTokenRequestAdditionalProperties :: KM.KeyMap Value
+  }
+  deriving (Eq, Show)
+
 instance FromJSON MediaTokenRequest where parseJSON = checked "MediaTokenRequest" $ withObject "MediaTokenRequest" (\fields -> MediaTokenRequest <$> (fields .: "resourceId") <*> traverse parseJSON (withoutFields ["resourceId"] fields))
+
 instance ToJSON MediaTokenRequest where toJSON value = Object (KM.fromList (concat [[("resourceId", toJSON (mediaTokenRequestResourceId value))]]) <> fmap toJSON (withoutFields ["resourceId"] (mediaTokenRequestAdditionalProperties value)))

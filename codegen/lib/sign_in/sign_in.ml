@@ -89,6 +89,22 @@ let go_owner_only (o : Owner_only.t) =
          ~doc:(G.prose (name ^ ": " ^ m.docs))
          ~type_:(G.Named "os.FileMode") name (G.Octal m.octal))
   in
+  let access_list name (l : Owner_only.access_list) =
+    G.func
+      ~doc:(G.prose (name ^ ": " ^ l.docs))
+      ~params:[ ("owner", G.Named "string") ]
+      ~results:(G.Unnamed [ G.Named "string" ]) name
+      (G.Block
+         [
+           G.Return
+             [
+               G.Binary
+                 ( G.Binary (G.Quoted l.before, G.Add, G.Name "owner"),
+                   G.Add,
+                   G.Quoted l.after );
+             ];
+         ])
+  in
   {
     Output.path = "go/owneronly_gen.go";
     text =
@@ -105,24 +121,8 @@ let go_owner_only (o : Owner_only.t) =
             [
               mode "OwnerOnlyDirMode" o.directory;
               mode "OwnerOnlyFileMode" o.file;
-              G.func
-                ~doc:(G.prose ("OwnerOnlyDirAccessList: " ^ o.access_list.docs))
-                ~params:[ ("owner", G.Named "string") ]
-                ~results:(G.Unnamed [ G.Named "string" ])
-                "OwnerOnlyDirAccessList"
-                (G.Block
-                   [
-                     G.Return
-                       [
-                         G.Binary
-                           ( G.Binary
-                               ( G.Quoted o.access_list.before,
-                                 G.Add,
-                                 G.Name "owner" ),
-                             G.Add,
-                             G.Quoted o.access_list.after );
-                       ];
-                   ]);
+              access_list "OwnerOnlyDirAccessList" o.directory_access_list;
+              access_list "OwnerOnlyFileAccessList" o.file_access_list;
             ];
         };
   }
@@ -237,17 +237,17 @@ let python_owner_only (o : Owner_only.t) =
                   name = "access_list";
                   params = [ ("owner", P.Name "str") ];
                   returns = P.Name "str";
-                  doc = Some (Wrapped o.access_list.docs);
+                  doc = Some (Wrapped o.directory_access_list.docs);
                   body =
                     [
                       P.Return
                         (P.Binary
                            ( P.Binary
-                               ( P.Str o.access_list.before,
+                               ( P.Str o.directory_access_list.before,
                                  P.Add,
                                  P.Name "owner" ),
                              P.Add,
-                             P.Str o.access_list.after ));
+                             P.Str o.directory_access_list.after ));
                     ];
                 };
             ];
@@ -317,7 +317,7 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
               constant "OWNER_ONLY_FILE_MODE" o.file.docs (Octal o.file.octal);
               S.Function
                 {
-                  about = [ Doc o.access_list.docs ];
+                  about = [ Doc o.directory_access_list.docs ];
                   export = true;
                   name = "ownerOnlyAccessList";
                   params = [ { name = "owner"; type_ = T_name "string" } ];
@@ -327,11 +327,11 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
                       Return
                         (Binary
                            ( Binary
-                               ( Str (Double, o.access_list.before),
+                               ( Str (Double, o.directory_access_list.before),
                                  Plus,
                                  Name "owner" ),
                              Plus,
-                             Str (Double, o.access_list.after) ));
+                             Str (Double, o.directory_access_list.after) ));
                     ];
                 };
               constant "SIGN_IN_STORE_FILE"
@@ -355,13 +355,15 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
 let ocaml_owner_only (o : Owner_only.t) =
   List.map
     (fun dir ->
-      {
-        Output.path = "ocaml/sdk/" ^ dir ^ "/store_policy.ml";
-        text =
-          Banner.ocaml ~from_:"sign-in-store/owner-only.json" __FILE__
-          ^ "let directory_mode = 0o" ^ o.directory.octal
-          ^ "\nlet file_mode = 0o" ^ o.file.octal ^ "\n";
-      })
+      Ocaml_syntax.implementation
+        ~path:("ocaml/sdk/" ^ dir ^ "/store_policy.ml")
+        ~banner:(Banner.ocaml ~from_:"sign-in-store/owner-only.json" __FILE__)
+        [
+          Ocaml_syntax.let_ "directory_mode"
+            (Ocaml_syntax.integer ("0o" ^ o.directory.octal));
+          Ocaml_syntax.let_ "file_mode"
+            (Ocaml_syntax.integer ("0o" ^ o.file.octal));
+        ])
     [ "lib"; "probes" ]
 
 (* What the Haskell SDK's native store binding holds the store to
@@ -372,7 +374,10 @@ let ocaml_owner_only (o : Owner_only.t) =
 let haskell (o : Owner_only.t) (names : Contract.t) =
   let module H = Haskell_syntax in
   let generated = "haskell/sdk/generated/Xynolog/Internal/Generated/" in
-  let access = o.access_list.before ^ Owner_only.owner ^ o.access_list.after in
+  let access =
+    o.directory_access_list.before ^ Owner_only.owner
+    ^ o.directory_access_list.after
+  in
   let c_string text =
     "\""
     ^ String.concat ""
@@ -386,7 +391,7 @@ let haskell (o : Owner_only.t) (names : Contract.t) =
       [
         {
           Decode.file = Owner_only.file;
-          pointer = "/accessList/value";
+          pointer = "/directoryAccessList/value";
           message = "is not ASCII, which the native binding's access list is";
         };
       ]
@@ -405,8 +410,8 @@ let haskell (o : Owner_only.t) (names : Contract.t) =
                 "#define XYNOLOG_FILE_MODE 0" ^ o.file.octal;
                 "#define XYNOLOG_ACCESS_LIST "
                 ^ c_string
-                    (o.access_list.before ^ Owner_only.owner
-                   ^ o.access_list.after);
+                    (o.directory_access_list.before ^ Owner_only.owner
+                   ^ o.directory_access_list.after);
                 "#define XYNOLOG_LOCK_HIGH 0x" ^ names.offset_high;
                 "#define XYNOLOG_LOCK_BYTES 1";
               ]

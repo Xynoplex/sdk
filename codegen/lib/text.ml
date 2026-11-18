@@ -57,6 +57,29 @@ let wrapped ~lead ~width text =
   in
   List.rev (if last = "" then lines else last :: lines)
 
+(* Prose as a spec states it: paragraphs, each a text of words or a list of
+   items. *)
+type paragraph = Words of string | Items of string list
+
+(* [paragraphs] as comment lines behind [lead], within [width]: each
+   paragraph's words wrapped, an item's first line behind ["- "] and its
+   others behind two spaces, and an empty line between paragraphs. *)
+let paragraphs ~lead ~width paragraphs =
+  let item text =
+    match wrapped ~lead:(lead ^ "  ") ~width text with
+    | first :: rest -> ("- " ^ first) :: List.map (fun l -> "  " ^ l) rest
+    | [] -> []
+  in
+  List.concat
+    (List.mapi
+       (fun i paragraph ->
+         (if i > 0 then [ "" ] else [])
+         @
+         match paragraph with
+         | Words text -> wrapped ~lead ~width text
+         | Items items -> List.concat_map item items)
+       paragraphs)
+
 let replace_all ~sub ~by text =
   let n = String.length sub and length = String.length text in
   let out = Buffer.create length in
@@ -190,20 +213,4 @@ let snake name =
       | _ -> ());
       Buffer.add_char out (Char.lowercase_ascii c))
     name;
-  Buffer.contents out
-
-(* A string as an OCaml literal: printable ASCII as itself, and a quote, a
-   backslash and every other byte by its decimal escape, so no byte of UTF-8
-   reads two ways. *)
-let ocaml_quoted text =
-  let out = Buffer.create (String.length text + 2) in
-  Buffer.add_char out '"';
-  String.iter
-    (fun c ->
-      match Char.code c with
-      | code when code >= 32 && code < 127 && c <> '"' && c <> '\\' ->
-          Buffer.add_char out c
-      | code -> Buffer.add_string out (Printf.sprintf "\\%03d" code))
-    text;
-  Buffer.add_char out '"';
   Buffer.contents out

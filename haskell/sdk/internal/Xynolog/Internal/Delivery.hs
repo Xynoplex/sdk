@@ -1,23 +1,45 @@
 module Xynolog.Internal.Delivery
-  ( Hub, newHub, withFrames, publish, closeHub, onFrameSTM
-  , Replies, PendingReply, CorrelationConflict(..), newReplies, withReply, awaitReply
-  , awaited, deliver, closeReplies
-  ) where
+  ( Hub,
+    newHub,
+    withFrames,
+    publish,
+    closeHub,
+    onFrameSTM,
+    Replies,
+    PendingReply,
+    CorrelationConflict (..),
+    newReplies,
+    withReply,
+    awaitReply,
+    awaited,
+    deliver,
+    closeReplies,
+  )
+where
 
 import Control.Concurrent.STM
 import Control.Exception (Exception, bracket)
 import Control.Monad (forM_, unless)
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Data.Text (Text)
-import qualified Xynolog.Internal.Broadcast as Broadcast
+import Xynolog.Internal.Broadcast qualified as Broadcast
 
-data Hub frame = Hub (frame -> Text) (TVar (Bool, Map.Map Text (Broadcast.Broadcast frame)))
-  (TVar (Map.Map Integer (frame -> STM ()))) (TVar Integer)
+data Hub frame
+  = Hub
+      (frame -> Text)
+      (TVar (Bool, Map.Map Text (Broadcast.Broadcast frame)))
+      (TVar (Map.Map Integer (frame -> STM ())))
+      (TVar Integer)
+
 instance Eq (Hub frame) where Hub _ left _ _ == Hub _ right _ _ = left == right
+
 data PendingReply frame = PendingReply Integer (Set.Set Text) (TMVar (Maybe frame))
+
 data Replies frame = Replies (frame -> Text) (frame -> Maybe Text) (TVar (Bool, Integer, Map.Map Text (PendingReply frame)))
+
 data CorrelationConflict = CorrelationConflict deriving (Eq, Show)
+
 instance Exception CorrelationConflict
 
 newHub :: (frame -> Text) -> STM (Hub frame)
@@ -30,7 +52,8 @@ channel (Hub _ cell _ _) name = do
     Just events -> pure events
     Nothing -> do
       events <- Broadcast.newEvents
-      if closed then Broadcast.close events
+      if closed
+        then Broadcast.close events
         else writeTVar cell (closed, Map.insert name events channels)
       pure events
 
@@ -44,12 +67,14 @@ withFrames hub name consume = do
 onFrameSTM :: Hub frame -> (frame -> STM ()) -> IO (IO ())
 onFrameSTM (Hub _ cell hooks counter) action = do
   release <- atomically $ do
-    (closed,_) <- readTVar cell
-    if closed then pure (pure ()) else do
-      key <- readTVar counter
-      writeTVar counter (key+1)
-      modifyTVar' hooks (Map.insert key action)
-      pure (modifyTVar' hooks (Map.delete key))
+    (closed, _) <- readTVar cell
+    if closed
+      then pure (pure ())
+      else do
+        key <- readTVar counter
+        writeTVar counter (key + 1)
+        modifyTVar' hooks (Map.insert key action)
+        pure (modifyTVar' hooks (Map.delete key))
   pure (atomically release)
 
 publish :: Hub frame -> frame -> STM ()
@@ -73,19 +98,24 @@ newReplies named correlated = Replies named correlated <$> newTVar (False, 0, Ma
 track :: Replies frame -> Text -> Set.Set Text -> STM (PendingReply frame)
 track (Replies _ _ cell) correlation channels = do
   (closed, generation, pending) <- readTVar cell
-  if Map.member correlation pending then throwSTM CorrelationConflict else do
-    result <- newEmptyTMVar
-    let reply = PendingReply generation channels result
-    if closed then putTMVar result Nothing else
-      writeTVar cell (False, generation + 1, Map.insert correlation reply pending)
-    pure reply
+  if Map.member correlation pending
+    then throwSTM CorrelationConflict
+    else do
+      result <- newEmptyTMVar
+      let reply = PendingReply generation channels result
+      if closed
+        then putTMVar result Nothing
+        else
+          writeTVar cell (False, generation + 1, Map.insert correlation reply pending)
+      pure reply
 
 forget :: Replies frame -> Text -> PendingReply frame -> STM ()
 forget (Replies _ _ cell) correlation (PendingReply generation _ _) = do
   (closed, counter, pending) <- readTVar cell
   case Map.lookup correlation pending of
-    Just (PendingReply current _ _) | current == generation ->
-      writeTVar cell (closed, counter, Map.delete correlation pending)
+    Just (PendingReply current _ _)
+      | current == generation ->
+          writeTVar cell (closed, counter, Map.delete correlation pending)
     _ -> pure ()
 
 withReply :: Replies frame -> Text -> Set.Set Text -> (PendingReply frame -> IO value) -> IO value

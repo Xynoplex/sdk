@@ -725,6 +725,10 @@ make test-haskell
 CI runs the same target. Exact project
 dependencies are frozen in [the freeze file](cabal.project.freeze). Ordinary
 builds use checked-in generated files and require no npm or schema generation.
+The target checks that every module, generated or written by hand, is laid
+out as ormolu lays it out. Ormolu and what it is built from are pinned by
+[its own freeze file](../toolchain/ormolu/cabal.project.freeze); run
+`ormolu -i` over a module to lay it out.
 
 The target builds `conformance/bin/xynolog-haskell-wire-driver` and
 `conformance/bin/xynolog-haskell-live-driver`. The shared

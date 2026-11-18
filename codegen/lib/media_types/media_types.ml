@@ -508,20 +508,26 @@ let haskell (t : T.t) (encodings : Encodings.Table.t) =
 (* Each type as the OCaml SDK reads it (ocaml/sdk/lib/media_facts.ml): its
    extension, whether a person authors one, and how its text is had. *)
 let ocaml (t : T.t) =
-  let string = Text.ocaml_quoted in
-  {
-    Output.path = "ocaml/sdk/lib/media_facts.ml";
-    text =
-      Banner.ocaml ~from_:file __FILE__
-      ^ "let types = ["
-      ^ String.concat "; "
-          (List.map
-             (fun (m : T.media_type) ->
-               Printf.sprintf "(%s, (%s, %b, %s))" (string m.media_type)
-                 (string m.extension) m.authorable (string m.text_source))
-             t.media_types)
-      ^ "]\n";
-  }
+  let module O = Ocaml_syntax in
+  O.implementation ~path:"ocaml/sdk/lib/media_facts.ml"
+    ~banner:(Banner.ocaml ~from_:file __FILE__)
+    [
+      O.let_ "types"
+        (O.list
+           (List.map
+              (fun (m : T.media_type) ->
+                O.tuple
+                  [
+                    O.string m.media_type;
+                    O.tuple
+                      [
+                        O.string m.extension;
+                        O.bool m.authorable;
+                        O.string m.text_source;
+                      ];
+                  ])
+              t.media_types));
+    ]
 
 (* The registry as the Rust SDK reads it (rust/sdk/src/media_types.rs): an
    enum per vocabulary, a row per media type in the registry's order, and

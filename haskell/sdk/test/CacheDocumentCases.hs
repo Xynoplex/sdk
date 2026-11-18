@@ -1,4 +1,7 @@
-{-# LANGUAGE OverloadedStrings, RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- | protocol/specs/src/session/cache-cases.json, run through each kept query's
 -- own persister over an in-memory storage, under the keys session/stored.json
 -- gives.
@@ -6,33 +9,35 @@ module CacheDocumentCases (cacheDocumentCases) where
 
 import Control.Concurrent.STM (STM, atomically, check, newTVarIO, readTVar, retry, writeTVar)
 import Control.Monad (forM, forM_, unless, when)
-import Data.Aeson (FromJSON, ToJSON, Result(..), Value(..), eitherDecodeStrict', encode, fromJSON, parseJSON, toJSON)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString as Bytes
-import qualified Data.ByteString.Lazy as Lazy
+import Data.Aeson (FromJSON, Result (..), ToJSON, Value (..), eitherDecodeStrict', encode, fromJSON, parseJSON, toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString qualified as Bytes
+import Data.ByteString.Lazy qualified as Lazy
 import Data.Foldable (toList)
-import qualified Data.Map.Strict as Map
-import Data.Proxy (Proxy(..))
+import Data.Map.Strict qualified as Map
+import Data.Proxy (Proxy (..))
 import Data.Scientific (floatingOrInteger)
 import Data.Text (Text)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
-import qualified Xynolog.Cache as Cache
-import qualified Xynolog.Internal.Coupled as Coupled
-import qualified Xynolog.Internal.Persistence as Persistence
-import Xynolog.Internal.CacheDocument (Whole)
-import Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName)
-import qualified Xynolog.Internal.Generated.CacheRefresh as Fact
-import qualified Xynolog.Internal.Kept as Kept
-import qualified Xynolog.SessionStorage as Storage
-import qualified Xynolog.Timing.Settings as Timing
-import Xynolog.Types (AnnotationId, ResourceId, resourceIdValue)
 import System.FilePath ((</>))
 import System.Timeout (timeout)
+import Xynolog.Cache qualified as Cache
+import Xynolog.Internal.CacheDocument (Whole)
+import Xynolog.Internal.Coupled qualified as Coupled
+import Xynolog.Internal.Generated.CachePersistence (KeptQuery (..), keptQueryName)
+import Xynolog.Internal.Generated.CacheRefresh qualified as Fact
+import Xynolog.Internal.Kept qualified as Kept
+import Xynolog.Internal.Persistence qualified as Persistence
+import Xynolog.SessionStorage qualified as Storage
+import Xynolog.Timing.Settings qualified as Timing
+import Xynolog.Types (AnnotationId, ResourceId, resourceIdValue)
 
-type Using result = forall key value. (ToJSON key, FromJSON key, ToJSON value, FromJSON value, Eq value)
-  => Proxy key -> Proxy value -> IO result
+type Using result =
+  forall key value.
+  (ToJSON key, FromJSON key, ToJSON value, FromJSON value, Eq value) =>
+  Proxy key -> Proxy value -> IO result
 
 -- | What each kept query's cache is keyed by and holds.
 kept :: KeptQuery -> Using result -> IO result
@@ -61,7 +66,7 @@ listOf :: Text -> Value -> IO [Value]
 listOf _ (Array values) = pure (toList values)
 listOf name _ = failure name "states no list"
 
-decoded :: FromJSON value => Text -> Value -> IO value
+decoded :: (FromJSON value) => Text -> Value -> IO value
 decoded name value = case fromJSON value of
   Success parsed -> pure parsed
   Error reason -> failure name ("holds a value that is not the query's: " ++ reason)
@@ -79,11 +84,15 @@ asMap :: [(Value, Value)] -> Map.Map Text Value
 asMap pairs = Map.fromList [(decodeUtf8 (Lazy.toStrict (encode key)), value) | (key, value) <- pairs]
 
 pairsOf :: Text -> Value -> IO [(Value, Value)]
-pairsOf name entries = listOf name entries >>= traverse (\entry -> do
-  parts <- listOf name entry
-  case parts of
-    [key, value] -> pure (key, value)
-    _ -> failure name "states an entry that is not a key and a value")
+pairsOf name entries =
+  listOf name entries
+    >>= traverse
+      ( \entry -> do
+          parts <- listOf name entry
+          case parts of
+            [key, value] -> pure (key, value)
+            _ -> failure name "states an entry that is not a key and a value"
+      )
 
 -- | The case's query, and the key its document is kept under, by the case's own name for it.
 queryOf :: Text -> Value -> IO (KeptQuery, Text)
@@ -94,12 +103,17 @@ queryOf name row = do
     _ -> failure name ("names " ++ Text.unpack queryName ++ ", no kept query")
 
 -- | The persister the client gives a kept query; its host's clock is not in whole milliseconds.
-persisterOf :: (ToJSON key, FromJSON key, ToJSON value, FromJSON value)
-  => Storage.SessionStorage -> KeptQuery -> IO (Cache.CachePersister key value)
+persisterOf ::
+  (ToJSON key, FromJSON key, ToJSON value, FromJSON value) =>
+  Storage.SessionStorage -> KeptQuery -> IO (Cache.CachePersister key value)
 persisterOf storage query = do
   coupled <- Coupled.newCoupled storage (Kept.lastEventIdKey kb person)
-  Persistence.persister (Persistence.CachePersistence storage kb person (pure 1800000000000.6)) coupled
-    Timing.protocolSettings query (\key _ -> parseJSON key)
+  Persistence.persister
+    (Persistence.CachePersistence storage kb person (pure 1800000000000.6))
+    coupled
+    Timing.protocolSettings
+    query
+    (\key _ -> parseJSON key)
 
 loadCase :: Value -> IO ()
 loadCase row = do
@@ -107,10 +121,14 @@ loadCase row = do
   (query, key) <- queryOf name row
   storage <- Storage.newMemoryStorage
   storedText name row >>= Storage.set storage key
-  loaded <- kept query (\(_ :: Proxy key) (_ :: Proxy value) -> do
-    persister <- persisterOf storage query :: IO (Cache.CachePersister key value)
-    entries <- Cache.load persister
-    pure [(toJSON identity, toJSON value) | (identity, value) <- entries])
+  loaded <-
+    kept
+      query
+      ( \(_ :: Proxy key) (_ :: Proxy value) -> do
+          persister <- persisterOf storage query :: IO (Cache.CachePersister key value)
+          entries <- Cache.load persister
+          pure [(toJSON identity, toJSON value) | (identity, value) <- entries]
+      )
   expected <- member name "kept" row >>= pairsOf name
   unless (asMap loaded == asMap expected) (failure name ("kept " ++ show loaded))
 
@@ -119,14 +137,19 @@ loadCase row = do
 holding :: Text -> Value -> KeptQuery -> Storage.SessionStorage -> (Integer -> IO ()) -> (STM Bool -> IO ()) -> IO ()
 holding name row query storage wait between = do
   held <- member name "held" row >>= pairsOf name
-  kept query (\(_ :: Proxy key) (_ :: Proxy value) -> do
-    persister <- persisterOf storage query :: IO (Cache.CachePersister key value)
-    values <- forM held (\(identity, value) -> (,) <$> decoded name identity <*> decoded name value) :: IO [(key, value)]
-    cache <- Cache.newCache (\_ -> failure name "asked the wire")
-      (Cache.CacheOptions (pure 0) wait 0 (Just persister) (const (pure (pure ()))))
-    forM_ values (uncurry (Cache.set cache))
-    between (Cache.persistencePending cache)
-    Cache.dispose cache)
+  kept
+    query
+    ( \(_ :: Proxy key) (_ :: Proxy value) -> do
+        persister <- persisterOf storage query :: IO (Cache.CachePersister key value)
+        values <- forM held (\(identity, value) -> (,) <$> decoded name identity <*> decoded name value) :: IO [(key, value)]
+        cache <-
+          Cache.newCache
+            (\_ -> failure name "asked the wire")
+            (Cache.CacheOptions (pure 0) wait 0 (Just persister) (const (pure (pure ()))))
+        forM_ values (uncurry (Cache.set cache))
+        between (Cache.persistencePending cache)
+        Cache.dispose cache
+    )
 
 -- | Disposal's flush is the only save: the debounce never ends.
 writeCase :: Value -> IO ()
@@ -148,8 +171,13 @@ refusedWriteCase row = do
   let refuses written = when (written == key) $ do
         first <- atomically (readTVar refused >>= \done -> if done then pure False else True <$ writeTVar refused True)
         when first (ioError (userError "the storage refuses the first write of the query's document"))
-      storage = Storage.SessionStorage (Storage.get memory) (\written value -> refuses written >> Storage.set memory written value)
-        (Storage.delete memory) (\written change -> refuses written >> Storage.update memory written change) (Storage.subscribe memory)
+      storage =
+        Storage.SessionStorage
+          (Storage.get memory)
+          (\written value -> refuses written >> Storage.set memory written value)
+          (Storage.delete memory)
+          (\written change -> refuses written >> Storage.update memory written change)
+          (Storage.subscribe memory)
   outcome <- timeout 10000000 $ holding name row query storage (const (pure ())) $ \owes -> do
     atomically (readTVar refused >>= check)
     pending <- atomically owes
@@ -183,16 +211,18 @@ placesCase row = do
   storedText name row >>= Storage.set storage (Kept.lastEventIdKey kb person)
   coupled <- Coupled.newCoupled storage (Kept.lastEventIdKey kb person)
   loaded <- Coupled.loadPositions coupled
-  expected <- member name "kept" row >>= \value -> case value of
-    Object fields -> forM (KM.toList fields) (\(scope, place) -> (,) (Key.toText scope) <$> textOf name place)
-    _ -> failure name "keeps no object"
+  expected <-
+    member name "kept" row >>= \value -> case value of
+      Object fields -> forM (KM.toList fields) (\(scope, place) -> (,) (Key.toText scope) <$> textOf name place)
+      _ -> failure name "keeps no object"
   let held = Map.fromList [(resourceIdValue scope, place) | (scope, place) <- Map.toList loaded]
   unless (held == Map.fromList expected) (failure name ("kept " ++ show held))
 
 cacheDocumentCases :: FilePath -> IO ()
 cacheDocumentCases root = do
-  table <- Bytes.readFile (root </> "protocol/specs/src/session/cache-cases.json")
-    >>= either (ioError . userError) pure . eitherDecodeStrict'
+  table <-
+    Bytes.readFile (root </> "protocol/specs/src/session/cache-cases.json")
+      >>= either (ioError . userError) pure . eitherDecodeStrict'
   loads <- member "the cache table" "cases" table >>= listOf "the cache table"
   writes <- member "the cache table" "writes" table >>= listOf "the cache table"
   refusals <- member "the cache table" "refusedWrites" table >>= listOf "the cache table"
@@ -201,5 +231,8 @@ cacheDocumentCases root = do
   mapM_ writeCase writes
   mapM_ refusedWriteCase refusals
   mapM_ placesCase places
-  putStrLn ("PASS " ++ show (length loads + length writes + length refusals + length places)
-    ++ " shared cache document, write, refused write and places cases")
+  putStrLn
+    ( "PASS "
+        ++ show (length loads + length writes + length refusals + length places)
+        ++ " shared cache document, write, refused write and places cases"
+    )

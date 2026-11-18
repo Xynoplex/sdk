@@ -2,8 +2,8 @@
 module Xynolog.Internal.Digest (sha256Base64Url) where
 
 import Crypto.Hash (Digest, SHA256, hash)
-import qualified Data.ByteArray as Memory
-import qualified Data.ByteString.Base64.URL as Base64
+import Data.ByteArray qualified as Memory
+import Data.ByteString.Base64.URL qualified as Base64
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 

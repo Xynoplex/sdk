@@ -4,11 +4,14 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 module Xynolog.Internal.Generated.OperationFailure (message, code) where
+
 import Data.Text (Text)
 import Xynolog.Channels
-import Xynolog.ErrorCodes (BusRequestCode(..))
-import qualified Xynolog.Types as Types
+import Xynolog.ErrorCodes (BusRequestCode (..))
+import Xynolog.Types qualified as Types
+
 message :: Operation input output failure -> failure -> Text
 message BindUpdateBodyOperation = Types.commandErrorMessage
 message BrowseResourceRequestedOperation = Types.commandErrorMessage
@@ -51,6 +54,7 @@ message YieldUpdateOperation = Types.commandErrorMessage
 message YieldCloneCreateOperation = Types.commandErrorMessage
 message YieldCloneResourceRequestedOperation = Types.commandErrorMessage
 message YieldCloneTokenRequestedOperation = Types.commandErrorMessage
+
 -- | The bus request code of an operation's failure: the one its code is read as, and for no code the
 -- unrecognized failure's.
 code :: Operation input output failure -> failure -> BusRequestCode
@@ -95,6 +99,7 @@ code YieldUpdateOperation = fromCommandErrorCode . Types.commandErrorCode
 code YieldCloneCreateOperation = fromCommandErrorCode . Types.commandErrorCode
 code YieldCloneResourceRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
 code YieldCloneTokenRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
+
 fromCommandErrorCode :: Maybe Types.CommandErrorCode -> BusRequestCode
 fromCommandErrorCode value = case value of
   Nothing -> BusRequestRejected
@@ -102,6 +107,7 @@ fromCommandErrorCode value = case value of
   (Just Types.CommandErrorCodeNotU2d_found) -> BusRequestNotFound
   (Just Types.CommandErrorCodeUnauthorized) -> BusRequestUnauthorized
   (Just Types.CommandErrorCodeNoneU2d_pending) -> BusRequestNonePending
+
 fromBrowseDirectoryFailedCode :: Maybe Types.BrowseDirectoryFailedCode -> BusRequestCode
 fromBrowseDirectoryFailedCode value = case value of
   Nothing -> BusRequestRejected
@@ -109,6 +115,7 @@ fromBrowseDirectoryFailedCode value = case value of
   (Just Types.BrowseDirectoryFailedCodeNotU2d_found) -> BusRequestNotFound
   (Just Types.BrowseDirectoryFailedCodeUnauthorized) -> BusRequestUnauthorized
   (Just Types.BrowseDirectoryFailedCodeNoneU2d_pending) -> BusRequestNonePending
+
 fromGatherFailedCode :: Maybe Types.GatherFailedCode -> BusRequestCode
 fromGatherFailedCode value = case value of
   Nothing -> BusRequestRejected
@@ -116,6 +123,7 @@ fromGatherFailedCode value = case value of
   (Just Types.GatherFailedCodeNotU2d_found) -> BusRequestNotFound
   (Just Types.GatherFailedCodeUnauthorized) -> BusRequestUnauthorized
   (Just Types.GatherFailedCodeNoneU2d_pending) -> BusRequestNonePending
+
 fromGatherResourceFailedCode :: Maybe Types.GatherResourceFailedCode -> BusRequestCode
 fromGatherResourceFailedCode value = case value of
   Nothing -> BusRequestRejected
@@ -123,6 +131,7 @@ fromGatherResourceFailedCode value = case value of
   (Just Types.GatherResourceFailedCodeNotU2d_found) -> BusRequestNotFound
   (Just Types.GatherResourceFailedCodeUnauthorized) -> BusRequestUnauthorized
   (Just Types.GatherResourceFailedCodeNoneU2d_pending) -> BusRequestNonePending
+
 fromMatchSearchFailedCode :: Maybe Types.MatchSearchFailedCode -> BusRequestCode
 fromMatchSearchFailedCode value = case value of
   Nothing -> BusRequestRejected

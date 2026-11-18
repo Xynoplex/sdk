@@ -26,7 +26,6 @@ import type { ChannelRefinements } from './bus-refinements';
 
 /** Each channel's payload as the registry states it. */
 export type StatedEventMap = {
-
   // ========================================================================
   // YIELD FLOW — resource creation, update, move, clone
   // ========================================================================
@@ -39,8 +38,8 @@ export type StatedEventMap = {
   'yield:representation-added': StoredEvent<EventOfType<'yield:representation-added'>>;
   'yield:representation-removed': StoredEvent<EventOfType<'yield:representation-removed'>>;
 
-  // Generation lifecycle flows through the unified job:* family
-  // (job:start, job:report-progress, job:complete, job:fail).
+  // Generation lifecycle flows through the unified job:* family (job:start,
+  // job:report-progress, job:complete, job:fail).
 
   // Commands
   'yield:create': components['schemas']['YieldCreateCommand'];
@@ -78,9 +77,9 @@ export type StatedEventMap = {
   'mark:archived': StoredEvent<EventOfType<'mark:archived'>>;
   'mark:unarchived': StoredEvent<EventOfType<'mark:unarchived'>>;
 
-  // Annotation-job lifecycle flows through the unified job:* family
-  // (job:start, job:report-progress, job:complete, job:fail). UI
-  // consumers filter by jobType.
+  // Annotation-job lifecycle flows through the unified job:* family (job:start,
+  // job:report-progress, job:complete, job:fail). UI consumers filter by
+  // jobType.
 
   // Commands
   'mark:create-request': components['schemas']['MarkCreateRequest'];
@@ -95,11 +94,10 @@ export type StatedEventMap = {
   'mark:create-failed': components['schemas']['CommandError'];
 
   /**
-   * Persist a detection unit's annotations as ONE acknowledged batch.
-   * Answered only after every annotation is in the event log, so a
-   * worker can gate unit completion on durability instead of on
-   * emission — which is what makes an Archivist outage a delay rather
-   * than silent data loss.
+   * Persist a detection unit's annotations as ONE acknowledged batch. Answered
+   * only after every annotation is in the event log, so a worker can gate unit
+   * completion on durability instead of on emission — which is what makes an
+   * Archivist outage a delay rather than silent data loss.
    */
   'mark:commit': components['schemas']['MarkCommitCommand'];
   'mark:commit-ok': components['schemas']['MarkCommitOk'];
@@ -107,8 +105,8 @@ export type StatedEventMap = {
   'mark:delete-ok': components['schemas']['MarkDeleteOk'];
   'mark:delete-failed': components['schemas']['CommandError'];
   // archive/unarchive confirmed-write replies (bridged) — correlation-keyed
-  // acks the SDK's Bus.request awaits. Failure routes the real outcome back;
-  // a fire-and-forget command would fail in silence.
+  // acks the SDK's Bus.request awaits. Failure routes the real outcome back; a
+  // fire-and-forget command would fail in silence.
   'mark:archive-ok': Record<string, never>;
   'mark:archive-failed': components['schemas']['CommandError'];
   'mark:unarchive-ok': Record<string, never>;
@@ -123,18 +121,18 @@ export type StatedEventMap = {
   // UI events
   'mark:requested': components['schemas']['MarkRequestedEvent'];
   'mark:submit': components['schemas']['MarkSubmitEvent'];
-  // Client-local: a delegated job went silent past its deadline (no
-  // progress, no completion, no job:fail). Emitted by mark-state-unit so the
-  // outcome-notification layer can tell the user; a real job failure arrives
-  // as job:fail instead and never produces this.
+  // Client-local: a delegated job went silent past its deadline (no progress,
+  // no completion, no job:fail). Emitted by mark-state-unit so the
+  // outcome-notification layer can tell the user; a real job failure arrives as
+  // job:fail instead and never produces this.
   'mark:delegate-timeout': components['schemas']['MarkDelegateTimeoutEvent'];
   // Client-local UI notifications for annotation command failures, emitted by
   // the awaiting catch (mark-state-unit), which inherently knows whose command
   // failed on which resource. Distinct from the `mark:create-failed` /
   // `mark:delete-failed` wire replies above: those are Bus.request correlation
   // plumbing (CommandError, matched by correlationId, delivered to the
-  // requesting client) and are NOT for UI consumption — subscribing to
-  // them raw toasts the requester twice.
+  // requesting client) and are NOT for UI consumption — subscribing to them raw
+  // toasts the requester twice.
   'mark:create-error': components['schemas']['ResourceErrorEvent'];
   'mark:delete-error': components['schemas']['ResourceErrorEvent'];
   // Same pattern for bind body updates initiated by callers that cannot toast
@@ -143,8 +141,8 @@ export type StatedEventMap = {
   'bind:body-error': components['schemas']['ResourceErrorEvent'];
 
   // ========================================================================
-  // FRAME FLOW — schema-layer vocabulary (entity types, tag schemas).
-  // The eighth flow.
+  // FRAME FLOW — schema-layer vocabulary (entity types, tag schemas). The
+  // eighth flow.
   // ========================================================================
 
   // Domain events (branded — system of record). System-level: no resourceId.
@@ -156,9 +154,9 @@ export type StatedEventMap = {
   'frame:add-tag-schema': components['schemas']['FrameAddTagSchemaCommand'];
 
   // Command results — `*-add-ok` / `*-add-failed` are correlation-keyed replies
-  // for the SDK's confirmed `Bus.request` writes (both bridged). In-process callers
-  // (bootstrap/replay/import) instead race the `frame:*-added` domain event and
-  // don't await `*-add-ok`.
+  // for the SDK's confirmed `Bus.request` writes (both bridged). In-process
+  // callers (bootstrap/replay/import) instead race the `frame:*-added` domain
+  // event and don't await `*-add-ok`.
   'frame:entity-type-add-ok': Record<string, never>;
   'frame:entity-type-add-failed': components['schemas']['CommandError'];
   'frame:tag-schema-add-ok': Record<string, never>;
@@ -167,14 +165,15 @@ export type StatedEventMap = {
   // ========================================================================
   // PRINCIPAL FLOW — who a principal is. One line per NAME it has had,
   // system-level like the frame vocabulary. Never read by provenance: every
-  // artifact joins on the DID, and names are resolved from the projection
-  // when a record is READ.
+  // artifact joins on the DID, and names are resolved from the projection when
+  // a record is READ.
   // ========================================================================
 
   // Domain event (branded — system of record). System-level: no resourceId.
   'principal:profiled': StoredEvent<EventOfType<'principal:profiled'>>;
 
-  // Command — what a principal is called: emitted by the gateway from a token's name, or by a principal of itself. The gateway stamps the sender's DID.
+  // Command — what a principal is called: emitted by the gateway from a token's
+  // name, or by a principal of itself. The gateway stamps the sender's DID.
   'principal:profile': components['schemas']['PrincipalProfileCommand'];
 
   // ========================================================================
@@ -194,7 +193,8 @@ export type StatedEventMap = {
   'match:search-results': components['schemas']['MatchSearchResult'];
   'match:search-failed': components['schemas']['MatchSearchFailed'];
 
-  // Searching resources by text: lexical first, by meaning when nothing matches.
+  // Searching resources by text: lexical first, by meaning when nothing
+  // matches.
   'match:resources-requested': components['schemas']['MatchResourcesRequest'];
   'match:resources-result': components['schemas']['MatchResourcesResult'];
   'match:resources-failed': components['schemas']['CommandError'];
@@ -289,8 +289,8 @@ export type StatedEventMap = {
 
   // ========================================================================
   // SHELL — app-scoped UI events (fire on XynologBrowser's bus, not the
-  // per-session client bus). These must work regardless of whether a
-  // KB session is active: panel toggles, sidebar, tab bar, routing.
+  // per-session client bus). These must work regardless of whether a KB session
+  // is active: panel toggles, sidebar, tab bar, routing.
   // ========================================================================
 
   'panel:toggle': components['schemas']['BrowsePanelToggleEvent'];
@@ -345,8 +345,8 @@ export type StatedEventMap = {
   'job:create-failed': components['schemas']['CommandError'];
   'job:claimed': components['schemas']['JobClaimedResult'];
   'job:claim-failed': components['schemas']['CommandError'];
-  // confirmed-write reply to a cancellation: whether the queue acted on the job it
-  // named (a pending job is cancelled; a running one is left to its worker).
+  // confirmed-write reply to a cancellation: whether the queue acted on the job
+  // it named (a pending job is cancelled; a running one is left to its worker).
   // Failure surfaces a queue error rather than being swallowed.
   'job:cancel-ok': { response: components['schemas']['JobCancelResult'] };
   'job:cancel-failed': components['schemas']['CommandError'];
@@ -356,39 +356,40 @@ export type StatedEventMap = {
   // ========================================================================
 
   /**
-   * Emitted by the Weaver after applying an event (or a batch's last event)
-   * for a resource to the graph. `sequenceNumber` is the resource-stream
-   * sequence of the last applied event. Folded by the Librarian's
-   * `WeaveProgress` into a process-local applied map that its
-   * `when_applied` barrier awaits. The Weaver runs as its own process,
-   * so the signal reaches the fold over the bus.
+   * Emitted by the Weaver after applying an event (or a batch's last event) for
+   * a resource to the graph. `sequenceNumber` is the resource-stream sequence
+   * of the last applied event. Folded by the Librarian's `WeaveProgress` into a
+   * process-local applied map that its `when_applied` barrier awaits. The
+   * Weaver runs as its own process, so the signal reaches the fold over the
+   * bus.
    */
   'weave:applied': components['schemas']['WeaveApplied'];
 
-  // Signal — the vector projection's per-resource decision report: emitted
-  // by the Smelter after indexing a resource's content ('indexed') or after
+  // Signal — the vector projection's per-resource decision report: emitted by
+  // the Smelter after indexing a resource's content ('indexed') or after
   // deciding not to ('skipped', with a `reason` naming the decline:
   // 'no-extractor', 'empty', or one of the PDF decline classes). Keyed by the
   // checksum of the bytes inspected — "settled at C" is read-your-writes for
   // exactly that content. NEVER emitted on transient failures: an error is not
   // a decision. Consumed by the process-local `SmeltProgress` folds behind the
-  // gather and anchored-text barriers. This is the Smelter's single outbound signal.
+  // gather and anchored-text barriers. This is the Smelter's single outbound
+  // signal.
   'smelt:settled': components['schemas']['SmeltSettled'];
 
   // Command — rebuild the graph projection from the event log (full when
-  // resourceId is absent, one resource when present). Served by the Weaver
-  // over the bus: a direct `rebuildAll()`/`rebuildResource()` call cannot
-  // reach a Weaver running in its own container. Correlated request/reply
-  // via the BUS_OPERATIONS registry.
+  // resourceId is absent, one resource when present). Served by the Weaver over
+  // the bus: a direct `rebuildAll()`/`rebuildResource()` call cannot reach a
+  // Weaver running in its own container. Correlated request/reply via the
+  // BUS_OPERATIONS registry.
   'weave:rebuild': components['schemas']['WeaveRebuildCommand'];
   'weave:rebuild-ok': Record<string, never>;
   'weave:rebuild-failed': components['schemas']['CommandError'];
 
-  // Command — rebuild anchored-text artifacts by re-running extraction
-  // (every geometry-capable resource when resourceId is absent, one when
-  // present). Served by the Smelter, serialized, never destructive, and
-  // with ZERO embedding calls — only the derived map is re-made. Correlated
-  // request/reply via BUS_OPERATIONS.
+  // Command — rebuild anchored-text artifacts by re-running extraction (every
+  // geometry-capable resource when resourceId is absent, one when present).
+  // Served by the Smelter, serialized, never destructive, and with ZERO
+  // embedding calls — only the derived map is re-made. Correlated request/reply
+  // via BUS_OPERATIONS.
   'smelt:rebuild-anchors': components['schemas']['SmeltRebuildAnchorsCommand'];
   'smelt:rebuild-anchors-ok': Record<string, never>;
   'smelt:rebuild-anchors-failed': components['schemas']['CommandError'];
@@ -407,11 +408,11 @@ export type StatedEventMap = {
   // ========================================================================
 
   /**
-   * Written by the `/bus/subscribe` handler when a scoped entry's
-   * `lastEventId` cannot be honoured — the watermark is unparseable or
-   * names another scope, the record no longer holds the events after
-   * it, or the record could not be read. The client falls back to
-   * invalidating what it caches for that scope and re-reading it.
+   * Written by the `/bus/subscribe` handler when a scoped entry's `lastEventId`
+   * cannot be honoured — the watermark is unparseable or names another scope,
+   * the record no longer holds the events after it, or the record could not be
+   * read. The client falls back to invalidating what it caches for that scope
+   * and re-reading it.
    */
   'bus:resume-gap': components['schemas']['BusResumeGap'];
   'session:joined': components['schemas']['SessionJoinedEvent'];
@@ -444,11 +445,11 @@ export type { AnchorRect } from './bus-ui-types';
  * - `BridgedChannel` (`bridged-channels.ts`) — the transport fan-in set; the
  *   only channels a client can SUBSCRIBE to over a concrete transport.
  *
- * Request/reply (`Bus.request`) emits on an `EmittableChannel` and subscribes on
- * `BridgedChannel` replies. A reply channel that is a valid `EventName` but NOT
- * in `BRIDGED_CHANNELS` is never delivered → the request times out with no
- * compile or runtime error. `Bus.request` therefore takes no reply channels:
- * it looks them up in `BUS_OPERATIONS`, from which `BRIDGED_CHANNELS` derives.
+ * Request/reply (`Bus.request`) emits on an `EmittableChannel` and subscribes
+ * on `BridgedChannel` replies. A reply channel that is a valid `EventName` but
+ * NOT in `BRIDGED_CHANNELS` is never delivered → the request times out with no
+ * compile or runtime error. `Bus.request` therefore takes no reply channels: it
+ * looks them up in `BUS_OPERATIONS`, from which `BRIDGED_CHANNELS` derives.
  */
 export type EventName = keyof EventMap;
 
@@ -459,11 +460,11 @@ export type EventName = keyof EventMap;
  *
  * The enricher switches on THIS list: a flag with no case fails to compile
  * rather than silently never attaching, which consumers cannot detect because
- * `annotation` is optional and their absent-branch is indistinguishable from
- * a genuine decline.
+ * `annotation` is optional and their absent-branch is indistinguishable from a
+ * genuine decline.
  *
- * Typed `PersistedEventType`, not `EventName`: the validator already allows
- * the flag only on a stored event, so this makes enriched ⊆ persisted a
+ * Typed `PersistedEventType`, not `EventName`: the validator already allows the
+ * flag only on a stored event, so this makes enriched ⊆ persisted a
  * compile-time fact rather than a convention.
  */
 export const ENRICHED_EVENT_TYPES = [
@@ -476,20 +477,21 @@ export type EnrichedEventType = typeof ENRICHED_EVENT_TYPES[number];
 /**
  * Authoritative map from bus channel to OpenAPI schema name.
  *
- * Every {@link EventName} must appear. The `satisfies` clause below
- * enforces completeness at compile time — adding a channel to
- * {@link EventMap} without adding an entry here is a build error.
+ * Every `EventName` must appear. The `satisfies` clause below enforces
+ * completeness at compile time — adding a channel to `EventMap` without adding
+ * an entry here is a build error.
  *
  * Values:
- *   - `<SchemaName>`: payload validates against `components['schemas'][SchemaName]`.
- *   - `null`: no single-schema validation. Used for branded
- *     `StoredEvent` wrappers, `void` UI signals, and inline wrapper
- *     types (e.g. `{ response: T }`). These are not validated by
- *     `/bus/emit`.
  *
- * The gateway's `/bus/emit` route validates against the same registry
- * entries. Consumers can use this map for client-side pre-flight
- * validation before emitting.
+ * - `<SchemaName>`: payload validates against
+ *   `components['schemas'][SchemaName]`.
+ * - `null`: no single-schema validation. Used for branded `StoredEvent`
+ *   wrappers, `void` UI signals, and inline wrapper types (e.g. `{ response: T
+ *   }`). These are not validated by `/bus/emit`.
+ *
+ * The gateway's `/bus/emit` route validates against the same registry entries.
+ * Consumers can use this map for client-side pre-flight validation before
+ * emitting.
  */
 export const CHANNEL_SCHEMAS = {
   // ── YIELD FLOW ──────────────────────────────────────────────────
@@ -682,7 +684,7 @@ export const CHANNEL_SCHEMAS = {
   'job:cancel-ok':                    null,
   'job:cancel-failed':                'CommandError',
 
-  // ── SETTINGS (Browser-only) ────────────────────────────────────
+  // ── SETTINGS (Browser-only) ─────────────────────────────────────
   'settings:theme-changed':           'SettingsThemeChangedEvent',
   'settings:line-numbers-toggled':    null, // void
   'settings:locale-changed':          'SettingsLocaleChangedEvent',

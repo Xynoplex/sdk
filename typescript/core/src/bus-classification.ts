@@ -46,9 +46,9 @@ export interface ChannelAttrs {
    * something?
    *
    * A WRITE is an act: it appends to the event log, or it enqueues or
-   * transitions durable work the log will later cite. A READ answers from
-   * state that already exists and leaves nothing behind — every `browse:*`
-   * request, and the three lookups that merely resolve a token or a summary.
+   * transitions durable work the log will later cite. A READ answers from state
+   * that already exists and leaves nothing behind — every `browse:*` request,
+   * and the three lookups that merely resolve a token or a summary.
    *
    * The domain is exactly the EMITTABLE set: an operation's request, or a
    * `kind: command`. Inbound replies, broadcast events and in-process UI
@@ -57,10 +57,9 @@ export interface ChannelAttrs {
    * other and the generator refuses — there is no default.
    *
    * The gateway reads this to decide when the record learns a principal's name:
-   * a `_userId` stamp is NOT the test, because a read carries one too.
-   * Someone who signs in and only browses is never named, and the profile
-   * publish rate is the WRITE rate rather than the emit rate — orders of
-   * magnitude apart.
+   * a `_userId` stamp is NOT the test, because a read carries one too. Someone
+   * who signs in and only browses is never named, and the profile publish rate
+   * is the WRITE rate rather than the emit rate — orders of magnitude apart.
    */
   readonly writes?: boolean;
   /** Absent exactly when the channel never crosses the wire (`in-process`). */

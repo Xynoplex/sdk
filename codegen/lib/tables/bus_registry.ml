@@ -9,13 +9,53 @@ let channel_order =
         schemas = Decode.required o "schemas" (Decode.list Decode.string);
       })
 
-(* The lines written before an entry, and the comment after it on its line. *)
-type docs = { lead : string list; trailing : string }
+(* Prose as the registry states it, in no language's shape: paragraphs, each
+   a text or a list of items, every text one line of words that a writer lays
+   out for its own language. *)
+type prose = Text.paragraph list
+
+let text = Decode.non_empty_string
+
+let paragraph cursor : Text.paragraph =
+  match Decode.kind cursor with
+  | String -> Words (text cursor)
+  | _ ->
+      Decode.obj
+        (fun o ->
+          Text.Items (Decode.required o "items" (Decode.non_empty_list text)))
+        cursor
+
+let prose = Decode.non_empty_list paragraph
+
+(* What is written before an entry of a listing: a break in the listing, a
+   section heading a part of it, a comment on what follows, or a doc of the
+   entry itself. *)
+type block = Break | Section of string | Comment of prose | Doc of prose
+
+let block cursor =
+  match Decode.kind cursor with
+  | String ->
+      Decode.literal "" cursor;
+      Break
+  | _ ->
+      Decode.keyed
+        [
+          ( "section",
+            Decode.obj (fun o -> Section (Decode.required o "section" text)) );
+          ( "comment",
+            Decode.obj (fun o -> Comment (Decode.required o "comment" prose)) );
+          ("doc", Decode.obj (fun o -> Doc (Decode.required o "doc" prose)));
+        ]
+        cursor
+
+(* The blocks before an entry, and the note after it on its line, [""] for
+   none. *)
+type docs = { lead : block list; trailing : string }
 
 let docs =
   Decode.obj (fun o : docs ->
       {
-        lead = Decode.required o "lead" (Decode.list Decode.string);
+        lead = Decode.required o "lead" (Decode.list block);
         trailing = Decode.required o "trailing" Decode.string;
       })
 
@@ -119,42 +159,42 @@ let operation =
       })
 
 type type_docs = {
-  event_name : string;
-  enriched_events : string;
-  channel_schemas : string;
-  emittable_channel : string;
+  event_name : prose;
+  enriched_events : prose;
+  channel_schemas : prose;
+  emittable_channel : prose;
 }
 
 let type_docs =
   Decode.obj (fun o : type_docs ->
       {
-        event_name = Decode.required o "eventName" Decode.string;
-        enriched_events = Decode.required o "enrichedEvents" Decode.string;
-        channel_schemas = Decode.required o "channelSchemas" Decode.string;
-        emittable_channel = Decode.required o "emittableChannel" Decode.string;
+        event_name = Decode.required o "eventName" prose;
+        enriched_events = Decode.required o "enrichedEvents" prose;
+        channel_schemas = Decode.required o "channelSchemas" prose;
+        emittable_channel = Decode.required o "emittableChannel" prose;
       })
 
-type in_process = { doc : string; channels : string list }
+type in_process = { doc : prose; channels : string list }
 
 let in_process =
   Decode.obj (fun o : in_process ->
       {
-        doc = Decode.required o "doc" Decode.string;
+        doc = Decode.required o "doc" prose;
         channels = Decode.required o "channels" (Decode.list Decode.string);
       })
 
-type kind = { doc : string; command : string list; event : string list }
+type kind = { doc : prose; command : string list; event : string list }
 
 let kind =
   Decode.obj (fun o : kind ->
       {
-        doc = Decode.required o "doc" Decode.string;
+        doc = Decode.required o "doc" prose;
         command = Decode.required o "command" (Decode.list Decode.string);
         event = Decode.required o "event" (Decode.list Decode.string);
       })
 
 type audience = {
-  doc : string;
+  doc : prose;
   everyone : string list;
   scoped : string list;
   declared : string list;
@@ -163,18 +203,18 @@ type audience = {
 let audience =
   Decode.obj (fun o : audience ->
       {
-        doc = Decode.required o "doc" Decode.string;
+        doc = Decode.required o "doc" prose;
         everyone = Decode.required o "everyone" (Decode.list Decode.string);
         scoped = Decode.required o "scoped" (Decode.list Decode.string);
         declared = Decode.required o "declared" (Decode.list Decode.string);
       })
 
-type effect_ = { doc : string; writes : string list; reads : string list }
+type effect_ = { doc : prose; writes : string list; reads : string list }
 
 let effect_ =
   Decode.obj (fun o : effect_ ->
       {
-        doc = Decode.required o "doc" Decode.string;
+        doc = Decode.required o "doc" prose;
         writes = Decode.required o "writes" (Decode.list Decode.string);
         reads = Decode.required o "reads" (Decode.list Decode.string);
       })

@@ -1,6 +1,6 @@
 (* How a writer of the sign-in store keeps its directory and its files to
    their owner (sign-in-store/owner-only.json): a mode for the directory, one
-   for a file, each four octal digits, and the directory's access list, which
+   for a file, each four octal digits, and an access list for each, which
    names where the owner's SID goes once. *)
 
 module T = Tables.Sign_in_store_owner_only
@@ -19,7 +19,12 @@ type access_list = {
   docs : string;  (** Naming the owner's place [owner], an argument's name. *)
 }
 
-type t = { directory : mode; file : mode; access_list : access_list }
+type t = {
+  directory : mode;
+  file : mode;
+  directory_access_list : access_list;
+  file_access_list : access_list;
+}
 
 let derive (table : T.t) =
   let refusals = ref [] in
@@ -46,23 +51,31 @@ let derive (table : T.t) =
   let file_mode =
     mode "/fileMode" ~value:table.file_mode.value ~docs:table.file_mode.docs
   in
-  let list = table.access_list in
-  if list.docs = "" then refuse "/accessList/docs" "is empty";
-  let access_list =
-    match Text.split ~sub:owner list.value with
+  let access_list pointer ~value ~docs =
+    if docs = "" then refuse (pointer ^ "/docs") "is empty";
+    match Text.split ~sub:owner value with
     | [ before; after ] ->
         {
           before;
           after;
-          docs =
-            Text.replace_all ~sub:("`" ^ owner ^ "`") ~by:"`owner`" list.docs;
+          docs = Text.replace_all ~sub:("`" ^ owner ^ "`") ~by:"`owner`" docs;
         }
     | parts ->
-        refuse "/accessList/value"
+        refuse (pointer ^ "/value")
           (Printf.sprintf "names %s %d times, not once" owner
              (List.length parts - 1));
         { before = ""; after = ""; docs = "" }
   in
+  let directory_access_list =
+    access_list "/directoryAccessList" ~value:table.directory_access_list.value
+      ~docs:table.directory_access_list.docs
+  in
+  let file_access_list =
+    access_list "/fileAccessList" ~value:table.file_access_list.value
+      ~docs:table.file_access_list.docs
+  in
   match List.rev !refusals with
-  | [] -> Ok { directory; file = file_mode; access_list }
+  | [] ->
+      Ok
+        { directory; file = file_mode; directory_access_list; file_access_list }
   | errors -> Error errors

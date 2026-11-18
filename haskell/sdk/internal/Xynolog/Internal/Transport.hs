@@ -1,13 +1,50 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Xynolog.Internal.Transport
-  ( Transport, TransportInput, TransportOptions(..), Frame(..), Carried(..), FrameRefusal(..), EventBus
-  , newTransport, baseUrl, emit, frames, stream, on, state, errors, relayErrors, isSubscribed
-  , subscribeToResource, trackReply, bridgeInto, dispose
-  , receiveSTM, receiveContextSTM, receive, receiveRefusal, carriedChannel, carriedScope, carriedCorrelationId, refusalSaid, setState, subscriptions, reportError, withPendingReply
-  , ownAction, raiseTransportError, reportFailure
-  , newEventBus, local, localSTM, tapLocal, events, closeEventBus
-  ) where
+  ( Transport,
+    TransportInput,
+    TransportOptions (..),
+    Frame (..),
+    Carried (..),
+    FrameRefusal (..),
+    EventBus,
+    newTransport,
+    baseUrl,
+    emit,
+    frames,
+    stream,
+    on,
+    state,
+    errors,
+    relayErrors,
+    isSubscribed,
+    subscribeToResource,
+    trackReply,
+    bridgeInto,
+    dispose,
+    receiveSTM,
+    receiveContextSTM,
+    receive,
+    receiveRefusal,
+    carriedChannel,
+    carriedScope,
+    carriedCorrelationId,
+    refusalSaid,
+    setState,
+    subscriptions,
+    reportError,
+    withPendingReply,
+    ownAction,
+    raiseTransportError,
+    reportFailure,
+    newEventBus,
+    local,
+    localSTM,
+    tapLocal,
+    events,
+    closeEventBus,
+  )
+where
 
 import Control.Concurrent (ThreadId, myThreadId)
 import Control.Concurrent.Async (Async, asyncThreadId, cancel, waitCatch, waitCatchSTM)
@@ -15,83 +52,107 @@ import Control.Concurrent.STM
 import Control.Exception (SomeAsyncException, SomeException, bracket, catch, finally, fromException, mask, mask_, onException, throwIO, try)
 import Control.Monad (forM_, unless, void, when)
 import Control.Monad.IO.Class (liftIO)
-import Data.Aeson (Object, Result(..), Value(..), fromJSON, toJSON)
-import Xynolog.Internal.Required (Fault(..), faultSaid)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
+import Data.Aeson (Object, Result (..), Value (..), fromJSON, toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
 import Data.List (nub)
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Data.Text (Text)
-import qualified OpenTelemetry.Context as Context
+import OpenTelemetry.Context qualified as Context
 import OpenTelemetry.Context.ThreadLocal (getContext)
 import OpenTelemetry.Context.ThreadLocal.Propagation (tracedAsync)
-import qualified Xynolog.Internal.Broadcast as Broadcast
-import qualified Xynolog.Internal.Delivery as Delivery
-import qualified Xynolog.Internal.StateValue as State
-import Xynolog.Internal.Generated.Schemas (schemas)
-import Xynolog.Internal.Schema (validateProperty)
-import Xynolog.ErrorCodes hiding (TransportError)
-import qualified Xynolog.ErrorCodes as Codes
-import Xynolog.Errors
-import Xynolog.Transport.Facts
-import Xynolog.Types (BusFrame(..), BusFramePayload(..), ResourceId, TraceCarrier)
 import Streaming (Of, Stream)
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
+import Xynolog.ErrorCodes hiding (TransportError)
+import Xynolog.ErrorCodes qualified as Codes
+import Xynolog.Errors
+import Xynolog.Internal.Broadcast qualified as Broadcast
+import Xynolog.Internal.Delivery qualified as Delivery
+import Xynolog.Internal.Generated.Schemas (schemas)
+import Xynolog.Internal.Required (Fault (..), faultSaid)
+import Xynolog.Internal.Schema (validateProperty)
+import Xynolog.Internal.StateValue qualified as State
+import Xynolog.Transport.Facts
+import Xynolog.Types (BusFrame (..), BusFramePayload (..), ResourceId, TraceCarrier)
 
-data Frame = Frame { wireFrame :: BusFrame, frameTrace :: Maybe TraceCarrier } deriving (Eq, Show)
+data Frame = Frame {wireFrame :: BusFrame, frameTrace :: Maybe TraceCarrier} deriving (Eq, Show)
+
 data FrameRefusal = FrameRefusal
-  { refusedChannel :: Text, refusedPayload :: Maybe Value
-  , refusedScope :: Maybe ResourceId, refusedCorrelationId :: Maybe Text
-  , fault :: Fault
-  } deriving (Eq, Show)
+  { refusedChannel :: Text,
+    refusedPayload :: Maybe Value,
+    refusedScope :: Maybe ResourceId,
+    refusedCorrelationId :: Maybe Text,
+    fault :: Fault
+  }
+  deriving (Eq, Show)
+
 data Carried = Arrived Frame | FrameRejected FrameRefusal deriving (Eq, Show)
+
 carriedChannel :: Carried -> Text
 carriedChannel (Arrived frame) = busFrameChannel (wireFrame frame)
 carriedChannel (FrameRejected refused) = refusedChannel refused
+
 carriedScope :: Carried -> Maybe ResourceId
 carriedScope (Arrived frame) = busFrameScope (wireFrame frame)
 carriedScope (FrameRejected refused) = refusedScope refused
+
 carriedCorrelationId :: Carried -> Maybe Text
 carriedCorrelationId (Arrived frame) = busFrameCorrelationId (wireFrame frame)
 carriedCorrelationId (FrameRejected refused) = refusedCorrelationId refused
+
 refusalSaid :: FrameRefusal -> Text
 refusalSaid refused = "a frame on " <> refusedChannel refused <> " is not that channel's: " <> faultSaid (fault refused)
+
 data EventBus = EventBus (Delivery.Hub Carried) (TVar (Maybe Context.Context)) deriving (Eq)
+
 data TransportOptions = TransportOptions
-  { transportBaseUrl :: Text
-  , receiveChannels :: Set.Set Text
-  , sendFrame :: BusFrame -> IO (Maybe Integer)
-  , closeDriver :: IO ()
+  { transportBaseUrl :: Text,
+    receiveChannels :: Set.Set Text,
+    sendFrame :: BusFrame -> IO (Maybe Integer),
+    closeDriver :: IO ()
   }
+
 newtype Transport = Transport Runtime
+
 newtype TransportInput = TransportInput Runtime
+
 data Runtime = Runtime
-  { options :: TransportOptions
-  , received :: Delivery.Hub Carried
-  , replies :: Delivery.Replies Carried
-  , connection :: State.StateValue ConnectionState
-  , failures :: Broadcast.Broadcast TransportError
-  , scopes :: TVar (Map.Map ResourceId Integer)
-  , tracked :: TVar (Map.Map Text Integer)
-  , revision :: TVar Integer
-  , bridges :: TVar (Map.Map Integer EventBus)
-  , listeners :: TVar (Map.Map Integer (Async ()))
-  , nextKey :: TVar Integer
-  , closing :: TVar Bool
-  , ownedThreads :: TVar (Map.Map ThreadId Integer)
-  , closer :: TVar (Maybe ThreadId)
-  , closed :: TMVar (Either SomeException ())
+  { options :: TransportOptions,
+    received :: Delivery.Hub Carried,
+    replies :: Delivery.Replies Carried,
+    connection :: State.StateValue ConnectionState,
+    failures :: Broadcast.Broadcast TransportError,
+    scopes :: TVar (Map.Map ResourceId Integer),
+    tracked :: TVar (Map.Map Text Integer),
+    revision :: TVar Integer,
+    bridges :: TVar (Map.Map Integer EventBus),
+    listeners :: TVar (Map.Map Integer (Async ())),
+    nextKey :: TVar Integer,
+    closing :: TVar Bool,
+    ownedThreads :: TVar (Map.Map ThreadId Integer),
+    closer :: TVar (Maybe ThreadId),
+    closed :: TMVar (Either SomeException ())
   }
 
 newTransport :: TransportOptions -> IO (Transport, TransportInput)
 newTransport configuration = atomically $ do
-  runtime <- Runtime configuration <$> Delivery.newHub carriedChannel
-    <*> Delivery.newReplies carriedChannel carriedCorrelationId
-    <*> State.newStateValue Initial <*> Broadcast.newKeptEvents
-    <*> newTVar Map.empty <*> newTVar Map.empty <*> newTVar 0
-    <*> newTVar Map.empty <*> newTVar Map.empty <*> newTVar 0
-    <*> newTVar False <*> newTVar Map.empty <*> newTVar Nothing <*> newEmptyTMVar
+  runtime <-
+    Runtime configuration
+      <$> Delivery.newHub carriedChannel
+      <*> Delivery.newReplies carriedChannel carriedCorrelationId
+      <*> State.newStateValue Initial
+      <*> Broadcast.newKeptEvents
+      <*> newTVar Map.empty
+      <*> newTVar Map.empty
+      <*> newTVar 0
+      <*> newTVar Map.empty
+      <*> newTVar Map.empty
+      <*> newTVar 0
+      <*> newTVar False
+      <*> newTVar Map.empty
+      <*> newTVar Nothing
+      <*> newEmptyTMVar
   pure (Transport runtime, TransportInput runtime)
 
 baseUrl :: Transport -> Text
@@ -123,7 +184,7 @@ raiseTransportError (Transport runtime) failure = atomically (Broadcast.publish 
 fromReader :: Broadcast.Subscription value -> Stream (Of value) IO ()
 fromReader reader = do
   value <- liftIO (atomically (Broadcast.next reader))
-  case value of Nothing -> pure (); Just item -> Stream.yield item >> fromReader reader
+  case value of { Nothing -> pure (); Just item -> Stream.yield item >> fromReader reader }
 
 frames :: Transport -> Text -> (Stream (Of Carried) IO () -> IO result) -> IO result
 frames transport@(Transport runtime) channel consume = do
@@ -132,8 +193,9 @@ frames transport@(Transport runtime) channel consume = do
 
 stream :: Transport -> Text -> (Stream (Of (Either FrameRefusal Object)) IO () -> IO result) -> IO result
 stream transport channel consume = frames transport channel (consume . Stream.map payloadOf)
-  where payloadOf (Arrived frame) = Right (busFramePayloadAdditionalProperties (busFramePayload (wireFrame frame)))
-        payloadOf (FrameRejected refusal) = Left refusal
+  where
+    payloadOf (Arrived frame) = Right (busFramePayloadAdditionalProperties (busFramePayload (wireFrame frame)))
+    payloadOf (FrameRejected refusal) = Left refusal
 
 -- | Each failure the transport meets, in the order met. The first reader is
 -- given first the latest 'Xynolog.Timing.errorsKeptForFirstReaderCount' met
@@ -172,10 +234,17 @@ on transport@(Transport runtime) channel callback = mask $ \restore -> do
             Right (carried, rest) -> do
               callback (case carried of Arrived frame -> Right (busFramePayloadAdditionalProperties (busFramePayload (wireFrame frame))); FrameRejected refusal -> Left refusal)
               pump rest
-  let work = (atomically (takeTMVar start) >> frames transport channel (\values -> do
-        atomically (putTMVar ready ())
-        restore (pump values)))
-        `catch` callbackFailure
+  let work =
+        ( atomically (takeTMVar start)
+            >> frames
+              transport
+              channel
+              ( \values -> do
+                  atomically (putTMVar ready ())
+                  restore (pump values)
+              )
+        )
+          `catch` callbackFailure
       callbackFailure :: SomeException -> IO ()
       callbackFailure exception = case fromException exception :: Maybe SomeAsyncException of
         Just _ -> throwIO exception
@@ -183,29 +252,38 @@ on transport@(Transport runtime) channel callback = mask $ \restore -> do
   worker <- tracedAsync (work `finally` atomically (modifyTVar' (listeners runtime) (Map.delete key)))
   accepted <- atomically $ do
     over <- readTVar (closing runtime)
-    if over then pure False else do
-      modifyTVar' (listeners runtime) (Map.insert key worker)
-      putTMVar start ()
-      pure True
+    if over
+      then pure False
+      else do
+        modifyTVar' (listeners runtime) (Map.insert key worker)
+        putTMVar start ()
+        pure True
   let release = do
         atomically (writeTVar active False)
         thread <- myThreadId
         unless (thread == asyncThreadId worker) (cancel worker)
-  if not accepted then cancel worker >> throwIO (BusRequestError BusRequestClosed "transport is closed" Nothing) else do
-    let ended = do
-          outcome <- waitCatchSTM worker
-          over <- readTVar (closing runtime)
-          if over then throwSTM (BusRequestError BusRequestClosed "transport closed during attachment" Nothing)
-            else either throwSTM (const (throwSTM (BusRequestError BusRequestClosed "listener ended before attachment" Nothing))) outcome
-    restore (atomically (takeTMVar ready `orElse` ended))
-      `onException` release
-    pure release
+  if not accepted
+    then cancel worker >> throwIO (BusRequestError BusRequestClosed "transport is closed" Nothing)
+    else do
+      let ended = do
+            outcome <- waitCatchSTM worker
+            over <- readTVar (closing runtime)
+            if over
+              then throwSTM (BusRequestError BusRequestClosed "transport closed during attachment" Nothing)
+              else either throwSTM (const (throwSTM (BusRequestError BusRequestClosed "listener ended before attachment" Nothing))) outcome
+      restore (atomically (takeTMVar ready `orElse` ended))
+        `onException` release
+      pure release
 
 subscriptions :: TransportInput -> STM (Integer, [ResourceId], [Text], Bool)
-subscriptions (TransportInput runtime) = (,,,) <$> readTVar (revision runtime)
-  <*> (Map.keys <$> readTVar (scopes runtime)) <*> (Map.keys <$> readTVar (tracked runtime)) <*> readTVar (closing runtime)
+subscriptions (TransportInput runtime) =
+  (,,,)
+    <$> readTVar (revision runtime)
+    <*> (Map.keys <$> readTVar (scopes runtime))
+    <*> (Map.keys <$> readTVar (tracked runtime))
+    <*> readTVar (closing runtime)
 
-hold :: Ord key => Runtime -> TVar (Map.Map key Integer) -> key -> IO (IO ())
+hold :: (Ord key) => Runtime -> TVar (Map.Map key Integer) -> key -> IO (IO ())
 hold runtime cell key = mask_ $ do
   active <- atomically $ do
     ensureOpenLifetime runtime
@@ -235,10 +313,13 @@ trackReply transport@(Transport runtime) correlation = do
 
 withPendingReply :: Transport -> Text -> Set.Set Text -> (STM (Maybe Carried) -> IO result) -> IO result
 withPendingReply transport@(Transport runtime) correlation channels action =
-  (bracket (trackReply transport correlation) id $ \_ ->
-    Delivery.withReply (replies runtime) correlation channels (action . Delivery.awaitReply))
-    `catch` \Delivery.CorrelationConflict -> raiseTransportError transport
-      (TransportError Codes.TransportConflict "correlation id is already pending" Nothing Nothing)
+  ( bracket (trackReply transport correlation) id $ \_ ->
+      Delivery.withReply (replies runtime) correlation channels (action . Delivery.awaitReply)
+  )
+    `catch` \Delivery.CorrelationConflict ->
+      raiseTransportError
+        transport
+        (TransportError Codes.TransportConflict "correlation id is already pending" Nothing Nothing)
 
 newEventBus :: IO EventBus
 newEventBus = atomically $ EventBus <$> Delivery.newHub carriedChannel <*> newTVar Nothing
@@ -288,7 +369,7 @@ receiveContextSTM context (TransportInput runtime) raw = do
         carrier = case KM.lookup (Key.fromText traceField) payload of
           Nothing -> Nothing
           Just value -> case fromJSON value of Success value' -> Just value'; Error _ -> Nothing
-        frame = Frame (raw { busFramePayload = BusFramePayload (KM.delete (Key.fromText traceField) payload) }) carrier
+        frame = Frame (raw {busFramePayload = BusFramePayload (KM.delete (Key.fromText traceField) payload)}) carrier
     targets <- nub . Map.elems <$> readTVar (bridges runtime)
     forM_ targets $ \(EventBus _ held) -> writeTVar held context
     Delivery.deliver (received runtime : [hub | EventBus hub _ <- targets]) (replies runtime) (Arrived frame)
@@ -307,11 +388,14 @@ receiveRefusal (TransportInput runtime) refusal = do
 
 setState :: TransportInput -> ConnectionState -> IO ()
 setState (TransportInput runtime) next = do
-  if next == Closed then dispose (Transport runtime) else atomically $ do
-    before <- State.current (connection runtime)
-    unless (next == before || next `elem` connectionTransitions before)
-      (throwSTM (TransportError Codes.TransportError "invalid connection-state transition" Nothing Nothing))
-    when (next /= before) (State.update (connection runtime) next)
+  if next == Closed
+    then dispose (Transport runtime)
+    else atomically $ do
+      before <- State.current (connection runtime)
+      unless
+        (next == before || next `elem` connectionTransitions before)
+        (throwSTM (TransportError Codes.TransportError "invalid connection-state transition" Nothing Nothing))
+      when (next /= before) (State.update (connection runtime) next)
 
 reportFailure :: Transport -> TransportError -> IO ()
 reportFailure (Transport runtime) = reportError (TransportInput runtime)
@@ -343,10 +427,12 @@ dispose (Transport runtime) = mask $ \restore -> do
   when startClose $ void $ tracedAsync $ do
     identity <- myThreadId
     atomically (writeTVar (closer runtime) (Just identity))
-    outcome <- try $ closeDriver (options runtime) `finally` do
-      active <- atomically (Map.elems <$> readTVar (listeners runtime))
-      mapM_ cancel active
-      mapM_ waitCatch active
+    outcome <-
+      try $
+        closeDriver (options runtime) `finally` do
+          active <- atomically (Map.elems <$> readTVar (listeners runtime))
+          mapM_ cancel active
+          mapM_ waitCatch active
     atomically $ do
       case outcome of
         Left exception -> case fromException exception of Just failure -> Broadcast.publish (failures runtime) failure; Nothing -> pure ()

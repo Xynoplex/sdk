@@ -1,9 +1,13 @@
 -- Generated from protocol/specs/src/client/refresh.json; do not edit.
 -- Regenerate: make generate (codegen/lib/cache_refresh/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module LiveQueries (LiveQuery(..)) where
-import Data.Aeson (FromJSON(..), withText)
+
+module LiveQueries (LiveQuery (..)) where
+
+import Data.Aeson (FromJSON (..), withText)
+
 data LiveQuery = Resource | Annotations | Annotation | Events | ReferencedBy | Resources | MatchedResources | EntityTypes | TagSchemas | Engines deriving (Eq, Show)
+
 instance FromJSON LiveQuery where
   parseJSON = withText "LiveQuery" $ \value -> case value of
     "resource" -> pure Resource

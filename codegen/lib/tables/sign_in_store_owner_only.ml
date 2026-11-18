@@ -18,10 +18,19 @@ let file_mode =
         docs = Decode.required o "docs" Decode.string;
       })
 
-type access_list = { value : string; docs : string }
+type directory_access_list = { value : string; docs : string }
 
-let access_list =
-  Decode.obj (fun o : access_list ->
+let directory_access_list =
+  Decode.obj (fun o : directory_access_list ->
+      {
+        value = Decode.required o "value" Decode.string;
+        docs = Decode.required o "docs" Decode.string;
+      })
+
+type file_access_list = { value : string; docs : string }
+
+let file_access_list =
+  Decode.obj (fun o : file_access_list ->
       {
         value = Decode.required o "value" Decode.string;
         docs = Decode.required o "docs" Decode.string;
@@ -31,7 +40,8 @@ type t = {
   comment : string;
   directory_mode : directory_mode;
   file_mode : file_mode;
-  access_list : access_list;
+  directory_access_list : directory_access_list;
+  file_access_list : file_access_list;
 }
 
 let decode =
@@ -40,5 +50,7 @@ let decode =
         comment = Decode.required o "$comment" Decode.string;
         directory_mode = Decode.required o "directoryMode" directory_mode;
         file_mode = Decode.required o "fileMode" file_mode;
-        access_list = Decode.required o "accessList" access_list;
+        directory_access_list =
+          Decode.required o "directoryAccessList" directory_access_list;
+        file_access_list = Decode.required o "fileAccessList" file_access_list;
       })

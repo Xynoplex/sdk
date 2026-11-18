@@ -1,23 +1,29 @@
 -- | Real sessions for consumer tests, over the real client the test supplies.
-module Xynolog.Testing.Client (TestSessionOptions(..), TestSession(..), createTestSession) where
+module Xynolog.Testing.Client (TestSessionOptions (..), TestSession (..), createTestSession) where
 
-import qualified Xynolog.Client as Client
+import Xynolog.Client qualified as Client
 import Xynolog.Retry (RetryOptions)
-import qualified Xynolog.Session as Session
-import qualified Xynolog.Timing.Settings as Timing
+import Xynolog.Session qualified as Session
+import Xynolog.Timing.Settings qualified as Timing
 
 data TestSessionOptions = TestSessionOptions
-  { testSessionOptionsClient :: Client.Client
-  , testSessionOptionsSession :: Session.SessionOptions
-  , testSessionOptionsClock :: RetryOptions
-  , testSessionOptionsTiming :: Timing.Settings
+  { testSessionOptionsClient :: Client.Client,
+    testSessionOptionsSession :: Session.SessionOptions,
+    testSessionOptionsClock :: RetryOptions,
+    testSessionOptionsTiming :: Timing.Settings
   }
+
 data TestSession = TestSession
-  { testSessionSession :: Session.Session
-  , closeTestSession :: IO ()
+  { testSessionSession :: Session.Session,
+    closeTestSession :: IO ()
   }
+
 createTestSession :: TestSessionOptions -> IO TestSession
 createTestSession options = do
-  session <- Session.newSession (testSessionOptionsClient options) (testSessionOptionsSession options)
-    (testSessionOptionsClock options) (testSessionOptionsTiming options)
+  session <-
+    Session.newSession
+      (testSessionOptionsClient options)
+      (testSessionOptionsSession options)
+      (testSessionOptionsClock options)
+      (testSessionOptionsTiming options)
   pure (TestSession session (Session.dispose session))

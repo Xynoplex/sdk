@@ -1,7 +1,7 @@
 """Hold each Dune project's compiler and repository constraints to the container pins.
 
 The projects are the SDK (ocaml/sdk) and the generator (codegen), which build
-on the same toolchain. With --base-image it then prints the image the pins are
+on the same toolchain; the generator's ocamlformat-lib is the SDK's ocamlformat. With --base-image it then prints the image the pins are
 built on, which every OCaml container starts from.
 """
 import json
@@ -20,6 +20,8 @@ for project_root in (root / 'sdk', root.parent / 'codegen'):
     assert (project_root / '.ocamlformat').read_text().strip() == 'version=' + pins['ocamlformat'], project_root
     assert re.findall(r'git\+https://github.com/ocaml/opam-repository.git#([a-f0-9]+)', workspace) == [pins['opamRepository']], project_root
     assert re.findall(r'git\+https://github.com/ocaml-dune/opam-overlays.git#([a-f0-9]+)', workspace) == [pins['duneOverlay']], project_root
+# The generator lays its OCaml out with the library of the formatter the SDK checks it with.
+assert re.findall(r'\(ocamlformat-lib \(= ([^)]+)\)\)', (root.parent / 'codegen' / 'dune-project').read_text()) == [pins['ocamlformat']]
 if sys.argv[1:] == ['--base-image']:
     print(pins['baseImage'])
 elif sys.argv[1:]:
