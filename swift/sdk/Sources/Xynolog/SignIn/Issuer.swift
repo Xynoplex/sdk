@@ -53,7 +53,7 @@ struct IssuedTokens: Sendable {
   let access: String
   let refresh: String
 }
-func refreshAtIssuer(_ held: HeldSignIn, http: HTTPClient, clock: any Clock<Duration>)
+func refreshAtIssuer(_ held: StoredSession, http: HTTPClient, clock: any Clock<Duration>)
   async throws -> IssuedTokens
 {
   let answer = try await issuerAnswer(
@@ -94,7 +94,7 @@ func retryRenewal<Value: Sendable>(
 }
 func renewKept(
   _ kept: any SignInKept, holding: String?,
-  grant: @escaping @Sendable (HeldSignIn) async throws -> IssuedTokens
+  grant: @escaping @Sendable (StoredSession) async throws -> IssuedTokens
 ) async throws -> String? {
   guard let held = try await kept.held() else { return nil }
   if held.access != holding, !isTokenExpired(held.access, now: Date().timeIntervalSince1970) {
@@ -222,7 +222,7 @@ public func signInDevice(
         throw SignInError(.exchange, "The issuer returned no refresh token")
       }
       try await kept.keep(
-        HeldSignIn(
+        StoredSession(
           access: access, clientId: scriptClientID, refresh: refresh,
           revocationEndpoint: issuer.revocation, tokenEndpoint: issuer.token))
       return

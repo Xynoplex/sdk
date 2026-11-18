@@ -460,7 +460,7 @@ private func form(_ data: Data) -> [String: String] {
         endpoint: .httpEndpoint(HttpEndpoint(host: "127.0.0.1", port: port, protocol: .http)),
         id: "test", label: "test")
       let kept = MemorySignIn(
-        HeldSignIn(
+        StoredSession(
           access: old, clientId: scriptClientID, refresh: "refresh",
           tokenEndpoint: origin + "/token")
       )
@@ -506,7 +506,7 @@ private func form(_ data: Data) -> [String: String] {
           endpoint: .httpEndpoint(HttpEndpoint(host: "127.0.0.1", port: port, protocol: .http)),
           id: "test", label: "test")
         let kept = MemorySignIn(
-          HeldSignIn(
+          StoredSession(
             access: access, clientId: scriptClientID, refresh: "refresh",
             tokenEndpoint: origin + "/token"))
         let opened: OpenedSession

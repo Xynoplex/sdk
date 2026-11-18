@@ -89,13 +89,13 @@ private var registryEndpoint: KbEndpoint {
   let peer = try await newXynologBrowser(
     XynologBrowserConfig(storage: storage.context(), sessionFactory: factory))
   let token = try jwt(.object(["exp": .number(Date().timeIntervalSince1970 + 3600)]))
-  let session = HeldSignIn(
+  let session = StoredSession(
     access: token, clientId: "browser", refresh: "refresh", tokenEndpoint: "issuer")
   do {
     let first = try await browser.signedIn(
       SignedIn(
-        endpoint: registryEndpoint,
         description: KbDescription(domain: "example.org", name: "First"),
+        endpoint: registryEndpoint,
         session: session))
     let id = first.kb.id
     #expect(browser.activeSession.value?.session.kb.id == id)
@@ -112,7 +112,7 @@ private var registryEndpoint: KbEndpoint {
     }
     address.withLock { $0 = "elsewhere.example.org" }
     let check = try await browser.readActiveKb()
-    #expect(check.kind == .conflict)
+    if case .conflict = check {} else { Issue.record("Expected a conflict, read \(check)") }
     #expect(browser.openResources.value.map(\.id) == [resource])
     try await browser.signIn(id, session: session)
     let signals = try await withinTestDeadline {
@@ -130,9 +130,9 @@ private var registryEndpoint: KbEndpoint {
     #expect(browser.lastViewedResource.value == nil)
     let second = try await browser.signedIn(
       SignedIn(
-        endpoint: registryEndpoint,
         description: KbDescription(domain: "elsewhere.example.org", name: "Other"),
-        session: session, kbId: id))
+        endpoint: registryEndpoint,
+        kbId: id, session: session))
     #expect(second.kb.id != id)
     #expect(second.expected?.did == "did:web:example.org")
     #expect(browser.knowledgeBases.value.count == 2)

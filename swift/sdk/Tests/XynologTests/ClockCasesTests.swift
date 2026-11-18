@@ -586,7 +586,7 @@ private func renewal(_ given: [String: JSONValue], _ clock: TestClock) async thr
       ]))
   }
   let kept = MemorySignIn(
-    HeldSignIn(
+    StoredSession(
       access: try token(), clientId: scriptClientID, refresh: "a-refresh-token",
       tokenEndpoint: "http://issuer.test/realms/xynolog/token"))
   let client = try await XynologClient(

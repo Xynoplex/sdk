@@ -2,9 +2,9 @@ import Foundation
 import Synchronization
 
 public protocol SignInKept: Sendable {
-  func held() async throws -> HeldSignIn?
-  func keep(_ signIn: HeldSignIn) async throws
-  func renewed(read: HeldSignIn, access: String, refresh: String) async throws -> String?
+  func held() async throws -> StoredSession?
+  func keep(_ signIn: StoredSession) async throws
+  func renewed(read: StoredSession, access: String, refresh: String) async throws -> String?
   /// Records that the gateway named `personKey`'s person as the one whose token is `access`, and
   /// says whether the kept sign-in now names them. It records only while the sign-in still holds
   /// `access` and names nobody, and never overwrites another person; a sign-in that already names
@@ -13,11 +13,11 @@ public protocol SignInKept: Sendable {
   func forget() async throws
 }
 public final class MemorySignIn: SignInKept {
-  private let value: Mutex<HeldSignIn?>
-  public init(_ signIn: HeldSignIn? = nil) { value = Mutex(signIn) }
-  public func held() async -> HeldSignIn? { value.withLock { $0 } }
-  public func keep(_ signIn: HeldSignIn) async { value.withLock { $0 = signIn } }
-  public func renewed(read: HeldSignIn, access: String, refresh: String) async -> String? {
+  private let value: Mutex<StoredSession?>
+  public init(_ signIn: StoredSession? = nil) { value = Mutex(signIn) }
+  public func held() async -> StoredSession? { value.withLock { $0 } }
+  public func keep(_ signIn: StoredSession) async { value.withLock { $0 = signIn } }
+  public func renewed(read: StoredSession, access: String, refresh: String) async -> String? {
     value.withLock { held in
       guard var current = held else { return nil }
       guard current.access == read.access && current.refresh == read.refresh else {

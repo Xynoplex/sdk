@@ -1,7 +1,5 @@
 import Foundation
 
-public enum SessionEndReason: String, Codable, Sendable { case expired, refused }
-
 public actor XynologSession: StateUnit {
   public nonisolated let id = "session-" + UUID().uuidString
   public nonisolated let kb: KbTarget

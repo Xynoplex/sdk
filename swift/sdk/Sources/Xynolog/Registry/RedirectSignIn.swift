@@ -86,7 +86,7 @@ public func beginAuthorization(
 public func completeAuthorization(
   _ callback: String, storage: any SessionStorage, httpClient: HTTPClient,
   clock: any Clock<Duration> = ContinuousClock()
-) async throws -> (pending: PendingAuthorization, session: HeldSignIn) {
+) async throws -> (pending: PendingAuthorization, session: StoredSession) {
   let taken = Mutex<String?>(nil)
   try storage.update(pendingAuthorizationKey) { text in
     taken.withLock { $0 = text }
@@ -123,15 +123,10 @@ public func completeAuthorization(
   }
   return (
     record,
-    HeldSignIn(
+    StoredSession(
       access: access, clientId: browserClientId, refresh: refresh,
       revocationEndpoint: record.issuer.revocation, tokenEndpoint: record.issuer.token)
   )
-}
-
-public struct ConnectionIdentity: Sendable {
-  public let did: UserId
-  public let description: KbDescription
 }
 
 public struct IdentityUnverifiableError: Error, Sendable, CustomStringConvertible {
@@ -163,7 +158,7 @@ public func describeConnection(
     throw IdentityUnverifiableError(reason: .unreachable, description: String(describing: error))
   }
   do {
-    return try ConnectionIdentity(did: kbDid(description.domain), description: description)
+    return try ConnectionIdentity(description: description, did: kbDid(description.domain))
   } catch {
     throw IdentityUnverifiableError(reason: .notReported, description: String(describing: error))
   }
