@@ -1,10 +1,9 @@
 # Codegen
 
 The generator that reads the pinned Protocol's specs and writes every SDK's
-generated code. It is a Dune project on the OCaml toolchain that
+generated code, and cli's. It is a Dune project on the OCaml toolchain that
 [`ocaml/toolchain.json`](../ocaml/toolchain.json) pins, and
 `ocaml/check-toolchain.py` holds it to the same pins as the OCaml SDK.
-`node/` holds the Node generators each OCaml port replaces.
 
 ## The model
 
@@ -32,9 +31,11 @@ Pointer of the value refused; nothing is defaulted.
 ## The groups
 
 A group writes one subject's files, in every language it has, from the
-model, and refuses a spec that breaks a rule its files rely on. `Groups.all`
-lists them; each group's modules are a directory of `lib/`, with one module
-per language it writes:
+model, and refuses a spec that breaks a rule its files rely on. Each group
+belongs to a target, the repository whose files it writes: `Groups.sdk`
+lists this one's, and `Groups.cli` cli's ([below](#clis-groups)). Each
+group's modules are a directory of `lib/`, with one module per language it
+writes:
 
 - `bus`: every SDK's bus vocabulary, from `bus/registry.json`.
   `Bus.Registry` holds the registry to the bus's rules and derives what the
@@ -226,6 +227,36 @@ per language it writes:
   builds each model as the module runs. `Python_syntax` is the Python it is
   built of.
 
+### cli's groups
+
+cli's launcher (`xynolog/cli`) validates what it reads against Protocol's
+schemas and reads it through Go types of their shape. `lib/cli/` writes
+them, into a cli checkout, from the Protocol that checkout pins:
+
+- `control`: the control API's types and the schemas a control message is
+  read against, from `control/methods.json`, with the control group of
+  `errors/codes.json` (`internal/launcher/control_*_gen.go`).
+- `stack`: the stack's documents' types and their schemas, from `stack/`
+  and `kb-identity/ProjectConfig.json` (`internal/launcher/stack/*_gen.go`).
+- `mcp-tools`: the tools `xynolog mcp` serves, each with self-contained
+  input and output schemas, from cli's own `internal/launcher/verbs/mcp-tools.json`,
+  which `Cli.Mcp_tools_table` reads strictly, and the components it names
+  (`internal/launcher/verbs/mcp_tools_gen.go`).
+
+A type states a schema's shape and none of its rules, which are the
+validator's; a schema is embedded as Protocol writes it. A schema the Go
+SDK declares a type for (a component, or a discovery document) is that
+type, `api.X`, named as `go-types` names it (`Cli.Schemas.api_type`), so
+the launcher restates none of the SDK's types. `test/cli_groups.exe` runs
+the groups against the Protocol sdk pins, with a table of every mcp-tools
+form, and holds the table's refusals; cli's own drift gate holds the files
+to what cli commits.
+
+cli runs the generator the SDK bundle carries (`make codegen`), at the sdk
+commit its `sdk.lock` pins, against its own checkout:
+`xynolog-codegen generate cli ROOT`. The binary is linked statically, so
+it runs in any Linux container.
+
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
 of printable ASCII, a camel-case name in upper or lower snake case, and a
@@ -289,7 +320,8 @@ make generate
 make check-generated
 ```
 
-run every group. `xynolog-codegen generate` writes each OCaml group's files
+run every group of this repository (`xynolog-codegen generate sdk`).
+`xynolog-codegen generate` writes each OCaml group's files
 into the checkout, a TypeScript file as it prints it, and Prettier then lays
 those out, at the version `typescript/package.json` pins. check-generated
 does the same in a copy of the checkout and fails when a file the generator

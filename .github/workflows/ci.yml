@@ -188,6 +188,11 @@ jobs:
       - name: Build, format-check and test the generator
         run: make test-codegen
 
+      - name: The bundle carries the generator
+        run: |
+          make codegen
+          SDK_ARTIFACTS="$(python3 scripts/create-artifact-bundle.py --path codegen)" make verify-artifacts
+
   # No dependency in any lockfile has a published advisory that advisories.toml
   # does not ignore with a reason, and no ignore outlives its finding
   # (build-tools/advisories.py).

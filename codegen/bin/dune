@@ -1,4 +1,7 @@
+; Linked statically, so the binary the SDK bundle carries runs in any Linux
+; container another repository checks its generated files in.
 (executable
  (name main)
  (public_name xynolog-codegen)
- (libraries xynolog_codegen))
+ (libraries xynolog_codegen)
+ (link_flags (-ccopt -static)))
