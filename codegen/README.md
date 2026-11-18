@@ -214,6 +214,14 @@ per language it writes:
   (`typescript/core/src/types.ts`), each component schema as a type written
   as the schema states it, and each kind of id branded. `Typescript_syntax`
   is the TypeScript it is built of, and Prettier lays it out.
+- `python-types`: the Python SDK's `xynolog/types.py`, a frozen `WireModel`
+  for every component schema that is an object and a type alias for every
+  other, but the kinds of id, which it imports from `xynolog.identifiers`. A
+  model states types and no rules: what a value must be beyond its type is
+  the `required` table's. What a schema writes in place is named by
+  `Naming`, and each declaration follows every one it names, so pydantic
+  builds each model as the module runs. `Python_syntax` is the Python it is
+  built of.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal

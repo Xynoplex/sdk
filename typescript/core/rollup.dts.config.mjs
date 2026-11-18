@@ -72,35 +72,13 @@ function selfExternal({ ownShards, redirects = {} }) {
   };
 }
 
-/**
- * The generated validators ship AS a `.d.cts` in `src/`, and tsc does not copy
- * declaration inputs into `dist-types/` — so the openapi entry's one relative
- * import has nothing to resolve there. Point it at the generated declaration
- * itself; its own `components` import falls through to `selfExternal`, which
- * externalizes it to `@xynolog/core` rather than inlining all of `types.ts`.
- */
-function resolveGeneratedValidators() {
-  return {
-    name: 'dts-generated-validators',
-    resolveId(source) {
-      if (source.endsWith('generated/openapi-validators.cjs')) {
-        return resolve(__dirname, 'src/generated/openapi-validators.d.cts');
-      }
-      return null;
-    },
-  };
-}
-
 const entries = [
   { input: 'dist-types/index.d.ts', file: 'dist/index.d.ts' },
-  // `@xynolog/core/openapi` — the generated validators' declarations. Its own
-  // shard is the generated `.d.ts`, which types each validator against
-  // `components['schemas'][…]` from the same bundle.
+  // `@xynolog/core/openapi` — the spec's limits.
   {
     input: 'dist-types/openapi.d.ts',
     file: 'dist/openapi.d.ts',
-    selfExternal: { ownShards: new Set(['openapi']) },
-    prePlugins: [resolveGeneratedValidators()],
+    selfExternal: { ownShards: new Set(['openapi', 'protocol-limits']) },
   },
   {
     input: 'dist-types/testing.d.ts',
@@ -125,9 +103,9 @@ const entries = [
   },
 ];
 
-export default entries.map(({ input, file, selfExternal: cfg, prePlugins = [] }) => ({
+export default entries.map(({ input, file, selfExternal: cfg }) => ({
   input,
   output: { file, format: 'es' },
-  plugins: [...prePlugins, ...(cfg ? [selfExternal(cfg)] : []), dts()],
+  plugins: [...(cfg ? [selfExternal(cfg)] : []), dts()],
   external: isExternal,
 }));

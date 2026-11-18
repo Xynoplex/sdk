@@ -8,7 +8,7 @@
  *
  * Asserted against `protocol/specs/src/components/schemas/` rather than the generated
  * types because the schema is the authority — the TS types, the Go client and
- * the Ajv validators are all derived from it, so a check on any one of them
+ * the required table are all derived from it, so a check on any one of them
  * would be a check on a derivation.
  */
 

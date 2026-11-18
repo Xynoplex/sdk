@@ -17,13 +17,12 @@ type CreateAnnotationRequest = components['schemas']['CreateAnnotationRequest'];
 `src/types.ts` is generated from the spec's component schemas and committed;
 `make generate` writes it again after a change to the spec.
 
-The spec's validators and limits come from the same bundle, on the
-`@xynolog/core/openapi` subpath:
+The spec's limits come from the same spec, on the `@xynolog/core/openapi`
+subpath:
 
 ```typescript
-import { validators, operationLimits, itemLimits } from '@xynolog/core/openapi';
+import { operationLimits, itemLimits } from '@xynolog/core/openapi';
 
-validators.BusEmitRequest(body);                          // Ajv, compiled at build
 operationLimits['POST /bus/emit'].claimSeconds;           // an operation's x-xynolog-limits
 itemLimits['BusSubscribeRequest.pendingReplies'];         // a property's maxItems
 ```

@@ -17,8 +17,7 @@ let lines ~from_ file =
    ambiguous character are Protocol's prose and data restated, and an order
    of imports or of __all__ is the spec's or the writer's, not isort's; and
    RUF100, since a module need not break each of them. Every other rule holds
-   it, as ruff format, the drift gate and the type checkers do.
-   python/sdk/scripts/generate_models.py writes the same line. *)
+   it, as ruff format, the drift gate and the type checkers do. *)
 let python_exempt = "ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
 
 (* A generated Python module's opening comment lines, without their [#]. *)

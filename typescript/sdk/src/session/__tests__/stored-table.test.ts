@@ -23,12 +23,13 @@ import { filter, firstValueFrom } from 'rxjs';
 import {
   CACHE_PER,
   PERSISTED_QUERIES,
+  faultOf,
   isObject,
+  isSchemaName,
   resourceId,
   type CachePer,
   type PersistedQuery,
 } from '@xynolog/core';
-import { validators } from '@xynolog/core/openapi';
 import {
   KEPT_QUERIES,
   WHOLE_KEY,
@@ -158,20 +159,14 @@ function writtenUnder(
   return written;
 }
 
-/** A component's name among the validators; the namespace's `default` is the module itself. */
-const isComponent = (
-  name: string,
-): name is Exclude<keyof typeof validators, 'default'> =>
-  name !== 'default' && Object.hasOwn(validators, name);
-
-/** The validator of the component a `$ref` of the table names. */
-function validatorOf(ref: string): (value: unknown) => boolean {
+/** Whether a value holds as the component a `$ref` of the table names, by the rules every SDK reads the table by. */
+function holdsAs(ref: string): (value: unknown) => boolean {
   const component = /^\.\.\/components\/schemas\/([A-Za-z0-9]+)\.json$/.exec(
     ref,
   )?.[1];
-  if (component === undefined || !isComponent(component))
+  if (component === undefined || !isSchemaName(component))
     throw new Error(`${ref} names no component`);
-  return validators[component];
+  return (value) => faultOf(component, value) === undefined;
 }
 
 /** A stored value with every member the table names but `left`. */
@@ -312,8 +307,8 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
     coupled.storage.set(cacheKey('kb-a', PERSON, 'resource'), '{}');
     const written = writtenUnder(storage, lastEventIdKey('kb-a', PERSON));
-    const scope = validatorOf(table.lastEventIds.propertyNames.$ref);
-    const place = validatorOf(table.lastEventIds.additionalProperties.$ref);
+    const scope = holdsAs(table.lastEventIds.propertyNames.$ref);
+    const place = holdsAs(table.lastEventIds.additionalProperties.$ref);
     expect(Object.keys(written)).toEqual(['res-1']);
     for (const [key, value] of Object.entries(written)) {
       expect(scope(key), `the scope ${key}`).toBe(true);

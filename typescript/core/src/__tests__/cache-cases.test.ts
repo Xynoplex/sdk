@@ -23,7 +23,7 @@ import {
   type CachePer,
   type PersistedQuery,
 } from '../cache-refresh';
-import { validators } from '../openapi';
+import { faultOf, isSchemaName } from '../required';
 
 const ROOT = fileURLToPath(new URL('../../../..', import.meta.url));
 
@@ -73,15 +73,11 @@ function keptQuery(name: string, stated: string): PersistedQuery {
   return name;
 }
 
-/** A component's name among the validators; the namespace's `default` is the module itself. */
-const isComponent = (
-  name: string,
-): name is Exclude<keyof typeof validators, 'default'> =>
-  name !== 'default' && Object.hasOwn(validators, name);
-
+/** Whether `value` holds as a `component`, by the rules every SDK reads the table by. */
 const holds = (component: string, value: unknown): boolean => {
-  if (!isComponent(component)) throw new Error(`${component} has no validator`);
-  return validators[component](value) === true;
+  if (!isSchemaName(component))
+    throw new Error(`${component} is no component schema`);
+  return faultOf(component, value) === undefined;
 };
 
 /** A key held as what the query is asked for per: a resource's id, an annotation's id, or the whole key. */

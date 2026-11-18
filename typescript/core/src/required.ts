@@ -331,6 +331,11 @@ function without(value: unknown, leftOut: LeftOut): unknown {
 /** A value as its reader reads it (`read`), or its first fault. */
 export type Reading = { readonly read: unknown } | { readonly fault: Fault };
 
+/** Whether `name` is a component schema's, as a `$ref` a table states names one. */
+export function isSchemaName(name: string): name is SchemaName {
+  return Object.hasOwn(REQUIRED_SCHEMAS, name);
+}
+
 /** The first fault `value` has as a `schema`, by the rules every SDK reads the table by; nothing, when it has none. */
 export function faultOf(schema: SchemaName, value: unknown): Fault | undefined {
   return faultAt(REQUIRED_SCHEMAS[schema], value, '', new Map());
