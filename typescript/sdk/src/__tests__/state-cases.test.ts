@@ -874,7 +874,9 @@ describe('the state units against protocol/specs/src/client/state-units.json', (
   });
 
   it.each(
-    TABLE.cases.map((stated) => [`${stated.unit}: ${stated.case}`, stated] as const),
+    TABLE.cases.map(
+      (stated) => [`${stated.unit}: ${stated.case}`, stated] as const,
+    ),
   )('%s', async (_name, stated) => {
     await play(stated);
   });
