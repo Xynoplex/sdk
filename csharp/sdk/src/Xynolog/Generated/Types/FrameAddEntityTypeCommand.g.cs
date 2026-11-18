@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(FrameAddEntityTypeCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record FrameAddEntityTypeCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required string Tag { get; init; }
-}
-
-internal sealed class FrameAddEntityTypeCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<FrameAddEntityTypeCommand>
-{
-    public override FrameAddEntityTypeCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("FrameAddEntityTypeCommand", root);
-        return new FrameAddEntityTypeCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            Tag = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "tag", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, FrameAddEntityTypeCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("tag", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Tag, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "FrameAddEntityTypeCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("tag")] public required string Tag { get; init; }
 }

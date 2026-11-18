@@ -4,34 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JanusGraphConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JanusGraphConfig
 {
-    public required string Host { get; init; }
-    public required long Port { get; init; }
-    public string Type => "janusgraph";
-}
-
-internal sealed class JanusGraphConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JanusGraphConfig>
-{
-    public override JanusGraphConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JanusGraphConfig", root);
-        return new JanusGraphConfig
-        {
-            Host = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "host", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JanusGraphConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("host", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Host, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JanusGraphConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("host")] public required string Host { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "janusgraph";
 }

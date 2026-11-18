@@ -4,41 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(TagSchemaJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record TagSchema
 {
-    public required string Description { get; init; }
-    public required string Domain { get; init; }
-    public required string Id { get; init; }
-    public required string Name { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.TagCategory> Tags { get; init; }
-}
-
-internal sealed class TagSchemaJsonConverter : global::System.Text.Json.Serialization.JsonConverter<TagSchema>
-{
-    public override TagSchema Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("TagSchema", root);
-        return new TagSchema
-        {
-            Description = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "description", options),
-            Domain = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "domain", options),
-            Id = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "id", options),
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-            Tags = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.TagCategory>>(root, "tags", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, TagSchema value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("description", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Description, options));
-        fields.Add("domain", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Domain, options));
-        fields.Add("id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        fields.Add("tags", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Tags, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "TagSchema", fields);
-    }
+    [global::Xynolog.Serialization.Wire("description")] public required string Description { get; init; }
+    [global::Xynolog.Serialization.Wire("domain")] public required string Domain { get; init; }
+    [global::Xynolog.Serialization.Wire("id")] public required string Id { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
+    [global::Xynolog.Serialization.Wire("tags")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.TagCategory> Tags { get; init; }
 }

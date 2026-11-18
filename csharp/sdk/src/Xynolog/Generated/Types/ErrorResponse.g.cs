@@ -4,47 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ErrorResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ErrorResponse
 {
-    public string? Code { get; init; }
-    public global::System.Text.Json.JsonElement? Details { get; init; }
-    public required string Error { get; init; }
-    public string? Hint { get; init; }
-}
-
-internal sealed class ErrorResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ErrorResponse>
-{
-    public override ErrorResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ErrorResponse", root);
-        return new ErrorResponse
-        {
-            Code = root.TryGetProperty("code", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Details = root.TryGetProperty("details", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::System.Text.Json.JsonElement>(p1, options) : null,
-            Error = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "error", options),
-            Hint = root.TryGetProperty("hint", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ErrorResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Code is not null)
-        {
-            fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        }
-        if (value.Details is not null)
-        {
-            fields.Add("details", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Details, options));
-        }
-        fields.Add("error", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Error, options));
-        if (value.Hint is not null)
-        {
-            fields.Add("hint", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Hint, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ErrorResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("code")] public string? Code { get; init; }
+    [global::Xynolog.Serialization.Wire("details")] public global::System.Text.Json.JsonElement? Details { get; init; }
+    [global::Xynolog.Serialization.Wire("error")] public required string Error { get; init; }
+    [global::Xynolog.Serialization.Wire("hint")] public string? Hint { get; init; }
 }

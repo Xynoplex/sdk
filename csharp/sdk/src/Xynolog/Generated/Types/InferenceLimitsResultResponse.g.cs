@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(InferenceLimitsResultResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record InferenceLimitsResultResponse
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.EngineLimits> Limits { get; init; }
-}
-
-internal sealed class InferenceLimitsResultResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<InferenceLimitsResultResponse>
-{
-    public override InferenceLimitsResultResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("InferenceLimitsResultResponse", root);
-        return new InferenceLimitsResultResponse
-        {
-            Limits = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.EngineLimits>>(root, "limits", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, InferenceLimitsResultResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("limits", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Limits, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "InferenceLimitsResultResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("limits")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.EngineLimits> Limits { get; init; }
 }

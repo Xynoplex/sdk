@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SettingsThemeChangedEventThemeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum SettingsThemeChangedEventTheme
 {
-    Light,
-    Dark,
-    System,
-}
-
-internal sealed class SettingsThemeChangedEventThemeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SettingsThemeChangedEventTheme>
-{
-    public override SettingsThemeChangedEventTheme Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SettingsThemeChangedEventTheme", root);
-        return root.GetString() switch
-        {
-            "light" => SettingsThemeChangedEventTheme.Light,
-            "dark" => SettingsThemeChangedEventTheme.Dark,
-            "system" => SettingsThemeChangedEventTheme.System,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SettingsThemeChangedEventTheme value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            SettingsThemeChangedEventTheme.Light => "light",
-            SettingsThemeChangedEventTheme.Dark => "dark",
-            SettingsThemeChangedEventTheme.System => "system",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("light")] Light,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("dark")] Dark,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("system")] System,
 }

@@ -4,53 +4,13 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobStartCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobStartCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
-    public long? Attempt { get; init; }
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-    public required global::Xynolog.Types.JobType JobType { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class JobStartCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobStartCommand>
-{
-    public override JobStartCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobStartCommand", root);
-        return new JobStartCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            AnnotationId = root.TryGetProperty("annotationId", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.AnnotationId>(p1, options) : null,
-            Attempt = root.TryGetProperty("attempt", out var p2) ? global::Xynolog.Serialization.WireJson.Read<long>(p2, options) : null,
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-            JobType = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobType>(root, "jobType", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobStartCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        if (value.AnnotationId is not null)
-        {
-            fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        }
-        if (value.Attempt is not null)
-        {
-            fields.Add("attempt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Attempt, options));
-        }
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        fields.Add("jobType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobType, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobStartCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("annotationId")] public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("attempt")] public long? Attempt { get; init; }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("jobType")] public required global::Xynolog.Types.JobType JobType { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

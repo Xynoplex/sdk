@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(WorkerKnowledgeBaseConfigIdentityJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record WorkerKnowledgeBaseConfigIdentity
 {
-    public required string ClientId { get; init; }
-    public required string Issuer { get; init; }
-}
-
-internal sealed class WorkerKnowledgeBaseConfigIdentityJsonConverter : global::System.Text.Json.Serialization.JsonConverter<WorkerKnowledgeBaseConfigIdentity>
-{
-    public override WorkerKnowledgeBaseConfigIdentity Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("WorkerKnowledgeBaseConfigIdentity", root);
-        return new WorkerKnowledgeBaseConfigIdentity
-        {
-            ClientId = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "clientId", options),
-            Issuer = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "issuer", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, WorkerKnowledgeBaseConfigIdentity value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("clientId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ClientId, options));
-        fields.Add("issuer", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Issuer, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "WorkerKnowledgeBaseConfigIdentity", fields);
-    }
+    [global::Xynolog.Serialization.Wire("clientId")] public required string ClientId { get; init; }
+    [global::Xynolog.Serialization.Wire("issuer")] public required string Issuer { get; init; }
 }

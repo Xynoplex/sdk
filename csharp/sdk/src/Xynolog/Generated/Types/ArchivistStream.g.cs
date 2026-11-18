@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ArchivistStreamJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ArchivistStream
 {
-    public required long LastSequence { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class ArchivistStreamJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ArchivistStream>
-{
-    public override ArchivistStream Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ArchivistStream", root);
-        return new ArchivistStream
-        {
-            LastSequence = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "lastSequence", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ArchivistStream value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("lastSequence", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LastSequence, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ArchivistStream", fields);
-    }
+    [global::Xynolog.Serialization.Wire("lastSequence")] public required long LastSequence { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

@@ -1,65 +1,24 @@
 // Generated from the component schemas in protocol/specs/src; do not edit.
 // Regenerate: make generate (codegen/lib/kotlin_sdk/kotlin_sdk.ml)
-@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class, kotlin.ExperimentalStdlibApi::class)
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * One page of the resources a text search found, and which kind of answer it is.
- */
+/** One page of the resources a text search found, and which kind of answer it is. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class MatchResourcesResponse(
-    @SerialName("resources")
     public val resources: kotlin.collections.List<ResourceDescriptor>,
-    /**
-     * How many resources the search found in all, and not only on this page.
-     */
-    @SerialName("total")
+    /** How many resources the search found in all, and not only on this page. */
     public val total: Long,
-    /**
-     * How many of the resources the search found were passed over before this page, as the request stated.
-     */
-    @SerialName("offset")
+    /** How many of the resources the search found were passed over before this page, as the request stated. */
     public val offset: Long,
-    /**
-     * The limit the search was made with.
-     */
-    @SerialName("limit")
+    /** The limit the search was made with. */
     public val limit: Long,
-    /**
-     * What kind of answer this is: 'lexical' — the resources matched the query text; 'semantic' — no lexical match existed, and these resources discuss the query per the vector index. Required so every producer labels its answer; a UI can render semantic results as a different kind of page ('no title matches, but these documents discuss it').
-     */
-    @SerialName("matchKind")
+    /** What kind of answer this is: 'lexical' — the resources matched the query text; 'semantic' — no lexical match existed, and these resources discuss the query per the vector index. Required so every producer labels its answer; a UI can render semantic results as a different kind of page ('no title matches, but these documents discuss it'). */
     public val matchKind: MatchResourcesResponseMatchKind,
 ) {
     /** How Java makes a `MatchResourcesResponse`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */

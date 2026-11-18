@@ -4,95 +4,21 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(YieldCreateCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record YieldCreateCommand
 {
-    public global::System.Collections.Generic.IReadOnlyList<string>? Roles { get; init; }
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required long ByteSize { get; init; }
-    public required string ContentChecksum { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<string>? EntityTypes { get; init; }
-    public required string Format { get; init; }
-    public global::Xynolog.Types.YieldCreateCommandGeneratedFrom? GeneratedFrom { get; init; }
-    public string? GenerationPrompt { get; init; }
-    public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
-    public bool? IsDraft { get; init; }
-    public global::Xynolog.Identifiers.JobId? JobId { get; init; }
-    public string? Language { get; init; }
-    public required string Name { get; init; }
-    public required string StorageUri { get; init; }
-}
-
-internal sealed class YieldCreateCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<YieldCreateCommand>
-{
-    public override YieldCreateCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("YieldCreateCommand", root);
-        return new YieldCreateCommand
-        {
-            Roles = root.TryGetProperty("_roles", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p0, options) : null,
-            UserId = root.TryGetProperty("_userId", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p1, options) : null,
-            ByteSize = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "byteSize", options),
-            ContentChecksum = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "contentChecksum", options),
-            EntityTypes = root.TryGetProperty("entityTypes", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p4, options) : null,
-            Format = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "format", options),
-            GeneratedFrom = root.TryGetProperty("generatedFrom", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.YieldCreateCommandGeneratedFrom>(p6, options) : null,
-            GenerationPrompt = root.TryGetProperty("generationPrompt", out var p7) ? global::Xynolog.Serialization.WireJson.Read<string>(p7, options) : null,
-            Generator = root.TryGetProperty("generator", out var p8) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p8, options) : null,
-            IsDraft = root.TryGetProperty("isDraft", out var p9) ? global::Xynolog.Serialization.WireJson.Read<bool>(p9, options) : null,
-            JobId = root.TryGetProperty("jobId", out var p10) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.JobId>(p10, options) : null,
-            Language = root.TryGetProperty("language", out var p11) ? global::Xynolog.Serialization.WireJson.Read<string>(p11, options) : null,
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-            StorageUri = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "storageUri", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, YieldCreateCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Roles is not null)
-        {
-            fields.Add("_roles", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Roles, options));
-        }
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("byteSize", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ByteSize, options));
-        fields.Add("contentChecksum", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ContentChecksum, options));
-        if (value.EntityTypes is not null)
-        {
-            fields.Add("entityTypes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntityTypes, options));
-        }
-        fields.Add("format", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Format, options));
-        if (value.GeneratedFrom is not null)
-        {
-            fields.Add("generatedFrom", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GeneratedFrom, options));
-        }
-        if (value.GenerationPrompt is not null)
-        {
-            fields.Add("generationPrompt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GenerationPrompt, options));
-        }
-        if (value.Generator is not null)
-        {
-            fields.Add("generator", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Generator, options));
-        }
-        if (value.IsDraft is not null)
-        {
-            fields.Add("isDraft", global::System.Text.Json.JsonSerializer.SerializeToElement(value.IsDraft, options));
-        }
-        if (value.JobId is not null)
-        {
-            fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        }
-        if (value.Language is not null)
-        {
-            fields.Add("language", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Language, options));
-        }
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        fields.Add("storageUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StorageUri, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "YieldCreateCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_roles")] public global::System.Collections.Generic.IReadOnlyList<string>? Roles { get; init; }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("byteSize")] public required long ByteSize { get; init; }
+    [global::Xynolog.Serialization.Wire("contentChecksum")] public required string ContentChecksum { get; init; }
+    [global::Xynolog.Serialization.Wire("entityTypes")] public global::System.Collections.Generic.IReadOnlyList<string>? EntityTypes { get; init; }
+    [global::Xynolog.Serialization.Wire("format")] public required string Format { get; init; }
+    [global::Xynolog.Serialization.Wire("generatedFrom")] public global::Xynolog.Types.YieldCreateCommandGeneratedFrom? GeneratedFrom { get; init; }
+    [global::Xynolog.Serialization.Wire("generationPrompt")] public string? GenerationPrompt { get; init; }
+    [global::Xynolog.Serialization.Wire("generator")] public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
+    [global::Xynolog.Serialization.Wire("isDraft")] public bool? IsDraft { get; init; }
+    [global::Xynolog.Serialization.Wire("jobId")] public global::Xynolog.Identifiers.JobId? JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
+    [global::Xynolog.Serialization.Wire("storageUri")] public required string StorageUri { get; init; }
 }

@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnnotationRemovedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AnnotationRemovedPayload
 {
-    public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
-}
-
-internal sealed class AnnotationRemovedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnnotationRemovedPayload>
-{
-    public override AnnotationRemovedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnnotationRemovedPayload", root);
-        return new AnnotationRemovedPayload
-        {
-            AnnotationId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "annotationId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnnotationRemovedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AnnotationRemovedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationId")] public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
 }

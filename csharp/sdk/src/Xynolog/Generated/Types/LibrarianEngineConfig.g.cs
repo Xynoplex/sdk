@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(LibrarianEngineConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record LibrarianEngineConfig
 {
-    public string? ApiKeyEnv { get; init; }
-    public required string BaseUrl { get; init; }
-    public required global::Xynolog.Types.Engine Engine { get; init; }
-}
-
-internal sealed class LibrarianEngineConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<LibrarianEngineConfig>
-{
-    public override LibrarianEngineConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("LibrarianEngineConfig", root);
-        return new LibrarianEngineConfig
-        {
-            ApiKeyEnv = root.TryGetProperty("apiKeyEnv", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            BaseUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "baseUrl", options),
-            Engine = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Engine>(root, "engine", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, LibrarianEngineConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.ApiKeyEnv is not null)
-        {
-            fields.Add("apiKeyEnv", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ApiKeyEnv, options));
-        }
-        fields.Add("baseUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.BaseUrl, options));
-        fields.Add("engine", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Engine, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "LibrarianEngineConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("apiKeyEnv")] public string? ApiKeyEnv { get; init; }
+    [global::Xynolog.Serialization.Wire("baseUrl")] public required string BaseUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("engine")] public required global::Xynolog.Types.Engine Engine { get; init; }
 }

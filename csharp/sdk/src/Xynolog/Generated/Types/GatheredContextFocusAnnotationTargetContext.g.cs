@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatheredContextFocusAnnotationTargetContextJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatheredContextFocusAnnotationTargetContext
 {
-    public required string Content { get; init; }
-    public string? Summary { get; init; }
-}
-
-internal sealed class GatheredContextFocusAnnotationTargetContextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatheredContextFocusAnnotationTargetContext>
-{
-    public override GatheredContextFocusAnnotationTargetContext Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatheredContextFocusAnnotationTargetContext", root);
-        return new GatheredContextFocusAnnotationTargetContext
-        {
-            Content = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "content", options),
-            Summary = root.TryGetProperty("summary", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatheredContextFocusAnnotationTargetContext value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("content", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Content, options));
-        if (value.Summary is not null)
-        {
-            fields.Add("summary", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Summary, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatheredContextFocusAnnotationTargetContext", fields);
-    }
+    [global::Xynolog.Serialization.Wire("content")] public required string Content { get; init; }
+    [global::Xynolog.Serialization.Wire("summary")] public string? Summary { get; init; }
 }

@@ -4,43 +4,13 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobCompleteJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobComplete
 {
-    public required string CompletedAt { get; init; }
-    public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
-    public required global::Xynolog.Types.JobParams Params { get; init; }
-    public required global::Xynolog.Types.JobStoredResult Result { get; init; }
-    public required string StartedAt { get; init; }
-    public string Status => "complete";
-}
-
-internal sealed class JobCompleteJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobComplete>
-{
-    public override JobComplete Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobComplete", root);
-        return new JobComplete
-        {
-            CompletedAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "completedAt", options),
-            Metadata = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobMetadata>(root, "metadata", options),
-            Params = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobParams>(root, "params", options),
-            Result = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobStoredResult>(root, "result", options),
-            StartedAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "startedAt", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobComplete value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("completedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CompletedAt, options));
-        fields.Add("metadata", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Metadata, options));
-        fields.Add("params", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Params, options));
-        fields.Add("result", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Result, options));
-        fields.Add("startedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StartedAt, options));
-        fields.Add("status", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Status, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobComplete", fields);
-    }
+    [global::Xynolog.Serialization.Wire("completedAt")] public required string CompletedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("metadata")] public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
+    [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.JobParams Params { get; init; }
+    [global::Xynolog.Serialization.Wire("result")] public required global::Xynolog.Types.JobStoredResult Result { get; init; }
+    [global::Xynolog.Serialization.Wire("startedAt")] public required string StartedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("status")] public string Status => "complete";
 }

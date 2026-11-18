@@ -4,67 +4,26 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
 import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * Request payload sent on the match:search-request bus channel to find candidate matches.
- */
+/** Request payload sent on the match:search-request bus channel to find candidate matches. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class MatchSearchRequest(
-    /**
-     * Resource ID the reference annotation belongs to. Used to scope result events on the EventBus so the events-stream delivers them to participants viewing this resource.
-     */
-    @SerialName("resourceId")
+    /** Resource ID the reference annotation belongs to. Used to scope result events on the EventBus so the events-stream delivers them to participants viewing this resource. */
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
-    /**
-     * Annotation ID of the reference to search candidates for
-     */
-    @SerialName("referenceId")
+    /** Annotation ID of the reference to search candidates for */
     @get:JvmExposeBoxed
     public val referenceId: AnnotationId,
-    /**
-     * Gathered context for the reference annotation
-     */
-    @SerialName("context")
+    /** Gathered context for the reference annotation */
     public val context: GatheredContext,
-    /**
-     * Maximum number of candidate results to return
-     */
-    @SerialName("limit")
+    /** Maximum number of candidate results to return */
     public val limit: Long? = null,
-    /**
-     * Enable semantic similarity scoring in addition to keyword matching
-     */
-    @SerialName("useSemanticScoring")
+    /** Enable semantic similarity scoring in addition to keyword matching */
     public val useSemanticScoring: Boolean? = null,
 ) {
     /** How Java makes a `MatchSearchRequest`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -76,15 +35,8 @@ public data class MatchSearchRequest(
         private var limit: Long? = null
         private var useSemanticScoring: Boolean? = null
 
-        public fun limit(limit: Long?): Builder {
-            this.limit = limit
-            return this
-        }
-
-        public fun useSemanticScoring(useSemanticScoring: Boolean?): Builder {
-            this.useSemanticScoring = useSemanticScoring
-            return this
-        }
+        public fun limit(limit: Long?): Builder = apply { this.limit = limit }
+        public fun useSemanticScoring(useSemanticScoring: Boolean?): Builder = apply { this.useSemanticScoring = useSemanticScoring }
 
         public fun build(): MatchSearchRequest = MatchSearchRequest(resourceId = resourceId, referenceId = referenceId, context = context, limit = limit, useSemanticScoring = useSemanticScoring)
     }

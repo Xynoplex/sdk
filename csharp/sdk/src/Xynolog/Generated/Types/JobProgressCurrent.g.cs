@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressCurrentJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressCurrent
 {
-    public required global::Xynolog.Types.JobProgressCurrentKind Kind { get; init; }
-    public required string Value { get; init; }
-}
-
-internal sealed class JobProgressCurrentJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressCurrent>
-{
-    public override JobProgressCurrent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressCurrent", root);
-        return new JobProgressCurrent
-        {
-            Kind = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobProgressCurrentKind>(root, "kind", options),
-            Value = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "value", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressCurrent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("kind", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kind, options));
-        fields.Add("value", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Value, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobProgressCurrent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("kind")] public required global::Xynolog.Types.JobProgressCurrentKind Kind { get; init; }
+    [global::Xynolog.Serialization.Wire("value")] public required string Value { get; init; }
 }

@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextDeclinedEntryJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AnchoredTextDeclinedEntry
 {
-    public required global::Xynolog.Types.ExtractionDeclinedReason Declined { get; init; }
-    public required string Stamp { get; init; }
-    public required long V { get; init; }
-}
-
-internal sealed class AnchoredTextDeclinedEntryJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextDeclinedEntry>
-{
-    public override AnchoredTextDeclinedEntry Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextDeclinedEntry", root);
-        return new AnchoredTextDeclinedEntry
-        {
-            Declined = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ExtractionDeclinedReason>(root, "declined", options),
-            Stamp = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "stamp", options),
-            V = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "v", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextDeclinedEntry value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("declined", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Declined, options));
-        fields.Add("stamp", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Stamp, options));
-        fields.Add("v", global::System.Text.Json.JsonSerializer.SerializeToElement(value.V, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AnchoredTextDeclinedEntry", fields);
-    }
+    [global::Xynolog.Serialization.Wire("declined")] public required global::Xynolog.Types.ExtractionDeclinedReason Declined { get; init; }
+    [global::Xynolog.Serialization.Wire("stamp")] public required string Stamp { get; init; }
+    [global::Xynolog.Serialization.Wire("v")] public required long V { get; init; }
 }

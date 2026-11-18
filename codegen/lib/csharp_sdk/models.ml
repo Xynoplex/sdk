@@ -28,7 +28,6 @@ exception Refused of string
 let refuse fmt = Printf.ksprintf (fun m -> raise (Refused m)) fmt
 let types = "global::Xynolog.Types."
 let json name = Csharp_converter.json name
-let wire name = C.Name ("global::Xynolog.Serialization.WireJson." ^ name)
 let element = C.T (json "JsonElement")
 
 let generic name args =
@@ -166,26 +165,6 @@ type field = {
   constant : string option;
 }
 
-(* The converter's [Read], up to the value it returns. *)
-let reading name =
-  [
-    C.Using_var
-      ( "document",
-        Call (Name (json "JsonDocument.ParseValue"), [], [ Ref (Name "reader") ])
-      );
-    C.Var ("root", Member (Name "document", "RootElement"));
-    C.Do (Call (wire "Validate", [], [ Arg (Str name); Arg (Name "root") ]));
-  ]
-
-let throw_json message =
-  C.Throw
-    (New
-       {
-         type_ = Some (T (json "JsonException"));
-         args = Some [ Arg (Str message) ];
-         init = None;
-       })
-
 let rec named state name =
   if List.mem name state.identifiers then
     C.T ("global::Xynolog.Identifiers." ^ name)
@@ -258,16 +237,20 @@ and type_of state owner property ((schema, json) as node) =
   | { type_ = None; _ } when Schema.keywords s = [] -> element
   | _ -> refuse "%s.%s has an unsupported type shape." owner property
 
+(* A model as the record, union or enumeration it is, named to the
+   hand-written converter that reads and writes it. *)
 and declare state name d =
-  let s = layer name d.schema in
-  let attribute = Csharp_converter.attribute name in
-  match s with
-  | { enum = Some values; _ } -> enum name ~attribute values
+  let read_as attribute : C.attribute =
+    { name = "global::Xynolog.Serialization." ^ attribute; args = [] }
+  in
+  match layer name d.schema with
+  | { enum = Some values; _ } ->
+      enum name ~attribute:(read_as "WireEnum") values
   | { one_of = Some members; _ } ->
-      union state name ~attribute (members, child "oneOf" d.json)
+      union state name (members, child "oneOf" d.json)
   | { any_of = Some members; _ } ->
-      union state name ~attribute (members, child "anyOf" d.json)
-  | _ -> object_ state name ~attribute d
+      union state name (members, child "anyOf" d.json)
+  | _ -> object_ state name ~attribute:(read_as "WireObject") d
 
 and enum name ~attribute values =
   let members =
@@ -282,42 +265,24 @@ and enum name ~attribute values =
   if
     List.length (List.sort_uniq String.compare constants) <> List.length members
   then refuse "%s has colliding C# enumeration names." name;
-  let constant member = C.Name (name ^ "." ^ pascal member) in
-  let unknown = (C.Discard, throw_json "Unknown enumeration value.") in
   [
     C.Enum
       {
         attributes = [ attribute ];
         modifiers = [ Public ];
         name;
-        members = constants;
+        members =
+          List.map
+            (fun member ->
+              ( [
+                  {
+                    C.name = json "Serialization.JsonStringEnumMemberName";
+                    args = [ Str member ];
+                  };
+                ],
+                pascal member ))
+            members;
       };
-    Csharp_converter.converter name
-      ~read:
-        (reading name
-        @ [
-            Return
-              (Switch
-                 ( Call (Member (Name "root", "GetString"), [], []),
-                   List.map (fun m -> (C.Value (Str m), constant m)) members
-                   @ [ unknown ] ));
-          ])
-      ~write:
-        [
-          Do
-            (Call
-               ( Member (Name "writer", "WriteStringValue"),
-                 [],
-                 [
-                   Arg
-                     (Switch
-                        ( Name "value",
-                          List.map
-                            (fun m -> (C.Value (constant m), C.Str m))
-                            members
-                          @ [ unknown ] ));
-                 ] ));
-        ];
   ]
 
 (* An object's properties, its requirements and whether it is open, gathered
@@ -370,6 +335,11 @@ and object_ state name ~attribute d =
   let s = layer name d.schema in
   if s.type_ <> Some [ Object ] && s.all_of = None then
     refuse "%s is not an object schema." name;
+  let owner =
+    Inherited.of_schemas
+      ~find:(fun n -> (definition state n).schema)
+      ~referenced name d.schema
+  in
   let fields =
     List.map
       (fun (wire, ((schema, _) as node)) ->
@@ -381,7 +351,7 @@ and object_ state name ~attribute d =
         let type_ =
           match constant with
           | Some _ -> C.T "string"
-          | None -> type_of state name field node
+          | None -> type_of state (owner wire) field node
         in
         { wire; name = field; type_; required; nullable; constant })
       (List.sort (fun (a, _) (b, _) -> String.compare a b) properties)
@@ -393,6 +363,9 @@ and object_ state name ~attribute d =
   then refuse "%s has colliding C# property names." name;
   let stated t = C.Generic (types ^ "Stated", [ Nullable t ]) in
   let extra = generic "IReadOnlyDictionary" [ T "string"; element ] in
+  let wire_name f : C.attribute =
+    { name = "global::Xynolog.Serialization.Wire"; args = [ Str f.wire ] }
+  in
   let members =
     List.map
       (fun f ->
@@ -400,6 +373,7 @@ and object_ state name ~attribute d =
         | Some c ->
             C.Expression_property
               {
+                attributes = [ wire_name f ];
                 modifiers = [ Public ];
                 type_ = T "string";
                 name = f.name;
@@ -408,6 +382,7 @@ and object_ state name ~attribute d =
         | None ->
             C.Property
               {
+                attributes = [ wire_name f ];
                 modifiers =
                   (if f.required then [ Public; Required ] else [ Public ]);
                 type_ =
@@ -424,6 +399,8 @@ and object_ state name ~attribute d =
       [
         C.Property
           {
+            attributes =
+              [ { name = "global::Xynolog.Serialization.WireRest"; args = [] } ];
             modifiers = [ Public ];
             type_ = extra;
             name = "AdditionalProperties";
@@ -440,122 +417,6 @@ and object_ state name ~attribute d =
       ]
     else []
   in
-  let null_kind e =
-    C.Binary (Member (e, "ValueKind"), Eq, Name (json "JsonValueKind.Null"))
-  in
-  let nothing t = C.Cast (Nullable t, Null) in
-  let reads =
-    List.mapi
-      (fun i f ->
-        let p = C.Name ("p" ^ string_of_int i) in
-        let read =
-          C.Call (wire "Read", [ f.type_ ], [ Arg p; Arg (Name "options") ])
-        in
-        let read =
-          if f.nullable then C.Conditional (null_kind p, nothing f.type_, read)
-          else read
-        in
-        let value =
-          if f.required then
-            let member =
-              C.Call
-                ( wire "ReadMember",
-                  [ f.type_ ],
-                  [ Arg (Name "root"); Arg (Str f.wire); Arg (Name "options") ]
-                )
-            in
-            if f.nullable then
-              C.Conditional
-                ( null_kind
-                    (Call
-                       ( Member (Name "root", "GetProperty"),
-                         [],
-                         [ Arg (Str f.wire) ] )),
-                  nothing f.type_,
-                  member )
-            else member
-          else
-            C.Conditional
-              ( Call
-                  ( Member (Name "root", "TryGetProperty"),
-                    [],
-                    [ Arg (Str f.wire); Out_var ("p" ^ string_of_int i) ] ),
-                (if f.nullable then
-                   New
-                     {
-                       type_ = Some (stated f.type_);
-                       args = Some [ Arg read ];
-                       init = None;
-                     }
-                 else read),
-                if f.nullable then Default else Null )
-        in
-        (f.name, value))
-      (List.filter (fun f -> f.constant = None) fields)
-    @
-    if open_ then
-      [
-        ( "AdditionalProperties",
-          C.Call
-            ( wire "Extra",
-              [],
-              [
-                Arg (Name "root");
-                Arg
-                  (Array_new
-                     (T "string", List.map (fun f -> C.Str f.wire) fields));
-              ] ) );
-      ]
-    else []
-  in
-  let add key value =
-    C.Do (Call (Member (Name "fields", "Add"), [], [ Arg key; Arg value ]))
-  in
-  let writes =
-    List.map
-      (fun f ->
-        let access = C.Member (Name "value", f.name) in
-        let add =
-          add (Str f.wire)
-            (Call
-               ( Name (json "JsonSerializer.SerializeToElement"),
-                 [],
-                 [
-                   Arg
-                     (if (not f.required) && f.nullable then
-                        Member (access, "Value")
-                      else access);
-                   Arg (Name "options");
-                 ] ))
-        in
-        if f.required then add
-        else
-          C.If
-            ( (if f.nullable then Member (access, "IsPresent")
-               else Is_not_null access),
-              [ add ] ))
-      fields
-    @ (if open_ then
-         [
-           C.Foreach
-             {
-               name = "pair";
-               over = Member (Name "value", "AdditionalProperties");
-               body =
-                 add
-                   (Member (Name "pair", "Key"))
-                   (Member (Name "pair", "Value"));
-             };
-         ]
-       else [])
-    @ [
-        C.Do
-          (Call
-             ( wire "WriteObject",
-               [],
-               [ Arg (Name "writer"); Arg (Str name); Arg (Name "fields") ] ));
-      ]
-  in
   [
     C.Type
       {
@@ -567,33 +428,11 @@ and object_ state name ~attribute d =
         base = None;
         body = Some (Packed, members);
       };
-    Csharp_converter.converter name
-      ~read:
-        (reading name
-        @ [
-            Return
-              (New
-                 {
-                   type_ = Some (T name);
-                   args = None;
-                   init = Some (Assigns reads);
-                 });
-          ])
-      ~write:
-        (C.Var
-           ( "fields",
-             New
-               {
-                 type_ = Some (generic "Dictionary" [ T "string"; element ]);
-                 args = Some [];
-                 init = None;
-               } )
-        :: writes);
   ]
 
 (* The case a union's member is: what it refers to, Array, Text, or the one
    string its first property that admits one admits, else Object. *)
-and union state name ~attribute (members, written) =
+and union state name (members, written) =
   let variant (s : Schema.schema) =
     match s with
     | { ref_ = Some r; _ } -> referenced r
@@ -622,6 +461,12 @@ and union state name ~attribute (members, written) =
   let names = List.map fst cases in
   if List.length (List.sort_uniq String.compare names) <> List.length names then
     refuse "%s has colliding C# union cases." name;
+  let attribute : C.attribute =
+    {
+      name = "global::Xynolog.Serialization.WireUnion";
+      args = List.map (fun case -> C.Typeof (C.T (name ^ "." ^ case))) names;
+    }
+  in
   [
     C.Type
       {
@@ -650,70 +495,6 @@ and union state name ~attribute (members, written) =
                        }))
                 cases );
       };
-    Csharp_converter.converter name
-      ~read:
-        (reading name
-        @ [
-            Var
-              ( "variant",
-                Call (wire "Variant", [], [ Arg (Str name); Arg (Name "root") ])
-              );
-            Return
-              (Switch
-                 ( Name "variant",
-                   List.mapi
-                     (fun i (case, t) ->
-                       ( C.Value (Int i),
-                         C.New
-                           {
-                             type_ = Some (T (name ^ "." ^ case));
-                             args =
-                               Some
-                                 [
-                                   Arg
-                                     (Call
-                                        ( wire "Read",
-                                          [ t ],
-                                          [
-                                            Arg (Name "root");
-                                            Arg (Name "options");
-                                          ] ));
-                                 ];
-                             init = None;
-                           } ))
-                     cases
-                   @ [ (Discard, throw_json "No matching union variant.") ] ));
-          ])
-      ~write:
-        [
-          Switch_stmt
-            {
-              on = Name "value";
-              cases =
-                List.map
-                  (fun (case, _) ->
-                    ( C.T (name ^ "." ^ case),
-                      "selected",
-                      C.Do
-                        (Call
-                           ( Name (json "JsonSerializer.Serialize"),
-                             [],
-                             [
-                               Arg (Name "writer");
-                               Arg (Member (Name "selected", "Value"));
-                               Arg (Name "options");
-                             ] )) ))
-                  cases;
-              default =
-                Throw_stmt
-                  (New
-                     {
-                       type_ = Some (T (json "JsonException"));
-                       args = Some [ Arg (Str "Unknown union variant.") ];
-                       init = None;
-                     });
-            };
-        ];
   ]
 
 type t = {

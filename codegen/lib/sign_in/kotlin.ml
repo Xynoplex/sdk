@@ -1,7 +1,7 @@
 (* How a writer keeps the sign-in store to its owner, as the Kotlin SDK reads
    it (xynolog.signin): each mode as the permissions a POSIX file system
-   names it, and the access list Windows gives the directory, made for the
-   user whose SID is [owner]. *)
+   names it, and the access lists Windows gives the directory and a file, each
+   made for the user whose SID is [owner]. *)
 
 module K = Kotlin_syntax
 
@@ -21,20 +21,22 @@ let mode name (m : Owner_only.mode) =
     ~value:(K.Same_line (K.Str (permissions m.octal)))
     name
 
+let access_list name (l : Owner_only.access_list) =
+  K.function_ ~about:(K.Block l.docs) ~visibility:K.Internal
+    ~params:[ ("owner", K.Type "String") ]
+    ~returns:(K.Type "String") name
+    (K.Same_line
+       (K.Binary
+          ( K.Binary (K.Str l.before, K.Plus, K.Name "owner"),
+            K.Plus,
+            K.Str l.after )))
+
 let file (o : Owner_only.t) =
   Kotlin_sdk.table ~from_:Owner_only.file __FILE__ ~package:"xynolog.signin"
     ~name:"OwnerOnlyTable" ~imports:[]
     [
       mode "OWNER_ONLY_DIRECTORY_PERMISSIONS" o.directory;
       mode "OWNER_ONLY_FILE_PERMISSIONS" o.file;
-      K.function_ ~about:(K.Block o.directory_access_list.docs)
-        ~visibility:K.Internal
-        ~params:[ ("owner", K.Type "String") ]
-        ~returns:(K.Type "String") "ownerOnlyDirectoryAccessList"
-        (K.Same_line
-           (K.Binary
-              ( K.Binary
-                  (K.Str o.directory_access_list.before, K.Plus, K.Name "owner"),
-                K.Plus,
-                K.Str o.directory_access_list.after )));
+      access_list "ownerOnlyDirectoryAccessList" o.directory_access_list;
+      access_list "ownerOnlyFileAccessList" o.file_access_list;
     ]

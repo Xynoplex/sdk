@@ -4,26 +4,7 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseEntityTypesRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseEntityTypesRequest
 {
-}
-
-internal sealed class BrowseEntityTypesRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseEntityTypesRequest>
-{
-    public override BrowseEntityTypesRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseEntityTypesRequest", root);
-        return new BrowseEntityTypesRequest
-        {
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseEntityTypesRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseEntityTypesRequest", fields);
-    }
 }

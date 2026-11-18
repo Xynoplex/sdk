@@ -4,41 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnnotationTargetJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AnnotationTarget
 {
-    public global::Xynolog.Types.AnnotationSelector? Selector { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId Source { get; init; }
-    public global::Xynolog.Types.AnnotationTargetType? Type { get; init; }
-}
-
-internal sealed class AnnotationTargetJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnnotationTarget>
-{
-    public override AnnotationTarget Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnnotationTarget", root);
-        return new AnnotationTarget
-        {
-            Selector = root.TryGetProperty("selector", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationSelector>(p0, options) : null,
-            Source = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "source", options),
-            Type = root.TryGetProperty("type", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationTargetType>(p2, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnnotationTarget value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Selector is not null)
-        {
-            fields.Add("selector", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Selector, options));
-        }
-        fields.Add("source", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Source, options));
-        if (value.Type is not null)
-        {
-            fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AnnotationTarget", fields);
-    }
+    [global::Xynolog.Serialization.Wire("selector")] public global::Xynolog.Types.AnnotationSelector? Selector { get; init; }
+    [global::Xynolog.Serialization.Wire("source")] public required global::Xynolog.Identifiers.ResourceId Source { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public global::Xynolog.Types.AnnotationTargetType? Type { get; init; }
 }

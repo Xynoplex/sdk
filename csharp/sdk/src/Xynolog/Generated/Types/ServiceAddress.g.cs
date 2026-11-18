@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ServiceAddressJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ServiceAddress
 {
-    public required string Host { get; init; }
-    public required long Port { get; init; }
-}
-
-internal sealed class ServiceAddressJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ServiceAddress>
-{
-    public override ServiceAddress Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ServiceAddress", root);
-        return new ServiceAddress
-        {
-            Host = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "host", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ServiceAddress value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("host", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Host, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ServiceAddress", fields);
-    }
+    [global::Xynolog.Serialization.Wire("host")] public required string Host { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
 }

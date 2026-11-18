@@ -4,44 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatherFailedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatherFailed
 {
-    public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
-    public global::Xynolog.Types.GatherFailedCode? Code { get; init; }
-    public string? Details { get; init; }
-    public required string Message { get; init; }
-}
-
-internal sealed class GatherFailedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatherFailed>
-{
-    public override GatherFailed Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatherFailed", root);
-        return new GatherFailed
-        {
-            AnnotationId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "annotationId", options),
-            Code = root.TryGetProperty("code", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.GatherFailedCode>(p1, options) : null,
-            Details = root.TryGetProperty("details", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            Message = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "message", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatherFailed value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        if (value.Code is not null)
-        {
-            fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        }
-        if (value.Details is not null)
-        {
-            fields.Add("details", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Details, options));
-        }
-        fields.Add("message", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Message, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatherFailed", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationId")] public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("code")] public global::Xynolog.Types.CommandErrorCode? Code { get; init; }
+    [global::Xynolog.Serialization.Wire("details")] public string? Details { get; init; }
+    [global::Xynolog.Serialization.Wire("message")] public required string Message { get; init; }
 }

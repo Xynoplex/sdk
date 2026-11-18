@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobStatusResponseStatusJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum JobStatusResponseStatus
 {
-    Pending,
-    Running,
-    Complete,
-    Failed,
-    Cancelled,
-}
-
-internal sealed class JobStatusResponseStatusJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobStatusResponseStatus>
-{
-    public override JobStatusResponseStatus Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobStatusResponseStatus", root);
-        return root.GetString() switch
-        {
-            "pending" => JobStatusResponseStatus.Pending,
-            "running" => JobStatusResponseStatus.Running,
-            "complete" => JobStatusResponseStatus.Complete,
-            "failed" => JobStatusResponseStatus.Failed,
-            "cancelled" => JobStatusResponseStatus.Cancelled,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobStatusResponseStatus value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            JobStatusResponseStatus.Pending => "pending",
-            JobStatusResponseStatus.Running => "running",
-            JobStatusResponseStatus.Complete => "complete",
-            JobStatusResponseStatus.Failed => "failed",
-            JobStatusResponseStatus.Cancelled => "cancelled",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("pending")] Pending,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("running")] Running,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("complete")] Complete,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("failed")] Failed,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("cancelled")] Cancelled,
 }

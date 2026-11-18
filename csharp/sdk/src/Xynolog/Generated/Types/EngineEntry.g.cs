@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(EngineEntryJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record EngineEntry
 {
-    public required global::Xynolog.Types.Engine Engine { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter>? Jobs { get; init; }
-}
-
-internal sealed class EngineEntryJsonConverter : global::System.Text.Json.Serialization.JsonConverter<EngineEntry>
-{
-    public override EngineEntry Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("EngineEntry", root);
-        return new EngineEntry
-        {
-            Engine = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Engine>(root, "engine", options),
-            Jobs = root.TryGetProperty("jobs", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter>>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, EngineEntry value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("engine", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Engine, options));
-        if (value.Jobs is not null)
-        {
-            fields.Add("jobs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Jobs, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "EngineEntry", fields);
-    }
+    [global::Xynolog.Serialization.Wire("engine")] public required global::Xynolog.Types.Engine Engine { get; init; }
+    [global::Xynolog.Serialization.Wire("jobs")] public global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter>? Jobs { get; init; }
 }

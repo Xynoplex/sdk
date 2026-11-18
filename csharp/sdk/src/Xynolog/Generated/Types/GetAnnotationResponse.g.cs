@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GetAnnotationResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GetAnnotationResponse
 {
-    public required global::Xynolog.Types.Annotation Annotation { get; init; }
-    public required global::Xynolog.Types.ResourceDescriptor? ResolvedResource { get; init; }
-    public required global::Xynolog.Types.ResourceDescriptor? Resource { get; init; }
-}
-
-internal sealed class GetAnnotationResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GetAnnotationResponse>
-{
-    public override GetAnnotationResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GetAnnotationResponse", root);
-        return new GetAnnotationResponse
-        {
-            Annotation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Annotation>(root, "annotation", options),
-            ResolvedResource = root.GetProperty("resolvedResource").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (global::Xynolog.Types.ResourceDescriptor?)null : global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ResourceDescriptor>(root, "resolvedResource", options),
-            Resource = root.GetProperty("resource").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (global::Xynolog.Types.ResourceDescriptor?)null : global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ResourceDescriptor>(root, "resource", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GetAnnotationResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Annotation, options));
-        fields.Add("resolvedResource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResolvedResource, options));
-        fields.Add("resource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Resource, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GetAnnotationResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotation")] public required global::Xynolog.Types.Annotation Annotation { get; init; }
+    [global::Xynolog.Serialization.Wire("resolvedResource")] public required global::Xynolog.Types.ResourceDescriptor? ResolvedResource { get; init; }
+    [global::Xynolog.Serialization.Wire("resource")] public required global::Xynolog.Types.ResourceDescriptor? Resource { get; init; }
 }

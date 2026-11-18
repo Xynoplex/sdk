@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobCompleteCommandJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(JobCompleteCommand.MarkJobCompleteCommandCase), typeof(JobCompleteCommand.YieldJobCompleteCommandCase))]
 public closed record JobCompleteCommand
 {
     public sealed record MarkJobCompleteCommandCase(global::Xynolog.Types.MarkJobCompleteCommand Value) : JobCompleteCommand;
     public sealed record YieldJobCompleteCommandCase(global::Xynolog.Types.YieldJobCompleteCommand Value) : JobCompleteCommand;
-}
-
-internal sealed class JobCompleteCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobCompleteCommand>
-{
-    public override JobCompleteCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobCompleteCommand", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("JobCompleteCommand", root);
-        return variant switch
-        {
-            0 => new JobCompleteCommand.MarkJobCompleteCommandCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MarkJobCompleteCommand>(root, options)),
-            1 => new JobCompleteCommand.YieldJobCompleteCommandCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.YieldJobCompleteCommand>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobCompleteCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case JobCompleteCommand.MarkJobCompleteCommandCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobCompleteCommand.YieldJobCompleteCommandCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

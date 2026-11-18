@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextEntryJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(AnchoredTextEntry.AnchoredTextExtractedEntryCase), typeof(AnchoredTextEntry.AnchoredTextDeclinedEntryCase))]
 public closed record AnchoredTextEntry
 {
     public sealed record AnchoredTextExtractedEntryCase(global::Xynolog.Types.AnchoredTextExtractedEntry Value) : AnchoredTextEntry;
     public sealed record AnchoredTextDeclinedEntryCase(global::Xynolog.Types.AnchoredTextDeclinedEntry Value) : AnchoredTextEntry;
-}
-
-internal sealed class AnchoredTextEntryJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextEntry>
-{
-    public override AnchoredTextEntry Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextEntry", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("AnchoredTextEntry", root);
-        return variant switch
-        {
-            0 => new AnchoredTextEntry.AnchoredTextExtractedEntryCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnchoredTextExtractedEntry>(root, options)),
-            1 => new AnchoredTextEntry.AnchoredTextDeclinedEntryCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnchoredTextDeclinedEntry>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextEntry value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case AnchoredTextEntry.AnchoredTextExtractedEntryCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case AnchoredTextEntry.AnchoredTextDeclinedEntryCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

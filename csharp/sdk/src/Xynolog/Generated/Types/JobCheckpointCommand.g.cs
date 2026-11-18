@@ -4,44 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobCheckpointCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobCheckpointCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<string> CompletedUnits { get; init; }
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.UnitCursor>? UnitCursors { get; init; }
-}
-
-internal sealed class JobCheckpointCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobCheckpointCommand>
-{
-    public override JobCheckpointCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobCheckpointCommand", root);
-        return new JobCheckpointCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            CompletedUnits = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<string>>(root, "completedUnits", options),
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-            UnitCursors = root.TryGetProperty("unitCursors", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.UnitCursor>>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobCheckpointCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("completedUnits", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CompletedUnits, options));
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        if (value.UnitCursors is not null)
-        {
-            fields.Add("unitCursors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UnitCursors, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobCheckpointCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("completedUnits")] public required global::System.Collections.Generic.IReadOnlyList<string> CompletedUnits { get; init; }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("unitCursors")] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.UnitCursor>? UnitCursors { get; init; }
 }

@@ -4,44 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MatchSearchFailedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MatchSearchFailed
 {
-    public global::Xynolog.Types.MatchSearchFailedCode? Code { get; init; }
-    public string? Details { get; init; }
-    public required string Message { get; init; }
-    public required global::Xynolog.Identifiers.AnnotationId ReferenceId { get; init; }
-}
-
-internal sealed class MatchSearchFailedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MatchSearchFailed>
-{
-    public override MatchSearchFailed Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MatchSearchFailed", root);
-        return new MatchSearchFailed
-        {
-            Code = root.TryGetProperty("code", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MatchSearchFailedCode>(p0, options) : null,
-            Details = root.TryGetProperty("details", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Message = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "message", options),
-            ReferenceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "referenceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MatchSearchFailed value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Code is not null)
-        {
-            fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        }
-        if (value.Details is not null)
-        {
-            fields.Add("details", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Details, options));
-        }
-        fields.Add("message", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Message, options));
-        fields.Add("referenceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ReferenceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MatchSearchFailed", fields);
-    }
+    [global::Xynolog.Serialization.Wire("code")] public global::Xynolog.Types.CommandErrorCode? Code { get; init; }
+    [global::Xynolog.Serialization.Wire("details")] public string? Details { get; init; }
+    [global::Xynolog.Serialization.Wire("message")] public required string Message { get; init; }
+    [global::Xynolog.Serialization.Wire("referenceId")] public required global::Xynolog.Identifiers.AnnotationId ReferenceId { get; init; }
 }

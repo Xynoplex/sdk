@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobTypeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum JobType
 {
-    Mark,
-    Yield,
-}
-
-internal sealed class JobTypeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobType>
-{
-    public override JobType Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobType", root);
-        return root.GetString() switch
-        {
-            "mark" => JobType.Mark,
-            "yield" => JobType.Yield,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobType value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            JobType.Mark => "mark",
-            JobType.Yield => "yield",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("mark")] Mark,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("yield")] Yield,
 }

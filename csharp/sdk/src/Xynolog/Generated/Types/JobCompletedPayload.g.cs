@@ -4,80 +4,17 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobCompletedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobCompletedPayload
 {
-    public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
-    public string? AnnotationUri { get; init; }
-    public long? Attempt { get; init; }
-    public global::Xynolog.Types.DurabilityEvidence? Durability { get; init; }
-    public long? FoundCount { get; init; }
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-    public required global::Xynolog.Types.JobType JobType { get; init; }
-    public global::System.Text.Json.JsonElement? Result { get; init; }
-    public global::Xynolog.Identifiers.ResourceId? ResultResourceId { get; init; }
-    public long? TotalSteps { get; init; }
-}
-
-internal sealed class JobCompletedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobCompletedPayload>
-{
-    public override JobCompletedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobCompletedPayload", root);
-        return new JobCompletedPayload
-        {
-            AnnotationId = root.TryGetProperty("annotationId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.AnnotationId>(p0, options) : null,
-            AnnotationUri = root.TryGetProperty("annotationUri", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Attempt = root.TryGetProperty("attempt", out var p2) ? global::Xynolog.Serialization.WireJson.Read<long>(p2, options) : null,
-            Durability = root.TryGetProperty("durability", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.DurabilityEvidence>(p3, options) : null,
-            FoundCount = root.TryGetProperty("foundCount", out var p4) ? global::Xynolog.Serialization.WireJson.Read<long>(p4, options) : null,
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-            JobType = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobType>(root, "jobType", options),
-            Result = root.TryGetProperty("result", out var p7) ? global::Xynolog.Serialization.WireJson.Read<global::System.Text.Json.JsonElement>(p7, options) : null,
-            ResultResourceId = root.TryGetProperty("resultResourceId", out var p8) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.ResourceId>(p8, options) : null,
-            TotalSteps = root.TryGetProperty("totalSteps", out var p9) ? global::Xynolog.Serialization.WireJson.Read<long>(p9, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobCompletedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.AnnotationId is not null)
-        {
-            fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        }
-        if (value.AnnotationUri is not null)
-        {
-            fields.Add("annotationUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationUri, options));
-        }
-        if (value.Attempt is not null)
-        {
-            fields.Add("attempt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Attempt, options));
-        }
-        if (value.Durability is not null)
-        {
-            fields.Add("durability", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Durability, options));
-        }
-        if (value.FoundCount is not null)
-        {
-            fields.Add("foundCount", global::System.Text.Json.JsonSerializer.SerializeToElement(value.FoundCount, options));
-        }
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        fields.Add("jobType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobType, options));
-        if (value.Result is not null)
-        {
-            fields.Add("result", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Result, options));
-        }
-        if (value.ResultResourceId is not null)
-        {
-            fields.Add("resultResourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResultResourceId, options));
-        }
-        if (value.TotalSteps is not null)
-        {
-            fields.Add("totalSteps", global::System.Text.Json.JsonSerializer.SerializeToElement(value.TotalSteps, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobCompletedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationId")] public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("annotationUri")] public string? AnnotationUri { get; init; }
+    [global::Xynolog.Serialization.Wire("attempt")] public long? Attempt { get; init; }
+    [global::Xynolog.Serialization.Wire("durability")] public global::Xynolog.Types.DurabilityEvidence? Durability { get; init; }
+    [global::Xynolog.Serialization.Wire("foundCount")] public long? FoundCount { get; init; }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("jobType")] public required global::Xynolog.Types.JobType JobType { get; init; }
+    [global::Xynolog.Serialization.Wire("result")] public global::System.Text.Json.JsonElement? Result { get; init; }
+    [global::Xynolog.Serialization.Wire("resultResourceId")] public global::Xynolog.Identifiers.ResourceId? ResultResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("totalSteps")] public long? TotalSteps { get; init; }
 }

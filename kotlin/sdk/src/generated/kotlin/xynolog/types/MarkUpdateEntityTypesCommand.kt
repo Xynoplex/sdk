@@ -4,53 +4,23 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
 import xynolog.identifiers.UserId
 
-/**
- * Bus command to replace the entity types on a resource.
- */
+/** Bus command to replace the entity types on a resource. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class MarkUpdateEntityTypesCommand(
-    @SerialName("resourceId")
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
-    /**
-     * Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
-     */
+    /** Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this. */
     @SerialName("_userId")
     @get:JvmExposeBoxed
     public val userId: UserId? = null,
-    @SerialName("currentEntityTypes")
     public val currentEntityTypes: kotlin.collections.List<String>,
-    @SerialName("updatedEntityTypes")
     public val updatedEntityTypes: kotlin.collections.List<String>,
 ) {
     /** How Java makes a `MarkUpdateEntityTypesCommand`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -62,10 +32,7 @@ public data class MarkUpdateEntityTypesCommand(
         private var userId: UserId? = null
 
         @JvmExposeBoxed
-        public fun userId(userId: UserId?): Builder {
-            this.userId = userId
-            return this
-        }
+        public fun userId(userId: UserId?): Builder = apply { this.userId = userId }
 
         public fun build(): MarkUpdateEntityTypesCommand = MarkUpdateEntityTypesCommand(resourceId = resourceId, userId = userId, currentEntityTypes = currentEntityTypes, updatedEntityTypes = updatedEntityTypes)
     }

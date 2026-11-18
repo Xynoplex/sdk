@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ResourceMovedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ResourceMovedPayload
 {
-    public required string FromUri { get; init; }
-    public required string ToUri { get; init; }
-}
-
-internal sealed class ResourceMovedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceMovedPayload>
-{
-    public override ResourceMovedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ResourceMovedPayload", root);
-        return new ResourceMovedPayload
-        {
-            FromUri = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "fromUri", options),
-            ToUri = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "toUri", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ResourceMovedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("fromUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.FromUri, options));
-        fields.Add("toUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ToUri, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ResourceMovedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("fromUri")] public required string FromUri { get; init; }
+    [global::Xynolog.Serialization.Wire("toUri")] public required string ToUri { get; init; }
 }

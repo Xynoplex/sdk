@@ -46,34 +46,30 @@ let identifiers_package = "xynolog.identifiers"
 let empty_object = "EmptyObject"
 let stated = "Stated"
 let invalid_identifier = "InvalidIdentifier"
+let kinds_union_serializer = "KindsUnionSerializer"
+let tagged_union_serializer = "TaggedUnionSerializer"
+let wrapper_serializer = "WrapperSerializer"
+let open_object_serializer = "OpenObjectSerializer"
 let rest = "rest"
 
 (* The names a generated file imports: no schema may be named as one. *)
 let imported =
   [
-    "kotlinx.serialization.DeserializationStrategy";
     "kotlinx.serialization.EncodeDefault";
-    "kotlinx.serialization.ExperimentalSerializationApi";
     "kotlinx.serialization.KSerializer";
+    "kotlinx.serialization.KeepGeneratedSerializer";
     "kotlinx.serialization.SerialName";
     "kotlinx.serialization.Serializable";
     "kotlinx.serialization.SerializationException";
-    "kotlinx.serialization.builtins.ListSerializer";
+    "kotlinx.serialization.Transient";
     "kotlinx.serialization.descriptors.PrimitiveKind";
     "kotlinx.serialization.descriptors.PrimitiveSerialDescriptor";
     "kotlinx.serialization.descriptors.SerialDescriptor";
-    "kotlinx.serialization.descriptors.nullable";
     "kotlinx.serialization.encoding.Decoder";
     "kotlinx.serialization.encoding.Encoder";
-    "kotlinx.serialization.json.JsonArray";
-    "kotlinx.serialization.json.JsonContentPolymorphicSerializer";
-    "kotlinx.serialization.json.JsonDecoder";
     "kotlinx.serialization.json.JsonElement";
-    "kotlinx.serialization.json.JsonEncoder";
     "kotlinx.serialization.json.JsonIgnoreUnknownKeys";
     "kotlinx.serialization.json.JsonObject";
-    "kotlinx.serialization.json.JsonPrimitive";
-    "kotlinx.serialization.json.jsonObject";
     "kotlinx.serialization.serializer";
   ]
 
@@ -191,12 +187,14 @@ type spec = {
   component_of_file : (string * string) list;
 }
 
+let component spec (r : Decode.reference) =
+  match Decode.resolve r with
+  | file, "" when List.mem_assoc file spec.component_of_file ->
+      List.assoc file spec.component_of_file
+  | _ -> refuse "$ref %s is not a component schema" r.target
+
 let reference spec = function
-  | Ref r -> (
-      match Decode.resolve r with
-      | file, "" when List.mem_assoc file spec.component_of_file ->
-          Some (List.assoc file spec.component_of_file)
-      | _ -> refuse "$ref %s is not a component schema" r.target)
+  | Ref r -> Some (component spec r)
   | Bool_node _ | Null_type | Node _ -> None
 
 let schema spec name =
@@ -240,6 +238,8 @@ type written =
 type state = {
   spec : spec;
   written : (string, written) Hashtbl.t;
+  inlined : (string, node) Hashtbl.t;
+      (** The schema each type written in place was written from. *)
   identifiers_written : (string, K.decl) Hashtbl.t;
   unions_of : (string, string list) Hashtbl.t;
 }
@@ -248,6 +248,7 @@ let state spec =
   {
     spec;
     written = Hashtbl.create 512;
+    inlined = Hashtbl.create 256;
     identifiers_written = Hashtbl.create 8;
     unions_of = Hashtbl.create 512;
   }
@@ -256,8 +257,13 @@ let t name = K.Type name
 let list_of item = K.Generic ("kotlin.collections.List", [ item ])
 let name_of = function K.Type name -> Some name | _ -> None
 
+(* A description as a doc: on one line when it is one. *)
 let doc = function
-  | Some text when String.trim text <> "" -> Some (K.Block text : K.doc)
+  | Some text when String.trim text <> "" ->
+      let text = String.trim text in
+      Some
+        (if String.contains text '\n' then (K.Block text : K.doc)
+         else K.Doc text)
   | _ -> None
 
 let public_val = K.Bound { visibility = K.Public; mutable_ = false }
@@ -268,7 +274,12 @@ let serializable_with target =
     ~args:[ K.arg ~label:"with" (K.Class_literal target) ]
     "Serializable"
 
-let serial_name wire = K.annotation ~args:[ K.arg (K.Str wire) ] "SerialName"
+(* What renames a declaration named [name] to [wire] on the wire: nothing
+   where the two are one. *)
+let serial_name ~name wire =
+  if wire = name then []
+  else [ K.annotation ~args:[ K.arg (K.Str wire) ] "SerialName" ]
+
 let supers unions = List.map (fun u -> K.super (t u)) unions
 let serializer_of type_ = K.call (K.Name (type_ ^ ".serializer")) []
 
@@ -301,15 +312,21 @@ let rec named st name =
    long as a schema already has that name. *)
 and inline_name st owner property =
   let rec free name =
-    if List.mem_assoc name st.spec.definitions || Hashtbl.mem st.written name
-    then free (name ^ "Value")
+    if List.mem_assoc name st.spec.definitions then free (name ^ "Value")
     else name
   in
   free (owner ^ Names.pascal property)
 
 and inline st name n =
-  Hashtbl.replace st.written name Pending;
-  Hashtbl.replace st.written name (declaration st name n);
+  (match Hashtbl.find_opt st.inlined name with
+  | Some written when written = n -> ()
+  | Some _ -> refuse "two different schemas written in place as %s" name
+  | None when Hashtbl.mem st.written name ->
+      refuse "a schema written in place as %s, which another type is" name
+  | None ->
+      Hashtbl.replace st.inlined name n;
+      Hashtbl.replace st.written name Pending;
+      Hashtbl.replace st.written name (declaration st name n));
   t name
 
 (* The Kotlin type of a value [owner]'s property [property] holds, not null. *)
@@ -408,10 +425,15 @@ and declaration st name raw : written =
       in
       union_declaration st name members told_apart about
   | None -> (
-      match all_of raw with
-      | Some members ->
-          object_declaration st name (merged st name members) about
-      | None -> (
+      match (all_of raw, keywords raw) with
+      | Some members, Some s ->
+          object_declaration st name
+            ~owner:
+              (Inherited.of_schemas
+                 ~find:(fun n -> List.assoc n st.spec.definitions)
+                 ~referenced:(component st.spec) name (Schema.Schema s))
+            (merged st name members) about
+      | _ -> (
           refuse_const name raw;
           match enum raw with
           | Some values ->
@@ -427,6 +449,7 @@ and declaration st name raw : written =
                 refuse "%s: a schema shape the generator does not know" name
               else
                 object_declaration st name
+                  ~owner:(fun _ -> name)
                   {
                     stated_properties =
                       Option.value ~default:[] (properties raw);
@@ -451,7 +474,7 @@ and enum_declaration name values about =
         entries
         @ [
             K.entry
-              ~annotations:[ serial_name text ]
+              ~annotations:(serial_name ~name:variant text)
               ~args:[ K.Str text ] variant;
           ])
       [] values
@@ -489,8 +512,8 @@ and property st owner wire n required =
   in
   { wire; name; type_; about; boxed; form }
 
-and object_declaration st name { stated_properties; required_names; beside }
-    about : written =
+and object_declaration st name ~owner
+    { stated_properties; required_names; beside } about : written =
   let open_ =
     match beside with
     | Some (Boolean_schema true) -> true
@@ -524,7 +547,8 @@ and object_declaration st name { stated_properties; required_names; beside }
       let props =
         List.map
           (fun (wire, s) ->
-            property st name wire (node s) (List.mem wire required_names))
+            property st (owner wire) wire (node s)
+              (List.mem wire required_names))
           stated_properties
       in
       List.iteri
@@ -550,39 +574,42 @@ and object_declaration st name { stated_properties; required_names; beside }
             K.param
               ~about:
                 (K.Doc "Every property the schema does not name, as it came.")
+              ~annotations:[ K.annotation "Transient" ]
               ~binding:public_val ~default:empty_json_object rest
               (t "JsonObject")
           in
           [
             K.class_ ?about
               ~annotations:
-                ((if open_ then serializable_with (name ^ ".Serializer")
-                  else serializable)
-                ::
-                (if closed || open_ then []
-                 else [ K.annotation "JsonIgnoreUnknownKeys" ]))
+                ((if open_ then
+                    [
+                      serializable_with (name ^ ".Serializer");
+                      K.annotation "KeepGeneratedSerializer";
+                    ]
+                  else [ serializable ])
+                @
+                if closed || open_ then []
+                else [ K.annotation "JsonIgnoreUnknownKeys" ])
               ~visibility:K.Public
               ~constructor:
                 (K.constructor
-                   (List.map (declared ~boxing:true) props
+                   (List.map declared props
                    @ if open_ then [ rest_param ] else []))
               ~supers:(supers unions)
               ~members:
                 (builder name props open_
-                @ if open_ then open_serializer name props else [])
+                @ if open_ then open_serializer name else [])
               K.Data_class name;
           ])
 
 (* As the data class declares it. *)
-and declared ~boxing p =
+and declared p =
   let annotations =
-    serial_name p.wire
-    :: ((match p.form with
-          | Single _ -> [ K.annotation "EncodeDefault" ]
-          | _ -> [])
-       @
-       if boxing && p.boxed then [ K.annotation ~target:"get" "JvmExposeBoxed" ]
-       else [])
+    serial_name ~name:p.name p.wire
+    @ (match p.form with
+      | Single _ -> [ K.annotation "EncodeDefault" ]
+      | _ -> [])
+    @ if p.boxed then [ K.annotation ~target:"get" "JvmExposeBoxed" ] else []
   in
   let type_, default =
     match p.form with
@@ -608,6 +635,18 @@ and taken p =
   | Single _ | Required -> p.type_
 
 (* What Java makes one with: the builder, and the companion's [builder]. *)
+(* [members] a line apart where none is annotated: each annotated one
+   stands apart, as the printer packs only bare members. *)
+and packed members =
+  let run = function [] -> [] | run -> [ K.Packed (List.rev run) ] in
+  let rec go acc = function
+    | [] -> run acc
+    | (K.Function { annotations = _ :: _; _ } as m) :: rest ->
+        run acc @ (m :: go [] rest)
+    | m :: rest -> go (m :: acc) rest
+  in
+  go [] members
+
 and builder name props open_ =
   let given =
     List.filter
@@ -646,7 +685,11 @@ and builder name props open_ =
     K.function_ ~annotations ~visibility:K.Public
       ~params:[ (field, type_) ]
       ~returns:(t "Builder") field
-      (K.Block [ K.Assign (K.Member (K.This, field), value); K.Return K.This ])
+      (K.Same_line
+         (K.call
+            ~lambda:
+              (K.Lambda ([], K.Assigning (K.Member (K.This, field), value)))
+            (K.Name "apply") []))
   in
   let setters =
     List.map
@@ -700,7 +743,7 @@ and builder name props open_ =
               given))
       ~members:
         ((match fields with [] -> [] | fields -> [ K.Packed fields ])
-        @ setters @ [ build ])
+        @ packed setters @ [ build ])
       K.Class "Builder";
     K.class_ ~visibility:K.Public
       ~members:
@@ -728,106 +771,25 @@ and builder name props open_ =
       K.Companion_object "Companion";
   ]
 
-(* An open object's serializer: what the schema names, read and written as
-   the class, and the rest kept as it came. *)
-and open_serializer name props =
-  let kept op =
-    K.call (K.Name "JsonObject")
-      [
-        K.call
-          ~lambda:(K.Lambda ([], K.Binary (K.Name "it", op, K.Name "named")))
-          (K.Name "all.filterKeys") [];
-      ]
-  in
-  let json_of coder kind verb =
-    K.Val
-      ( "json",
-        K.Binary
-          ( K.As_safe (K.Name coder, t kind),
-            K.Elvis,
-            K.Throw
-              (K.call (K.Name "SerializationException")
-                 [ K.Str (Printf.sprintf "a %s is %s JSON alone" name verb) ])
-          ) )
-  in
-  let known_serializer = K.call (K.Name "Known.serializer") [] in
+(* An open object's serializer: what the schema names, read and written by
+   the serializer the plugin generates, and the rest kept as it came. *)
+and open_serializer name =
   [
-    K.class_ ~annotations:[ serializable ] ~visibility:K.Internal
-      ~constructor:(K.constructor (List.map (declared ~boxing:false) props))
-      K.Data_class "Known";
     K.class_ ~visibility:K.Internal
-      ~supers:[ K.super (K.Generic ("KSerializer", [ t name ])) ]
-      ~members:
+      ~supers:
         [
-          K.property ~visibility:K.Private
-            ~type_:(K.Generic ("Set", [ t "String" ]))
-            ~value:
-              (K.Same_line
-                 (K.call (K.Name "setOf")
-                    (List.map (fun p -> K.Str p.wire) props)))
-            "named";
-          K.property ~override:true ~type_:(t "SerialDescriptor")
-            ~value:
-              (K.Same_line
-                 (K.call (K.Name "SerialDescriptor")
-                    [
-                      K.Str (types_package ^ "." ^ name);
-                      K.Member (known_serializer, "descriptor");
-                    ]))
-            "descriptor";
-          K.function_ ~override:true
-            ~params:[ ("decoder", t "Decoder") ]
-            ~returns:(t name) "deserialize"
-            (K.Block
-               [
-                 json_of "decoder" "JsonDecoder" "read from";
-                 K.Val
-                   ( "all",
-                     K.Member
-                       ( K.call (K.Name "json.decodeJsonElement") [],
-                         "jsonObject" ) );
-                 K.Val
-                   ( "known",
-                     K.call (K.Name "json.json.decodeFromJsonElement")
-                       [ known_serializer; kept K.In ] );
-                 K.Return
-                   (K.named_call (K.Name name)
-                      (List.map
-                         (fun p -> (p.name, K.Member (K.Name "known", p.name)))
-                         props
-                      @ [ (rest, kept K.Not_in) ]));
-               ]);
-          K.function_ ~override:true
-            ~params:[ ("encoder", t "Encoder"); ("value", t name) ]
-            "serialize"
-            (K.Block
-               [
-                 json_of "encoder" "JsonEncoder" "written as";
-                 K.Val
-                   ( "known",
-                     K.Member
-                       ( K.call (K.Name "json.json.encodeToJsonElement")
-                           [
-                             known_serializer;
-                             K.named_call (K.Name "Known")
-                               (List.map
-                                  (fun p ->
-                                    (p.name, K.Member (K.Name "value", p.name)))
-                                  props);
-                           ],
-                         "jsonObject" ) );
-                 K.Do
-                   (K.call (K.Name "json.encodeJsonElement")
-                      [
-                        K.call (K.Name "JsonObject")
-                          [
-                            K.Binary
-                              ( K.Name "known",
-                                K.Plus,
-                                K.Member (K.Name "value", rest) );
-                          ];
-                      ]);
-               ]);
+          K.super ~layout:K.Lines
+            ~args:
+              [
+                K.arg (K.call (K.Name (name ^ ".generatedSerializer")) []);
+                K.arg (K.Reference (name, rest));
+                K.arg
+                  (K.Lambda
+                     ( [ "named"; rest ],
+                       K.named_call (K.Name "named.copy")
+                         [ (rest, K.Name rest) ] ));
+              ]
+            (K.Generic (open_object_serializer, [ t name ]));
         ]
       K.Object "Serializer";
   ]
@@ -1099,84 +1061,48 @@ and union_declaration st name members told_apart about : written =
       | _ -> refuse "%s: a union member the generator does not know" name)
     members;
   let read = !read and variants = !variants in
-  let select =
+  let lazily e = K.Lambda ([], e) in
+  let serializer = name ^ "Serializer" in
+  let chooser =
     match told_apart with
     | Some (property, tags) ->
-        let said =
-          Printf.sprintf "a %s states a `%s` that is one of %s" name property
-            (String.concat ", " (List.map (fun tag -> "`" ^ tag ^ "`") tags))
-        in
-        K.When
-          {
-            subject =
-              Some
-                (K.Safe
-                   ( K.As_safe
-                       ( K.call
-                           (K.Safe
-                              ( K.As_safe (K.Name "element", t "JsonObject"),
-                                "get" ))
-                           [ K.Str property ],
-                         t "JsonPrimitive" ),
-                     "content" ));
-            branches =
-              List.map2
-                (fun tag (type_, _) ->
-                  {
-                    K.conditions = [ K.Equal (K.Str tag) ];
-                    result = serializer_of type_;
-                  })
-                tags read
-              @ [
-                  {
-                    K.conditions = [];
-                    result =
-                      K.Throw
-                        (K.call (K.Name "SerializationException") [ K.Str said ]);
-                  };
-                ];
-          }
+        K.super ~layout:K.Lines
+          ~args:
+            [
+              K.arg (K.Class_literal name);
+              K.arg (K.Str property);
+              K.arg ~label:"members"
+                (lazily
+                   (K.call (K.Name "mapOf")
+                      (List.map2
+                         (fun tag (type_, _) ->
+                           K.Binary (K.Str tag, K.To, serializer_of type_))
+                         tags read)));
+            ]
+          (K.Generic (tagged_union_serializer, [ t name ]))
     | None ->
         let fits kind =
-          K.call (K.Name "listOf")
-            (List.filter_map
-               (fun (type_, reads) ->
-                 if List.mem kind reads then Some (serializer_of type_)
-                 else None)
-               read)
+          let members =
+            List.filter_map
+              (fun (type_, reads) ->
+                if List.mem kind reads then Some (serializer_of type_) else None)
+              read
+          in
+          lazily
+            (match members with
+            | [] -> K.call (K.Name "emptyList") []
+            | _ -> K.call (K.Name "listOf") members)
         in
-        K.call
-          ~types:[ t name ]
-          ~layout:K.Lines (K.Name "firstThatFits")
-          [
-            K.Name "element";
-            K.When
-              {
-                subject = Some (K.Name "element");
-                branches =
-                  [
-                    {
-                      K.conditions = [ K.Is (t "JsonPrimitive") ];
-                      result =
-                        K.If
-                          ( K.Name "element.isString",
-                            fits `Text,
-                            K.call (K.Name "emptyList") [] );
-                    };
-                    {
-                      K.conditions = [ K.Is (t "JsonArray") ];
-                      result = fits `List;
-                    };
-                    {
-                      K.conditions = [ K.Is (t "JsonObject") ];
-                      result = fits `Object;
-                    };
-                  ];
-              };
-            K.Str name;
-          ]
+        K.super ~layout:K.Lines
+          ~args:
+            [
+              K.arg (K.Class_literal name);
+              K.arg ~label:"strings" (fits `Text);
+              K.arg ~label:"arrays" (fits `List);
+              K.arg ~label:"objects" (fits `Object);
+            ]
+          (K.Generic (kinds_union_serializer, [ t name ]))
   in
-  let serializer = name ^ "Serializer" in
   Declared
     (fun unions ->
       [
@@ -1184,46 +1110,13 @@ and union_declaration st name members told_apart about : written =
           ~annotations:[ serializable_with serializer ]
           ~visibility:K.Public ~supers:(supers unions) ~members:variants
           K.Sealed_interface name;
-        K.class_ ~visibility:K.Internal
-          ~supers:
-            [
-              K.super
-                ~args:[ K.arg (K.Class_literal name) ]
-                (K.Generic ("JsonContentPolymorphicSerializer", [ t name ]));
-            ]
-          ~members:
-            [
-              (* Named as every other type of the package is, by its schema. *)
-              K.property ~override:true ~type_:(t "SerialDescriptor")
-                ~value:
-                  (K.Same_line
-                     (K.call (K.Name "SerialDescriptor")
-                        [
-                          K.Str (types_package ^ "." ^ name);
-                          K.Member (K.Super, "descriptor");
-                        ]))
-                "descriptor";
-              K.function_ ~override:true
-                ~params:[ ("element", t "JsonElement") ]
-                ~returns:(K.Generic ("DeserializationStrategy", [ t name ]))
-                "selectDeserializer" (K.Below select);
-            ]
-          K.Object serializer;
+        K.class_ ~visibility:K.Internal ~supers:[ chooser ] K.Object serializer;
       ])
 
 (* A variant of a union that holds a value of [type_], written as the value
    itself. [type_] is qualified where the variant is named as it is, which
    would shadow it. *)
 and wrapped union variant type_ =
-  let descriptor_name = K.Str (types_package ^ "." ^ union ^ "." ^ variant) in
-  let descriptor =
-    if type_ = t "String" then
-      K.call (K.Name "PrimitiveSerialDescriptor")
-        [ descriptor_name; K.Name "PrimitiveKind.STRING" ]
-    else
-      K.call (K.Name "SerialDescriptor")
-        [ descriptor_name; K.Name "value.descriptor" ]
-  in
   K.class_
     ~about:
       (K.Doc
@@ -1238,35 +1131,19 @@ and wrapped union variant type_ =
     ~members:
       [
         K.class_ ~visibility:K.Internal
-          ~supers:[ K.super (K.Generic ("KSerializer", [ t variant ])) ]
-          ~members:
+          ~supers:
             [
-              K.property ~visibility:K.Private
-                ~type_:(K.Generic ("KSerializer", [ type_ ]))
-                ~value:
-                  (K.Same_line
-                     (K.call (K.Name "kotlinx.serialization.serializer") []))
-                "value";
-              K.property ~override:true ~type_:(t "SerialDescriptor")
-                ~value:(K.Same_line descriptor) "descriptor";
-              K.function_ ~override:true
-                ~params:[ ("encoder", t "Encoder"); ("value", t variant) ]
-                "serialize"
-                (K.Block
-                   [
-                     K.Do
-                       (K.call (K.Name "encoder.encodeSerializableValue")
-                          [ K.Member (K.This, "value"); K.Name "value.value" ]);
-                   ]);
-              K.function_ ~override:true
-                ~params:[ ("decoder", t "Decoder") ]
-                ~returns:(t variant) "deserialize"
-                (K.Same_line
-                   (K.call (K.Name variant)
-                      [
-                        K.call (K.Name "decoder.decodeSerializableValue")
-                          [ K.Name "value" ];
-                      ]));
+              K.super
+                ~args:
+                  [
+                    K.arg (K.Class_literal variant);
+                    K.arg
+                      (K.call (K.Name "kotlinx.serialization.serializer") []);
+                    K.arg
+                      (K.Lambda ([], K.call (K.Name variant) [ K.Name "it" ]));
+                    K.arg (K.Reference (variant, "value"));
+                  ]
+                (K.Generic (wrapper_serializer, [ t variant; type_ ]));
             ]
           K.Object "Serializer";
       ]
@@ -1290,8 +1167,18 @@ let generate spec =
       if List.exists (fun i -> after_last_dot i = name) imported then
         refuse "%s is a schema's name, and a name the generated code imports"
           name;
-      if List.mem name [ empty_object; stated; invalid_identifier ] then
-        refuse "%s is a schema's name, and one the SDK declares by hand" name)
+      if
+        List.mem name
+          [
+            empty_object;
+            stated;
+            invalid_identifier;
+            kinds_union_serializer;
+            tagged_union_serializer;
+            wrapper_serializer;
+            open_object_serializer;
+          ]
+      then refuse "%s is a schema's name, and one the SDK declares by hand" name)
     spec.definitions;
   let st = state spec in
   List.iter

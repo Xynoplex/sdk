@@ -109,7 +109,7 @@ per language it writes:
   `sign-in-store/README.md` gives the store's files, and Haskell's native
   binding with the one byte of the lock file a Windows writer locks. `Sign_in.Flat` holds the entry to a flat schema (every property a
   described string, some of them a date-time), `Sign_in.Owner_only` each
-  mode to four octal digits and the access list to one place for the owner,
+  mode to four octal digits and each access list to one place for the owner,
   and `Sign_in.Contract` the README to one name for each.
 - `media-types`: the types a knowledge base admits and what can be done with
   each, from `media-types/registry.json`, for the Go, Python, TypeScript and

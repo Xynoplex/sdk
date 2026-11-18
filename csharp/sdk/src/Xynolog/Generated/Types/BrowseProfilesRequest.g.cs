@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseProfilesRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseProfilesRequest
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.UserId> Dids { get; init; }
-}
-
-internal sealed class BrowseProfilesRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseProfilesRequest>
-{
-    public override BrowseProfilesRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseProfilesRequest", root);
-        return new BrowseProfilesRequest
-        {
-            Dids = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.UserId>>(root, "dids", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseProfilesRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("dids", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Dids, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseProfilesRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("dids")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.UserId> Dids { get; init; }
 }

@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AssessingJobParamsToneJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum AssessingJobParamsTone
 {
-    Analytical,
-    Critical,
-    Balanced,
-    Constructive,
-}
-
-internal sealed class AssessingJobParamsToneJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AssessingJobParamsTone>
-{
-    public override AssessingJobParamsTone Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AssessingJobParamsTone", root);
-        return root.GetString() switch
-        {
-            "analytical" => AssessingJobParamsTone.Analytical,
-            "critical" => AssessingJobParamsTone.Critical,
-            "balanced" => AssessingJobParamsTone.Balanced,
-            "constructive" => AssessingJobParamsTone.Constructive,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AssessingJobParamsTone value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            AssessingJobParamsTone.Analytical => "analytical",
-            AssessingJobParamsTone.Critical => "critical",
-            AssessingJobParamsTone.Balanced => "balanced",
-            AssessingJobParamsTone.Constructive => "constructive",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("analytical")] Analytical,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("critical")] Critical,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("balanced")] Balanced,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("constructive")] Constructive,
 }

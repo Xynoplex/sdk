@@ -452,6 +452,7 @@ type reader = {
   operation : operation;
   accessor : string;  (** The failure's words. *)
   failure : string;  (** The failure's model. *)
+  code_type : string;  (** The model of its [code]. *)
   codes : (string * string) list;
       (** Each code it states, and the bus request code it is read as. *)
 }
@@ -473,6 +474,12 @@ let readers t ~normalize ~definition (codes : Tables.Errors_codes.t) =
       let failure = o.failure.payload in
       let* schema = definition failure in
       let* s = normalize schema in
+      (* [normalize] has refused a schema any of whose references names none. *)
+      let code_owner =
+        Inherited.of_schemas
+          ~find:(fun n -> Result.get_ok (definition n))
+          ~referenced:Normalize.referenced failure schema "code"
+      in
       let properties = Option.value s.Schema.properties ~default:[] in
       let required = Option.value s.required ~default:[] in
       let* () =
@@ -518,22 +525,22 @@ let readers t ~normalize ~definition (codes : Tables.Errors_codes.t) =
           operation = o;
           accessor = Models.lower failure ^ Models.identifier "message";
           failure;
+          code_type = Models.member_type code_owner "code";
           codes = mapped;
         })
     t.operations
 
 let failure_file ~banner ~unrecognized readers =
-  let reader_of failure = "from" ^ failure ^ Models.identifier "code" in
-  let code_type failure = failure ^ Models.identifier "code" in
+  let reader_of code_type = "from" ^ code_type in
   let operation_failure result =
     H.T_fun (operation_type, T_fun (t_name "failure", result))
   in
   let distinct =
     List.fold_left
       (fun kept r ->
-        if List.exists (fun (f, c) -> f = r.failure && c = r.codes) kept then
+        if List.exists (fun (t, c) -> t = r.code_type && c = r.codes) kept then
           kept
-        else kept @ [ (r.failure, r.codes) ])
+        else kept @ [ (r.code_type, r.codes) ])
       [] readers
   in
   {
@@ -580,7 +587,7 @@ let failure_file ~banner ~unrecognized readers =
                        [ Constructor (constructor_of r.operation, []) ];
                      body =
                        Compose
-                         ( Name (reader_of r.failure),
+                         ( Name (reader_of r.code_type),
                            Name
                              ("Types." ^ Models.lower r.failure
                             ^ Models.identifier "code") );
@@ -588,15 +595,15 @@ let failure_file ~banner ~unrecognized readers =
                  readers;
            }
       :: List.map
-           (fun (failure, codes) ->
+           (fun (code_type, codes) ->
              H.Private
                (H.Value
                   {
                     about = [];
-                    name = reader_of failure;
+                    name = reader_of code_type;
                     type_ =
                       T_fun
-                        ( T_apply ("Maybe", [ types (code_type failure) ]),
+                        ( T_apply ("Maybe", [ types code_type ]),
                           t_name "BusRequestCode" );
                     clauses =
                       [
@@ -613,7 +620,7 @@ let failure_file ~banner ~unrecognized readers =
                                            ( "Just",
                                              [
                                                Constructor
-                                                 ( "Types." ^ code_type failure
+                                                 ( "Types." ^ code_type
                                                    ^ Models.identifier wire,
                                                    [] );
                                              ] ),

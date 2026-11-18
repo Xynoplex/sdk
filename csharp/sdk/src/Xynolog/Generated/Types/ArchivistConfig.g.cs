@@ -4,59 +4,18 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ArchivistConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ArchivistConfig
 {
-    public required string AnchoredTextDir { get; init; }
-    public required global::Xynolog.Types.ArchivistEngines Engines { get; init; }
-    public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
-    public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
-    public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
-    public required long Port { get; init; }
-    public required string Root { get; init; }
-    public required bool SkipRebuild { get; init; }
-    public required global::Xynolog.Types.ArchivistConfigStaging Staging { get; init; }
-    public required string StateHome { get; init; }
-}
-
-internal sealed class ArchivistConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ArchivistConfig>
-{
-    public override ArchivistConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ArchivistConfig", root);
-        return new ArchivistConfig
-        {
-            AnchoredTextDir = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "anchoredTextDir", options),
-            Engines = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ArchivistEngines>(root, "engines", options),
-            GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ServiceIdentity>(root, "identity", options),
-            LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
-            LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-            Root = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "root", options),
-            SkipRebuild = global::Xynolog.Serialization.WireJson.ReadMember<bool>(root, "skipRebuild", options),
-            Staging = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ArchivistConfigStaging>(root, "staging", options),
-            StateHome = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "stateHome", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ArchivistConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("anchoredTextDir", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnchoredTextDir, options));
-        fields.Add("engines", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Engines, options));
-        fields.Add("gatewayUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GatewayUrl, options));
-        fields.Add("identity", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Identity, options));
-        fields.Add("logFormat", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogFormat, options));
-        fields.Add("logLevel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogLevel, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("root", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Root, options));
-        fields.Add("skipRebuild", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SkipRebuild, options));
-        fields.Add("staging", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Staging, options));
-        fields.Add("stateHome", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StateHome, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ArchivistConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("anchoredTextDir")] public required string AnchoredTextDir { get; init; }
+    [global::Xynolog.Serialization.Wire("engines")] public required global::Xynolog.Types.ArchivistEngines Engines { get; init; }
+    [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
+    [global::Xynolog.Serialization.Wire("logFormat")] public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
+    [global::Xynolog.Serialization.Wire("logLevel")] public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("root")] public required string Root { get; init; }
+    [global::Xynolog.Serialization.Wire("skipRebuild")] public required bool SkipRebuild { get; init; }
+    [global::Xynolog.Serialization.Wire("staging")] public required global::Xynolog.Types.ArchivistConfigStaging Staging { get; init; }
+    [global::Xynolog.Serialization.Wire("stateHome")] public required string StateHome { get; init; }
 }

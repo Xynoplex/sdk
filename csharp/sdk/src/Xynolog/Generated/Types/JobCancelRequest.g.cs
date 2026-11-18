@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobCancelRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobCancelRequest
 {
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-}
-
-internal sealed class JobCancelRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobCancelRequest>
-{
-    public override JobCancelRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobCancelRequest", root);
-        return new JobCancelRequest
-        {
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobCancelRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobCancelRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
 }

@@ -4,50 +4,15 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(WorkerEngineHealthJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record WorkerEngineHealth
 {
-    public required global::Xynolog.Types.WorkerEngineHealthActiveJob? ActiveJob { get; init; }
-    public required global::Xynolog.Types.Engine Engine { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter> Jobs { get; init; }
-    public required long JobsCompleted { get; init; }
-    public required string? LastActivityAt { get; init; }
-    public required string? LastClaimAt { get; init; }
-    public required string? LastFinishedAt { get; init; }
-    public required string? LastQueuedEventAt { get; init; }
-}
-
-internal sealed class WorkerEngineHealthJsonConverter : global::System.Text.Json.Serialization.JsonConverter<WorkerEngineHealth>
-{
-    public override WorkerEngineHealth Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("WorkerEngineHealth", root);
-        return new WorkerEngineHealth
-        {
-            ActiveJob = root.GetProperty("activeJob").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (global::Xynolog.Types.WorkerEngineHealthActiveJob?)null : global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.WorkerEngineHealthActiveJob>(root, "activeJob", options),
-            Engine = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Engine>(root, "engine", options),
-            Jobs = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter>>(root, "jobs", options),
-            JobsCompleted = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "jobsCompleted", options),
-            LastActivityAt = root.GetProperty("lastActivityAt").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (string?)null : global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "lastActivityAt", options),
-            LastClaimAt = root.GetProperty("lastClaimAt").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (string?)null : global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "lastClaimAt", options),
-            LastFinishedAt = root.GetProperty("lastFinishedAt").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (string?)null : global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "lastFinishedAt", options),
-            LastQueuedEventAt = root.GetProperty("lastQueuedEventAt").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (string?)null : global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "lastQueuedEventAt", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, WorkerEngineHealth value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("activeJob", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ActiveJob, options));
-        fields.Add("engine", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Engine, options));
-        fields.Add("jobs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Jobs, options));
-        fields.Add("jobsCompleted", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobsCompleted, options));
-        fields.Add("lastActivityAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LastActivityAt, options));
-        fields.Add("lastClaimAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LastClaimAt, options));
-        fields.Add("lastFinishedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LastFinishedAt, options));
-        fields.Add("lastQueuedEventAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LastQueuedEventAt, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "WorkerEngineHealth", fields);
-    }
+    [global::Xynolog.Serialization.Wire("activeJob")] public required global::Xynolog.Types.WorkerEngineHealthActiveJob? ActiveJob { get; init; }
+    [global::Xynolog.Serialization.Wire("engine")] public required global::Xynolog.Types.Engine Engine { get; init; }
+    [global::Xynolog.Serialization.Wire("jobs")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter> Jobs { get; init; }
+    [global::Xynolog.Serialization.Wire("jobsCompleted")] public required long JobsCompleted { get; init; }
+    [global::Xynolog.Serialization.Wire("lastActivityAt")] public required string? LastActivityAt { get; init; }
+    [global::Xynolog.Serialization.Wire("lastClaimAt")] public required string? LastClaimAt { get; init; }
+    [global::Xynolog.Serialization.Wire("lastFinishedAt")] public required string? LastFinishedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("lastQueuedEventAt")] public required string? LastQueuedEventAt { get; init; }
 }

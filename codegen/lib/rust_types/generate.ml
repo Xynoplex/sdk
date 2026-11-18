@@ -482,6 +482,7 @@ and declaration st name (s : D.t) =
       in
       union_declaration st name members told_apart doc
   | None ->
+      let owner = D.owners st.definitions name s in
       let s =
         match s with
         | D.Node { all_of = Some members; _ } -> merged st name members
@@ -499,7 +500,7 @@ and declaration st name (s : D.t) =
         [ R.Type_alias { doc; vis = Pub; name; ty = string_ty } ]
       else if n.type_ <> Some (D.One Object) then
         refuse "%s: a schema shape the generator does not know" name
-      else structure st name n doc
+      else structure st name ~owner n doc
 
 and enumeration name (n : D.node) doc =
   if n.type_ <> Some (D.One String) then
@@ -834,7 +835,7 @@ and tags st property members =
   in
   go [] members
 
-and structure st name (n : D.node) doc =
+and structure st name ~owner (n : D.node) doc =
   let properties = Option.value n.properties ~default:[] in
   let required = Option.value n.required ~default:[] in
   let fields = List.map (fun (p, _) -> R.snake p) properties in
@@ -864,7 +865,7 @@ and structure st name (n : D.node) doc =
   let rust_fields =
     List.map
       (fun (property, ps) ->
-        let rust_type = type_of st name property ps in
+        let rust_type = type_of st (owner property) property ps in
         let field = R.snake property in
         let renamed =
           if field <> property then

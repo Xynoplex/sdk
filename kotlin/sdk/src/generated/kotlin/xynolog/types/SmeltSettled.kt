@@ -4,58 +4,21 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * The payload of `smelt:settled`: the Smelter's decision for one resource's content, keyed by the checksum of the bytes it inspected. `indexed`: the content is in the vector index. `skipped`: it declined, and `reason` says why.
- */
+/** The payload of `smelt:settled`: the Smelter's decision for one resource's content, keyed by the checksum of the bytes it inspected. `indexed`: the content is in the vector index. `skipped`: it declined, and `reason` says why. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class SmeltSettled(
-    /**
-     * The resource whose content was inspected.
-     */
-    @SerialName("resourceId")
+    /** The resource whose content was inspected. */
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
-    /**
-     * The checksum of the bytes inspected.
-     */
-    @SerialName("contentChecksum")
+    /** The checksum of the bytes inspected. */
     public val contentChecksum: String,
-    @SerialName("outcome")
     public val outcome: SmeltSettledOutcome,
-    /**
-     * Why the content was skipped.
-     */
-    @SerialName("reason")
+    /** Why the content was skipped. */
     public val reason: SmeltSettledReason? = null,
 ) {
     /** How Java makes a `SmeltSettled`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -66,10 +29,7 @@ public data class SmeltSettled(
     ) {
         private var reason: SmeltSettledReason? = null
 
-        public fun reason(reason: SmeltSettledReason?): Builder {
-            this.reason = reason
-            return this
-        }
+        public fun reason(reason: SmeltSettledReason?): Builder = apply { this.reason = reason }
 
         public fun build(): SmeltSettled = SmeltSettled(resourceId = resourceId, contentChecksum = contentChecksum, outcome = outcome, reason = reason)
     }

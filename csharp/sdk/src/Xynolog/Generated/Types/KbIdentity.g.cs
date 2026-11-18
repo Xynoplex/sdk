@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(KbIdentityJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record KbIdentity
 {
-    public required string Domain { get; init; }
-    public required string Name { get; init; }
-}
-
-internal sealed class KbIdentityJsonConverter : global::System.Text.Json.Serialization.JsonConverter<KbIdentity>
-{
-    public override KbIdentity Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("KbIdentity", root);
-        return new KbIdentity
-        {
-            Domain = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "domain", options),
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, KbIdentity value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("domain", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Domain, options));
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "KbIdentity", fields);
-    }
+    [global::Xynolog.Serialization.Wire("domain")] public required string Domain { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
 }

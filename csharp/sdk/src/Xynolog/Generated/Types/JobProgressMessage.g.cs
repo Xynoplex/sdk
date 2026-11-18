@@ -4,7 +4,7 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressMessageJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(JobProgressMessage.JobProgressLoadingCase), typeof(JobProgressMessage.JobProgressAnalyzingCase), typeof(JobProgressMessage.JobProgressAnalyzingTagsCase), typeof(JobProgressMessage.JobProgressGeneratingResourceCase), typeof(JobProgressMessage.JobProgressCreatingResourceCase), typeof(JobProgressMessage.JobProgressCompleteGeneratedCase), typeof(JobProgressMessage.JobProgressDetectingEntitiesCase), typeof(JobProgressMessage.JobProgressCreatingAnnotationsCase), typeof(JobProgressMessage.JobProgressCreatingTagAnnotationsCase), typeof(JobProgressMessage.JobProgressCompleteCreatedCase))]
 public closed record JobProgressMessage
 {
     public sealed record JobProgressLoadingCase(global::Xynolog.Types.JobProgressLoading Value) : JobProgressMessage;
@@ -17,47 +17,4 @@ public closed record JobProgressMessage
     public sealed record JobProgressCreatingAnnotationsCase(global::Xynolog.Types.JobProgressCreatingAnnotations Value) : JobProgressMessage;
     public sealed record JobProgressCreatingTagAnnotationsCase(global::Xynolog.Types.JobProgressCreatingTagAnnotations Value) : JobProgressMessage;
     public sealed record JobProgressCompleteCreatedCase(global::Xynolog.Types.JobProgressCompleteCreated Value) : JobProgressMessage;
-}
-
-internal sealed class JobProgressMessageJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressMessage>
-{
-    public override JobProgressMessage Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressMessage", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("JobProgressMessage", root);
-        return variant switch
-        {
-            0 => new JobProgressMessage.JobProgressLoadingCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressLoading>(root, options)),
-            1 => new JobProgressMessage.JobProgressAnalyzingCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressAnalyzing>(root, options)),
-            2 => new JobProgressMessage.JobProgressAnalyzingTagsCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressAnalyzingTags>(root, options)),
-            3 => new JobProgressMessage.JobProgressGeneratingResourceCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressGeneratingResource>(root, options)),
-            4 => new JobProgressMessage.JobProgressCreatingResourceCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressCreatingResource>(root, options)),
-            5 => new JobProgressMessage.JobProgressCompleteGeneratedCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressCompleteGenerated>(root, options)),
-            6 => new JobProgressMessage.JobProgressDetectingEntitiesCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressDetectingEntities>(root, options)),
-            7 => new JobProgressMessage.JobProgressCreatingAnnotationsCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressCreatingAnnotations>(root, options)),
-            8 => new JobProgressMessage.JobProgressCreatingTagAnnotationsCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressCreatingTagAnnotations>(root, options)),
-            9 => new JobProgressMessage.JobProgressCompleteCreatedCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressCompleteCreated>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressMessage value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case JobProgressMessage.JobProgressLoadingCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressAnalyzingCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressAnalyzingTagsCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressGeneratingResourceCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressCreatingResourceCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressCompleteGeneratedCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressDetectingEntitiesCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressCreatingAnnotationsCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressCreatingTagAnnotationsCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobProgressMessage.JobProgressCompleteCreatedCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

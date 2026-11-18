@@ -4,72 +4,18 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnnotationJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record Annotation
 {
-    public string Context => "http://www.w3.org/ns/anno.jsonld";
-    public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
-    public required string Created { get; init; }
-    public global::Xynolog.Types.Agent? Creator { get; init; }
-    public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
-    public required global::Xynolog.Identifiers.AnnotationId Id { get; init; }
-    public string? Modified { get; init; }
-    public required global::Xynolog.Types.Motivation Motivation { get; init; }
-    public required global::Xynolog.Types.AnnotationTargetValue Target { get; init; }
-    public string Type => "Annotation";
-    public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
-}
-
-internal sealed class AnnotationJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Annotation>
-{
-    public override Annotation Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("Annotation", root);
-        return new Annotation
-        {
-            Body = root.TryGetProperty("body", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationBodies>(p0, options) : null,
-            Created = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "created", options),
-            Creator = root.TryGetProperty("creator", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Agent>(p2, options) : null,
-            Generator = root.TryGetProperty("generator", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p3, options) : null,
-            Id = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "id", options),
-            Modified = root.TryGetProperty("modified", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
-            Motivation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Motivation>(root, "motivation", options),
-            Target = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationTargetValue>(root, "target", options),
-            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p8) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p8, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, Annotation value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("@context", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Context, options));
-        if (value.Body is not null)
-        {
-            fields.Add("body", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Body, options));
-        }
-        fields.Add("created", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Created, options));
-        if (value.Creator is not null)
-        {
-            fields.Add("creator", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Creator, options));
-        }
-        if (value.Generator is not null)
-        {
-            fields.Add("generator", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Generator, options));
-        }
-        fields.Add("id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        if (value.Modified is not null)
-        {
-            fields.Add("modified", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Modified, options));
-        }
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        fields.Add("target", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Target, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        if (value.WasAttributedTo is not null)
-        {
-            fields.Add("wasAttributedTo", global::System.Text.Json.JsonSerializer.SerializeToElement(value.WasAttributedTo, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "Annotation", fields);
-    }
+    [global::Xynolog.Serialization.Wire("@context")] public string Context => "http://www.w3.org/ns/anno.jsonld";
+    [global::Xynolog.Serialization.Wire("body")] public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
+    [global::Xynolog.Serialization.Wire("created")] public required string Created { get; init; }
+    [global::Xynolog.Serialization.Wire("creator")] public global::Xynolog.Types.Agent? Creator { get; init; }
+    [global::Xynolog.Serialization.Wire("generator")] public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
+    [global::Xynolog.Serialization.Wire("id")] public required global::Xynolog.Identifiers.AnnotationId Id { get; init; }
+    [global::Xynolog.Serialization.Wire("modified")] public string? Modified { get; init; }
+    [global::Xynolog.Serialization.Wire("motivation")] public required global::Xynolog.Types.Motivation Motivation { get; init; }
+    [global::Xynolog.Serialization.Wire("target")] public required global::Xynolog.Types.AnnotationTargetValue Target { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "Annotation";
+    [global::Xynolog.Serialization.Wire("wasAttributedTo")] public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
 }

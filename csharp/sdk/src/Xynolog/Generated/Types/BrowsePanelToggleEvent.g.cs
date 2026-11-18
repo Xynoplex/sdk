@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowsePanelToggleEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowsePanelToggleEvent
 {
-    public required string Panel { get; init; }
-}
-
-internal sealed class BrowsePanelToggleEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowsePanelToggleEvent>
-{
-    public override BrowsePanelToggleEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowsePanelToggleEvent", root);
-        return new BrowsePanelToggleEvent
-        {
-            Panel = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "panel", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowsePanelToggleEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("panel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Panel, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowsePanelToggleEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("panel")] public required string Panel { get; init; }
 }

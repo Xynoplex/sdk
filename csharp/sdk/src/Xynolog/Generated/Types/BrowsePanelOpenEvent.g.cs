@@ -4,41 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowsePanelOpenEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowsePanelOpenEvent
 {
-    public global::Xynolog.Types.Motivation? Motivation { get; init; }
-    public required string Panel { get; init; }
-    public global::Xynolog.Identifiers.AnnotationId? ScrollToAnnotationId { get; init; }
-}
-
-internal sealed class BrowsePanelOpenEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowsePanelOpenEvent>
-{
-    public override BrowsePanelOpenEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowsePanelOpenEvent", root);
-        return new BrowsePanelOpenEvent
-        {
-            Motivation = root.TryGetProperty("motivation", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Motivation>(p0, options) : null,
-            Panel = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "panel", options),
-            ScrollToAnnotationId = root.TryGetProperty("scrollToAnnotationId", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.AnnotationId>(p2, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowsePanelOpenEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Motivation is not null)
-        {
-            fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        }
-        fields.Add("panel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Panel, options));
-        if (value.ScrollToAnnotationId is not null)
-        {
-            fields.Add("scrollToAnnotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ScrollToAnnotationId, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowsePanelOpenEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("motivation")] public global::Xynolog.Types.Motivation? Motivation { get; init; }
+    [global::Xynolog.Serialization.Wire("panel")] public required string Panel { get; init; }
+    [global::Xynolog.Serialization.Wire("scrollToAnnotationId")] public global::Xynolog.Identifiers.AnnotationId? ScrollToAnnotationId { get; init; }
 }

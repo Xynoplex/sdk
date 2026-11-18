@@ -4,30 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DispatcherHealthJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record DispatcherHealth
 {
-    public string Queue => "jetstream";
-    public string Status => "ok";
-}
-
-internal sealed class DispatcherHealthJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DispatcherHealth>
-{
-    public override DispatcherHealth Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DispatcherHealth", root);
-        return new DispatcherHealth
-        {
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DispatcherHealth value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("queue", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Queue, options));
-        fields.Add("status", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Status, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "DispatcherHealth", fields);
-    }
+    [global::Xynolog.Serialization.Wire("queue")] public string Queue => "jetstream";
+    [global::Xynolog.Serialization.Wire("status")] public string Status => "ok";
 }

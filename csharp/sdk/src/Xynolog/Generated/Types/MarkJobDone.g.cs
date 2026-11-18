@@ -4,56 +4,13 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkJobDoneJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkJobDone
 {
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, long>? ByCategory { get; init; }
-    public long? Errors { get; init; }
-    public required long Found { get; init; }
-    public required long Persisted { get; init; }
-    public long? UncheckedPieces { get; init; }
-    public long? UnderReportedPieces { get; init; }
-}
-
-internal sealed class MarkJobDoneJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkJobDone>
-{
-    public override MarkJobDone Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkJobDone", root);
-        return new MarkJobDone
-        {
-            ByCategory = root.TryGetProperty("byCategory", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyDictionary<string, long>>(p0, options) : null,
-            Errors = root.TryGetProperty("errors", out var p1) ? global::Xynolog.Serialization.WireJson.Read<long>(p1, options) : null,
-            Found = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "found", options),
-            Persisted = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "persisted", options),
-            UncheckedPieces = root.TryGetProperty("uncheckedPieces", out var p4) ? global::Xynolog.Serialization.WireJson.Read<long>(p4, options) : null,
-            UnderReportedPieces = root.TryGetProperty("underReportedPieces", out var p5) ? global::Xynolog.Serialization.WireJson.Read<long>(p5, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkJobDone value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.ByCategory is not null)
-        {
-            fields.Add("byCategory", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ByCategory, options));
-        }
-        if (value.Errors is not null)
-        {
-            fields.Add("errors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Errors, options));
-        }
-        fields.Add("found", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Found, options));
-        fields.Add("persisted", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Persisted, options));
-        if (value.UncheckedPieces is not null)
-        {
-            fields.Add("uncheckedPieces", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UncheckedPieces, options));
-        }
-        if (value.UnderReportedPieces is not null)
-        {
-            fields.Add("underReportedPieces", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UnderReportedPieces, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkJobDone", fields);
-    }
+    [global::Xynolog.Serialization.Wire("byCategory")] public global::System.Collections.Generic.IReadOnlyDictionary<string, long>? ByCategory { get; init; }
+    [global::Xynolog.Serialization.Wire("errors")] public long? Errors { get; init; }
+    [global::Xynolog.Serialization.Wire("found")] public required long Found { get; init; }
+    [global::Xynolog.Serialization.Wire("persisted")] public required long Persisted { get; init; }
+    [global::Xynolog.Serialization.Wire("uncheckedPieces")] public long? UncheckedPieces { get; init; }
+    [global::Xynolog.Serialization.Wire("underReportedPieces")] public long? UnderReportedPieces { get; init; }
 }

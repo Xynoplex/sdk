@@ -4,44 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BusFrameJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BusFrame
 {
-    public required string Channel { get; init; }
-    public string? CorrelationId { get; init; }
-    public required global::System.Text.Json.JsonElement Payload { get; init; }
-    public global::Xynolog.Identifiers.ResourceId? Scope { get; init; }
-}
-
-internal sealed class BusFrameJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BusFrame>
-{
-    public override BusFrame Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BusFrame", root);
-        return new BusFrame
-        {
-            Channel = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "channel", options),
-            CorrelationId = root.TryGetProperty("correlationId", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Payload = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Text.Json.JsonElement>(root, "payload", options),
-            Scope = root.TryGetProperty("scope", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.ResourceId>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BusFrame value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("channel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Channel, options));
-        if (value.CorrelationId is not null)
-        {
-            fields.Add("correlationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CorrelationId, options));
-        }
-        fields.Add("payload", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Payload, options));
-        if (value.Scope is not null)
-        {
-            fields.Add("scope", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Scope, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BusFrame", fields);
-    }
+    [global::Xynolog.Serialization.Wire("channel")] public required string Channel { get; init; }
+    [global::Xynolog.Serialization.Wire("correlationId")] public string? CorrelationId { get; init; }
+    [global::Xynolog.Serialization.Wire("payload")] public required global::System.Text.Json.JsonElement Payload { get; init; }
+    [global::Xynolog.Serialization.Wire("scope")] public global::Xynolog.Identifiers.ResourceId? Scope { get; init; }
 }
