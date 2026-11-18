@@ -29,6 +29,12 @@ let beside =
     "NewKnowledgeBase";
   ]
 
+(* The client types (protocol/specs/src/client/types) the SDK generates. The
+   rest wait on Protocol: an object among them states no additionalProperties,
+   which the types read as open, and AnchorMethod is held with
+   ReconciledSpan's shape. *)
+let client_types = [ "FrameRefusalReason"; "MatchQuality" ]
+
 (* A body that is not JSON: an upload is a multipart form, whose fields
    [xynolog::transport::PutBinaryRequest] carries. *)
 let passed_through = [ "ResourceUpload" ]
@@ -58,7 +64,7 @@ let types (spec : Spec.t) =
     List.sort_uniq String.compare
       (payloads spec
       @ List.filter (fun b -> not (List.mem b passed_through)) bundle.bodies
-      @ beside @ identifiers
+      @ beside @ identifiers @ client_types
       @ List.map (fun (_, name, _) -> name) (Definitions.records spec))
   in
   {

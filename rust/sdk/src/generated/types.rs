@@ -2795,6 +2795,29 @@ impl FrameAddTagSchemaCommand {
 
 schema!(FrameAddTagSchemaCommand);
 
+/// Why a reader refused a frame, for its first fault: `lacks`, a member it lacks; `malformed`, a member that is not of its shape. A reader's rule (specs/src/bus/frame-cases.json).
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum FrameRefusalReason {
+    #[serde(rename = "lacks")]
+    Lacks,
+    #[serde(rename = "malformed")]
+    Malformed,
+}
+
+impl FrameRefusalReason {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            FrameRefusalReason::Lacks => "lacks",
+            FrameRefusalReason::Malformed => "malformed",
+        }
+    }
+}
+
+schema!(FrameRefusalReason);
+
 /// Completion payload emitted on the gather:annotation-complete bus channel when annotation context gathering finishes.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GatherAnnotationComplete {
@@ -6981,6 +7004,32 @@ impl MarkUpdateEntityTypesCommand {
 }
 
 schema!(MarkUpdateEntityTypesCommand);
+
+/// Which looser search found a quoted selection, stated of a span whose `anchorMethod` is `fuzzy-match` and only then. Which search finds it is reconcile's rule (specs/src/annotations/reconcile-cases.json).
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MatchQuality {
+    #[serde(rename = "normalized")]
+    Normalized,
+    #[serde(rename = "case-insensitive")]
+    CaseInsensitive,
+    #[serde(rename = "fuzzy")]
+    Fuzzy,
+}
+
+impl MatchQuality {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MatchQuality::Normalized => "normalized",
+            MatchQuality::CaseInsensitive => "case-insensitive",
+            MatchQuality::Fuzzy => "fuzzy",
+        }
+    }
+}
+
+schema!(MatchQuality);
 
 /// Request to search the knowledge base's resources by text. The Librarian answers: it matches the text lexically, and when nothing matches, by meaning.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]

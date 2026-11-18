@@ -15,7 +15,8 @@ use xynolog::namespaces::{Delegation, JobEvent, stall_deadline};
 use xynolog::testing::as_id;
 use xynolog::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
 use xynolog::timing::{JOB_SILENCE, JOB_STATUS_POLL};
-use xynolog::transport::{ConnectionState, Envelope, FrameRefusal, FrameRefusalReason};
+use xynolog::transport::{ConnectionState, Envelope, FrameRefusal};
+use xynolog::types::FrameRefusalReason;
 use xynolog::types::{
     HighlightingJobParams, JobDeclinedReason, LinkingJobParams, MarkJobCompleteCommand,
     MarkJobDone, MarkJobResult, TaggingJobParams, YieldJobCompleteCommand, YieldJobResult,

@@ -329,7 +329,7 @@ impl ScopedEventBus {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::transport::FrameRefusalReason;
+    use crate::types::FrameRefusalReason;
     use serde_json::json;
 
     fn payload(n: u64) -> Map<String, Value> {

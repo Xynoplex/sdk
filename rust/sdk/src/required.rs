@@ -7,7 +7,7 @@
 //! does not state is a fault of the value itself, and nothing of serde's own
 //! account is said: it shows what it was given.
 
-use crate::transport::FrameRefusalReason;
+use crate::types::FrameRefusalReason;
 use crate::types::Schema;
 use serde_json::{Map, Value};
 use std::fmt;
@@ -424,7 +424,7 @@ pub fn fault_said<T: Schema>(body: &mut Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{Fault, fault_of, fault_said, schema};
-    use crate::transport::FrameRefusalReason;
+    use crate::types::FrameRefusalReason;
     use crate::types::UserResponse;
     use serde_json::json;
 

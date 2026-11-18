@@ -28,10 +28,9 @@ use crate::types::{
     HealthResponse, MediaTokenResponse, ProtectedResourceMetadata, StatusResponse, UserResponse,
 };
 use crate::types::{AnnotationId, JobId};
-use crate::types::{BusFrame, ResourceId, Schema};
+use crate::types::{BusFrame, FrameRefusalReason, ResourceId, Schema};
 use bytes::Bytes;
 use futures_core::Stream;
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 use std::fmt;
@@ -130,47 +129,6 @@ pub struct Frame {
     pub scope: Option<ResourceId>,
     pub trace: Option<TraceCarrier>,
     pub stream_id: Option<StreamId>,
-}
-
-/// Why a value is refused at a member, as every SDK finds a value's first
-/// fault (codegen/lib/required/shape.ml).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FrameRefusalReason {
-    /// The value does not carry the member, or the member holds null where it
-    /// may not.
-    Lacks,
-    /// The member is not what its schema allows (of another kind, another
-    /// value, form or size), or is one a closed object does not name.
-    Malformed,
-}
-
-impl FrameRefusalReason {
-    const EVERY: [FrameRefusalReason; 2] =
-        [FrameRefusalReason::Lacks, FrameRefusalReason::Malformed];
-
-    /// The reason as every SDK spells it.
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            FrameRefusalReason::Lacks => "lacks",
-            FrameRefusalReason::Malformed => "malformed",
-        }
-    }
-}
-
-impl Serialize for FrameRefusalReason {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.as_str())
-    }
-}
-
-impl<'de> Deserialize<'de> for FrameRefusalReason {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let spelled = String::deserialize(deserializer)?;
-        FrameRefusalReason::EVERY
-            .into_iter()
-            .find(|reason| reason.as_str() == spelled)
-            .ok_or_else(|| de::Error::custom(format!("no refusal's reason is spelled {spelled:?}")))
-    }
 }
 
 /// What a transport delivers in place of a frame BusFrame does not allow,
