@@ -2,11 +2,20 @@ open Xynolog_codegen
 
 let usage =
   "usage: xynolog-codegen read ROOT\n\
-  \       xynolog-codegen generate ROOT [GROUP ...]\n\n\
-   ROOT is the sdk checkout, whose protocol/specs/src the model reads. read \
-   reads it and writes nothing; generate writes each group's files under ROOT, \
-   every group when none is named, and names each file it writes. The groups: "
-  ^ String.concat ", " (List.map (fun (g : Groups.group) -> g.name) Groups.all)
+  \       xynolog-codegen generate TARGET ROOT [GROUP ...]\n\n\
+   ROOT is a checkout whose protocol/specs/src the model reads. read reads it \
+   and writes nothing; generate writes each of TARGET's groups' files under \
+   ROOT, every group of TARGET when none is named, and names each file it \
+   writes. The targets and their groups: "
+  ^ String.concat "; "
+      (List.map
+         (fun (name, target) ->
+           name ^ ": "
+           ^ String.concat ", "
+               (List.map
+                  (fun (g : Groups.group) -> g.name)
+                  (Groups.of_target target)))
+         Groups.targets)
 
 let refused errors =
   List.iter (fun error -> prerr_endline (Decode.error_to_string error)) errors;
@@ -21,22 +30,28 @@ let load root =
   let specs = Filename.concat root "protocol/specs/src" in
   match Spec.load specs with Ok spec -> spec | Error errors -> refused errors
 
-let groups = function
-  | [] -> Groups.all
+let groups target names =
+  let all =
+    match List.assoc_opt target Groups.targets with
+    | Some target -> Groups.of_target target
+    | None ->
+        Printf.eprintf "no target is named %s\n" target;
+        bad_usage ()
+  in
+  match names with
+  | [] -> all
   | names ->
       List.map
         (fun name ->
-          match
-            List.find_opt (fun (g : Groups.group) -> g.name = name) Groups.all
-          with
+          match List.find_opt (fun (g : Groups.group) -> g.name = name) all with
           | Some group -> group
           | None ->
-              Printf.eprintf "no group is named %s\n" name;
+              Printf.eprintf "%s has no group named %s\n" target name;
               bad_usage ())
         names
 
-let files root names =
-  let groups = groups names in
+let files target root names =
+  let groups = groups target names in
   let spec = load root in
   let collected =
     List.fold_right
@@ -59,5 +74,6 @@ let () =
         (List.length spec.path_items)
         (List.length spec.responses)
         (List.length spec.schemas)
-  | _ :: "generate" :: root :: names -> Output.write ~root (files root names)
+  | _ :: "generate" :: target :: root :: names ->
+      Output.write ~root (files target root names)
   | _ -> bad_usage ()

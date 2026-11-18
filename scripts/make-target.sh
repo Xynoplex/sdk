@@ -162,6 +162,7 @@ case "${1:-}" in
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
       dune exec -- ./test/coverage_census.exe ..
+      dune exec -- ./test/cli_groups.exe ..
       dune exec -- xynolog-codegen read ..
       dune exec -- ./test/boundary_census.exe ..
       dune exec -- ./test/protocol_paths_census.exe .. ../protocol' --memory 4g
@@ -195,7 +196,7 @@ case "${1:-}" in
         cp -a /sdk/codegen /tmp/codegen
         cd /tmp/codegen
         dune build ./bin/main.exe
-        dune exec -- xynolog-codegen generate /sdk | tee /work/written'
+        dune exec -- xynolog-codegen generate sdk /sdk | tee /work/written'
     "$RUNTIME" run --rm --volume "$target:/sdk" --volume "$work:/work" --workdir /sdk node:26-bookworm bash -euc '
       cd typescript
       npm install --no-package-lock --ignore-scripts
@@ -220,8 +221,22 @@ case "${1:-}" in
       fi
     fi
     ;;
+  codegen-binary)
+    # The generator as the SDK bundle carries it, for another repository to
+    # run against its own checkout: built in the toolchain's container, and
+    # linked statically, so it runs in any Linux container. It is written to
+    # the directory given, as xynolog-codegen.
+    [[ $# -eq 2 ]] || { echo 'Usage: make-target.sh codegen-binary DIRECTORY' >&2; exit 2; }
+    mkdir -p "$2"
+    ocaml_toolchain_image
+    in_container xynolog-ocaml-toolchain '
+      cd /tmp/sdk/codegen
+      dune build ./bin/main.exe
+      install -m 0755 _build/default/bin/main.exe /artifacts/xynolog-codegen' \
+      --volume "$(cd "$2" && pwd -P):/artifacts" --memory 4g
+    ;;
   *)
-    echo 'Usage: make-target.sh test-<language>|haskell-dependencies|test-codegen|generate|check-generated' >&2
+    echo 'Usage: make-target.sh test-<language>|haskell-dependencies|test-codegen|generate|check-generated|codegen-binary DIRECTORY' >&2
     exit 2
     ;;
 esac

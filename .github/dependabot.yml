@@ -87,6 +87,14 @@ updates:
         patterns: ["*"]
       typescript:
         patterns: ["*"]
+    ignore:
+      # rollup-plugin-dts needs TypeScript's compiler API, which TypeScript 7
+      # does not ship.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Prettier lays out the generated TypeScript, so its version moves only
+      # with a regeneration.
+      - dependency-name: prettier
 
   - package-ecosystem: uv
     labels: ["dependencies"]

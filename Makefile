@@ -2,7 +2,7 @@
 
 LANGUAGES := typescript python rust go csharp haskell kotlin ocaml swift
 
-.PHONY: help build test generate check-generated test-codegen verify-artifacts clean clean-local $(LANGUAGES) $(addprefix test-,$(LANGUAGES)) $(addsuffix -clean,$(LANGUAGES))
+.PHONY: help build codegen test generate check-generated test-codegen verify-artifacts clean clean-local $(LANGUAGES) $(addprefix test-,$(LANGUAGES)) $(addsuffix -clean,$(LANGUAGES))
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynolog SDK: make [target] [VARIABLE=value ...]
@@ -24,6 +24,10 @@ build:
 ## <language>: One SDK: <list>
 $(LANGUAGES):
 	bash scripts/publish-local.sh $@
+
+## codegen: The generator, as a local artifact and an artifact bundle, for another repository to write its generated files with
+codegen:
+	bash scripts/publish-local.sh codegen
 
 ## verify-artifacts: Check the artifact bundle SDK_ARTIFACTS names
 verify-artifacts:
