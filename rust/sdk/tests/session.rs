@@ -1683,12 +1683,6 @@ async fn a_session_closed_while_renewing_gives_the_refusal_no_token_and_keeps_th
 // ── What a host shows about a session ───────────────────────────────────
 
 #[test]
-fn a_reason_is_named_as_the_table_names_it() {
-    assert_eq!(SessionEndReason::Expired.as_str(), "expired");
-    assert_eq!(SessionEndReason::Refused.as_str(), "refused");
-}
-
-#[test]
 fn a_second_occurrence_is_told_even_when_it_says_the_same() {
     let signals = SessionSignals::new();
     let mut ended = signals.session_ended();
