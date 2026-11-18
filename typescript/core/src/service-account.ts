@@ -55,14 +55,18 @@ export type ServiceAccountCredential = SecretCredential | KeyCredential;
  * function, never as a method of something else, which a browser refuses.
  */
 function fetchOf(given: typeof fetch | undefined): typeof fetch {
-  return (...request: Parameters<typeof fetch>) => (given ?? globalThis.fetch)(...request);
+  return (...request: Parameters<typeof fetch>) =>
+    (given ?? globalThis.fetch)(...request);
 }
 
 /** Renew this long before expiry, so a token never expires mid-flight. */
 const RENEW_BEFORE_EXPIRY_MS = 30_000;
 
 /** The client-credentials grant's form: the secret itself, or an assertion signed for this grant alone. */
-async function proof(credential: ServiceAccountCredential, endpoint: string): Promise<URLSearchParams> {
+async function proof(
+  credential: ServiceAccountCredential,
+  endpoint: string,
+): Promise<URLSearchParams> {
   if ('clientSecret' in credential) {
     return new URLSearchParams({
       grant_type: 'client_credentials',
@@ -70,10 +74,15 @@ async function proof(credential: ServiceAccountCredential, endpoint: string): Pr
       client_secret: credential.clientSecret,
     });
   }
-  const assertion = await clientAssertion(credential.privateKey, credential.clientId, endpoint, {
-    issuedAt: Math.floor(Date.now() / 1000),
-    jti: uuidV4(),
-  });
+  const assertion = await clientAssertion(
+    credential.privateKey,
+    credential.clientId,
+    endpoint,
+    {
+      issuedAt: Math.floor(Date.now() / 1000),
+      jti: uuidV4(),
+    },
+  );
   return new URLSearchParams({
     grant_type: 'client_credentials',
     client_assertion_type: JWT_BEARER,
@@ -116,19 +125,35 @@ export class ServiceToken {
 
   private async discover(): Promise<string> {
     const { issuer } = this.credential;
-    const url = new URL('.well-known/openid-configuration', issuer.endsWith('/') ? issuer : `${issuer}/`);
-    const unanswered = (error: unknown) => new UnansweredError(`OIDC discovery for ${issuer}`, error);
-    const document = await withinDeadline(HTTP_REQUEST_TIMEOUT_MS, async (signal) => {
-      const response = await fetchOf(this.fetch)(url, { signal }).catch((error: unknown) => {
-        throw unanswered(error);
-      });
-      if (!response.ok) {
-        throw new SignInError('discovery', `OIDC discovery for ${issuer} failed: HTTP ${response.status} from ${url}`, response.status);
-      }
-      return jsonOf(response, unanswered);
-    });
+    const url = new URL(
+      '.well-known/openid-configuration',
+      issuer.endsWith('/') ? issuer : `${issuer}/`,
+    );
+    const unanswered = (error: unknown) =>
+      new UnansweredError(`OIDC discovery for ${issuer}`, error);
+    const document = await withinDeadline(
+      HTTP_REQUEST_TIMEOUT_MS,
+      async (signal) => {
+        const response = await fetchOf(this.fetch)(url, { signal }).catch(
+          (error: unknown) => {
+            throw unanswered(error);
+          },
+        );
+        if (!response.ok) {
+          throw new SignInError(
+            'discovery',
+            `OIDC discovery for ${issuer} failed: HTTP ${response.status} from ${url}`,
+            response.status,
+          );
+        }
+        return jsonOf(response, unanswered);
+      },
+    );
     if (!isObject(document) || !isString(document['token_endpoint'])) {
-      throw new SignInError('discovery', `OIDC discovery for ${issuer} returned no \`token_endpoint\``);
+      throw new SignInError(
+        'discovery',
+        `OIDC discovery for ${issuer} returned no \`token_endpoint\``,
+      );
     }
     return document['token_endpoint'];
   }
@@ -170,38 +195,52 @@ export class ServiceToken {
   private async granted(renewed: boolean): Promise<string> {
     const { issuer, clientId } = this.credential;
 
-    if (!renewed && this.held && this.held.expiresAt - RENEW_BEFORE_EXPIRY_MS > Date.now()) {
+    if (
+      !renewed &&
+      this.held &&
+      this.held.expiresAt - RENEW_BEFORE_EXPIRY_MS > Date.now()
+    ) {
       return this.held.token;
     }
 
     const endpoint = await this.tokenEndpoint();
     const form = await proof(this.credential, endpoint);
 
-    const unanswered = (error: unknown) => new UnansweredError(`Client-credentials grant for ${clientId} at ${issuer}`, error);
-    const body = await withinDeadline(HTTP_REQUEST_TIMEOUT_MS, async (signal) => {
-      const response = await fetchOf(this.fetch)(endpoint, {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: form,
-        signal,
-      }).catch((error: unknown) => {
-        throw unanswered(error);
-      });
+    const unanswered = (error: unknown) =>
+      new UnansweredError(
+        `Client-credentials grant for ${clientId} at ${issuer}`,
+        error,
+      );
+    const body = await withinDeadline(
+      HTTP_REQUEST_TIMEOUT_MS,
+      async (signal) => {
+        const response = await fetchOf(this.fetch)(endpoint, {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          body: form,
+          signal,
+        }).catch((error: unknown) => {
+          throw unanswered(error);
+        });
 
-      if (!response.ok) {
-        // The status, not the body: a token endpoint's error body can echo the
-        // request, and this one carried the secret or the assertion.
-        throw new SignInError(
-          'exchange',
-          `Client-credentials grant for ${clientId} at ${issuer} failed (HTTP ${response.status})`,
-          response.status,
-        );
-      }
+        if (!response.ok) {
+          // The status, not the body: a token endpoint's error body can echo the
+          // request, and this one carried the secret or the assertion.
+          throw new SignInError(
+            'exchange',
+            `Client-credentials grant for ${clientId} at ${issuer} failed (HTTP ${response.status})`,
+            response.status,
+          );
+        }
 
-      return jsonOf(response, unanswered);
-    });
+        return jsonOf(response, unanswered);
+      },
+    );
     if (!isObject(body) || !isString(body['access_token'])) {
-      throw new SignInError('exchange', `Token endpoint for ${issuer} returned no \`access_token\``);
+      throw new SignInError(
+        'exchange',
+        `Token endpoint for ${issuer} returned no \`access_token\``,
+      );
     }
 
     const token = body['access_token'];
@@ -209,7 +248,10 @@ export class ServiceToken {
     // A token whose grant reports no lifetime is not held, and neither is the
     // one it replaces, rather than either living by a guess: serving a token
     // past its expiry fails at the far end, where the cause is hardest to see.
-    this.held = typeof expiresIn === 'number' && Number.isFinite(expiresIn) ? { token, expiresAt: Date.now() + expiresIn * 1000 } : null;
+    this.held =
+      typeof expiresIn === 'number' && Number.isFinite(expiresIn)
+        ? { token, expiresAt: Date.now() + expiresIn * 1000 }
+        : null;
     return token;
   }
 }

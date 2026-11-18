@@ -4,7 +4,13 @@ import type { components } from '@xynolog/core';
 type DeclineReason = components['schemas']['JobDeclined']['reason'];
 
 /** The closed vocabulary this client has copy for. */
-const REASONS: readonly string[] = ['no-text-layer', 'encrypted', 'corrupt', 'too-large', 'empty'];
+const REASONS: readonly string[] = [
+  'no-text-layer',
+  'encrypted',
+  'corrupt',
+  'too-large',
+  'empty',
+];
 
 /**
  * A detection job can *decline* cleanly rather than succeed or fail: a PDF
@@ -21,8 +27,11 @@ const REASONS: readonly string[] = ['no-text-layer', 'encrypted', 'corrupt', 'to
  * not a "failed" error toast (alarming — nothing broke).
  */
 export function declineReason(result: unknown): DeclineReason | null {
-  if (!isObject(result) || result.declined !== true || !isString(result.reason)) return null;
+  if (!isObject(result) || result.declined !== true || !isString(result.reason))
+    return null;
   // A reason outside the vocabulary has no copy: returning it anyway would put
   // a raw, untranslated wire token in a toast.
-  return REASONS.includes(result.reason) ? (result.reason as DeclineReason) : null;
+  return REASONS.includes(result.reason)
+    ? (result.reason as DeclineReason)
+    : null;
 }

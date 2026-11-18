@@ -9,7 +9,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { resourceId, type ResourceDescriptor } from '@xynolog/core';
 import { ResourceCard } from '../components/ResourceCard';
 
-const createMockResource = (overrides?: Partial<ResourceDescriptor>): ResourceDescriptor => ({
+const createMockResource = (
+  overrides?: Partial<ResourceDescriptor>,
+): ResourceDescriptor => ({
   '@context': 'https://www.w3.org/ns/anno.jsonld',
   '@id': resourceId('test-123'),
   '@type': 'schema:DigitalDocument',
@@ -34,7 +36,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       expect(screen.getByText('Test Resource')).toBeInTheDocument();
@@ -50,7 +52,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       expect(screen.getByText(/Created:/)).toBeInTheDocument();
@@ -58,7 +60,9 @@ describe('ResourceCard', () => {
     });
 
     it('renders entity type tags', () => {
-      const resource = createMockResource({ entityTypes: ['Document', 'Article'] });
+      const resource = createMockResource({
+        entityTypes: ['Document', 'Article'],
+      });
       const onOpen = vi.fn();
 
       render(
@@ -67,7 +71,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       expect(screen.getByText('Document')).toBeInTheDocument();
@@ -86,7 +90,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       expect(screen.getByText('Document')).toBeInTheDocument();
@@ -104,7 +108,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       expect(screen.getByText('Archived')).toBeInTheDocument();
@@ -120,7 +124,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       expect(screen.queryByText('Archived')).not.toBeInTheDocument();
@@ -136,7 +140,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       expect(screen.getByText(/N\/A/)).toBeInTheDocument();
@@ -154,10 +158,12 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Resource/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Resource/,
+      });
       fireEvent.click(card);
 
       expect(onOpen).toHaveBeenCalledWith(resource);
@@ -173,10 +179,12 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Resource/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Resource/,
+      });
       fireEvent.click(card);
       fireEvent.click(card);
       fireEvent.click(card);
@@ -196,10 +204,12 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Resource/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Resource/,
+      });
       fireEvent.keyDown(card, { key: 'Enter' });
 
       expect(onOpen).toHaveBeenCalledWith(resource);
@@ -215,10 +225,12 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Resource/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Resource/,
+      });
       fireEvent.keyDown(card, { key: ' ' });
 
       expect(onOpen).toHaveBeenCalledWith(resource);
@@ -234,10 +246,12 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Resource/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Resource/,
+      });
       fireEvent.keyDown(card, { key: 'a' });
       fireEvent.keyDown(card, { key: 'Escape' });
       fireEvent.keyDown(card, { key: 'Tab' });
@@ -256,10 +270,12 @@ describe('ResourceCard', () => {
           tabIndex={-1}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Resource/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Resource/,
+      });
       expect(card).toHaveAttribute('tabindex', '-1');
     });
 
@@ -273,10 +289,12 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Resource/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Resource/,
+      });
       expect(card).toHaveAttribute('tabindex', '0');
     });
   });
@@ -292,10 +310,12 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
-      expect(screen.getByRole('button', { name: 'Open resource: Test Resource' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Open resource: Test Resource' }),
+      ).toBeInTheDocument();
     });
 
     it('has button role', () => {
@@ -308,7 +328,7 @@ describe('ResourceCard', () => {
           onOpen={onOpen}
           archivedLabel="Archived"
           createdLabel="Created:"
-        />
+        />,
       );
 
       const card = screen.getByRole('button');

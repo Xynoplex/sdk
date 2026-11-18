@@ -21,8 +21,14 @@ export class BeckonNamespace implements IBeckonNamespace {
   // these methods never loop back onto the local bus.
 
   /** Point the others at an annotation, or, with none, at the resource as a whole. */
-  attention(resourceId: ResourceId, annotationId?: AnnotationId): Promise<number | undefined> {
-    return this.wire.emit('beckon:focus', { ...(annotationId !== undefined ? { annotationId } : {}), resourceId });
+  attention(
+    resourceId: ResourceId,
+    annotationId?: AnnotationId,
+  ): Promise<number | undefined> {
+    return this.wire.emit('beckon:focus', {
+      ...(annotationId !== undefined ? { annotationId } : {}),
+      resourceId,
+    });
   }
 
   /**

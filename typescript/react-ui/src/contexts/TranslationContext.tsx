@@ -1,9 +1,19 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useState, useEffect, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+  useMemo,
+} from 'react';
 import type { LocaleCode } from '@xynolog/core';
 import type { TranslationManager } from '../types/TranslationManager';
-import { createTranslationManager, type Messages } from '../lib/translation-manager';
+import {
+  createTranslationManager,
+  type Messages,
+} from '../lib/translation-manager';
 
 const TranslationContext = createContext<TranslationManager | null>(null);
 
@@ -49,7 +59,9 @@ export type TranslationSource =
       translationManager?: never;
     };
 
-export type TranslationProviderProps = TranslationSource & { children: ReactNode };
+export type TranslationProviderProps = TranslationSource & {
+  children: ReactNode;
+};
 
 /**
  * Provider for translation management
@@ -70,7 +82,10 @@ export function TranslationProvider(props: TranslationProviderProps) {
   }
 
   return (
-    <LocaleTranslations locale={props.locale} loadingComponent={props.loadingComponent}>
+    <LocaleTranslations
+      locale={props.locale}
+      loadingComponent={props.loadingComponent}
+    >
       {props.children}
     </LocaleTranslations>
   );
@@ -96,16 +111,23 @@ function LocaleTranslations({
   useEffect(() => {
     const cached = translationCache.get(locale);
     if (cached) {
-      setLoaded((previous) => (previous?.locale === locale ? previous : { locale, messages: cached }));
+      setLoaded((previous) =>
+        previous?.locale === locale ? previous : { locale, messages: cached },
+      );
       return;
     }
     let current = true;
     loadTranslations(locale).then(
-      messages => {
+      (messages) => {
         if (current) setLoaded({ locale, messages });
       },
-      cause => {
-        if (current) setFailure(new Error(`Failed to load translations for locale: ${locale}`, { cause }));
+      (cause) => {
+        if (current)
+          setFailure(
+            new Error(`Failed to load translations for locale: ${locale}`, {
+              cause,
+            }),
+          );
       },
     );
     return () => {
@@ -118,7 +140,8 @@ function LocaleTranslations({
   // entire application subtree on every runtime language change (discarding
   // in-progress UI state). The loading screen is only needed on initial load.
   const manager = useMemo(
-    () => (loaded ? createTranslationManager(loaded.locale, loaded.messages) : null),
+    () =>
+      loaded ? createTranslationManager(loaded.locale, loaded.messages) : null,
     [loaded],
   );
 
@@ -148,11 +171,14 @@ function LocaleTranslations({
 export function useTranslations(namespace: string) {
   const manager = useContext(TranslationContext);
   if (!manager) {
-    throw new Error('useTranslations must be used within a TranslationProvider');
+    throw new Error(
+      'useTranslations must be used within a TranslationProvider',
+    );
   }
 
   // Return a function that translates keys within this namespace
-  return (key: string, params?: Record<string, unknown>) => manager.t(namespace, key, params);
+  return (key: string, params?: Record<string, unknown>) =>
+    manager.t(namespace, key, params);
 }
 
 /**
@@ -163,7 +189,9 @@ export function useTranslations(namespace: string) {
 export function useTranslationManager(): TranslationManager {
   const manager = useContext(TranslationContext);
   if (!manager) {
-    throw new Error('useTranslationManager must be used within a TranslationProvider');
+    throw new Error(
+      'useTranslationManager must be used within a TranslationProvider',
+    );
   }
   return manager;
 }

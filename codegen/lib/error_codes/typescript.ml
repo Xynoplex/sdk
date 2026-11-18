@@ -5,14 +5,13 @@
 module T = Typescript_syntax
 
 let path = "typescript/core/src/error-codes.ts"
-let code (c : Table.code) = T.Str (Double, c.code)
+let code (c : Table.code) = T.Str c.code
 
 let union (v : Table.vocabulary) =
   T.type_alias v.name ~about:[ Doc v.docs ]
     (T_cases
        (List.map
-          (fun (c : Table.code) ->
-            T.case ~about:[ Doc c.docs ] (T_str (Double, c.code)))
+          (fun (c : Table.code) -> T.case ~about:[ Doc c.docs ] (T_str c.code))
           v.codes))
 
 let text (t : Table.t) =
@@ -34,7 +33,7 @@ let text (t : Table.t) =
               ]
             (T.rows
                (List.map
-                  (fun (wire, c) -> T.entry (Quoted (Double, wire)) (code c))
+                  (fun (wire, c) -> T.entry (Quoted wire) (code c))
                   t.wire));
           T.const "unrecognizedFailureCode" ~as_const:true
             ~about:

@@ -4,7 +4,10 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { of } from 'rxjs';
 import { CacheObservable, type XynologSession } from '@xynolog/sdk';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 import type { TagSchema } from '@xynolog/core';
 
@@ -21,14 +24,24 @@ vi.mock('@xynolog/core', async () => {
   };
 });
 
-import { getAnnotationExactText, getTagCategory, getTagSchemaId, resourceId } from '@xynolog/core';
+import {
+  getAnnotationExactText,
+  getTagCategory,
+  getTagSchemaId,
+  resourceId,
+} from '@xynolog/core';
 import type { MockedFunction } from 'vitest';
 import { TagEntry } from '../TagEntry';
 
-const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<typeof getAnnotationExactText>;
-const mockGetTagCategory = getTagCategory as MockedFunction<typeof getTagCategory>;
-const mockGetTagSchemaId = getTagSchemaId as MockedFunction<typeof getTagSchemaId>;
-
+const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<
+  typeof getAnnotationExactText
+>;
+const mockGetTagCategory = getTagCategory as MockedFunction<
+  typeof getTagCategory
+>;
+const mockGetTagSchemaId = getTagSchemaId as MockedFunction<
+  typeof getTagSchemaId
+>;
 
 const createMockTag = (overrides?: Partial<Annotation>): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
@@ -69,7 +82,9 @@ describe('TagEntry', () => {
 
   // The component is provider-free: hand it a fresh per-test fake session as
   // the `session` prop. renderWithProviders still supplies translations/toasts.
-  const renderTagEntry = (element: ReactElement<{ session: XynologSession | null }>) => {
+  const renderTagEntry = (
+    element: ReactElement<{ session: XynologSession | null }>,
+  ) => {
     const { session } = createTestXynologWrapper();
     return renderWithProviders(cloneElement(element, { session }));
   };
@@ -100,7 +115,9 @@ describe('TagEntry', () => {
 
       renderTagEntry(<TagEntry {...defaultProps} />);
 
-      expect(screen.getByText(new RegExp(`"${'C'.repeat(150)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'C'.repeat(150)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
@@ -130,9 +147,13 @@ describe('TagEntry', () => {
       // transport's HTTP plumbing.
       const { XynologWrapper, client, session } = createTestXynologWrapper();
       vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
-        CacheObservable.from(of({ status: 'ready' as const, value: [NER_SCHEMA] }))
+        CacheObservable.from(
+          of({ status: 'ready' as const, value: [NER_SCHEMA] }),
+        ),
       );
-      render(<TagEntry {...defaultProps} session={session} />, { wrapper: XynologWrapper });
+      render(<TagEntry {...defaultProps} session={session} />, {
+        wrapper: XynologWrapper,
+      });
 
       expect(screen.getByText('Named Entity Recognition')).toBeInTheDocument();
     });
@@ -144,11 +165,16 @@ describe('TagEntry', () => {
       // misses, the schema-name `<span>` is not rendered.
       const { XynologWrapper, client, session } = createTestXynologWrapper();
       vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
-        CacheObservable.from(of({ status: 'ready' as const, value: [] }))
+        CacheObservable.from(of({ status: 'ready' as const, value: [] })),
       );
-      const { container } = render(<TagEntry {...defaultProps} session={session} />, { wrapper: XynologWrapper });
+      const { container } = render(
+        <TagEntry {...defaultProps} session={session} />,
+        { wrapper: XynologWrapper },
+      );
 
-      expect(container.querySelector('.xynolog-annotation-entry__meta')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-annotation-entry__meta'),
+      ).not.toBeInTheDocument();
     });
 
     it('should render category badge with correct data-variant', () => {
@@ -170,7 +196,7 @@ describe('TagEntry', () => {
       const subscription = eventBus.on('browse:click').subscribe(clickHandler);
 
       const { container } = renderWithProviders(
-        <TagEntry {...defaultProps} session={session} />
+        <TagEntry {...defaultProps} session={session} />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -187,7 +213,7 @@ describe('TagEntry', () => {
   describe('Hover state', () => {
     it('should apply pulse class when isHovered is true', () => {
       const { container } = renderTagEntry(
-        <TagEntry {...defaultProps} isHovered={true} />
+        <TagEntry {...defaultProps} isHovered={true} />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -196,7 +222,7 @@ describe('TagEntry', () => {
 
     it('should not apply pulse class when isHovered is false', () => {
       const { container } = renderTagEntry(
-        <TagEntry {...defaultProps} isHovered={false} />
+        <TagEntry {...defaultProps} isHovered={false} />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -207,7 +233,7 @@ describe('TagEntry', () => {
   describe('Focus state', () => {
     it('should set data-focused to true when focused', () => {
       const { container } = renderTagEntry(
-        <TagEntry {...defaultProps} isFocused={true} />
+        <TagEntry {...defaultProps} isFocused={true} />,
       );
 
       const entry = container.firstChild as HTMLElement;

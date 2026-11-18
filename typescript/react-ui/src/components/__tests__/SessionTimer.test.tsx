@@ -15,7 +15,9 @@ import { useSessionExpiry } from '../../hooks/useSessionExpiry';
 import { formatTime } from '../../lib/formatTime';
 
 /** What `useSessionExpiry` returns. `SessionTimer` reads only `timeRemaining`. */
-const expiry = (timeRemaining: number): ReturnType<typeof useSessionExpiry> => ({
+const expiry = (
+  timeRemaining: number,
+): ReturnType<typeof useSessionExpiry> => ({
   timeRemaining,
   isExpiringSoon: false,
 });
@@ -38,7 +40,9 @@ describe('SessionTimer', () => {
 
       const { container } = render(<SessionTimer />);
 
-      expect(container.querySelector('.xynolog-session-timer')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-session-timer'),
+      ).toBeInTheDocument();
     });
 
     it('should display complete message with formatted time', () => {
@@ -119,7 +123,9 @@ describe('SessionTimer', () => {
 
         const { unmount } = render(<SessionTimer />);
 
-        expect(screen.getByText(`Session: ${formatted} remaining`)).toBeInTheDocument();
+        expect(
+          screen.getByText(`Session: ${formatted} remaining`),
+        ).toBeInTheDocument();
 
         unmount();
       });
@@ -176,7 +182,9 @@ describe('SessionTimer', () => {
 
       render(<SessionTimer />);
 
-      expect(screen.getByText('Session: expired remaining')).toBeInTheDocument();
+      expect(
+        screen.getByText('Session: expired remaining'),
+      ).toBeInTheDocument();
     });
 
     it('should handle very large timeRemaining', () => {

@@ -48,7 +48,10 @@ function sessionDouble() {
     client: {
       // The canvas takes a gesture only while it holds the image's text, and
       // an image's answer is that its media type has none.
-      browse: { click, resourceAnchoredText: vi.fn().mockResolvedValue({ kind: 'no-map' }) },
+      browse: {
+        click,
+        resourceAnchoredText: vi.fn().mockResolvedValue({ kind: 'no-map' }),
+      },
       beckon: { hover: vi.fn() },
     },
   } as unknown as XynologSession;
@@ -70,7 +73,7 @@ describe('SvgDrawingCanvas — drawing-path hit-test anchorRect', () => {
     const { container } = renderInEnglish(
       <SvgDrawingCanvas
         imageUrl="http://test/image.png"
-        resourceUri={resourceId("resource-1")}
+        resourceUri={resourceId('resource-1')}
         existingAnnotations={[rectAnnotation]}
         drawingMode="rectangle"
         selectedMotivation="highlighting"
@@ -80,33 +83,56 @@ describe('SvgDrawingCanvas — drawing-path hit-test anchorRect', () => {
 
     // Wait for the stubbed Image load to land imageDimensions (overlay mounts).
     await waitFor(() => {
-      expect(container.querySelector('.xynolog-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
+      expect(
+        container.querySelector(
+          '.xynolog-svg-drawing-canvas__overlay-container',
+        ),
+      ).toBeInTheDocument();
     });
 
     // jsdom has no layout: give the rendered <img> display dimensions and let
     // the resize listener re-read them (display 200×200 over natural 100×100
     // → scale 2, so the 10,10,20,20 annotation displays at 20,20,40,40).
-    const img = container.querySelector('.xynolog-svg-drawing-canvas__image') as HTMLImageElement;
-    Object.defineProperty(img, 'clientWidth', { value: 200, configurable: true });
-    Object.defineProperty(img, 'clientHeight', { value: 200, configurable: true });
+    const img = container.querySelector(
+      '.xynolog-svg-drawing-canvas__image',
+    ) as HTMLImageElement;
+    Object.defineProperty(img, 'clientWidth', {
+      value: 200,
+      configurable: true,
+    });
+    Object.defineProperty(img, 'clientHeight', {
+      value: 200,
+      configurable: true,
+    });
     fireEvent(window, new Event('resize'));
 
     await waitFor(() => {
-      const overlay = container.querySelector('.xynolog-svg-drawing-canvas__overlay') as HTMLElement;
+      const overlay = container.querySelector(
+        '.xynolog-svg-drawing-canvas__overlay',
+      ) as HTMLElement;
       expect(overlay?.style.width).toBe('200px');
     });
 
     // Sub-10px gesture inside the displayed annotation (image rect is zeros
     // in jsdom, so client coordinates are display coordinates).
     const canvas = container.querySelector('.xynolog-svg-drawing-canvas')!;
-    await waitFor(() => expect(canvas).toHaveAttribute('data-annotate-deferred', 'false'));
+    await waitFor(() =>
+      expect(canvas).toHaveAttribute('data-annotate-deferred', 'false'),
+    );
     fireEvent.mouseDown(canvas, { clientX: 30, clientY: 30 });
     fireEvent.mouseUp(canvas, { clientX: 30, clientY: 30 });
 
     expect(click).toHaveBeenCalledTimes(1);
     expect(click.mock.calls[0]?.[0]).toBe('canvas-ann-1');
     expect(click.mock.calls[0]?.[1]).toEqual({
-      x: 20, y: 20, left: 20, top: 20, width: 40, height: 40, right: 60, bottom: 60,
+      x: 20,
+      y: 20,
+      left: 20,
+      top: 20,
+      width: 40,
+      height: 40,
+      right: 60,
+      bottom: 60,
     });
   });
 
@@ -125,25 +151,54 @@ describe('SvgDrawingCanvas — drawing-path hit-test anchorRect', () => {
     );
 
     await waitFor(() => {
-      expect(container.querySelector('.xynolog-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
+      expect(
+        container.querySelector(
+          '.xynolog-svg-drawing-canvas__overlay-container',
+        ),
+      ).toBeInTheDocument();
     });
-    const img = container.querySelector('.xynolog-svg-drawing-canvas__image') as HTMLImageElement;
-    Object.defineProperty(img, 'clientWidth', { value: 200, configurable: true });
-    Object.defineProperty(img, 'clientHeight', { value: 200, configurable: true });
+    const img = container.querySelector(
+      '.xynolog-svg-drawing-canvas__image',
+    ) as HTMLImageElement;
+    Object.defineProperty(img, 'clientWidth', {
+      value: 200,
+      configurable: true,
+    });
+    Object.defineProperty(img, 'clientHeight', {
+      value: 200,
+      configurable: true,
+    });
     vi.spyOn(img, 'getBoundingClientRect').mockReturnValue({
-      x: 0, y: 0, left: 0, top: 0, right: 400, bottom: 400, width: 400, height: 400, toJSON: () => ({}),
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 400,
+      bottom: 400,
+      width: 400,
+      height: 400,
+      toJSON: () => ({}),
     });
     fireEvent(window, new Event('resize'));
 
     const canvas = container.querySelector('.xynolog-svg-drawing-canvas')!;
-    await waitFor(() => expect(canvas).toHaveAttribute('data-annotate-deferred', 'false'));
+    await waitFor(() =>
+      expect(canvas).toHaveAttribute('data-annotate-deferred', 'false'),
+    );
     // The logical annotation box is 20..60; at 2× it occupies 40..120.
     fireEvent.mouseDown(canvas, { clientX: 60, clientY: 60 });
     fireEvent.mouseUp(canvas, { clientX: 60, clientY: 60 });
 
     expect(click).toHaveBeenCalledTimes(1);
     expect(click.mock.calls[0]?.[1]).toEqual({
-      x: 40, y: 40, left: 40, top: 40, width: 80, height: 80, right: 120, bottom: 120,
+      x: 40,
+      y: 40,
+      left: 40,
+      top: 40,
+      width: 80,
+      height: 80,
+      right: 120,
+      bottom: 120,
     });
   });
 });

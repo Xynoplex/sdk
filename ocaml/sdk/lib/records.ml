@@ -1,26 +1,7 @@
 (* Generated from OpenAPI object components and discriminator mappings. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/records.ml) *)
 
-let object_fields = function `Assoc fields -> fields | _ -> assert false
-
-let string = function
-  | `Stringlit literal -> (
-      match Yojson.Safe.from_string literal with
-      | `String text -> text
-      | _ -> assert false)
-  | _ -> assert false
-
-let bool = function `Bool value -> value | _ -> assert false
-let required read name fields = read (List.assoc name fields)
-
-let optional read name fields =
-  match List.assoc_opt name fields with
-  | None -> Types.Absent
-  | Some `Null -> Types.Null
-  | Some value -> Types.Present (read value)
-
-let identity value = value
-let extra names = List.filter (fun (name, _) -> not (List.mem name names))
+open Record_reader
 
 module Agent_organization = struct
   type t = {
@@ -32,15 +13,20 @@ module Agent_organization = struct
   }
 
   let project fields =
-    {
-      field_type = required string "@type" fields;
-      field_id = optional string "@id" fields;
-      name = required string "name" fields;
-      homepage = optional string "homepage" fields;
-      extra = extra [ "@type"; "@id"; "name"; "homepage" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_type = required reader string "@type";
+        field_id = optional reader string "@id";
+        name = required reader string "name";
+        homepage = optional reader string "homepage";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AgentOrganization ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Agent_person = struct
@@ -56,29 +42,23 @@ module Agent_person = struct
   }
 
   let project fields =
-    {
-      field_type = required string "@type" fields;
-      field_id = optional string "@id" fields;
-      name = optional string "name" fields;
-      nickname = optional string "nickname" fields;
-      email = optional string "email" fields;
-      email_sha1 = optional string "email_sha1" fields;
-      homepage = optional string "homepage" fields;
-      extra =
-        extra
-          [
-            "@type";
-            "@id";
-            "name";
-            "nickname";
-            "email";
-            "email_sha1";
-            "homepage";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_type = required reader string "@type";
+        field_id = optional reader string "@id";
+        name = optional reader string "name";
+        nickname = optional reader string "nickname";
+        email = optional reader string "email";
+        email_sha1 = optional reader string "email_sha1";
+        homepage = optional reader string "homepage";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AgentPerson ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Agent_software = struct
@@ -93,20 +73,22 @@ module Agent_software = struct
   }
 
   let project fields =
-    {
-      field_type = required string "@type" fields;
-      field_id = optional string "@id" fields;
-      name = optional string "name" fields;
-      provider = optional string "provider" fields;
-      model = optional string "model" fields;
-      parameters = optional identity "parameters" fields;
-      extra =
-        extra
-          [ "@type"; "@id"; "name"; "provider"; "model"; "parameters" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_type = required reader string "@type";
+        field_id = optional reader string "@id";
+        name = optional reader string "name";
+        provider = optional reader string "provider";
+        model = optional reader string "model";
+        parameters = optional reader raw "parameters";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AgentSoftware ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Annotation = struct
@@ -126,37 +108,27 @@ module Annotation = struct
   }
 
   let project fields =
-    {
-      field_context = required string "@context" fields;
-      type_ = required string "type" fields;
-      id = required identity "id" fields;
-      motivation = required identity "motivation" fields;
-      target = required identity "target" fields;
-      body = optional identity "body" fields;
-      creator = optional identity "creator" fields;
-      created = required string "created" fields;
-      modified = optional string "modified" fields;
-      generator = optional identity "generator" fields;
-      was_attributed_to = optional identity "wasAttributedTo" fields;
-      extra =
-        extra
-          [
-            "@context";
-            "type";
-            "id";
-            "motivation";
-            "target";
-            "body";
-            "creator";
-            "created";
-            "modified";
-            "generator";
-            "wasAttributedTo";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_context = required reader string "@context";
+        type_ = required reader string "type";
+        id = required reader raw "id";
+        motivation = required reader raw "motivation";
+        target = required reader raw "target";
+        body = optional reader raw "body";
+        creator = optional reader raw "creator";
+        created = required reader string "created";
+        modified = optional reader string "modified";
+        generator = optional reader raw "generator";
+        was_attributed_to = optional reader raw "wasAttributedTo";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `Annotation ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Annotation_added_payload = struct
@@ -167,13 +139,18 @@ module Annotation_added_payload = struct
   }
 
   let project fields =
-    {
-      annotation = required identity "annotation" fields;
-      content_checksum = optional string "contentChecksum" fields;
-      extra = extra [ "annotation"; "contentChecksum" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation = required reader raw "annotation";
+        content_checksum = optional reader string "contentChecksum";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnnotationAddedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Annotation_body_updated_payload = struct
@@ -184,13 +161,18 @@ module Annotation_body_updated_payload = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      operations = required identity "operations" fields;
-      extra = extra [ "annotationId"; "operations" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation_id = required reader raw "annotationId";
+        operations = required reader raw "operations";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnnotationBodyUpdatedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Annotation_removed_payload = struct
@@ -200,12 +182,14 @@ module Annotation_removed_payload = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { annotation_id = required reader raw "annotationId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnnotationRemovedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Annotation_target = struct
@@ -217,14 +201,19 @@ module Annotation_target = struct
   }
 
   let project fields =
-    {
-      type_ = optional string "type" fields;
-      source = required identity "source" fields;
-      selector = optional identity "selector" fields;
-      extra = extra [ "type"; "source"; "selector" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = optional reader string "type";
+        source = required reader raw "source";
+        selector = optional reader raw "selector";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnnotationTarget ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Attributed_event = struct
@@ -242,33 +231,25 @@ module Attributed_event = struct
   }
 
   let project fields =
-    {
-      id = required string "id" fields;
-      type_ = required string "type" fields;
-      timestamp = required string "timestamp" fields;
-      user_id = required identity "userId" fields;
-      resource_id = optional identity "resourceId" fields;
-      version = required identity "version" fields;
-      payload = required identity "payload" fields;
-      metadata = required identity "metadata" fields;
-      agent = required identity "agent" fields;
-      extra =
-        extra
-          [
-            "id";
-            "type";
-            "timestamp";
-            "userId";
-            "resourceId";
-            "version";
-            "payload";
-            "metadata";
-            "agent";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader string "id";
+        type_ = required reader string "type";
+        timestamp = required reader string "timestamp";
+        user_id = required reader raw "userId";
+        resource_id = optional reader raw "resourceId";
+        version = required reader raw "version";
+        payload = required reader raw "payload";
+        metadata = required reader raw "metadata";
+        agent = required reader raw "agent";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AttributedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Beckon_focus_event = struct
@@ -279,13 +260,18 @@ module Beckon_focus_event = struct
   }
 
   let project fields =
-    {
-      annotation_id = optional identity "annotationId" fields;
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "annotationId"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation_id = optional reader raw "annotationId";
+        resource_id = required reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BeckonFocusEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Beckon_hover_event = struct
@@ -295,12 +281,14 @@ module Beckon_hover_event = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { annotation_id = required reader raw "annotationId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BeckonHoverEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Beckon_sparkle_event = struct
@@ -310,12 +298,14 @@ module Beckon_sparkle_event = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { annotation_id = required reader raw "annotationId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BeckonSparkleEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bind_body_operation = struct
@@ -328,15 +318,20 @@ module Bind_body_operation = struct
   }
 
   let project fields =
-    {
-      op = required string "op" fields;
-      item = optional identity "item" fields;
-      old_item = optional identity "oldItem" fields;
-      new_item = optional identity "newItem" fields;
-      extra = extra [ "op"; "item"; "oldItem"; "newItem" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        op = required reader string "op";
+        item = optional reader raw "item";
+        old_item = optional reader raw "oldItem";
+        new_item = optional reader raw "newItem";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BindBodyOperation ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bind_initiate_command = struct
@@ -349,18 +344,20 @@ module Bind_initiate_command = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      resource_id = required identity "resourceId" fields;
-      default_title = required string "defaultTitle" fields;
-      entity_types = required identity "entityTypes" fields;
-      extra =
-        extra
-          [ "annotationId"; "resourceId"; "defaultTitle"; "entityTypes" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation_id = required reader raw "annotationId";
+        resource_id = required reader raw "resourceId";
+        default_title = required reader string "defaultTitle";
+        entity_types = required reader raw "entityTypes";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BindInitiateCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bind_update_body_command = struct
@@ -373,16 +370,20 @@ module Bind_update_body_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      annotation_id = required identity "annotationId" fields;
-      resource_id = required identity "resourceId" fields;
-      operations = required identity "operations" fields;
-      extra =
-        extra [ "_userId"; "annotationId"; "resourceId"; "operations" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        annotation_id = required reader raw "annotationId";
+        resource_id = required reader raw "resourceId";
+        operations = required reader raw "operations";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BindUpdateBodyCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Body_operation_add = struct
@@ -393,13 +394,18 @@ module Body_operation_add = struct
   }
 
   let project fields =
-    {
-      op = required string "op" fields;
-      item = required identity "item" fields;
-      extra = extra [ "op"; "item" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        op = required reader string "op";
+        item = required reader raw "item";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BodyOperationAdd ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Body_operation_remove = struct
@@ -410,13 +416,18 @@ module Body_operation_remove = struct
   }
 
   let project fields =
-    {
-      op = required string "op" fields;
-      item = required identity "item" fields;
-      extra = extra [ "op"; "item" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        op = required reader string "op";
+        item = required reader raw "item";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BodyOperationRemove ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Body_operation_replace = struct
@@ -428,47 +439,55 @@ module Body_operation_replace = struct
   }
 
   let project fields =
-    {
-      op = required string "op" fields;
-      old_item = required identity "oldItem" fields;
-      new_item = required identity "newItem" fields;
-      extra = extra [ "op"; "oldItem"; "newItem" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        op = required reader string "op";
+        old_item = required reader raw "oldItem";
+        new_item = required reader raw "newItem";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BodyOperationReplace ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_engines_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseEnginesResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_profiles_request = struct
   type t = { dids : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { dids = required identity "dids" fields; extra = extra [ "dids" ] fields }
+    let reader = start fields in
+    let record = { dids = required reader raw "dids"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseProfilesRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_profiles_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseProfilesResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_annotation_history_request = struct
@@ -479,25 +498,30 @@ module Browse_annotation_history_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "resourceId"; "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        annotation_id = required reader raw "annotationId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseAnnotationHistoryRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_annotation_history_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseAnnotationHistoryResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_annotation_request = struct
@@ -508,25 +532,30 @@ module Browse_annotation_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "resourceId"; "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        annotation_id = required reader raw "annotationId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseAnnotationRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_annotation_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseAnnotationResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_click_event = struct
@@ -536,12 +565,14 @@ module Browse_click_event = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { annotation_id = required reader raw "annotationId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseClickEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_directory_request = struct
@@ -552,25 +583,30 @@ module Browse_directory_request = struct
   }
 
   let project fields =
-    {
-      path = required string "path" fields;
-      sort = optional string "sort" fields;
-      extra = extra [ "path"; "sort" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        path = required reader string "path";
+        sort = optional reader string "sort";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseDirectoryRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_directory_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseDirectoryResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_directory_result_response = struct
@@ -581,37 +617,44 @@ module Browse_directory_result_response = struct
   }
 
   let project fields =
-    {
-      path = required string "path" fields;
-      entries = required identity "entries" fields;
-      extra = extra [ "path"; "entries" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        path = required reader string "path";
+        entries = required reader raw "entries";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseDirectoryResultResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_entity_type_clicked_event = struct
   type t = { entity_type : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      entity_type = required string "entityType" fields;
-      extra = extra [ "entityType" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { entity_type = required reader string "entityType"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseEntityTypeClickedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_entity_types_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseEntityTypesResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_events_request = struct
@@ -624,27 +667,32 @@ module Browse_events_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      type_ = optional string "type" fields;
-      user_id = optional identity "userId" fields;
-      limit = optional identity "limit" fields;
-      extra = extra [ "resourceId"; "type"; "userId"; "limit" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        type_ = optional reader string "type";
+        user_id = optional reader raw "userId";
+        limit = optional reader raw "limit";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseEventsRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_events_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseEventsResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_external_navigate_event = struct
@@ -655,13 +703,18 @@ module Browse_external_navigate_event = struct
   }
 
   let project fields =
-    {
-      url = required string "url" fields;
-      resource_id = optional identity "resourceId" fields;
-      extra = extra [ "url"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        url = required reader string "url";
+        resource_id = optional reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseExternalNavigateEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_files_response = struct
@@ -672,25 +725,30 @@ module Browse_files_response = struct
   }
 
   let project fields =
-    {
-      path = required string "path" fields;
-      entries = required identity "entries" fields;
-      extra = extra [ "path"; "entries" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        path = required reader string "path";
+        entries = required reader raw "entries";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseFilesResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_kb_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseKbResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_link_clicked_event = struct
@@ -701,13 +759,18 @@ module Browse_link_clicked_event = struct
   }
 
   let project fields =
-    {
-      href = required string "href" fields;
-      label = optional string "label" fields;
-      extra = extra [ "href"; "label" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        href = required reader string "href";
+        label = optional reader string "label";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseLinkClickedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_panel_open_event = struct
@@ -719,59 +782,73 @@ module Browse_panel_open_event = struct
   }
 
   let project fields =
-    {
-      panel = required string "panel" fields;
-      scroll_to_annotation_id = optional identity "scrollToAnnotationId" fields;
-      motivation = optional identity "motivation" fields;
-      extra = extra [ "panel"; "scrollToAnnotationId"; "motivation" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        panel = required reader string "panel";
+        scroll_to_annotation_id = optional reader raw "scrollToAnnotationId";
+        motivation = optional reader raw "motivation";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowsePanelOpenEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_panel_toggle_event = struct
   type t = { panel : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { panel = required string "panel" fields; extra = extra [ "panel" ] fields }
+    let reader = start fields in
+    let record = { panel = required reader string "panel"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowsePanelToggleEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resource_open_event = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourceOpenEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resource_viewed_event = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourceViewedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resource_close_event = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourceCloseEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resource_reorder_event = struct
@@ -782,13 +859,18 @@ module Browse_resource_reorder_event = struct
   }
 
   let project fields =
-    {
-      old_index = required identity "oldIndex" fields;
-      new_index = required identity "newIndex" fields;
-      extra = extra [ "oldIndex"; "newIndex" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        old_index = required reader raw "oldIndex";
+        new_index = required reader raw "newIndex";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourceReorderEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Anchored_text = struct
@@ -799,13 +881,18 @@ module Anchored_text = struct
   }
 
   let project fields =
-    {
-      text = required string "text" fields;
-      items = required identity "items" fields;
-      extra = extra [ "text"; "items" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        text = required reader string "text";
+        items = required reader raw "items";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnchoredText ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Pdf_text_item = struct
@@ -821,52 +908,61 @@ module Pdf_text_item = struct
   }
 
   let project fields =
-    {
-      start = required identity "start" fields;
-      end_ = required identity "end" fields;
-      page = required identity "page" fields;
-      x = required identity "x" fields;
-      y = required identity "y" fields;
-      width = required identity "width" fields;
-      height = required identity "height" fields;
-      extra =
-        extra [ "start"; "end"; "page"; "x"; "y"; "width"; "height" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        start = required reader raw "start";
+        end_ = required reader raw "end";
+        page = required reader raw "page";
+        x = required reader raw "x";
+        y = required reader raw "y";
+        width = required reader raw "width";
+        height = required reader raw "height";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `PdfTextItem ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Anchored_text_absent = struct
   type t = { kind : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { kind = required string "kind" fields; extra = extra [ "kind" ] fields }
+    let reader = start fields in
+    let record = { kind = required reader string "kind"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnchoredTextAbsent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resource_request = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourceRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resource_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourceResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resources_request = struct
@@ -879,27 +975,32 @@ module Browse_resources_request = struct
   }
 
   let project fields =
-    {
-      archived = optional bool "archived" fields;
-      entity_type = optional string "entityType" fields;
-      offset = optional identity "offset" fields;
-      limit = optional identity "limit" fields;
-      extra = extra [ "archived"; "entityType"; "offset"; "limit" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        archived = optional reader bool "archived";
+        entity_type = optional reader string "entityType";
+        offset = optional reader raw "offset";
+        limit = optional reader raw "limit";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourcesRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_resources_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseResourcesResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_router_push_event = struct
@@ -910,25 +1011,30 @@ module Browse_router_push_event = struct
   }
 
   let project fields =
-    {
-      path = required string "path" fields;
-      reason = optional string "reason" fields;
-      extra = extra [ "path"; "reason" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        path = required reader string "path";
+        reason = optional reader string "reason";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseRouterPushEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_tag_schemas_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseTagSchemasResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bus_emit_accepted = struct
@@ -938,12 +1044,14 @@ module Bus_emit_accepted = struct
   }
 
   let project fields =
-    {
-      subscribers = optional identity "subscribers" fields;
-      extra = extra [ "subscribers" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { subscribers = optional reader raw "subscribers"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BusEmitAccepted ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bus_emit_request = struct
@@ -957,19 +1065,21 @@ module Bus_emit_request = struct
   }
 
   let project fields =
-    {
-      channel = required string "channel" fields;
-      payload = required identity "payload" fields;
-      scope = optional identity "scope" fields;
-      client_id = optional string "clientId" fields;
-      correlation_id = optional string "correlationId" fields;
-      extra =
-        extra
-          [ "channel"; "payload"; "scope"; "clientId"; "correlationId" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        channel = required reader string "channel";
+        payload = required reader raw "payload";
+        scope = optional reader raw "scope";
+        client_id = optional reader string "clientId";
+        correlation_id = optional reader string "correlationId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BusEmitRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bus_subscribe_request = struct
@@ -982,15 +1092,20 @@ module Bus_subscribe_request = struct
   }
 
   let project fields =
-    {
-      global = optional identity "global" fields;
-      pending_replies = optional identity "pendingReplies" fields;
-      scoped = optional identity "scoped" fields;
-      client_id = required string "clientId" fields;
-      extra = extra [ "global"; "pendingReplies"; "scoped"; "clientId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        global = optional reader raw "global";
+        pending_replies = optional reader raw "pendingReplies";
+        scoped = optional reader raw "scoped";
+        client_id = required reader string "clientId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BusSubscribeRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Clone_resource_with_token_response = struct
@@ -1002,14 +1117,19 @@ module Clone_resource_with_token_response = struct
   }
 
   let project fields =
-    {
-      token = required string "token" fields;
-      expires_at = required string "expiresAt" fields;
-      resource = required identity "resource" fields;
-      extra = extra [ "token"; "expiresAt"; "resource" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        token = required reader string "token";
+        expires_at = required reader string "expiresAt";
+        resource = required reader raw "resource";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `CloneResourceWithTokenResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Engine_entry = struct
@@ -1020,13 +1140,18 @@ module Engine_entry = struct
   }
 
   let project fields =
-    {
-      engine = required identity "engine" fields;
-      jobs = optional identity "jobs" fields;
-      extra = extra [ "engine"; "jobs" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        jobs = optional reader raw "jobs";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `EngineEntry ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Command_error = struct
@@ -1038,14 +1163,19 @@ module Command_error = struct
   }
 
   let project fields =
-    {
-      code = optional string "code" fields;
-      message = required string "message" fields;
-      details = optional string "details" fields;
-      extra = extra [ "code"; "message"; "details" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = optional reader string "code";
+        message = required reader string "message";
+        details = optional reader string "details";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `CommandError ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Contextual_summary_response = struct
@@ -1057,14 +1187,19 @@ module Contextual_summary_response = struct
   }
 
   let project fields =
-    {
-      summary = required string "summary" fields;
-      relevant_fields = required identity "relevantFields" fields;
-      context = required identity "context" fields;
-      extra = extra [ "summary"; "relevantFields"; "context" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        summary = required reader string "summary";
+        relevant_fields = required reader raw "relevantFields";
+        context = required reader raw "context";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ContextualSummaryResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Create_annotation_request = struct
@@ -1076,26 +1211,33 @@ module Create_annotation_request = struct
   }
 
   let project fields =
-    {
-      motivation = required identity "motivation" fields;
-      target = required identity "target" fields;
-      body = optional identity "body" fields;
-      extra = extra [ "motivation"; "target"; "body" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        motivation = required reader raw "motivation";
+        target = required reader raw "target";
+        body = optional reader raw "body";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `CreateAnnotationRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Create_resource_response = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `CreateResourceResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Dir_entry = struct
@@ -1108,15 +1250,20 @@ module Dir_entry = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      name = required string "name" fields;
-      path = required string "path" fields;
-      mtime = required string "mtime" fields;
-      extra = extra [ "type"; "name"; "path"; "mtime" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        name = required reader string "name";
+        path = required reader string "path";
+        mtime = required reader string "mtime";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `DirEntry ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Discovered_kb = struct
@@ -1132,23 +1279,23 @@ module Discovered_kb = struct
   }
 
   let project fields =
-    {
-      host = required string "host" fields;
-      port = required identity "port" fields;
-      placement = required string "placement" fields;
-      repo = optional string "repo" fields;
-      did = required string "did" fields;
-      site_name = optional string "siteName" fields;
-      managed_by = required string "managedBy" fields;
-      extra =
-        extra
-          [
-            "host"; "port"; "placement"; "repo"; "did"; "siteName"; "managedBy";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        host = required reader string "host";
+        port = required reader raw "port";
+        placement = required reader string "placement";
+        repo = optional reader string "repo";
+        did = required reader string "did";
+        site_name = optional reader string "siteName";
+        managed_by = required reader string "managedBy";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `DiscoveredKB ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Discovery_document = struct
@@ -1159,13 +1306,18 @@ module Discovery_document = struct
   }
 
   let project fields =
-    {
-      version = required identity "version" fields;
-      kbs = required identity "kbs" fields;
-      extra = extra [ "version"; "kbs" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        version = required reader raw "version";
+        kbs = required reader raw "kbs";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `DiscoveryDocument ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Enriched_resource_event = struct
@@ -1183,57 +1335,53 @@ module Enriched_resource_event = struct
   }
 
   let project fields =
-    {
-      id = required string "id" fields;
-      type_ = required string "type" fields;
-      timestamp = required string "timestamp" fields;
-      user_id = required identity "userId" fields;
-      resource_id = optional identity "resourceId" fields;
-      version = required identity "version" fields;
-      payload = required identity "payload" fields;
-      metadata = required identity "metadata" fields;
-      annotation = optional identity "annotation" fields;
-      extra =
-        extra
-          [
-            "id";
-            "type";
-            "timestamp";
-            "userId";
-            "resourceId";
-            "version";
-            "payload";
-            "metadata";
-            "annotation";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader string "id";
+        type_ = required reader string "type";
+        timestamp = required reader string "timestamp";
+        user_id = required reader raw "userId";
+        resource_id = optional reader raw "resourceId";
+        version = required reader raw "version";
+        payload = required reader raw "payload";
+        metadata = required reader raw "metadata";
+        annotation = optional reader raw "annotation";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `EnrichedResourceEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Entity_tag_changed_payload = struct
   type t = { entity_type : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      entity_type = required string "entityType" fields;
-      extra = extra [ "entityType" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { entity_type = required reader string "entityType"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `EntityTagChangedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Entity_type_added_payload = struct
   type t = { entity_type : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      entity_type = required string "entityType" fields;
-      extra = extra [ "entityType" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { entity_type = required reader string "entityType"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `EntityTypeAddedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Error_response = struct
@@ -1246,15 +1394,20 @@ module Error_response = struct
   }
 
   let project fields =
-    {
-      error = required string "error" fields;
-      code = optional string "code" fields;
-      hint = optional string "hint" fields;
-      details = optional identity "details" fields;
-      extra = extra [ "error"; "code"; "hint"; "details" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        error = required reader string "error";
+        code = optional reader string "code";
+        hint = optional reader string "hint";
+        details = optional reader raw "details";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ErrorResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Event_metadata = struct
@@ -1264,12 +1417,14 @@ module Event_metadata = struct
   }
 
   let project fields =
-    {
-      sequence_number = required identity "sequenceNumber" fields;
-      extra = extra [ "sequenceNumber" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { sequence_number = required reader raw "sequenceNumber"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `EventMetadata ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Extracted_text = struct
@@ -1285,29 +1440,23 @@ module Extracted_text = struct
   }
 
   let project fields =
-    {
-      text = required string "text" fields;
-      items = required identity "items" fields;
-      kind = required string "kind" fields;
-      method_ = required identity "method" fields;
-      pdf_class = optional identity "pdfClass" fields;
-      ocr_confidence = optional identity "ocrConfidence" fields;
-      unread_pages = optional identity "unreadPages" fields;
-      extra =
-        extra
-          [
-            "text";
-            "items";
-            "kind";
-            "method";
-            "pdfClass";
-            "ocrConfidence";
-            "unreadPages";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        text = required reader string "text";
+        items = required reader raw "items";
+        kind = required reader string "kind";
+        method_ = required reader raw "method";
+        pdf_class = optional reader raw "pdfClass";
+        ocr_confidence = optional reader raw "ocrConfidence";
+        unread_pages = optional reader raw "unreadPages";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ExtractedText ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Ocr_confidence = struct
@@ -1319,14 +1468,19 @@ module Ocr_confidence = struct
   }
 
   let project fields =
-    {
-      mean = required identity "mean" fields;
-      low_confidence_words = required identity "lowConfidenceWords" fields;
-      total_words = required identity "totalWords" fields;
-      extra = extra [ "mean"; "lowConfidenceWords"; "totalWords" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        mean = required reader raw "mean";
+        low_confidence_words = required reader raw "lowConfidenceWords";
+        total_words = required reader raw "totalWords";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `OcrConfidence ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Extraction_declined = struct
@@ -1337,13 +1491,18 @@ module Extraction_declined = struct
   }
 
   let project fields =
-    {
-      kind = required string "kind" fields;
-      declined = required identity "declined" fields;
-      extra = extra [ "kind"; "declined" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kind = required reader string "kind";
+        declined = required reader raw "declined";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ExtractionDeclined ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module File_entry = struct
@@ -1362,35 +1521,26 @@ module File_entry = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      name = required string "name" fields;
-      path = required string "path" fields;
-      size = required identity "size" fields;
-      mtime = required string "mtime" fields;
-      tracked = required bool "tracked" fields;
-      resource_id = optional identity "resourceId" fields;
-      entity_types = optional identity "entityTypes" fields;
-      annotation_count = optional identity "annotationCount" fields;
-      creator = optional string "creator" fields;
-      extra =
-        extra
-          [
-            "type";
-            "name";
-            "path";
-            "size";
-            "mtime";
-            "tracked";
-            "resourceId";
-            "entityTypes";
-            "annotationCount";
-            "creator";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        name = required reader string "name";
+        path = required reader string "path";
+        size = required reader raw "size";
+        mtime = required reader string "mtime";
+        tracked = required reader bool "tracked";
+        resource_id = optional reader raw "resourceId";
+        entity_types = optional reader raw "entityTypes";
+        annotation_count = optional reader raw "annotationCount";
+        creator = optional reader string "creator";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `FileEntry ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Fragment_selector = struct
@@ -1402,14 +1552,19 @@ module Fragment_selector = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      value = required string "value" fields;
-      conforms_to = optional string "conformsTo" fields;
-      extra = extra [ "type"; "value"; "conformsTo" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        value = required reader string "value";
+        conforms_to = optional reader string "conformsTo";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `FragmentSelector ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Frame_add_entity_type_command = struct
@@ -1420,13 +1575,18 @@ module Frame_add_entity_type_command = struct
   }
 
   let project fields =
-    {
-      tag = required string "tag" fields;
-      field_user_id = optional identity "_userId" fields;
-      extra = extra [ "tag"; "_userId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        tag = required reader string "tag";
+        field_user_id = optional reader raw "_userId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `FrameAddEntityTypeCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Frame_add_tag_schema_command = struct
@@ -1437,13 +1597,18 @@ module Frame_add_tag_schema_command = struct
   }
 
   let project fields =
-    {
-      schema = required identity "schema" fields;
-      field_user_id = optional identity "_userId" fields;
-      extra = extra [ "schema"; "_userId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        schema = required reader raw "schema";
+        field_user_id = optional reader raw "_userId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `FrameAddTagSchemaCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_annotation_complete = struct
@@ -1454,13 +1619,18 @@ module Gather_annotation_complete = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      response = required identity "response" fields;
-      extra = extra [ "annotationId"; "response" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation_id = required reader raw "annotationId";
+        response = required reader raw "response";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherAnnotationComplete ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_annotation_options = struct
@@ -1472,17 +1642,19 @@ module Gather_annotation_options = struct
   }
 
   let project fields =
-    {
-      include_source_context = optional bool "includeSourceContext" fields;
-      include_target_context = optional bool "includeTargetContext" fields;
-      context_window = optional identity "contextWindow" fields;
-      extra =
-        extra
-          [ "includeSourceContext"; "includeTargetContext"; "contextWindow" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        include_source_context = optional reader bool "includeSourceContext";
+        include_target_context = optional reader bool "includeTargetContext";
+        context_window = optional reader raw "contextWindow";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherAnnotationOptions ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_annotation_request = struct
@@ -1494,14 +1666,19 @@ module Gather_annotation_request = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      resource_id = required identity "resourceId" fields;
-      options = optional identity "options" fields;
-      extra = extra [ "annotationId"; "resourceId"; "options" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation_id = required reader raw "annotationId";
+        resource_id = required reader raw "resourceId";
+        options = optional reader raw "options";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherAnnotationRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_resource_complete = struct
@@ -1512,13 +1689,18 @@ module Gather_resource_complete = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      response = required identity "response" fields;
-      extra = extra [ "resourceId"; "response" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        response = required reader raw "response";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherResourceComplete ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_resource_request = struct
@@ -1529,13 +1711,18 @@ module Gather_resource_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      options = required identity "options" fields;
-      extra = extra [ "resourceId"; "options" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        options = required reader raw "options";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherResourceRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_resource_request_options = struct
@@ -1549,25 +1736,21 @@ module Gather_resource_request_options = struct
   }
 
   let project fields =
-    {
-      depth = required identity "depth" fields;
-      max_resources = required identity "maxResources" fields;
-      include_content = required bool "includeContent" fields;
-      include_summary = required bool "includeSummary" fields;
-      exclude_entity_types = optional identity "excludeEntityTypes" fields;
-      extra =
-        extra
-          [
-            "depth";
-            "maxResources";
-            "includeContent";
-            "includeSummary";
-            "excludeEntityTypes";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        depth = required reader raw "depth";
+        max_resources = required reader raw "maxResources";
+        include_content = required reader bool "includeContent";
+        include_summary = required reader bool "includeSummary";
+        exclude_entity_types = optional reader raw "excludeEntityTypes";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherResourceRequestOptions ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_summary_request = struct
@@ -1578,13 +1761,18 @@ module Gather_summary_request = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "annotationId"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation_id = required reader raw "annotationId";
+        resource_id = required reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherSummaryRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_referenced_by_request = struct
@@ -1595,25 +1783,30 @@ module Gather_referenced_by_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      motivation = optional identity "motivation" fields;
-      extra = extra [ "resourceId"; "motivation" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        motivation = optional reader raw "motivation";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherReferencedByRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_referenced_by_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherReferencedByResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gathered_context = struct
@@ -1627,26 +1820,22 @@ module Gathered_context = struct
   }
 
   let project fields =
-    {
-      focus = required identity "focus" fields;
-      graph = required identity "graph" fields;
-      semantic_context = optional identity "semanticContext" fields;
-      metadata = required identity "metadata" fields;
-      inferred_relationship_summary =
-        optional string "inferredRelationshipSummary" fields;
-      extra =
-        extra
-          [
-            "focus";
-            "graph";
-            "semanticContext";
-            "metadata";
-            "inferredRelationshipSummary";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        focus = required reader raw "focus";
+        graph = required reader raw "graph";
+        semantic_context = optional reader raw "semanticContext";
+        metadata = required reader raw "metadata";
+        inferred_relationship_summary =
+          optional reader string "inferredRelationshipSummary";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatheredContext ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Generation_job_params = struct
@@ -1668,41 +1857,29 @@ module Generation_job_params = struct
   }
 
   let project fields =
-    {
-      title = required string "title" fields;
-      storage_uri = required string "storageUri" fields;
-      prompt = optional string "prompt" fields;
-      entity_types = optional identity "entityTypes" fields;
-      language = optional string "language" fields;
-      source_language = optional string "sourceLanguage" fields;
-      temperature = optional identity "temperature" fields;
-      max_tokens = optional identity "maxTokens" fields;
-      output_media_type = optional identity "outputMediaType" fields;
-      task = optional string "task" fields;
-      structure = optional string "structure" fields;
-      cite = optional bool "cite" fields;
-      context = required identity "context" fields;
-      extra =
-        extra
-          [
-            "title";
-            "storageUri";
-            "prompt";
-            "entityTypes";
-            "language";
-            "sourceLanguage";
-            "temperature";
-            "maxTokens";
-            "outputMediaType";
-            "task";
-            "structure";
-            "cite";
-            "context";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        title = required reader string "title";
+        storage_uri = required reader string "storageUri";
+        prompt = optional reader string "prompt";
+        entity_types = optional reader raw "entityTypes";
+        language = optional reader string "language";
+        source_language = optional reader string "sourceLanguage";
+        temperature = optional reader raw "temperature";
+        max_tokens = optional reader raw "maxTokens";
+        output_media_type = optional reader raw "outputMediaType";
+        task = optional reader string "task";
+        structure = optional reader string "structure";
+        cite = optional reader bool "cite";
+        context = required reader raw "context";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GenerationJobParams ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_annotation_history_response = struct
@@ -1715,15 +1892,20 @@ module Get_annotation_history_response = struct
   }
 
   let project fields =
-    {
-      events = required identity "events" fields;
-      total = required identity "total" fields;
-      annotation_id = required identity "annotationId" fields;
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "events"; "total"; "annotationId"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        events = required reader raw "events";
+        total = required reader raw "total";
+        annotation_id = required reader raw "annotationId";
+        resource_id = required reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetAnnotationHistoryResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_annotation_response = struct
@@ -1735,14 +1917,19 @@ module Get_annotation_response = struct
   }
 
   let project fields =
-    {
-      annotation = required identity "annotation" fields;
-      resource = required identity "resource" fields;
-      resolved_resource = required identity "resolvedResource" fields;
-      extra = extra [ "annotation"; "resource"; "resolvedResource" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotation = required reader raw "annotation";
+        resource = required reader raw "resource";
+        resolved_resource = required reader raw "resolvedResource";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetAnnotationResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_annotations_response = struct
@@ -1754,26 +1941,33 @@ module Get_annotations_response = struct
   }
 
   let project fields =
-    {
-      annotations = required identity "annotations" fields;
-      total = required identity "total" fields;
-      motivation = optional identity "motivation" fields;
-      extra = extra [ "annotations"; "total"; "motivation" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        annotations = required reader raw "annotations";
+        total = required reader raw "total";
+        motivation = optional reader raw "motivation";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetAnnotationsResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_entity_types_response = struct
   type t = { entity_types : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      entity_types = required identity "entityTypes" fields;
-      extra = extra [ "entityTypes" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { entity_types = required reader raw "entityTypes"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetEntityTypesResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_events_response = struct
@@ -1785,14 +1979,19 @@ module Get_events_response = struct
   }
 
   let project fields =
-    {
-      events = required identity "events" fields;
-      total = required identity "total" fields;
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "events"; "total"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        events = required reader raw "events";
+        total = required reader raw "total";
+        resource_id = required reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetEventsResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_referenced_by_response = struct
@@ -1802,12 +2001,14 @@ module Get_referenced_by_response = struct
   }
 
   let project fields =
-    {
-      referenced_by = required identity "referencedBy" fields;
-      extra = extra [ "referencedBy" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { referenced_by = required reader raw "referencedBy"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetReferencedByResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_referenced_by_response_referenced_by_item = struct
@@ -1819,14 +2020,19 @@ module Get_referenced_by_response_referenced_by_item = struct
   }
 
   let project fields =
-    {
-      id = required identity "id" fields;
-      resource_name = optional string "resourceName" fields;
-      target = required identity "target" fields;
-      extra = extra [ "id"; "resourceName"; "target" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader raw "id";
+        resource_name = optional reader string "resourceName";
+        target = required reader raw "target";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetReferencedByResponseReferencedByItem ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_resource_by_token_response = struct
@@ -1837,13 +2043,18 @@ module Get_resource_by_token_response = struct
   }
 
   let project fields =
-    {
-      source_resource = required identity "sourceResource" fields;
-      expires_at = required string "expiresAt" fields;
-      extra = extra [ "sourceResource"; "expiresAt" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        source_resource = required reader raw "sourceResource";
+        expires_at = required reader string "expiresAt";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetResourceByTokenResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_resource_response = struct
@@ -1854,25 +2065,32 @@ module Get_resource_response = struct
   }
 
   let project fields =
-    {
-      resource = required identity "resource" fields;
-      annotations = required identity "annotations" fields;
-      extra = extra [ "resource"; "annotations" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource = required reader raw "resource";
+        annotations = required reader raw "annotations";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetResourceResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Get_tag_schemas_response = struct
   type t = { tag_schemas : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      tag_schemas = required identity "tagSchemas" fields;
-      extra = extra [ "tagSchemas" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { tag_schemas = required reader raw "tagSchemas"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GetTagSchemasResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Health_response = struct
@@ -1885,15 +2103,20 @@ module Health_response = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      message = required string "message" fields;
-      version = required string "version" fields;
-      timestamp = required string "timestamp" fields;
-      extra = extra [ "status"; "message"; "version"; "timestamp" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        message = required reader string "message";
+        version = required reader string "version";
+        timestamp = required reader string "timestamp";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `HealthResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Inference_limits = struct
@@ -1905,29 +2128,31 @@ module Inference_limits = struct
   }
 
   let project fields =
-    {
-      context_tokens = required identity "contextTokens" fields;
-      max_output_tokens = required identity "maxOutputTokens" fields;
-      accepts_temperature = optional bool "acceptsTemperature" fields;
-      extra =
-        extra
-          [ "contextTokens"; "maxOutputTokens"; "acceptsTemperature" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        context_tokens = required reader raw "contextTokens";
+        max_output_tokens = required reader raw "maxOutputTokens";
+        accepts_temperature = optional reader bool "acceptsTemperature";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `InferenceLimits ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Inference_limits_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `InferenceLimitsResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Engine_limits = struct
@@ -1938,13 +2163,18 @@ module Engine_limits = struct
   }
 
   let project fields =
-    {
-      engine = required identity "engine" fields;
-      limits = required identity "limits" fields;
-      extra = extra [ "engine"; "limits" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        limits = required reader raw "limits";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `EngineLimits ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Graph_annotation_node = struct
@@ -1959,20 +2189,22 @@ module Graph_annotation_node = struct
   }
 
   let project fields =
-    {
-      id = required identity "id" fields;
-      type_ = required string "type" fields;
-      label = required string "label" fields;
-      entity_types = optional identity "entityTypes" fields;
-      annotation = required identity "annotation" fields;
-      metadata = optional identity "metadata" fields;
-      extra =
-        extra
-          [ "id"; "type"; "label"; "entityTypes"; "annotation"; "metadata" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader raw "id";
+        type_ = required reader string "type";
+        label = required reader string "label";
+        entity_types = optional reader raw "entityTypes";
+        annotation = required reader raw "annotation";
+        metadata = optional reader raw "metadata";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GraphAnnotationNode ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Graph_resource_node = struct
@@ -1986,28 +2218,33 @@ module Graph_resource_node = struct
   }
 
   let project fields =
-    {
-      id = required identity "id" fields;
-      type_ = required string "type" fields;
-      label = required string "label" fields;
-      entity_types = optional identity "entityTypes" fields;
-      metadata = optional identity "metadata" fields;
-      extra = extra [ "id"; "type"; "label"; "entityTypes"; "metadata" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader raw "id";
+        type_ = required reader string "type";
+        label = required reader string "label";
+        entity_types = optional reader raw "entityTypes";
+        metadata = optional reader raw "metadata";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GraphResourceNode ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_cancel_request = struct
   type t = { job_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      extra = extra [ "jobId" ] fields;
-    }
+    let reader = start fields in
+    let record = { job_id = required reader raw "jobId"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCancelRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_cancel_command = struct
@@ -2023,29 +2260,23 @@ module Job_cancel_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      annotation_id = optional identity "annotationId" fields;
-      completed_units = optional identity "completedUnits" fields;
-      unit_cursors = optional identity "unitCursors" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "resourceId";
-            "jobId";
-            "jobType";
-            "annotationId";
-            "completedUnits";
-            "unitCursors";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        annotation_id = optional reader raw "annotationId";
+        completed_units = optional reader raw "completedUnits";
+        unit_cursors = optional reader raw "unitCursors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCancelCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_claim_command = struct
@@ -2057,14 +2288,19 @@ module Job_claim_command = struct
   }
 
   let project fields =
-    {
-      accepts = required identity "accepts" fields;
-      field_user_id = optional identity "_userId" fields;
-      field_roles = optional identity "_roles" fields;
-      extra = extra [ "accepts"; "_userId"; "_roles" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        accepts = required reader raw "accepts";
+        field_user_id = optional reader raw "_userId";
+        field_roles = optional reader raw "_roles";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobClaimCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_completed_payload = struct
@@ -2083,59 +2319,50 @@ module Job_completed_payload = struct
   }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      attempt = optional identity "attempt" fields;
-      annotation_id = optional identity "annotationId" fields;
-      total_steps = optional identity "totalSteps" fields;
-      found_count = optional identity "foundCount" fields;
-      result_resource_id = optional identity "resultResourceId" fields;
-      annotation_uri = optional string "annotationUri" fields;
-      result = optional identity "result" fields;
-      durability = optional identity "durability" fields;
-      extra =
-        extra
-          [
-            "jobId";
-            "jobType";
-            "attempt";
-            "annotationId";
-            "totalSteps";
-            "foundCount";
-            "resultResourceId";
-            "annotationUri";
-            "result";
-            "durability";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        attempt = optional reader raw "attempt";
+        annotation_id = optional reader raw "annotationId";
+        total_steps = optional reader raw "totalSteps";
+        found_count = optional reader raw "foundCount";
+        result_resource_id = optional reader raw "resultResourceId";
+        annotation_uri = optional reader string "annotationUri";
+        result = optional reader raw "result";
+        durability = optional reader raw "durability";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCompletedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_created_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCreatedResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_created_result_response = struct
   type t = { job_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      extra = extra [ "jobId" ] fields;
-    }
+    let reader = start fields in
+    let record = { job_id = required reader raw "jobId"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCreatedResultResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_fail_command = struct
@@ -2156,39 +2383,28 @@ module Job_fail_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      attempt = optional identity "attempt" fields;
-      annotation_id = optional identity "annotationId" fields;
-      error = required string "error" fields;
-      completed_units = optional identity "completedUnits" fields;
-      unit_cursors = optional identity "unitCursors" fields;
-      failure_class = optional identity "failureClass" fields;
-      will_retry = optional bool "willRetry" fields;
-      durability = optional identity "durability" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "resourceId";
-            "jobId";
-            "jobType";
-            "attempt";
-            "annotationId";
-            "error";
-            "completedUnits";
-            "unitCursors";
-            "failureClass";
-            "willRetry";
-            "durability";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        attempt = optional reader raw "attempt";
+        annotation_id = optional reader raw "annotationId";
+        error = required reader string "error";
+        completed_units = optional reader raw "completedUnits";
+        unit_cursors = optional reader raw "unitCursors";
+        failure_class = optional reader raw "failureClass";
+        will_retry = optional reader bool "willRetry";
+        durability = optional reader raw "durability";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobFailCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_checkpoint_command = struct
@@ -2201,16 +2417,20 @@ module Job_checkpoint_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      job_id = required identity "jobId" fields;
-      completed_units = required identity "completedUnits" fields;
-      unit_cursors = optional identity "unitCursors" fields;
-      extra =
-        extra [ "_userId"; "jobId"; "completedUnits"; "unitCursors" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        job_id = required reader raw "jobId";
+        completed_units = required reader raw "completedUnits";
+        unit_cursors = optional reader raw "unitCursors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCheckpointCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Unit_cursor = struct
@@ -2224,16 +2444,21 @@ module Unit_cursor = struct
   }
 
   let project fields =
-    {
-      next = required identity "next" fields;
-      size = required identity "size" fields;
-      found = required identity "found" fields;
-      emitted = required identity "emitted" fields;
-      errors = required identity "errors" fields;
-      extra = extra [ "next"; "size"; "found"; "emitted"; "errors" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        next = required reader raw "next";
+        size = required reader raw "size";
+        found = required reader raw "found";
+        emitted = required reader raw "emitted";
+        errors = required reader raw "errors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `UnitCursor ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_declined = struct
@@ -2244,13 +2469,18 @@ module Job_declined = struct
   }
 
   let project fields =
-    {
-      declined = required bool "declined" fields;
-      reason = required string "reason" fields;
-      extra = extra [ "declined"; "reason" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        declined = required reader bool "declined";
+        reason = required reader string "reason";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobDeclined ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_failed_payload = struct
@@ -2267,31 +2497,24 @@ module Job_failed_payload = struct
   }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      attempt = optional identity "attempt" fields;
-      annotation_id = optional identity "annotationId" fields;
-      error = required string "error" fields;
-      failure_class = optional identity "failureClass" fields;
-      will_retry = optional bool "willRetry" fields;
-      durability = optional identity "durability" fields;
-      extra =
-        extra
-          [
-            "jobId";
-            "jobType";
-            "attempt";
-            "annotationId";
-            "error";
-            "failureClass";
-            "willRetry";
-            "durability";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        attempt = optional reader raw "attempt";
+        annotation_id = optional reader raw "annotationId";
+        error = required reader string "error";
+        failure_class = optional reader raw "failureClass";
+        will_retry = optional reader bool "willRetry";
+        durability = optional reader raw "durability";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobFailedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_job_done = struct
@@ -2303,14 +2526,19 @@ module Yield_job_done = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      resource_name = required string "resourceName" fields;
-      truncated = required bool "truncated" fields;
-      extra = extra [ "resourceId"; "resourceName"; "truncated" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        resource_name = required reader string "resourceName";
+        truncated = required reader bool "truncated";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldJobDone ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress = struct
@@ -2330,55 +2558,51 @@ module Job_progress = struct
   }
 
   let project fields =
-    {
-      percentage = required identity "percentage" fields;
-      message = optional identity "message" fields;
-      annotation_id = optional identity "annotationId" fields;
-      current = optional identity "current" fields;
-      processed = optional identity "processed" fields;
-      total = optional identity "total" fields;
-      entities_found = optional identity "entitiesFound" fields;
-      entities_expected = optional identity "entitiesExpected" fields;
-      entities_emitted = optional identity "entitiesEmitted" fields;
-      completed_items = optional identity "completedItems" fields;
-      request_params = optional identity "requestParams" fields;
-      extra =
-        extra
-          [
-            "percentage";
-            "message";
-            "annotationId";
-            "current";
-            "processed";
-            "total";
-            "entitiesFound";
-            "entitiesExpected";
-            "entitiesEmitted";
-            "completedItems";
-            "requestParams";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        percentage = required reader raw "percentage";
+        message = optional reader raw "message";
+        annotation_id = optional reader raw "annotationId";
+        current = optional reader raw "current";
+        processed = optional reader raw "processed";
+        total = optional reader raw "total";
+        entities_found = optional reader raw "entitiesFound";
+        entities_expected = optional reader raw "entitiesExpected";
+        entities_emitted = optional reader raw "entitiesEmitted";
+        completed_items = optional reader raw "completedItems";
+        request_params = optional reader raw "requestParams";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgress ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_analyzing = struct
   type t = { code : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { code = required string "code" fields; extra = extra [ "code" ] fields }
+    let reader = start fields in
+    let record = { code = required reader string "code"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressAnalyzing ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_analyzing_tags = struct
   type t = { code : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { code = required string "code" fields; extra = extra [ "code" ] fields }
+    let reader = start fields in
+    let record = { code = required reader string "code"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressAnalyzingTags ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_complete_created = struct
@@ -2390,14 +2614,19 @@ module Job_progress_complete_created = struct
   }
 
   let project fields =
-    {
-      code = required string "code" fields;
-      count = required identity "count" fields;
-      motivation = required identity "motivation" fields;
-      extra = extra [ "code"; "count"; "motivation" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = required reader string "code";
+        count = required reader raw "count";
+        motivation = required reader raw "motivation";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressCompleteCreated ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_complete_generated = struct
@@ -2408,13 +2637,18 @@ module Job_progress_complete_generated = struct
   }
 
   let project fields =
-    {
-      code = required string "code" fields;
-      truncated = required bool "truncated" fields;
-      extra = extra [ "code"; "truncated" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = required reader string "code";
+        truncated = required reader bool "truncated";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressCompleteGenerated ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_creating_annotations = struct
@@ -2425,22 +2659,30 @@ module Job_progress_creating_annotations = struct
   }
 
   let project fields =
-    {
-      code = required string "code" fields;
-      count = required identity "count" fields;
-      extra = extra [ "code"; "count" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = required reader string "code";
+        count = required reader raw "count";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressCreatingAnnotations ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_creating_resource = struct
   type t = { code : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { code = required string "code" fields; extra = extra [ "code" ] fields }
+    let reader = start fields in
+    let record = { code = required reader string "code"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressCreatingResource ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_creating_tag_annotations = struct
@@ -2451,13 +2693,18 @@ module Job_progress_creating_tag_annotations = struct
   }
 
   let project fields =
-    {
-      code = required string "code" fields;
-      count = required identity "count" fields;
-      extra = extra [ "code"; "count" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = required reader string "code";
+        count = required reader raw "count";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressCreatingTagAnnotations ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_detecting_entities = struct
@@ -2468,31 +2715,42 @@ module Job_progress_detecting_entities = struct
   }
 
   let project fields =
-    {
-      code = required string "code" fields;
-      entity_type = required string "entityType" fields;
-      extra = extra [ "code"; "entityType" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = required reader string "code";
+        entity_type = required reader string "entityType";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressDetectingEntities ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_generating_resource = struct
   type t = { code : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { code = required string "code" fields; extra = extra [ "code" ] fields }
+    let reader = start fields in
+    let record = { code = required reader string "code"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressGeneratingResource ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_progress_loading = struct
   type t = { code : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { code = required string "code" fields; extra = extra [ "code" ] fields }
+    let reader = start fields in
+    let record = { code = required reader string "code"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobProgressLoading ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_job_done = struct
@@ -2507,27 +2765,22 @@ module Mark_job_done = struct
   }
 
   let project fields =
-    {
-      found = required identity "found" fields;
-      persisted = required identity "persisted" fields;
-      errors = optional identity "errors" fields;
-      by_category = optional identity "byCategory" fields;
-      under_reported_pieces = optional identity "underReportedPieces" fields;
-      unchecked_pieces = optional identity "uncheckedPieces" fields;
-      extra =
-        extra
-          [
-            "found";
-            "persisted";
-            "errors";
-            "byCategory";
-            "underReportedPieces";
-            "uncheckedPieces";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        found = required reader raw "found";
+        persisted = required reader raw "persisted";
+        errors = optional reader raw "errors";
+        by_category = optional reader raw "byCategory";
+        under_reported_pieces = optional reader raw "underReportedPieces";
+        unchecked_pieces = optional reader raw "uncheckedPieces";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkJobDone ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_report_progress_command = struct
@@ -2544,31 +2797,24 @@ module Job_report_progress_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      attempt = optional identity "attempt" fields;
-      annotation_id = optional identity "annotationId" fields;
-      percentage = required identity "percentage" fields;
-      progress = optional identity "progress" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "resourceId";
-            "jobId";
-            "jobType";
-            "attempt";
-            "annotationId";
-            "percentage";
-            "progress";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        attempt = optional reader raw "attempt";
+        annotation_id = optional reader raw "annotationId";
+        percentage = required reader raw "percentage";
+        progress = optional reader raw "progress";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobReportProgressCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_start_command = struct
@@ -2583,27 +2829,22 @@ module Job_start_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      annotation_id = optional identity "annotationId" fields;
-      attempt = optional identity "attempt" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "resourceId";
-            "jobId";
-            "jobType";
-            "annotationId";
-            "attempt";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        annotation_id = optional reader raw "annotationId";
+        attempt = optional reader raw "attempt";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobStartCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_assign_command = struct
@@ -2618,20 +2859,22 @@ module Job_assign_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      resource_id = required identity "resourceId" fields;
-      holder = required identity "holder" fields;
-      requester = required identity "requester" fields;
-      extra =
-        extra
-          [ "_userId"; "jobId"; "jobType"; "resourceId"; "holder"; "requester" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        resource_id = required reader raw "resourceId";
+        holder = required reader raw "holder";
+        requester = required reader raw "requester";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobAssignCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_started_payload = struct
@@ -2644,15 +2887,20 @@ module Job_started_payload = struct
   }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      annotation_id = optional identity "annotationId" fields;
-      total_steps = optional identity "totalSteps" fields;
-      extra = extra [ "jobId"; "jobType"; "annotationId"; "totalSteps" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        annotation_id = optional reader raw "annotationId";
+        total_steps = optional reader raw "totalSteps";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobStartedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_assigned_payload = struct
@@ -2666,17 +2914,21 @@ module Job_assigned_payload = struct
   }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      job_type = required identity "jobType" fields;
-      resource_id = required identity "resourceId" fields;
-      holder = required identity "holder" fields;
-      requester = required identity "requester" fields;
-      extra =
-        extra [ "jobId"; "jobType"; "resourceId"; "holder"; "requester" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_id = required reader raw "jobId";
+        job_type = required reader raw "jobType";
+        resource_id = required reader raw "resourceId";
+        holder = required reader raw "holder";
+        requester = required reader raw "requester";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobAssignedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Principal_profile_command = struct
@@ -2687,34 +2939,42 @@ module Principal_profile_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      name = required string "name" fields;
-      extra = extra [ "_userId"; "name" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        name = required reader string "name";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `PrincipalProfileCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Principal_profiled_payload = struct
   type t = { name : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { name = required string "name" fields; extra = extra [ "name" ] fields }
+    let reader = start fields in
+    let record = { name = required reader string "name"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `PrincipalProfiledPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_status_request = struct
   type t = { job_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      extra = extra [ "jobId" ] fields;
-    }
+    let reader = start fields in
+    let record = { job_id = required reader raw "jobId"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobStatusRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_status_response = struct
@@ -2734,49 +2994,39 @@ module Job_status_response = struct
   }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      type_ = required identity "type" fields;
-      status = required string "status" fields;
-      user_id = required identity "userId" fields;
-      created = required string "created" fields;
-      started_at = optional string "startedAt" fields;
-      completed_at = optional string "completedAt" fields;
-      error = optional string "error" fields;
-      failure_class = optional identity "failureClass" fields;
-      progress = optional identity "progress" fields;
-      result = optional identity "result" fields;
-      extra =
-        extra
-          [
-            "jobId";
-            "type";
-            "status";
-            "userId";
-            "created";
-            "startedAt";
-            "completedAt";
-            "error";
-            "failureClass";
-            "progress";
-            "result";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_id = required reader raw "jobId";
+        type_ = required reader raw "type";
+        status = required reader string "status";
+        user_id = required reader raw "userId";
+        created = required reader string "created";
+        started_at = optional reader string "startedAt";
+        completed_at = optional reader string "completedAt";
+        error = optional reader string "error";
+        failure_class = optional reader raw "failureClass";
+        progress = optional reader raw "progress";
+        result = optional reader raw "result";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobStatusResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_status_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobStatusResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Kb_description = struct
@@ -2788,14 +3038,19 @@ module Kb_description = struct
   }
 
   let project fields =
-    {
-      name = required string "name" fields;
-      domain = required string "domain" fields;
-      git_branch = optional string "gitBranch" fields;
-      extra = extra [ "name"; "domain"; "gitBranch" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        name = required reader string "name";
+        domain = required reader string "domain";
+        git_branch = optional reader string "gitBranch";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `KbDescription ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Http_endpoint = struct
@@ -2808,15 +3063,20 @@ module Http_endpoint = struct
   }
 
   let project fields =
-    {
-      kind = required string "kind" fields;
-      host = required string "host" fields;
-      port = required identity "port" fields;
-      protocol = required string "protocol" fields;
-      extra = extra [ "kind"; "host"; "port"; "protocol" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kind = required reader string "kind";
+        host = required reader string "host";
+        port = required reader raw "port";
+        protocol = required reader string "protocol";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `HttpEndpoint ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Kb_read = struct
@@ -2827,13 +3087,18 @@ module Kb_read = struct
   }
 
   let project fields =
-    {
-      at = required string "at" fields;
-      git_branch = optional string "gitBranch" fields;
-      extra = extra [ "at"; "gitBranch" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        at = required reader string "at";
+        git_branch = optional reader string "gitBranch";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `KbRead ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Kb_target = struct
@@ -2845,14 +3110,19 @@ module Kb_target = struct
   }
 
   let project fields =
-    {
-      id = required string "id" fields;
-      label = required string "label" fields;
-      endpoint = required identity "endpoint" fields;
-      extra = extra [ "id"; "label"; "endpoint" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader string "id";
+        label = required reader string "label";
+        endpoint = required reader raw "endpoint";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `KbTarget ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Knowledge_base = struct
@@ -2866,16 +3136,21 @@ module Knowledge_base = struct
   }
 
   let project fields =
-    {
-      id = required string "id" fields;
-      label = required identity "label" fields;
-      endpoint = required identity "endpoint" fields;
-      did = required string "did" fields;
-      last_read = optional identity "lastRead" fields;
-      extra = extra [ "id"; "label"; "endpoint"; "did"; "lastRead" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader string "id";
+        label = required reader raw "label";
+        endpoint = required reader raw "endpoint";
+        did = required reader string "did";
+        last_read = optional reader raw "lastRead";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `KnowledgeBase ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Local_endpoint = struct
@@ -2886,13 +3161,18 @@ module Local_endpoint = struct
   }
 
   let project fields =
-    {
-      kind = required string "kind" fields;
-      kb_id = required string "kbId" fields;
-      extra = extra [ "kind"; "kbId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kind = required reader string "kind";
+        kb_id = required reader string "kbId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `LocalEndpoint ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module New_knowledge_base = struct
@@ -2905,15 +3185,20 @@ module New_knowledge_base = struct
   }
 
   let project fields =
-    {
-      label = required string "label" fields;
-      endpoint = required identity "endpoint" fields;
-      did = required string "did" fields;
-      last_read = optional identity "lastRead" fields;
-      extra = extra [ "label"; "endpoint"; "did"; "lastRead" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        label = required reader string "label";
+        endpoint = required reader raw "endpoint";
+        did = required reader string "did";
+        last_read = optional reader raw "lastRead";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `NewKnowledgeBase ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Knowledge_graph = struct
@@ -2925,14 +3210,19 @@ module Knowledge_graph = struct
   }
 
   let project fields =
-    {
-      nodes = required identity "nodes" fields;
-      edges = required identity "edges" fields;
-      truncated = optional bool "truncated" fields;
-      extra = extra [ "nodes"; "edges"; "truncated" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        nodes = required reader raw "nodes";
+        edges = required reader raw "edges";
+        truncated = optional reader bool "truncated";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `KnowledgeGraph ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module List_resources_response = struct
@@ -2945,15 +3235,20 @@ module List_resources_response = struct
   }
 
   let project fields =
-    {
-      resources = required identity "resources" fields;
-      total = required identity "total" fields;
-      offset = required identity "offset" fields;
-      limit = required identity "limit" fields;
-      extra = extra [ "resources"; "total"; "offset"; "limit" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resources = required reader raw "resources";
+        total = required reader raw "total";
+        offset = required reader raw "offset";
+        limit = required reader raw "limit";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ListResourcesResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_archive_command = struct
@@ -2966,27 +3261,32 @@ module Mark_archive_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      storage_uri = optional string "storageUri" fields;
-      keep_file = optional bool "keepFile" fields;
-      extra = extra [ "_userId"; "resourceId"; "storageUri"; "keepFile" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        storage_uri = optional reader string "storageUri";
+        keep_file = optional reader bool "keepFile";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkArchiveCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_create_ok = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkCreateOk ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_create_ok_response = struct
@@ -2996,12 +3296,14 @@ module Mark_create_ok_response = struct
   }
 
   let project fields =
-    {
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { annotation_id = required reader raw "annotationId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkCreateOkResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_commit_command = struct
@@ -3015,31 +3317,33 @@ module Mark_commit_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      field_roles = optional identity "_roles" fields;
-      job_id = optional identity "jobId" fields;
-      resource_id = required identity "resourceId" fields;
-      annotations = required identity "annotations" fields;
-      extra =
-        extra
-          [ "_userId"; "_roles"; "jobId"; "resourceId"; "annotations" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        field_roles = optional reader raw "_roles";
+        job_id = optional reader raw "jobId";
+        resource_id = required reader raw "resourceId";
+        annotations = required reader raw "annotations";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkCommitCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_commit_ok = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkCommitOk ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_create_request = struct
@@ -3050,13 +3354,18 @@ module Mark_create_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      request = required identity "request" fields;
-      extra = extra [ "resourceId"; "request" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        request = required reader raw "request";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkCreateRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_delete_command = struct
@@ -3068,26 +3377,31 @@ module Mark_delete_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      annotation_id = required identity "annotationId" fields;
-      resource_id = optional identity "resourceId" fields;
-      extra = extra [ "_userId"; "annotationId"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        annotation_id = required reader raw "annotationId";
+        resource_id = optional reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkDeleteCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_delete_ok = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkDeleteOk ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_requested_event = struct
@@ -3099,14 +3413,19 @@ module Mark_requested_event = struct
   }
 
   let project fields =
-    {
-      source = required identity "source" fields;
-      selector = required identity "selector" fields;
-      motivation = required identity "motivation" fields;
-      extra = extra [ "source"; "selector"; "motivation" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        source = required reader raw "source";
+        selector = required reader raw "selector";
+        motivation = required reader raw "motivation";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkRequestedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_submit_event = struct
@@ -3119,15 +3438,20 @@ module Mark_submit_event = struct
   }
 
   let project fields =
-    {
-      source = required identity "source" fields;
-      motivation = required identity "motivation" fields;
-      selector = required identity "selector" fields;
-      body = optional identity "body" fields;
-      extra = extra [ "source"; "motivation"; "selector"; "body" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        source = required reader raw "source";
+        motivation = required reader raw "motivation";
+        selector = required reader raw "selector";
+        body = optional reader raw "body";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkSubmitEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_unarchive_command = struct
@@ -3139,14 +3463,19 @@ module Mark_unarchive_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      storage_uri = optional string "storageUri" fields;
-      extra = extra [ "_userId"; "resourceId"; "storageUri" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        storage_uri = optional reader string "storageUri";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkUnarchiveCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_update_body_command = struct
@@ -3159,16 +3488,20 @@ module Mark_update_body_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      annotation_id = required identity "annotationId" fields;
-      resource_id = required identity "resourceId" fields;
-      operations = required identity "operations" fields;
-      extra =
-        extra [ "_userId"; "annotationId"; "resourceId"; "operations" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        annotation_id = required reader raw "annotationId";
+        resource_id = required reader raw "resourceId";
+        operations = required reader raw "operations";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkUpdateBodyCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_update_entity_types_command = struct
@@ -3181,20 +3514,20 @@ module Mark_update_entity_types_command = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      field_user_id = optional identity "_userId" fields;
-      current_entity_types = required identity "currentEntityTypes" fields;
-      updated_entity_types = required identity "updatedEntityTypes" fields;
-      extra =
-        extra
-          [
-            "resourceId"; "_userId"; "currentEntityTypes"; "updatedEntityTypes";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        field_user_id = optional reader raw "_userId";
+        current_entity_types = required reader raw "currentEntityTypes";
+        updated_entity_types = required reader raw "updatedEntityTypes";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkUpdateEntityTypesCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Match_search_failed = struct
@@ -3207,15 +3540,20 @@ module Match_search_failed = struct
   }
 
   let project fields =
-    {
-      code = optional string "code" fields;
-      message = required string "message" fields;
-      details = optional string "details" fields;
-      reference_id = required identity "referenceId" fields;
-      extra = extra [ "code"; "message"; "details"; "referenceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = optional reader string "code";
+        message = required reader string "message";
+        details = optional reader string "details";
+        reference_id = required reader raw "referenceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MatchSearchFailed ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Match_search_request = struct
@@ -3229,25 +3567,21 @@ module Match_search_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      reference_id = required identity "referenceId" fields;
-      context = required identity "context" fields;
-      limit = optional identity "limit" fields;
-      use_semantic_scoring = optional bool "useSemanticScoring" fields;
-      extra =
-        extra
-          [
-            "resourceId";
-            "referenceId";
-            "context";
-            "limit";
-            "useSemanticScoring";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        reference_id = required reader raw "referenceId";
+        context = required reader raw "context";
+        limit = optional reader raw "limit";
+        use_semantic_scoring = optional reader bool "useSemanticScoring";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MatchSearchRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Match_search_result = struct
@@ -3258,13 +3592,18 @@ module Match_search_result = struct
   }
 
   let project fields =
-    {
-      reference_id = required identity "referenceId" fields;
-      response = required identity "response" fields;
-      extra = extra [ "referenceId"; "response" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        reference_id = required reader raw "referenceId";
+        response = required reader raw "response";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MatchSearchResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Match_resources_request = struct
@@ -3278,17 +3617,21 @@ module Match_resources_request = struct
   }
 
   let project fields =
-    {
-      search = required string "search" fields;
-      archived = optional bool "archived" fields;
-      entity_type = optional string "entityType" fields;
-      offset = optional identity "offset" fields;
-      limit = optional identity "limit" fields;
-      extra =
-        extra [ "search"; "archived"; "entityType"; "offset"; "limit" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        search = required reader string "search";
+        archived = optional reader bool "archived";
+        entity_type = optional reader string "entityType";
+        offset = optional reader raw "offset";
+        limit = optional reader raw "limit";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MatchResourcesRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Match_resources_response = struct
@@ -3302,50 +3645,59 @@ module Match_resources_response = struct
   }
 
   let project fields =
-    {
-      resources = required identity "resources" fields;
-      total = required identity "total" fields;
-      offset = required identity "offset" fields;
-      limit = required identity "limit" fields;
-      match_kind = required string "matchKind" fields;
-      extra =
-        extra [ "resources"; "total"; "offset"; "limit"; "matchKind" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resources = required reader raw "resources";
+        total = required reader raw "total";
+        offset = required reader raw "offset";
+        limit = required reader raw "limit";
+        match_kind = required reader string "matchKind";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MatchResourcesResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Match_resources_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MatchResourcesResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Media_token_request = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MediaTokenRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Media_token_response = struct
   type t = { token : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { token = required string "token" fields; extra = extra [ "token" ] fields }
+    let reader = start fields in
+    let record = { token = required reader string "token"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MediaTokenResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Protected_resource_metadata = struct
@@ -3358,24 +3710,21 @@ module Protected_resource_metadata = struct
   }
 
   let project fields =
-    {
-      resource = required string "resource" fields;
-      authorization_servers = required identity "authorization_servers" fields;
-      bearer_methods_supported =
-        required identity "bearer_methods_supported" fields;
-      resource_name = optional string "resource_name" fields;
-      extra =
-        extra
-          [
-            "resource";
-            "authorization_servers";
-            "bearer_methods_supported";
-            "resource_name";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource = required reader string "resource";
+        authorization_servers = required reader raw "authorization_servers";
+        bearer_methods_supported =
+          required reader raw "bearer_methods_supported";
+        resource_name = optional reader string "resource_name";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ProtectedResourceMetadata ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Representation = struct
@@ -3401,49 +3750,33 @@ module Representation = struct
   }
 
   let project fields =
-    {
-      field_id = optional string "@id" fields;
-      field_type = optional identity "@type" fields;
-      media_type = required string "mediaType" fields;
-      storage_uri = optional string "storageUri" fields;
-      filename = optional string "filename" fields;
-      byte_size = optional identity "byteSize" fields;
-      checksum = optional string "checksum" fields;
-      encoding = optional string "encoding" fields;
-      language = optional string "language" fields;
-      width = optional identity "width" fields;
-      height = optional identity "height" fields;
-      duration = optional identity "duration" fields;
-      created = optional string "created" fields;
-      modified = optional string "modified" fields;
-      conforms_to = optional identity "conformsTo" fields;
-      tags = optional identity "tags" fields;
-      rel = optional string "rel" fields;
-      extra =
-        extra
-          [
-            "@id";
-            "@type";
-            "mediaType";
-            "storageUri";
-            "filename";
-            "byteSize";
-            "checksum";
-            "encoding";
-            "language";
-            "width";
-            "height";
-            "duration";
-            "created";
-            "modified";
-            "conformsTo";
-            "tags";
-            "rel";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_id = optional reader string "@id";
+        field_type = optional reader raw "@type";
+        media_type = required reader string "mediaType";
+        storage_uri = optional reader string "storageUri";
+        filename = optional reader string "filename";
+        byte_size = optional reader raw "byteSize";
+        checksum = optional reader string "checksum";
+        encoding = optional reader string "encoding";
+        language = optional reader string "language";
+        width = optional reader raw "width";
+        height = optional reader raw "height";
+        duration = optional reader raw "duration";
+        created = optional reader string "created";
+        modified = optional reader string "modified";
+        conforms_to = optional reader raw "conformsTo";
+        tags = optional reader raw "tags";
+        rel = optional reader string "rel";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `Representation ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Representation_added_payload = struct
@@ -3453,24 +3786,26 @@ module Representation_added_payload = struct
   }
 
   let project fields =
-    {
-      representation = required identity "representation" fields;
-      extra = extra [ "representation" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { representation = required reader raw "representation"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `RepresentationAddedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Representation_removed_payload = struct
   type t = { checksum : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      checksum = required string "checksum" fields;
-      extra = extra [ "checksum" ] fields;
-    }
+    let reader = start fields in
+    let record = { checksum = required reader string "checksum"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `RepresentationRemovedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_archived_payload = struct
@@ -3480,12 +3815,12 @@ module Resource_archived_payload = struct
   }
 
   let project fields =
-    {
-      reason = optional string "reason" fields;
-      extra = extra [ "reason" ] fields;
-    }
+    let reader = start fields in
+    let record = { reason = optional reader string "reason"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceArchivedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_cloned_payload = struct
@@ -3504,35 +3839,26 @@ module Resource_cloned_payload = struct
   }
 
   let project fields =
-    {
-      name = required string "name" fields;
-      format = required identity "format" fields;
-      content_checksum = required string "contentChecksum" fields;
-      content_byte_size = optional identity "contentByteSize" fields;
-      storage_uri = optional string "storageUri" fields;
-      parent_resource_id = required identity "parentResourceId" fields;
-      entity_types = optional identity "entityTypes" fields;
-      language = optional string "language" fields;
-      creator = optional identity "creator" fields;
-      was_attributed_to = optional identity "wasAttributedTo" fields;
-      extra =
-        extra
-          [
-            "name";
-            "format";
-            "contentChecksum";
-            "contentByteSize";
-            "storageUri";
-            "parentResourceId";
-            "entityTypes";
-            "language";
-            "creator";
-            "wasAttributedTo";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        name = required reader string "name";
+        format = required reader raw "format";
+        content_checksum = required reader string "contentChecksum";
+        content_byte_size = optional reader raw "contentByteSize";
+        storage_uri = optional reader string "storageUri";
+        parent_resource_id = required reader raw "parentResourceId";
+        entity_types = optional reader raw "entityTypes";
+        language = optional reader string "language";
+        creator = optional reader raw "creator";
+        was_attributed_to = optional reader raw "wasAttributedTo";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceClonedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_created_payload = struct
@@ -3555,43 +3881,30 @@ module Resource_created_payload = struct
   }
 
   let project fields =
-    {
-      name = required string "name" fields;
-      format = required identity "format" fields;
-      content_checksum = required string "contentChecksum" fields;
-      content_byte_size = optional identity "contentByteSize" fields;
-      entity_types = optional identity "entityTypes" fields;
-      storage_uri = optional string "storageUri" fields;
-      language = optional string "language" fields;
-      is_draft = optional bool "isDraft" fields;
-      job_id = optional identity "jobId" fields;
-      generated_from = optional identity "generatedFrom" fields;
-      generation_prompt = optional string "generationPrompt" fields;
-      generator = optional identity "generator" fields;
-      creator = optional identity "creator" fields;
-      was_attributed_to = optional identity "wasAttributedTo" fields;
-      extra =
-        extra
-          [
-            "name";
-            "format";
-            "contentChecksum";
-            "contentByteSize";
-            "entityTypes";
-            "storageUri";
-            "language";
-            "isDraft";
-            "jobId";
-            "generatedFrom";
-            "generationPrompt";
-            "generator";
-            "creator";
-            "wasAttributedTo";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        name = required reader string "name";
+        format = required reader raw "format";
+        content_checksum = required reader string "contentChecksum";
+        content_byte_size = optional reader raw "contentByteSize";
+        entity_types = optional reader raw "entityTypes";
+        storage_uri = optional reader string "storageUri";
+        language = optional reader string "language";
+        is_draft = optional reader bool "isDraft";
+        job_id = optional reader raw "jobId";
+        generated_from = optional reader raw "generatedFrom";
+        generation_prompt = optional reader string "generationPrompt";
+        generator = optional reader raw "generator";
+        creator = optional reader raw "creator";
+        was_attributed_to = optional reader raw "wasAttributedTo";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceCreatedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_descriptor = struct
@@ -3626,67 +3939,42 @@ module Resource_descriptor = struct
   }
 
   let project fields =
-    {
-      field_context = required identity "@context" fields;
-      field_id = required identity "@id" fields;
-      field_type = optional identity "@type" fields;
-      name = required string "name" fields;
-      description = optional string "description" fields;
-      identifier = optional identity "identifier" fields;
-      about = optional identity "about" fields;
-      same_as = optional identity "sameAs" fields;
-      is_part_of = optional identity "isPartOf" fields;
-      has_part = optional identity "hasPart" fields;
-      license = optional string "license" fields;
-      version = optional string "version" fields;
-      date_created = optional string "dateCreated" fields;
-      date_modified = optional string "dateModified" fields;
-      was_derived_from = optional identity "wasDerivedFrom" fields;
-      was_attributed_to = optional identity "wasAttributedTo" fields;
-      generator = optional identity "generator" fields;
-      conforms_to = optional identity "conformsTo" fields;
-      available_formats = optional identity "availableFormats" fields;
-      representations = required identity "representations" fields;
-      archived = optional bool "archived" fields;
-      entity_types = optional identity "entityTypes" fields;
-      is_draft = optional bool "isDraft" fields;
-      source_annotation_id = optional identity "sourceAnnotationId" fields;
-      source_resource_id = optional identity "sourceResourceId" fields;
-      originated_from = optional string "originatedFrom" fields;
-      extra =
-        extra
-          [
-            "@context";
-            "@id";
-            "@type";
-            "name";
-            "description";
-            "identifier";
-            "about";
-            "sameAs";
-            "isPartOf";
-            "hasPart";
-            "license";
-            "version";
-            "dateCreated";
-            "dateModified";
-            "wasDerivedFrom";
-            "wasAttributedTo";
-            "generator";
-            "conformsTo";
-            "availableFormats";
-            "representations";
-            "archived";
-            "entityTypes";
-            "isDraft";
-            "sourceAnnotationId";
-            "sourceResourceId";
-            "originatedFrom";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_context = required reader raw "@context";
+        field_id = required reader raw "@id";
+        field_type = optional reader raw "@type";
+        name = required reader string "name";
+        description = optional reader string "description";
+        identifier = optional reader raw "identifier";
+        about = optional reader raw "about";
+        same_as = optional reader raw "sameAs";
+        is_part_of = optional reader raw "isPartOf";
+        has_part = optional reader raw "hasPart";
+        license = optional reader string "license";
+        version = optional reader string "version";
+        date_created = optional reader string "dateCreated";
+        date_modified = optional reader string "dateModified";
+        was_derived_from = optional reader raw "wasDerivedFrom";
+        was_attributed_to = optional reader raw "wasAttributedTo";
+        generator = optional reader raw "generator";
+        conforms_to = optional reader raw "conformsTo";
+        available_formats = optional reader raw "availableFormats";
+        representations = required reader raw "representations";
+        archived = optional reader bool "archived";
+        entity_types = optional reader raw "entityTypes";
+        is_draft = optional reader bool "isDraft";
+        source_annotation_id = optional reader raw "sourceAnnotationId";
+        source_resource_id = optional reader raw "sourceResourceId";
+        originated_from = optional reader string "originatedFrom";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceDescriptor ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_moved_payload = struct
@@ -3697,13 +3985,18 @@ module Resource_moved_payload = struct
   }
 
   let project fields =
-    {
-      from_uri = required string "fromUri" fields;
-      to_uri = required string "toUri" fields;
-      extra = extra [ "fromUri"; "toUri" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        from_uri = required reader string "fromUri";
+        to_uri = required reader string "toUri";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceMovedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_updated_payload = struct
@@ -3714,13 +4007,18 @@ module Resource_updated_payload = struct
   }
 
   let project fields =
-    {
-      content_checksum = required string "contentChecksum" fields;
-      content_byte_size = optional identity "contentByteSize" fields;
-      extra = extra [ "contentChecksum"; "contentByteSize" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        content_checksum = required reader string "contentChecksum";
+        content_byte_size = optional reader raw "contentByteSize";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceUpdatedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Scored_resource = struct
@@ -3757,71 +4055,44 @@ module Scored_resource = struct
   }
 
   let project fields =
-    {
-      field_context = required identity "@context" fields;
-      field_id = required identity "@id" fields;
-      field_type = optional identity "@type" fields;
-      name = required string "name" fields;
-      description = optional string "description" fields;
-      identifier = optional identity "identifier" fields;
-      about = optional identity "about" fields;
-      same_as = optional identity "sameAs" fields;
-      is_part_of = optional identity "isPartOf" fields;
-      has_part = optional identity "hasPart" fields;
-      license = optional string "license" fields;
-      version = optional string "version" fields;
-      date_created = optional string "dateCreated" fields;
-      date_modified = optional string "dateModified" fields;
-      was_derived_from = optional identity "wasDerivedFrom" fields;
-      was_attributed_to = optional identity "wasAttributedTo" fields;
-      generator = optional identity "generator" fields;
-      conforms_to = optional identity "conformsTo" fields;
-      available_formats = optional identity "availableFormats" fields;
-      representations = required identity "representations" fields;
-      archived = optional bool "archived" fields;
-      entity_types = optional identity "entityTypes" fields;
-      is_draft = optional bool "isDraft" fields;
-      source_annotation_id = optional identity "sourceAnnotationId" fields;
-      source_resource_id = optional identity "sourceResourceId" fields;
-      originated_from = optional string "originatedFrom" fields;
-      score = optional identity "score" fields;
-      match_reason = optional string "matchReason" fields;
-      extra =
-        extra
-          [
-            "@context";
-            "@id";
-            "@type";
-            "name";
-            "description";
-            "identifier";
-            "about";
-            "sameAs";
-            "isPartOf";
-            "hasPart";
-            "license";
-            "version";
-            "dateCreated";
-            "dateModified";
-            "wasDerivedFrom";
-            "wasAttributedTo";
-            "generator";
-            "conformsTo";
-            "availableFormats";
-            "representations";
-            "archived";
-            "entityTypes";
-            "isDraft";
-            "sourceAnnotationId";
-            "sourceResourceId";
-            "originatedFrom";
-            "score";
-            "matchReason";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_context = required reader raw "@context";
+        field_id = required reader raw "@id";
+        field_type = optional reader raw "@type";
+        name = required reader string "name";
+        description = optional reader string "description";
+        identifier = optional reader raw "identifier";
+        about = optional reader raw "about";
+        same_as = optional reader raw "sameAs";
+        is_part_of = optional reader raw "isPartOf";
+        has_part = optional reader raw "hasPart";
+        license = optional reader string "license";
+        version = optional reader string "version";
+        date_created = optional reader string "dateCreated";
+        date_modified = optional reader string "dateModified";
+        was_derived_from = optional reader raw "wasDerivedFrom";
+        was_attributed_to = optional reader raw "wasAttributedTo";
+        generator = optional reader raw "generator";
+        conforms_to = optional reader raw "conformsTo";
+        available_formats = optional reader raw "availableFormats";
+        representations = required reader raw "representations";
+        archived = optional reader bool "archived";
+        entity_types = optional reader raw "entityTypes";
+        is_draft = optional reader bool "isDraft";
+        source_annotation_id = optional reader raw "sourceAnnotationId";
+        source_resource_id = optional reader raw "sourceResourceId";
+        originated_from = optional reader string "originatedFrom";
+        score = optional reader raw "score";
+        match_reason = optional reader string "matchReason";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ScoredResource ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Semantic_match = struct
@@ -3837,29 +4108,23 @@ module Semantic_match = struct
   }
 
   let project fields =
-    {
-      text = required string "text" fields;
-      resource_id = required identity "resourceId" fields;
-      resource_name = required string "resourceName" fields;
-      annotation_id = optional identity "annotationId" fields;
-      score = required identity "score" fields;
-      entity_types = optional identity "entityTypes" fields;
-      machine_read = optional bool "machineRead" fields;
-      extra =
-        extra
-          [
-            "text";
-            "resourceId";
-            "resourceName";
-            "annotationId";
-            "score";
-            "entityTypes";
-            "machineRead";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        text = required reader string "text";
+        resource_id = required reader raw "resourceId";
+        resource_name = required reader string "resourceName";
+        annotation_id = optional reader raw "annotationId";
+        score = required reader raw "score";
+        entity_types = optional reader raw "entityTypes";
+        machine_read = optional reader bool "machineRead";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SemanticMatch ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Session_joined_event = struct
@@ -3870,13 +4135,18 @@ module Session_joined_event = struct
   }
 
   let project fields =
-    {
-      participant = required identity "participant" fields;
-      connection_id = required string "connectionId" fields;
-      extra = extra [ "participant"; "connectionId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        participant = required reader raw "participant";
+        connection_id = required reader string "connectionId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SessionJoinedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Session_left_event = struct
@@ -3887,13 +4157,18 @@ module Session_left_event = struct
   }
 
   let project fields =
-    {
-      participant = required identity "participant" fields;
-      connection_id = required string "connectionId" fields;
-      extra = extra [ "participant"; "connectionId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        participant = required reader raw "participant";
+        connection_id = required reader string "connectionId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SessionLeftEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Settings_hover_delay_changed_event = struct
@@ -3903,33 +4178,38 @@ module Settings_hover_delay_changed_event = struct
   }
 
   let project fields =
-    {
-      hover_delay_ms = required identity "hoverDelayMs" fields;
-      extra = extra [ "hoverDelayMs" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { hover_delay_ms = required reader raw "hoverDelayMs"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SettingsHoverDelayChangedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Settings_locale_changed_event = struct
   type t = { locale : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      locale = required string "locale" fields;
-      extra = extra [ "locale" ] fields;
-    }
+    let reader = start fields in
+    let record = { locale = required reader string "locale"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SettingsLocaleChangedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Settings_theme_changed_event = struct
   type t = { theme : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { theme = required string "theme" fields; extra = extra [ "theme" ] fields }
+    let reader = start fields in
+    let record = { theme = required reader string "theme"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SettingsThemeChangedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Specific_resource = struct
@@ -3941,14 +4221,19 @@ module Specific_resource = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      source = required identity "source" fields;
-      purpose = optional identity "purpose" fields;
-      extra = extra [ "type"; "source"; "purpose" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        source = required reader raw "source";
+        purpose = optional reader raw "purpose";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SpecificResource ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Status_response = struct
@@ -3962,19 +4247,21 @@ module Status_response = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      version = required string "version" fields;
-      features = required identity "features" fields;
-      message = required string "message" fields;
-      authenticated_as = optional string "authenticatedAs" fields;
-      extra =
-        extra
-          [ "status"; "version"; "features"; "message"; "authenticatedAs" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        version = required reader string "version";
+        features = required reader raw "features";
+        message = required reader string "message";
+        authenticated_as = optional reader string "authenticatedAs";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `StatusResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Stored_event_response = struct
@@ -3991,31 +4278,24 @@ module Stored_event_response = struct
   }
 
   let project fields =
-    {
-      id = required string "id" fields;
-      type_ = required string "type" fields;
-      timestamp = required string "timestamp" fields;
-      user_id = required identity "userId" fields;
-      resource_id = optional identity "resourceId" fields;
-      version = required identity "version" fields;
-      payload = required identity "payload" fields;
-      metadata = required identity "metadata" fields;
-      extra =
-        extra
-          [
-            "id";
-            "type";
-            "timestamp";
-            "userId";
-            "resourceId";
-            "version";
-            "payload";
-            "metadata";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader string "id";
+        type_ = required reader string "type";
+        timestamp = required reader string "timestamp";
+        user_id = required reader raw "userId";
+        resource_id = optional reader raw "resourceId";
+        version = required reader raw "version";
+        payload = required reader raw "payload";
+        metadata = required reader raw "metadata";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `StoredEventResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Svg_selector = struct
@@ -4026,13 +4306,18 @@ module Svg_selector = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      value = required string "value" fields;
-      extra = extra [ "type"; "value" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        value = required reader string "value";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SvgSelector ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Tag_category = struct
@@ -4044,14 +4329,19 @@ module Tag_category = struct
   }
 
   let project fields =
-    {
-      name = required string "name" fields;
-      description = required string "description" fields;
-      examples = required identity "examples" fields;
-      extra = extra [ "name"; "description"; "examples" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        name = required reader string "name";
+        description = required reader string "description";
+        examples = required reader raw "examples";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TagCategory ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Tag_schema = struct
@@ -4065,28 +4355,33 @@ module Tag_schema = struct
   }
 
   let project fields =
-    {
-      id = required string "id" fields;
-      name = required string "name" fields;
-      description = required string "description" fields;
-      domain = required string "domain" fields;
-      tags = required identity "tags" fields;
-      extra = extra [ "id"; "name"; "description"; "domain"; "tags" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader string "id";
+        name = required reader string "name";
+        description = required reader string "description";
+        domain = required reader string "domain";
+        tags = required reader raw "tags";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TagSchema ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Tag_schema_added_payload = struct
   type t = { schema : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      schema = required identity "schema" fields;
-      extra = extra [ "schema" ] fields;
-    }
+    let reader = start fields in
+    let record = { schema = required reader raw "schema"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TagSchemaAddedPayload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Text_position_selector = struct
@@ -4098,14 +4393,19 @@ module Text_position_selector = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      start = required identity "start" fields;
-      end_ = required identity "end" fields;
-      extra = extra [ "type"; "start"; "end" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        start = required reader raw "start";
+        end_ = required reader raw "end";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TextPositionSelector ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Text_quote_selector = struct
@@ -4118,15 +4418,20 @@ module Text_quote_selector = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      exact = required string "exact" fields;
-      prefix = optional string "prefix" fields;
-      suffix = optional string "suffix" fields;
-      extra = extra [ "type"; "exact"; "prefix"; "suffix" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        exact = required reader string "exact";
+        prefix = optional reader string "prefix";
+        suffix = optional reader string "suffix";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TextQuoteSelector ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Textual_body = struct
@@ -4140,16 +4445,21 @@ module Textual_body = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      value = required string "value" fields;
-      purpose = optional identity "purpose" fields;
-      format = optional string "format" fields;
-      language = optional string "language" fields;
-      extra = extra [ "type"; "value"; "purpose"; "format"; "language" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        value = required reader string "value";
+        purpose = optional reader raw "purpose";
+        format = optional reader string "format";
+        language = optional reader string "language";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TextualBody ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Update_annotation_body_request = struct
@@ -4160,13 +4470,18 @@ module Update_annotation_body_request = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      operations = required identity "operations" fields;
-      extra = extra [ "resourceId"; "operations" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        operations = required reader raw "operations";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `UpdateAnnotationBodyRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module User_response = struct
@@ -4180,16 +4495,21 @@ module User_response = struct
   }
 
   let project fields =
-    {
-      did = required identity "did" fields;
-      email = required identity "email" fields;
-      name = required identity "name" fields;
-      image = required identity "image" fields;
-      domain = required string "domain" fields;
-      extra = extra [ "did"; "email"; "name"; "image"; "domain" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        did = required reader raw "did";
+        email = required reader raw "email";
+        name = required reader raw "name";
+        image = required reader raw "image";
+        domain = required reader string "domain";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `UserResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Smelt_rebuild_anchors_command = struct
@@ -4200,13 +4520,18 @@ module Smelt_rebuild_anchors_command = struct
   }
 
   let project fields =
-    {
-      resource_id = optional identity "resourceId" fields;
-      field_user_id = optional identity "_userId" fields;
-      extra = extra [ "resourceId"; "_userId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = optional reader raw "resourceId";
+        field_user_id = optional reader raw "_userId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SmeltRebuildAnchorsCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Weave_rebuild_command = struct
@@ -4217,13 +4542,18 @@ module Weave_rebuild_command = struct
   }
 
   let project fields =
-    {
-      resource_id = optional identity "resourceId" fields;
-      field_user_id = optional identity "_userId" fields;
-      extra = extra [ "resourceId"; "_userId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = optional reader raw "resourceId";
+        field_user_id = optional reader raw "_userId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WeaveRebuildCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_clone_create_command = struct
@@ -4240,64 +4570,62 @@ module Yield_clone_create_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      token = required string "token" fields;
-      name = required string "name" fields;
-      storage_uri = required string "storageUri" fields;
-      content_checksum = required string "contentChecksum" fields;
-      byte_size = required identity "byteSize" fields;
-      format = required identity "format" fields;
-      archive_original = optional bool "archiveOriginal" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "token";
-            "name";
-            "storageUri";
-            "contentChecksum";
-            "byteSize";
-            "format";
-            "archiveOriginal";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        token = required reader string "token";
+        name = required reader string "name";
+        storage_uri = required reader string "storageUri";
+        content_checksum = required reader string "contentChecksum";
+        byte_size = required reader raw "byteSize";
+        format = required reader raw "format";
+        archive_original = optional reader bool "archiveOriginal";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldCloneCreateCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_clone_created = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldCloneCreated ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_clone_resource_request = struct
   type t = { token : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { token = required string "token" fields; extra = extra [ "token" ] fields }
+    let reader = start fields in
+    let record = { token = required reader string "token"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldCloneResourceRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_clone_token_request = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldCloneTokenRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_create_command = struct
@@ -4320,43 +4648,30 @@ module Yield_create_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      field_roles = optional identity "_roles" fields;
-      job_id = optional identity "jobId" fields;
-      name = required string "name" fields;
-      storage_uri = required string "storageUri" fields;
-      content_checksum = required string "contentChecksum" fields;
-      byte_size = required identity "byteSize" fields;
-      format = required identity "format" fields;
-      language = optional string "language" fields;
-      entity_types = optional identity "entityTypes" fields;
-      is_draft = optional bool "isDraft" fields;
-      generated_from = optional identity "generatedFrom" fields;
-      generation_prompt = optional string "generationPrompt" fields;
-      generator = optional identity "generator" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "_roles";
-            "jobId";
-            "name";
-            "storageUri";
-            "contentChecksum";
-            "byteSize";
-            "format";
-            "language";
-            "entityTypes";
-            "isDraft";
-            "generatedFrom";
-            "generationPrompt";
-            "generator";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        field_roles = optional reader raw "_roles";
+        job_id = optional reader raw "jobId";
+        name = required reader string "name";
+        storage_uri = required reader string "storageUri";
+        content_checksum = required reader string "contentChecksum";
+        byte_size = required reader raw "byteSize";
+        format = required reader raw "format";
+        language = optional reader string "language";
+        entity_types = optional reader raw "entityTypes";
+        is_draft = optional reader bool "isDraft";
+        generated_from = optional reader raw "generatedFrom";
+        generation_prompt = optional reader string "generationPrompt";
+        generator = optional reader raw "generator";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldCreateCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_clone_persist_command = struct
@@ -4374,57 +4689,49 @@ module Yield_clone_persist_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      name = required string "name" fields;
-      storage_uri = required string "storageUri" fields;
-      content_checksum = required string "contentChecksum" fields;
-      byte_size = required identity "byteSize" fields;
-      format = required identity "format" fields;
-      language = optional string "language" fields;
-      entity_types = optional identity "entityTypes" fields;
-      parent_resource_id = required identity "parentResourceId" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "name";
-            "storageUri";
-            "contentChecksum";
-            "byteSize";
-            "format";
-            "language";
-            "entityTypes";
-            "parentResourceId";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        name = required reader string "name";
+        storage_uri = required reader string "storageUri";
+        content_checksum = required reader string "contentChecksum";
+        byte_size = required reader raw "byteSize";
+        format = required reader raw "format";
+        language = optional reader string "language";
+        entity_types = optional reader raw "entityTypes";
+        parent_resource_id = required reader raw "parentResourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldClonePersistCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_create_ok = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldCreateOk ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_clone_persist_ok = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldClonePersistOk ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_update_command = struct
@@ -4438,45 +4745,47 @@ module Yield_update_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      storage_uri = required string "storageUri" fields;
-      content_checksum = required string "contentChecksum" fields;
-      byte_size = required identity "byteSize" fields;
-      extra =
-        extra
-          [
-            "_userId"; "resourceId"; "storageUri"; "contentChecksum"; "byteSize";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        storage_uri = required reader string "storageUri";
+        content_checksum = required reader string "contentChecksum";
+        byte_size = required reader raw "byteSize";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldUpdateCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_update_ok = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldUpdateOk ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yielded_resource = struct
   type t = { resource_id : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { resource_id = required reader raw "resourceId"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldedResource ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bus_event_message = struct
@@ -4488,14 +4797,19 @@ module Bus_event_message = struct
   }
 
   let project fields =
-    {
-      event = required string "event" fields;
-      id = required identity "id" fields;
-      data = required identity "data" fields;
-      extra = extra [ "event"; "id"; "data" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        event = required reader string "event";
+        id = required reader raw "id";
+        data = required reader raw "data";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BusEventMessage ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bus_frame = struct
@@ -4508,15 +4822,20 @@ module Bus_frame = struct
   }
 
   let project fields =
-    {
-      channel = required string "channel" fields;
-      correlation_id = optional string "correlationId" fields;
-      payload = required identity "payload" fields;
-      scope = optional identity "scope" fields;
-      extra = extra [ "channel"; "correlationId"; "payload"; "scope" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        channel = required reader string "channel";
+        correlation_id = optional reader string "correlationId";
+        payload = required reader raw "payload";
+        scope = optional reader raw "scope";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BusFrame ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bus_ping_message = struct
@@ -4527,13 +4846,18 @@ module Bus_ping_message = struct
   }
 
   let project fields =
-    {
-      event = required string "event" fields;
-      data = required string "data" fields;
-      extra = extra [ "event"; "data" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        event = required reader string "event";
+        data = required reader string "data";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BusPingMessage ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Bus_resume_gap = struct
@@ -4545,14 +4869,19 @@ module Bus_resume_gap = struct
   }
 
   let project fields =
-    {
-      scope = required identity "scope" fields;
-      last_seen_id = required string "lastSeenId" fields;
-      reason = required string "reason" fields;
-      extra = extra [ "scope"; "lastSeenId"; "reason" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        scope = required reader raw "scope";
+        last_seen_id = required reader string "lastSeenId";
+        reason = required reader string "reason";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BusResumeGap ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gateway_config = struct
@@ -4570,33 +4899,25 @@ module Gateway_config = struct
   }
 
   let project fields =
-    {
-      kb = required identity "kb" fields;
-      port = required identity "port" fields;
-      public_url = required string "publicUrl" fields;
-      identity = required identity "identity" fields;
-      archivist = required identity "archivist" fields;
-      signal = required identity "signal" fields;
-      log_level = required identity "logLevel" fields;
-      log_format = required identity "logFormat" fields;
-      capacity = required identity "capacity" fields;
-      extra =
-        extra
-          [
-            "kb";
-            "port";
-            "publicUrl";
-            "identity";
-            "archivist";
-            "signal";
-            "logLevel";
-            "logFormat";
-            "capacity";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        port = required reader raw "port";
+        public_url = required reader string "publicUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        signal = required reader raw "signal";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        capacity = required reader raw "capacity";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatewayConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Kb_identity = struct
@@ -4607,13 +4928,18 @@ module Kb_identity = struct
   }
 
   let project fields =
-    {
-      name = required string "name" fields;
-      domain = required string "domain" fields;
-      extra = extra [ "name"; "domain" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        name = required reader string "name";
+        domain = required reader string "domain";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `KbIdentity ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_upload = struct
@@ -4636,43 +4962,30 @@ module Resource_upload = struct
   }
 
   let project fields =
-    {
-      name = required string "name" fields;
-      file = required string "file" fields;
-      format = required string "format" fields;
-      storage_uri = required string "storageUri" fields;
-      language = optional string "language" fields;
-      entity_types = optional string "entityTypes" fields;
-      source_annotation_id = optional identity "sourceAnnotationId" fields;
-      source_resource_id = optional identity "sourceResourceId" fields;
-      generation_prompt = optional string "generationPrompt" fields;
-      generator = optional string "generator" fields;
-      job_id = optional identity "jobId" fields;
-      is_draft = optional string "isDraft" fields;
-      clone_token = optional string "cloneToken" fields;
-      archive_original = optional string "archiveOriginal" fields;
-      extra =
-        extra
-          [
-            "name";
-            "file";
-            "format";
-            "storageUri";
-            "language";
-            "entityTypes";
-            "sourceAnnotationId";
-            "sourceResourceId";
-            "generationPrompt";
-            "generator";
-            "jobId";
-            "isDraft";
-            "cloneToken";
-            "archiveOriginal";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        name = required reader string "name";
+        file = required reader string "file";
+        format = required reader string "format";
+        storage_uri = required reader string "storageUri";
+        language = optional reader string "language";
+        entity_types = optional reader string "entityTypes";
+        source_annotation_id = optional reader raw "sourceAnnotationId";
+        source_resource_id = optional reader raw "sourceResourceId";
+        generation_prompt = optional reader string "generationPrompt";
+        generator = optional reader string "generator";
+        job_id = optional reader raw "jobId";
+        is_draft = optional reader string "isDraft";
+        clone_token = optional reader string "cloneToken";
+        archive_original = optional reader string "archiveOriginal";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceUpload ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Archivist_events_response = struct
@@ -4683,13 +4996,18 @@ module Archivist_events_response = struct
   }
 
   let project fields =
-    {
-      events = required identity "events" fields;
-      last_sequence = required identity "lastSequence" fields;
-      extra = extra [ "events"; "lastSequence" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        events = required reader raw "events";
+        last_sequence = required reader raw "lastSequence";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ArchivistEventsResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Archivist_stream = struct
@@ -4700,25 +5018,30 @@ module Archivist_stream = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      last_sequence = required identity "lastSequence" fields;
-      extra = extra [ "resourceId"; "lastSequence" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        last_sequence = required reader raw "lastSequence";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ArchivistStream ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Archivist_streams_response = struct
   type t = { streams : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      streams = required identity "streams" fields;
-      extra = extra [ "streams" ] fields;
-    }
+    let reader = start fields in
+    let record = { streams = required reader raw "streams"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ArchivistStreamsResponse ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Archivist_health = struct
@@ -4729,13 +5052,18 @@ module Archivist_health = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      actors = required identity "actors" fields;
-      extra = extra [ "status"; "actors" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        actors = required reader raw "actors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ArchivistHealth ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Representation_not_found = struct
@@ -4748,15 +5076,20 @@ module Representation_not_found = struct
   }
 
   let project fields =
-    {
-      error = required string "error" fields;
-      code = required identity "code" fields;
-      hint = optional string "hint" fields;
-      details = optional identity "details" fields;
-      extra = extra [ "error"; "code"; "hint"; "details" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        error = required reader string "error";
+        code = required reader raw "code";
+        hint = optional reader string "hint";
+        details = optional reader raw "details";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `RepresentationNotFound ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Limit_refusal = struct
@@ -4769,15 +5102,20 @@ module Limit_refusal = struct
   }
 
   let project fields =
-    {
-      error = required string "error" fields;
-      code = required identity "code" fields;
-      hint = optional string "hint" fields;
-      details = optional identity "details" fields;
-      extra = extra [ "error"; "code"; "hint"; "details" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        error = required reader string "error";
+        code = required reader raw "code";
+        hint = optional reader string "hint";
+        details = optional reader raw "details";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `LimitRefusal ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_metadata = struct
@@ -4794,31 +5132,24 @@ module Job_metadata = struct
   }
 
   let project fields =
-    {
-      id = required identity "id" fields;
-      type_ = required identity "type" fields;
-      user_id = required identity "userId" fields;
-      created = required string "created" fields;
-      retry_count = required identity "retryCount" fields;
-      max_retries = required identity "maxRetries" fields;
-      completed_units = optional identity "completedUnits" fields;
-      unit_cursors = optional identity "unitCursors" fields;
-      extra =
-        extra
-          [
-            "id";
-            "type";
-            "userId";
-            "created";
-            "retryCount";
-            "maxRetries";
-            "completedUnits";
-            "unitCursors";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        id = required reader raw "id";
+        type_ = required reader raw "type";
+        user_id = required reader raw "userId";
+        created = required reader string "created";
+        retry_count = required reader raw "retryCount";
+        max_retries = required reader raw "maxRetries";
+        completed_units = optional reader raw "completedUnits";
+        unit_cursors = optional reader raw "unitCursors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobMetadata ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_params = struct
@@ -4829,13 +5160,18 @@ module Job_params = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      schema = optional identity "schema" fields;
-      extra = extra [ "resourceId"; "schema" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        schema = optional reader raw "schema";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobParams ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Highlighting_job_params = struct
@@ -4848,18 +5184,20 @@ module Highlighting_job_params = struct
   }
 
   let project fields =
-    {
-      motivation = required string "motivation" fields;
-      instructions = optional string "instructions" fields;
-      density = optional identity "density" fields;
-      source_language = optional string "sourceLanguage" fields;
-      extra =
-        extra
-          [ "motivation"; "instructions"; "density"; "sourceLanguage" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        motivation = required reader string "motivation";
+        instructions = optional reader string "instructions";
+        density = optional reader raw "density";
+        source_language = optional reader string "sourceLanguage";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `HighlightingJobParams ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Commenting_job_params = struct
@@ -4874,27 +5212,22 @@ module Commenting_job_params = struct
   }
 
   let project fields =
-    {
-      motivation = required string "motivation" fields;
-      instructions = optional string "instructions" fields;
-      tone = optional string "tone" fields;
-      density = optional identity "density" fields;
-      language = optional string "language" fields;
-      source_language = optional string "sourceLanguage" fields;
-      extra =
-        extra
-          [
-            "motivation";
-            "instructions";
-            "tone";
-            "density";
-            "language";
-            "sourceLanguage";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        motivation = required reader string "motivation";
+        instructions = optional reader string "instructions";
+        tone = optional reader string "tone";
+        density = optional reader raw "density";
+        language = optional reader string "language";
+        source_language = optional reader string "sourceLanguage";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `CommentingJobParams ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Assessing_job_params = struct
@@ -4909,27 +5242,22 @@ module Assessing_job_params = struct
   }
 
   let project fields =
-    {
-      motivation = required string "motivation" fields;
-      instructions = optional string "instructions" fields;
-      tone = optional string "tone" fields;
-      density = optional identity "density" fields;
-      language = optional string "language" fields;
-      source_language = optional string "sourceLanguage" fields;
-      extra =
-        extra
-          [
-            "motivation";
-            "instructions";
-            "tone";
-            "density";
-            "language";
-            "sourceLanguage";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        motivation = required reader string "motivation";
+        instructions = optional reader string "instructions";
+        tone = optional reader string "tone";
+        density = optional reader raw "density";
+        language = optional reader string "language";
+        source_language = optional reader string "sourceLanguage";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AssessingJobParams ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Linking_job_params = struct
@@ -4943,26 +5271,22 @@ module Linking_job_params = struct
   }
 
   let project fields =
-    {
-      motivation = required string "motivation" fields;
-      entity_types = required identity "entityTypes" fields;
-      include_descriptive_references =
-        optional bool "includeDescriptiveReferences" fields;
-      language = optional string "language" fields;
-      source_language = optional string "sourceLanguage" fields;
-      extra =
-        extra
-          [
-            "motivation";
-            "entityTypes";
-            "includeDescriptiveReferences";
-            "language";
-            "sourceLanguage";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        motivation = required reader string "motivation";
+        entity_types = required reader raw "entityTypes";
+        include_descriptive_references =
+          optional reader bool "includeDescriptiveReferences";
+        language = optional reader string "language";
+        source_language = optional reader string "sourceLanguage";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `LinkingJobParams ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Tagging_job_params = struct
@@ -4976,21 +5300,21 @@ module Tagging_job_params = struct
   }
 
   let project fields =
-    {
-      motivation = required string "motivation" fields;
-      schema_id = required string "schemaId" fields;
-      categories = required identity "categories" fields;
-      language = optional string "language" fields;
-      source_language = optional string "sourceLanguage" fields;
-      extra =
-        extra
-          [
-            "motivation"; "schemaId"; "categories"; "language"; "sourceLanguage";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        motivation = required reader string "motivation";
+        schema_id = required reader string "schemaId";
+        categories = required reader raw "categories";
+        language = optional reader string "language";
+        source_language = optional reader string "sourceLanguage";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TaggingJobParams ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Generation_job_request = struct
@@ -5011,39 +5335,28 @@ module Generation_job_request = struct
   }
 
   let project fields =
-    {
-      title = required string "title" fields;
-      storage_uri = required string "storageUri" fields;
-      prompt = optional string "prompt" fields;
-      entity_types = optional identity "entityTypes" fields;
-      language = optional string "language" fields;
-      source_language = optional string "sourceLanguage" fields;
-      temperature = optional identity "temperature" fields;
-      max_tokens = optional identity "maxTokens" fields;
-      output_media_type = optional identity "outputMediaType" fields;
-      task = optional string "task" fields;
-      structure = optional string "structure" fields;
-      cite = optional bool "cite" fields;
-      extra =
-        extra
-          [
-            "title";
-            "storageUri";
-            "prompt";
-            "entityTypes";
-            "language";
-            "sourceLanguage";
-            "temperature";
-            "maxTokens";
-            "outputMediaType";
-            "task";
-            "structure";
-            "cite";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        title = required reader string "title";
+        storage_uri = required reader string "storageUri";
+        prompt = optional reader string "prompt";
+        entity_types = optional reader raw "entityTypes";
+        language = optional reader string "language";
+        source_language = optional reader string "sourceLanguage";
+        temperature = optional reader raw "temperature";
+        max_tokens = optional reader raw "maxTokens";
+        output_media_type = optional reader raw "outputMediaType";
+        task = optional reader string "task";
+        structure = optional reader string "structure";
+        cite = optional reader bool "cite";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GenerationJobRequest ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_job_create_command = struct
@@ -5057,17 +5370,21 @@ module Mark_job_create_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      field_roles = optional identity "_roles" fields;
-      job_type = required string "jobType" fields;
-      resource_id = required identity "resourceId" fields;
-      params = required identity "params" fields;
-      extra =
-        extra [ "_userId"; "_roles"; "jobType"; "resourceId"; "params" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        field_roles = optional reader raw "_roles";
+        job_type = required reader string "jobType";
+        resource_id = required reader raw "resourceId";
+        params = required reader raw "params";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkJobCreateCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_job_create_command = struct
@@ -5080,15 +5397,20 @@ module Yield_job_create_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      field_roles = optional identity "_roles" fields;
-      job_type = required string "jobType" fields;
-      params = required identity "params" fields;
-      extra = extra [ "_userId"; "_roles"; "jobType"; "params" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        field_roles = optional reader raw "_roles";
+        job_type = required reader string "jobType";
+        params = required reader raw "params";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldJobCreateCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_job_queued_event = struct
@@ -5102,17 +5424,21 @@ module Mark_job_queued_event = struct
   }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      job_type = required string "jobType" fields;
-      resource_id = required identity "resourceId" fields;
-      user_id = required identity "userId" fields;
-      params = required identity "params" fields;
-      extra =
-        extra [ "jobId"; "jobType"; "resourceId"; "userId"; "params" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_id = required reader raw "jobId";
+        job_type = required reader string "jobType";
+        resource_id = required reader raw "resourceId";
+        user_id = required reader raw "userId";
+        params = required reader raw "params";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkJobQueuedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_job_queued_event = struct
@@ -5126,17 +5452,21 @@ module Yield_job_queued_event = struct
   }
 
   let project fields =
-    {
-      job_id = required identity "jobId" fields;
-      job_type = required string "jobType" fields;
-      resource_id = required identity "resourceId" fields;
-      user_id = required identity "userId" fields;
-      params = required identity "params" fields;
-      extra =
-        extra [ "jobId"; "jobType"; "resourceId"; "userId"; "params" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_id = required reader raw "jobId";
+        job_type = required reader string "jobType";
+        resource_id = required reader raw "resourceId";
+        user_id = required reader raw "userId";
+        params = required reader raw "params";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldJobQueuedEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_job_complete_command = struct
@@ -5152,29 +5482,23 @@ module Mark_job_complete_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      job_id = required identity "jobId" fields;
-      job_type = required string "jobType" fields;
-      attempt = optional identity "attempt" fields;
-      result = optional identity "result" fields;
-      durability = optional identity "durability" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "resourceId";
-            "jobId";
-            "jobType";
-            "attempt";
-            "result";
-            "durability";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        job_id = required reader raw "jobId";
+        job_type = required reader string "jobType";
+        attempt = optional reader raw "attempt";
+        result = optional reader raw "result";
+        durability = optional reader raw "durability";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkJobCompleteCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_job_complete_command = struct
@@ -5191,31 +5515,24 @@ module Yield_job_complete_command = struct
   }
 
   let project fields =
-    {
-      field_user_id = optional identity "_userId" fields;
-      resource_id = required identity "resourceId" fields;
-      job_id = required identity "jobId" fields;
-      job_type = required string "jobType" fields;
-      attempt = optional identity "attempt" fields;
-      annotation_id = optional identity "annotationId" fields;
-      result = optional identity "result" fields;
-      durability = optional identity "durability" fields;
-      extra =
-        extra
-          [
-            "_userId";
-            "resourceId";
-            "jobId";
-            "jobType";
-            "attempt";
-            "annotationId";
-            "result";
-            "durability";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        field_user_id = optional reader raw "_userId";
+        resource_id = required reader raw "resourceId";
+        job_id = required reader raw "jobId";
+        job_type = required reader string "jobType";
+        attempt = optional reader raw "attempt";
+        annotation_id = optional reader raw "annotationId";
+        result = optional reader raw "result";
+        durability = optional reader raw "durability";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldJobCompleteCommand ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_job_filter = struct
@@ -5226,25 +5543,30 @@ module Mark_job_filter = struct
   }
 
   let project fields =
-    {
-      job_type = required string "jobType" fields;
-      params = required identity "params" fields;
-      extra = extra [ "jobType"; "params" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job_type = required reader string "jobType";
+        params = required reader raw "params";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkJobFilter ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Yield_job_filter = struct
   type t = { job_type : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      job_type = required string "jobType" fields;
-      extra = extra [ "jobType" ] fields;
-    }
+    let reader = start fields in
+    let record = { job_type = required reader string "jobType"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `YieldJobFilter ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_pending = struct
@@ -5256,14 +5578,19 @@ module Job_pending = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      metadata = required identity "metadata" fields;
-      params = required identity "params" fields;
-      extra = extra [ "status"; "metadata"; "params" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        metadata = required reader raw "metadata";
+        params = required reader raw "params";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobPending ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_running = struct
@@ -5277,17 +5604,21 @@ module Job_running = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      metadata = required identity "metadata" fields;
-      params = required identity "params" fields;
-      started_at = required string "startedAt" fields;
-      progress = required identity "progress" fields;
-      extra =
-        extra [ "status"; "metadata"; "params"; "startedAt"; "progress" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        metadata = required reader raw "metadata";
+        params = required reader raw "params";
+        started_at = required reader string "startedAt";
+        progress = required reader raw "progress";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobRunning ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_complete = struct
@@ -5302,22 +5633,22 @@ module Job_complete = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      metadata = required identity "metadata" fields;
-      params = required identity "params" fields;
-      started_at = required string "startedAt" fields;
-      completed_at = required string "completedAt" fields;
-      result = required identity "result" fields;
-      extra =
-        extra
-          [
-            "status"; "metadata"; "params"; "startedAt"; "completedAt"; "result";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        metadata = required reader raw "metadata";
+        params = required reader raw "params";
+        started_at = required reader string "startedAt";
+        completed_at = required reader string "completedAt";
+        result = required reader raw "result";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobComplete ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_failed = struct
@@ -5333,29 +5664,23 @@ module Job_failed = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      metadata = required identity "metadata" fields;
-      params = required identity "params" fields;
-      started_at = optional string "startedAt" fields;
-      completed_at = required string "completedAt" fields;
-      error = required string "error" fields;
-      failure_class = optional identity "failureClass" fields;
-      extra =
-        extra
-          [
-            "status";
-            "metadata";
-            "params";
-            "startedAt";
-            "completedAt";
-            "error";
-            "failureClass";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        metadata = required reader raw "metadata";
+        params = required reader raw "params";
+        started_at = optional reader string "startedAt";
+        completed_at = required reader string "completedAt";
+        error = required reader string "error";
+        failure_class = optional reader raw "failureClass";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobFailed ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_cancelled = struct
@@ -5369,19 +5694,21 @@ module Job_cancelled = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      metadata = required identity "metadata" fields;
-      params = required identity "params" fields;
-      started_at = optional string "startedAt" fields;
-      completed_at = required string "completedAt" fields;
-      extra =
-        extra
-          [ "status"; "metadata"; "params"; "startedAt"; "completedAt" ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        metadata = required reader raw "metadata";
+        params = required reader raw "params";
+        started_at = optional reader string "startedAt";
+        completed_at = required reader string "completedAt";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCancelled ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_record = struct
@@ -5392,25 +5719,30 @@ module Job_record = struct
   }
 
   let project fields =
-    {
-      job = required identity "job" fields;
-      last_progress_at = required string "lastProgressAt" fields;
-      extra = extra [ "job"; "lastProgressAt" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        job = required reader raw "job";
+        last_progress_at = required reader string "lastProgressAt";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobRecord ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_claimed_result = struct
   type t = { response : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      response = required identity "response" fields;
-      extra = extra [ "response" ] fields;
-    }
+    let reader = start fields in
+    let record = { response = required reader raw "response"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobClaimedResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Dispatcher_config = struct
@@ -5427,31 +5759,24 @@ module Dispatcher_config = struct
   }
 
   let project fields =
-    {
-      kb = required identity "kb" fields;
-      gateway_url = required string "gatewayUrl" fields;
-      identity = required identity "identity" fields;
-      queue = required identity "queue" fields;
-      port = required identity "port" fields;
-      timing = required identity "timing" fields;
-      log_level = required identity "logLevel" fields;
-      log_format = required identity "logFormat" fields;
-      extra =
-        extra
-          [
-            "kb";
-            "gatewayUrl";
-            "identity";
-            "queue";
-            "port";
-            "timing";
-            "logLevel";
-            "logFormat";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        queue = required reader raw "queue";
+        port = required reader raw "port";
+        timing = required reader raw "timing";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `DispatcherConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Worker_config = struct
@@ -5465,21 +5790,21 @@ module Worker_config = struct
   }
 
   let project fields =
-    {
-      knowledge_bases = required identity "knowledgeBases" fields;
-      model_catalogue = required string "modelCatalogue" fields;
-      port = required identity "port" fields;
-      log_level = required identity "logLevel" fields;
-      log_format = required identity "logFormat" fields;
-      extra =
-        extra
-          [
-            "knowledgeBases"; "modelCatalogue"; "port"; "logLevel"; "logFormat";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        knowledge_bases = required reader raw "knowledgeBases";
+        model_catalogue = required reader string "modelCatalogue";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WorkerConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Worker_engine_config = struct
@@ -5492,15 +5817,20 @@ module Worker_engine_config = struct
   }
 
   let project fields =
-    {
-      engine = required identity "engine" fields;
-      jobs = required identity "jobs" fields;
-      base_url = required string "baseUrl" fields;
-      api_key_env = optional string "apiKeyEnv" fields;
-      extra = extra [ "engine"; "jobs"; "baseUrl"; "apiKeyEnv" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        jobs = required reader raw "jobs";
+        base_url = required reader string "baseUrl";
+        api_key_env = optional reader string "apiKeyEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WorkerEngineConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Worker_knowledge_base_config = struct
@@ -5513,15 +5843,20 @@ module Worker_knowledge_base_config = struct
   }
 
   let project fields =
-    {
-      domain = required string "domain" fields;
-      gateway_url = required string "gatewayUrl" fields;
-      identity = required identity "identity" fields;
-      engines = required identity "engines" fields;
-      extra = extra [ "domain"; "gatewayUrl"; "identity"; "engines" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        domain = required reader string "domain";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        engines = required reader raw "engines";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WorkerKnowledgeBaseConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Worker_health = struct
@@ -5532,13 +5867,18 @@ module Worker_health = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      knowledge_bases = required identity "knowledgeBases" fields;
-      extra = extra [ "status"; "knowledgeBases" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        knowledge_bases = required reader raw "knowledgeBases";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WorkerHealth ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Worker_knowledge_base_health = struct
@@ -5551,15 +5891,20 @@ module Worker_knowledge_base_health = struct
   }
 
   let project fields =
-    {
-      domain = required string "domain" fields;
-      state = required string "state" fields;
-      did = optional string "did" fields;
-      engines = optional identity "engines" fields;
-      extra = extra [ "domain"; "state"; "did"; "engines" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        domain = required reader string "domain";
+        state = required reader string "state";
+        did = optional reader string "did";
+        engines = optional reader raw "engines";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WorkerKnowledgeBaseHealth ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Worker_engine_health = struct
@@ -5576,31 +5921,24 @@ module Worker_engine_health = struct
   }
 
   let project fields =
-    {
-      engine = required identity "engine" fields;
-      jobs = required identity "jobs" fields;
-      last_queued_event_at = required identity "lastQueuedEventAt" fields;
-      last_claim_at = required identity "lastClaimAt" fields;
-      last_finished_at = required identity "lastFinishedAt" fields;
-      last_activity_at = required identity "lastActivityAt" fields;
-      active_job = required identity "activeJob" fields;
-      jobs_completed = required identity "jobsCompleted" fields;
-      extra =
-        extra
-          [
-            "engine";
-            "jobs";
-            "lastQueuedEventAt";
-            "lastClaimAt";
-            "lastFinishedAt";
-            "lastActivityAt";
-            "activeJob";
-            "jobsCompleted";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        jobs = required reader raw "jobs";
+        last_queued_event_at = required reader raw "lastQueuedEventAt";
+        last_claim_at = required reader raw "lastClaimAt";
+        last_finished_at = required reader raw "lastFinishedAt";
+        last_activity_at = required reader raw "lastActivityAt";
+        active_job = required reader raw "activeJob";
+        jobs_completed = required reader raw "jobsCompleted";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WorkerEngineHealth ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Weaver_config = struct
@@ -5618,33 +5956,25 @@ module Weaver_config = struct
   }
 
   let project fields =
-    {
-      kb = required identity "kb" fields;
-      gateway_url = required string "gatewayUrl" fields;
-      identity = required identity "identity" fields;
-      archivist = required identity "archivist" fields;
-      graph = required identity "graph" fields;
-      cursors_path = required identity "cursorsPath" fields;
-      port = required identity "port" fields;
-      log_level = required identity "logLevel" fields;
-      log_format = required identity "logFormat" fields;
-      extra =
-        extra
-          [
-            "kb";
-            "gatewayUrl";
-            "identity";
-            "archivist";
-            "graph";
-            "cursorsPath";
-            "port";
-            "logLevel";
-            "logFormat";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        graph = required reader raw "graph";
+        cursors_path = required reader raw "cursorsPath";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WeaverConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Neo4j_graph_config = struct
@@ -5658,17 +5988,21 @@ module Neo4j_graph_config = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      uri = required string "uri" fields;
-      username = required string "username" fields;
-      password_env = required string "passwordEnv" fields;
-      database = required string "database" fields;
-      extra =
-        extra [ "type"; "uri"; "username"; "passwordEnv"; "database" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        uri = required reader string "uri";
+        username = required reader string "username";
+        password_env = required reader string "passwordEnv";
+        database = required reader string "database";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `Neo4jGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Janus_graph_config = struct
@@ -5680,14 +6014,19 @@ module Janus_graph_config = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      host = required string "host" fields;
-      port = required identity "port" fields;
-      extra = extra [ "type"; "host"; "port" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        host = required reader string "host";
+        port = required reader raw "port";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JanusGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Neptune_graph_config = struct
@@ -5699,23 +6038,31 @@ module Neptune_graph_config = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      endpoint = required string "endpoint" fields;
-      port = required identity "port" fields;
-      extra = extra [ "type"; "endpoint"; "port" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        endpoint = required reader string "endpoint";
+        port = required reader raw "port";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `NeptuneGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Memory_graph_config = struct
   type t = { type_ : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { type_ = required string "type" fields; extra = extra [ "type" ] fields }
+    let reader = start fields in
+    let record = { type_ = required reader string "type"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MemoryGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Smelter_config = struct
@@ -5736,39 +6083,28 @@ module Smelter_config = struct
   }
 
   let project fields =
-    {
-      kb = required identity "kb" fields;
-      gateway_url = required string "gatewayUrl" fields;
-      identity = required identity "identity" fields;
-      archivist = required identity "archivist" fields;
-      embedding = required identity "embedding" fields;
-      vectors = required identity "vectors" fields;
-      chunking = required identity "chunking" fields;
-      pdfs_at_once = required identity "pdfsAtOnce" fields;
-      cursors_path = required identity "cursorsPath" fields;
-      port = required identity "port" fields;
-      log_level = required identity "logLevel" fields;
-      log_format = required identity "logFormat" fields;
-      extra =
-        extra
-          [
-            "kb";
-            "gatewayUrl";
-            "identity";
-            "archivist";
-            "embedding";
-            "vectors";
-            "chunking";
-            "pdfsAtOnce";
-            "cursorsPath";
-            "port";
-            "logLevel";
-            "logFormat";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        embedding = required reader raw "embedding";
+        vectors = required reader raw "vectors";
+        chunking = required reader raw "chunking";
+        pdfs_at_once = required reader raw "pdfsAtOnce";
+        cursors_path = required reader raw "cursorsPath";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SmelterConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Librarian_config = struct
@@ -5792,45 +6128,31 @@ module Librarian_config = struct
   }
 
   let project fields =
-    {
-      kb = required identity "kb" fields;
-      gateway_url = required string "gatewayUrl" fields;
-      identity = required identity "identity" fields;
-      archivist = required identity "archivist" fields;
-      graph = required identity "graph" fields;
-      vectors = required identity "vectors" fields;
-      embedding = required identity "embedding" fields;
-      matcher = required identity "matcher" fields;
-      gatherer = required identity "gatherer" fields;
-      model_catalogue = required string "modelCatalogue" fields;
-      gather = required identity "gather" fields;
-      search = required identity "search" fields;
-      port = required identity "port" fields;
-      log_level = required identity "logLevel" fields;
-      log_format = required identity "logFormat" fields;
-      extra =
-        extra
-          [
-            "kb";
-            "gatewayUrl";
-            "identity";
-            "archivist";
-            "graph";
-            "vectors";
-            "embedding";
-            "matcher";
-            "gatherer";
-            "modelCatalogue";
-            "gather";
-            "search";
-            "port";
-            "logLevel";
-            "logFormat";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        graph = required reader raw "graph";
+        vectors = required reader raw "vectors";
+        embedding = required reader raw "embedding";
+        matcher = required reader raw "matcher";
+        gatherer = required reader raw "gatherer";
+        model_catalogue = required reader string "modelCatalogue";
+        gather = required reader raw "gather";
+        search = required reader raw "search";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `LibrarianConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Librarian_engine_config = struct
@@ -5842,14 +6164,19 @@ module Librarian_engine_config = struct
   }
 
   let project fields =
-    {
-      engine = required identity "engine" fields;
-      base_url = required string "baseUrl" fields;
-      api_key_env = optional string "apiKeyEnv" fields;
-      extra = extra [ "engine"; "baseUrl"; "apiKeyEnv" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        base_url = required reader string "baseUrl";
+        api_key_env = optional reader string "apiKeyEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `LibrarianEngineConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Ollama_embedding_config = struct
@@ -5861,14 +6188,19 @@ module Ollama_embedding_config = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      model = required string "model" fields;
-      base_url = required string "baseUrl" fields;
-      extra = extra [ "type"; "model"; "baseUrl" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        model = required reader string "model";
+        base_url = required reader string "baseUrl";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `OllamaEmbeddingConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Voyage_embedding_config = struct
@@ -5881,15 +6213,20 @@ module Voyage_embedding_config = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      model = required string "model" fields;
-      endpoint = required string "endpoint" fields;
-      api_key_env = required string "apiKeyEnv" fields;
-      extra = extra [ "type"; "model"; "endpoint"; "apiKeyEnv" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        model = required reader string "model";
+        endpoint = required reader string "endpoint";
+        api_key_env = required reader string "apiKeyEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `VoyageEmbeddingConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Qdrant_vectors_config = struct
@@ -5902,24 +6239,32 @@ module Qdrant_vectors_config = struct
   }
 
   let project fields =
-    {
-      type_ = required string "type" fields;
-      host = required string "host" fields;
-      port = required identity "port" fields;
-      token_env = required string "tokenEnv" fields;
-      extra = extra [ "type"; "host"; "port"; "tokenEnv" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        host = required reader string "host";
+        port = required reader raw "port";
+        token_env = required reader string "tokenEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `QdrantVectorsConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Memory_vectors_config = struct
   type t = { type_ : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { type_ = required string "type" fields; extra = extra [ "type" ] fields }
+    let reader = start fields in
+    let record = { type_ = required reader string "type"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MemoryVectorsConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Dispatcher_health = struct
@@ -5930,13 +6275,18 @@ module Dispatcher_health = struct
   }
 
   let project fields =
-    {
-      status = required string "status" fields;
-      queue = required string "queue" fields;
-      extra = extra [ "status"; "queue" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        queue = required reader string "queue";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `DispatcherHealth ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Archivist_config = struct
@@ -5956,49 +6306,39 @@ module Archivist_config = struct
   }
 
   let project fields =
-    {
-      gateway_url = required string "gatewayUrl" fields;
-      identity = required identity "identity" fields;
-      root = required string "root" fields;
-      state_home = required string "stateHome" fields;
-      anchored_text_dir = required string "anchoredTextDir" fields;
-      engines = required identity "engines" fields;
-      port = required identity "port" fields;
-      skip_rebuild = required bool "skipRebuild" fields;
-      staging = required identity "staging" fields;
-      log_level = required identity "logLevel" fields;
-      log_format = required identity "logFormat" fields;
-      extra =
-        extra
-          [
-            "gatewayUrl";
-            "identity";
-            "root";
-            "stateHome";
-            "anchoredTextDir";
-            "engines";
-            "port";
-            "skipRebuild";
-            "staging";
-            "logLevel";
-            "logFormat";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        root = required reader string "root";
+        state_home = required reader string "stateHome";
+        anchored_text_dir = required reader string "anchoredTextDir";
+        engines = required reader raw "engines";
+        port = required reader raw "port";
+        skip_rebuild = required reader bool "skipRebuild";
+        staging = required reader raw "staging";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ArchivistConfig ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Service_identity = struct
   type t = { issuer : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      issuer = required string "issuer" fields;
-      extra = extra [ "issuer" ] fields;
-    }
+    let reader = start fields in
+    let record = { issuer = required reader string "issuer"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ServiceIdentity ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Service_address = struct
@@ -6009,13 +6349,18 @@ module Service_address = struct
   }
 
   let project fields =
-    {
-      host = required string "host" fields;
-      port = required identity "port" fields;
-      extra = extra [ "host"; "port" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        host = required reader string "host";
+        port = required reader raw "port";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ServiceAddress ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_annotations = struct
@@ -6028,16 +6373,20 @@ module Resource_annotations = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      annotations = required identity "annotations" fields;
-      version = required identity "version" fields;
-      updated_at = required string "updatedAt" fields;
-      extra =
-        extra [ "resourceId"; "annotations"; "version"; "updatedAt" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        annotations = required reader raw "annotations";
+        version = required reader raw "version";
+        updated_at = required reader string "updatedAt";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceAnnotations ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_view = struct
@@ -6049,50 +6398,59 @@ module Resource_view = struct
   }
 
   let project fields =
-    {
-      resource = required identity "resource" fields;
-      annotations = required identity "annotations" fields;
-      last_sequence = required identity "lastSequence" fields;
-      extra = extra [ "resource"; "annotations"; "lastSequence" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource = required reader raw "resource";
+        annotations = required reader raw "annotations";
+        last_sequence = required reader raw "lastSequence";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceView ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Entity_types_projection = struct
   type t = { entity_types : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      entity_types = required identity "entityTypes" fields;
-      extra = extra [ "entityTypes" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { entity_types = required reader raw "entityTypes"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `EntityTypesProjection ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Tag_schemas_projection = struct
   type t = { tag_schemas : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      tag_schemas = required identity "tagSchemas" fields;
-      extra = extra [ "tagSchemas" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      { tag_schemas = required reader raw "tagSchemas"; extra = [] }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `TagSchemasProjection ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Profiles_projection = struct
   type t = { profiles : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      profiles = required identity "profiles" fields;
-      extra = extra [ "profiles" ] fields;
-    }
+    let reader = start fields in
+    let record = { profiles = required reader raw "profiles"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ProfilesProjection ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Profile = struct
@@ -6103,13 +6461,18 @@ module Profile = struct
   }
 
   let project fields =
-    {
-      name = required string "name" fields;
-      since = required string "since" fields;
-      extra = extra [ "name"; "since" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        name = required reader string "name";
+        since = required reader string "since";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `Profile ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Storage_uri_entry = struct
@@ -6120,13 +6483,18 @@ module Storage_uri_entry = struct
   }
 
   let project fields =
-    {
-      uri = required string "uri" fields;
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "uri"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        uri = required reader string "uri";
+        resource_id = required reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `StorageUriEntry ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Anchored_text_extracted_entry = struct
@@ -6143,31 +6511,24 @@ module Anchored_text_extracted_entry = struct
   }
 
   let project fields =
-    {
-      v = required identity "v" fields;
-      stamp = required string "stamp" fields;
-      text = required string "text" fields;
-      lines = required identity "lines" fields;
-      method_ = required identity "method" fields;
-      pdf_class = optional identity "pdfClass" fields;
-      ocr_confidence = optional identity "ocrConfidence" fields;
-      unread_pages = optional identity "unreadPages" fields;
-      extra =
-        extra
-          [
-            "v";
-            "stamp";
-            "text";
-            "lines";
-            "method";
-            "pdfClass";
-            "ocrConfidence";
-            "unreadPages";
-          ]
-          fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        v = required reader raw "v";
+        stamp = required reader string "stamp";
+        text = required reader string "text";
+        lines = required reader raw "lines";
+        method_ = required reader raw "method";
+        pdf_class = optional reader raw "pdfClass";
+        ocr_confidence = optional reader raw "ocrConfidence";
+        unread_pages = optional reader raw "unreadPages";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnchoredTextExtractedEntry ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Anchored_text_declined_entry = struct
@@ -6179,35 +6540,43 @@ module Anchored_text_declined_entry = struct
   }
 
   let project fields =
-    {
-      v = required identity "v" fields;
-      stamp = required string "stamp" fields;
-      declined = required identity "declined" fields;
-      extra = extra [ "v"; "stamp"; "declined" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        v = required reader raw "v";
+        stamp = required reader string "stamp";
+        declined = required reader raw "declined";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnchoredTextDeclinedEntry ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Anchored_text_entries = struct
   type t = { checksums : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      checksums = required identity "checksums" fields;
-      extra = extra [ "checksums" ] fields;
-    }
+    let reader = start fields in
+    let record = { checksums = required reader raw "checksums"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnchoredTextEntries ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Anchored_text_stamp = struct
   type t = { stamp : string; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    { stamp = required string "stamp" fields; extra = extra [ "stamp" ] fields }
+    let reader = start fields in
+    let record = { stamp = required reader string "stamp"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnchoredTextStamp ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Anchored_text_write = struct
@@ -6218,13 +6587,18 @@ module Anchored_text_write = struct
   }
 
   let project fields =
-    {
-      content_checksum = required string "contentChecksum" fields;
-      entry = required identity "entry" fields;
-      extra = extra [ "contentChecksum"; "entry" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        content_checksum = required reader string "contentChecksum";
+        entry = required reader raw "entry";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `AnchoredTextWrite ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Archivist_engines = struct
@@ -6235,13 +6609,18 @@ module Archivist_engines = struct
   }
 
   let project fields =
-    {
-      jobs = required identity "jobs" fields;
-      actors = required identity "actors" fields;
-      extra = extra [ "jobs"; "actors" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        jobs = required reader raw "jobs";
+        actors = required reader raw "actors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ArchivistEngines ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Engine = struct
@@ -6252,13 +6631,18 @@ module Engine = struct
   }
 
   let project fields =
-    {
-      provider = required string "provider" fields;
-      model = required string "model" fields;
-      extra = extra [ "provider"; "model" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        provider = required reader string "provider";
+        model = required reader string "model";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `Engine ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_failed = struct
@@ -6271,15 +6655,20 @@ module Gather_failed = struct
   }
 
   let project fields =
-    {
-      code = optional string "code" fields;
-      message = required string "message" fields;
-      details = optional string "details" fields;
-      annotation_id = required identity "annotationId" fields;
-      extra = extra [ "code"; "message"; "details"; "annotationId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = optional reader string "code";
+        message = required reader string "message";
+        details = optional reader string "details";
+        annotation_id = required reader raw "annotationId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherFailed ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Gather_resource_failed = struct
@@ -6292,15 +6681,20 @@ module Gather_resource_failed = struct
   }
 
   let project fields =
-    {
-      code = optional string "code" fields;
-      message = required string "message" fields;
-      details = optional string "details" fields;
-      resource_id = required identity "resourceId" fields;
-      extra = extra [ "code"; "message"; "details"; "resourceId" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = optional reader string "code";
+        message = required reader string "message";
+        details = optional reader string "details";
+        resource_id = required reader raw "resourceId";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `GatherResourceFailed ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Browse_directory_failed = struct
@@ -6313,15 +6707,20 @@ module Browse_directory_failed = struct
   }
 
   let project fields =
-    {
-      code = optional string "code" fields;
-      message = required string "message" fields;
-      details = optional string "details" fields;
-      path = required string "path" fields;
-      extra = extra [ "code"; "message"; "details"; "path" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        code = optional reader string "code";
+        message = required reader string "message";
+        details = optional reader string "details";
+        path = required reader string "path";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `BrowseDirectoryFailed ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Mark_delegate_timeout_event = struct
@@ -6332,13 +6731,18 @@ module Mark_delegate_timeout_event = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      motivation = required identity "motivation" fields;
-      extra = extra [ "resourceId"; "motivation" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        motivation = required reader raw "motivation";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `MarkDelegateTimeoutEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Resource_error_event = struct
@@ -6349,25 +6753,30 @@ module Resource_error_event = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      message = required string "message" fields;
-      extra = extra [ "resourceId"; "message" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        message = required reader string "message";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `ResourceErrorEvent ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Job_cancel_result = struct
   type t = { cancelled : bool; extra : (string * Yojson.Raw.t) list }
 
   let project fields =
-    {
-      cancelled = required bool "cancelled" fields;
-      extra = extra [ "cancelled" ] fields;
-    }
+    let reader = start fields in
+    let record = { cancelled = required reader bool "cancelled"; extra = [] } in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `JobCancelResult ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Weave_applied = struct
@@ -6378,13 +6787,18 @@ module Weave_applied = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      sequence_number = required identity "sequenceNumber" fields;
-      extra = extra [ "resourceId"; "sequenceNumber" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        sequence_number = required reader raw "sequenceNumber";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `WeaveApplied ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Smelt_settled = struct
@@ -6397,16 +6811,20 @@ module Smelt_settled = struct
   }
 
   let project fields =
-    {
-      resource_id = required identity "resourceId" fields;
-      content_checksum = required string "contentChecksum" fields;
-      outcome = required string "outcome" fields;
-      reason = optional string "reason" fields;
-      extra =
-        extra [ "resourceId"; "contentChecksum"; "outcome"; "reason" ] fields;
-    }
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        content_checksum = required reader string "contentChecksum";
+        outcome = required reader string "outcome";
+        reason = optional reader string "reason";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
 
-  let of_model model = project (object_fields (Models.json model))
+  let of_model (model : [ `SmeltSettled ] Models.t) =
+    project (fields_of (Models.json model))
 end
 
 module Agent = struct
@@ -6415,8 +6833,8 @@ module Agent = struct
     | Organization of Agent_organization.t
     | Software of Agent_software.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `Agent ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "@type" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6433,8 +6851,8 @@ module Annotation_body = struct
     | TextualBody of Textual_body.t
     | SpecificResource of Specific_resource.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `AnnotationBody ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "type" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6453,8 +6871,8 @@ module Anchored_text_answer = struct
     | NoMap of Anchored_text_absent.t
     | Unknown of Anchored_text_absent.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `AnchoredTextAnswer ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "kind" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6470,8 +6888,8 @@ end
 module Directory_entry = struct
   type t = File of File_entry.t | Dir of Dir_entry.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `DirectoryEntry ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "type" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6484,8 +6902,8 @@ end
 module Extraction_outcome = struct
   type t = Extracted of Extracted_text.t | Declined of Extraction_declined.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `ExtractionOutcome ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "kind" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6500,8 +6918,8 @@ module Job_complete_command = struct
     | Mark of Mark_job_complete_command.t
     | Yield of Yield_job_complete_command.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `JobCompleteCommand ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "jobType" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6516,8 +6934,8 @@ module Job_create_command = struct
     | Mark of Mark_job_create_command.t
     | Yield of Yield_job_create_command.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `JobCreateCommand ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "jobType" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6540,8 +6958,8 @@ module Job_progress_message = struct
     | CreatingTagAnnotations of Job_progress_creating_tag_annotations.t
     | CompleteCreated of Job_progress_complete_created.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `JobProgressMessage ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "code" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6583,8 +7001,8 @@ end
 module Job_queued_event = struct
   type t = Mark of Mark_job_queued_event.t | Yield of Yield_job_queued_event.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `JobQueuedEvent ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "jobType" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6597,8 +7015,8 @@ end
 module Kb_endpoint = struct
   type t = Http of Http_endpoint.t | Local of Local_endpoint.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `KbEndpoint ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "kind" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6615,8 +7033,8 @@ module Selector = struct
     | SvgSelector of Svg_selector.t
     | FragmentSelector of Fragment_selector.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `Selector ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "type" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6639,8 +7057,8 @@ module Mark_job_params = struct
     | Linking of Linking_job_params.t
     | Tagging of Tagging_job_params.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `MarkJobParams ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "motivation" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6658,8 +7076,8 @@ end
 module Job_filter = struct
   type t = Mark of Mark_job_filter.t | Yield of Yield_job_filter.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `JobFilter ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "jobType" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6677,8 +7095,8 @@ module Job = struct
     | Failed of Job_failed.t
     | Cancelled of Job_cancelled.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `Job ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "status" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6698,8 +7116,8 @@ module Graph_config = struct
     | Neptune of Neptune_graph_config.t
     | Memory of Memory_graph_config.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `GraphConfig ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "type" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6716,8 +7134,8 @@ module Embedding_config = struct
     | Ollama of Ollama_embedding_config.t
     | Voyage of Voyage_embedding_config.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `EmbeddingConfig ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "type" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with
@@ -6732,8 +7150,8 @@ module Vectors_config = struct
     | Qdrant of Qdrant_vectors_config.t
     | Memory of Memory_vectors_config.t
 
-  let of_model model =
-    let fields = object_fields (Models.json model) in
+  let of_model (model : [ `VectorsConfig ] Models.t) =
+    let fields = fields_of (Models.json model) in
     match List.assoc_opt "type" fields with
     | Some (`Stringlit literal) -> (
         match string (`Stringlit literal) with

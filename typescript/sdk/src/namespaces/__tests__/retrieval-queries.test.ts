@@ -7,9 +7,24 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { BehaviorSubject, filter, firstValueFrom, map, type Observable } from 'rxjs';
+import {
+  BehaviorSubject,
+  filter,
+  firstValueFrom,
+  map,
+  type Observable,
+} from 'rxjs';
 import { EventBus, resourceId } from '@xynolog/core';
-import type { ConnectionState, EventMap, EventMetadata, EventOfType, ResourceDescriptor, ResourceId, StoredEvent, UserId } from '@xynolog/core';
+import type {
+  ConnectionState,
+  EventMap,
+  EventMetadata,
+  EventOfType,
+  ResourceDescriptor,
+  ResourceId,
+  StoredEvent,
+  UserId,
+} from '@xynolog/core';
 import { isReady, type CacheState } from '../../cache';
 import { GatherNamespace } from '../gather';
 import { MatchNamespace } from '../match';
@@ -25,7 +40,12 @@ const resource = (id: string): ResourceDescriptor => ({
 });
 
 function ready<T>(obs: Observable<CacheState<T>>): Promise<T> {
-  return firstValueFrom(obs.pipe(filter(isReady), map((s) => s.value)));
+  return firstValueFrom(
+    obs.pipe(
+      filter(isReady),
+      map((s) => s.value),
+    ),
+  );
 }
 
 /** A transport that answers the two operations, counting what it was asked. */
@@ -48,21 +68,48 @@ function harness(matchKind: 'lexical' | 'semantic' = 'lexical') {
       const correlationId = envelope?.correlationId;
       if (channel === 'match:resources-requested') {
         asked.push({ channel, payload });
-        queueMicrotask(() => bus.emit('match:resources-result', {
-          response: { resources: [resource('res-hit')], total: 1, offset: 0, limit: 100, matchKind },
-        }, { correlationId }));
+        queueMicrotask(() =>
+          bus.emit(
+            'match:resources-result',
+            {
+              response: {
+                resources: [resource('res-hit')],
+                total: 1,
+                offset: 0,
+                limit: 100,
+                matchKind,
+              },
+            },
+            { correlationId },
+          ),
+        );
       }
       if (channel === 'gather:referenced-by-requested') {
         asked.push({ channel, payload });
-        queueMicrotask(() => bus.emit('gather:referenced-by-result', {
-          response: { referencedBy: [] },
-        }, { correlationId }));
+        queueMicrotask(() =>
+          bus.emit(
+            'gather:referenced-by-result',
+            {
+              response: { referencedBy: [] },
+            },
+            { correlationId },
+          ),
+        );
       }
     },
   });
 
-  const count = (channel: keyof EventMap) => asked.filter((a) => a.channel === channel).length;
-  return { bus, state$, transport, asked, count, subscribeToResource, releases };
+  const count = (channel: keyof EventMap) =>
+    asked.filter((a) => a.channel === channel).length;
+  return {
+    bus,
+    state$,
+    transport,
+    asked,
+    count,
+    subscribeToResource,
+    releases,
+  };
 }
 
 function created(rId: ResourceId): StoredEvent<EventOfType<'yield:created'>> {
@@ -73,7 +120,11 @@ function created(rId: ResourceId): StoredEvent<EventOfType<'yield:created'>> {
     userId: 'did:web:test:users:test' as UserId,
     version: 1,
     timestamp: '2026-01-01T00:00:00Z',
-    payload: { name: `Imported ${rId}`, format: 'text/plain', contentChecksum: 'sha256-test' },
+    payload: {
+      name: `Imported ${rId}`,
+      format: 'text/plain',
+      contentChecksum: 'sha256-test',
+    },
     metadata: { sequenceNumber: 1 } as EventMetadata,
   };
 }
@@ -87,11 +138,29 @@ describe('match.resources()', () => {
     const match = new MatchNamespace(h.transport, h.bus);
 
     await ready(match.resources('cat'));
-    await ready(match.resources('cat', { archived: false, entityType: 'Person', limit: 5 }));
+    await ready(
+      match.resources('cat', {
+        archived: false,
+        entityType: 'Person',
+        limit: 5,
+      }),
+    );
 
     expect(h.asked.map((a) => a.payload)).toEqual([
-      { search: 'cat', archived: undefined, entityType: undefined, limit: 100, offset: 0 },
-      { search: 'cat', archived: false, entityType: 'Person', limit: 5, offset: 0 },
+      {
+        search: 'cat',
+        archived: undefined,
+        entityType: undefined,
+        limit: 100,
+        offset: 0,
+      },
+      {
+        search: 'cat',
+        archived: false,
+        entityType: 'Person',
+        limit: 5,
+        offset: 0,
+      },
     ]);
     match.dispose();
   });
@@ -126,7 +195,9 @@ describe('match.resources()', () => {
 
   it('a resource created elsewhere asks every held search again, once per window', async () => {
     const h = harness();
-    const match = new MatchNamespace(h.transport, h.bus, { invalidationWindowMs: 50 });
+    const match = new MatchNamespace(h.transport, h.bus, {
+      invalidationWindowMs: 50,
+    });
     await ready(match.resources('foo'));
     await ready(match.resources('bar'));
 
@@ -143,7 +214,9 @@ describe('match.resources()', () => {
 
   it('the stream open again after a drop asks every held search again', async () => {
     const h = harness();
-    const match = new MatchNamespace(h.transport, h.bus, { invalidationWindowMs: 50 });
+    const match = new MatchNamespace(h.transport, h.bus, {
+      invalidationWindowMs: 50,
+    });
     await ready(match.resources('foo'));
 
     h.state$.next('reconnecting');
@@ -156,7 +229,9 @@ describe('match.resources()', () => {
 
   it('a disposed namespace asks nothing more', async () => {
     const h = harness();
-    const match = new MatchNamespace(h.transport, h.bus, { invalidationWindowMs: 50 });
+    const match = new MatchNamespace(h.transport, h.bus, {
+      invalidationWindowMs: 50,
+    });
     await ready(match.resources('foo'));
 
     match.dispose();
@@ -178,9 +253,16 @@ describe('gather.referencedBy()', () => {
     expect(await ready(gather.referencedBy(RID))).toEqual([]);
     await ready(gather.referencedBy(RID));
 
-    expect(h.asked).toEqual([{ channel: 'gather:referenced-by-requested', payload: { resourceId: RID } }]);
+    expect(h.asked).toEqual([
+      {
+        channel: 'gather:referenced-by-requested',
+        payload: { resourceId: RID },
+      },
+    ]);
     expect(gather.referencedBy(RID)).toBe(gather.referencedBy(RID));
-    expect(gather.referencedBy(RID)).not.toBe(gather.referencedBy(resourceId('res-2')));
+    expect(gather.referencedBy(RID)).not.toBe(
+      gather.referencedBy(resourceId('res-2')),
+    );
     gather.dispose();
   });
 
@@ -200,18 +282,32 @@ describe('gather.referencedBy()', () => {
 
   it('a gap in what the scope replayed asks again for the resource it names, and no other', async () => {
     const h = harness();
-    const gather = new GatherNamespace(h.transport, h.bus, { invalidationWindowMs: 50 });
+    const gather = new GatherNamespace(h.transport, h.bus, {
+      invalidationWindowMs: 50,
+    });
     const other = resourceId('res-2');
     const held = gather.referencedBy(RID);
     await ready(held);
     await ready(gather.referencedBy(other));
 
-    h.bus.emit('bus:resume-gap', { scope: RID, lastSeenId: `p-${RID}-1`, reason: 'query-error' });
+    h.bus.emit('bus:resume-gap', {
+      scope: RID,
+      lastSeenId: `p-${RID}-1`,
+      reason: 'query-error',
+    });
     // A resource nothing asked about has nothing to refresh.
-    h.bus.emit('bus:resume-gap', { scope: resourceId('res-3'), lastSeenId: 'p-res-3-1', reason: 'query-error' });
+    h.bus.emit('bus:resume-gap', {
+      scope: resourceId('res-3'),
+      lastSeenId: 'p-res-3-1',
+      reason: 'query-error',
+    });
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(h.asked.map((a) => a.payload)).toEqual([{ resourceId: RID }, { resourceId: other }, { resourceId: RID }]);
+    expect(h.asked.map((a) => a.payload)).toEqual([
+      { resourceId: RID },
+      { resourceId: other },
+      { resourceId: RID },
+    ]);
     // The observable a subscriber holds is the one that carries the new answer.
     expect(gather.referencedBy(RID)).toBe(held);
     gather.dispose();

@@ -28,6 +28,8 @@ export function renderAgentLabels(agents: Agent | Agent[]): string {
 }
 
 /** The name an annotation's creator goes by, when it has one. */
-export function creatorName(creator: Agent | string | undefined): string | undefined {
+export function creatorName(
+  creator: Agent | string | undefined,
+): string | undefined {
   return typeof creator === 'string' ? creator : creator?.name;
 }

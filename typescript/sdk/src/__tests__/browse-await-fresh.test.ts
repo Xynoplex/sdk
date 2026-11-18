@@ -17,7 +17,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { EventBus, resourceId as makeResourceId } from '@xynolog/core';
 import type { IContentTransport, ResourceId } from '@xynolog/core';
 import { BrowseNamespace } from '../namespaces/browse';
-import { inMemoryTransport, contentTransportSpies } from './helpers/in-memory-transport';
+import {
+  inMemoryTransport,
+  contentTransportSpies,
+} from './helpers/in-memory-transport';
 import { mockAnnotation } from './fixtures/annotation';
 
 function makeContent(): IContentTransport {

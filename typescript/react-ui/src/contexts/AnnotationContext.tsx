@@ -3,7 +3,9 @@
 import React, { createContext, useContext } from 'react';
 import type { AnnotationManager } from '../types/AnnotationManager';
 
-const AnnotationContext = createContext<AnnotationManager | undefined>(undefined);
+const AnnotationContext = createContext<AnnotationManager | undefined>(
+  undefined,
+);
 
 export interface AnnotationProviderProps {
   annotationManager: AnnotationManager;
@@ -41,7 +43,10 @@ export interface AnnotationProviderProps {
  * </AnnotationProvider>
  * ```
  */
-export function AnnotationProvider({ annotationManager, children }: AnnotationProviderProps) {
+export function AnnotationProvider({
+  annotationManager,
+  children,
+}: AnnotationProviderProps) {
   return (
     <AnnotationContext.Provider value={annotationManager}>
       {children}
@@ -58,7 +63,9 @@ export function AnnotationProvider({ annotationManager, children }: AnnotationPr
 export function useAnnotationManager(): AnnotationManager {
   const context = useContext(AnnotationContext);
   if (!context) {
-    throw new Error('useAnnotationManager must be used within an AnnotationProvider');
+    throw new Error(
+      'useAnnotationManager must be used within an AnnotationProvider',
+    );
   }
   return context;
 }

@@ -12,12 +12,17 @@ import '@testing-library/jest-dom';
 import { resourceId } from '@xynolog/core';
 import type { ResourceDescriptor, ResourceId } from '@xynolog/core';
 import type { XynologClient } from '@xynolog/sdk';
-import { useResourceContent, type UseResourceContentResult } from '../useResourceContent';
+import {
+  useResourceContent,
+  type UseResourceContentResult,
+} from '../useResourceContent';
 
 const mockResourceRepresentation = vi.fn();
 const client = {
   browse: {
-    get resourceRepresentation() { return mockResourceRepresentation; },
+    get resourceRepresentation() {
+      return mockResourceRepresentation;
+    },
   },
 } as unknown as XynologClient;
 
@@ -31,14 +36,19 @@ const utf8 = (s: string) => new TextEncoder().encode(s).buffer;
 /** A promise the test settles by hand, to observe the state while it is pending. */
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((r) => { resolve = r; });
+  const promise = new Promise<T>((r) => {
+    resolve = r;
+  });
   return { promise, resolve };
 }
 
 describe('useResourceContent — bring-your-own-client, no providers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockResourceRepresentation.mockResolvedValue({ data: utf8(''), contentType: 'text/plain' });
+    mockResourceRepresentation.mockResolvedValue({
+      data: utf8(''),
+      contentType: 'text/plain',
+    });
   });
 
   it('resolves decoded content for text media (real charset decode)', async () => {
@@ -47,7 +57,9 @@ describe('useResourceContent — bring-your-own-client, no providers', () => {
       contentType: 'text/plain; charset=utf-8',
     });
 
-    const { result } = renderHook(() => useResourceContent(client, RID, resource));
+    const { result } = renderHook(() =>
+      useResourceContent(client, RID, resource),
+    );
 
     await waitFor(() => expect(result.current.content).toBe('Hello World'));
     expect(result.current.loading).toBe(false);
@@ -57,7 +69,10 @@ describe('useResourceContent — bring-your-own-client, no providers', () => {
 
   it('transitions through a loading state', async () => {
     const loadingStates: boolean[] = [];
-    mockResourceRepresentation.mockResolvedValue({ data: utf8('done'), contentType: 'text/plain' });
+    mockResourceRepresentation.mockResolvedValue({
+      data: utf8('done'),
+      contentType: 'text/plain',
+    });
 
     const { result } = renderHook(() => {
       const r = useResourceContent(client, RID, resource);
@@ -71,7 +86,9 @@ describe('useResourceContent — bring-your-own-client, no providers', () => {
   });
 
   it('client=null stays idle — no fetch, not loading, no content', () => {
-    const { result } = renderHook(() => useResourceContent(null, RID, resource));
+    const { result } = renderHook(() =>
+      useResourceContent(null, RID, resource),
+    );
 
     expect(mockResourceRepresentation).not.toHaveBeenCalled();
     expect(result.current.loading).toBe(false);
@@ -80,7 +97,9 @@ describe('useResourceContent — bring-your-own-client, no providers', () => {
   });
 
   it('enabled=false fetches nothing (the binary/media-token path)', () => {
-    const { result } = renderHook(() => useResourceContent(client, RID, resource, false));
+    const { result } = renderHook(() =>
+      useResourceContent(client, RID, resource, false),
+    );
 
     expect(mockResourceRepresentation).not.toHaveBeenCalled();
     expect(result.current.loading).toBe(false);
@@ -89,7 +108,9 @@ describe('useResourceContent — bring-your-own-client, no providers', () => {
   it('a failing fetch RETURNS the error — nothing is toasted (no provider to toast with)', async () => {
     mockResourceRepresentation.mockRejectedValue(new Error('Network error'));
 
-    const { result } = renderHook(() => useResourceContent(client, RID, resource));
+    const { result } = renderHook(() =>
+      useResourceContent(client, RID, resource),
+    );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toBeInstanceOf(Error);
@@ -111,7 +132,9 @@ describe('useResourceContent — undefined means not loaded, never an empty docu
     const fetch = deferred<{ data: ArrayBuffer; contentType: string }>();
     mockResourceRepresentation.mockReturnValue(fetch.promise);
 
-    const { result } = renderHook(() => useResourceContent(client, RID, resource));
+    const { result } = renderHook(() =>
+      useResourceContent(client, RID, resource),
+    );
     expect(result.current.content).toBeUndefined();
 
     fetch.resolve({ data: utf8(''), contentType: 'text/plain' });
@@ -163,7 +186,10 @@ describe('useResourceContent — every render answers for its own inputs', () =>
       },
       { initialProps: { rid: RID } },
     );
-    return { ...hook, rendersFor: (rid: ResourceId) => renders.filter((r) => r.rid === rid) };
+    return {
+      ...hook,
+      rendersFor: (rid: ResourceId) => renders.filter((r) => r.rid === rid),
+    };
   }
 
   it('is loading from the first render — no frame says idle while its fetch is about to start', () => {
@@ -174,8 +200,11 @@ describe('useResourceContent — every render answers for its own inputs', () =>
     expect(rendersFor(RID).map((r) => r.loading)).not.toContain(false);
   });
 
-  it('never returns the previous resource\'s content on a render for the next', async () => {
-    mockResourceRepresentation.mockResolvedValueOnce({ data: utf8('first'), contentType: 'text/plain' });
+  it("never returns the previous resource's content on a render for the next", async () => {
+    mockResourceRepresentation.mockResolvedValueOnce({
+      data: utf8('first'),
+      contentType: 'text/plain',
+    });
     const { result, rerender, rendersFor } = renderRecording();
     await waitFor(() => expect(result.current.content).toBe('first'));
 
@@ -192,16 +221,20 @@ describe('useResourceContent — every render answers for its own inputs', () =>
     expect(result.current.loading).toBe(false);
   });
 
-  it('never returns the previous resource\'s error on a render for the next', async () => {
+  it("never returns the previous resource's error on a render for the next", async () => {
     mockResourceRepresentation.mockRejectedValueOnce(new Error('first failed'));
     const { result, rerender, rendersFor } = renderRecording();
-    await waitFor(() => expect(result.current.error?.message).toBe('first failed'));
+    await waitFor(() =>
+      expect(result.current.error?.message).toBe('first failed'),
+    );
 
     mockResourceRepresentation.mockReturnValueOnce(deferred().promise);
     rerender({ rid: NEXT });
 
     expect(rendersFor(NEXT)).not.toHaveLength(0);
-    expect(rendersFor(NEXT).map((r) => r.error?.message)).not.toContain('first failed');
+    expect(rendersFor(NEXT).map((r) => r.error?.message)).not.toContain(
+      'first failed',
+    );
   });
 
   // The other side of "an outcome answers for the inputs it was fetched for":
@@ -209,7 +242,10 @@ describe('useResourceContent — every render answers for its own inputs', () =>
   // the answer. It is served at once and refreshed behind, rather than blanked
   // for a round trip — text does not expire the way a media token does.
   it('re-enabling for the same inputs serves the fetched content at once, and refetches', async () => {
-    mockResourceRepresentation.mockResolvedValueOnce({ data: utf8('first'), contentType: 'text/plain' });
+    mockResourceRepresentation.mockResolvedValueOnce({
+      data: utf8('first'),
+      contentType: 'text/plain',
+    });
     const renders: Array<{ enabled: boolean } & UseResourceContentResult> = [];
     const { result, rerender } = renderHook(
       ({ enabled }) => {
@@ -222,7 +258,11 @@ describe('useResourceContent — every render answers for its own inputs', () =>
     await waitFor(() => expect(result.current.content).toBe('first'));
 
     rerender({ enabled: false });
-    expect(result.current).toEqual({ content: undefined, loading: false, error: null });
+    expect(result.current).toEqual({
+      content: undefined,
+      loading: false,
+      error: null,
+    });
 
     const refetch = deferred<{ data: ArrayBuffer; contentType: string }>();
     mockResourceRepresentation.mockReturnValueOnce(refetch.promise);
@@ -231,7 +271,9 @@ describe('useResourceContent — every render answers for its own inputs', () =>
 
     const sinceReenabled = renders.slice(rendersBefore);
     expect(sinceReenabled).not.toHaveLength(0);
-    expect(sinceReenabled.map((r) => r.content)).toEqual(sinceReenabled.map(() => 'first'));
+    expect(sinceReenabled.map((r) => r.content)).toEqual(
+      sinceReenabled.map(() => 'first'),
+    );
     expect(sinceReenabled.map((r) => r.loading)).not.toContain(true);
     expect(mockResourceRepresentation).toHaveBeenCalledTimes(2);
 

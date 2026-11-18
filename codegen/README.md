@@ -234,6 +234,8 @@ make generate
 make check-generated
 ```
 
-run every group, the OCaml ones with `xynolog-codegen generate` and
-`xynolog-codegen check`: generate writes each group's files into the
-checkout, and check compares them with the committed ones and writes nothing.
+run every group. `xynolog-codegen generate` writes each OCaml group's files
+into the checkout, a TypeScript file as it prints it, and Prettier then lays
+those out, at the version `typescript/package.json` pins. check-generated
+does the same in a copy of the checkout and fails when a file the generator
+names differs from the committed one.

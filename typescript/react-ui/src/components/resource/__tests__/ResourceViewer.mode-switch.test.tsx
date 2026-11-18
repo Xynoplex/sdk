@@ -16,7 +16,10 @@ import { ResourceViewer } from '../ResourceViewer';
 import { createTestXynologWrapper } from '../../../test-utils';
 import { ResourceAnnotationsProvider } from '../../../contexts/ResourceAnnotationsContext';
 import { EventBus } from '@xynolog/core';
-import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 
 // ResourceViewer takes its session as a prop; ResourceAnnotationsContext
 // resolves the client via useXynolog(). Mock useXynolog to emit a minimal
@@ -39,9 +42,9 @@ const stubBrowser = {
 };
 
 vi.mock('../../../session/XynologProvider', async () => {
-  const actual = await vi.importActual<typeof import('../../../session/XynologProvider')>(
-    '../../../session/XynologProvider'
-  );
+  const actual = await vi.importActual<
+    typeof import('../../../session/XynologProvider')
+  >('../../../session/XynologProvider');
   return {
     ...actual,
     useXynolog: () => stubBrowser,
@@ -82,9 +85,7 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
   const { XynologWrapper } = createTestXynologWrapper();
   return (
     <XynologWrapper>
-      <ResourceAnnotationsProvider>
-        {children}
-      </ResourceAnnotationsProvider>
+      <ResourceAnnotationsProvider>{children}</ResourceAnnotationsProvider>
     </XynologWrapper>
   );
 }
@@ -107,10 +108,12 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
-    expect(screen.getByText('This is test content for mode switching.')).toBeInTheDocument();
+    expect(
+      screen.getByText('This is test content for mode switching.'),
+    ).toBeInTheDocument();
   });
 
   it('should switch to annotate mode without hook ordering errors', async () => {
@@ -122,11 +125,13 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     // Initial render in browse mode
-    expect(screen.getByText('This is test content for mode switching.')).toBeInTheDocument();
+    expect(
+      screen.getByText('This is test content for mode switching.'),
+    ).toBeInTheDocument();
 
     // Simulate mode toggle by setting localStorage and triggering re-render
     localStorage.setItem('annotateMode', 'true');
@@ -140,11 +145,13 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     // Should still render without errors
-    expect(screen.getByText('This is test content for mode switching.')).toBeInTheDocument();
+    expect(
+      screen.getByText('This is test content for mode switching.'),
+    ).toBeInTheDocument();
   });
 
   it('should toggle between browse and annotate modes multiple times without errors', async () => {
@@ -156,7 +163,7 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     // Toggle to annotate
@@ -169,9 +176,11 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
-    expect(screen.getByText('This is test content for mode switching.')).toBeInTheDocument();
+    expect(
+      screen.getByText('This is test content for mode switching.'),
+    ).toBeInTheDocument();
 
     // Toggle back to browse
     localStorage.setItem('annotateMode', 'false');
@@ -183,9 +192,11 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
-    expect(screen.getByText('This is test content for mode switching.')).toBeInTheDocument();
+    expect(
+      screen.getByText('This is test content for mode switching.'),
+    ).toBeInTheDocument();
 
     // Toggle to annotate again
     localStorage.setItem('annotateMode', 'true');
@@ -197,15 +208,19 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
-    expect(screen.getByText('This is test content for mode switching.')).toBeInTheDocument();
+    expect(
+      screen.getByText('This is test content for mode switching.'),
+    ).toBeInTheDocument();
 
     // No React Hook ordering errors should occur
   });
 
   it('should maintain consistent hook calls across mode switches', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     const { rerender } = render(
       <TestWrapper>
@@ -215,7 +230,7 @@ describe('ResourceViewer - Mode Switching', () => {
           annotations={mockAnnotations}
           session={null}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     // Multiple rapid mode switches
@@ -229,14 +244,15 @@ describe('ResourceViewer - Mode Switching', () => {
             annotations={mockAnnotations}
             session={null}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
     }
 
     // Should not have any React Hook warnings
-    const hookErrors = consoleError.mock.calls.filter(call =>
-      call[0]?.toString().includes('Rendered more hooks') ||
-      call[0]?.toString().includes('Rendered fewer hooks')
+    const hookErrors = consoleError.mock.calls.filter(
+      (call) =>
+        call[0]?.toString().includes('Rendered more hooks') ||
+        call[0]?.toString().includes('Rendered fewer hooks'),
     );
 
     expect(hookErrors).toHaveLength(0);

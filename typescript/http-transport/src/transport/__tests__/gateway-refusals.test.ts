@@ -25,7 +25,10 @@ function refusal(status: number, retryAfterSeconds: number, code: string) {
     ok: false,
     status,
     statusText: status === 429 ? 'Too Many Requests' : 'Service Unavailable',
-    headers: new Headers({ 'retry-after': String(retryAfterSeconds), 'content-type': 'application/json' }),
+    headers: new Headers({
+      'retry-after': String(retryAfterSeconds),
+      'content-type': 'application/json',
+    }),
     body: null,
     text: async () => body,
   };
@@ -33,24 +36,42 @@ function refusal(status: number, retryAfterSeconds: number, code: string) {
 
 /** A refusal of the credential by the limit on refused requests, as a real response carries it: its body is read. */
 function refusedCredential(retryAfterSeconds: number): Response {
-  return new Response(JSON.stringify({ error: 'refused', code: 'refusal-rate' }), {
-    status: 429,
-    statusText: 'Too Many Requests',
-    headers: { 'retry-after': String(retryAfterSeconds), 'content-type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({ error: 'refused', code: 'refusal-rate' }),
+    {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: {
+        'retry-after': String(retryAfterSeconds),
+        'content-type': 'application/json',
+      },
+    },
+  );
 }
 
 /** The bearer the `n`th request carried. */
-const bearerOf = (n: number): string => (mockFetch.mock.calls[n]![1] as { headers: Record<string, string> }).headers['Authorization']!;
+const bearerOf = (n: number): string =>
+  (mockFetch.mock.calls[n]![1] as { headers: Record<string, string> }).headers[
+    'Authorization'
+  ]!;
 
 /** The idempotency key the `n`th request carried. */
-const keyOf = (n: number): string | undefined => (mockFetch.mock.calls[n]![1] as { headers: Record<string, string> }).headers['Idempotency-Key'];
+const keyOf = (n: number): string | undefined =>
+  (mockFetch.mock.calls[n]![1] as { headers: Record<string, string> }).headers[
+    'Idempotency-Key'
+  ];
 
 function accepted() {
-  return { ok: true, status: 202, statusText: 'Accepted', headers: new Headers(), json: async () => ({ subscribers: 1 }) };
+  return {
+    ok: true,
+    status: 202,
+    statusText: 'Accepted',
+    headers: new Headers(),
+    json: async () => ({ subscribers: 1 }),
+  };
 }
 
-describe('refusals by the gateway\'s limits', () => {
+describe("refusals by the gateway's limits", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetch.mockReset();
@@ -61,9 +82,13 @@ describe('refusals by the gateway\'s limits', () => {
   });
 
   it('an emit refused 429 waits at least Retry-After before its retry', async () => {
-    mockFetch.mockResolvedValueOnce(refusal(429, 3, 'emit-rate')).mockResolvedValueOnce(accepted());
+    mockFetch
+      .mockResolvedValueOnce(refusal(429, 3, 'emit-rate'))
+      .mockResolvedValueOnce(accepted());
     const actor = createActorStateUnit({ baseUrl, token: 'tok', channels: [] });
-    const sent = actor.emit('beckon:hover', { annotationId: annotationId('a-1') });
+    const sent = actor.emit('beckon:hover', {
+      annotationId: annotationId('a-1'),
+    });
     await vi.advanceTimersByTimeAsync(2_900);
     expect(mockFetch, 'no retry before Retry-After').toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(200);
@@ -75,7 +100,9 @@ describe('refusals by the gateway\'s limits', () => {
   it('an emit refused 429 past its retries rejects rate-limited, carrying the wait', async () => {
     mockFetch.mockResolvedValue(refusal(429, 3, 'emit-rate'));
     const actor = createActorStateUnit({ baseUrl, token: 'tok', channels: [] });
-    const refused = expect(actor.emit('beckon:hover', { annotationId: annotationId('a-1') })).rejects.toMatchObject({
+    const refused = expect(
+      actor.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toMatchObject({
       code: 'rate-limited',
       status: 429,
       retryAfterMs: 3_000,
@@ -88,10 +115,16 @@ describe('refusals by the gateway\'s limits', () => {
   it('a refused stream connect waits at least Retry-After before trying again', async () => {
     mockFetch.mockResolvedValueOnce(refusal(429, 20, 'streams'));
     mockConn();
-    const actor = createActorStateUnit({ baseUrl, token: 'tok', channels: ['beckon:hover'] });
+    const actor = createActorStateUnit({
+      baseUrl,
+      token: 'tok',
+      channels: ['beckon:hover'],
+    });
     actor.start();
     await vi.advanceTimersByTimeAsync(15_000);
-    expect(mockFetch, 'no reconnect before Retry-After').toHaveBeenCalledTimes(1);
+    expect(mockFetch, 'no reconnect before Retry-After').toHaveBeenCalledTimes(
+      1,
+    );
     await vi.advanceTimersByTimeAsync(6_000);
     expect(mockFetch).toHaveBeenCalledTimes(2);
     actor.dispose();
@@ -99,7 +132,11 @@ describe('refusals by the gateway\'s limits', () => {
 
   it('reconnects asked for while a connect is in flight open one more stream, not one each', async () => {
     mockConn();
-    const actor = createActorStateUnit({ baseUrl, token: 'tok', channels: ['beckon:hover'] });
+    const actor = createActorStateUnit({
+      baseUrl,
+      token: 'tok',
+      channels: ['beckon:hover'],
+    });
     actor.start();
     await vi.advanceTimersByTimeAsync(10);
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -113,14 +150,19 @@ describe('refusals by the gateway\'s limits', () => {
     await vi.advanceTimersByTimeAsync(150);
     actor.addChannels(['mark:added']);
     await vi.advanceTimersByTimeAsync(150);
-    expect(mockFetch, 'the next changes wait for the connect in flight').toHaveBeenCalledTimes(2);
+    expect(
+      mockFetch,
+      'the next changes wait for the connect in flight',
+    ).toHaveBeenCalledTimes(2);
 
     inFlight.open();
     await vi.advanceTimersByTimeAsync(10);
     expect(mockFetch, 'one follow-up connect').toHaveBeenCalledTimes(3);
     const [, opts] = mockFetch.mock.calls[2] as [string, { body: string }];
     const global = (JSON.parse(opts.body) as { global: string[] }).global;
-    expect(global, 'carrying every change').toEqual(expect.arrayContaining(['beckon:focus', 'beckon:sparkle', 'mark:added']));
+    expect(global, 'carrying every change').toEqual(
+      expect.arrayContaining(['beckon:focus', 'beckon:sparkle', 'mark:added']),
+    );
     actor.dispose();
   });
 });
@@ -136,12 +178,24 @@ describe('a refused credential is renewed, never waited out', () => {
   });
 
   it('an emit refused 429 refusal-rate is sent again at once with the renewed token, outside its budget', async () => {
-    mockFetch.mockResolvedValueOnce(refusedCredential(3)).mockResolvedValueOnce(accepted());
+    mockFetch
+      .mockResolvedValueOnce(refusedCredential(3))
+      .mockResolvedValueOnce(accepted());
     let token = 'tok';
-    const refresher = vi.fn(async () => { token = 'fresh-tok'; return 'fresh-tok'; });
-    const actor = createActorStateUnit({ baseUrl, token: () => token, channels: [], tokenRefresher: refresher });
+    const refresher = vi.fn(async () => {
+      token = 'fresh-tok';
+      return 'fresh-tok';
+    });
+    const actor = createActorStateUnit({
+      baseUrl,
+      token: () => token,
+      channels: [],
+      tokenRefresher: refresher,
+    });
 
-    const sent = actor.emit('beckon:hover', { annotationId: annotationId('a-1') });
+    const sent = actor.emit('beckon:hover', {
+      annotationId: annotationId('a-1'),
+    });
     await vi.advanceTimersByTimeAsync(10);
     await expect(sent, 'settled well inside the Retry-After').resolves.toBe(1);
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -150,16 +204,29 @@ describe('a refused credential is renewed, never waited out', () => {
     expect(keyOf(0)).toEqual(expect.any(String));
     expect(keyOf(1), 'the renewed resend is the same emit').toBe(keyOf(0));
     expect(refresher).toHaveBeenCalledTimes(1);
-    expect(refresher, 'told the token the refused emit carried').toHaveBeenCalledWith(bearerOf(0).replace(/^Bearer /, ''));
+    expect(
+      refresher,
+      'told the token the refused emit carried',
+    ).toHaveBeenCalledWith(bearerOf(0).replace(/^Bearer /, ''));
     actor.dispose();
   });
 
   it('an emit whose renewed token is refused too fails unauthorized with its 429, and is not sent a third time', async () => {
     mockFetch.mockImplementation(async () => refusedCredential(3));
-    const refresher = vi.fn().mockResolvedValueOnce('fresh-tok').mockResolvedValueOnce('never-asked');
-    const actor = createActorStateUnit({ baseUrl, token: 'tok', channels: [], tokenRefresher: refresher });
+    const refresher = vi
+      .fn()
+      .mockResolvedValueOnce('fresh-tok')
+      .mockResolvedValueOnce('never-asked');
+    const actor = createActorStateUnit({
+      baseUrl,
+      token: 'tok',
+      channels: [],
+      tokenRefresher: refresher,
+    });
 
-    const refused = expect(actor.emit('beckon:hover', { annotationId: annotationId('a-1') })).rejects.toMatchObject({
+    const refused = expect(
+      actor.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toMatchObject({
       code: 'unauthorized',
       status: 429,
     });
@@ -173,22 +240,34 @@ describe('a refused credential is renewed, never waited out', () => {
   it.each([
     ['gives no token', async () => null],
     ['gives the token refused', async () => 'tok'],
-  ])('an emit whose refresher %s fails unauthorized, sent once', async (_what, refresher) => {
-    mockFetch.mockImplementation(async () => refusedCredential(3));
-    const actor = createActorStateUnit({ baseUrl, token: 'tok', channels: [], tokenRefresher: refresher });
+  ])(
+    'an emit whose refresher %s fails unauthorized, sent once',
+    async (_what, refresher) => {
+      mockFetch.mockImplementation(async () => refusedCredential(3));
+      const actor = createActorStateUnit({
+        baseUrl,
+        token: 'tok',
+        channels: [],
+        tokenRefresher: refresher,
+      });
 
-    const refused = expect(actor.emit('beckon:hover', { annotationId: annotationId('a-1') })).rejects.toMatchObject({ code: 'unauthorized', status: 429 });
-    await vi.advanceTimersByTimeAsync(60_000);
-    await refused;
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    actor.dispose();
-  });
+      const refused = expect(
+        actor.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+      ).rejects.toMatchObject({ code: 'unauthorized', status: 429 });
+      await vi.advanceTimersByTimeAsync(60_000);
+      await refused;
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      actor.dispose();
+    },
+  );
 
   it('without a refresher, an emit refused 429 refusal-rate is final at once: no retry after its Retry-After', async () => {
     mockFetch.mockImplementation(async () => refusedCredential(3));
     const actor = createActorStateUnit({ baseUrl, token: 'tok', channels: [] });
 
-    const refused = expect(actor.emit('beckon:hover', { annotationId: annotationId('a-1') })).rejects.toMatchObject({ code: 'unauthorized', status: 429 });
+    const refused = expect(
+      actor.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toMatchObject({ code: 'unauthorized', status: 429 });
     await vi.advanceTimersByTimeAsync(60_000);
     await refused;
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -199,8 +278,16 @@ describe('a refused credential is renewed, never waited out', () => {
     mockFetch.mockResolvedValueOnce(refusedCredential(20));
     mockConn();
     let token = 'tok';
-    const refresher = vi.fn(async () => { token = 'fresh-tok'; return 'fresh-tok'; });
-    const actor = createActorStateUnit({ baseUrl, token: () => token, channels: ['beckon:hover'], tokenRefresher: refresher });
+    const refresher = vi.fn(async () => {
+      token = 'fresh-tok';
+      return 'fresh-tok';
+    });
+    const actor = createActorStateUnit({
+      baseUrl,
+      token: () => token,
+      channels: ['beckon:hover'],
+      tokenRefresher: refresher,
+    });
     const reported: XynologError[] = [];
     actor.errors$.subscribe((error) => reported.push(error));
     const states: string[] = [];
@@ -212,11 +299,17 @@ describe('a refused credential is renewed, never waited out', () => {
     expect(reported).toHaveLength(1);
     expect(reported[0]).toMatchObject({ code: 'unauthorized', status: 429 });
     expect(states).toContain('unauthenticated');
-    expect(mockFetch, 'opened again well inside the Retry-After').toHaveBeenCalledTimes(2);
+    expect(
+      mockFetch,
+      'opened again well inside the Retry-After',
+    ).toHaveBeenCalledTimes(2);
     expect(bearerOf(1)).toBe('Bearer fresh-tok');
     expect(states.at(-1)).toBe('open');
     expect(refresher).toHaveBeenCalledTimes(1);
-    expect(refresher, 'told the token the refused connect carried').toHaveBeenCalledWith(bearerOf(0).replace(/^Bearer /, ''));
+    expect(
+      refresher,
+      'told the token the refused connect carried',
+    ).toHaveBeenCalledWith(bearerOf(0).replace(/^Bearer /, ''));
     actor.dispose();
   });
 });

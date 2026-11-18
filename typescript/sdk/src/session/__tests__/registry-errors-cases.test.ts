@@ -25,9 +25,21 @@ import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { BehaviorSubject, filter, firstValueFrom, lastValueFrom, map, toArray } from 'rxjs';
+import {
+  BehaviorSubject,
+  filter,
+  firstValueFrom,
+  lastValueFrom,
+  map,
+  toArray,
+} from 'rxjs';
 import { BRIDGED_CHANNELS, XynologError, resourceId } from '@xynolog/core';
-import type { AccessToken, NewKnowledgeBase, XynologSessionErrorCode, TransportErrorCode } from '@xynolog/core';
+import type {
+  AccessToken,
+  NewKnowledgeBase,
+  XynologSessionErrorCode,
+  TransportErrorCode,
+} from '@xynolog/core';
 import { isReady } from '../../cache';
 import { XynologClient } from '../../client';
 import { FaultyTransport, inMemoryContent } from '../../testing';
@@ -38,10 +50,17 @@ import { XynologSession, sayOn } from '../xynolog-session';
 import type { SessionFactory } from '../session-factory';
 import { keptIn, personKey } from '../storage';
 import { fakeGateway, GATEWAY_ENDPOINT, renews } from './fake-gateway';
-import { RefusingStorage, TestStorage, freshJwt, testSession } from './test-storage-helpers';
+import {
+  RefusingStorage,
+  TestStorage,
+  freshJwt,
+  testSession,
+} from './test-storage-helpers';
 
 /** What a case's session says: one of its own errors, by its code, or a failure of its transport, by its code, with its message. */
-type Said = { own: XynologSessionErrorCode } | { transport: TransportErrorCode; message: string };
+type Said =
+  | { own: XynologSessionErrorCode }
+  | { transport: TransportErrorCode; message: string };
 
 interface Case {
   why: string;
@@ -57,19 +76,43 @@ interface ClosingCase {
   registryErrors: XynologSessionErrorCode[];
 }
 
-const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src/session/registry-errors-cases.json');
-const { cases, closing } = JSON.parse(readFileSync(TABLE, 'utf-8')) as { cases: Case[]; closing: ClosingCase[] };
+const TABLE = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../../protocol/specs/src/session/registry-errors-cases.json',
+);
+const { cases, closing } = JSON.parse(readFileSync(TABLE, 'utf-8')) as {
+  cases: Case[];
+  closing: ClosingCase[];
+};
 
 /** The knowledge base each registry signs in to, where the fake gateway is. */
-const KB: NewKnowledgeBase = { did: 'did:web:kb.example.org:kb-a', label: 'KB A', endpoint: GATEWAY_ENDPOINT };
+const KB: NewKnowledgeBase = {
+  did: 'did:web:kb.example.org:kb-a',
+  label: 'KB A',
+  endpoint: GATEWAY_ENDPOINT,
+};
 
-const JO = { did: 'did:web:example.org:users:jo', email: 'jo@example.org', name: 'Jo', image: null, domain: 'example.org' };
+const JO = {
+  did: 'did:web:example.org:users:jo',
+  email: 'jo@example.org',
+  name: 'Jo',
+  image: null,
+  domain: 'example.org',
+};
 
 /** Say each of `entries` on `session`'s errors, in order: its own through `sayOn`, its transport's failures through `transport`. Gives each error as it was said. */
-function sayAll(session: XynologSession, transport: FaultyTransport, entries: readonly Said[]): XynologError[] {
+function sayAll(
+  session: XynologSession,
+  transport: FaultyTransport,
+  entries: readonly Said[],
+): XynologError[] {
   return entries.map((entry): XynologError => {
     if ('own' in entry) {
-      const own = new XynologSessionError(entry.own, `the session says ${entry.own}`, session.kb.id);
+      const own = new XynologSessionError(
+        entry.own,
+        `the session says ${entry.own}`,
+        session.kb.id,
+      );
       sayOn(session, own);
       return own;
     }
@@ -107,7 +150,8 @@ function scripted(row: Case): {
       },
     });
     transports.set(session, transport);
-    if (row.while === 'opening') sayings.set(session, sayAll(session, transport, row.said));
+    if (row.while === 'opening')
+      sayings.set(session, sayAll(session, transport, row.said));
     return session;
   };
   return { factory, transports, sayings, handed };
@@ -117,32 +161,59 @@ describe('protocol/specs/src/session/registry-errors-cases.json', () => {
   describe('cases', () => {
     it.each(cases)('$while: $why', async (row) => {
       const { factory, transports, sayings, handed } = scripted(row);
-      const browser = new XynologBrowser({ storage: new TestStorage(), sessionFactory: factory });
+      const browser = new XynologBrowser({
+        storage: new TestStorage(),
+        sessionFactory: factory,
+      });
       // Read before the knowledge base is added: a session it activates says what it says opening as it is made.
       const read: XynologSessionError[] = [];
       browser.error$.subscribe((error) => read.push(error));
       try {
         browser.addKb(KB, testSession(freshJwt(), 'refresh'));
-        const active = await firstValueFrom(browser.activeSession$.pipe(filter((live): live is XynologSession => live !== null)));
+        const active = await firstValueFrom(
+          browser.activeSession$.pipe(
+            filter((live): live is XynologSession => live !== null),
+          ),
+        );
         const transport = transports.get(active);
-        if (transport === undefined) throw new Error('the registry activated a session its factory did not make');
+        if (transport === undefined)
+          throw new Error(
+            'the registry activated a session its factory did not make',
+          );
         const signals = browser.activeSignals$.getValue();
-        if (signals === null) throw new Error('the registry activated a session without its signals');
-        if (row.while === 'active') sayings.set(active, sayAll(active, transport, row.said));
+        if (signals === null)
+          throw new Error(
+            'the registry activated a session without its signals',
+          );
+        if (row.while === 'active')
+          sayings.set(active, sayAll(active, transport, row.said));
         const said = sayings.get(active);
         if (said === undefined) throw new Error('the session said nothing');
         const last = said[said.length - 1];
         if (last === undefined) throw new Error('the case says nothing');
 
         // The effect of what the session said last.
-        if (last instanceof XynologSessionError) await vi.waitFor(() => expect(read).toContain(last));
-        else if (last.code === 'forbidden') await vi.waitFor(() => expect(signals.permissionDenied$.getValue()).toEqual({ detail: last.message }));
-        else throw new Error(`the case's last said, ${last.code}, has no effect to wait for`);
+        if (last instanceof XynologSessionError)
+          await vi.waitFor(() => expect(read).toContain(last));
+        else if (last.code === 'forbidden')
+          await vi.waitFor(() =>
+            expect(signals.permissionDenied$.getValue()).toEqual({
+              detail: last.message,
+            }),
+          );
+        else
+          throw new Error(
+            `the case's last said, ${last.code}, has no effect to wait for`,
+          );
 
         expect(read.map((error) => error.code)).toEqual(row.registryErrors);
         expect(handed, 'the tokens a renewal was handed').toEqual([]);
-        if (row.permissionDenied === undefined) expect(signals.permissionDenied$.getValue()).toBeNull();
-        else expect(signals.permissionDenied$.getValue()).toEqual({ detail: row.permissionDenied });
+        if (row.permissionDenied === undefined)
+          expect(signals.permissionDenied$.getValue()).toBeNull();
+        else
+          expect(signals.permissionDenied$.getValue()).toEqual({
+            detail: row.permissionDenied,
+          });
       } finally {
         await browser.dispose();
       }
@@ -152,20 +223,43 @@ describe('protocol/specs/src/session/registry-errors-cases.json', () => {
   describe('closing', () => {
     it.each(closing)('owed $owed: $why', async (row) => {
       const storage = new RefusingStorage();
-      const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'kept' });
-      const browser = new XynologBrowser({ storage, sessionFactory: createHttpSessionFactory(gateway.fetch) });
+      const gateway = fakeGateway({
+        whoIs: async () => Response.json(JO),
+        issuer: renews,
+        resourceName: 'kept',
+      });
+      const browser = new XynologBrowser({
+        storage,
+        sessionFactory: createHttpSessionFactory(gateway.fetch),
+      });
       try {
-        browser.addKb(KB, { ...testSession(freshJwt(), 'refresh'), personKey: personKey(JO.did) });
-        const active = await firstValueFrom(browser.activeSession$.pipe(filter((live): live is XynologSession => live !== null)));
+        browser.addKb(KB, {
+          ...testSession(freshJwt(), 'refresh'),
+          personKey: personKey(JO.did),
+        });
+        const active = await firstValueFrom(
+          browser.activeSession$.pipe(
+            filter((live): live is XynologSession => live !== null),
+          ),
+        );
         storage.refusing = true;
         if (row.owed) {
           // The clock is held until the close begins: the save the read leaves the client owing waits out its debounce
           // on a timer that never falls due, so the close is the first to make it.
           vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-          await firstValueFrom(active.client.browse.resource(resourceId('res-1')).pipe(filter(isReady)));
+          await firstValueFrom(
+            active.client.browse
+              .resource(resourceId('res-1'))
+              .pipe(filter(isReady)),
+          );
           vi.useRealTimers();
         }
-        const said = lastValueFrom(browser.error$.pipe(map((error) => error.code), toArray()));
+        const said = lastValueFrom(
+          browser.error$.pipe(
+            map((error) => error.code),
+            toArray(),
+          ),
+        );
         await browser.dispose();
         expect(await said).toEqual(row.registryErrors);
       } finally {

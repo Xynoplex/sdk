@@ -4,7 +4,16 @@ import type { ResourceId } from '@xynolog/core';
 import type { Ref } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import type { Annotation } from '@xynolog/core';
-import { getAnnotationExactText, isBodyResolved, getBodySource, getTargetSource, getFragmentSelector, getSvgSelector, getTargetSelector, getPrimaryMediaType } from '@xynolog/core';
+import {
+  getAnnotationExactText,
+  isBodyResolved,
+  getBodySource,
+  getTargetSource,
+  getFragmentSelector,
+  getSvgSelector,
+  getTargetSelector,
+  getPrimaryMediaType,
+} from '@xynolog/core';
 import { getEntityTypes } from '@xynolog/core';
 import { getResourceIcon } from '../../../lib/resource-utils';
 import { readyValue, type XynologSession } from '@xynolog/sdk';
@@ -57,7 +66,11 @@ export function ReferenceEntry({
   const selector = getTargetSelector(reference.target);
   const hasFragmentSelector = getFragmentSelector(selector);
   const hasSvgSelector = getSvgSelector(selector);
-  const annotationType = hasFragmentSelector ? 'Fragment annotation' : hasSvgSelector ? 'Image annotation' : 'Annotation';
+  const annotationType = hasFragmentSelector
+    ? 'Fragment annotation'
+    : hasSvgSelector
+      ? 'Image annotation'
+      : 'Annotation';
 
   // The link target's name and media type are the TARGET resource's facts,
   // read from that resource through the SDK's cache where they are displayed —
@@ -68,7 +81,9 @@ export function ReferenceEntry({
   // stub has no resolved body and requests nothing; and unlike a value stapled
   // onto the annotation, the name follows a rename of the target.
   const targetState = useObservable(
-    xynolog && resolvedResourceUri ? xynolog.browse.resource(resolvedResourceUri) : null,
+    xynolog && resolvedResourceUri
+      ? xynolog.browse.resource(resolvedResourceUri)
+      : null,
   );
   const target = targetState ? readyValue(targetState) : undefined;
   const resolvedDocumentName = target?.name;
@@ -85,18 +100,25 @@ export function ReferenceEntry({
 
   const handleUnlink = () => {
     if (resolvedResourceUri && xynolog) {
-      xynolog.bind.body(
-        source,
-        reference.id,
-        [{ op: 'remove', item: { type: 'SpecificResource', source: resolvedResourceUri, purpose: 'linking' } }],
-      ).catch((error: unknown) => {
-        // This component has no toast surface — report the client-local,
-        // resource-stamped bind error; useOutcomeToasts surfaces it.
-        xynolog.bind.reportBodyError({
-          resourceId: source,
-          message: error instanceof Error ? error.message : String(error),
+      xynolog.bind
+        .body(source, reference.id, [
+          {
+            op: 'remove',
+            item: {
+              type: 'SpecificResource',
+              source: resolvedResourceUri,
+              purpose: 'linking',
+            },
+          },
+        ])
+        .catch((error: unknown) => {
+          // This component has no toast surface — report the client-local,
+          // resource-stamped bind error; useOutcomeToasts surfaces it.
+          xynolog.bind.reportBodyError({
+            resourceId: source,
+            message: error instanceof Error ? error.message : String(error),
+          });
         });
-      });
     }
   };
 
@@ -137,7 +159,9 @@ export function ReferenceEntry({
         <div className="xynolog-reference-icon-group">
           <button
             className={`xynolog-reference-icon${iconIsClickable ? ' xynolog-reference-icon--clickable' : ''}${sparkle ? ' annotation-sparkle' : ''}`}
-            title={isResolved ? t('open') : annotateMode ? t('resolve') : t('stub')}
+            title={
+              isResolved ? t('open') : annotateMode ? t('resolve') : t('stub')
+            }
             onClick={iconIsClickable ? handleIconClick : undefined}
             data-generating={!isResolved && isGenerating ? 'true' : 'false'}
             tabIndex={iconIsClickable ? 0 : -1}
@@ -148,7 +172,10 @@ export function ReferenceEntry({
             <button
               className="xynolog-reference-unlink"
               title={t('unlink')}
-              onClick={(e) => { e.stopPropagation(); handleUnlink(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleUnlink();
+              }}
             >
               ⛓️‍💥
             </button>
@@ -156,8 +183,12 @@ export function ReferenceEntry({
         </div>
         <div className="xynolog-annotation-entry__content">
           {selectedText && (
-            <div className="xynolog-annotation-entry__quote" data-type="reference">
-              "{selectedText.substring(0, 100)}{selectedText.length > 100 ? '...' : ''}"
+            <div
+              className="xynolog-annotation-entry__quote"
+              data-type="reference"
+            >
+              "{selectedText.substring(0, 100)}
+              {selectedText.length > 100 ? '...' : ''}"
             </div>
           )}
           {!selectedText && (
@@ -173,7 +204,9 @@ export function ReferenceEntry({
           )}
           {resolvedDocumentName && (
             <div className="xynolog-reference-link">
-              <span>→ {resourceIcon} {resolvedDocumentName}</span>
+              <span>
+                → {resourceIcon} {resolvedDocumentName}
+              </span>
             </div>
           )}
         </div>
@@ -183,11 +216,7 @@ export function ReferenceEntry({
       {entityTypes.length > 0 && (
         <div className="xynolog-annotation-entry__tags">
           {entityTypes.map((type, index) => (
-            <span
-              key={index}
-              className="xynolog-tag"
-              data-variant="blue"
-            >
+            <span key={index} className="xynolog-tag" data-variant="blue">
               {type}
             </span>
           ))}

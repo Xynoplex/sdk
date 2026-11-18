@@ -40,7 +40,7 @@ let derive (t : T.t) =
 
 let typescript (t : T.t) =
   let module S = Typescript_syntax in
-  let text value = S.Str (Single, value) in
+  let text value = S.Str value in
   {
     Output.path = "typescript/core/src/locale-registry.ts";
     text =
@@ -59,8 +59,7 @@ let typescript (t : T.t) =
                       "The code of every supported language, in the registry's \
                        order.";
                   ]
-                (S.strings Inline
-                   (List.map (fun (l : T.locale) -> l.code) t.locales));
+                (S.strings (List.map (fun (l : T.locale) -> l.code) t.locales));
               S.type_alias "LocaleCode"
                 ~about:[ Doc "The code of a supported language." ]
                 (T_index (T_paren (T_typeof "LOCALE_CODES"), T_name "number"));
@@ -87,13 +86,12 @@ let typescript (t : T.t) =
                     Doc "A row per supported language, in the registry's order.";
                   ]
                 ~annotation:(T_readonly (T_array (T_name "LocaleInfo")))
-                (S.array Rows
+                (S.array
                    (List.map
                       (fun (l : T.locale) ->
                         S.Object
                           {
                             layout = Inline;
-                            column = None;
                             entries =
                               [
                                 S.entry (Ident "code") (text l.code);

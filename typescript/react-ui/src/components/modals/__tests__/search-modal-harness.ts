@@ -16,14 +16,31 @@ import { asStates } from '../../../__tests__/test-client';
 const matched = new BehaviorSubject<unknown[] | undefined>(undefined);
 
 /** The client's `match.resources`: every call follows the results the test gives. */
-export const matchResourcesMock = vi.fn((_search: string, _filters?: { limit?: number }) => asStates(matched.asObservable().pipe(
-  // Arrays get the search envelope `match.resources()` emits; `undefined`
-  // passes through as the pending state.
-  map((v) => (Array.isArray(v) ? { resources: v, total: v.length, offset: 0, limit: 20, matchKind: 'lexical' } : v)),
-)));
+export const matchResourcesMock = vi.fn(
+  (_search: string, _filters?: { limit?: number }) =>
+    asStates(
+      matched.asObservable().pipe(
+        // Arrays get the search envelope `match.resources()` emits; `undefined`
+        // passes through as the pending state.
+        map((v) =>
+          Array.isArray(v)
+            ? {
+                resources: v,
+                total: v.length,
+                offset: 0,
+                limit: 20,
+                matchKind: 'lexical',
+              }
+            : v,
+        ),
+      ),
+    ),
+);
 
 export const searchBrowser = {
-  activeSession$: new BehaviorSubject({ client: { match: { resources: matchResourcesMock } } }),
+  activeSession$: new BehaviorSubject({
+    client: { match: { resources: matchResourcesMock } },
+  }),
 };
 
 /** Answer the search under way with these resources; `undefined` is one not yet answered. */
@@ -39,7 +56,11 @@ export function resetSearch(): void {
   matchResourcesMock.mockClear();
 }
 
-export const buildResource = (id: string, name: string, description?: string) => ({
+export const buildResource = (
+  id: string,
+  name: string,
+  description?: string,
+) => ({
   '@context': 'https://www.w3.org/ns/anno.jsonld',
   '@id': id,
   name,

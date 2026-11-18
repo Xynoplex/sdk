@@ -16,13 +16,20 @@ interface GatewayUrlCase {
   origin: string | null;
 }
 
-const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src/session/gateway-url-cases.json');
-const { cases } = JSON.parse(readFileSync(TABLE, 'utf-8')) as { cases: GatewayUrlCase[] };
+const TABLE = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../../protocol/specs/src/session/gateway-url-cases.json',
+);
+const { cases } = JSON.parse(readFileSync(TABLE, 'utf-8')) as {
+  cases: GatewayUrlCase[];
+};
 
 describe("a gateway's origin, as the shared table states it", () => {
   it.each(cases)('$why', ({ endpoint, origin }) => {
     if (origin === null) {
-      expect(() => kbGatewayUrl(endpoint)).toThrow(`Invalid KB hostname: "${endpoint.host}"`);
+      expect(() => kbGatewayUrl(endpoint)).toThrow(
+        `Invalid KB hostname: "${endpoint.host}"`,
+      );
     } else {
       expect(kbGatewayUrl(endpoint)).toBe(origin);
     }

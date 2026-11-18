@@ -10,8 +10,16 @@ describe('ImageURLSchema', () => {
       });
 
       it('should accept URLs with various image extensions', () => {
-        const extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico'];
-        extensions.forEach(ext => {
+        const extensions = [
+          '.jpg',
+          '.jpeg',
+          '.png',
+          '.gif',
+          '.webp',
+          '.svg',
+          '.ico',
+        ];
+        extensions.forEach((ext) => {
           const url = `https://example.com/image${ext}`;
           expect(ImageURLSchema.parse(url)).toBe(url);
         });
@@ -46,34 +54,42 @@ describe('ImageURLSchema', () => {
     describe('Invalid URLs', () => {
       it('should reject non-string values', () => {
         expect(() => ImageURLSchema.parse(123)).toThrow('URL must be a string');
-        expect(() => ImageURLSchema.parse(null)).toThrow('URL must be a string');
-        expect(() => ImageURLSchema.parse(undefined)).toThrow('URL must be a string');
+        expect(() => ImageURLSchema.parse(null)).toThrow(
+          'URL must be a string',
+        );
+        expect(() => ImageURLSchema.parse(undefined)).toThrow(
+          'URL must be a string',
+        );
         expect(() => ImageURLSchema.parse({})).toThrow('URL must be a string');
       });
 
       it('should reject malformed URLs', () => {
-        expect(() => ImageURLSchema.parse('not a url')).toThrow('Invalid image URL');
-        expect(() => ImageURLSchema.parse('htp://example.com/image.jpg')).toThrow('External images must use HTTPS');
+        expect(() => ImageURLSchema.parse('not a url')).toThrow(
+          'Invalid image URL',
+        );
+        expect(() =>
+          ImageURLSchema.parse('htp://example.com/image.jpg'),
+        ).toThrow('External images must use HTTPS');
       });
 
       it('should reject HTTP for external images', () => {
-        expect(() => ImageURLSchema.parse('http://example.com/image.jpg')).toThrow(
-          'External images must use HTTPS'
-        );
+        expect(() =>
+          ImageURLSchema.parse('http://example.com/image.jpg'),
+        ).toThrow('External images must use HTTPS');
       });
 
       it('should reject javascript: URLs', () => {
         // javascript: protocol is not https, so it fails protocol check first
         expect(() => ImageURLSchema.parse('javascript:alert(1)')).toThrow(
-          'External images must use HTTPS'
+          'External images must use HTTPS',
         );
       });
 
       it('should reject data URLs with HTML', () => {
         // data: protocol is not https, so it fails protocol check first
-        expect(() => ImageURLSchema.parse('data:text/html,<script>alert(1)</script>')).toThrow(
-          'External images must use HTTPS'
-        );
+        expect(() =>
+          ImageURLSchema.parse('data:text/html,<script>alert(1)</script>'),
+        ).toThrow('External images must use HTTPS');
       });
 
       it('should reject URLs with XSS patterns in HTTPS URLs', () => {
@@ -85,17 +101,17 @@ describe('ImageURLSchema', () => {
           'https://example.com/image.jpg?onclick=alert(1)',
         ];
 
-        xssPatterns.forEach(url => {
+        xssPatterns.forEach((url) => {
           expect(() => ImageURLSchema.parse(url)).toThrow(
-            'Invalid or potentially unsafe image URL'
+            'Invalid or potentially unsafe image URL',
           );
         });
       });
 
       it('should reject URLs without image extensions or known domains', () => {
-        expect(() => ImageURLSchema.parse('https://example.com/notanimage')).toThrow(
-          'URL must point to an image file'
-        );
+        expect(() =>
+          ImageURLSchema.parse('https://example.com/notanimage'),
+        ).toThrow('URL must point to an image file');
       });
 
       it('should reject profile-image domains anywhere but the host', () => {
@@ -107,8 +123,10 @@ describe('ImageURLSchema', () => {
           'https://avatars.githubusercontent.com.example.com/u/1',
         ];
 
-        elsewhere.forEach(url => {
-          expect(() => ImageURLSchema.parse(url)).toThrow('URL must point to an image file');
+        elsewhere.forEach((url) => {
+          expect(() => ImageURLSchema.parse(url)).toThrow(
+            'URL must point to an image file',
+          );
         });
       });
 
@@ -124,9 +142,11 @@ describe('ImageURLSchema', () => {
       });
 
       it('should detect XSS patterns case-insensitively', () => {
-        expect(() => ImageURLSchema.parse('https://example.com/image.jpg?ONERROR=alert(1)')).toThrow(
-          'Invalid or potentially unsafe image URL'
-        );
+        expect(() =>
+          ImageURLSchema.parse(
+            'https://example.com/image.jpg?ONERROR=alert(1)',
+          ),
+        ).toThrow('Invalid or potentially unsafe image URL');
       });
     });
   });
@@ -214,7 +234,10 @@ describe('sanitizeImageURL', () => {
       const result = sanitizeImageURL(url);
 
       expect(result).toBeNull();
-      expect(console.warn).toHaveBeenCalledWith('Invalid image URL:', expect.any(String));
+      expect(console.warn).toHaveBeenCalledWith(
+        'Invalid image URL:',
+        expect.any(String),
+      );
     });
 
     it('should return null for XSS attempts', () => {

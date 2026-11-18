@@ -31,7 +31,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fc from 'fast-check';
 import { InMemorySessionStorage } from '../session/session-storage';
 import { SAVE_DEBOUNCE_MS, resourceId } from '@xynolog/core';
-import { BOOKMARK_KEY, bookmarkSeq, buildRig, persistedAUpTo } from './helpers/persisted-cache-rig';
+import {
+  BOOKMARK_KEY,
+  bookmarkSeq,
+  buildRig,
+  persistedAUpTo,
+} from './helpers/persisted-cache-rig';
 
 type Command = 'deliver' | 'complete' | 'writeB' | 'settleA';
 
@@ -45,8 +50,12 @@ describe('C1 — the persisted bookmark never leads the persisted content', () =
    * its own teeth: the uncoupled rig must violate C1 for the counterexample
    * sequences.
    */
-  async function runScenario(commands: Command[], coupled: boolean): Promise<{
-    c1Held: boolean; renderedEqualsServer: boolean;
+  async function runScenario(
+    commands: Command[],
+    coupled: boolean,
+  ): Promise<{
+    c1Held: boolean;
+    renderedEqualsServer: boolean;
   }> {
     const storage = new InMemorySessionStorage();
     let serverSeq = 0;
@@ -92,13 +101,15 @@ describe('C1 — the persisted bookmark never leads the persisted content', () =
     // an absent bookmark as "replay from 1" is backwards: it heals scenarios
     // the real client cannot. See cache-reload-fidelity.property.test.ts
     // for the full note.)
-    const resumeFrom = storage.get(BOOKMARK_KEY) !== null ? bookmarkSeq(storage) + 1 : null;
+    const resumeFrom =
+      storage.get(BOOKMARK_KEY) !== null ? bookmarkSeq(storage) + 1 : null;
     if (resumeFrom !== null) {
       for (let seq = resumeFrom; seq <= serverSeq; seq++) {
-        rig.invalidateA();   // replay re-invalidates idempotently
+        rig.invalidateA(); // replay re-invalidates idempotently
       }
     }
-    while (rig.resolvers.length > 0) rig.resolvers.shift()!({ upTo: serverSeq });
+    while (rig.resolvers.length > 0)
+      rig.resolvers.shift()!({ upTo: serverSeq });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
 
     // ── C1, corollary: rendered state == server truth.
@@ -135,7 +146,7 @@ describe('C1 — the persisted bookmark never leads the persisted content', () =
 
   it('K2 (coupled): deliver → complete → bystander write → crash-reload renders server truth', async () => {
     const { c1Held, renderedEqualsServer } = await runScenario(
-      ['deliver', 'complete', 'writeB'],   // reload lands inside A's debounce window
+      ['deliver', 'complete', 'writeB'], // reload lands inside A's debounce window
       true,
     );
     expect(c1Held).toBe(true);
@@ -148,10 +159,7 @@ describe('C1 — the persisted bookmark never leads the persisted content', () =
     // violate even uncoupled: A's own debounced save shares B's deadline and
     // fires first, landing content before the flush — the write-ordering
     // coupling covers that narrower path, and only that one.
-    const { c1Held } = await runScenario(
-      ['deliver', 'writeB'],
-      false,
-    );
+    const { c1Held } = await runScenario(['deliver', 'writeB'], false);
     // Uncoupled: B's write flushes bookmark 1 while A's refetch is in
     // flight — the persisted doc says 0, the bookmark says 1, and replay
     // from 2 redelivers nothing. That storage violation is what this pins.
@@ -165,11 +173,23 @@ describe('C1 — the persisted bookmark never leads the persisted content', () =
   it('C1 property: no interleaving of deliver/complete/writeB/settleA + crash-reload breaks the invariant (coupled)', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.array(fc.constantFrom<Command>('deliver', 'complete', 'writeB', 'settleA'), { maxLength: 12 }),
+        fc.array(
+          fc.constantFrom<Command>('deliver', 'complete', 'writeB', 'settleA'),
+          { maxLength: 12 },
+        ),
         async (commands) => {
-          const { c1Held, renderedEqualsServer } = await runScenario(commands, true);
-          if (!c1Held) throw new Error(`C1 violated: bookmark leads persisted content after [${commands.join(', ')}]`);
-          if (!renderedEqualsServer) throw new Error(`stale render after reload: [${commands.join(', ')}]`);
+          const { c1Held, renderedEqualsServer } = await runScenario(
+            commands,
+            true,
+          );
+          if (!c1Held)
+            throw new Error(
+              `C1 violated: bookmark leads persisted content after [${commands.join(', ')}]`,
+            );
+          if (!renderedEqualsServer)
+            throw new Error(
+              `stale render after reload: [${commands.join(', ')}]`,
+            );
         },
       ),
       { numRuns: 60 },

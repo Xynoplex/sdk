@@ -2,13 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { LeftSidebar } from '../LeftSidebar';
-import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../contexts/RoutingContext';
 
 // No mocks - using real components via composition
 
 // Mock Link component
 const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
-  <a href={href} {...props}>{children}</a>
+  <a href={href} {...props}>
+    {children}
+  </a>
 );
 
 // Mock routes: the layout links to no resource, and leaves the others to their defaults
@@ -54,7 +59,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           <div>Sidebar Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       expect(screen.getByText('Sidebar Content')).toBeInTheDocument();
@@ -69,7 +74,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       // Real XynologBranding renders "Xynolog" text
@@ -85,7 +90,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const brandingLink = screen.getByLabelText('Go to home page');
@@ -104,7 +109,7 @@ describe('LeftSidebar Component', () => {
           collapsible={true}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const aside = container.querySelector('aside');
@@ -115,7 +120,9 @@ describe('LeftSidebar Component', () => {
     it('should render function as children with collapse state', () => {
       const mockChildren = vi.fn((isCollapsed, toggleCollapsed) => (
         <div>
-          <span data-testid="collapsed-state">{isCollapsed ? 'collapsed' : 'expanded'}</span>
+          <span data-testid="collapsed-state">
+            {isCollapsed ? 'collapsed' : 'expanded'}
+          </span>
           <button onClick={toggleCollapsed}>Toggle</button>
         </div>
       ));
@@ -129,11 +136,13 @@ describe('LeftSidebar Component', () => {
           collapsible={true}
         >
           {mockChildren}
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       expect(mockChildren).toHaveBeenCalled();
-      expect(screen.getByTestId('collapsed-state')).toHaveTextContent('expanded');
+      expect(screen.getByTestId('collapsed-state')).toHaveTextContent(
+        'expanded',
+      );
     });
 
     it('should load collapsed state from localStorage', () => {
@@ -149,7 +158,7 @@ describe('LeftSidebar Component', () => {
           storageKey="testStorageKey"
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const aside = container.querySelector('aside');
@@ -159,7 +168,9 @@ describe('LeftSidebar Component', () => {
 
     it('should save collapsed state to localStorage', () => {
       const mockChildren = vi.fn((_isCollapsed, toggleCollapsed) => (
-        <button onClick={toggleCollapsed} data-testid="toggle-btn">Toggle</button>
+        <button onClick={toggleCollapsed} data-testid="toggle-btn">
+          Toggle
+        </button>
       ));
 
       render(
@@ -172,7 +183,7 @@ describe('LeftSidebar Component', () => {
           storageKey="customKey"
         >
           {mockChildren}
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const toggleButton = screen.getByTestId('toggle-btn');
@@ -183,7 +194,9 @@ describe('LeftSidebar Component', () => {
 
     it('should not collapse when collapsible is false', () => {
       const mockChildren = vi.fn((_isCollapsed, toggleCollapsed) => (
-        <button onClick={toggleCollapsed} data-testid="toggle-btn">Toggle</button>
+        <button onClick={toggleCollapsed} data-testid="toggle-btn">
+          Toggle
+        </button>
       ));
 
       const { container } = render(
@@ -195,7 +208,7 @@ describe('LeftSidebar Component', () => {
           collapsible={false}
         >
           {mockChildren}
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const toggleButton = screen.getByTestId('toggle-btn');
@@ -208,7 +221,9 @@ describe('LeftSidebar Component', () => {
 
     it('should use default storage key', () => {
       const mockChildren = vi.fn((_isCollapsed, toggleCollapsed) => (
-        <button onClick={toggleCollapsed} data-testid="toggle-btn">Toggle</button>
+        <button onClick={toggleCollapsed} data-testid="toggle-btn">
+          Toggle
+        </button>
       ));
 
       render(
@@ -220,7 +235,7 @@ describe('LeftSidebar Component', () => {
           collapsible={true}
         >
           {mockChildren}
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const toggleButton = screen.getByTestId('toggle-btn');
@@ -232,11 +247,13 @@ describe('LeftSidebar Component', () => {
 
   describe('Navigation Menu Helper', () => {
     it('should provide navigationMenu helper to function children', () => {
-      const mockChildren = vi.fn((_isCollapsed, _toggleCollapsed, navigationMenu) => {
-        // Test that navigationMenu helper returns NavigationMenu component
-        const menuElement = navigationMenu(() => {});
-        return <div data-testid="children-content">{menuElement}</div>;
-      });
+      const mockChildren = vi.fn(
+        (_isCollapsed, _toggleCollapsed, navigationMenu) => {
+          // Test that navigationMenu helper returns NavigationMenu component
+          const menuElement = navigationMenu(() => {});
+          return <div data-testid="children-content">{menuElement}</div>;
+        },
+      );
 
       render(
         <LeftSidebar
@@ -246,21 +263,25 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           {mockChildren}
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       expect(mockChildren).toHaveBeenCalled();
       // Real NavigationMenu renders navigation links
       const childrenContent = screen.getByTestId('children-content');
-      expect(childrenContent.querySelector('nav.xynolog-navigation-menu')).toBeInTheDocument();
+      expect(
+        childrenContent.querySelector('nav.xynolog-navigation-menu'),
+      ).toBeInTheDocument();
     });
 
     it('should pass onClose callback to NavigationMenu', () => {
       const mockOnClose = vi.fn();
-      const mockChildren = vi.fn((_isCollapsed, _toggleCollapsed, navigationMenu) => {
-        const menuElement = navigationMenu(mockOnClose);
-        return <div>{menuElement}</div>;
-      });
+      const mockChildren = vi.fn(
+        (_isCollapsed, _toggleCollapsed, navigationMenu) => {
+          const menuElement = navigationMenu(mockOnClose);
+          return <div>{menuElement}</div>;
+        },
+      );
 
       render(
         <LeftSidebar
@@ -270,7 +291,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           {mockChildren}
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       // Real NavigationMenu renders a link (translated 'know' key)
@@ -291,7 +312,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const aside = container.querySelector('aside');
@@ -308,7 +329,7 @@ describe('LeftSidebar Component', () => {
           collapsible={true}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const aside = container.querySelector('aside');
@@ -327,7 +348,7 @@ describe('LeftSidebar Component', () => {
           collapsible={true}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       expect(screen.getByText('S')).toBeInTheDocument();
@@ -346,7 +367,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const nav = screen.getByRole('navigation');
@@ -362,7 +383,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       const brandingLink = screen.getByLabelText('Go to home page');
@@ -381,7 +402,7 @@ describe('LeftSidebar Component', () => {
           brandingLink="/custom"
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       expect(screen.getByText('Xynolog')).toBeInTheDocument();
@@ -396,7 +417,7 @@ describe('LeftSidebar Component', () => {
           tHome={mockTHome}
         >
           <div>Content</div>
-        </LeftSidebar>
+        </LeftSidebar>,
       );
 
       expect(screen.getByText('Xynolog')).toBeInTheDocument();

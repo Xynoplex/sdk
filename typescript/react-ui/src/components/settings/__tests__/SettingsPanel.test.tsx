@@ -70,10 +70,12 @@ describe('SettingsPanel', () => {
       const handler = vi.fn();
       const { browser } = renderWithProviders(
         <SettingsPanel {...defaultProps} />,
-        { returnShellBus: true }
+        { returnShellBus: true },
       );
 
-      const sub = browser!.stream('settings:line-numbers-toggled').subscribe(handler);
+      const sub = browser!
+        .stream('settings:line-numbers-toggled')
+        .subscribe(handler);
       fireEvent.click(screen.getByRole('switch'));
       expect(handler).toHaveBeenCalled();
       sub.unsubscribe();
@@ -87,18 +89,26 @@ describe('SettingsPanel', () => {
       // per-caller useState never flips.
       function OtherConsumer() {
         const { toggleLineNumbers } = useLineNumbers();
-        return <button data-testid="other-consumer" onClick={toggleLineNumbers} />;
+        return (
+          <button data-testid="other-consumer" onClick={toggleLineNumbers} />
+        );
       }
       renderWithProviders(
         <>
           <OtherConsumer />
           <SettingsPanel {...defaultProps} />
-        </>
+        </>,
       );
 
-      expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
+      expect(screen.getByRole('switch')).toHaveAttribute(
+        'aria-checked',
+        'false',
+      );
       fireEvent.click(screen.getByTestId('other-consumer'));
-      expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('switch')).toHaveAttribute(
+        'aria-checked',
+        'true',
+      );
     });
   });
 
@@ -123,7 +133,7 @@ describe('SettingsPanel', () => {
       const handler = vi.fn();
       const { browser } = renderWithProviders(
         <SettingsPanel {...defaultProps} />,
-        { returnShellBus: true }
+        { returnShellBus: true },
       );
 
       const sub = browser!.stream('settings:theme-changed').subscribe(handler);
@@ -146,7 +156,9 @@ describe('SettingsPanel', () => {
 
     it('shows current locale as selected', () => {
       renderWithProviders(<SettingsPanel {...defaultProps} locale="de" />);
-      const select = screen.getByLabelText('Settings.language') as HTMLSelectElement;
+      const select = screen.getByLabelText(
+        'Settings.language',
+      ) as HTMLSelectElement;
       expect(select.value).toBe('de');
     });
 
@@ -154,7 +166,7 @@ describe('SettingsPanel', () => {
       const handler = vi.fn();
       const { browser } = renderWithProviders(
         <SettingsPanel {...defaultProps} />,
-        { returnShellBus: true }
+        { returnShellBus: true },
       );
 
       const sub = browser!.stream('settings:locale-changed').subscribe(handler);
@@ -167,7 +179,7 @@ describe('SettingsPanel', () => {
 
     it('disables select when locale change is pending', () => {
       renderWithProviders(
-        <SettingsPanel {...defaultProps} isPendingLocaleChange={true} />
+        <SettingsPanel {...defaultProps} isPendingLocaleChange={true} />,
       );
       const select = screen.getByLabelText('Settings.language');
       expect(select).toBeDisabled();
@@ -176,7 +188,7 @@ describe('SettingsPanel', () => {
 
     it('shows loading message when locale change is pending', () => {
       renderWithProviders(
-        <SettingsPanel {...defaultProps} isPendingLocaleChange={true} />
+        <SettingsPanel {...defaultProps} isPendingLocaleChange={true} />,
       );
       expect(screen.getByText('Settings.languageChanging')).toBeInTheDocument();
     });
@@ -193,8 +205,12 @@ describe('SettingsPanel', () => {
     });
 
     it('shows current hover delay value', () => {
-      renderWithProviders(<SettingsPanel {...defaultProps} hoverDelayMs={200} />);
-      const slider = screen.getByLabelText('Settings.hoverDelay') as HTMLInputElement;
+      renderWithProviders(
+        <SettingsPanel {...defaultProps} hoverDelayMs={200} />,
+      );
+      const slider = screen.getByLabelText(
+        'Settings.hoverDelay',
+      ) as HTMLInputElement;
       expect(slider.value).toBe('200');
     });
 
@@ -202,10 +218,12 @@ describe('SettingsPanel', () => {
       const handler = vi.fn();
       const { browser } = renderWithProviders(
         <SettingsPanel {...defaultProps} />,
-        { returnShellBus: true }
+        { returnShellBus: true },
       );
 
-      const sub = browser!.stream('settings:hover-delay-changed').subscribe(handler);
+      const sub = browser!
+        .stream('settings:hover-delay-changed')
+        .subscribe(handler);
       fireEvent.change(screen.getByLabelText('Settings.hoverDelay'), {
         target: { value: '300' },
       });

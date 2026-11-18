@@ -21,10 +21,12 @@ interface PendingAnnotation {
 }
 
 // Helper to extract display text from selector
-function getSelectorDisplayText(selector: Selector | Selector[]): string | null {
+function getSelectorDisplayText(
+  selector: Selector | Selector[],
+): string | null {
   if (Array.isArray(selector)) {
     // Text selectors: array of [TextPositionSelector, TextQuoteSelector]
-    const quoteSelector = selector.find(s => s.type === 'TextQuoteSelector');
+    const quoteSelector = selector.find((s) => s.type === 'TextQuoteSelector');
     if (quoteSelector && 'exact' in quoteSelector) {
       return quoteSelector.exact;
     }
@@ -93,7 +95,9 @@ export function CommentsPanel({
 }: CommentsPanelProps) {
   const t = useTranslations('CommentsPanel');
   const [newCommentText, setNewCommentText] = useState('');
-  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(null);
+  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Direct ref management
@@ -110,13 +114,16 @@ export function CommentsPanel({
   }, [annotations]);
 
   // Ref callback for entry components
-  const setEntryRef = useCallback((id: string, element: HTMLDivElement | null) => {
-    if (element) {
-      entryRefs.current.set(id, element);
-    } else {
-      entryRefs.current.delete(id);
-    }
-  }, []);
+  const setEntryRef = useCallback(
+    (id: string, element: HTMLDivElement | null) => {
+      if (element) {
+        entryRefs.current.set(id, element);
+      } else {
+        entryRefs.current.delete(id);
+      }
+    },
+    [],
+  );
 
   // Handle scrollToAnnotationId (click scroll)
   useEffect(() => {
@@ -129,7 +136,7 @@ export function CommentsPanel({
       const elementTop = element.offsetTop;
       const containerHeight = containerRef.current.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
 
       // Scroll to center
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
@@ -167,7 +174,7 @@ export function CommentsPanel({
       const elementTop = element.offsetTop;
       const containerHeight = container.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
 
       container.scrollTo({ top: scrollTo, behavior: 'smooth' });
     }
@@ -177,10 +184,13 @@ export function CommentsPanel({
 
   // Subscribe to click events - update focused state
   // Event handler for annotation clicks (a named callback rather than an inline arrow function)
-  const handleAnnotationClick = useCallback(({ annotationId }: { annotationId: string }) => {
-    setFocusedAnnotationId(annotationId);
-    setTimeout(() => setFocusedAnnotationId(null), 3000);
-  }, []);
+  const handleAnnotationClick = useCallback(
+    ({ annotationId }: { annotationId: string }) => {
+      setFocusedAnnotationId(annotationId);
+      setTimeout(() => setFocusedAnnotationId(null), 3000);
+    },
+    [],
+  );
 
   useSessionEventSubscriptions(session, {
     'browse:click': handleAnnotationClick,
@@ -192,7 +202,9 @@ export function CommentsPanel({
         source: resourceId,
         motivation: 'commenting',
         selector: pendingAnnotation.selector,
-        body: [{ type: 'TextualBody', value: newCommentText, purpose: 'commenting' }],
+        body: [
+          { type: 'TextualBody', value: newCommentText, purpose: 'commenting' },
+        ],
       });
       setNewCommentText('');
     }
@@ -222,7 +234,9 @@ export function CommentsPanel({
         <div className="xynolog-annotation-prompt" data-type="comment">
           <div className="xynolog-annotation-prompt__quote">
             {(() => {
-              const displayText = getSelectorDisplayText(pendingAnnotation.selector);
+              const displayText = getSelectorDisplayText(
+                pendingAnnotation.selector,
+              );
               if (displayText) {
                 return `"${displayText.substring(0, 100)}${displayText.length > 100 ? '...' : ''}"`;
               }
@@ -287,9 +301,7 @@ export function CommentsPanel({
         {/* Comments list */}
         <div className="xynolog-panel__list">
           {sortedAnnotations.length === 0 ? (
-            <p className="xynolog-panel__empty">
-              {t('noComments')}
-            </p>
+            <p className="xynolog-panel__empty">{t('noComments')}</p>
           ) : (
             sortedAnnotations.map((comment) => (
               <CommentEntry

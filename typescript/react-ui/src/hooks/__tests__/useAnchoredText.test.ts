@@ -33,11 +33,13 @@ const HELLO: AnchoredTextAnswer = {
 function sessionAnswering(replies: Array<AnchoredTextAnswer | Error>) {
   const { session, client } = createTestSession();
   let asked = 0;
-  const ask = vi.spyOn(client.browse, 'resourceAnchoredText').mockImplementation(async () => {
-    const reply = replies[Math.min(asked++, replies.length - 1)]!;
-    if (reply instanceof Error) throw reply;
-    return reply;
-  });
+  const ask = vi
+    .spyOn(client.browse, 'resourceAnchoredText')
+    .mockImplementation(async () => {
+      const reply = replies[Math.min(asked++, replies.length - 1)]!;
+      if (reply instanceof Error) throw reply;
+      return reply;
+    });
   return { session, ask };
 }
 
@@ -51,8 +53,14 @@ describe('useAnchoredText', () => {
 
   it('asks when it mounts, and holds nothing before the first answer arrives', () => {
     const { session, client } = createTestSession();
-    const ask = vi.spyOn(client.browse, 'resourceAnchoredText')
-      .mockImplementation(() => new Promise<AnchoredTextAnswer>(() => { /* never answered */ }));
+    const ask = vi
+      .spyOn(client.browse, 'resourceAnchoredText')
+      .mockImplementation(
+        () =>
+          new Promise<AnchoredTextAnswer>(() => {
+            /* never answered */
+          }),
+      );
 
     const { result } = renderHook(() => useAnchoredText(session, RESOURCE));
 
@@ -73,7 +81,9 @@ describe('useAnchoredText', () => {
   });
 
   it('holds an `extracted` text that is empty: the document was read and has no words', async () => {
-    const { session } = sessionAnswering([{ kind: 'extracted', method: 'ocr', text: '', items: [] }]);
+    const { session } = sessionAnswering([
+      { kind: 'extracted', method: 'ocr', text: '', items: [] },
+    ]);
     const { result } = renderHook(() => useAnchoredText(session, RESOURCE));
 
     await answered();
@@ -86,7 +96,10 @@ describe('useAnchoredText', () => {
     const { result } = renderHook(() => useAnchoredText(session, RESOURCE));
 
     await answered();
-    expect(result.current).toEqual({ status: 'held', text: { text: '', items: [] } });
+    expect(result.current).toEqual({
+      status: 'held',
+      text: { text: '', items: [] },
+    });
 
     await pass(ANCHORED_TEXT_REASK_MS * 10);
     expect(ask).toHaveBeenCalledTimes(1);
@@ -145,28 +158,35 @@ describe('useAnchoredText', () => {
   it.each<[string, AnchoredTextAnswer]>([
     ['`declined`', { kind: 'declined', declined: 'no-text-layer' }],
     ['`unknown`', { kind: 'unknown' }],
-  ])('will never hold a text after %s, and does not ask again', async (_name, answer) => {
-    const { session, ask } = sessionAnswering([answer]);
-    const { result } = renderHook(() => useAnchoredText(session, RESOURCE));
+  ])(
+    'will never hold a text after %s, and does not ask again',
+    async (_name, answer) => {
+      const { session, ask } = sessionAnswering([answer]);
+      const { result } = renderHook(() => useAnchoredText(session, RESOURCE));
 
-    await answered();
-    expect(result.current).toEqual({ status: 'never' });
+      await answered();
+      expect(result.current).toEqual({ status: 'never' });
 
-    await pass(ANCHORED_TEXT_REASK_MS * 10);
-    expect(ask).toHaveBeenCalledTimes(1);
-    expect(result.current).toEqual({ status: 'never' });
-  });
+      await pass(ANCHORED_TEXT_REASK_MS * 10);
+      expect(ask).toHaveBeenCalledTimes(1);
+      expect(result.current).toEqual({ status: 'never' });
+    },
+  );
 
   it('starts over for another resource, holding nothing of the first one meanwhile', async () => {
     const first = resourceId('res-first');
     const second = resourceId('res-second');
     const { session, client } = createTestSession();
-    const ask = vi.spyOn(client.browse, 'resourceAnchoredText')
+    const ask = vi
+      .spyOn(client.browse, 'resourceAnchoredText')
       .mockImplementation(async (id) => (id === first ? HELLO : NOT_YET));
 
-    const { result, rerender } = renderHook(({ id }) => useAnchoredText(session, id), {
-      initialProps: { id: first },
-    });
+    const { result, rerender } = renderHook(
+      ({ id }) => useAnchoredText(session, id),
+      {
+        initialProps: { id: first },
+      },
+    );
     await answered();
     expect(result.current).toEqual({ status: 'held', text: HELLO });
 
@@ -194,7 +214,8 @@ describe('useAnchoredText', () => {
   it('asks nothing with no session, and asks when one arrives', async () => {
     const { session, ask } = sessionAnswering([HELLO]);
     const { result, rerender } = renderHook(
-      ({ current }: { current: XynologSession | null }) => useAnchoredText(current, RESOURCE),
+      ({ current }: { current: XynologSession | null }) =>
+        useAnchoredText(current, RESOURCE),
       { initialProps: { current: null as XynologSession | null } },
     );
 

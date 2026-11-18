@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
 import type { ReactNode } from 'react';
 
 interface LineNumbersContextValue {
@@ -50,7 +56,8 @@ export function LineNumbersProvider({
     }
     setLocalValue((prev) => {
       const next = !prev;
-      if (typeof window !== 'undefined') localStorage.setItem('showLineNumbers', next.toString());
+      if (typeof window !== 'undefined')
+        localStorage.setItem('showLineNumbers', next.toString());
       return next;
     });
   }, []);

@@ -67,7 +67,13 @@ export {
 // consumers of its observables (react-ui's `trackList`) can be tested against
 // the REAL B14/B15 semantics instead of mock subjects — mock-only coverage is
 // how a two-state consumer of a three-outcome cache shipped twice.
-export { createCache, isReady, readyValue, type CacheState, type Cache } from './cache';
+export {
+  createCache,
+  isReady,
+  readyValue,
+  type CacheState,
+  type Cache,
+} from './cache';
 // Where a client keeps its persisted queries: `XynologClient`'s `cachePersistence` option.
 export type { CachePersistence } from './cache-persister';
 
@@ -86,10 +92,16 @@ export { BindNamespace } from './namespaces/bind';
 export { GatherNamespace } from './namespaces/gather';
 export { MatchNamespace } from './namespaces/match';
 export { YieldNamespace } from './namespaces/yield';
-export { GenerationStallError, deriveStallDeadlineMs } from './namespaces/generation-stall';
+export {
+  GenerationStallError,
+  deriveStallDeadlineMs,
+} from './namespaces/generation-stall';
 export { BeckonNamespace } from './namespaces/beckon';
 export { JobNamespace } from './namespaces/job';
-export { JobCancelledError, JobFailedError } from './namespaces/job-status-poll';
+export {
+  JobCancelledError,
+  JobFailedError,
+} from './namespaces/job-status-poll';
 export { AuthNamespace } from './namespaces/auth';
 export { SystemNamespace } from './namespaces/system';
 export type * from './namespaces/types';
@@ -186,16 +198,48 @@ export {
 // (`job.commit`). A span that is not the text's is refused with a
 // `SpanRefusedError`. Every SDK has the three, and
 // protocol/specs/src/annotations/builder-cases.json holds them to one answer.
-export { annotationOfResource, annotationOfSpan, reconcile, SpanRefusedError } from '@xynolog/core';
-export type { AnchorMethod, MatchQuality, QuotedText, ReconciledSpan, SpanRefusal, TextSpan } from '@xynolog/core';
+export {
+  annotationOfResource,
+  annotationOfSpan,
+  reconcile,
+  SpanRefusedError,
+} from '@xynolog/core';
+export type {
+  AnchorMethod,
+  MatchQuality,
+  QuotedText,
+  ReconciledSpan,
+  SpanRefusal,
+  TextSpan,
+} from '@xynolog/core';
 
 // Session layer — per-KB sessions, app-level browser, storage adapter,
 // error surface, modal signals.
-export { XynologSession, type OpenedSession, type XynologSessionConfig, type UserInfo } from './session/xynolog-session';
+export {
+  XynologSession,
+  type OpenedSession,
+  type XynologSessionConfig,
+  type UserInfo,
+} from './session/xynolog-session';
 // A software agent's sign-in: a worker's, or one of the knowledge base's own services'.
-export { startAgentSession, type AgentSession, type AgentSessionOptions } from './session/agent-session';
-export { privateKeyFromPem, ServiceToken, type KeyCredential, type SecretCredential, type ServiceAccountCredential } from '@xynolog/core';
-export { XynologBrowser, type XynologBrowserConfig, type SignInOutcome, type KbReadVerdict } from './session/xynolog-browser';
+export {
+  startAgentSession,
+  type AgentSession,
+  type AgentSessionOptions,
+} from './session/agent-session';
+export {
+  privateKeyFromPem,
+  ServiceToken,
+  type KeyCredential,
+  type SecretCredential,
+  type ServiceAccountCredential,
+} from '@xynolog/core';
+export {
+  XynologBrowser,
+  type XynologBrowserConfig,
+  type SignInOutcome,
+  type KbReadVerdict,
+} from './session/xynolog-browser';
 export { SignInError } from '@xynolog/core';
 export {
   BROWSER_CLIENT_ID,
@@ -212,8 +256,15 @@ export {
   renewKept,
   revokeAtIssuer,
 } from './session/oauth';
-export { IdentityUnverifiableError, type ConnectionIdentity, describeConnection } from './session/connect';
-export type { SessionFactory, SessionFactoryOptions } from './session/session-factory';
+export {
+  IdentityUnverifiableError,
+  type ConnectionIdentity,
+  describeConnection,
+} from './session/connect';
+export type {
+  SessionFactory,
+  SessionFactoryOptions,
+} from './session/session-factory';
 export { createHttpSessionFactory } from './session/http-session-factory';
 export {
   createSessionSignals,
@@ -238,10 +289,7 @@ export type {
   HttpEndpoint,
   LocalEndpoint,
 } from '@xynolog/core';
-export {
-  type KbSessionStatus,
-  httpKb,
-} from './session/knowledge-base';
+export { type KbSessionStatus, httpKb } from './session/knowledge-base';
 export { type OpenResource } from './session/open-resource';
 export {
   defaultProtocol,
@@ -265,7 +313,12 @@ export {
 // or an entry of the sign-ins `xynolog login` keeps, over the files a caller
 // gives; and a script's sign-out of one.
 export { MemorySignIn, signOut, type SignInKept } from './session/sign-in-kept';
-export { SignInStore, stateDir, type SignInFiles, type System } from './session/sign-in-store';
+export {
+  SignInStore,
+  stateDir,
+  type SignInFiles,
+  type System,
+} from './session/sign-in-store';
 
 // State units — flow state machines and their RxJS substrate.
 // None presume a UI: they're consumed by browser apps, terminals,

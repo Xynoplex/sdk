@@ -127,7 +127,9 @@ export interface HttpStatusError extends Error {
  * otherwise.
  */
 export function retryAfterMs(header: string | null): number | undefined {
-  return header !== null && /^[0-9]+$/.test(header.trim()) ? Number(header.trim()) * 1000 : undefined;
+  return header !== null && /^[0-9]+$/.test(header.trim())
+    ? Number(header.trim()) * 1000
+    : undefined;
 }
 
 /**
@@ -157,7 +159,8 @@ export function retryAfterMs(header: string | null): number | undefined {
  * wait, so the same "it answered" fact points the other way.
  */
 export function isRetryableRequestError(error: unknown): boolean {
-  if (isTransientFetchError(error) || error instanceof UnansweredError) return true;
+  if (isTransientFetchError(error) || error instanceof UnansweredError)
+    return true;
   if (typeof error !== 'object' || error === null) return false;
   if ((error as { name?: unknown }).name === 'TimeoutError') return true;
   const status = (error as { status?: unknown }).status;
@@ -222,7 +225,10 @@ export async function retryWithBackoff<T>(
       // A wait the server stated (`Retry-After`) is a floor under it: a
       // refused caller backs off by the server's clock, not its own.
       const stated = (error as { retryAfterMs?: unknown }).retryAfterMs;
-      const delayMs = Math.max(equalJitter(cap), typeof stated === 'number' ? stated : 0);
+      const delayMs = Math.max(
+        equalJitter(cap),
+        typeof stated === 'number' ? stated : 0,
+      );
       onRetry?.({ attempt, attempts: policy.attempts, delayMs, error });
       if (!(await waited(delayMs, signal))) throw error;
       cap = Math.min(cap * 2, policy.maxDelayMs);

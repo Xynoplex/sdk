@@ -20,19 +20,29 @@ import type { TransportErrorCode } from './error-codes';
 
 /** HTTP white space: line feed, carriage return, tab and space. */
 const isHttpWhiteSpace = (character: string): boolean =>
-  character === '\n' || character === '\r' || character === '\t' || character === ' ';
+  character === '\n' ||
+  character === '\r' ||
+  character === '\t' ||
+  character === ' ';
 /** ASCII white space: HTTP white space and form feed. */
-const isAsciiWhiteSpace = (character: string): boolean => isHttpWhiteSpace(character) || character === '\f';
+const isAsciiWhiteSpace = (character: string): boolean =>
+  isHttpWhiteSpace(character) || character === '\f';
 
 /** `text` without the characters at its start that `isSpace` holds of. */
-function withoutLeading(text: string, isSpace: (character: string) => boolean): string {
+function withoutLeading(
+  text: string,
+  isSpace: (character: string) => boolean,
+): string {
   let start = 0;
   while (start < text.length && isSpace(text.charAt(start))) start += 1;
   return text.slice(start);
 }
 
 /** `text` without the characters at its end that `isSpace` holds of. */
-function withoutTrailing(text: string, isSpace: (character: string) => boolean): string {
+function withoutTrailing(
+  text: string,
+  isSpace: (character: string) => boolean,
+): string {
   let end = text.length;
   while (end > 0 && isSpace(text.charAt(end - 1))) end -= 1;
   return text.slice(0, end);
@@ -43,15 +53,24 @@ const HTTP_TOKEN = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
 /** What a parameter's value may hold: a tab, U+0020 to U+007E, and U+0080 to U+00FF. */
 const PARAMETER_VALUE = /^[\t\x20-\x7e\x80-\xff]*$/;
 
-const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
+const asciiLowerCase = (text: string): string =>
+  text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
 
 /** The quoted string that opens at `start`, without its quotation marks, and where it ends. */
-function quotedString(input: string, start: number): [value: string, end: number] {
+function quotedString(
+  input: string,
+  start: number,
+): [value: string, end: number] {
   let position = start + 1;
   let value = '';
   for (;;) {
     const from = position;
-    while (position < input.length && input.charAt(position) !== '"' && input.charAt(position) !== '\\') position += 1;
+    while (
+      position < input.length &&
+      input.charAt(position) !== '"' &&
+      input.charAt(position) !== '\\'
+    )
+      position += 1;
     value += input.slice(from, position);
     if (position >= input.length) break;
     const mark = input.charAt(position);
@@ -75,18 +94,32 @@ function quotedString(input: string, start: number): [value: string, end: number
  * type.
  */
 function charsetParameter(contentType: string): string | undefined {
-  const input = withoutTrailing(withoutLeading(contentType, isHttpWhiteSpace), isHttpWhiteSpace);
+  const input = withoutTrailing(
+    withoutLeading(contentType, isHttpWhiteSpace),
+    isHttpWhiteSpace,
+  );
   const slash = input.indexOf('/');
   if (slash === -1 || !HTTP_TOKEN.test(input.slice(0, slash))) return undefined;
   const semicolon = input.indexOf(';', slash);
   let position = semicolon === -1 ? input.length : semicolon;
-  if (!HTTP_TOKEN.test(withoutTrailing(input.slice(slash + 1, position), isHttpWhiteSpace))) return undefined;
+  if (
+    !HTTP_TOKEN.test(
+      withoutTrailing(input.slice(slash + 1, position), isHttpWhiteSpace),
+    )
+  )
+    return undefined;
 
   while (position < input.length) {
     position += 1; // past the semicolon
-    while (position < input.length && isHttpWhiteSpace(input.charAt(position))) position += 1;
+    while (position < input.length && isHttpWhiteSpace(input.charAt(position)))
+      position += 1;
     const nameStart = position;
-    while (position < input.length && input.charAt(position) !== ';' && input.charAt(position) !== '=') position += 1;
+    while (
+      position < input.length &&
+      input.charAt(position) !== ';' &&
+      input.charAt(position) !== '='
+    )
+      position += 1;
     const name = asciiLowerCase(input.slice(nameStart, position));
     if (position < input.length) {
       if (input.charAt(position) === ';') continue;
@@ -97,11 +130,16 @@ function charsetParameter(contentType: string): string | undefined {
     let value: string;
     if (input.charAt(position) === '"') {
       [value, position] = quotedString(input, position);
-      while (position < input.length && input.charAt(position) !== ';') position += 1;
+      while (position < input.length && input.charAt(position) !== ';')
+        position += 1;
     } else {
       const valueStart = position;
-      while (position < input.length && input.charAt(position) !== ';') position += 1;
-      value = withoutTrailing(input.slice(valueStart, position), isHttpWhiteSpace);
+      while (position < input.length && input.charAt(position) !== ';')
+        position += 1;
+      value = withoutTrailing(
+        input.slice(valueStart, position),
+        isHttpWhiteSpace,
+      );
       if (value === '') continue;
     }
     if (name === 'charset' && PARAMETER_VALUE.test(value)) return value;
@@ -123,7 +161,12 @@ function charsetParameter(contentType: string): string | undefined {
 export function extractCharset(mediaType: string): string {
   const stated = charsetParameter(mediaType);
   if (stated === undefined || stated === '') return 'utf-8';
-  return asciiLowerCase(withoutTrailing(withoutLeading(stated, isAsciiWhiteSpace), isAsciiWhiteSpace));
+  return asciiLowerCase(
+    withoutTrailing(
+      withoutLeading(stated, isAsciiWhiteSpace),
+      isAsciiWhiteSpace,
+    ),
+  );
 }
 
 /** The reader's own refusal of a charset, which names it. */
@@ -151,8 +194,11 @@ function decoderFor(label: string): TextDecoder {
 }
 
 /** The encoding whose byte-order mark the bytes begin with. */
-function encodingOfMark(bytes: Uint8Array): 'utf-8' | 'utf-16be' | 'utf-16le' | undefined {
-  if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) return 'utf-8';
+function encodingOfMark(
+  bytes: Uint8Array,
+): 'utf-8' | 'utf-16be' | 'utf-16le' | undefined {
+  if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf)
+    return 'utf-8';
   if (bytes[0] === 0xfe && bytes[1] === 0xff) return 'utf-16be';
   if (bytes[0] === 0xff && bytes[1] === 0xfe) return 'utf-16le';
   return undefined;
@@ -175,7 +221,10 @@ function encodingOfMark(bytes: Uint8Array): 'utf-8' | 'utf-16be' | 'utf-16le' | 
  * @example
  * const text = decodeWithCharset(bytes, "text/plain; charset=iso-8859-1");
  */
-export function decodeWithCharset(buffer: ArrayBuffer | Uint8Array, mediaType: string): string {
+export function decodeWithCharset(
+  buffer: ArrayBuffer | Uint8Array,
+  mediaType: string,
+): string {
   const bytes = ArrayBuffer.isView(buffer) ? buffer : new Uint8Array(buffer);
   // The stated charset is held to the standard before the bytes are looked at.
   const stated = decoderFor(extractCharset(mediaType));

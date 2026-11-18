@@ -79,25 +79,34 @@ describe('JsonLdPanel Component', () => {
 
     mockClipboard = { writeText: vi.fn().mockResolvedValue(undefined) };
     Object.defineProperty(navigator, 'clipboard', {
-      value: mockClipboard, writable: true, configurable: true,
+      value: mockClipboard,
+      writable: true,
+      configurable: true,
     });
     vi.mocked(useLineNumbers).mockReturnValue({
-      showLineNumbers: true, toggleLineNumbers: vi.fn(),
+      showLineNumbers: true,
+      toggleLineNumbers: vi.fn(),
     });
     // Default: graph loaded successfully.
     vi.mocked(useResourceGraph).mockReturnValue({
-      graph: MOCK_GRAPH, loading: false, error: null,
+      graph: MOCK_GRAPH,
+      loading: false,
+      error: null,
     });
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   describe('Rendering', () => {
     it('renders the header, copy button, and editor container', () => {
       const { container } = renderPanel();
       expect(screen.getByText('JSON-LD')).toBeInTheDocument();
       expect(screen.getByText(/Copy/)).toBeInTheDocument();
-      expect(container.querySelector('.xynolog-jsonld-panel__editor')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-jsonld-panel__editor'),
+      ).toBeInTheDocument();
     });
 
     it('fetches the graph for the given resourceId', () => {
@@ -108,7 +117,11 @@ describe('JsonLdPanel Component', () => {
 
   describe('Loading / error states', () => {
     it('shows a loading state and disables Copy while loading', () => {
-      vi.mocked(useResourceGraph).mockReturnValue({ graph: null, loading: true, error: null });
+      vi.mocked(useResourceGraph).mockReturnValue({
+        graph: null,
+        loading: true,
+        error: null,
+      });
       renderPanel();
       expect(screen.getByText(/Loading JSON-LD/i)).toBeInTheDocument();
       expect(screen.getByText(/Copy/).closest('button')).toBeDisabled();
@@ -116,7 +129,9 @@ describe('JsonLdPanel Component', () => {
 
     it('shows an error state and disables Copy on failure', () => {
       vi.mocked(useResourceGraph).mockReturnValue({
-        graph: null, loading: false, error: new Error('boom'),
+        graph: null,
+        loading: false,
+        error: new Error('boom'),
       });
       renderPanel();
       expect(screen.getByText(/Failed to load JSON-LD/i)).toBeInTheDocument();
@@ -126,7 +141,11 @@ describe('JsonLdPanel Component', () => {
 
   describe('Copy to clipboard', () => {
     it('renders no copy control where the page has no Clipboard API, as on an origin that is not a secure context', () => {
-      Object.defineProperty(navigator, 'clipboard', { value: undefined, writable: true, configurable: true });
+      Object.defineProperty(navigator, 'clipboard', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
 
       renderPanel();
 
@@ -159,7 +178,11 @@ describe('JsonLdPanel Component', () => {
     });
 
     it('does not copy when there is no graph yet', async () => {
-      vi.mocked(useResourceGraph).mockReturnValue({ graph: null, loading: true, error: null });
+      vi.mocked(useResourceGraph).mockReturnValue({
+        graph: null,
+        loading: true,
+        error: null,
+      });
       renderPanel();
       const button = screen.getByText(/Copy/).closest('button')!;
       await userEvent.click(button);
@@ -167,12 +190,17 @@ describe('JsonLdPanel Component', () => {
     });
 
     it('handles clipboard errors gracefully', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       mockClipboard.writeText.mockRejectedValue(new Error('Clipboard error'));
       renderPanel();
       await userEvent.click(screen.getByText(/Copy/));
       await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to copy JSON-LD:', expect.any(Error));
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Failed to copy JSON-LD:',
+          expect.any(Error),
+        );
       });
       consoleErrorSpy.mockRestore();
     });
@@ -194,7 +222,9 @@ describe('JsonLdPanel Component', () => {
       expect(container.firstChild).toHaveClass('xynolog-jsonld-panel');
       const copyButton = screen.getByText(/Copy/).closest('button');
       expect(copyButton).toHaveAttribute('title', 'Copy to clipboard');
-      expect(screen.getByText('JSON-LD')).toHaveClass('xynolog-jsonld-panel__title');
+      expect(screen.getByText('JSON-LD')).toHaveClass(
+        'xynolog-jsonld-panel__title',
+      );
     });
   });
 });

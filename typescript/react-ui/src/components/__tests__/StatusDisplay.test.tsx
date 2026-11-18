@@ -8,7 +8,9 @@ import { StatusDisplay } from '../StatusDisplay';
 let mockGetStatus: ReturnType<typeof vi.fn>;
 const stableMockClient = {
   system: {
-    get status() { return mockGetStatus; },
+    get status() {
+      return mockGetStatus;
+    },
   },
 };
 const stableMockSession = { client: stableMockClient };
@@ -16,7 +18,8 @@ const stableActiveSession$ = new BehaviorSubject(stableMockSession);
 const stableMockBrowser = { activeSession$: stableActiveSession$ };
 
 vi.mock('../../session/XynologProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../session/XynologProvider')>();
+  const actual =
+    await importOriginal<typeof import('../../session/XynologProvider')>();
   return {
     ...actual,
     useXynolog: () => stableMockBrowser,
@@ -33,7 +36,7 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockResolvedValue({ status: 'healthy', version: '1.0.0' });
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />
+      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />,
     );
 
     expect(screen.getByText(/Authentication required/)).toBeInTheDocument();
@@ -43,7 +46,11 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockResolvedValue({ status: 'healthy', version: '1.2.3' });
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={true} isAuthenticated={true} hasValidGatewayToken={true} />
+      <StatusDisplay
+        isFullyAuthenticated={true}
+        isAuthenticated={true}
+        hasValidGatewayToken={true}
+      />,
     );
 
     await waitFor(() => {
@@ -56,7 +63,11 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockRejectedValue(new Error('Network error'));
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={true} isAuthenticated={true} hasValidGatewayToken={true} />
+      <StatusDisplay
+        isFullyAuthenticated={true}
+        isAuthenticated={true}
+        hasValidGatewayToken={true}
+      />,
     );
 
     await waitFor(() => {
@@ -68,11 +79,17 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockRejectedValue(new Error('401 Unauthorized'));
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={true} isAuthenticated={true} hasValidGatewayToken={true} />
+      <StatusDisplay
+        isFullyAuthenticated={true}
+        isAuthenticated={true}
+        hasValidGatewayToken={true}
+      />,
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/sign out and sign in again/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/sign out and sign in again/i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -80,17 +97,23 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockResolvedValue(undefined);
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={true} hasValidGatewayToken={false} />
+      <StatusDisplay
+        isFullyAuthenticated={false}
+        isAuthenticated={true}
+        hasValidGatewayToken={false}
+      />,
     );
 
-    expect(screen.getByText(/sign out and sign in again to reconnect/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/sign out and sign in again to reconnect/i),
+    ).toBeInTheDocument();
   });
 
   it('should have role="status"', () => {
     mockGetStatus.mockResolvedValue(undefined);
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />
+      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />,
     );
 
     expect(screen.getByRole('status')).toBeInTheDocument();
@@ -100,7 +123,7 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockResolvedValue(undefined);
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />
+      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />,
     );
 
     const status = screen.getByRole('status');
@@ -111,21 +134,29 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockResolvedValue(undefined);
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />
+      <StatusDisplay isFullyAuthenticated={false} isAuthenticated={false} />,
     );
 
-    expect(screen.getByText('Sign in to view gateway status')).toBeInTheDocument();
+    expect(
+      screen.getByText('Sign in to view gateway status'),
+    ).toBeInTheDocument();
   });
 
   it('should show error hint when there is an error', async () => {
     mockGetStatus.mockRejectedValue(new Error('Connection refused'));
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={true} isAuthenticated={true} hasValidGatewayToken={true} />
+      <StatusDisplay
+        isFullyAuthenticated={true}
+        isAuthenticated={true}
+        hasValidGatewayToken={true}
+      />,
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Check that the gateway server is running/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Check that the gateway server is running/),
+      ).toBeInTheDocument();
     });
   });
 
@@ -133,7 +164,11 @@ describe('StatusDisplay', () => {
     mockGetStatus.mockResolvedValue({ status: 'healthy', version: '1.0.0' });
 
     renderWithProviders(
-      <StatusDisplay isFullyAuthenticated={true} isAuthenticated={true} hasValidGatewayToken={true} />
+      <StatusDisplay
+        isFullyAuthenticated={true}
+        isAuthenticated={true}
+        hasValidGatewayToken={true}
+      />,
     );
 
     await waitFor(() => {

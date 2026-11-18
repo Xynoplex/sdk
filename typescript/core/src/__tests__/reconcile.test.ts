@@ -67,7 +67,8 @@ describe('reconcile — context-recovered', () => {
     // and fall to first-of-many. The place name appears 3 times; only a
     // >32-char prefix tells the occurrences apart.
     const place = 'Paris';
-    const seg = (lead: string) => `${lead} the delegation arrived in ${place} and stayed.`;
+    const seg = (lead: string) =>
+      `${lead} the delegation arrived in ${place} and stayed.`;
     // Three near-identical sentences; the distinguishing words sit >32 chars
     // before "Paris", beyond the 32-char minimum window.
     const content = [
@@ -77,7 +78,8 @@ describe('reconcile — context-recovered', () => {
     ].join(' ');
 
     // 64-char prefix that uniquely identifies the SECOND occurrence.
-    const before = 'In the warm and pleasant summer of the prosperous year the delegation arrived in ';
+    const before =
+      'In the warm and pleasant summer of the prosperous year the delegation arrived in ';
     const llmPrefix = before.slice(-64);
     expect(llmPrefix.length).toBe(64);
 
@@ -170,7 +172,9 @@ describe('reconcile — no-overlap invariant on output', () => {
     const result = reconcile(content, { exact: 'The question for decision' });
     expect(result).not.toBeNull();
     if (result!.prefix !== undefined) {
-      expect(content.substring(result!.start - result!.prefix.length, result!.start)).toBe(result!.prefix);
+      expect(
+        content.substring(result!.start - result!.prefix.length, result!.start),
+      ).toBe(result!.prefix);
     }
   });
 
@@ -178,7 +182,9 @@ describe('reconcile — no-overlap invariant on output', () => {
     const result = reconcile(content, { exact: 'The question for decision' });
     expect(result).not.toBeNull();
     if (result!.suffix !== undefined) {
-      expect(content.substring(result!.end, result!.end + result!.suffix.length)).toBe(result!.suffix);
+      expect(
+        content.substring(result!.end, result!.end + result!.suffix.length),
+      ).toBe(result!.suffix);
     }
   });
 
@@ -191,10 +197,14 @@ describe('reconcile — no-overlap invariant on output', () => {
     expect(result!.start).toBe(truePos);
     expect(content.substring(result!.start, result!.end)).toBe(result!.exact);
     if (result!.prefix !== undefined) {
-      expect(content.substring(result!.start - result!.prefix.length, result!.start)).toBe(result!.prefix);
+      expect(
+        content.substring(result!.start - result!.prefix.length, result!.start),
+      ).toBe(result!.prefix);
     }
     if (result!.suffix !== undefined) {
-      expect(content.substring(result!.end, result!.end + result!.suffix.length)).toBe(result!.suffix);
+      expect(
+        content.substring(result!.end, result!.end + result!.suffix.length),
+      ).toBe(result!.suffix);
     }
   });
 });
@@ -215,7 +225,9 @@ describe('reconcile — LLM prefix/suffix never leak into output', () => {
     expect(result!.start).toBe(14);
     // The returned prefix must end where exact begins.
     expect(result!.prefix).not.toContain('Th');
-    expect(content.substring(result!.start - result!.prefix!.length, result!.start)).toBe(result!.prefix);
+    expect(
+      content.substring(result!.start - result!.prefix!.length, result!.start),
+    ).toBe(result!.prefix);
   });
 });
 
@@ -279,7 +291,11 @@ describe('reconcile — empty hint ≡ absent hint', () => {
     const content = 'X foo Y foo Z foo W';
 
     const absent = reconcile(content, { exact: 'foo' });
-    const empties = reconcile(content, { exact: 'foo', prefix: '', suffix: '' });
+    const empties = reconcile(content, {
+      exact: 'foo',
+      prefix: '',
+      suffix: '',
+    });
 
     expect(absent).not.toBeNull();
     expect(empties).toEqual(absent);
@@ -290,7 +306,11 @@ describe('reconcile — empty hint ≡ absent hint', () => {
     const content = 'Alice went to Paris.';
 
     const absent = reconcile(content, { exact: 'Paris' });
-    const empties = reconcile(content, { exact: 'Paris', prefix: '', suffix: '' });
+    const empties = reconcile(content, {
+      exact: 'Paris',
+      prefix: '',
+      suffix: '',
+    });
 
     expect(empties).toEqual(absent);
     expect(empties!.anchorMethod).toBe('unique-match');

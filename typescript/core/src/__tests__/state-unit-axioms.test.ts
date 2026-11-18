@@ -27,11 +27,25 @@ describe('assertStateUnitAxioms — the harness has teeth', () => {
             b$: b$.asObservable(),
             child: { state$: child$.asObservable() },
             browse: probe, // injected dependency, re-exposed but NOT disposed
-            set(v: number) { a$.next(v); },
-            async ping(): Promise<void> { /* async → exercises swallowAsync */ },
-            dispose() { a$.complete(); b$.complete(); child$.complete(); },
+            set(v: number) {
+              a$.next(v);
+            },
+            async ping(): Promise<void> {
+              /* async → exercises swallowAsync */
+            },
+            dispose() {
+              a$.complete();
+              b$.complete();
+              child$.complete();
+            },
           };
-          return { unit, passedIn: [probe], teardown: () => { /* noop */ } };
+          return {
+            unit,
+            passedIn: [probe],
+            teardown: () => {
+              /* noop */
+            },
+          };
         },
         surfaces: (u) => [u.a$, u.b$],
         invocations: (u) => [() => u.set(1), () => u.ping()],
@@ -70,7 +84,10 @@ describe('assertStateUnitAxioms — the harness has teeth', () => {
           const src = new BehaviorSubject<number>(0);
           // shareReplay + pipe yields an AnonymousSubject (instanceof Subject, but
           // carries a `.source` and is an inert sink) — must be excluded by X1.
-          const derived$ = src.pipe(shareReplay({ bufferSize: 1, refCount: true }), map((x) => x));
+          const derived$ = src.pipe(
+            shareReplay({ bufferSize: 1, refCount: true }),
+            map((x) => x),
+          );
           return { unit: { derived$, dispose: () => src.complete() } };
         },
       }),
@@ -97,7 +114,11 @@ describe('assertStateUnitAxioms — the harness has teeth', () => {
           const s = new BehaviorSubject<number>(0);
           return {
             s$: s.asObservable(),
-            dispose() { n += 1; if (n > 1) throw new Error('not idempotent'); s.complete(); },
+            dispose() {
+              n += 1;
+              if (n > 1) throw new Error('not idempotent');
+              s.complete();
+            },
           };
         },
         surfaces: (u) => [u.s$],
@@ -110,7 +131,14 @@ describe('assertStateUnitAxioms — the harness has teeth', () => {
       assertStateUnitAxioms({
         setup: () => {
           const s = new BehaviorSubject<number>(0);
-          return { unit: { value$: s.asObservable(), dispose: () => { /* ❌ forgets to complete */ } } };
+          return {
+            unit: {
+              value$: s.asObservable(),
+              dispose: () => {
+                /* ❌ forgets to complete */
+              },
+            },
+          };
         },
         surfaces: (u) => [u.value$],
       }),
@@ -124,7 +152,9 @@ describe('assertStateUnitAxioms — the harness has teeth', () => {
           const s = new BehaviorSubject<number>(0);
           return {
             s$: s.asObservable(),
-            boom() { throw new Error('not inert after dispose'); }, // ❌ throws post-dispose
+            boom() {
+              throw new Error('not inert after dispose');
+            }, // ❌ throws post-dispose
             dispose: () => s.complete(),
           };
         },
@@ -143,7 +173,9 @@ describe('assertStateUnitAxioms — the harness has teeth', () => {
           return {
             own$: own.asObservable(),
             child$: child.asObservable(),
-            dispose() { own.complete(); /* ❌ forgets the child */ },
+            dispose() {
+              own.complete(); /* ❌ forgets the child */
+            },
           };
         },
         surfaces: (u) => [u.own$],
@@ -158,7 +190,9 @@ describe('assertStateUnitAxioms — the harness has teeth', () => {
         setup: () => {
           const r = new ReplaySubject<number>(1);
           r.next(42); // completed-then-subscribed still replays 42 → not inert
-          return { unit: { r$: r.asObservable(), dispose: () => r.complete() } };
+          return {
+            unit: { r$: r.asObservable(), dispose: () => r.complete() },
+          };
         },
         surfaces: (u) => [u.r$],
       }),

@@ -20,10 +20,19 @@ interface IdentityCase {
   resource: string | null;
 }
 
-const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../protocol/specs/src/kb-identity/cases.json');
-const { cases } = JSON.parse(readFileSync(TABLE, 'utf-8')) as { cases: IdentityCase[] };
+const TABLE = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../protocol/specs/src/kb-identity/cases.json',
+);
+const { cases } = JSON.parse(readFileSync(TABLE, 'utf-8')) as {
+  cases: IdentityCase[];
+};
 
-const declared = cases.flatMap((c) => (c.domain === null ? [] : [{ why: c.why, domain: c.domain, did: c.did, resource: c.resource }]));
+const declared = cases.flatMap((c) =>
+  c.domain === null
+    ? []
+    : [{ why: c.why, domain: c.domain, did: c.did, resource: c.resource }],
+);
 
 describe('KB identity — kbDid and kbResource agree with the shared table', () => {
   it('the table has cases with a domain: a gate that runs nothing passes on silence', () => {
@@ -31,6 +40,9 @@ describe('KB identity — kbDid and kbResource agree with the shared table', () 
   });
 
   it.each(declared)('$why', (c) => {
-    expect({ did: kbDid(c.domain), resource: kbResource(c.domain) }).toEqual({ did: c.did, resource: c.resource });
+    expect({ did: kbDid(c.domain), resource: kbResource(c.domain) }).toEqual({
+      did: c.did,
+      resource: c.resource,
+    });
   });
 });

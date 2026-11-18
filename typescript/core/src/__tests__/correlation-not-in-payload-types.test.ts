@@ -35,7 +35,9 @@ import type { EventMap } from '../bus-protocol';
  * listed — a new channel enrols itself.
  */
 type ChannelsWithCidInPayload = {
-  [K in keyof EventMap]: EventMap[K] extends { correlationId: unknown } ? K : never;
+  [K in keyof EventMap]: EventMap[K] extends { correlationId: unknown }
+    ? K
+    : never;
 }[keyof EventMap];
 
 /**
@@ -48,7 +50,8 @@ type ChannelsWithCidInPayload = {
  * whatever the census computes, because `never` is assignable to everything,
  * and the gate passes a registry full of violations while looking identical.
  */
-const _noPayloadCarriesCorrelation: never = undefined as never as ChannelsWithCidInPayload;
+const _noPayloadCarriesCorrelation: never =
+  undefined as never as ChannelsWithCidInPayload;
 
 describe('no channel payload type declares correlationId', () => {
   it('is enforced by the assignment above, which fails the TYPECHECK, not this run', () => {

@@ -6,7 +6,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { reconcile, type QuotedText, type ReconciledSpan } from '../annotation-builders';
+import {
+  reconcile,
+  type QuotedText,
+  type ReconciledSpan,
+} from '../annotation-builders';
 
 interface Case {
   why: string;
@@ -17,7 +21,13 @@ interface Case {
 }
 
 const table: { cases: Case[] } = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/annotations/reconcile-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/annotations/reconcile-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
 describe('reconciling a quoted span (protocol/specs/src/annotations/reconcile-cases.json)', () => {

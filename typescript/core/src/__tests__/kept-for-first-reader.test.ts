@@ -2,10 +2,18 @@ import { describe, it, expect } from 'vitest';
 import { ERRORS_KEPT_FOR_FIRST_READER_COUNT } from '../client-timing';
 import { KeptForFirstReader } from '../kept-for-first-reader';
 
-function heardBy<T>(stream: KeptForFirstReader<T>): { heard: T[]; ended: () => boolean } {
+function heardBy<T>(stream: KeptForFirstReader<T>): {
+  heard: T[];
+  ended: () => boolean;
+} {
   const heard: T[] = [];
   let ended = false;
-  stream.said$.subscribe({ next: (value) => heard.push(value), complete: () => { ended = true; } });
+  stream.said$.subscribe({
+    next: (value) => heard.push(value),
+    complete: () => {
+      ended = true;
+    },
+  });
   return { heard, ended: () => ended };
 }
 
@@ -13,7 +21,10 @@ describe('KeptForFirstReader', () => {
   it('gives its first reader the latest ERRORS_KEPT_FOR_FIRST_READER_COUNT said before it came, in order, the oldest dropped', () => {
     const stream = new KeptForFirstReader<number>();
     const beyond = 5;
-    const said = Array.from({ length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond }, (_, n) => n);
+    const said = Array.from(
+      { length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond },
+      (_, n) => n,
+    );
     for (const value of said) stream.say(value);
 
     expect(heardBy(stream).heard).toEqual(said.slice(beyond));
@@ -27,7 +38,11 @@ describe('KeptForFirstReader', () => {
     const second = heardBy(stream);
     stream.say('after both read');
 
-    expect(first.heard).toEqual(['before anyone read', 'before the second read', 'after both read']);
+    expect(first.heard).toEqual([
+      'before anyone read',
+      'before the second read',
+      'after both read',
+    ]);
     expect(second.heard).toEqual(['after both read']);
   });
 

@@ -158,7 +158,11 @@ export function ComposeStep({
         {fixedTypes ? (
           <div className="xynolog-form__entity-type-tags" role="list">
             {referenceEntityTypes.map((type) => (
-              <span key={type} role="listitem" className="xynolog-form__entity-type-tag">
+              <span
+                key={type}
+                role="listitem"
+                className="xynolog-form__entity-type-tag"
+              >
                 {type}
               </span>
             ))}
@@ -171,11 +175,13 @@ export function ComposeStep({
                 <button
                   key={type}
                   type="button"
-                  onClick={() => onDraftChange({
-                    entityTypes: isSelected
-                      ? draft.entityTypes.filter((x) => x !== type)
-                      : [...draft.entityTypes, type],
-                  })}
+                  onClick={() =>
+                    onDraftChange({
+                      entityTypes: isSelected
+                        ? draft.entityTypes.filter((x) => x !== type)
+                        : [...draft.entityTypes, type],
+                    })
+                  }
                   className="xynolog-form__entity-type-button"
                   data-selected={isSelected}
                   aria-pressed={isSelected}
@@ -227,7 +233,12 @@ export function ComposeStep({
       <WizardFooter
         backLabel={t.back}
         onBack={onBack}
-        primary={{ label: t.createAndLink, pendingLabel: t.creatingAndLinking, pending: isCreating, type: 'submit' }}
+        primary={{
+          label: t.createAndLink,
+          pendingLabel: t.creatingAndLinking,
+          pending: isCreating,
+          type: 'submit',
+        }}
       />
     </form>
   );

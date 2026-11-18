@@ -5,8 +5,14 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { filter, map, skip, take, toArray } from 'rxjs/operators';
 import type { XynologClient } from '@xynolog/sdk';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
-import { createDiscoverStateUnit, type DiscoverStateUnit } from '../discover-state-unit';
-import { assertStateUnitAxioms, disposeProbe } from '@xynolog/core/testing/axioms';
+import {
+  createDiscoverStateUnit,
+  type DiscoverStateUnit,
+} from '../discover-state-unit';
+import {
+  assertStateUnitAxioms,
+  disposeProbe,
+} from '@xynolog/core/testing/axioms';
 
 function mockBrowse(): ShellStateUnit {
   return { dispose: vi.fn() } as unknown as ShellStateUnit;
@@ -20,37 +26,64 @@ interface BrowseFilters {
   entityType?: string;
 }
 
-function mockClient(overrides: {
-  resources$?: BehaviorSubject<unknown[] | undefined>;
-  entityTypes$?: BehaviorSubject<string[] | undefined>;
-  resourcesFn?: (filters: BrowseFilters) => BehaviorSubject<unknown[] | undefined>;
-  /** What the stubbed search envelope reports as its match kind. */
-  matchKind?: 'lexical' | 'semantic';
-} = {}): { client: XynologClient; resourceCalls: BrowseFilters[] } {
+function mockClient(
+  overrides: {
+    resources$?: BehaviorSubject<unknown[] | undefined>;
+    entityTypes$?: BehaviorSubject<string[] | undefined>;
+    resourcesFn?: (
+      filters: BrowseFilters,
+    ) => BehaviorSubject<unknown[] | undefined>;
+    /** What the stubbed search envelope reports as its match kind. */
+    matchKind?: 'lexical' | 'semantic';
+  } = {},
+): { client: XynologClient; resourceCalls: BrowseFilters[] } {
   const resourceCalls: BrowseFilters[] = [];
   const defaultResources$ =
-    overrides.resources$ ?? new BehaviorSubject<unknown[] | undefined>([{ '@id': 'r1' }]);
+    overrides.resources$ ??
+    new BehaviorSubject<unknown[] | undefined>([{ '@id': 'r1' }]);
   const entityTypes$ =
-    overrides.entityTypes$ ?? new BehaviorSubject<string[] | undefined>(['Person']);
+    overrides.entityTypes$ ??
+    new BehaviorSubject<string[] | undefined>(['Person']);
 
   const resourcesFn = overrides.resourcesFn ?? (() => defaultResources$);
 
   // Arrays get the envelope the query emits; explicit status objects (B15
   // fixtures) and `undefined` pass through.
-  const asked = (filters: BrowseFilters, envelope: (page: unknown[]) => unknown) => {
+  const asked = (
+    filters: BrowseFilters,
+    envelope: (page: unknown[]) => unknown,
+  ) => {
     resourceCalls.push(filters);
-    return asStates(resourcesFn(filters).asObservable().pipe(map((v) => (Array.isArray(v) ? envelope(v) : v))));
+    return asStates(
+      resourcesFn(filters)
+        .asObservable()
+        .pipe(map((v) => (Array.isArray(v) ? envelope(v) : v))),
+    );
   };
 
   const client = {
     browse: {
       resources: (filters: Omit<BrowseFilters, 'search'> = {}) =>
-        asked(filters, (page) => ({ resources: page, total: page.length, offset: 0, limit: 20 })),
+        asked(filters, (page) => ({
+          resources: page,
+          total: page.length,
+          offset: 0,
+          limit: 20,
+        })),
       entityTypes: () => asStates(entityTypes$.asObservable()),
     },
     match: {
-      resources: (search: string, filters: Omit<BrowseFilters, 'search'> = {}) =>
-        asked({ search, ...filters }, (page) => ({ resources: page, total: page.length, offset: 0, limit: 20, matchKind: overrides.matchKind ?? 'lexical' })),
+      resources: (
+        search: string,
+        filters: Omit<BrowseFilters, 'search'> = {},
+      ) =>
+        asked({ search, ...filters }, (page) => ({
+          resources: page,
+          total: page.length,
+          offset: 0,
+          limit: 20,
+          matchKind: overrides.matchKind ?? 'lexical',
+        })),
     },
   } as unknown as XynologClient;
 
@@ -65,9 +98,17 @@ describe('createDiscoverStateUnit — search match kind', () => {
   it('emits matchKind in the SAME value as the results it labels', async () => {
     vi.useFakeTimers();
     try {
-      const results$ = new BehaviorSubject<unknown[] | undefined>([{ '@id': 'sem-1' }]);
-      const { client } = mockClient({ resourcesFn: () => results$, matchKind: 'semantic' });
-      const stateUnit = createDiscoverStateUnit(sessionOf(client), mockBrowse());
+      const results$ = new BehaviorSubject<unknown[] | undefined>([
+        { '@id': 'sem-1' },
+      ]);
+      const { client } = mockClient({
+        resourcesFn: () => results$,
+        matchKind: 'semantic',
+      });
+      const stateUnit = createDiscoverStateUnit(
+        sessionOf(client),
+        mockBrowse(),
+      );
 
       // Subscribe BEFORE setQuery: `queryInput$` is a plain Subject, so a value
       // pushed with nothing listening is gone.
@@ -142,7 +183,9 @@ describe('createDiscoverStateUnit', () => {
     expect(loading).toBe(true);
 
     resources$.next([]);
-    const loaded = await firstValueFrom(stateUnit.recent.loading$.pipe(filter((l) => !l)));
+    const loaded = await firstValueFrom(
+      stateUnit.recent.loading$.pipe(filter((l) => !l)),
+    );
     expect(loaded).toBe(false);
 
     stateUnit.dispose();
@@ -184,7 +227,11 @@ describe('createDiscoverStateUnit', () => {
     expect(await firstValueFrom(stateUnit.selectedEntityType$)).toBe('Person');
     // Two calls expected: initial '' then 'Person'.
     expect(resourceCalls.length).toBeGreaterThanOrEqual(2);
-    expect(resourceCalls.at(-1)).toEqual({ limit: 10, archived: false, entityType: 'Person' });
+    expect(resourceCalls.at(-1)).toEqual({
+      limit: 10,
+      archived: false,
+      entityType: 'Person',
+    });
 
     sub.unsubscribe();
     stateUnit.dispose();
@@ -194,7 +241,10 @@ describe('createDiscoverStateUnit', () => {
     vi.useFakeTimers();
     try {
       const { client, resourceCalls } = mockClient();
-      const stateUnit = createDiscoverStateUnit(sessionOf(client), mockBrowse());
+      const stateUnit = createDiscoverStateUnit(
+        sessionOf(client),
+        mockBrowse(),
+      );
 
       const collected: Array<{ results: unknown[]; isSearching: boolean }> = [];
       const sub = stateUnit.search.state$.subscribe((s) => collected.push(s));
@@ -215,11 +265,19 @@ describe('createDiscoverStateUnit', () => {
   it('search with a non-empty query and selected entityType pushes both into the filter', async () => {
     vi.useFakeTimers();
     try {
-      const results$ = new BehaviorSubject<unknown[] | undefined>([{ '@id': 'hit' }]);
+      const results$ = new BehaviorSubject<unknown[] | undefined>([
+        { '@id': 'hit' },
+      ]);
       const { client, resourceCalls } = mockClient({
-        resourcesFn: (filters) => (filters.search ? results$ : new BehaviorSubject<unknown[] | undefined>([])),
+        resourcesFn: (filters) =>
+          filters.search
+            ? results$
+            : new BehaviorSubject<unknown[] | undefined>([]),
       });
-      const stateUnit = createDiscoverStateUnit(sessionOf(client), mockBrowse());
+      const stateUnit = createDiscoverStateUnit(
+        sessionOf(client),
+        mockBrowse(),
+      );
 
       const sub = stateUnit.search.state$.subscribe();
       stateUnit.setSelectedEntityType('Person');
@@ -245,11 +303,16 @@ describe('createDiscoverStateUnit', () => {
   it('search results flow through state$ once the debounced query fetches', async () => {
     vi.useFakeTimers();
     try {
-      const results$ = new BehaviorSubject<unknown[] | undefined>([{ '@id': 'hit' }]);
+      const results$ = new BehaviorSubject<unknown[] | undefined>([
+        { '@id': 'hit' },
+      ]);
       const { client } = mockClient({
         resourcesFn: () => results$,
       });
-      const stateUnit = createDiscoverStateUnit(sessionOf(client), mockBrowse());
+      const stateUnit = createDiscoverStateUnit(
+        sessionOf(client),
+        mockBrowse(),
+      );
 
       const collected: Array<{ results: unknown[]; isSearching: boolean }> = [];
       const sub = stateUnit.search.state$.subscribe((s) => collected.push(s));
@@ -257,7 +320,11 @@ describe('createDiscoverStateUnit', () => {
       stateUnit.search.setQuery('lincoln');
       await vi.advanceTimersByTimeAsync(300);
 
-      expect(collected.at(-1)).toEqual({ results: [{ '@id': 'hit' }], isSearching: false, matchKind: 'lexical' });
+      expect(collected.at(-1)).toEqual({
+        results: [{ '@id': 'hit' }],
+        isSearching: false,
+        matchKind: 'lexical',
+      });
 
       sub.unsubscribe();
       stateUnit.dispose();
@@ -273,7 +340,10 @@ describe('createDiscoverStateUnit', () => {
       const { client } = mockClient({
         resourcesFn: () => inflight$,
       });
-      const stateUnit = createDiscoverStateUnit(sessionOf(client), mockBrowse());
+      const stateUnit = createDiscoverStateUnit(
+        sessionOf(client),
+        mockBrowse(),
+      );
 
       const collected: Array<{ results: unknown[]; isSearching: boolean }> = [];
       const sub = stateUnit.search.state$.subscribe((s) => collected.push(s));
@@ -294,7 +364,9 @@ describe('createDiscoverStateUnit', () => {
     const { client } = mockClient();
     const stateUnit = createDiscoverStateUnit(sessionOf(client), mockBrowse());
 
-    const queries = stateUnit.search.query$.pipe(skip(1), take(1), toArray()).toPromise();
+    const queries = stateUnit.search.query$
+      .pipe(skip(1), take(1), toArray())
+      .toPromise();
     stateUnit.search.setQuery('alpha');
 
     expect(await queries).toEqual(['alpha']);
@@ -324,7 +396,13 @@ describe('DiscoverStateUnit — StateUnit axioms', () => {
       setup: () => {
         const browse = disposeProbe();
         const { client } = mockClient();
-        return { unit: createDiscoverStateUnit(sessionOf(client), browse as unknown as ShellStateUnit), passedIn: [browse] };
+        return {
+          unit: createDiscoverStateUnit(
+            sessionOf(client),
+            browse as unknown as ShellStateUnit,
+          ),
+          passedIn: [browse],
+        };
       },
       surfaces: (u) => [u.selectedEntityType$],
       invocations: (u) => [() => u.setSelectedEntityType('')],
@@ -342,11 +420,15 @@ describe('createDiscoverStateUnit — terminal load failure', () => {
     const unit = createDiscoverStateUnit(sessionOf(client), mockBrowse());
 
     expect(await firstValueFrom(unit.recent.loading$)).toBe(true);
-    resources$.next({ status: 'failed', error: new Error('Resource not found') } as never);
+    resources$.next({
+      status: 'failed',
+      error: new Error('Resource not found'),
+    } as never);
 
     expect(await firstValueFrom(unit.recent.loading$)).toBe(false);
-    expect((await firstValueFrom(unit.recent.error$) as Error | null)?.message)
-      .toBe('Resource not found');
+    expect(
+      ((await firstValueFrom(unit.recent.error$)) as Error | null)?.message,
+    ).toBe('Resource not found');
 
     unit.dispose();
   });

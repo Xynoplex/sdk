@@ -6,10 +6,20 @@
  * the preference channels; owners (viewer instances / hosts) apply the values.
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { vi, beforeEach, describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
-import { AnnotateToolbar, type SelectionMotivation, type ClickAction } from '../AnnotateToolbar';
+import {
+  AnnotateToolbar,
+  type SelectionMotivation,
+  type ClickAction,
+} from '../AnnotateToolbar';
 import { ANNOTATORS } from '../../../lib/annotation-registry';
 import { TranslationProvider } from '../../../contexts/TranslationContext';
 import type { TranslationManager } from '../../../types/TranslationManager';
@@ -90,14 +100,18 @@ describe('AnnotateToolbar', () => {
     });
 
     it('hides the delete option when showDeleteButton is false', () => {
-      renderWithIntl(<AnnotateToolbar {...defaultProps} showDeleteButton={false} />);
+      renderWithIntl(
+        <AnnotateToolbar {...defaultProps} showDeleteButton={false} />,
+      );
       const clickGroup = screen.getByLabelText('Click');
       fireEvent.mouseEnter(clickGroup.parentElement!);
       expect(screen.queryByText('Delete')).not.toBeInTheDocument();
     });
 
     it('displays the given mode across rerenders (value comes from the owner)', () => {
-      const { rerender } = renderWithIntl(<AnnotateToolbar {...defaultProps} annotateMode={false} />);
+      const { rerender } = renderWithIntl(
+        <AnnotateToolbar {...defaultProps} annotateMode={false} />,
+      );
       expect(screen.getByText('Browse')).toBeInTheDocument();
       rerender(
         <TranslationProvider translationManager={translationManager}>
@@ -111,7 +125,12 @@ describe('AnnotateToolbar', () => {
   describe('parts composition', () => {
     it("parts={['shape']} renders exactly the shape group", () => {
       const { container } = renderWithIntl(
-        <AnnotateToolbar {...defaultProps} parts={['shape']} selectedShape="rectangle" mediaType="image/png" />,
+        <AnnotateToolbar
+          {...defaultProps}
+          parts={['shape']}
+          selectedShape="rectangle"
+          mediaType="image/png"
+        />,
       );
       expect(screen.getByLabelText('Shape')).toBeInTheDocument();
       expect(screen.queryByLabelText('Click')).not.toBeInTheDocument();
@@ -128,12 +147,18 @@ describe('AnnotateToolbar', () => {
       expect(screen.getByLabelText('Click')).toBeInTheDocument();
       expect(screen.getByLabelText('Mode')).toBeInTheDocument();
       expect(screen.queryByLabelText('Motivation')).not.toBeInTheDocument();
-      expect(container.querySelectorAll('.xynolog-toolbar-separator')).toHaveLength(1);
+      expect(
+        container.querySelectorAll('.xynolog-toolbar-separator'),
+      ).toHaveLength(1);
     });
 
     it('the default renders all four groups (shape media-gated: none for PDF beyond rectangle)', () => {
       renderWithIntl(
-        <AnnotateToolbar {...defaultProps} selectedShape="rectangle" mediaType="image/png" />,
+        <AnnotateToolbar
+          {...defaultProps}
+          selectedShape="rectangle"
+          mediaType="image/png"
+        />,
       );
       expect(screen.getByLabelText('Click')).toBeInTheDocument();
       expect(screen.getByLabelText('Mode')).toBeInTheDocument();
@@ -145,21 +170,39 @@ describe('AnnotateToolbar', () => {
   describe('Mode control', () => {
     it('reports the next mode via onModeChange when switching to Annotate', async () => {
       const onModeChange = vi.fn();
-      renderWithIntl(<AnnotateToolbar {...defaultProps} annotateMode={false} onModeChange={onModeChange} />);
+      renderWithIntl(
+        <AnnotateToolbar
+          {...defaultProps}
+          annotateMode={false}
+          onModeChange={onModeChange}
+        />,
+      );
       await pick('Mode', 'Annotate');
       expect(onModeChange).toHaveBeenCalledWith(true);
     });
 
     it('reports false when switching back to Browse from annotate mode', async () => {
       const onModeChange = vi.fn();
-      renderWithIntl(<AnnotateToolbar {...defaultProps} annotateMode={true} onModeChange={onModeChange} />);
+      renderWithIntl(
+        <AnnotateToolbar
+          {...defaultProps}
+          annotateMode={true}
+          onModeChange={onModeChange}
+        />,
+      );
       await pick('Mode', 'Browse');
       expect(onModeChange).toHaveBeenCalledWith(false);
     });
 
     it('clicking the CURRENT mode reports nothing', async () => {
       const onModeChange = vi.fn();
-      renderWithIntl(<AnnotateToolbar {...defaultProps} annotateMode={false} onModeChange={onModeChange} />);
+      renderWithIntl(
+        <AnnotateToolbar
+          {...defaultProps}
+          annotateMode={false}
+          onModeChange={onModeChange}
+        />,
+      );
       const trigger = screen.getByLabelText('Mode');
       fireEvent.mouseEnter(trigger.parentElement!);
       await waitFor(() => {
@@ -173,13 +216,20 @@ describe('AnnotateToolbar', () => {
   describe('Click-action control', () => {
     it('reports the chosen action via onClickActionChange', async () => {
       const onClickActionChange = vi.fn();
-      renderWithIntl(<AnnotateToolbar {...defaultProps} onClickActionChange={onClickActionChange} />);
+      renderWithIntl(
+        <AnnotateToolbar
+          {...defaultProps}
+          onClickActionChange={onClickActionChange}
+        />,
+      );
       await pick('Click', 'Follow');
       expect(onClickActionChange).toHaveBeenCalledWith('follow');
     });
 
     it('displays the selected action from props', () => {
-      renderWithIntl(<AnnotateToolbar {...defaultProps} selectedClick="jsonld" />);
+      renderWithIntl(
+        <AnnotateToolbar {...defaultProps} selectedClick="jsonld" />,
+      );
       expect(screen.getByText('JSON-LD')).toBeInTheDocument();
     });
   });
@@ -187,7 +237,12 @@ describe('AnnotateToolbar', () => {
   describe('Selection control', () => {
     it('reports the chosen motivation', async () => {
       const onSelectionChange = vi.fn();
-      renderWithIntl(<AnnotateToolbar {...defaultProps} onSelectionChange={onSelectionChange} />);
+      renderWithIntl(
+        <AnnotateToolbar
+          {...defaultProps}
+          onSelectionChange={onSelectionChange}
+        />,
+      );
       await pick('Motivation', 'Highlight');
       expect(onSelectionChange).toHaveBeenCalledWith('highlighting');
     });
@@ -195,7 +250,11 @@ describe('AnnotateToolbar', () => {
     it('re-picking the current motivation reports null (toggle off)', async () => {
       const onSelectionChange = vi.fn();
       renderWithIntl(
-        <AnnotateToolbar {...defaultProps} selectedMotivation="highlighting" onSelectionChange={onSelectionChange} />,
+        <AnnotateToolbar
+          {...defaultProps}
+          selectedMotivation="highlighting"
+          onSelectionChange={onSelectionChange}
+        />,
       );
       await pick('Motivation', 'Highlight');
       expect(onSelectionChange).toHaveBeenCalledWith(null);
@@ -204,7 +263,11 @@ describe('AnnotateToolbar', () => {
     it('picking None reports null', async () => {
       const onSelectionChange = vi.fn();
       renderWithIntl(
-        <AnnotateToolbar {...defaultProps} selectedMotivation="linking" onSelectionChange={onSelectionChange} />,
+        <AnnotateToolbar
+          {...defaultProps}
+          selectedMotivation="linking"
+          onSelectionChange={onSelectionChange}
+        />,
       );
       await pick('Motivation', 'None');
       expect(onSelectionChange).toHaveBeenCalledWith(null);
@@ -215,8 +278,13 @@ describe('AnnotateToolbar', () => {
     it('reports the chosen shape', async () => {
       const onShapeChange = vi.fn();
       renderWithIntl(
-        <AnnotateToolbar {...defaultProps} parts={['shape']} selectedShape="rectangle"
-          mediaType="image/png" onShapeChange={onShapeChange} />,
+        <AnnotateToolbar
+          {...defaultProps}
+          parts={['shape']}
+          selectedShape="rectangle"
+          mediaType="image/png"
+          onShapeChange={onShapeChange}
+        />,
       );
       await pick('Shape', 'Circle');
       expect(onShapeChange).toHaveBeenCalledWith('circle');
@@ -231,7 +299,9 @@ describe('AnnotateToolbar', () => {
       await waitFor(() => expect(screen.getByRole('menu')).toBeInTheDocument());
       fireEvent.keyDown(document, { key: 'Escape' });
       fireEvent.mouseLeave(trigger.parentElement!);
-      await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+      await waitFor(() =>
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument(),
+      );
     });
   });
 });

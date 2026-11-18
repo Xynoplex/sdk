@@ -58,7 +58,12 @@ import {
   type BeginAuthorizationOptions,
 } from './oauth';
 import { describeConnection } from './connect';
-import type { KbEndpoint, KbRead, KnowledgeBase, NewKnowledgeBase } from '@xynolog/core';
+import type {
+  KbEndpoint,
+  KbRead,
+  KnowledgeBase,
+  NewKnowledgeBase,
+} from '@xynolog/core';
 import { kbRead, type KbSessionStatus } from './knowledge-base';
 import {
   applyTabChecks,
@@ -79,7 +84,9 @@ import type { SessionFactory } from './session-factory';
  */
 function signalled<T>(payload: T | FrameRefusal): T {
   if (payload instanceof FrameRefusal) {
-    throw new Error(`The app-scoped bus holds a refusal on ${payload.channel}, and nothing bridges into it`);
+    throw new Error(
+      `The app-scoped bus holds a refusal on ${payload.channel}, and nothing bridges into it`,
+    );
   }
   return payload;
 }
@@ -90,7 +97,9 @@ function signalled<T>(payload: T | FrameRefusal): T {
  * flat `openDocuments` key in storage is deliberately ignored: it does not
  * record which KB its entries belong to.
  */
-function openResourcesByKbOf(stored: string | null): Record<string, OpenResource[]> {
+function openResourcesByKbOf(
+  stored: string | null,
+): Record<string, OpenResource[]> {
   if (stored === null) return {};
   try {
     return JSON.parse(stored) as Record<string, OpenResource[]>;
@@ -116,10 +125,12 @@ function lastViewedByKbOf(stored: string | null): Record<string, string> {
  */
 export function samePlace(one: KbEndpoint, other: KbEndpoint): boolean {
   if (one.kind === 'http') {
-    return other.kind === 'http'
-      && one.protocol === other.protocol
-      && one.host.toLowerCase() === other.host.toLowerCase()
-      && one.port === other.port;
+    return (
+      other.kind === 'http' &&
+      one.protocol === other.protocol &&
+      one.host.toLowerCase() === other.host.toLowerCase() &&
+      one.port === other.port
+    );
   }
   return other.kind === 'local' && one.kbId === other.kbId;
 }
@@ -141,7 +152,8 @@ function changeKept<T>(
     written = change(read(stored));
     return JSON.stringify(written);
   });
-  if (written === undefined) throw new Error(`The storage did not change ${key}`);
+  if (written === undefined)
+    throw new Error(`The storage did not change ${key}`);
   return written;
 }
 
@@ -269,16 +281,20 @@ export class XynologBrowser {
     const initialActive =
       storedActive && kbs.some((kb) => kb.id === storedActive)
         ? storedActive
-        : kbs[0]?.id ?? null;
+        : (kbs[0]?.id ?? null);
 
     this.kbs$ = new BehaviorSubject<KnowledgeBase[]>([]);
     this.activeKbId$ = new BehaviorSubject<string | null>(null);
     this.activeSession$ = new BehaviorSubject<XynologSession | null>(null);
     this.activeSignals$ = new BehaviorSubject<SessionSignals | null>(null);
     this.sessionActivating$ = new BehaviorSubject<boolean>(false);
-    this.openByKb = openResourcesByKbOf(this.storage.get(OPEN_RESOURCES_BY_KB_KEY));
+    this.openByKb = openResourcesByKbOf(
+      this.storage.get(OPEN_RESOURCES_BY_KB_KEY),
+    );
     this.openResources$ = new BehaviorSubject<OpenResource[]>([]);
-    this.lastViewedByKb = lastViewedByKbOf(this.storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY));
+    this.lastViewedByKb = lastViewedByKbOf(
+      this.storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY),
+    );
     this.lastViewedResource$ = new BehaviorSubject<string | null>(null);
     this.error$ = this.said.said$;
     this.identityToken$ = new BehaviorSubject<string | null>(null);
@@ -306,7 +322,10 @@ export class XynologBrowser {
       if (!newValue) return;
       try {
         if (key === OPEN_RESOURCES_BY_KB_KEY) {
-          this.openByKb = JSON.parse(newValue) as Record<string, OpenResource[]>;
+          this.openByKb = JSON.parse(newValue) as Record<
+            string,
+            OpenResource[]
+          >;
           this.refreshOpenResources();
         } else if (key === LAST_VIEWED_RESOURCE_BY_KB_KEY) {
           this.lastViewedByKb = JSON.parse(newValue) as Record<string, string>;
@@ -342,7 +361,9 @@ export class XynologBrowser {
 
   /** Read-only observable for an app-scoped channel. */
   stream<K extends keyof EventMap>(channel: K): Observable<EventMap[K]> {
-    return this.eventBus.on(channel).pipe(map((payload) => signalled<EventMap[K]>(payload)));
+    return this.eventBus
+      .on(channel)
+      .pipe(map((payload) => signalled<EventMap[K]>(payload)));
   }
 
   // ── Identity token (external OAuth/identity bridge) ───────────────────
@@ -396,8 +417,16 @@ export class XynologBrowser {
    * Several entries can share an address, one per KB that has answered there.
    */
   async completeSignIn(callbackUrl: string): Promise<SignInOutcome> {
-    const { pending, tokens } = await completeAuthorization(callbackUrl, this.storage, this.fetch);
-    const identity = await describeConnection(pending.target, tokens.access, this.fetch);
+    const { pending, tokens } = await completeAuthorization(
+      callbackUrl,
+      this.storage,
+      this.fetch,
+    );
+    const identity = await describeConnection(
+      pending.target,
+      tokens.access,
+      this.fetch,
+    );
     const label = identity.description.name;
     const lastRead = kbRead(identity.description, new Date());
     const session: StoredSession = {
@@ -405,18 +434,30 @@ export class XynologBrowser {
       refresh: tokens.refresh,
       clientId: BROWSER_CLIENT_ID,
       tokenEndpoint: pending.issuer.token,
-      ...(pending.issuer.revocation ? { revocationEndpoint: pending.issuer.revocation } : {}),
+      ...(pending.issuer.revocation
+        ? { revocationEndpoint: pending.issuer.revocation }
+        : {}),
     };
     const kbs = this.kbs$.getValue();
-    const atAddress = kbs.filter((kb) => samePlace(kb.endpoint, pending.target));
+    const atAddress = kbs.filter((kb) =>
+      samePlace(kb.endpoint, pending.target),
+    );
     // An address with several entries singles out no belief of its own.
     const believed = pending.kbId
       ? kbs.find((kb) => kb.id === pending.kbId)
-      : atAddress.length === 1 ? atAddress[0] : undefined;
+      : atAddress.length === 1
+        ? atAddress[0]
+        : undefined;
     const expected = pending.expectedDid
-      ? { did: pending.expectedDid, ...(pending.expectedName ? { name: pending.expectedName } : {}) }
+      ? {
+          did: pending.expectedDid,
+          ...(pending.expectedName ? { name: pending.expectedName } : {}),
+        }
       : believed
-        ? { did: believed.did, ...(believed.label ? { name: believed.label } : {}) }
+        ? {
+            did: believed.did,
+            ...(believed.label ? { name: believed.label } : {}),
+          }
         : undefined;
 
     const answered = atAddress.find((kb) => kb.did === identity.did);
@@ -452,7 +493,9 @@ export class XynologBrowser {
    */
   updateKb(id: string, updates: { label?: string; lastRead?: KbRead }): void {
     this.putKbs(
-      this.kbs$.getValue().map((kb) => (kb.id === id ? { ...kb, ...updates } : kb)),
+      this.kbs$
+        .getValue()
+        .map((kb) => (kb.id === id ? { ...kb, ...updates } : kb)),
     );
   }
 
@@ -640,7 +683,12 @@ export class XynologBrowser {
     if (stored?.revocationEndpoint) {
       // The local act is the sign-out; an unreachable issuer must not trap
       // the user in a session they asked to end.
-      void revokeAtIssuer(stored.revocationEndpoint, stored.clientId, stored.refresh, this.fetch).catch(() => {});
+      void revokeAtIssuer(
+        stored.revocationEndpoint,
+        stored.clientId,
+        stored.refresh,
+        this.fetch,
+      ).catch(() => {});
     }
 
     // Bump the kbs$ list so downstream status-derivations re-run.
@@ -667,7 +715,8 @@ export class XynologBrowser {
       this.activeSignals$.next(null);
       this.endSession(prevSession, prevSignals);
     }
-    if (forgotten !== null && forgotten.personKey !== undefined) forgetKept(this.storage, id, forgotten.personKey);
+    if (forgotten !== null && forgotten.personKey !== undefined)
+      forgetKept(this.storage, id, forgotten.personKey);
   }
 
   // ── Open resources (per-KB; the visible list is a projection) ─────────
@@ -675,7 +724,8 @@ export class XynologBrowser {
   private refreshOpenResources(): void {
     const kbId = this.activeKbId$.getValue();
     const session = this.activeSession$.getValue();
-    const list = kbId && session ? sortOpenResources(this.openByKb[kbId] ?? []) : [];
+    const list =
+      kbId && session ? sortOpenResources(this.openByKb[kbId] ?? []) : [];
     this.openResources$.next(list);
   }
 
@@ -693,7 +743,9 @@ export class XynologBrowser {
    * removal needs no toast. The phantom silently ceasing to exist IS the
    * correct outcome.
    */
-  private async validateOpenResources(session: XynologSession | null): Promise<void> {
+  private async validateOpenResources(
+    session: XynologSession | null,
+  ): Promise<void> {
     const kbId = this.activeKbId$.getValue();
     if (!session || !kbId || this.validatedFor === session) return;
     this.validatedFor = session;
@@ -706,32 +758,41 @@ export class XynologBrowser {
     const verdict = await this.readKb(session, kbId);
     if (verdict.kind === 'conflict') {
       // The read was of this session's KB; what it voids is the ACTIVE KB's.
-      if (!this.disposed && this.activeSession$.getValue() === session) this.voidForConflict(kbId, verdict.observedDid);
+      if (!this.disposed && this.activeSession$.getValue() === session)
+        this.voidForConflict(kbId, verdict.observedDid);
       return;
     }
 
     // Committed state here too, for the same reason `mutateOpenResources`
     // writes against it: a sibling context may have added a tab before this
     // session activated, and that tab deserves checking like any other.
-    const ids = (openResourcesByKbOf(this.storage.get(OPEN_RESOURCES_BY_KB_KEY))[kbId] ?? []).map((tab) => tab.id);
+    const ids = (
+      openResourcesByKbOf(this.storage.get(OPEN_RESOURCES_BY_KB_KEY))[kbId] ??
+      []
+    ).map((tab) => tab.id);
     if (ids.length === 0) return;
 
     const checks = new Map<ResourceId, TabCheck>();
     // Bounded concurrency. Tab counts are small, so a fixed lane count
     // beats any cleverer scheduler; the point is to not open N requests at
     // once on a connection that just came up.
-    const lanes = Array.from({ length: Math.min(CHECKS_AT_ONCE_COUNT, ids.length) }, async () => {
-      for (;;) {
-        const id = ids.shift();
-        if (id === undefined) return;
-        checks.set(id, await this.checkOpenResource(session, id));
-      }
-    });
+    const lanes = Array.from(
+      { length: Math.min(CHECKS_AT_ONCE_COUNT, ids.length) },
+      async () => {
+        for (;;) {
+          const id = ids.shift();
+          if (id === undefined) return;
+          checks.set(id, await this.checkOpenResource(session, id));
+        }
+      },
+    );
     await Promise.all(lanes);
 
     // Logged, not surfaced — and aggregated, because an activation while
     // the archivist is down would otherwise emit one line per tab.
-    const inconclusive = [...checks.values()].filter((c) => c.verdict === 'unknown').length;
+    const inconclusive = [...checks.values()].filter(
+      (c) => c.verdict === 'unknown',
+    ).length;
     if (inconclusive > 0) {
       // eslint-disable-next-line no-console
       console.debug(
@@ -779,7 +840,10 @@ export class XynologBrowser {
    * phantoms this addresses. Neither records anything either: an entry shows
    * what the KB last said, never what it failed to say.
    */
-  private async readKb(session: XynologSession, kbId: string): Promise<KbReadVerdict> {
+  private async readKb(
+    session: XynologSession,
+    kbId: string,
+  ): Promise<KbReadVerdict> {
     const expectedDid = this.kbs$.getValue().find((k) => k.id === kbId)?.did;
     if (!expectedDid) return { kind: 'no-verdict' };
 
@@ -799,7 +863,10 @@ export class XynologBrowser {
       return { kind: 'conflict', observedDid, observedName: description.name };
     }
     if (this.disposed) return { kind: 'no-verdict' };
-    this.updateKb(kbId, { label: description.name, lastRead: kbRead(description, new Date()) });
+    this.updateKb(kbId, {
+      label: description.name,
+      lastRead: kbRead(description, new Date()),
+    });
     return { kind: 'recorded' };
   }
 
@@ -818,7 +885,9 @@ export class XynologBrowser {
     this.mutateOpenResources(() => []);
     this.mutateLastViewed(({ [kbId]: _dropped, ...rest }) => rest);
 
-    this.activeSignals$.getValue()?.notifyKbIdentityConflict({ expectedDid, observedDid });
+    this.activeSignals$
+      .getValue()
+      ?.notifyKbIdentityConflict({ expectedDid, observedDid });
   }
 
   /**
@@ -831,7 +900,10 @@ export class XynologBrowser {
    * Only `bus.not-found` removes. It is a verdict from the event
    * store, which is the system of record; everything else is a symptom.
    */
-  private async checkOpenResource(session: XynologSession, id: ResourceId): Promise<TabCheck> {
+  private async checkOpenResource(
+    session: XynologSession,
+    id: ResourceId,
+  ): Promise<TabCheck> {
     try {
       const descriptor = await session.client.browse.resource(id).fresh();
       const name = descriptor.name;
@@ -859,25 +931,44 @@ export class XynologBrowser {
    * committed state, so a sibling's later add cannot resurrect it. A write
    * the storage refuses throws, and changes nothing here.
    */
-  private mutateOpenResources(mutate: (list: OpenResource[]) => OpenResource[]): void {
+  private mutateOpenResources(
+    mutate: (list: OpenResource[]) => OpenResource[],
+  ): void {
     const kbId = this.activeKbId$.getValue();
     if (!kbId || !this.activeSession$.getValue()) return;
-    this.openByKb = changeKept(this.storage, OPEN_RESOURCES_BY_KB_KEY, openResourcesByKbOf, (committed) => ({
-      ...committed,
-      [kbId]: mutate(committed[kbId] ?? []),
-    }));
+    this.openByKb = changeKept(
+      this.storage,
+      OPEN_RESOURCES_BY_KB_KEY,
+      openResourcesByKbOf,
+      (committed) => ({
+        ...committed,
+        [kbId]: mutate(committed[kbId] ?? []),
+      }),
+    );
     this.refreshOpenResources();
   }
 
   /** Change where the person was in each KB, against what the storage holds, as one step, and re-project. */
-  private mutateLastViewed(mutate: (byKb: Record<string, string>) => Record<string, string>): void {
-    this.lastViewedByKb = changeKept(this.storage, LAST_VIEWED_RESOURCE_BY_KB_KEY, lastViewedByKbOf, mutate);
+  private mutateLastViewed(
+    mutate: (byKb: Record<string, string>) => Record<string, string>,
+  ): void {
+    this.lastViewedByKb = changeKept(
+      this.storage,
+      LAST_VIEWED_RESOURCE_BY_KB_KEY,
+      lastViewedByKbOf,
+      mutate,
+    );
     this.refreshLastViewedResource();
   }
 
   /** Forget what was open in a KB, and where the person was in it. */
   private forgetOpenOf(kbId: string): void {
-    this.openByKb = changeKept(this.storage, OPEN_RESOURCES_BY_KB_KEY, openResourcesByKbOf, ({ [kbId]: _forgotten, ...rest }) => rest);
+    this.openByKb = changeKept(
+      this.storage,
+      OPEN_RESOURCES_BY_KB_KEY,
+      openResourcesByKbOf,
+      ({ [kbId]: _forgotten, ...rest }) => rest,
+    );
     this.refreshOpenResources();
     this.mutateLastViewed(({ [kbId]: _forgotten, ...rest }) => rest);
   }
@@ -903,16 +994,19 @@ export class XynologBrowser {
         next[idx] = updated;
         return next;
       }
-      return [...existing, {
-        id,
-        name,
-        openedAt: Date.now(),
-        // max+1, not the count: after a close, the count can be a place
-        // still taken (e.g. [0,2] + add), and a place is never given twice.
-        order: existing.reduce((m, r) => Math.max(m, r.order), -1) + 1,
-        ...(mediaType !== undefined ? { mediaType } : {}),
-        ...(storageUri !== undefined ? { storageUri } : {}),
-      }];
+      return [
+        ...existing,
+        {
+          id,
+          name,
+          openedAt: Date.now(),
+          // max+1, not the count: after a close, the count can be a place
+          // still taken (e.g. [0,2] + add), and a place is never given twice.
+          order: existing.reduce((m, r) => Math.max(m, r.order), -1) + 1,
+          ...(mediaType !== undefined ? { mediaType } : {}),
+          ...(storageUri !== undefined ? { storageUri } : {}),
+        },
+      ];
     });
   }
 
@@ -931,7 +1025,12 @@ export class XynologBrowser {
       // Indices refer to the SORTED (visible) list; renumber `order` after
       // the move so the drag survives persistence and re-sorting.
       const list = sortOpenResources(existing);
-      if (oldIndex < 0 || oldIndex >= list.length || newIndex < 0 || newIndex >= list.length) {
+      if (
+        oldIndex < 0 ||
+        oldIndex >= list.length ||
+        newIndex < 0 ||
+        newIndex >= list.length
+      ) {
         return existing;
       }
       const [moved] = list.splice(oldIndex, 1);
@@ -945,7 +1044,9 @@ export class XynologBrowser {
   private refreshLastViewedResource(): void {
     const kbId = this.activeKbId$.getValue();
     const session = this.activeSession$.getValue();
-    this.lastViewedResource$.next(kbId && session ? this.lastViewedByKb[kbId] ?? null : null);
+    this.lastViewedResource$.next(
+      kbId && session ? (this.lastViewedByKb[kbId] ?? null) : null,
+    );
   }
 
   /**
@@ -990,7 +1091,10 @@ export class XynologBrowser {
    * says reaches the session's errors before they end, then the session, and
    * the signals made beside it.
    */
-  private endSession(session: XynologSession | null, signals: SessionSignals | null): void {
+  private endSession(
+    session: XynologSession | null,
+    signals: SessionSignals | null,
+  ): void {
     session?.client.dispose();
     session?.dispose();
     signals?.dispose();

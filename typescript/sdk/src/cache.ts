@@ -57,7 +57,11 @@
  *     stale-beats-error.
  */
 
-import { BusRequestError, SAVE_DEBOUNCE_MS, type StateUnit } from '@xynolog/core';
+import {
+  BusRequestError,
+  SAVE_DEBOUNCE_MS,
+  type StateUnit,
+} from '@xynolog/core';
 import {
   BehaviorSubject,
   Observable,
@@ -96,12 +100,13 @@ export type CacheState<T> =
 
 /** Type guard for the settled-with-value state — the paved path for
  * `pipe(filter(isReady), map((s) => s.value))`. */
-export const isReady = <T,>(s: CacheState<T>): s is { status: 'ready'; value: T } =>
-  s.status === 'ready';
+export const isReady = <T>(
+  s: CacheState<T>,
+): s is { status: 'ready'; value: T } => s.status === 'ready';
 
 /** Value-or-undefined projection for call sites that want that shape
  * EXPLICITLY (the type forces the choice at the boundary). */
-export const readyValue = <T,>(s: CacheState<T>): T | undefined =>
+export const readyValue = <T>(s: CacheState<T>): T | undefined =>
   s.status === 'ready' ? s.value : undefined;
 
 export interface Cache<K, V> extends StateUnit {
@@ -220,8 +225,10 @@ export function createCache<K, V>(
  */
 export function warnRefusedSave(cause: unknown): void {
   // eslint-disable-next-line no-console
-  console.warn('[cache PERSIST] the storage refused the save; it is owed until the next change or disposal:',
-    cause instanceof Error ? cause.message : cause);
+  console.warn(
+    '[cache PERSIST] the storage refused the save; it is owed until the next change or disposal:',
+    cause instanceof Error ? cause.message : cause,
+  );
 }
 
 /**
@@ -237,7 +244,10 @@ export interface PersistableCache<K, V> {
    * is told to `refused`, with what it threw, as it is refused, the save
    * then owed. Once; inert after disposal (B16).
    */
-  attach(persister: CachePersister<K, V>, refused: (cause: unknown) => void): void;
+  attach(
+    persister: CachePersister<K, V>,
+    refused: (cause: unknown) => void,
+  ): void;
   /**
    * B17 — a fetch is in flight, or disposal dropped one: what holds the
    * stream's places back at disposal's one reading of them. A save owed does
@@ -302,7 +312,8 @@ export function createPersistableCache<K, V>(
     next.delete(key);
     failures$.next(next);
   };
-  const toError = (e: unknown): Error => (e instanceof Error ? e : new Error(String(e)));
+  const toError = (e: unknown): Error =>
+    e instanceof Error ? e : new Error(String(e));
 
   /**
    * B17 — the save owed, from when a persister is attached: the store as a
@@ -314,7 +325,10 @@ export function createPersistableCache<K, V>(
    * goes inert with the rest of B16.
    */
   let attached = false;
-  let pendingSave: { timer: ReturnType<typeof setTimeout> | null; save(): void } | null = null;
+  let pendingSave: {
+    timer: ReturnType<typeof setTimeout> | null;
+    save(): void;
+  } | null = null;
 
   /**
    * The key's current fetch, joined (B3), or one started when there is none.
@@ -399,7 +413,11 @@ export function createPersistableCache<K, V>(
    * the two asks (B17), and a second fails a key that holds no value (B15).
    * A fetch no ask waits on fails only its callers (B14 boundary 1).
    */
-  const askFailed = (key: K, validation: Validation | null, failure: unknown): void => {
+  const askFailed = (
+    key: K,
+    validation: Validation | null,
+    failure: unknown,
+  ): void => {
     switch (validation) {
       case 'first':
         // Always-on breadcrumb: a failure swallowed with zero trace is how lost
@@ -443,10 +461,20 @@ export function createPersistableCache<K, V>(
     clearFailure(key);
   };
 
-  const knownKeys = (): K[] => [...new Set([...store$.value.keys(), ...failures$.value.keys(), ...inflight.keys()])];
+  const knownKeys = (): K[] => [
+    ...new Set([
+      ...store$.value.keys(),
+      ...failures$.value.keys(),
+      ...inflight.keys(),
+    ]),
+  ];
 
-  const attach = (persister: CachePersister<K, V>, refused: (cause: unknown) => void): void => {
-    if (attached) throw new Error('A cache keeps its values with one persister');
+  const attach = (
+    persister: CachePersister<K, V>,
+    refused: (cause: unknown) => void,
+  ): void => {
+    if (attached)
+      throw new Error('A cache keeps its values with one persister');
     attached = true;
     if (disposed) return; // B16
     const loaded = persister.load();
@@ -463,7 +491,8 @@ export function createPersistableCache<K, V>(
     }
     store$.pipe(skip(1)).subscribe((entries) => {
       if (disposed) return;
-      if (pendingSave !== null && pendingSave.timer !== null) clearTimeout(pendingSave.timer);
+      if (pendingSave !== null && pendingSave.timer !== null)
+        clearTimeout(pendingSave.timer);
       // Owed no more while it is written, so the places' gate the write
       // reads finds this cache at rest. A write the storage refuses (its
       // quota, a broken adapter), of the document or of the places it
@@ -494,13 +523,18 @@ export function createPersistableCache<K, V>(
         // subscription lives through it), and neither is `pending`.
         const inner = combineLatest([store$, failures$]).pipe(
           map(([values, failed]): CacheState<V> => {
-            if (values.has(key)) return { status: 'ready', value: values.get(key) as V };
+            if (values.has(key))
+              return { status: 'ready', value: values.get(key) as V };
             const error = failed.get(key);
-            return error === undefined ? { status: 'pending' } : { status: 'failed', error };
+            return error === undefined
+              ? { status: 'pending' }
+              : { status: 'failed', error };
           }),
           distinctUntilChanged((a, b) => {
-            if (a.status === 'ready') return b.status === 'ready' && Object.is(a.value, b.value);
-            if (a.status === 'failed') return b.status === 'failed' && a.error === b.error;
+            if (a.status === 'ready')
+              return b.status === 'ready' && Object.is(a.value, b.value);
+            if (a.status === 'failed')
+              return b.status === 'failed' && a.error === b.error;
             return b.status === 'pending';
           }),
         );
@@ -552,7 +586,10 @@ export function createPersistableCache<K, V>(
       // B16: surfaced, not silent — the await path's caller owns retry
       // policy (B14 boundary 1), so it gets a rejection it can see, under the
       // code a request of a closed bus fails with.
-      if (disposed) return Promise.reject(new BusRequestError('The client is closed', 'bus.closed'));
+      if (disposed)
+        return Promise.reject(
+          new BusRequestError('The client is closed', 'bus.closed'),
+        );
       return runFetch(key).answer;
     },
 
@@ -561,7 +598,9 @@ export function createPersistableCache<K, V>(
     },
 
     known(key: K): boolean {
-      return store$.value.has(key) || failures$.value.has(key) || inflight.has(key);
+      return (
+        store$.value.has(key) || failures$.value.has(key) || inflight.has(key)
+      );
     },
 
     keys: knownKeys,

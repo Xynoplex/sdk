@@ -9,10 +9,16 @@ import React from 'react';
 import {
   AcademicCapIcon,
   ScaleIcon,
-  LightBulbIcon
+  LightBulbIcon,
 } from '@heroicons/react/24/outline';
-import { COMMON_PANELS, type ToolbarPanelType } from '../../../state/shell-state-unit';
-import { type ToolbarPanelsProps, type ToolbarProps } from '../../../components/Toolbar';
+import {
+  COMMON_PANELS,
+  type ToolbarPanelType,
+} from '../../../state/shell-state-unit';
+import {
+  type ToolbarPanelsProps,
+  type ToolbarProps,
+} from '../../../components/Toolbar';
 import type { TagSchema } from '@xynolog/sdk';
 export type { TagSchema };
 
@@ -38,16 +44,19 @@ export interface TagSchemasPageProps {
   Toolbar: React.ComponentType<ToolbarProps<ToolbarPanelType>>;
 }
 
-const domainIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+const domainIcons: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   legal: ScaleIcon,
   scientific: AcademicCapIcon,
-  general: LightBulbIcon
+  general: LightBulbIcon,
 };
 
 const domainClasses: Record<string, string> = {
   legal: 'xynolog-schema-domain--legal',
   scientific: 'xynolog-schema-domain--scientific',
-  general: 'xynolog-schema-domain--general'
+  general: 'xynolog-schema-domain--general',
 };
 
 export function TagSchemasPage({
@@ -59,7 +68,6 @@ export function TagSchemasPage({
   ToolbarPanels,
   Toolbar,
 }: TagSchemasPageProps) {
-
   if (isLoading) {
     return (
       <div className="xynolog-page__loading">
@@ -69,31 +77,31 @@ export function TagSchemasPage({
   }
 
   return (
-    <div className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}>
+    <div
+      className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}
+    >
       {/* Main Content Area */}
       <div className="xynolog-page__content">
         {/* Page Title */}
         <div className="xynolog-page__header">
           <h1 className="xynolog-page__title">{t.pageTitle}</h1>
-          <p className="xynolog-page__subtitle">
-            {t.pageDescription}
-          </p>
+          <p className="xynolog-page__subtitle">{t.pageDescription}</p>
         </div>
 
         {/* Schemas Grid */}
         <div className="xynolog-card-grid xynolog-card-grid--two-columns">
           {schemas.map((schema) => {
             const Icon = domainIcons[schema.domain] || LightBulbIcon;
-            const domainClass = domainClasses[schema.domain] || domainClasses.general!;
+            const domainClass =
+              domainClasses[schema.domain] || domainClasses.general!;
 
             return (
-              <div
-                key={schema.id}
-                className="xynolog-card"
-              >
+              <div key={schema.id} className="xynolog-card">
                 {/* Schema Header */}
                 <div className="xynolog-schema__header">
-                  <div className={`xynolog-schema__icon-wrapper ${domainClass}`}>
+                  <div
+                    className={`xynolog-schema__icon-wrapper ${domainClass}`}
+                  >
                     {Icon && <Icon className="xynolog-schema__icon" />}
                   </div>
                   <div className="xynolog-schema__content">
@@ -113,10 +121,7 @@ export function TagSchemasPage({
                     {t.categories}
                   </h4>
                   {schema.tags.map((tag) => (
-                    <div
-                      key={tag.name}
-                      className="xynolog-schema__category"
-                    >
+                    <div key={tag.name} className="xynolog-schema__category">
                       <div className="xynolog-schema__category-name">
                         {tag.name}
                       </div>
@@ -125,10 +130,7 @@ export function TagSchemasPage({
                       </div>
                       <div className="xynolog-schema__examples">
                         {tag.examples.slice(0, 2).map((example, idx) => (
-                          <span
-                            key={idx}
-                            className="xynolog-schema__example"
-                          >
+                          <span key={idx} className="xynolog-schema__example">
                             {example}
                           </span>
                         ))}
@@ -149,15 +151,9 @@ export function TagSchemasPage({
 
       {/* Right Sidebar - Panels and Toolbar */}
       <div className="xynolog-page__sidebar">
-        <ToolbarPanels
-          activePanel={activePanel}
-          theme={theme}
-        />
+        <ToolbarPanels activePanel={activePanel} theme={theme} />
 
-        <Toolbar
-          context="simple"
-          activePanel={activePanel}
-        />
+        <Toolbar context="simple" activePanel={activePanel} />
       </div>
     </div>
   );

@@ -33,6 +33,7 @@ case "${1:-}" in
       git config --global --add safe.directory /tmp/sdk
       cd /tmp/sdk/typescript
       npm install --no-package-lock
+      npm run format:check
       npm run build:packages
       for package in core observability http-transport sdk react-ui; do
         npm run typecheck --workspace="@xynolog/$package"
@@ -162,37 +163,66 @@ case "${1:-}" in
       python3 check-boundary.py ..' --memory 4g
     ;;
   generate|check-generated)
-    # The Node groups are codegen/node/package.json's generate:<group>, in the
-    # order it lists them; the OCaml groups are xynolog-codegen's. check-generated
-    # compares each group's files with the committed ones and writes nothing.
-    # generate writes into the checkout itself, and builds xynolog-codegen in a
-    # copy of codegen/, never in the checkout.
+    # The OCaml generator writes each of its groups' files, a TypeScript one as
+    # it prints it. The Node step lays those out with Prettier, then runs the
+    # Node groups, codegen/node/package.json's generate:<group>, in the order
+    # it lists them. generate writes into the checkout and builds
+    # xynolog-codegen in a copy of codegen/, never in the checkout;
+    # check-generated runs the same into a copy of the checkout, the Node
+    # groups as generate:<group>:check, and fails when a file the generator
+    # names differs from the committed one.
     bash "$ROOT/scripts/bundle-protocol.sh"
     ocaml_toolchain_image
-    suffix=""
-    [[ "$1" == check-generated ]] && suffix=:check
-    node_groups='
-      cd typescript
-      npm install --no-package-lock --ignore-scripts
-      ln -sfn ../../typescript/node_modules ../codegen/node/node_modules
-      cd ../codegen/node
-      for script in $(node -p "Object.keys(require(\"./package.json\").scripts).filter((s) => /^generate:[a-z-]+$/.test(s)).join(\" \")"); do
-        npm run --silent "$script'"$suffix"'"
-      done'
+    work=$(mktemp -d)
+    # The containers write into it as their own users, root among them, so a
+    # container empties it.
+    trap '"$RUNTIME" run --rm --volume "$work:/work" node:26-bookworm find /work -mindepth 1 -delete
+      rmdir "$work"' EXIT
     if [[ "$1" == generate ]]; then
-      "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /sdk node:26-bookworm bash -euc "$node_groups"
-      "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /tmp --memory 4g xynolog-ocaml-toolchain bash -euc '
+      target=$ROOT
+      suffix=""
+    else
+      target=$work/sdk
+      suffix=:check
+      mkdir "$target"
+      tar -C "$ROOT" --exclude=.git --exclude=node_modules --exclude=dist --exclude=dist-newstyle \
+        --exclude=target --exclude=.gradle --exclude=build --exclude=obj --exclude=.build \
+        --exclude=_build --exclude=.venv -cf - . | tar -C "$target" -xf -
+    fi
+    "$RUNTIME" run --rm --volume "$target:/sdk" --volume "$work:/work" --workdir /tmp --memory 4g \
+      xynolog-ocaml-toolchain bash -euc '
+        set -o pipefail
         cp -a /sdk/codegen /tmp/codegen
         cd /tmp/codegen
         dune build ./bin/main.exe
-        dune exec -- xynolog-codegen generate /sdk'
-    else
-      in_container node:26-bookworm "cd /tmp/sdk
-$node_groups"
-      in_container xynolog-ocaml-toolchain '
-        cd /tmp/sdk/codegen
-        dune build ./bin/main.exe
-        dune exec -- xynolog-codegen check ..' --memory 4g
+        dune exec -- xynolog-codegen generate /sdk | tee /work/written'
+    "$RUNTIME" run --rm --volume "$target:/sdk" --volume "$work:/work" --workdir /sdk node:26-bookworm bash -euc '
+      cd typescript
+      npm install --no-package-lock --ignore-scripts
+      cd ..
+      sed -n "s/^format //p" /work/written > /work/laid-out
+      xargs -r -a /work/laid-out typescript/node_modules/.bin/prettier --write --log-level warn
+      ln -sfn ../../typescript/node_modules codegen/node/node_modules
+      cd codegen/node
+      for script in $(node -p "Object.keys(require(\"./package.json\").scripts).filter((s) => /^generate:[a-z-]+$/.test(s)).join(\" \")"); do
+        npm run --silent "$script'"$suffix"'"
+      done'
+    if [[ "$1" == check-generated ]]; then
+      [[ -s "$work/written" ]]
+      drifted=0
+      while read -r _ path; do
+        if [[ ! -f "$ROOT/$path" ]]; then
+          echo "absent $path"
+          drifted=$((drifted + 1))
+        elif ! cmp -s "$target/$path" "$ROOT/$path"; then
+          echo "DRIFT  $path"
+          drifted=$((drifted + 1))
+        fi
+      done < "$work/written"
+      if ((drifted)); then
+        echo "$drifted generated files differ from what their generators write: run make generate" >&2
+        exit 1
+      fi
     fi
     ;;
   *)

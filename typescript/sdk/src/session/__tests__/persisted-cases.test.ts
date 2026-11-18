@@ -48,7 +48,14 @@ import {
   personKey,
   sessionKey,
 } from '../storage';
-import { fakeGateway, GATEWAY_ENDPOINT, refuses, renews, type FakeGateway, type StreamConnect } from './fake-gateway';
+import {
+  fakeGateway,
+  GATEWAY_ENDPOINT,
+  refuses,
+  renews,
+  type FakeGateway,
+  type StreamConnect,
+} from './fake-gateway';
 import { SharedStorage, freshJwt, testSession } from './test-storage-helpers';
 
 type Kept = Readonly<Record<string, string>>;
@@ -120,9 +127,16 @@ interface StoredTable {
   cacheKeyPrefix: { prefix: string };
 }
 
-const SPECS = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src');
-const table = JSON.parse(readFileSync(join(SPECS, 'session/persisted-cases.json'), 'utf-8')) as PersistedCases;
-const stored = JSON.parse(readFileSync(join(SPECS, 'session/stored.json'), 'utf-8')) as StoredTable;
+const SPECS = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../../protocol/specs/src',
+);
+const table = JSON.parse(
+  readFileSync(join(SPECS, 'session/persisted-cases.json'), 'utf-8'),
+) as PersistedCases;
+const stored = JSON.parse(
+  readFileSync(join(SPECS, 'session/stored.json'), 'utf-8'),
+) as StoredTable;
 
 const personOf = (name: string): Person => {
   const person = table.people[name];
@@ -131,7 +145,12 @@ const personOf = (name: string): Person => {
 };
 const jo = personOf('jo');
 
-const kbNamed = (id: string): KnowledgeBase => ({ id, label: id, did: `did:web:kb.example.org:${id}`, endpoint: GATEWAY_ENDPOINT });
+const kbNamed = (id: string): KnowledgeBase => ({
+  id,
+  label: id,
+  did: `did:web:kb.example.org:${id}`,
+  endpoint: GATEWAY_ENDPOINT,
+});
 const KB_A = kbNamed('kb-a');
 const KB_B = kbNamed('kb-b');
 
@@ -150,14 +169,27 @@ const seed = (storage: SessionStorage, kept: Kept): void => {
  * naming `person`, one naming nobody, or none. Written as the JSON a
  * registry keeps.
  */
-const storeSignIn = (storage: SessionStorage, kbId: string, signedIn: SignedIn, person: string, access: string): void => {
+const storeSignIn = (
+  storage: SessionStorage,
+  kbId: string,
+  signedIn: SignedIn,
+  person: string,
+  access: string,
+): void => {
   if (signedIn === 'none') return;
   const signIn = testSession(access, 'refresh-1');
-  storage.set(sessionKey(kbId), JSON.stringify(signedIn === 'named' ? { ...signIn, personKey: person } : signIn));
+  storage.set(
+    sessionKey(kbId),
+    JSON.stringify(
+      signedIn === 'named' ? { ...signIn, personKey: person } : signIn,
+    ),
+  );
 };
 
 /** A gateway that names whom the table's `whoAmI` names once `release` is called, or cannot be asked. */
-const heldGateway = (says: StartupRow['gateway']): { gateway: FakeGateway; release: () => void } => {
+const heldGateway = (
+  says: StartupRow['gateway'],
+): { gateway: FakeGateway; release: () => void } => {
   let release!: () => void;
   const released = new Promise<void>((resolve) => {
     release = resolve;
@@ -175,8 +207,16 @@ const heldGateway = (says: StartupRow['gateway']): { gateway: FakeGateway; relea
 };
 
 /** A session of `kb` the HTTP session factory makes over `storage`, as a registry has it made. */
-const sessionOver = (gateway: FakeGateway, kb: KnowledgeBase, storage: SessionStorage): XynologSession =>
-  createHttpSessionFactory(gateway.fetch)({ kb, storage, signals: createSessionSignals() });
+const sessionOver = (
+  gateway: FakeGateway,
+  kb: KnowledgeBase,
+  storage: SessionStorage,
+): XynologSession =>
+  createHttpSessionFactory(gateway.fetch)({
+    kb,
+    storage,
+    signals: createSessionSignals(),
+  });
 
 /** End `session` as a registry does, the client it was made with and then the session, and then the gateway. */
 const end = (session: XynologSession, gateway: FakeGateway): void => {
@@ -187,13 +227,24 @@ const end = (session: XynologSession, gateway: FakeGateway): void => {
 
 /** The name of the first value the client gives for `id`. */
 const firstName = (session: XynologSession, id: string): Promise<string> =>
-  firstValueFrom(session.client.browse.resource(resourceId(id)).pipe(filter(isReady), map((state) => state.value.name), take(1)));
+  firstValueFrom(
+    session.client.browse.resource(resourceId(id)).pipe(
+      filter(isReady),
+      map((state) => state.value.name),
+      take(1),
+    ),
+  );
 
 type ScopeEntry = NonNullable<StreamConnect['scoped']>[number];
 
 /** The entry for `scope` of the first connect that subscribes to it. */
-const scopeEntry = (connects: readonly StreamConnect[], scope: string): ScopeEntry | undefined =>
-  connects.flatMap((connect) => (connect.scoped === undefined ? [] : connect.scoped)).find((entry) => entry.scope === scope);
+const scopeEntry = (
+  connects: readonly StreamConnect[],
+  scope: string,
+): ScopeEntry | undefined =>
+  connects
+    .flatMap((connect) => (connect.scoped === undefined ? [] : connect.scoped))
+    .find((entry) => entry.scope === scope);
 
 /** A storage that remembers every key it was asked for. */
 class ReadStorage extends SharedStorage {
@@ -212,27 +263,45 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
       expect(lastEventIdKey(row.kbId, row.personKey)).toBe(row.lastEventIdKey);
       expect([...PERSISTED_QUERIES]).toEqual(Object.keys(row.cacheKeys));
       for (const query of PERSISTED_QUERIES) {
-        expect(cacheKey(row.kbId, row.personKey, query)).toBe(row.cacheKeys[query]);
+        expect(cacheKey(row.kbId, row.personKey, query)).toBe(
+          row.cacheKeys[query],
+        );
       }
     });
 
-    it.each(Object.entries(table.people))("%s's key is the one their did makes", (_, person) => {
-      expect(personKey(person.did)).toBe(person.personKey);
-    });
+    it.each(Object.entries(table.people))(
+      "%s's key is the one their did makes",
+      (_, person) => {
+        expect(personKey(person.did)).toBe(person.personKey);
+      },
+    );
 
-    it.each(table.keys)("a client kept for the person reads every persisted query's key and the stream's places as it is made, and no other kept key: $why", async (row) => {
-      const storage = new ReadStorage();
-      storeSignIn(storage, row.kbId, 'named', row.personKey, freshJwt());
-      const gateway = fakeGateway({ whoIs: async () => Response.json({ ...table.whoAmI, did: row.did }), issuer: renews, resourceName: 'fresh' });
+    it.each(table.keys)(
+      "a client kept for the person reads every persisted query's key and the stream's places as it is made, and no other kept key: $why",
+      async (row) => {
+        const storage = new ReadStorage();
+        storeSignIn(storage, row.kbId, 'named', row.personKey, freshJwt());
+        const gateway = fakeGateway({
+          whoIs: async () => Response.json({ ...table.whoAmI, did: row.did }),
+          issuer: renews,
+          resourceName: 'fresh',
+        });
 
-      const session = sessionOver(gateway, kbNamed(row.kbId), storage);
-      const read = [...storage.reads];
-      await session.ready;
-      end(session, gateway);
+        const session = sessionOver(gateway, kbNamed(row.kbId), storage);
+        const read = [...storage.reads];
+        await session.ready;
+        end(session, gateway);
 
-      expect(read.filter((key) => key.startsWith(stored.cacheKeyPrefix.prefix))).toEqual(Object.values(row.cacheKeys));
-      expect(read.filter((key) => key.startsWith(stored.lastEventIdKeyPrefix.prefix))).toEqual([row.lastEventIdKey]);
-    });
+        expect(
+          read.filter((key) => key.startsWith(stored.cacheKeyPrefix.prefix)),
+        ).toEqual(Object.values(row.cacheKeys));
+        expect(
+          read.filter((key) =>
+            key.startsWith(stored.lastEventIdKeyPrefix.prefix),
+          ),
+        ).toEqual([row.lastEventIdKey]);
+      },
+    );
   });
 
   describe('forget', () => {
@@ -246,27 +315,40 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
      */
     const closingWrites: SessionFactory = ({ kb, storage }) => {
       const { client } = createTestClient({ busTimeoutMs: 40 });
-      if (kb.id === KB_A.id && getStoredSession(storage, kb.id)?.personKey === jo.personKey) {
+      if (
+        kb.id === KB_A.id &&
+        getStoredSession(storage, kb.id)?.personKey === jo.personKey
+      ) {
         const close = client.dispose.bind(client);
         client.dispose = () => {
           close();
           storage.set(cacheKey(KB_A.id, jo.personKey, 'resource'), CLOSING);
         };
       }
-      return new XynologSession({ kb, kept: keptIn(storage, kb.id), client, token$: new BehaviorSubject<AccessToken | null>(null) });
+      return new XynologSession({
+        kb,
+        kept: keptIn(storage, kb.id),
+        client,
+        token$: new BehaviorSubject<AccessToken | null>(null),
+      });
     };
 
     /** The sign-in the registry signs in to kb-a with: new, so naming nobody. */
     const newSignIn = testSession(freshJwt(), 'refresh-new');
 
     /** The registry forgets kb-a's sign-in as it is asked to, with the stand-in for an open client. */
-    const forgetByRegistry = async (storage: SessionStorage, row: ForgetRow): Promise<void> => {
+    const forgetByRegistry = async (
+      storage: SessionStorage,
+      row: ForgetRow,
+    ): Promise<void> => {
       const browser = new XynologBrowser({
         storage,
         sessionFactory: closingWrites,
         fetch: async () => new Response(null, { status: 200 }),
       });
-      await firstValueFrom(browser.activeSession$.pipe(filter((session) => session !== null)));
+      await firstValueFrom(
+        browser.activeSession$.pipe(filter((session) => session !== null)),
+      );
       expect(browser.activeKbId$.getValue()).toBe(row.open ? KB_A.id : KB_B.id);
       if (row.by === 'signOut') await browser.signOut(KB_A.id);
       else if (row.by === 'signIn') await browser.signIn(KB_A.id, newSignIn);
@@ -279,15 +361,24 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
      * every token it is asked about, and the issuer refuses the renewal
      * (expiry) or makes it (refusal: the renewed token is refused too).
      */
-    const forgetBySession = async (storage: SessionStorage, row: ForgetRow): Promise<void> => {
+    const forgetBySession = async (
+      storage: SessionStorage,
+      row: ForgetRow,
+    ): Promise<void> => {
       const gateway = fakeGateway({
         whoIs: async () => new Response(null, { status: 401 }),
         issuer: row.by === 'refusal' ? renews : refuses,
         resourceName: 'fresh',
       });
-      const browser = new XynologBrowser({ storage, sessionFactory: createHttpSessionFactory(gateway.fetch), fetch: gateway.fetch });
+      const browser = new XynologBrowser({
+        storage,
+        sessionFactory: createHttpSessionFactory(gateway.fetch),
+        fetch: gateway.fetch,
+      });
       try {
-        await vi.waitFor(() => expect(getStoredSession(storage, KB_A.id)).toBeNull());
+        await vi.waitFor(() =>
+          expect(getStoredSession(storage, KB_A.id)).toBeNull(),
+        );
       } finally {
         await browser.dispose();
         gateway.close();
@@ -297,19 +388,28 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
     it.each(table.forget)('$by: $why', async (row) => {
       const storage = new SharedStorage();
       seed(storage, table.forgetStorage);
-      storeSignIn(storage, KB_A.id, row.signedIn, jo.personKey, row.stored === 'expired' ? freshJwt(-60) : freshJwt());
+      storeSignIn(
+        storage,
+        KB_A.id,
+        row.signedIn,
+        jo.personKey,
+        row.stored === 'expired' ? freshJwt(-60) : freshJwt(),
+      );
       storage.set(STORAGE_KEY, JSON.stringify([KB_A, KB_B]));
       storage.set(ACTIVE_KEY, row.open ? KB_A.id : KB_B.id);
 
-      if (row.by === 'signOut' || row.by === 'removal' || row.by === 'signIn') await forgetByRegistry(storage, row);
+      if (row.by === 'signOut' || row.by === 'removal' || row.by === 'signIn')
+        await forgetByRegistry(storage, row);
       else await forgetBySession(storage, row);
 
-      const removed = row.removes === 'person' ? keysOf(KB_A.id, jo.personKey) : [];
+      const removed =
+        row.removes === 'person' ? keysOf(KB_A.id, jo.personKey) : [];
       for (const key of removed) expect(storage.get(key), key).toBeNull();
       for (const [key, value] of Object.entries(table.forgetStorage)) {
         if (!removed.includes(key)) expect(storage.get(key), key).toBe(value);
       }
-      if (row.by === 'signIn') expect(getStoredSession(storage, KB_A.id)).toEqual(newSignIn);
+      if (row.by === 'signIn')
+        expect(getStoredSession(storage, KB_A.id)).toEqual(newSignIn);
       else expect(getStoredSession(storage, KB_A.id)).toBeNull();
     });
   });
@@ -333,12 +433,18 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
           expect(getStoredSession(storage, KB_A.id)?.personKey).toBeUndefined();
         } else {
           const recorded = row.recorded;
-          await vi.waitFor(() => expect(getStoredSession(storage, KB_A.id)?.personKey).toBe(recorded));
+          await vi.waitFor(() =>
+            expect(getStoredSession(storage, KB_A.id)?.personKey).toBe(
+              recorded,
+            ),
+          );
         }
 
-        const holding = session.client.browse.resource(resourceId('res-1')).subscribe((state) => {
-          if (isReady(state)) then.push(state.value.name);
-        });
+        const holding = session.client.browse
+          .resource(resourceId('res-1'))
+          .subscribe((state) => {
+            if (isReady(state)) then.push(state.value.name);
+          });
         await vi.waitFor(() => {
           expect(then.length).toBeGreaterThan(0);
           expect(scopeEntry(gateway.connects, 'res-1')).toBeDefined();
@@ -353,10 +459,18 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
       expect(then[0]).toBe(row.then);
       expect(place === undefined ? null : place).toBe(row.place);
       if (row.untouched === true) {
-        for (const [key, value] of Object.entries(table.startupStorage)) expect(storage.get(key), key).toBe(value);
-        const keptKeys = storage.keys().filter((key) =>
-          key.startsWith(stored.cacheKeyPrefix.prefix) || key.startsWith(stored.lastEventIdKeyPrefix.prefix));
-        expect(keptKeys.sort()).toEqual(Object.keys(table.startupStorage).sort());
+        for (const [key, value] of Object.entries(table.startupStorage))
+          expect(storage.get(key), key).toBe(value);
+        const keptKeys = storage
+          .keys()
+          .filter(
+            (key) =>
+              key.startsWith(stored.cacheKeyPrefix.prefix) ||
+              key.startsWith(stored.lastEventIdKeyPrefix.prefix),
+          );
+        expect(keptKeys.sort()).toEqual(
+          Object.keys(table.startupStorage).sort(),
+        );
       }
     });
 
@@ -395,13 +509,20 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
   const savedRes1 = (storage: SessionStorage): boolean => {
     const raw = storage.get(cacheKey(KB_A.id, jo.personKey, 'resource'));
     if (raw === null) return false;
-    const document = JSON.parse(raw) as { entries: Array<[unknown, { name: string }, number]> };
-    return document.entries.some(([key, value]) => key === 'res-1' && value.name === 'fresh');
+    const document = JSON.parse(raw) as {
+      entries: Array<[unknown, { name: string }, number]>;
+    };
+    return document.entries.some(
+      ([key, value]) => key === 'res-1' && value.name === 'fresh',
+    );
   };
 
   describe('crossTab', () => {
     /** What another context writes as kb-a's stored sign-in: nothing, or one with other tokens naming whom the row says. */
-    const writeElsewhere = (elsewhere: SessionStorage, written: CrossTabRow['stored']): void => {
+    const writeElsewhere = (
+      elsewhere: SessionStorage,
+      written: CrossTabRow['stored'],
+    ): void => {
       if (written === null) {
         elsewhere.delete(sessionKey(KB_A.id));
         return;
@@ -409,7 +530,11 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
       const signIn = testSession(freshJwt(), 'refresh-elsewhere');
       elsewhere.set(
         sessionKey(KB_A.id),
-        JSON.stringify(written.personKey === null ? signIn : { ...signIn, personKey: written.personKey }),
+        JSON.stringify(
+          written.personKey === null
+            ? signIn
+            : { ...signIn, personKey: written.personKey },
+        ),
       );
     };
 
@@ -440,7 +565,10 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
      * forgotten; a new sign-in kept in its place, naming whom the row says;
      * or, when the row names jo, renewed with other tokens.
      */
-    const changeHeld = (kept: SignInKept, held: CrossTabRow['stored']): void => {
+    const changeHeld = (
+      kept: SignInKept,
+      held: CrossTabRow['stored'],
+    ): void => {
       if (held === null) {
         kept.forget();
         return;
@@ -453,7 +581,11 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
         return;
       }
       const signIn = testSession(freshJwt(), 'refresh-held');
-      kept.keep(held.personKey === null ? signIn : { ...signIn, personKey: held.personKey });
+      kept.keep(
+        held.personKey === null
+          ? signIn
+          : { ...signIn, personKey: held.personKey },
+      );
     };
 
     it.each(table.holder)('$why', async (row) => {
@@ -475,24 +607,35 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
       expect(savedRes1(here)).toBe(row.saved);
     });
 
-    it.each(table.holder)('a session made from a memory sign-in over a storage: $why', async (row) => {
-      const here = new SharedStorage();
-      const kept = new MemorySignIn({ ...testSession(freshJwt(), 'refresh-1'), personKey: jo.personKey });
-      const { gateway, release } = heldGateway('names');
-      release();
-      const opened = await XynologSession.fromKept({ kb: KB_A, kept, storage: here, fetch: gateway.fetch });
-      try {
-        // The gateway's answer, which reaches the cache now and is written
-        // only once the save's wait is over: the change comes first.
-        expect(await firstName(opened.session, 'res-1')).toBe('fresh');
-        changeHeld(kept, row.stored);
-      } finally {
-        opened.dispose();
-        gateway.close();
-      }
+    it.each(table.holder)(
+      'a session made from a memory sign-in over a storage: $why',
+      async (row) => {
+        const here = new SharedStorage();
+        const kept = new MemorySignIn({
+          ...testSession(freshJwt(), 'refresh-1'),
+          personKey: jo.personKey,
+        });
+        const { gateway, release } = heldGateway('names');
+        release();
+        const opened = await XynologSession.fromKept({
+          kb: KB_A,
+          kept,
+          storage: here,
+          fetch: gateway.fetch,
+        });
+        try {
+          // The gateway's answer, which reaches the cache now and is written
+          // only once the save's wait is over: the change comes first.
+          expect(await firstName(opened.session, 'res-1')).toBe('fresh');
+          changeHeld(kept, row.stored);
+        } finally {
+          opened.dispose();
+          gateway.close();
+        }
 
-      expect(savedRes1(here)).toBe(row.saved);
-    });
+        expect(savedRes1(here)).toBe(row.saved);
+      },
+    );
   });
 
   describe('resumeFrom', () => {
@@ -527,17 +670,27 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
         let heard = 0;
         const held = [
           client.browse.resource(RES_1).subscribe(() => {}),
-          client.wire.frames('mark:added', RES_1).subscribe(() => { heard += 1; }),
+          client.wire.frames('mark:added', RES_1).subscribe(() => {
+            heard += 1;
+          }),
         ];
-        await vi.waitFor(() => expect(scopeEntry(gateway.connects, RES_1)).toBeDefined());
+        await vi.waitFor(() =>
+          expect(scopeEntry(gateway.connects, RES_1)).toBeDefined(),
+        );
 
         for (const id of row.frames) gateway.deliver(markAdded, id);
         await vi.waitFor(() => expect(heard).toBe(row.frames.length));
 
         // The next subscription: another resource's scope, so the stream connects again naming res-1's.
-        held.push(client.browse.resource(resourceId('res-2')).subscribe(() => {}));
-        await vi.waitFor(() => expect(scopeEntry(gateway.connects, 'res-2')).toBeDefined());
-        const next = gateway.connects.find((connect) => connect.scoped?.some((entry) => entry.scope === 'res-2'));
+        held.push(
+          client.browse.resource(resourceId('res-2')).subscribe(() => {}),
+        );
+        await vi.waitFor(() =>
+          expect(scopeEntry(gateway.connects, 'res-2')).toBeDefined(),
+        );
+        const next = gateway.connects.find((connect) =>
+          connect.scoped?.some((entry) => entry.scope === 'res-2'),
+        );
         const res1 = next?.scoped?.find((entry) => entry.scope === RES_1);
         expect(res1, "the next connect names res-1's scope").toBeDefined();
         resumes = res1?.lastEventId;

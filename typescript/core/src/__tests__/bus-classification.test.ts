@@ -19,7 +19,10 @@ import { CHANNEL_ATTRS } from '../bus-classification';
 import { channelAttrsOf } from '../channel-attrs';
 import { CHANNEL_SCHEMAS } from '../bus-protocol';
 import { BUS_OPERATIONS } from '../bus-operations';
-import { BRIDGED_BROADCASTS, RESOURCE_SCOPED_CHANNELS } from '../bridged-channels';
+import {
+  BRIDGED_BROADCASTS,
+  RESOURCE_SCOPED_CHANNELS,
+} from '../bridged-channels';
 import { BRIDGED_CHANNELS } from '../bridging';
 import { PERSISTED_EVENT_TYPES } from '../persisted-events';
 
@@ -45,7 +48,9 @@ describe('channel classification (generated)', () => {
     // stream to drop, so the key is absent, not undefined-valued.
     for (const ch of allChannels) {
       const a = attrs(ch);
-      expect('delivery' in a, `${ch} (${a.direction})`).toBe(a.direction !== 'in-process');
+      expect('delivery' in a, `${ch} (${a.direction})`).toBe(
+        a.direction !== 'in-process',
+      );
     }
   });
 
@@ -59,7 +64,11 @@ describe('channel classification (generated)', () => {
     for (const ch of allChannels) {
       const a = attrs(ch);
       if (a.direction === 'in-process') continue;
-      const expected = replyChannels.has(ch) ? 'correlated' : a.recorded && scoped.has(ch) ? 'positioned' : 'passing';
+      const expected = replyChannels.has(ch)
+        ? 'correlated'
+        : a.recorded && scoped.has(ch)
+          ? 'positioned'
+          : 'passing';
       expect(a.delivery, ch).toBe(expected);
     }
   });
@@ -69,7 +78,10 @@ describe('channel classification (generated)', () => {
     // to a client whose stream was down. A client asks again for what they
     // feed when its stream reopens (protocol/specs/src/client/refresh.json, `reopened`).
     const passingAndBridged = allChannels.filter(
-      (ch) => attrs(ch).recorded && attrs(ch).delivery === 'passing' && (BRIDGED_CHANNELS as readonly string[]).includes(ch),
+      (ch) =>
+        attrs(ch).recorded &&
+        attrs(ch).delivery === 'passing' &&
+        (BRIDGED_CHANNELS as readonly string[]).includes(ch),
     );
     expect(passingAndBridged.sort()).toEqual([
       'frame:entity-type-added',
@@ -86,11 +98,15 @@ describe('channel classification (generated)', () => {
     // resource) and declared (named in a client manifest). Only the first
     // auto-subscribes, so "bridged ⇔ inbound" would demand that every browser
     // subscribe the worker's channels.
-    const inbound = new Set(allChannels.filter((ch) => attrs(ch).direction === 'inbound'));
+    const inbound = new Set(
+      allChannels.filter((ch) => attrs(ch).direction === 'inbound'),
+    );
     for (const ch of BRIDGED_CHANNELS) {
       expect(inbound.has(ch), `${ch} is bridged but not inbound`).toBe(true);
     }
-    const scopedOrDeclared = [...inbound].filter((ch) => !(BRIDGED_CHANNELS as readonly string[]).includes(ch));
+    const scopedOrDeclared = [...inbound].filter(
+      (ch) => !(BRIDGED_CHANNELS as readonly string[]).includes(ch),
+    );
     expect(
       scopedOrDeclared.length,
       'inbound must be strictly larger than the auto-subscribe set once scoped/declared exist',

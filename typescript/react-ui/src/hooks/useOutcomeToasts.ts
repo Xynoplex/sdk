@@ -52,15 +52,23 @@ export function useOutcomeToasts(resourceId: string): void {
   useEventSubscriptions({
     'mark:create-error': (event) => {
       if (event.resourceId !== resourceId) return;
-      showError(t('createFailed', { detail: event.message || t('unknownError') }));
+      showError(
+        t('createFailed', { detail: event.message || t('unknownError') }),
+      );
     },
     'mark:delete-error': (event) => {
       if (event.resourceId !== resourceId) return;
-      showError(t('deleteFailed', { detail: event.message || t('unknownError') }));
+      showError(
+        t('deleteFailed', { detail: event.message || t('unknownError') }),
+      );
     },
     'bind:body-error': (event) => {
       if (event.resourceId !== resourceId) return;
-      showError(t('referenceUpdateFailed', { detail: event.message || t('unknownError') }));
+      showError(
+        t('referenceUpdateFailed', {
+          detail: event.message || t('unknownError'),
+        }),
+      );
     },
     'mark:delegate-timeout': (event) => {
       if (event.resourceId !== resourceId) return;
@@ -74,9 +82,11 @@ export function useOutcomeToasts(resourceId: string): void {
       // A result is told apart by what it alone carries: the resource a yield
       // job made, a decline's reason, or a mark job's counts. No cast.
       if (event.result && 'resourceId' in event.result) {
-        showSuccess(event.result.resourceName
-          ? t('resourceCreatedNamed', { name: event.result.resourceName })
-          : t('resourceCreated'));
+        showSuccess(
+          event.result.resourceName
+            ? t('resourceCreatedNamed', { name: event.result.resourceName })
+            : t('resourceCreated'),
+        );
         return;
       }
       const reason = declineReason(event.result);
@@ -84,12 +94,20 @@ export function useOutcomeToasts(resourceId: string): void {
         // `decline_no-text-layer` etc. — the code IS the key suffix, so a new
         // reason on the wire needs copy and the translations gate says so.
         showInfo(t(`decline_${reason}`));
-      } else if (event.result && 'found' in event.result && event.result.underReportedPieces !== undefined) {
+      } else if (
+        event.result &&
+        'found' in event.result &&
+        event.result.underReportedPieces !== undefined
+      ) {
         // A partial run, reported on the ephemeral surface: the run finished
         // but the count-verifier accepted under-reported pieces. Info, not
         // success — and only when the wire SAYS so: absence is the emitter's
         // mutation-proven claim of cleanliness, never re-derived here.
-        showInfo(t('annotationCompletePartial', { pieces: event.result.underReportedPieces }));
+        showInfo(
+          t('annotationCompletePartial', {
+            pieces: event.result.underReportedPieces,
+          }),
+        );
       } else {
         showSuccess(t('annotationComplete'));
       }
@@ -106,7 +124,9 @@ export function useOutcomeToasts(resourceId: string): void {
         // The terminal failure left durable finds standing (partial results
         // STAND — they are never retracted). Say so, so the annotations on
         // screen are not mistaken for a complete run's.
-        showError(t('annotationFailedPartial', { kept: event.completedUnits.length }));
+        showError(
+          t('annotationFailedPartial', { kept: event.completedUnits.length }),
+        );
       } else {
         showError(event.error || t('annotationFailed'));
       }

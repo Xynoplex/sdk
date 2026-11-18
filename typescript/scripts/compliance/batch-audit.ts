@@ -42,11 +42,17 @@ function loadBypassConfig(): BypassConfig {
   return { bypassed: [] };
 }
 
-function isFileBypassed(filePath: string, bypassConfig: BypassConfig): BypassEntry | null {
+function isFileBypassed(
+  filePath: string,
+  bypassConfig: BypassConfig,
+): BypassEntry | null {
   const normalizedPath = filePath.replace(/\\/g, '/');
   for (const entry of bypassConfig.bypassed) {
     const normalizedBypassPath = entry.file.replace(/\\/g, '/');
-    if (normalizedPath.endsWith(normalizedBypassPath) || normalizedPath.includes(normalizedBypassPath)) {
+    if (
+      normalizedPath.endsWith(normalizedBypassPath) ||
+      normalizedPath.includes(normalizedBypassPath)
+    ) {
       return entry;
     }
   }
@@ -112,7 +118,7 @@ function readSymbols(inputPath: string): SymbolInfo[] {
       return data.map((s: DiscoveredSymbol) => ({
         path: s.file,
         symbol: s.name,
-        type: s.type
+        type: s.type,
       }));
     }
   } catch {
@@ -136,7 +142,7 @@ function parseMarkdownInventory(content: string): SymbolInfo[] {
         items.push({
           path: filePath.trim(),
           symbol: symbol.trim(),
-          type: type.trim()
+          type: type.trim(),
         });
       }
     }
@@ -145,7 +151,10 @@ function parseMarkdownInventory(content: string): SymbolInfo[] {
   return items;
 }
 
-function analyzeHookForSymbol(fileAnalysis: FileAnalysis, symbolName: string): HookAnalysis | null {
+function analyzeHookForSymbol(
+  fileAnalysis: FileAnalysis,
+  symbolName: string,
+): HookAnalysis | null {
   // Find the hook/component matching this symbol
   for (const hook of fileAnalysis.hooks) {
     if (hook.hookName === symbolName) {
@@ -158,7 +167,7 @@ function analyzeHookForSymbol(fileAnalysis: FileAnalysis, symbolName: string): H
 function analyzeAndFormat(
   rootDir: string,
   item: SymbolInfo,
-  bypassConfig: BypassConfig
+  bypassConfig: BypassConfig,
 ): ComplianceRow {
   const fullPath = path.join(rootDir, item.path);
 
@@ -194,7 +203,7 @@ function analyzeAndFormat(
       createsEventSource: '🔍',
       returnsJSX: '🔍',
       hasGlobalEventBusImport: '🔍',
-      status: '🔍'
+      status: '🔍',
     };
   }
 
@@ -231,7 +240,7 @@ function analyzeAndFormat(
       createsEventSource: 'N/A',
       returnsJSX: 'N/A',
       hasGlobalEventBusImport: 'N/A',
-      status: item.type === 'interface' || item.type === 'type' ? '✅' : '🔍'
+      status: item.type === 'interface' || item.type === 'type' ? '✅' : '🔍',
     };
   }
 
@@ -239,7 +248,8 @@ function analyzeAndFormat(
   let status = '✅';
 
   // Determine if this is a component (not a hook)
-  const isComponent = /^[A-Z]/.test(item.symbol) && !item.symbol.startsWith('use');
+  const isComponent =
+    /^[A-Z]/.test(item.symbol) && !item.symbol.startsWith('use');
   const isHook = item.symbol.startsWith('use');
 
   // Check if bypassed
@@ -269,7 +279,10 @@ function analyzeAndFormat(
       status = '❌';
     } else if (isHook && hookAnalysis.returnsJSX) {
       status = '❌';
-    } else if (hookAnalysis.hasGlobalEventBusImport && !fullPath.includes('EventBusContext')) {
+    } else if (
+      hookAnalysis.hasGlobalEventBusImport &&
+      !fullPath.includes('EventBusContext')
+    ) {
       status = '❌';
     }
     // Warnings (⚠️)
@@ -283,22 +296,42 @@ function analyzeAndFormat(
   }
 
   // Calculate missing docs (must be done before checking for warnings)
-  const missingEmitsDocs = hookAnalysis.emittedEvents.filter(e => !hookAnalysis.documentedEmittedEvents.includes(e));
-  const missingSubscribesDocs = hookAnalysis.subscribedEvents.filter(e => !hookAnalysis.documentedSubscribedEvents.includes(e));
+  const missingEmitsDocs = hookAnalysis.emittedEvents.filter(
+    (e) => !hookAnalysis.documentedEmittedEvents.includes(e),
+  );
+  const missingSubscribesDocs = hookAnalysis.subscribedEvents.filter(
+    (e) => !hookAnalysis.documentedSubscribedEvents.includes(e),
+  );
 
   // Check for missing documentation (use unique events, not total occurrences)
-  if (status === '✅' && (missingEmitsDocs.length > 0 || missingSubscribesDocs.length > 0)) {
+  if (
+    status === '✅' &&
+    (missingEmitsDocs.length > 0 || missingSubscribesDocs.length > 0)
+  ) {
     status = '⚠️';
   }
-  const missingDocsStr = [...missingEmitsDocs.map(e => `emit:${e}`), ...missingSubscribesDocs.map(e => `sub:${e}`)].join(', ') || 'None';
+  const missingDocsStr =
+    [
+      ...missingEmitsDocs.map((e) => `emit:${e}`),
+      ...missingSubscribesDocs.map((e) => `sub:${e}`),
+    ].join(', ') || 'None';
 
   // Event naming status
   let eventNamingStr = 'N/A';
-  if (hookAnalysis.usesColonSeparatedEvents && !hookAnalysis.usesHyphenSeparatedEvents) {
+  if (
+    hookAnalysis.usesColonSeparatedEvents &&
+    !hookAnalysis.usesHyphenSeparatedEvents
+  ) {
     eventNamingStr = '✅ Colon';
-  } else if (hookAnalysis.usesHyphenSeparatedEvents && !hookAnalysis.usesColonSeparatedEvents) {
+  } else if (
+    hookAnalysis.usesHyphenSeparatedEvents &&
+    !hookAnalysis.usesColonSeparatedEvents
+  ) {
     eventNamingStr = '⚠️ Hyphen';
-  } else if (hookAnalysis.usesColonSeparatedEvents && hookAnalysis.usesHyphenSeparatedEvents) {
+  } else if (
+    hookAnalysis.usesColonSeparatedEvents &&
+    hookAnalysis.usesHyphenSeparatedEvents
+  ) {
     eventNamingStr = '⚠️ Mixed';
   }
 
@@ -308,72 +341,157 @@ function analyzeAndFormat(
     type: item.type,
     isContainer: hookAnalysis.isContainer ? 'Yes' : 'No',
     usesEventBus: hookAnalysis.usesEventBus ? 'Yes' : 'No',
-    eventBusInDeps: hookAnalysis.eventBusInDeps ? '❌ Yes' : hookAnalysis.usesEventBus ? '✅ No' : 'N/A',
+    eventBusInDeps: hookAnalysis.eventBusInDeps
+      ? '❌ Yes'
+      : hookAnalysis.usesEventBus
+        ? '✅ No'
+        : 'N/A',
     eventBusProp: hookAnalysis.acceptsEventBusProp ? '❌ Yes' : '✅ No',
     returnsEventBus: hookAnalysis.returnsEventBus ? '❌ Yes' : 'No',
     usesClient: hookAnalysis.usesClient ? 'Yes' : 'No',
-    clientInDeps: hookAnalysis.clientInDeps ? '✅ Yes' : hookAnalysis.usesClient ? '✅ No' : 'N/A',
+    clientInDeps: hookAnalysis.clientInDeps
+      ? '✅ Yes'
+      : hookAnalysis.usesClient
+        ? '✅ No'
+        : 'N/A',
     acceptsCallbacks: hookAnalysis.acceptsCallbacks ? 'Yes' : '✅ No',
-    callbacksInDeps: hookAnalysis.callbacksInDeps ? '❌ Yes' : hookAnalysis.acceptsCallbacks ? '✅ No' : 'N/A',
-    usesUseEventSubscriptions: hookAnalysis.usesUseEventSubscriptions ? 'Yes' : 'No',
-    inlineHandlers: hookAnalysis.hasInlineHandlers ? '⚠️ Yes' : hookAnalysis.usesUseEventSubscriptions ? '✅ No' : 'N/A',
-    eventDocs: hookAnalysis.hasEventContractDocs ? '✅ Yes' : hookAnalysis.isContainer ? '❌ No' : 'No',
+    callbacksInDeps: hookAnalysis.callbacksInDeps
+      ? '❌ Yes'
+      : hookAnalysis.acceptsCallbacks
+        ? '✅ No'
+        : 'N/A',
+    usesUseEventSubscriptions: hookAnalysis.usesUseEventSubscriptions
+      ? 'Yes'
+      : 'No',
+    inlineHandlers: hookAnalysis.hasInlineHandlers
+      ? '⚠️ Yes'
+      : hookAnalysis.usesUseEventSubscriptions
+        ? '✅ No'
+        : 'N/A',
+    eventDocs: hookAnalysis.hasEventContractDocs
+      ? '✅ Yes'
+      : hookAnalysis.isContainer
+        ? '❌ No'
+        : 'No',
     emittedEvents: hookAnalysis.emittedEvents.join(', ') || 'None',
     subscribedEvents: hookAnalysis.subscribedEvents.join(', ') || 'None',
     missingDocs: missingDocsStr,
     eventNaming: eventNamingStr,
     depCount: hookAnalysis.dependencyCount.toString(),
-    allDepsStable: hookAnalysis.allDepsStable === null ? '🔍' : (hookAnalysis.allDepsStable ? '✅ Yes' : '⚠️ No'),
+    allDepsStable:
+      hookAnalysis.allDepsStable === null
+        ? '🔍'
+        : hookAnalysis.allDepsStable
+          ? '✅ Yes'
+          : '⚠️ No',
     // Layer separation checks
-    usesEventBusOn: (isComponent && hookAnalysis.usesEventBusOn) ? '❌ Yes' : (hookAnalysis.usesEventBusOn ? 'Yes' : '✅ No'),
-    usesEventBusOff: (isComponent && hookAnalysis.usesEventBusOff) ? '❌ Yes' : (hookAnalysis.usesEventBusOff ? 'Yes' : '✅ No'),
-    createsEventSource: (isComponent && hookAnalysis.createsEventSource) ? '❌ Yes' : (hookAnalysis.createsEventSource ? 'Yes' : '✅ No'),
-    returnsJSX: (isHook && hookAnalysis.returnsJSX) ? '❌ Yes' : (hookAnalysis.returnsJSX ? 'Yes' : '✅ No'),
-    hasGlobalEventBusImport: (hookAnalysis.hasGlobalEventBusImport && !fullPath.includes('EventBusContext')) ? '❌ Yes' : (hookAnalysis.hasGlobalEventBusImport ? 'Yes' : '✅ No'),
-    status
+    usesEventBusOn:
+      isComponent && hookAnalysis.usesEventBusOn
+        ? '❌ Yes'
+        : hookAnalysis.usesEventBusOn
+          ? 'Yes'
+          : '✅ No',
+    usesEventBusOff:
+      isComponent && hookAnalysis.usesEventBusOff
+        ? '❌ Yes'
+        : hookAnalysis.usesEventBusOff
+          ? 'Yes'
+          : '✅ No',
+    createsEventSource:
+      isComponent && hookAnalysis.createsEventSource
+        ? '❌ Yes'
+        : hookAnalysis.createsEventSource
+          ? 'Yes'
+          : '✅ No',
+    returnsJSX:
+      isHook && hookAnalysis.returnsJSX
+        ? '❌ Yes'
+        : hookAnalysis.returnsJSX
+          ? 'Yes'
+          : '✅ No',
+    hasGlobalEventBusImport:
+      hookAnalysis.hasGlobalEventBusImport &&
+      !fullPath.includes('EventBusContext')
+        ? '❌ Yes'
+        : hookAnalysis.hasGlobalEventBusImport
+          ? 'Yes'
+          : '✅ No',
+    status,
   };
 }
 
 function formatAsMarkdownTable(rows: ComplianceRow[]): string {
-  const header = '| Path | Symbol/Export | Type | Container? | Uses eventBus? | eventBus in deps? | eventBus prop? | Returns eventBus? | Event docs? | Emitted events | Subscribed events | Missing docs | Event naming | Uses client? | client in deps? | Accepts callbacks? | Callbacks in deps? | Uses useEventSubscriptions? | Inline handlers? | eventBus.on()? | eventBus.off()? | new EventSource? | Returns JSX? | Global eventBus import? | Dep count | All deps stable? | Status |';
-  const separator = '|------|---------------|------|------------|----------------|-------------------|----------------|-------------------|-------------|----------------|-------------------|--------------|--------------|--------------|-----------------|-------------------|-------------------|----------------------------|------------------|----------------|-----------------|------------------|--------------|------------------------|-----------|------------------|--------|';
+  const header =
+    '| Path | Symbol/Export | Type | Container? | Uses eventBus? | eventBus in deps? | eventBus prop? | Returns eventBus? | Event docs? | Emitted events | Subscribed events | Missing docs | Event naming | Uses client? | client in deps? | Accepts callbacks? | Callbacks in deps? | Uses useEventSubscriptions? | Inline handlers? | eventBus.on()? | eventBus.off()? | new EventSource? | Returns JSX? | Global eventBus import? | Dep count | All deps stable? | Status |';
+  const separator =
+    '|------|---------------|------|------------|----------------|-------------------|----------------|-------------------|-------------|----------------|-------------------|--------------|--------------|--------------|-----------------|-------------------|-------------------|----------------------------|------------------|----------------|-----------------|------------------|--------------|------------------------|-----------|------------------|--------|';
 
-  const dataRows = rows.map(row => {
+  const dataRows = rows.map((row) => {
     return `| ${row.path} | ${row.symbol} | ${row.type} | ${row.isContainer} | ${row.usesEventBus} | ${row.eventBusInDeps} | ${row.eventBusProp} | ${row.returnsEventBus} | ${row.eventDocs} | ${row.emittedEvents} | ${row.subscribedEvents} | ${row.missingDocs} | ${row.eventNaming} | ${row.usesClient} | ${row.clientInDeps} | ${row.acceptsCallbacks} | ${row.callbacksInDeps} | ${row.usesUseEventSubscriptions} | ${row.inlineHandlers} | ${row.usesEventBusOn} | ${row.usesEventBusOff} | ${row.createsEventSource} | ${row.returnsJSX} | ${row.hasGlobalEventBusImport} | ${row.depCount} | ${row.allDepsStable} | ${row.status} |`;
   });
 
   return [header, separator, ...dataRows].join('\n');
 }
 
-function generateSummary(rows: ComplianceRow[], bypassConfig: BypassConfig): string {
+function generateSummary(
+  rows: ComplianceRow[],
+  bypassConfig: BypassConfig,
+): string {
   const total = rows.length;
-  const passing = rows.filter(r => r.status === '✅').length;
-  const warnings = rows.filter(r => r.status === '⚠️').length;
-  const failing = rows.filter(r => r.status === '❌').length;
-  const bypassed = rows.filter(r => r.status === '🔄').length;
-  const unknown = rows.filter(r => r.status === '🔍').length;
+  const passing = rows.filter((r) => r.status === '✅').length;
+  const warnings = rows.filter((r) => r.status === '⚠️').length;
+  const failing = rows.filter((r) => r.status === '❌').length;
+  const bypassed = rows.filter((r) => r.status === '🔄').length;
+  const unknown = rows.filter((r) => r.status === '🔍').length;
 
-  const eventBusInDepsViolations = rows.filter(r => r.eventBusInDeps.includes('❌')).length;
-  const eventBusPropViolations = rows.filter(r => r.eventBusProp.includes('❌')).length;
-  const returnsEventBusViolations = rows.filter(r => r.returnsEventBus.includes('❌')).length;
-  const callbackViolations = rows.filter(r => r.callbacksInDeps.includes('❌')).length;
-  const inlineHandlerViolations = rows.filter(r => r.inlineHandlers.includes('⚠️')).length;
-  const missingEventDocsViolations = rows.filter(r => r.eventDocs.includes('❌')).length;
-  const legacyEventNamingViolations = rows.filter(r => r.eventNaming.includes('⚠️')).length;
+  const eventBusInDepsViolations = rows.filter((r) =>
+    r.eventBusInDeps.includes('❌'),
+  ).length;
+  const eventBusPropViolations = rows.filter((r) =>
+    r.eventBusProp.includes('❌'),
+  ).length;
+  const returnsEventBusViolations = rows.filter((r) =>
+    r.returnsEventBus.includes('❌'),
+  ).length;
+  const callbackViolations = rows.filter((r) =>
+    r.callbacksInDeps.includes('❌'),
+  ).length;
+  const inlineHandlerViolations = rows.filter((r) =>
+    r.inlineHandlers.includes('⚠️'),
+  ).length;
+  const missingEventDocsViolations = rows.filter((r) =>
+    r.eventDocs.includes('❌'),
+  ).length;
+  const legacyEventNamingViolations = rows.filter((r) =>
+    r.eventNaming.includes('⚠️'),
+  ).length;
 
   // Layer separation violations
-  const eventBusOnViolations = rows.filter(r => r.usesEventBusOn.includes('❌')).length;
-  const eventBusOffViolations = rows.filter(r => r.usesEventBusOff.includes('❌')).length;
-  const eventSourceViolations = rows.filter(r => r.createsEventSource.includes('❌')).length;
-  const returnsJSXViolations = rows.filter(r => r.returnsJSX.includes('❌')).length;
-  const globalEventBusImportViolations = rows.filter(r => r.hasGlobalEventBusImport.includes('❌')).length;
+  const eventBusOnViolations = rows.filter((r) =>
+    r.usesEventBusOn.includes('❌'),
+  ).length;
+  const eventBusOffViolations = rows.filter((r) =>
+    r.usesEventBusOff.includes('❌'),
+  ).length;
+  const eventSourceViolations = rows.filter((r) =>
+    r.createsEventSource.includes('❌'),
+  ).length;
+  const returnsJSXViolations = rows.filter((r) =>
+    r.returnsJSX.includes('❌'),
+  ).length;
+  const globalEventBusImportViolations = rows.filter((r) =>
+    r.hasGlobalEventBusImport.includes('❌'),
+  ).length;
 
   let bypassedSection = '';
   if (bypassConfig.bypassed.length > 0) {
     bypassedSection = `\n## Bypassed Items (🔄 Legacy/In Progress)\n\nThese items are temporarily bypassed but should be addressed:\n\n| File | Reason | Issue | Added |\n|------|--------|-------|-------|\n`;
-    bypassedSection += bypassConfig.bypassed.map(entry =>
-      `| ${entry.file} | ${entry.reason} | ${entry.issue} | ${entry.addedDate} |`
-    ).join('\n');
+    bypassedSection += bypassConfig.bypassed
+      .map(
+        (entry) =>
+          `| ${entry.file} | ${entry.reason} | ${entry.issue} | ${entry.addedDate} |`,
+      )
+      .join('\n');
     bypassedSection += '\n';
   }
 
@@ -454,12 +572,14 @@ function main() {
   // non-zero exit, named on stderr. Whatever runs this reads its exit status
   // and never has to parse the report. `exitCode`, not `exit()`, so the report
   // above is written in full first.
-  const failing = results.filter(r => r.status === '❌');
+  const failing = results.filter((r) => r.status === '❌');
   if (failing.length > 0) {
     console.error(`❌ ${failing.length} failing symbol(s):`);
     for (const row of failing) {
       const checks = Object.entries(row)
-        .filter(([column, value]) => column !== 'status' && value.includes('❌'))
+        .filter(
+          ([column, value]) => column !== 'status' && value.includes('❌'),
+        )
         .map(([column]) => column);
       console.error(`   ${row.path}  ${row.symbol}  (${checks.join(', ')})`);
     }

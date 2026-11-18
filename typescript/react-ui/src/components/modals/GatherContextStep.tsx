@@ -6,7 +6,10 @@ import { ContextSummary } from './ContextSummary';
 import type { ContextSummaryTranslations } from './ContextSummary';
 import { CorpusPane } from './CorpusPane';
 import type { CorpusPaneTranslations } from './CorpusPane';
-import { ANNOTATORS, annotatorKeyForMotivation } from '../../lib/annotation-registry';
+import {
+  ANNOTATORS,
+  annotatorKeyForMotivation,
+} from '../../lib/annotation-registry';
 
 /**
  * The annotation-wizard resolution controls, as ONE optional group: a caller
@@ -57,7 +60,8 @@ export interface GatherContextStepProps {
   translations: {
     loadingContext: string;
     failedContext: string;
-  } & ContextSummaryTranslations & CorpusPaneTranslations;
+  } & ContextSummaryTranslations &
+    CorpusPaneTranslations;
 }
 
 export function GatherContextStep({
@@ -72,19 +76,25 @@ export function GatherContextStep({
   const [sourceExpanded, setSourceExpanded] = useState(false);
   const contextReady = !contextLoading && !contextError && !!context;
   const focus = context?.focus.kind === 'annotation' ? context.focus : null;
-  const resourceFocus = context?.focus.kind === 'resource' ? context.focus : null;
+  const resourceFocus =
+    context?.focus.kind === 'resource' ? context.focus : null;
   // The focal span WEARS its motivation — the viewer's own registry
   // class (the same one the document applies), never a copy or a chip.
   const focalKey = focus?.annotation.motivation
     ? annotatorKeyForMotivation(focus.annotation.motivation)
     : undefined;
-  const focalMotivationClass = focalKey ? ANNOTATORS[focalKey].className : undefined;
+  const focalMotivationClass = focalKey
+    ? ANNOTATORS[focalKey].className
+    : undefined;
   const highlightRef = useRef<HTMLSpanElement>(null);
 
   // Scroll the highlighted term into view when context loads
   useEffect(() => {
     if (highlightRef.current) {
-      highlightRef.current.scrollIntoView({ block: 'center', behavior: 'instant' });
+      highlightRef.current.scrollIntoView({
+        block: 'center',
+        behavior: 'instant',
+      });
     }
   }, [context]);
 
@@ -96,7 +106,10 @@ export function GatherContextStep({
       <div className="xynolog-form__field">
         <label className="xynolog-form__label">
           {annotate.translations.userHintLabel}
-          <span className="xynolog-gather__hint-effect"> — {annotate.translations.userHintEffect}</span>
+          <span className="xynolog-gather__hint-effect">
+            {' '}
+            — {annotate.translations.userHintEffect}
+          </span>
         </label>
         <textarea
           value={annotate.userHint}
@@ -111,7 +124,9 @@ export function GatherContextStep({
 
   const strategyFooter = annotate && (
     <div className="xynolog-gather__footer">
-      <div className="xynolog-gather__footer-label">{annotate.translations.resolutionStrategyLabel}</div>
+      <div className="xynolog-gather__footer-label">
+        {annotate.translations.resolutionStrategyLabel}
+      </div>
       <div className="xynolog-gather__actions">
         <button
           type="button"
@@ -154,7 +169,8 @@ export function GatherContextStep({
           <span className="xynolog-sr-only">{t.loadingContext}</span>
           {pending.resourceName && (
             <div className="xynolog-gather__skeleton-source">
-              {t.sourceContextLabel}{` "${pending.resourceName}"`}
+              {t.sourceContextLabel}
+              {` "${pending.resourceName}"`}
             </div>
           )}
           <div className="xynolog-gather__skeleton-dots" aria-hidden="true">
@@ -164,11 +180,23 @@ export function GatherContextStep({
           </div>
           <div className="xynolog-gather__skeleton-header">
             {/* Straight quotes — the same presentation the panel entries use. */}
-            <span className="xynolog-gather__skeleton-exact">"{pending.exact}"</span>
+            <span className="xynolog-gather__skeleton-exact">
+              "{pending.exact}"
+            </span>
             {pending.entityTypes.length > 0 && (
-              <span style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                {pending.entityTypes.map(et => (
-                  <span key={et} className="xynolog-chip" style={{ fontSize: 'var(--xynolog-text-xs)', padding: '0.125rem 0.375rem', fontWeight: 400 }}>
+              <span
+                style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}
+              >
+                {pending.entityTypes.map((et) => (
+                  <span
+                    key={et}
+                    className="xynolog-chip"
+                    style={{
+                      fontSize: 'var(--xynolog-text-xs)',
+                      padding: '0.125rem 0.375rem',
+                      fontWeight: 400,
+                    }}
+                  >
                     {et}
                   </span>
                 ))}
@@ -177,7 +205,9 @@ export function GatherContextStep({
           </div>
           <div className="xynolog-gather__skeleton-panes">
             <div className="xynolog-gather__skeleton-pane">
-              <div className="xynolog-gather-pane__title">{t.graphPaneTitle}</div>
+              <div className="xynolog-gather-pane__title">
+                {t.graphPaneTitle}
+              </div>
               <div className="xynolog-gather__skeleton-dots" aria-hidden="true">
                 <span className="xynolog-gather__loading-dot" />
                 <span className="xynolog-gather__loading-dot" />
@@ -185,7 +215,9 @@ export function GatherContextStep({
               </div>
             </div>
             <div className="xynolog-gather__skeleton-pane">
-              <div className="xynolog-gather-pane__title">{t.corpusPaneTitle}</div>
+              <div className="xynolog-gather-pane__title">
+                {t.corpusPaneTitle}
+              </div>
               <div className="xynolog-gather__skeleton-dots" aria-hidden="true">
                 <span className="xynolog-gather__loading-dot" />
                 <span className="xynolog-gather__loading-dot" />
@@ -204,11 +236,19 @@ export function GatherContextStep({
             <span className="xynolog-gather__loading-dot" />
             <span className="xynolog-gather__loading-dot" />
           </div>
-          <span className="xynolog-gather__loading-text">{t.loadingContext}</span>
+          <span className="xynolog-gather__loading-text">
+            {t.loadingContext}
+          </span>
         </div>
       )}
       {!!contextError && (
-        <div style={{ textAlign: 'center', padding: '1rem 0', color: 'var(--xynolog-color-red-600)' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '1rem 0',
+            color: 'var(--xynolog-color-red-600)',
+          }}
+        >
           {t.failedContext}
         </div>
       )}
@@ -224,34 +264,79 @@ export function GatherContextStep({
               here: exactly `focus.annotation`. */}
           {focus?.selected && (
             <div className="xynolog-gather__source-strip">
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.375rem' }}>
-                <label className="xynolog-form__label" style={{ marginBottom: 0 }}>
-                  {t.sourceContextLabel}{focus.sourceResource.name ? ` "${focus.sourceResource.name}"` : ''}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                  gap: '0.5rem',
+                  marginBottom: '0.375rem',
+                }}
+              >
+                <label
+                  className="xynolog-form__label"
+                  style={{ marginBottom: 0 }}
+                >
+                  {t.sourceContextLabel}
+                  {focus.sourceResource.name
+                    ? ` "${focus.sourceResource.name}"`
+                    : ''}
                 </label>
                 {(context.metadata?.entityTypes ?? []).length > 0 && (
-                  <span style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                    {(context.metadata?.entityTypes ?? []).map(et => (
-                      <span key={et} className="xynolog-chip" style={{ fontSize: 'var(--xynolog-text-xs)', padding: '0.125rem 0.375rem', fontWeight: 400 }}>
+                  <span
+                    style={{
+                      display: 'flex',
+                      gap: '0.25rem',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {(context.metadata?.entityTypes ?? []).map((et) => (
+                      <span
+                        key={et}
+                        className="xynolog-chip"
+                        style={{
+                          fontSize: 'var(--xynolog-text-xs)',
+                          padding: '0.125rem 0.375rem',
+                          fontWeight: 400,
+                        }}
+                      >
                         {et}
                       </span>
                     ))}
                   </span>
                 )}
               </div>
-              <div className={`xynolog-gather__source-box${sourceExpanded ? ' xynolog-gather__source-box--expanded' : ''}`}>
+              <div
+                className={`xynolog-gather__source-box${sourceExpanded ? ' xynolog-gather__source-box--expanded' : ''}`}
+              >
                 <div className="xynolog-gather__source-context">
-                  <div style={{ fontSize: 'var(--xynolog-text-sm)', whiteSpace: 'pre-wrap', color: 'var(--xynolog-text-secondary)' }}>
-                    {focus.selected.before && <span>{focus.selected.before}</span>}
-                    <span ref={highlightRef} {...(focalMotivationClass ? { className: focalMotivationClass } : {})}>
+                  <div
+                    style={{
+                      fontSize: 'var(--xynolog-text-sm)',
+                      whiteSpace: 'pre-wrap',
+                      color: 'var(--xynolog-text-secondary)',
+                    }}
+                  >
+                    {focus.selected.before && (
+                      <span>{focus.selected.before}</span>
+                    )}
+                    <span
+                      ref={highlightRef}
+                      {...(focalMotivationClass
+                        ? { className: focalMotivationClass }
+                        : {})}
+                    >
                       {focus.selected.text}
                     </span>
-                    {focus.selected.after && <span>{focus.selected.after}</span>}
+                    {focus.selected.after && (
+                      <span>{focus.selected.after}</span>
+                    )}
                   </div>
                 </div>
                 <button
                   type="button"
                   className="xynolog-gather__expand-btn"
-                  onClick={() => setSourceExpanded(v => !v)}
+                  onClick={() => setSourceExpanded((v) => !v)}
                 >
                   {sourceExpanded ? '▲ less' : '▼ more'}
                 </button>
@@ -264,14 +349,42 @@ export function GatherContextStep({
               live on the label row, never inside the prose. */}
           {resourceFocus && (
             <div className="xynolog-gather__source-strip">
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.375rem' }}>
-                <label className="xynolog-form__label" style={{ marginBottom: 0 }}>
-                  {t.sourceContextLabel}{resourceFocus.resource.name ? ` "${resourceFocus.resource.name}"` : ''}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                  gap: '0.5rem',
+                  marginBottom: '0.375rem',
+                }}
+              >
+                <label
+                  className="xynolog-form__label"
+                  style={{ marginBottom: 0 }}
+                >
+                  {t.sourceContextLabel}
+                  {resourceFocus.resource.name
+                    ? ` "${resourceFocus.resource.name}"`
+                    : ''}
                 </label>
                 {(context.metadata?.entityTypes ?? []).length > 0 && (
-                  <span style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                    {(context.metadata?.entityTypes ?? []).map(et => (
-                      <span key={et} className="xynolog-chip" style={{ fontSize: 'var(--xynolog-text-xs)', padding: '0.125rem 0.375rem', fontWeight: 400 }}>
+                  <span
+                    style={{
+                      display: 'flex',
+                      gap: '0.25rem',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {(context.metadata?.entityTypes ?? []).map((et) => (
+                      <span
+                        key={et}
+                        className="xynolog-chip"
+                        style={{
+                          fontSize: 'var(--xynolog-text-xs)',
+                          padding: '0.125rem 0.375rem',
+                          fontWeight: 400,
+                        }}
+                      >
                         {et}
                       </span>
                     ))}
@@ -279,30 +392,39 @@ export function GatherContextStep({
                 )}
               </div>
               {(resourceFocus.summary || resourceFocus.content?.main) && (
-                <div className={`xynolog-gather__source-box${sourceExpanded ? ' xynolog-gather__source-box--expanded' : ''}`}>
+                <div
+                  className={`xynolog-gather__source-box${sourceExpanded ? ' xynolog-gather__source-box--expanded' : ''}`}
+                >
                   <div className="xynolog-gather__source-context">
-                    <div style={{ fontSize: 'var(--xynolog-text-sm)', whiteSpace: 'pre-wrap', color: 'var(--xynolog-text-secondary)' }}>
+                    <div
+                      style={{
+                        fontSize: 'var(--xynolog-text-sm)',
+                        whiteSpace: 'pre-wrap',
+                        color: 'var(--xynolog-text-secondary)',
+                      }}
+                    >
                       {resourceFocus.summary ?? resourceFocus.content?.main}
                     </div>
                   </div>
                   <button
                     type="button"
                     className="xynolog-gather__expand-btn"
-                    onClick={() => setSourceExpanded(v => !v)}
+                    onClick={() => setSourceExpanded((v) => !v)}
                   >
                     {sourceExpanded ? '▲ less' : '▼ more'}
                   </button>
                 </div>
               )}
-              {resourceFocus.suggestedReferences && resourceFocus.suggestedReferences.length > 0 && (
-                // Prose, not chips: the live values are full research
-                // prompts — sentences. The chip vocabulary stays for tokens.
-                <ul className="xynolog-gather__suggested">
-                  {resourceFocus.suggestedReferences.map(ref => (
-                    <li key={ref}>{ref}</li>
-                  ))}
-                </ul>
-              )}
+              {resourceFocus.suggestedReferences &&
+                resourceFocus.suggestedReferences.length > 0 && (
+                  // Prose, not chips: the live values are full research
+                  // prompts — sentences. The chip vocabulary stays for tokens.
+                  <ul className="xynolog-gather__suggested">
+                    {resourceFocus.suggestedReferences.map((ref) => (
+                      <li key={ref}>{ref}</li>
+                    ))}
+                  </ul>
+                )}
             </div>
           )}
 
@@ -314,7 +436,10 @@ export function GatherContextStep({
               <ContextSummary context={context} translations={t} />
             </div>
             <div className="xynolog-gather__right">
-              <CorpusPane semanticContext={context.semanticContext} translations={t} />
+              <CorpusPane
+                semanticContext={context.semanticContext}
+                translations={t}
+              />
             </div>
           </div>
 
@@ -340,8 +465,12 @@ export function GatherContextStep({
           {focus && strategyFooter}
           {!annotate && chosenStrategy && (
             <div className="xynolog-gather__footer xynolog-gather__footer--echo">
-              <div className="xynolog-gather__footer-label">{chosenStrategy.label}</div>
-              <span className="xynolog-gather__chosen-strategy">{chosenStrategy.value}</span>
+              <div className="xynolog-gather__footer-label">
+                {chosenStrategy.label}
+              </div>
+              <span className="xynolog-gather__chosen-strategy">
+                {chosenStrategy.value}
+              </span>
             </div>
           )}
         </>

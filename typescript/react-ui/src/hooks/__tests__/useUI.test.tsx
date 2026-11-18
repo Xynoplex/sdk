@@ -106,7 +106,9 @@ describe('useLocalStorage', () => {
   });
 
   it('handles complex objects', () => {
-    const { result } = renderHook(() => useLocalStorage<{ a: number; b?: number }>('obj-key', { a: 1 }));
+    const { result } = renderHook(() =>
+      useLocalStorage<{ a: number; b?: number }>('obj-key', { a: 1 }),
+    );
     act(() => result.current[1]({ a: 2, b: 3 }));
     expect(result.current[0]).toEqual({ a: 2, b: 3 });
   });

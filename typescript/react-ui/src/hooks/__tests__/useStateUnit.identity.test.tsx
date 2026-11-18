@@ -21,7 +21,12 @@ import '@testing-library/jest-dom';
 import { BehaviorSubject, Subject, map, type Observable } from 'rxjs';
 import { readyValue } from '@xynolog/sdk';
 import { inMemoryContent } from '@xynolog/sdk/testing';
-import type { BusFrame, ConnectionState, EventMap, XynologError } from '@xynolog/core';
+import type {
+  BusFrame,
+  ConnectionState,
+  EventMap,
+  XynologError,
+} from '@xynolog/core';
 import { EventBus, FrameRefusal, baseUrl } from '@xynolog/core';
 import { type ITransport } from '@xynolog/core';
 import { BrowseNamespace } from '@xynolog/sdk';
@@ -29,8 +34,15 @@ import { useStateUnit } from '../useStateUnit';
 import { useObservable } from '../useObservable';
 
 const NINE_TYPES = [
-  'Author', 'Concept', 'Date', 'Event', 'Location',
-  'Organization', 'Person', 'Product', 'Technology',
+  'Author',
+  'Concept',
+  'Date',
+  'Event',
+  'Location',
+  'Organization',
+  'Person',
+  'Product',
+  'Technology',
 ];
 
 /**
@@ -64,10 +76,15 @@ function inMemoryTransport(
 ): ITransport {
   // The bus is this transport's wire, and nothing bridges into it: a refusal
   // there is no frame any wire carries, and is the test's own fault.
-  const frames = <K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K]>> =>
+  const frames = <K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K]>> =>
     bus.frames(channel).pipe(
       map(({ payload, ...envelope }) => {
-        if (payload instanceof FrameRefusal) throw new Error(`this double's wire holds a refusal on ${payload.channel}`);
+        if (payload instanceof FrameRefusal)
+          throw new Error(
+            `this double's wire holds a refusal on ${payload.channel}`,
+          );
         return { ...envelope, payload };
       }),
     );
@@ -99,7 +116,6 @@ function inMemoryTransport(
   };
 }
 
-
 /**
  * Build a minimal BrowseNamespace with a controllable mock transport. The
  * `answerEntityTypes` argument decides what the transport emits in response
@@ -107,14 +123,26 @@ function inMemoryTransport(
  */
 function makeBrowse(answerEntityTypes: string[]) {
   const transportBus = new EventBus();
-  const emit = vi.fn().mockImplementation((channel: string, _payload: Record<string, unknown>, envelope?: { correlationId?: string }) => {
-    if (channel === 'browse:entity-types-requested') {
-      const correlationId = envelope?.correlationId as string;
-      queueMicrotask(() => {
-        transportBus.emit('browse:entity-types-result', { response: { entityTypes: answerEntityTypes } }, { correlationId });
-      });
-    }
-  });
+  const emit = vi
+    .fn()
+    .mockImplementation(
+      (
+        channel: string,
+        _payload: Record<string, unknown>,
+        envelope?: { correlationId?: string },
+      ) => {
+        if (channel === 'browse:entity-types-requested') {
+          const correlationId = envelope?.correlationId as string;
+          queueMicrotask(() => {
+            transportBus.emit(
+              'browse:entity-types-result',
+              { response: { entityTypes: answerEntityTypes } },
+              { correlationId },
+            );
+          });
+        }
+      },
+    );
   return new BrowseNamespace(
     inMemoryTransport(transportBus, emit),
     new EventBus(),
@@ -127,124 +155,141 @@ function makeBrowse(answerEntityTypes: string[]) {
  * at factory-invocation time and pipes `.entityTypes()` into `$`.
  */
 function createToyStateUnit(browse: BrowseNamespace) {
-  const entityTypes$ = browse.entityTypes().pipe(map((st) => readyValue(st) ?? []));
+  const entityTypes$ = browse
+    .entityTypes()
+    .pipe(map((st) => readyValue(st) ?? []));
   return {
     entityTypes$,
-    dispose: () => { /* noop */ },
+    dispose: () => {
+      /* noop */
+    },
   };
 }
 
 describe('useStateUnit identity seam — stale client references', () => {
-  it(
-    'FACTORY RUNS ONCE: changing the browse prop does NOT re-create the state unit',
-    async () => {
-      const browseA = makeBrowse(NINE_TYPES);
-      const browseB = makeBrowse(['FromBrowseB']);
+  it('FACTORY RUNS ONCE: changing the browse prop does NOT re-create the state unit', async () => {
+    const browseA = makeBrowse(NINE_TYPES);
+    const browseB = makeBrowse(['FromBrowseB']);
 
-      let observedTypes: string[] = [];
+    let observedTypes: string[] = [];
 
-      function Harness({ browse }: { browse: BrowseNamespace }) {
-        const stateUnit = useStateUnit(() => createToyStateUnit(browse));
-        const types = useObservable(stateUnit.entityTypes$) ?? [];
-        observedTypes = types;
-        return <div data-testid="types">{types.join(',')}</div>;
-      }
+    function Harness({ browse }: { browse: BrowseNamespace }) {
+      const stateUnit = useStateUnit(() => createToyStateUnit(browse));
+      const types = useObservable(stateUnit.entityTypes$) ?? [];
+      observedTypes = types;
+      return <div data-testid="types">{types.join(',')}</div>;
+    }
 
-      const { rerender } = render(<Harness browse={browseA} />);
+    const { rerender } = render(<Harness browse={browseA} />);
 
-      // Let browseA's fetch complete.
-      await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-      expect(observedTypes).toEqual(NINE_TYPES);
+    // Let browseA's fetch complete.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(observedTypes).toEqual(NINE_TYPES);
 
-      // Now swap to browseB. state-unit factory is NOT re-run — state unit still points
-      // to browseA, so the observed value stays at NINE_TYPES (not
-      // ['FromBrowseB']).
-      rerender(<Harness browse={browseB} />);
-      await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    // Now swap to browseB. state-unit factory is NOT re-run — state unit still points
+    // to browseA, so the observed value stays at NINE_TYPES (not
+    // ['FromBrowseB']).
+    rerender(<Harness browse={browseB} />);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
 
-      // The point: observedTypes reflects browseA's data, not browseB's.
-      // This is how a stale-client-ref bug manifests.
-      expect(observedTypes).toEqual(NINE_TYPES);
-    },
-  );
+    // The point: observedTypes reflects browseA's data, not browseB's.
+    // This is how a stale-client-ref bug manifests.
+    expect(observedTypes).toEqual(NINE_TYPES);
+  });
 
-  it(
-    'STALE-FETCH DANGER: if client swap happens BEFORE first fetch resolves, the live client never gets queried',
-    async () => {
-      // Defer browseA's response so the client swap wins the race.
-      const deferredTransportBus = new EventBus();
-      const deferredEmit = vi.fn().mockImplementation(() => { /* never answers */ });
-      const browseA = new BrowseNamespace(
-        inMemoryTransport(deferredTransportBus, deferredEmit),
-        new EventBus(),
-        inMemoryContent(),
+  it('STALE-FETCH DANGER: if client swap happens BEFORE first fetch resolves, the live client never gets queried', async () => {
+    // Defer browseA's response so the client swap wins the race.
+    const deferredTransportBus = new EventBus();
+    const deferredEmit = vi.fn().mockImplementation(() => {
+      /* never answers */
+    });
+    const browseA = new BrowseNamespace(
+      inMemoryTransport(deferredTransportBus, deferredEmit),
+      new EventBus(),
+      inMemoryContent(),
+    );
+    const browseB = makeBrowse(['FromBrowseB']);
+
+    let observedTypes: string[] = [];
+
+    function Harness({ browse }: { browse: BrowseNamespace }) {
+      const stateUnit = useStateUnit(() => createToyStateUnit(browse));
+      const types = useObservable(stateUnit.entityTypes$) ?? [];
+      observedTypes = types;
+      return <div>{types.join(',')}</div>;
+    }
+
+    const { rerender } = render(<Harness browse={browseA} />);
+    expect(deferredEmit).toHaveBeenCalled();
+
+    // Swap to browseB while browseA's fetch is still pending.
+    rerender(<Harness browse={browseB} />);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    // state unit is still bound to browseA — so we never see browseB's value,
+    // and browseA's fetch never completes. The UI is stuck at [].
+    expect(observedTypes).toEqual([]);
+  });
+
+  it('LATE REPLY: a response reaching the stale browseA after the swap is observed by the state unit bound to it', async () => {
+    // The previous test's setup, except that browseA's request is answered
+    // after the swap.
+    const transportBus = new EventBus();
+    const pendingCids: string[] = [];
+    const emit = vi
+      .fn()
+      .mockImplementation(
+        (
+          channel: string,
+          _payload: Record<string, unknown>,
+          envelope?: { correlationId?: string },
+        ) => {
+          if (channel === 'browse:entity-types-requested') {
+            pendingCids.push(envelope?.correlationId as string);
+            // Don't respond yet — test resolves this manually.
+          }
+        },
       );
-      const browseB = makeBrowse(['FromBrowseB']);
+    const browseA = new BrowseNamespace(
+      inMemoryTransport(transportBus, emit),
+      new EventBus(),
+      inMemoryContent(),
+    );
+    const browseB = makeBrowse(NINE_TYPES);
 
-      let observedTypes: string[] = [];
+    let observedTypes: string[] = [];
+    function Harness({ browse }: { browse: BrowseNamespace }) {
+      const stateUnit = useStateUnit(() => createToyStateUnit(browse));
+      const types = useObservable(stateUnit.entityTypes$) ?? [];
+      observedTypes = types;
+      return <div>{types.join(',')}</div>;
+    }
 
-      function Harness({ browse }: { browse: BrowseNamespace }) {
-        const stateUnit = useStateUnit(() => createToyStateUnit(browse));
-        const types = useObservable(stateUnit.entityTypes$) ?? [];
-        observedTypes = types;
-        return <div>{types.join(',')}</div>;
-      }
+    const { rerender } = render(<Harness browse={browseA} />);
+    expect(pendingCids.length).toBe(1);
 
-      const { rerender } = render(<Harness browse={browseA} />);
-      expect(deferredEmit).toHaveBeenCalled();
+    // Swap. state unit still on browseA.
+    rerender(<Harness browse={browseB} />);
 
-      // Swap to browseB while browseA's fetch is still pending.
-      rerender(<Harness browse={browseB} />);
-      await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    // Answer browseA's request, after the swap.
+    transportBus.emit(
+      'browse:entity-types-result',
+      { response: { entityTypes: NINE_TYPES } },
+      { correlationId: pendingCids[0]! },
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
 
-      // state unit is still bound to browseA — so we never see browseB's value,
-      // and browseA's fetch never completes. The UI is stuck at [].
-      expect(observedTypes).toEqual([]);
-    },
-  );
-
-  it(
-    'LATE REPLY: a response reaching the stale browseA after the swap is observed by the state unit bound to it',
-    async () => {
-      // The previous test's setup, except that browseA's request is answered
-      // after the swap.
-      const transportBus = new EventBus();
-      const pendingCids: string[] = [];
-      const emit = vi.fn().mockImplementation((channel: string, _payload: Record<string, unknown>, envelope?: { correlationId?: string }) => {
-        if (channel === 'browse:entity-types-requested') {
-          pendingCids.push(envelope?.correlationId as string);
-          // Don't respond yet — test resolves this manually.
-        }
-      });
-      const browseA = new BrowseNamespace(
-        inMemoryTransport(transportBus, emit),
-        new EventBus(),
-        inMemoryContent(),
-      );
-      const browseB = makeBrowse(NINE_TYPES);
-
-      let observedTypes: string[] = [];
-      function Harness({ browse }: { browse: BrowseNamespace }) {
-        const stateUnit = useStateUnit(() => createToyStateUnit(browse));
-        const types = useObservable(stateUnit.entityTypes$) ?? [];
-        observedTypes = types;
-        return <div>{types.join(',')}</div>;
-      }
-
-      const { rerender } = render(<Harness browse={browseA} />);
-      expect(pendingCids.length).toBe(1);
-
-      // Swap. state unit still on browseA.
-      rerender(<Harness browse={browseB} />);
-
-      // Answer browseA's request, after the swap.
-      transportBus.emit('browse:entity-types-result', { response: { entityTypes: NINE_TYPES } }, { correlationId: pendingCids[0]! });
-      await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-
-      // The state unit is pinned to browseA, the cache that received the
-      // write, so the UI sees the late value. The stuck case is the previous
-      // test's, where the captured client is never answered.
-      expect(observedTypes).toEqual(NINE_TYPES);
-    },
-  );
+    // The state unit is pinned to browseA, the cache that received the
+    // write, so the UI sees the late value. The stuck case is the previous
+    // test's, where the captured client is never answered.
+    expect(observedTypes).toEqual(NINE_TYPES);
+  });
 });

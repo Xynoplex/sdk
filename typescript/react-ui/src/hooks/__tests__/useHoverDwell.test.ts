@@ -11,7 +11,9 @@ import { useHoverDwell } from '../useHoverDwell';
 
 function sessionDouble() {
   const hover = vi.fn();
-  const session = { client: { beckon: { hover } } } as unknown as XynologSession;
+  const session = {
+    client: { beckon: { hover } },
+  } as unknown as XynologSession;
   return { session, hover };
 }
 
@@ -23,8 +25,12 @@ function made(dwell: HoverDwell | undefined): HoverDwell {
 const ANN = annotationId('ann-1');
 
 describe('useHoverDwell', () => {
-  beforeEach(() => { vi.useFakeTimers(); });
-  afterEach(() => { vi.useRealTimers(); });
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it('says the annotation the pointer rests on, once it has rested for the delay', () => {
     const { session, hover } = sessionDouble();
@@ -49,9 +55,12 @@ describe('useHoverDwell', () => {
     expect(hover).not.toHaveBeenCalled();
   });
 
-  it('makes a new dwell when the delay changes, and forgets the old one\'s rest', () => {
+  it("makes a new dwell when the delay changes, and forgets the old one's rest", () => {
     const { session, hover } = sessionDouble();
-    const { result, rerender } = renderHook(({ delay }) => useHoverDwell(session, delay), { initialProps: { delay: 100 } });
+    const { result, rerender } = renderHook(
+      ({ delay }) => useHoverDwell(session, delay),
+      { initialProps: { delay: 100 } },
+    );
     const first = made(result.current);
 
     first.enter(ANN);
@@ -70,7 +79,10 @@ describe('useHoverDwell', () => {
   it('makes a new dwell for a new session, and says nothing more to the old one', () => {
     const old = sessionDouble();
     const next = sessionDouble();
-    const { result, rerender } = renderHook(({ session }) => useHoverDwell(session, 100), { initialProps: { session: old.session } });
+    const { result, rerender } = renderHook(
+      ({ session }) => useHoverDwell(session, 100),
+      { initialProps: { session: old.session } },
+    );
 
     made(result.current).enter(ANN);
     rerender({ session: next.session });

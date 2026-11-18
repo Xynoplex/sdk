@@ -2,15 +2,28 @@
 
 import type { AnnotationId } from '@xynolog/core';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import type { GatheredContext, EngineWithLimits, ResourceId } from '@xynolog/core';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
+import type {
+  GatheredContext,
+  EngineWithLimits,
+  ResourceId,
+} from '@xynolog/core';
 import { uuidV4 } from '@xynolog/core';
 import { HOVER_DELAY_MS } from '@xynolog/sdk';
 import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useEventSubscription } from '../../contexts/useEventSubscription';
 import { GatherContextStep } from './GatherContextStep';
-import { ConfigureGenerationStep, freshGenerationDraft } from './ConfigureGenerationStep';
+import {
+  ConfigureGenerationStep,
+  freshGenerationDraft,
+} from './ConfigureGenerationStep';
 import type { GenerationConfig } from './ConfigureGenerationStep';
 import { ConfigureSearchStep } from './ConfigureSearchStep';
 import type { SearchConfig } from './ConfigureSearchStep';
@@ -61,14 +74,23 @@ export interface ReferenceWizardModalProps {
   contextLoading: boolean;
   contextError: Error | null;
   /** Callbacks */
-  onGenerateSubmit: (referenceId: AnnotationId, config: GenerationConfig) => void;
-  onLinkResource: (referenceId: AnnotationId, targetResourceId: ResourceId) => void;
+  onGenerateSubmit: (
+    referenceId: AnnotationId,
+    config: GenerationConfig,
+  ) => void;
+  onLinkResource: (
+    referenceId: AnnotationId,
+    targetResourceId: ResourceId,
+  ) => void;
   /**
    * Create-and-link, inside the modal: the host runs `yield.resource` then
    * `bind.body` and settles the promise; rejection keeps the modal open with
    * the compose footer re-enabled.
    */
-  onComposeSubmit: (referenceId: AnnotationId, params: ComposeParams) => Promise<void>;
+  onComposeSubmit: (
+    referenceId: AnnotationId,
+    params: ComposeParams,
+  ) => Promise<void>;
   /** Picker vocabulary for compose when the reference fixed no entity types. */
   entityTypeOptions?: string[];
   /** Editor hover delay for the compose step's CodeMirror. */
@@ -166,17 +188,25 @@ export function ReferenceWizardModal({
   const [wizardStep, setWizardStep] = useState<WizardStep>({ step: 'gather' });
   // Both step drafts live HERE, not in the steps. Stepping back unmounts a step;
   // if the step owned its values, Back would silently discard everything typed.
-  const [searchConfig, setSearchConfig] = useState<SearchConfig>({ limit: 10, useSemanticScoring: true });
-  const [generationDraft, setGenerationDraft] = useState<GenerationDraft>(
-    () => freshGenerationDraft(defaultTitle, locale),
+  const [searchConfig, setSearchConfig] = useState<SearchConfig>({
+    limit: 10,
+    useSemanticScoring: true,
+  });
+  const [generationDraft, setGenerationDraft] = useState<GenerationDraft>(() =>
+    freshGenerationDraft(defaultTitle, locale),
   );
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [userHint, setUserHint] = useState('');
   const freshComposeDraft = (): ComposeDraft => ({
-    name: defaultTitle, storagePath: '', content: '', entityTypes: [], language: locale,
+    name: defaultTitle,
+    storagePath: '',
+    content: '',
+    entityTypes: [],
+    language: locale,
   });
-  const [composeDraft, setComposeDraft] = useState<ComposeDraft>(freshComposeDraft);
+  const [composeDraft, setComposeDraft] =
+    useState<ComposeDraft>(freshComposeDraft);
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
   // The editor consumes the shared display setting; the step itself stays
   // provider-free, so the wizard resolves it and passes it down.
@@ -208,7 +238,10 @@ export function ReferenceWizardModal({
     if (!isOpen) return;
     if (annotationId && event.referenceId === annotationId) {
       setIsSearching(false);
-      setWizardStep({ step: 'search-results', results: event.response as ScoredResult[] });
+      setWizardStep({
+        step: 'search-results',
+        results: event.response as ScoredResult[],
+      });
     }
   });
 
@@ -257,14 +290,17 @@ export function ReferenceWizardModal({
     setWizardStep({ step: 'compose' });
   }, [context, annotationId, resourceId]);
 
-  const handleComposeSubmit = useCallback(async (params: ComposeParams) => {
-    if (!annotationId) return;
-    // Rejection propagates to ComposeStep (footer re-enables); the host
-    // surfaces the error. Success closes UNCONDITIONALLY — the dirty guard
-    // protects dismissal, not completion.
-    await onComposeSubmitRef.current(annotationId, params);
-    onCloseRef.current();
-  }, [annotationId]);
+  const handleComposeSubmit = useCallback(
+    async (params: ComposeParams) => {
+      if (!annotationId) return;
+      // Rejection propagates to ComposeStep (footer re-enables); the host
+      // surfaces the error. Success closes UNCONDITIONALLY — the dirty guard
+      // protects dismissal, not completion.
+      await onComposeSubmitRef.current(annotationId, params);
+      onCloseRef.current();
+    },
+    [annotationId],
+  );
 
   // The dirty guard: a modal dies on ✕/Escape/backdrop, but typed work must
   // not die with it — WHEREVER the user currently is (drafts survive stepping
@@ -300,31 +336,43 @@ export function ReferenceWizardModal({
     if (el) el.scrollTop = el.scrollHeight;
   }, [wizardStep.step]);
 
-  const handleSearchSubmit = useCallback((config: SearchConfig) => {
-    if (!annotationId || !contextWithHint || !resourceId) return;
-    setIsSearching(true);
-    setSearchError(null);
-    session?.client.match.requestSearch({
-      resourceId: resourceId,
-      referenceId: annotationId,
-      context: contextWithHint,
-      limit: config.limit,
-      useSemanticScoring: config.useSemanticScoring,
-    }, uuidV4());
-    // Stay on configure-search until results arrive (subscription above handles transition)
-  }, [annotationId, resourceId, contextWithHint, session]);
+  const handleSearchSubmit = useCallback(
+    (config: SearchConfig) => {
+      if (!annotationId || !contextWithHint || !resourceId) return;
+      setIsSearching(true);
+      setSearchError(null);
+      session?.client.match.requestSearch(
+        {
+          resourceId: resourceId,
+          referenceId: annotationId,
+          context: contextWithHint,
+          limit: config.limit,
+          useSemanticScoring: config.useSemanticScoring,
+        },
+        uuidV4(),
+      );
+      // Stay on configure-search until results arrive (subscription above handles transition)
+    },
+    [annotationId, resourceId, contextWithHint, session],
+  );
 
-  const handleGenerateSubmit = useCallback((config: GenerationConfig) => {
-    if (!annotationId) return;
-    onGenerateSubmitRef.current(annotationId, config);
-    onCloseRef.current();
-  }, [annotationId]);
+  const handleGenerateSubmit = useCallback(
+    (config: GenerationConfig) => {
+      if (!annotationId) return;
+      onGenerateSubmitRef.current(annotationId, config);
+      onCloseRef.current();
+    },
+    [annotationId],
+  );
 
-  const handleLink = useCallback((targetResourceId: ResourceId) => {
-    if (!annotationId) return;
-    onLinkResourceRef.current(annotationId, targetResourceId);
-    onCloseRef.current();
-  }, [annotationId]);
+  const handleLink = useCallback(
+    (targetResourceId: ResourceId) => {
+      if (!annotationId) return;
+      onLinkResourceRef.current(annotationId, targetResourceId);
+      onCloseRef.current();
+    },
+    [annotationId],
+  );
 
   // The evidence display's translations — shared by the gather step and the
   // strategy steps, which keep the context in view (display-only)
@@ -344,7 +392,6 @@ export function ReferenceWizardModal({
     machineRead: t.machineRead,
     score: t.score,
   };
-
 
   return (
     <Transition appear show={isOpen}>
@@ -393,7 +440,10 @@ export function ReferenceWizardModal({
                     prompt={t.discardDraftPrompt}
                     discardLabel={t.discardDraft}
                     keepLabel={t.keepEditing}
-                    onDiscard={() => { setShowDiscardPrompt(false); onClose(); }}
+                    onDiscard={() => {
+                      setShowDiscardPrompt(false);
+                      onClose();
+                    }}
                     onKeepEditing={() => setShowDiscardPrompt(false)}
                   />
                 )}
@@ -403,7 +453,11 @@ export function ReferenceWizardModal({
                     context={context}
                     contextLoading={contextLoading}
                     contextError={contextError}
-                    pending={{ exact: defaultTitle, entityTypes, ...(resourceName ? { resourceName } : {}) }}
+                    pending={{
+                      exact: defaultTitle,
+                      entityTypes,
+                      ...(resourceName ? { resourceName } : {}),
+                    }}
                     annotate={{
                       userHint,
                       onUserHintChange: setUserHint,
@@ -425,130 +479,171 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'compose' && context && (
-                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
-                  <GatherContextStep
-                    context={context}
-                    contextLoading={contextLoading}
-                    contextError={contextError}
-                    chosenStrategy={{ label: t.resolutionStrategyLabel, value: `✍️ ${t.compose}` }}
-                    translations={displayTranslations}
-                  />
-                  <ComposeStep
-                    draft={composeDraft}
-                    onDraftChange={(patch) => setComposeDraft((d) => ({ ...d, ...patch }))}
-                    defaultFolder={defaultFolder}
-                    referenceEntityTypes={entityTypes}
-                    entityTypeOptions={entityTypeOptions}
-                    showLineNumbers={showLineNumbers}
-                    hoverDelayMs={hoverDelayMs}
-                    onBack={handleBackToGather}
-                    onCompose={handleComposeSubmit}
-                    translations={{
-                      resourceTitle: t.resourceTitle,
-                      resourceTitlePlaceholder: t.resourceTitlePlaceholder,
-                      saveLocation: t.saveLocation,
-                      entityTypes: t.entityTypes,
-                      language: t.language,
-                      contentLabel: t.contentLabel,
-                      back: t.back,
-                      createAndLink: t.createAndLink,
-                      creatingAndLinking: t.creatingAndLinking,
-                    }}
-                  />
+                  <div
+                    className="xynolog-wizard__step-scroll"
+                    ref={stepScrollRef}
+                  >
+                    <GatherContextStep
+                      context={context}
+                      contextLoading={contextLoading}
+                      contextError={contextError}
+                      chosenStrategy={{
+                        label: t.resolutionStrategyLabel,
+                        value: `✍️ ${t.compose}`,
+                      }}
+                      translations={displayTranslations}
+                    />
+                    <ComposeStep
+                      draft={composeDraft}
+                      onDraftChange={(patch) =>
+                        setComposeDraft((d) => ({ ...d, ...patch }))
+                      }
+                      defaultFolder={defaultFolder}
+                      referenceEntityTypes={entityTypes}
+                      entityTypeOptions={entityTypeOptions}
+                      showLineNumbers={showLineNumbers}
+                      hoverDelayMs={hoverDelayMs}
+                      onBack={handleBackToGather}
+                      onCompose={handleComposeSubmit}
+                      translations={{
+                        resourceTitle: t.resourceTitle,
+                        resourceTitlePlaceholder: t.resourceTitlePlaceholder,
+                        saveLocation: t.saveLocation,
+                        entityTypes: t.entityTypes,
+                        language: t.language,
+                        contentLabel: t.contentLabel,
+                        back: t.back,
+                        createAndLink: t.createAndLink,
+                        creatingAndLinking: t.creatingAndLinking,
+                      }}
+                    />
                   </div>
                 )}
 
                 {wizardStep.step === 'configure-generation' && context && (
-                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
-                  <GatherContextStep
-                    context={context}
-                    contextLoading={contextLoading}
-                    contextError={contextError}
-                    chosenStrategy={{ label: t.resolutionStrategyLabel, value: `✨ ${t.generate}` }}
-                    translations={displayTranslations}
-                  />
-                  <ConfigureGenerationStep
-                    {...(generationEngine ? { generationEngine } : {})}
-                    {...(userHint ? { hintEcho: { label: t.userHintLabel, value: userHint } } : {})}
-                    context={contextWithHint ?? context}
-                    config={generationDraft}
-                    onConfigChange={setGenerationDraft}
-                    defaultFolder={defaultFolder}
-                    onBack={handleBackToGather}
-                    onGenerate={handleGenerateSubmit}
-                    translations={{
-                      resourceTitle: t.resourceTitle,
-                      resourceTitlePlaceholder: t.resourceTitlePlaceholder,
-                      saveLocation: t.saveLocation,
-                      additionalInstructions: t.additionalInstructions,
-                      additionalInstructionsPlaceholder: t.additionalInstructionsPlaceholder,
-                      language: t.language,
-                      languageHelp: t.languageHelp,
-                      creativity: t.creativity,
-                      creativityFocused: t.creativityFocused,
-                      creativityCreative: t.creativityCreative,
-                      maxLength: t.maxLength,
-                      maxLengthHelp: t.maxLengthHelp,
-                      maxLengthCeiling: t.maxLengthCeiling,
-                      outputFormat: t.outputFormat,
-                      formatExtensionMismatch: t.formatExtensionMismatch,
-                      back: t.back,
-                      generate: t.generate,
-                    }}
-                  />
+                  <div
+                    className="xynolog-wizard__step-scroll"
+                    ref={stepScrollRef}
+                  >
+                    <GatherContextStep
+                      context={context}
+                      contextLoading={contextLoading}
+                      contextError={contextError}
+                      chosenStrategy={{
+                        label: t.resolutionStrategyLabel,
+                        value: `✨ ${t.generate}`,
+                      }}
+                      translations={displayTranslations}
+                    />
+                    <ConfigureGenerationStep
+                      {...(generationEngine ? { generationEngine } : {})}
+                      {...(userHint
+                        ? {
+                            hintEcho: {
+                              label: t.userHintLabel,
+                              value: userHint,
+                            },
+                          }
+                        : {})}
+                      context={contextWithHint ?? context}
+                      config={generationDraft}
+                      onConfigChange={setGenerationDraft}
+                      defaultFolder={defaultFolder}
+                      onBack={handleBackToGather}
+                      onGenerate={handleGenerateSubmit}
+                      translations={{
+                        resourceTitle: t.resourceTitle,
+                        resourceTitlePlaceholder: t.resourceTitlePlaceholder,
+                        saveLocation: t.saveLocation,
+                        additionalInstructions: t.additionalInstructions,
+                        additionalInstructionsPlaceholder:
+                          t.additionalInstructionsPlaceholder,
+                        language: t.language,
+                        languageHelp: t.languageHelp,
+                        creativity: t.creativity,
+                        creativityFocused: t.creativityFocused,
+                        creativityCreative: t.creativityCreative,
+                        maxLength: t.maxLength,
+                        maxLengthHelp: t.maxLengthHelp,
+                        maxLengthCeiling: t.maxLengthCeiling,
+                        outputFormat: t.outputFormat,
+                        formatExtensionMismatch: t.formatExtensionMismatch,
+                        back: t.back,
+                        generate: t.generate,
+                      }}
+                    />
                   </div>
                 )}
 
                 {wizardStep.step === 'configure-search' && (
-                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
-                  <GatherContextStep
-                    context={context}
-                    contextLoading={contextLoading}
-                    contextError={contextError}
-                    chosenStrategy={{ label: t.resolutionStrategyLabel, value: `🔍 ${t.search}` }}
-                    translations={displayTranslations}
-                  />
-                  <ConfigureSearchStep
-                    config={searchConfig}
-                    {...(userHint ? { hintEcho: { label: t.userHintLabel, value: userHint } } : {})}
-                    onConfigChange={setSearchConfig}
-                    isSearching={isSearching}
-                    searchError={searchError}
-                    onBack={handleBackToGather}
-                    onSearch={handleSearchSubmit}
-                    translations={{
-                      maxResults: t.maxResults,
-                      semanticScoring: t.semanticScoring,
-                      semanticScoringHelp: t.semanticScoringHelp,
-                      back: t.back,
-                      search: t.search,
-                      searching: t.searching,
-                      searchFailed: t.searchFailed,
-                    }}
-                  />
+                  <div
+                    className="xynolog-wizard__step-scroll"
+                    ref={stepScrollRef}
+                  >
+                    <GatherContextStep
+                      context={context}
+                      contextLoading={contextLoading}
+                      contextError={contextError}
+                      chosenStrategy={{
+                        label: t.resolutionStrategyLabel,
+                        value: `🔍 ${t.search}`,
+                      }}
+                      translations={displayTranslations}
+                    />
+                    <ConfigureSearchStep
+                      config={searchConfig}
+                      {...(userHint
+                        ? {
+                            hintEcho: {
+                              label: t.userHintLabel,
+                              value: userHint,
+                            },
+                          }
+                        : {})}
+                      onConfigChange={setSearchConfig}
+                      isSearching={isSearching}
+                      searchError={searchError}
+                      onBack={handleBackToGather}
+                      onSearch={handleSearchSubmit}
+                      translations={{
+                        maxResults: t.maxResults,
+                        semanticScoring: t.semanticScoring,
+                        semanticScoringHelp: t.semanticScoringHelp,
+                        back: t.back,
+                        search: t.search,
+                        searching: t.searching,
+                        searchFailed: t.searchFailed,
+                      }}
+                    />
                   </div>
                 )}
 
                 {wizardStep.step === 'search-results' && context && (
-                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
-                  <GatherContextStep
-                    context={context}
-                    contextLoading={contextLoading}
-                    contextError={contextError}
-                    chosenStrategy={{ label: t.resolutionStrategyLabel, value: `🔍 ${t.search}` }}
-                    translations={displayTranslations}
-                  />
-                  <SearchResultsStep
-                    results={wizardStep.results}
-                    onLink={handleLink}
-                    onBack={handleBackToGather}
-                    translations={{
-                      noResults: t.noResults,
-                      link: t.link,
-                      back: t.back,
-                      score: t.score,
-                    }}
-                  />
+                  <div
+                    className="xynolog-wizard__step-scroll"
+                    ref={stepScrollRef}
+                  >
+                    <GatherContextStep
+                      context={context}
+                      contextLoading={contextLoading}
+                      contextError={contextError}
+                      chosenStrategy={{
+                        label: t.resolutionStrategyLabel,
+                        value: `🔍 ${t.search}`,
+                      }}
+                      translations={displayTranslations}
+                    />
+                    <SearchResultsStep
+                      results={wizardStep.results}
+                      onLink={handleLink}
+                      onBack={handleBackToGather}
+                      translations={{
+                        noResults: t.noResults,
+                        link: t.link,
+                        back: t.back,
+                        score: t.score,
+                      }}
+                    />
                   </div>
                 )}
               </DialogPanel>

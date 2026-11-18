@@ -22,7 +22,8 @@ import type { components, paths } from '../types';
 // A reader reaches the store only by the content read, so the wire shape
 // this pins is the ROUTE's body.
 type Outcome = components['schemas']['ExtractionOutcome'];
-type Answer = paths['/resources/{id}/anchored-text']['get']['responses'][200]['content']['application/json'];
+type Answer =
+  paths['/resources/{id}/anchored-text']['get']['responses'][200]['content']['application/json'];
 
 /**
  * Axioms A2 and A3 of job-result-types.test.ts, for THIS union. Both members
@@ -48,8 +49,17 @@ function describeOutcome(o: Outcome): string {
 
 describe('ExtractionOutcome — the union discriminates', () => {
   it('narrows both members by kind, castless', () => {
-    expect(describeOutcome({ kind: 'extracted', text: 'abc', items: [], method: 'ocr' })).toBe('ocr: 3 chars');
-    expect(describeOutcome({ kind: 'declined', declined: 'encrypted' })).toBe('encrypted');
+    expect(
+      describeOutcome({
+        kind: 'extracted',
+        text: 'abc',
+        items: [],
+        method: 'ocr',
+      }),
+    ).toBe('ocr: 3 chars');
+    expect(describeOutcome({ kind: 'declined', declined: 'encrypted' })).toBe(
+      'encrypted',
+    );
   });
 });
 
@@ -73,7 +83,12 @@ describe('anchored-text record — extraction outcome guard', () => {
   });
 
   it('the answer carries the outcome', () => {
-    const outcome: Outcome = { kind: 'extracted', text: 't', items: [], method: 'pdf-text-layer' };
+    const outcome: Outcome = {
+      kind: 'extracted',
+      text: 't',
+      items: [],
+      method: 'pdf-text-layer',
+    };
     const answer: Answer = outcome;
     expect(answer).toBeDefined();
   });

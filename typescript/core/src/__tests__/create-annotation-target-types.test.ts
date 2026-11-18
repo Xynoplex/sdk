@@ -33,7 +33,9 @@ describe('CreateAnnotationRequest target (selector-optional)', () => {
 
   it('requires source', () => {
     // @ts-expect-error — source is required on a create target
-    const missingSource: CreateTarget = { selector: { type: 'TextQuoteSelector', exact: 'x' } };
+    const missingSource: CreateTarget = {
+      selector: { type: 'TextQuoteSelector', exact: 'x' },
+    };
     void missingSource;
     expect(true).toBe(true);
   });

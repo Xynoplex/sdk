@@ -20,9 +20,21 @@ import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { filter, firstValueFrom } from 'rxjs';
-import { CACHE_PER, PERSISTED_QUERIES, isObject, resourceId, type CachePer, type PersistedQuery } from '@xynolog/core';
+import {
+  CACHE_PER,
+  PERSISTED_QUERIES,
+  isObject,
+  resourceId,
+  type CachePer,
+  type PersistedQuery,
+} from '@xynolog/core';
 import { validators } from '@xynolog/core/openapi';
-import { KEPT_QUERIES, WHOLE_KEY, coupledLastEventId, keptPersister } from '../../cache-persister';
+import {
+  KEPT_QUERIES,
+  WHOLE_KEY,
+  coupledLastEventId,
+  keptPersister,
+} from '../../cache-persister';
 import { createTestSession } from '../../testing';
 import { PENDING_AUTHORIZATION_KEY } from '../oauth';
 import { XynologBrowser } from '../xynolog-browser';
@@ -56,8 +68,13 @@ interface StoredTable {
   storedSession: { properties: Record<string, unknown>; required: string[] };
   openResource: { properties: Record<string, unknown>; required: string[] };
   wholeKey: { key: string };
-  cacheDocument: { properties: { version: { const: number } } & Record<string, unknown> };
-  lastEventIds: { propertyNames: { $ref: string }; additionalProperties: { $ref: string } };
+  cacheDocument: {
+    properties: { version: { const: number } } & Record<string, unknown>;
+  };
+  lastEventIds: {
+    propertyNames: { $ref: string };
+    additionalProperties: { $ref: string };
+  };
 }
 
 /** The person what the tests keep is kept for. */
@@ -69,7 +86,11 @@ const table = JSON.parse(readFileSync(TABLE, 'utf-8')) as StoredTable;
 const members = Object.keys(table.storedSession.properties);
 
 /** A key of each kind a kept query's entries are keyed by: a resource's id, an annotation's id, or the whole key. */
-const KEY_OF_KIND: { [P in CachePer[PersistedQuery]]: string } = { resource: 'res-1', annotation: 'ann-1', whole: table.wholeKey.key };
+const KEY_OF_KIND: { [P in CachePer[PersistedQuery]]: string } = {
+  resource: 'res-1',
+  annotation: 'ann-1',
+  whole: table.wholeKey.key,
+};
 
 /** Each key's constant here, by the name the table gives it. */
 const KEYS: Record<string, string> = {
@@ -90,51 +111,84 @@ async function writtenOpenResources(): Promise<Record<string, object>> {
     id: 'kb-a',
     label: 'KB A',
     did: 'did:web:example.github.io:kb-a',
-    endpoint: { kind: 'http' as const, host: 'localhost', port: 4000, protocol: 'http' as const },
+    endpoint: {
+      kind: 'http' as const,
+      host: 'localhost',
+      port: 4000,
+      protocol: 'http' as const,
+    },
   };
   const { session, storage } = createTestSession({ kb });
   storage.set(STORAGE_KEY, JSON.stringify([kb]));
   storage.set(ACTIVE_KEY, kb.id);
-  const browser = new XynologBrowser({ storage, sessionFactory: () => session });
-  await firstValueFrom(browser.activeSession$.pipe(filter((live) => live !== null)));
+  const browser = new XynologBrowser({
+    storage,
+    sessionFactory: () => session,
+  });
+  await firstValueFrom(
+    browser.activeSession$.pipe(filter((live) => live !== null)),
+  );
 
-  browser.addOpenResource(resourceId('whole'), 'Whole', 'text/markdown', 'file://docs/whole.md');
+  browser.addOpenResource(
+    resourceId('whole'),
+    'Whole',
+    'text/markdown',
+    'file://docs/whole.md',
+  );
   browser.addOpenResource(resourceId('bare'), 'Bare');
   const kept = storage.get(OPEN_RESOURCES_BY_KB_KEY);
   await browser.dispose();
 
-  if (kept === null) throw new Error(`Nothing was written under ${OPEN_RESOURCES_BY_KB_KEY}`);
+  if (kept === null)
+    throw new Error(`Nothing was written under ${OPEN_RESOURCES_BY_KB_KEY}`);
   const byKb = JSON.parse(kept) as Record<string, { id: string }[]>;
   return Object.fromEntries(byKb[kb.id].map((entry) => [entry.id, entry]));
 }
 
 /** What was written under `key`, as JSON. */
-function writtenUnder(storage: InMemorySessionStorage, key: string): Record<string, unknown> {
+function writtenUnder(
+  storage: InMemorySessionStorage,
+  key: string,
+): Record<string, unknown> {
   const text = storage.get(key);
   if (text === null) throw new Error(`Nothing was written under ${key}`);
   const written: unknown = JSON.parse(text);
-  if (!isObject(written)) throw new Error(`What was written under ${key} is no object: ${text}`);
+  if (!isObject(written))
+    throw new Error(`What was written under ${key} is no object: ${text}`);
   return written;
 }
 
 /** A component's name among the validators; the namespace's `default` is the module itself. */
-const isComponent = (name: string): name is Exclude<keyof typeof validators, 'default'> =>
+const isComponent = (
+  name: string,
+): name is Exclude<keyof typeof validators, 'default'> =>
   name !== 'default' && Object.hasOwn(validators, name);
 
 /** The validator of the component a `$ref` of the table names. */
 function validatorOf(ref: string): (value: unknown) => boolean {
-  const component = /^\.\.\/components\/schemas\/([A-Za-z0-9]+)\.json$/.exec(ref)?.[1];
-  if (component === undefined || !isComponent(component)) throw new Error(`${ref} names no component`);
+  const component = /^\.\.\/components\/schemas\/([A-Za-z0-9]+)\.json$/.exec(
+    ref,
+  )?.[1];
+  if (component === undefined || !isComponent(component))
+    throw new Error(`${ref} names no component`);
   return validators[component];
 }
 
 /** A stored value with every member the table names but `left`. */
 const storedWithout = (left: string): string =>
-  JSON.stringify(Object.fromEntries(members.filter((member) => member !== left).map((member) => [member, `the ${member}`])));
+  JSON.stringify(
+    Object.fromEntries(
+      members
+        .filter((member) => member !== left)
+        .map((member) => [member, `the ${member}`]),
+    ),
+  );
 
 describe('what a registry keeps, as protocol/specs/src/session/stored.json states it', () => {
   it("each key is the table's, and the table has none this SDK lacks", () => {
-    expect(Object.fromEntries(table.keys.map(({ member, key }) => [member, key]))).toEqual(KEYS);
+    expect(
+      Object.fromEntries(table.keys.map(({ member, key }) => [member, key])),
+    ).toEqual(KEYS);
   });
 
   it("a knowledge base's session is kept under the table's prefix and its id", () => {
@@ -150,8 +204,13 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
 
   it("a kept query, for one person, is kept under the key the table's example works out", () => {
     const { prefix, example } = table.cacheKeyPrefix;
-    const query = PERSISTED_QUERIES.find((persisted) => persisted === example.query);
-    if (query === undefined) throw new Error(`the table's example keeps ${example.query}, which refresh.json does not mark persisted`);
+    const query = PERSISTED_QUERIES.find(
+      (persisted) => persisted === example.query,
+    );
+    if (query === undefined)
+      throw new Error(
+        `the table's example keeps ${example.query}, which refresh.json does not mark persisted`,
+      );
     const key = cacheKey(example.kbId, personKey(example.did), query);
     expect(key).toBe(example.key);
     expect(key.startsWith(`${prefix}${example.kbId}.`)).toBe(true);
@@ -169,7 +228,9 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
   it("a stored session is written with the table's members, and no others", () => {
     const storage = new InMemorySessionStorage();
     setStoredSession(storage, 'kb-a', whole);
-    const written = JSON.parse(storage.get(sessionKey('kb-a')) ?? 'null') as Record<string, unknown>;
+    const written = JSON.parse(
+      storage.get(sessionKey('kb-a')) ?? 'null',
+    ) as Record<string, unknown>;
     expect(Object.keys(written).sort()).toEqual([...members].sort());
   });
 
@@ -179,25 +240,32 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
     expect(getStoredSession(storage, 'kb-a')).toEqual(whole);
   });
 
-  it.each(members)('a stored value without %s is a session only if the table does not require it', (member) => {
-    const storage = new InMemorySessionStorage();
-    storage.set(sessionKey('kb-a'), storedWithout(member));
-    const read = getStoredSession(storage, 'kb-a');
-    if (table.storedSession.required.includes(member)) {
-      expect(read).toBeNull();
-    } else {
-      expect(read).not.toBeNull();
-    }
-  });
+  it.each(members)(
+    'a stored value without %s is a session only if the table does not require it',
+    (member) => {
+      const storage = new InMemorySessionStorage();
+      storage.set(sessionKey('kb-a'), storedWithout(member));
+      const read = getStoredSession(storage, 'kb-a');
+      if (table.storedSession.required.includes(member)) {
+        expect(read).toBeNull();
+      } else {
+        expect(read).not.toBeNull();
+      }
+    },
+  );
 
   it("an open resource is written with the table's members, and no others", async () => {
     const { whole } = await writtenOpenResources();
-    expect(Object.keys(whole).sort()).toEqual(Object.keys(table.openResource.properties).sort());
+    expect(Object.keys(whole).sort()).toEqual(
+      Object.keys(table.openResource.properties).sort(),
+    );
   });
 
   it('an open resource with no media type and no place in the tree is written with the members the table requires, and no others', async () => {
     const { bare } = await writtenOpenResources();
-    expect(Object.keys(bare).sort()).toEqual([...table.openResource.required].sort());
+    expect(Object.keys(bare).sort()).toEqual(
+      [...table.openResource.required].sort(),
+    );
   });
 
   it('the queries this SDK reads back are those refresh.json marks persisted, in its order, and none other', () => {
@@ -208,7 +276,10 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
     "$query: an entry keyed as refresh.json's per says ($per) is one it reads back",
     ({ query, per }) => {
       const sample = KEY_OF_KIND[per];
-      expect(KEPT_QUERIES[query].key(sample), `${query} keeps an entry under ${JSON.stringify(sample)}`).toBe(true);
+      expect(
+        KEPT_QUERIES[query].key(sample),
+        `${query} keeps an entry under ${JSON.stringify(sample)}`,
+      ).toBe(true);
     },
   );
 
@@ -218,10 +289,21 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
 
   it("a kept query's document is written with the table's members and version, and no others", () => {
     const storage = new InMemorySessionStorage();
-    keptPersister('entityTypes', { storage, kbId: 'kb-a', personKey: PERSON }).save(new Map([[WHOLE_KEY, ['Person']]]));
-    const written = writtenUnder(storage, cacheKey('kb-a', PERSON, 'entityTypes'));
-    expect(Object.keys(written).sort()).toEqual(Object.keys(table.cacheDocument.properties).sort());
-    expect(written['version']).toBe(table.cacheDocument.properties.version.const);
+    keptPersister('entityTypes', {
+      storage,
+      kbId: 'kb-a',
+      personKey: PERSON,
+    }).save(new Map([[WHOLE_KEY, ['Person']]]));
+    const written = writtenUnder(
+      storage,
+      cacheKey('kb-a', PERSON, 'entityTypes'),
+    );
+    expect(Object.keys(written).sort()).toEqual(
+      Object.keys(table.cacheDocument.properties).sort(),
+    );
+    expect(written['version']).toBe(
+      table.cacheDocument.properties.version.const,
+    );
   });
 
   it("the stream's places are written as the table's lastEventIds", () => {

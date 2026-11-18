@@ -26,7 +26,9 @@ type MatrixBody = {
 
 /** Parse the POST body of the i-th /bus/subscribe fetch. */
 const matrixOf = (callIndex: number): MatrixBody =>
-  JSON.parse((mockFetch.mock.calls[callIndex]![1] as { body: string }).body) as MatrixBody;
+  JSON.parse(
+    (mockFetch.mock.calls[callIndex]![1] as { body: string }).body,
+  ) as MatrixBody;
 
 describe('multi-scope over the real HttpTransport + ActorStateUnit', () => {
   beforeEach(() => {
@@ -60,7 +62,9 @@ describe('multi-scope over the real HttpTransport + ActorStateUnit', () => {
     const scopes = matrix.scoped.map((s) => s.scope).sort();
     expect(scopes).toEqual(['res-A', 'res-B']);
     for (const entry of matrix.scoped) {
-      expect(entry.channels.sort()).toEqual([...RESOURCE_SCOPED_CHANNELS].sort());
+      expect(entry.channels.sort()).toEqual(
+        [...RESOURCE_SCOPED_CHANNELS].sort(),
+      );
     }
 
     // ── One scoped frame → exactly one delivery on the bridged bus ────────
@@ -85,11 +89,17 @@ describe('multi-scope over the real HttpTransport + ActorStateUnit', () => {
       },
       metadata: { sequenceNumber: 1 },
     };
-    sse2.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: 'mark:added', payload: added, scope: 'res-A' }),
-      'p-res-A-1',
-    ));
+    sse2.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({
+          channel: 'mark:added',
+          payload: added,
+          scope: 'res-A',
+        }),
+        'p-res-A-1',
+      ),
+    );
     await vi.waitFor(() => expect(received).toHaveLength(1));
     await new Promise((r) => setTimeout(r, 20));
     expect(received).toHaveLength(1); // once — not once per held scope

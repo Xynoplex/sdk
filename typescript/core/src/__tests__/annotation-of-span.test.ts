@@ -7,7 +7,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { annotationOfSpan, reconcile, SpanRefusedError, type TextSpan } from '../annotation-builders';
+import {
+  annotationOfSpan,
+  reconcile,
+  SpanRefusedError,
+  type TextSpan,
+} from '../annotation-builders';
 import type { Annotation } from '../annotation-types';
 import type { Motivation } from '../branded-types';
 import { resourceId } from '../identifiers';
@@ -43,12 +48,27 @@ describe('building an annotation again does not make another', () => {
   // every comment on a span into one annotation.
   const RID = resourceId('res-idem');
   const CONTENT = 'Ada Lovelace wrote the first algorithm.';
-  const span = (start: number, end: number): TextSpan => ({ exact: CONTENT.slice(start, end), start, end });
+  const span = (start: number, end: number): TextSpan => ({
+    exact: CONTENT.slice(start, end),
+    start,
+    end,
+  });
   const comment = (value: string): Annotation['body'] => [
     { type: 'TextualBody', value, purpose: 'commenting', format: 'text/plain' },
   ];
-  const build = (of: TextSpan, motivation: Motivation, body?: Annotation['body']): Annotation =>
-    annotationOfSpan({ text: CONTENT, resourceId: RID, generator: GENERATOR, motivation, span: of, body });
+  const build = (
+    of: TextSpan,
+    motivation: Motivation,
+    body?: Annotation['body'],
+  ): Annotation =>
+    annotationOfSpan({
+      text: CONTENT,
+      resourceId: RID,
+      generator: GENERATOR,
+      motivation,
+      span: of,
+      body,
+    });
 
   it('the same span, motivation and body yields the SAME id', () => {
     // The whole point: a job the janitor recovered builds this again, and the
@@ -61,18 +81,28 @@ describe('building an annotation again does not make another', () => {
   it('survives being built at a different time by a different agent', () => {
     // Recovery happens later, in a fresh worker process. If `created` or the
     // generator leaked into the id, every recovery would duplicate.
-    const other: Agent = { ...GENERATOR, '@id': 'did:web:test.local:agents:other-worker' };
+    const other: Agent = {
+      ...GENERATOR,
+      '@id': 'did:web:test.local:agents:other-worker',
+    };
     const first = build(span(0, 12), 'highlighting');
-    const second = annotationOfSpan({ text: CONTENT, resourceId: RID, generator: other, motivation: 'highlighting', span: span(0, 12) });
+    const second = annotationOfSpan({
+      text: CONTENT,
+      resourceId: RID,
+      generator: other,
+      motivation: 'highlighting',
+      span: span(0, 12),
+    });
     expect(second.id).toBe(first.id);
   });
 
   it('a whole unit run again leaves the id set unchanged', () => {
-    const unit = () => [
-      build(span(0, 12), 'commenting', comment('an author')),
-      build(span(13, 18), 'commenting', comment('a verb')),
-      build(span(0, 12), 'highlighting'),
-    ].map((annotation) => annotation.id);
+    const unit = () =>
+      [
+        build(span(0, 12), 'commenting', comment('an author')),
+        build(span(13, 18), 'commenting', comment('a verb')),
+        build(span(0, 12), 'highlighting'),
+      ].map((annotation) => annotation.id);
 
     expect(new Set([...unit(), ...unit()]).size).toBe(3);
   });
@@ -86,7 +116,9 @@ describe('building an annotation again does not make another', () => {
   });
 
   it('different spans stay different annotations', () => {
-    expect(build(span(13, 18), 'highlighting').id).not.toBe(build(span(0, 12), 'highlighting').id);
+    expect(build(span(13, 18), 'highlighting').id).not.toBe(
+      build(span(0, 12), 'highlighting').id,
+    );
   });
 
   it('the same span under different motivations stays two annotations', () => {
@@ -114,10 +146,26 @@ describe('building an annotation again does not make another', () => {
     // text's does not, but geometry is DERIVED from these offsets and adds no identity.
     const anchored: AnchoredText = {
       text: CONTENT,
-      items: [{ page: 1, start: 0, end: CONTENT.length, x: 10, y: 700, width: 300, height: 12 }],
+      items: [
+        {
+          page: 1,
+          start: 0,
+          end: CONTENT.length,
+          x: 10,
+          y: 700,
+          width: 300,
+          height: 12,
+        },
+      ],
     };
 
-    const pdf = annotationOfSpan({ anchored, resourceId: RID, generator: GENERATOR, motivation: 'highlighting', span: span(0, 12) });
+    const pdf = annotationOfSpan({
+      anchored,
+      resourceId: RID,
+      generator: GENERATOR,
+      motivation: 'highlighting',
+      span: span(0, 12),
+    });
     expect(pdf.id).toBe(build(span(0, 12), 'highlighting').id);
   });
 });
@@ -129,9 +177,9 @@ const RID = resourceId('res-pdf');
 const LAYER: AnchoredText = {
   text: 'alpha beta\ngamma delta',
   items: [
-    { start: 0,  end: 5,  page: 1, x: 72,  y: 720, width: 40, height: 12 }, // alpha
-    { start: 6,  end: 10, page: 1, x: 118, y: 720, width: 34, height: 12 }, // beta
-    { start: 11, end: 16, page: 1, x: 72,  y: 700, width: 45, height: 12 }, // gamma
+    { start: 0, end: 5, page: 1, x: 72, y: 720, width: 40, height: 12 }, // alpha
+    { start: 6, end: 10, page: 1, x: 118, y: 720, width: 34, height: 12 }, // beta
+    { start: 11, end: 16, page: 1, x: 72, y: 700, width: 45, height: 12 }, // gamma
     { start: 17, end: 22, page: 1, x: 125, y: 700, width: 42, height: 12 }, // delta
   ],
 };
@@ -142,9 +190,9 @@ const LAYER: AnchoredText = {
 const CROSS_PAGE_LAYER: AnchoredText = {
   text: 'alpha beta\ngamma delta',
   items: [
-    { start: 0,  end: 5,  page: 1, x: 72,  y: 720, width: 40, height: 12 }, // alpha (p1)
-    { start: 6,  end: 10, page: 1, x: 118, y: 720, width: 34, height: 12 }, // beta  (p1)
-    { start: 11, end: 16, page: 2, x: 72,  y: 720, width: 45, height: 12 }, // gamma (p2)
+    { start: 0, end: 5, page: 1, x: 72, y: 720, width: 40, height: 12 }, // alpha (p1)
+    { start: 6, end: 10, page: 1, x: 118, y: 720, width: 34, height: 12 }, // beta  (p1)
+    { start: 11, end: 16, page: 2, x: 72, y: 720, width: 45, height: 12 }, // gamma (p2)
     { start: 17, end: 22, page: 2, x: 125, y: 720, width: 42, height: 12 }, // delta (p2)
   ],
 };
@@ -156,18 +204,39 @@ const CROSS_PAGE_LAYER: AnchoredText = {
 const SHIFTED_LAYER: AnchoredText = {
   text: ' alpha beta\ngamma delta',
   items: [
-    { start: 1,  end: 6,  page: 1, x: 72,  y: 720, width: 40, height: 12 }, // alpha
-    { start: 7,  end: 11, page: 1, x: 118, y: 720, width: 34, height: 12 }, // beta
-    { start: 12, end: 17, page: 1, x: 72,  y: 700, width: 45, height: 12 }, // gamma
+    { start: 1, end: 6, page: 1, x: 72, y: 720, width: 40, height: 12 }, // alpha
+    { start: 7, end: 11, page: 1, x: 118, y: 720, width: 34, height: 12 }, // beta
+    { start: 12, end: 17, page: 1, x: 72, y: 700, width: 45, height: 12 }, // gamma
     { start: 18, end: 23, page: 1, x: 125, y: 700, width: 42, height: 12 }, // delta
   ],
 };
 
-const pdf = (anchored: AnchoredText, motivation: Motivation, span: TextSpan, body?: Annotation['body']): Annotation =>
-  annotationOfSpan({ anchored, resourceId: RID, generator: GENERATOR, motivation, span, body });
-const fragments = (annotation: Annotation) => selectors(annotation).filter((selector) => selector.type === 'FragmentSelector');
-const quotes = (annotation: Annotation) => selectors(annotation).filter((selector) => selector.type === 'TextQuoteSelector');
-const positions = (annotation: Annotation) => selectors(annotation).filter((selector) => selector.type === 'TextPositionSelector');
+const pdf = (
+  anchored: AnchoredText,
+  motivation: Motivation,
+  span: TextSpan,
+  body?: Annotation['body'],
+): Annotation =>
+  annotationOfSpan({
+    anchored,
+    resourceId: RID,
+    generator: GENERATOR,
+    motivation,
+    span,
+    body,
+  });
+const fragments = (annotation: Annotation) =>
+  selectors(annotation).filter(
+    (selector) => selector.type === 'FragmentSelector',
+  );
+const quotes = (annotation: Annotation) =>
+  selectors(annotation).filter(
+    (selector) => selector.type === 'TextQuoteSelector',
+  );
+const positions = (annotation: Annotation) =>
+  selectors(annotation).filter(
+    (selector) => selector.type === 'TextPositionSelector',
+  );
 
 describe('a PDF annotation is identified by offsets it does not carry', () => {
   // `annotationOfSpan` stores NO TextPositionSelector for a span of a PDF —
@@ -208,32 +277,61 @@ describe('a PDF annotation is identified by offsets it does not carry', () => {
   });
 });
 
-describe('annotationOfSpan over a PDF\'s anchored text', () => {
+describe("annotationOfSpan over a PDF's anchored text", () => {
   it('single-line span -> one FragmentSelector + a TextQuoteSelector, and no TextPositionSelector', () => {
-    const annotation = pdf(LAYER, 'highlighting', { exact: 'alpha beta', start: 0, end: 10 });
+    const annotation = pdf(LAYER, 'highlighting', {
+      exact: 'alpha beta',
+      start: 0,
+      end: 10,
+    });
     expect(fragments(annotation)).toEqual([
-      { type: 'FragmentSelector', conformsTo: 'http://tools.ietf.org/rfc/rfc3778', value: 'page=1&viewrect=72,720,80,12' },
+      {
+        type: 'FragmentSelector',
+        conformsTo: 'http://tools.ietf.org/rfc/rfc3778',
+        value: 'page=1&viewrect=72,720,80,12',
+      },
     ]);
-    expect(quotes(annotation)).toEqual([{ type: 'TextQuoteSelector', exact: 'alpha beta' }]);
+    expect(quotes(annotation)).toEqual([
+      { type: 'TextQuoteSelector', exact: 'alpha beta' },
+    ]);
     expect(positions(annotation)).toEqual([]);
     expect(annotation.motivation).toBe('highlighting');
   });
 
   it('multi-line span -> one FragmentSelector per line (2), each a distinct viewrect', () => {
-    const found = fragments(pdf(LAYER, 'highlighting', { exact: 'beta\ngamma', start: 6, end: 16 }));
+    const found = fragments(
+      pdf(LAYER, 'highlighting', { exact: 'beta\ngamma', start: 6, end: 16 }),
+    );
     expect(found).toHaveLength(2);
     expect(new Set(found.map((fragment) => fragment.value)).size).toBe(2);
   });
 
   it('TextQuoteSelector carries exact + optional prefix/suffix', () => {
-    const annotation = pdf(LAYER, 'highlighting', { exact: 'beta', start: 6, end: 10, prefix: 'alpha ', suffix: '\ngamma' });
-    expect(quotes(annotation)).toEqual([{ type: 'TextQuoteSelector', exact: 'beta', prefix: 'alpha ', suffix: '\ngamma' }]);
+    const annotation = pdf(LAYER, 'highlighting', {
+      exact: 'beta',
+      start: 6,
+      end: 10,
+      prefix: 'alpha ',
+      suffix: '\ngamma',
+    });
+    expect(quotes(annotation)).toEqual([
+      {
+        type: 'TextQuoteSelector',
+        exact: 'beta',
+        prefix: 'alpha ',
+        suffix: '\ngamma',
+      },
+    ]);
   });
 
   it('refuses a span whose covered text does not have exact in it', () => {
     let refusal: unknown;
     try {
-      pdf(LAYER, 'highlighting', { exact: 'zzz not present', start: 0, end: 5 });
+      pdf(LAYER, 'highlighting', {
+        exact: 'zzz not present',
+        start: 0,
+        end: 5,
+      });
     } catch (error) {
       refusal = error;
     }
@@ -246,7 +344,10 @@ describe('annotationOfSpan over a PDF\'s anchored text', () => {
   // number is one more thing a JavaScript item can state, and no table can.
   it('refuses every span of an anchored text one of whose items is stated in fractions', () => {
     const [first, ...rest] = LAYER.items;
-    const fractional: AnchoredText = { text: LAYER.text, items: [{ ...first!, end: first!.end - 0.5 }, ...rest] };
+    const fractional: AnchoredText = {
+      text: LAYER.text,
+      items: [{ ...first!, end: first!.end - 0.5 }, ...rest],
+    };
     let refusal: unknown;
     try {
       // A span on the second line, which the item does not touch.
@@ -260,21 +361,41 @@ describe('annotationOfSpan over a PDF\'s anchored text', () => {
 
   it('holds exact to the covered text with white space apart (a space where the text breaks a line)', () => {
     // `exact` uses a single space where the anchored text has a line break.
-    const annotation = pdf(LAYER, 'highlighting', { exact: 'beta gamma', start: 6, end: 16 });
+    const annotation = pdf(LAYER, 'highlighting', {
+      exact: 'beta gamma',
+      start: 6,
+      end: 16,
+    });
     expect(fragments(annotation).length).toBeGreaterThanOrEqual(1);
   });
 
   it('attaches a body when provided (e.g. commenting)', () => {
-    const body: Annotation['body'] = { type: 'TextualBody', value: 'a note', format: 'text/plain' };
-    expect(pdf(LAYER, 'commenting', { exact: 'alpha', start: 0, end: 5 }, body).body).toEqual(body);
+    const body: Annotation['body'] = {
+      type: 'TextualBody',
+      value: 'a note',
+      format: 'text/plain',
+    };
+    expect(
+      pdf(LAYER, 'commenting', { exact: 'alpha', start: 0, end: 5 }, body).body,
+    ).toEqual(body);
   });
 
   it('linking motivation carries its detection-time body through the shared geometry', () => {
     // At detection time a linking reference's body is the entity type as a
     // TextualBody (the SpecificResource target is appended later, at bind). The
     // geometry is as a highlight's; only motivation + body differ.
-    const body: Annotation['body'] = { type: 'TextualBody', value: 'Person', purpose: 'tagging', format: 'text/plain' };
-    const annotation = pdf(LAYER, 'linking', { exact: 'gamma delta', start: 11, end: 22 }, body);
+    const body: Annotation['body'] = {
+      type: 'TextualBody',
+      value: 'Person',
+      purpose: 'tagging',
+      format: 'text/plain',
+    };
+    const annotation = pdf(
+      LAYER,
+      'linking',
+      { exact: 'gamma delta', start: 11, end: 22 },
+      body,
+    );
     expect(annotation.motivation).toBe('linking');
     expect(annotation.body).toEqual(body);
     expect(fragments(annotation).length).toBeGreaterThanOrEqual(1);
@@ -286,43 +407,85 @@ describe('annotationOfSpan over a PDF\'s anchored text', () => {
     // A comment and a tag are built with an ARRAY of bodies; either shape
     // (single object | array) is carried through verbatim.
     const body: Annotation['body'] = [
-      { type: 'TextualBody', value: 'Rule',   purpose: 'tagging',    format: 'text/plain' },
-      { type: 'TextualBody', value: 'a note', purpose: 'commenting', format: 'text/plain' },
+      {
+        type: 'TextualBody',
+        value: 'Rule',
+        purpose: 'tagging',
+        format: 'text/plain',
+      },
+      {
+        type: 'TextualBody',
+        value: 'a note',
+        purpose: 'commenting',
+        format: 'text/plain',
+      },
     ];
-    const annotation = pdf(LAYER, 'tagging', { exact: 'alpha', start: 0, end: 5 }, body);
+    const annotation = pdf(
+      LAYER,
+      'tagging',
+      { exact: 'alpha', start: 0, end: 5 },
+      body,
+    );
     expect(annotation.body).toEqual(body);
     expect(Array.isArray(annotation.body)).toBe(true);
   });
 
   it('cross-page: a span straddling a page break yields one FragmentSelector per page', () => {
     // "beta\ngamma" (offsets 6..16) — beta on page 1, gamma on page 2.
-    const annotation = pdf(CROSS_PAGE_LAYER, 'highlighting', { exact: 'beta\ngamma', start: 6, end: 16 });
+    const annotation = pdf(CROSS_PAGE_LAYER, 'highlighting', {
+      exact: 'beta\ngamma',
+      start: 6,
+      end: 16,
+    });
     const found = fragments(annotation);
     expect(found).toHaveLength(2);
     // One viewrect on page 1, one on page 2 (order-independent).
-    const pages = found.map((fragment) => fragment.value.match(/^page=(\d+)&/)?.[1]).sort();
+    const pages = found
+      .map((fragment) => fragment.value.match(/^page=(\d+)&/)?.[1])
+      .sort();
     expect(pages).toEqual(['1', '2']);
     // The covered text spans the break: 'beta\ngamma' has the exact in it, and
     // the span is not refused.
-    expect(quotes(annotation)).toEqual([{ type: 'TextQuoteSelector', exact: 'beta\ngamma' }]);
+    expect(quotes(annotation)).toEqual([
+      { type: 'TextQuoteSelector', exact: 'beta\ngamma' },
+    ]);
     expect(positions(annotation)).toEqual([]);
   });
 });
 
 describe('the span reconcile finds is the span annotationOfSpan takes', () => {
-  it('makes, in two calls, an annotation whose selectors are the text\'s own', () => {
+  it("makes, in two calls, an annotation whose selectors are the text's own", () => {
     const text = '😀 Ada Lovelace wrote the first algorithm.';
     // The model's letter case is not the text's, and its prefix is not in the text at all.
-    const span = reconcile(text, { exact: 'ada lovelace', prefix: 'nothing the text has ' });
+    const span = reconcile(text, {
+      exact: 'ada lovelace',
+      prefix: 'nothing the text has ',
+    });
     if (span === null) throw new Error('the words are in the text');
 
-    const annotation = annotationOfSpan({ text, resourceId: RID, generator: GENERATOR, motivation: 'highlighting', span });
+    const annotation = annotationOfSpan({
+      text,
+      resourceId: RID,
+      generator: GENERATOR,
+      motivation: 'highlighting',
+      span,
+    });
     expect(selectors(annotation)).toEqual([
       { type: 'TextPositionSelector', start: 2, end: 14 },
-      { type: 'TextQuoteSelector', exact: 'Ada Lovelace', prefix: '😀 ', suffix: ' wrote the first algorithm.' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'Ada Lovelace',
+        prefix: '😀 ',
+        suffix: ' wrote the first algorithm.',
+      },
     ]);
     // How the span was found is the caller's to log, and no member of the annotation.
-    expect(span).toMatchObject({ anchorMethod: 'fuzzy-match', matchQuality: 'case-insensitive' });
-    expect(JSON.stringify(annotation)).not.toMatch(/anchorMethod|matchQuality|fuzzy-match|case-insensitive/);
+    expect(span).toMatchObject({
+      anchorMethod: 'fuzzy-match',
+      matchQuality: 'case-insensitive',
+    });
+    expect(JSON.stringify(annotation)).not.toMatch(
+      /anchorMethod|matchQuality|fuzzy-match|case-insensitive/,
+    );
   });
 });

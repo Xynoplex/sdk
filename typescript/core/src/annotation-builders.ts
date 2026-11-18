@@ -23,14 +23,23 @@ import { annotationIdFor } from './annotation-id';
 import type { Annotation } from './annotation-types';
 import type { Motivation } from './branded-types';
 import { XynologError } from './errors';
-import { findBestTextMatch, buildContentCache, type MatchQuality } from './fuzzy-anchor';
+import {
+  findBestTextMatch,
+  buildContentCache,
+  type MatchQuality,
+} from './fuzzy-anchor';
 import type { SpanRefusal } from './error-codes';
 import type { ResourceId } from './identifiers';
 import type { Selector } from './payload-types';
 import { locate, type AnchoredText } from './pdf-anchoring';
 import { createFragmentSelector } from './pdf-coordinates';
 import { contextOf } from './text-context';
-import { between, occurrencesOf, textOffsets, type TextOffsets } from './text-offsets';
+import {
+  between,
+  occurrencesOf,
+  textOffsets,
+  type TextOffsets,
+} from './text-offsets';
 import type { components } from './types';
 
 type Agent = components['schemas']['Agent'];
@@ -125,7 +134,10 @@ const DISAMBIGUATION_MIN_WINDOW = 32;
  * `null` when `quoted.exact` is empty or only white space, or is nowhere in
  * the text, even loosely. A caller drops the proposal, and says so.
  */
-export function reconcile(text: string, quoted: QuotedText): ReconciledSpan | null {
+export function reconcile(
+  text: string,
+  quoted: QuotedText,
+): ReconciledSpan | null {
   const { exact } = quoted;
   // Nothing, or only white space, is no words to find.
   if (exact.trim() === '') return null;
@@ -141,21 +153,45 @@ export function reconcile(text: string, quoted: QuotedText): ReconciledSpan | nu
   // Size the comparison window to the hint (with a floor), so a prefix of 64
   // code points is matched against at least 64 of the text — a fixed smaller
   // window can't `endsWith`/`includes` a longer string.
-  const prefixWindow = Math.max(DISAMBIGUATION_MIN_WINDOW, prefixHint === undefined ? 0 : textOffsets(prefixHint).length);
-  const suffixWindow = Math.max(DISAMBIGUATION_MIN_WINDOW, suffixHint === undefined ? 0 : textOffsets(suffixHint).length);
+  const prefixWindow = Math.max(
+    DISAMBIGUATION_MIN_WINDOW,
+    prefixHint === undefined ? 0 : textOffsets(prefixHint).length,
+  );
+  const suffixWindow = Math.max(
+    DISAMBIGUATION_MIN_WINDOW,
+    suffixHint === undefined ? 0 : textOffsets(suffixHint).length,
+  );
 
   /** Whether the text around a place carries every hint given. */
   const fits = ({ start, end }: Place): boolean => {
-    const before = between(text, offsets, Math.max(0, start - prefixWindow), start);
-    const after = between(text, offsets, end, Math.min(offsets.length, end + suffixWindow));
-    const prefixOk = prefixHint === undefined || before.endsWith(prefixHint) || before.includes(prefixHint.trim());
-    const suffixOk = suffixHint === undefined || after.startsWith(suffixHint) || after.includes(suffixHint.trim());
+    const before = between(
+      text,
+      offsets,
+      Math.max(0, start - prefixWindow),
+      start,
+    );
+    const after = between(
+      text,
+      offsets,
+      end,
+      Math.min(offsets.length, end + suffixWindow),
+    );
+    const prefixOk =
+      prefixHint === undefined ||
+      before.endsWith(prefixHint) ||
+      before.includes(prefixHint.trim());
+    const suffixOk =
+      suffixHint === undefined ||
+      after.startsWith(suffixHint) ||
+      after.includes(suffixHint.trim());
     return prefixOk && suffixOk;
   };
 
   /** The first of several places that the hints pick: none when no hint was given, or no place fits. */
   const hinted = (places: Place[]): Place | undefined =>
-    prefixHint === undefined && suffixHint === undefined ? undefined : places.find(fits);
+    prefixHint === undefined && suffixHint === undefined
+      ? undefined
+      : places.find(fits);
 
   /** A place as a span: its words and its context are the text's own. */
   const spanAt = ({ start, end }: Place): TextSpan => {
@@ -174,7 +210,9 @@ export function reconcile(text: string, quoted: QuotedText): ReconciledSpan | nu
 
   // Find every place the text has `exact`, character for character: each as long as `exact` is in code points.
   const length = textOffsets(exact).length;
-  const occurrences: Place[] = occurrencesOf(text, offsets, exact).map((start) => ({ start, end: start + length }));
+  const occurrences: Place[] = occurrencesOf(text, offsets, exact).map(
+    (start) => ({ start, end: start + length }),
+  );
 
   if (occurrences.length === 1) {
     return { ...spanAt(occurrences[0]!), anchorMethod: 'unique-match' };
@@ -182,7 +220,8 @@ export function reconcile(text: string, quoted: QuotedText): ReconciledSpan | nu
 
   if (occurrences.length > 1) {
     const chosen = hinted(occurrences);
-    if (chosen !== undefined) return { ...spanAt(chosen), anchorMethod: 'context-recovered' };
+    if (chosen !== undefined)
+      return { ...spanAt(chosen), anchorMethod: 'context-recovered' };
 
     // No context chose. Fall back to the first place and flag it for audit:
     // with no hint of where, there is no better signal at this stage, and a
@@ -211,13 +250,24 @@ interface Refused {
   motivation: Motivation;
 }
 
-function refuse(code: SpanRefusal, why: string, { resourceId, motivation }: Refused): never {
-  throw new SpanRefusedError(`annotationOfSpan refused a span (${code}): ${why}, for resource ${resourceId}, motivation ${motivation}`, code);
+function refuse(
+  code: SpanRefusal,
+  why: string,
+  { resourceId, motivation }: Refused,
+): never {
+  throw new SpanRefusedError(
+    `annotationOfSpan refused a span (${code}): ${why}, for resource ${resourceId}, motivation ${motivation}`,
+    code,
+  );
 }
 
 /** Whether two numbers are the offsets of a stretch of a text of `length` code points: whole, in order, inside it. */
 const isStretchOf = (length: number, start: number, end: number): boolean =>
-  Number.isInteger(start) && Number.isInteger(end) && 0 <= start && start <= end && end <= length;
+  Number.isInteger(start) &&
+  Number.isInteger(end) &&
+  0 <= start &&
+  start <= end &&
+  end <= length;
 
 /**
  * Refuse a span that is no span of the text: one given backwards, one that
@@ -225,9 +275,17 @@ const isStretchOf = (length: number, start: number, end: number): boolean =>
  * Whatever words lie between its two numbers, it names no stretch of the
  * text, and an annotation built on it would state offsets that anchor nothing.
  */
-function holdSpanToText(offsets: TextOffsets, { start, end }: TextSpan, of: Refused): void {
+function holdSpanToText(
+  offsets: TextOffsets,
+  { start, end }: TextSpan,
+  of: Refused,
+): void {
   if (isStretchOf(offsets.length, start, end)) return;
-  refuse('span-out-of-range', `offsets ${start} to ${end} are not a span of a text of ${offsets.length} code points`, of);
+  refuse(
+    'span-out-of-range',
+    `offsets ${start} to ${end} are not a span of a text of ${offsets.length} code points`,
+    of,
+  );
 }
 
 /**
@@ -240,8 +298,14 @@ function holdSpanToText(offsets: TextOffsets, { start, end }: TextSpan, of: Refu
  * way than the text is counted is what this finds: its last items run past
  * the end, and every item before them is shifted where nothing would show it.
  */
-function holdItemsToText(anchored: AnchoredText, offsets: TextOffsets, of: Refused): void {
-  const stray = anchored.items.findIndex((item) => !isStretchOf(offsets.length, item.start, item.end));
+function holdItemsToText(
+  anchored: AnchoredText,
+  offsets: TextOffsets,
+  of: Refused,
+): void {
+  const stray = anchored.items.findIndex(
+    (item) => !isStretchOf(offsets.length, item.start, item.end),
+  );
   if (stray === -1) return;
   const { start, end } = anchored.items[stray]!;
   refuse(
@@ -256,17 +320,33 @@ function holdItemsToText(anchored: AnchoredText, offsets: TextOffsets, of: Refus
  * the span: as many code points of it as the prefix or suffix has itself, or
  * all there are if fewer. `span` is a span of the text (`holdSpanToText`).
  */
-function holdContextToText(text: string, offsets: TextOffsets, span: TextSpan, of: Refused): void {
+function holdContextToText(
+  text: string,
+  offsets: TextOffsets,
+  span: TextSpan,
+  of: Refused,
+): void {
   if (span.prefix !== undefined) {
     const from = Math.max(0, span.start - textOffsets(span.prefix).length);
     if (between(text, offsets, from, span.start) !== span.prefix) {
-      refuse('prefix-mismatch', `the prefix is not the text just before offset ${span.start}`, of);
+      refuse(
+        'prefix-mismatch',
+        `the prefix is not the text just before offset ${span.start}`,
+        of,
+      );
     }
   }
   if (span.suffix !== undefined) {
-    const to = Math.min(offsets.length, span.end + textOffsets(span.suffix).length);
+    const to = Math.min(
+      offsets.length,
+      span.end + textOffsets(span.suffix).length,
+    );
     if (between(text, offsets, span.end, to) !== span.suffix) {
-      refuse('suffix-mismatch', `the suffix is not the text just after offset ${span.end}`, of);
+      refuse(
+        'suffix-mismatch',
+        `the suffix is not the text just after offset ${span.end}`,
+        of,
+      );
     }
   }
 }
@@ -275,14 +355,25 @@ function holdContextToText(text: string, offsets: TextOffsets, span: TextSpan, o
  * The selectors of a span of a text: its position, and its quote. The span
  * is first held to the text, then its words, then its context.
  */
-function selectorsInText(text: string, span: TextSpan, of: Refused): Selector[] {
+function selectorsInText(
+  text: string,
+  span: TextSpan,
+  of: Refused,
+): Selector[] {
   const offsets = textOffsets(text);
   holdSpanToText(offsets, span, of);
   if (between(text, offsets, span.start, span.end) !== span.exact) {
-    refuse('exact-mismatch', `the text from offset ${span.start} to offset ${span.end}, which count code points, is not exact`, of);
+    refuse(
+      'exact-mismatch',
+      `the text from offset ${span.start} to offset ${span.end}, which count code points, is not exact`,
+      of,
+    );
   }
   holdContextToText(text, offsets, span, of);
-  return [{ type: 'TextPositionSelector', start: span.start, end: span.end }, quoteOf(span)];
+  return [
+    { type: 'TextPositionSelector', start: span.start, end: span.end },
+    quoteOf(span),
+  ];
 }
 
 /**
@@ -303,7 +394,11 @@ function selectorsInText(text: string, span: TextSpan, of: Refused): Selector[] 
  * span of a text is held to its text: the quote this writes is what
  * re-anchoring reads, on a PDF as on a text.
  */
-function selectorsInPdf(anchored: AnchoredText, span: TextSpan, of: Refused): Selector[] {
+function selectorsInPdf(
+  anchored: AnchoredText,
+  span: TextSpan,
+  of: Refused,
+): Selector[] {
   const offsets = textOffsets(anchored.text);
   holdItemsToText(anchored, offsets, of);
   holdSpanToText(offsets, span, of);
@@ -319,12 +414,21 @@ function selectorsInPdf(anchored: AnchoredText, span: TextSpan, of: Refused): Se
         Math.max(...overlap.map((item) => item.end)),
       )
     : '';
-  const collapsed = (words: string): string => words.replace(/\s+/g, ' ').trim();
+  const collapsed = (words: string): string =>
+    words.replace(/\s+/g, ' ').trim();
   if (rects.length === 0) {
-    refuse('nothing-located', `no rectangle is located for offsets ${span.start} to ${span.end}`, of);
+    refuse(
+      'nothing-located',
+      `no rectangle is located for offsets ${span.start} to ${span.end}`,
+      of,
+    );
   }
   if (!collapsed(covered).includes(collapsed(span.exact))) {
-    refuse('exact-not-covered', 'the text the span covers does not have exact in it', of);
+    refuse(
+      'exact-not-covered',
+      'the text the span covers does not have exact in it',
+      of,
+    );
   }
   holdContextToText(anchored.text, offsets, span, of);
 
@@ -387,14 +491,25 @@ export function annotationOfSpan(
     motivation: Motivation;
     span: TextSpan;
     body?: Annotation['body'];
-  } & ({ text: string; anchored?: never } | { anchored: AnchoredText; text?: never }),
+  } & (
+    | { text: string; anchored?: never }
+    | { anchored: AnchoredText; text?: never }
+  ),
 ): Annotation {
   const { resourceId, generator, motivation, span, body } = of;
-  const selector = of.text !== undefined ? selectorsInText(of.text, span, of) : selectorsInPdf(of.anchored, span, of);
+  const selector =
+    of.text !== undefined
+      ? selectorsInText(of.text, span, of)
+      : selectorsInPdf(of.anchored, span, of);
   return {
     '@context': 'http://www.w3.org/ns/anno.jsonld',
     type: 'Annotation',
-    id: annotationIdFor({ resourceId, motivation, anchor: anchorOf(span), body }),
+    id: annotationIdFor({
+      resourceId,
+      motivation,
+      anchor: anchorOf(span),
+      body,
+    }),
     motivation,
     generator,
     created: new Date().toISOString(),

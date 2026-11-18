@@ -32,7 +32,9 @@ interface Kind {
   refuses: Array<{ id: string; why: string }>;
 }
 
-const { kinds } = JSON.parse(readFileSync(resolve(SPEC, 'identifiers/kinds.json'), 'utf8')) as { kinds: Kind[] };
+const { kinds } = JSON.parse(
+  readFileSync(resolve(SPEC, 'identifiers/kinds.json'), 'utf8'),
+) as { kinds: Kind[] };
 
 /** Each kind's constructor and its guard. A kind the table names and this does not is a kind no test holds. */
 const MAKES: Record<string, (value: string) => string> = {
@@ -50,7 +52,9 @@ const ASKS: Record<string, (value: string) => boolean> = {
 
 describe('the kinds of id', () => {
   it('every kind the spec names has a constructor here, and no other does', () => {
-    expect(Object.keys(MAKES).sort()).toEqual(kinds.map((kind) => kind.schema).sort());
+    expect(Object.keys(MAKES).sort()).toEqual(
+      kinds.map((kind) => kind.schema).sort(),
+    );
     expect(Object.keys(ASKS).sort()).toEqual(Object.keys(MAKES).sort());
   });
 
@@ -65,7 +69,9 @@ describe('the kinds of id', () => {
     });
 
     it.each(kind.refuses)(`${kind.schema} refuses $id: $why`, ({ id }) => {
-      expect(asks(id), 'asked, it is an answer and nothing is thrown').toBe(false);
+      expect(asks(id), 'asked, it is an answer and nothing is thrown').toBe(
+        false,
+      );
       expect(() => make(id)).toThrow(TypeError);
       expect(() => make(id)).toThrow(`is not a ${kind.schema}`);
     });
@@ -80,22 +86,35 @@ describe('the types', () => {
     const user: UserId = userId('did:web:kb.example:users:alice');
 
     // What the spec's types say is what the constructors make.
-    const focus: components['schemas']['BeckonFocusEvent'] = { resourceId: resource, annotationId: annotation };
-    const described: components['schemas']['ResourceDescriptor']['@id'] = resource;
-    const metadata: Pick<components['schemas']['JobMetadata'], 'id' | 'userId'> = { id: job, userId: user };
-    expect([focus.resourceId, described, metadata.id, metadata.userId]).toEqual(['res-one', 'res-one', 'job-1', user]);
+    const focus: components['schemas']['BeckonFocusEvent'] = {
+      resourceId: resource,
+      annotationId: annotation,
+    };
+    const described: components['schemas']['ResourceDescriptor']['@id'] =
+      resource;
+    const metadata: Pick<
+      components['schemas']['JobMetadata'],
+      'id' | 'userId'
+    > = { id: job, userId: user };
+    expect([focus.resourceId, described, metadata.id, metadata.userId]).toEqual(
+      ['res-one', 'res-one', 'job-1', user],
+    );
 
     // Asked of text, the guard is what makes it an id.
     const entered: string = 'res-one';
-    const narrowed: ResourceId | undefined = isResourceId(entered) ? entered : undefined;
+    const narrowed: ResourceId | undefined = isResourceId(entered)
+      ? entered
+      : undefined;
     expect(narrowed).toBe('res-one');
 
     // @ts-expect-error text is not an id until its constructor has passed it
     const text: ResourceId = 'res-one';
     // @ts-expect-error an annotation's id is not a resource's
     const swapped: ResourceId = annotation;
-    // @ts-expect-error nor in a payload
-    const wrong: components['schemas']['BeckonFocusEvent'] = { resourceId: annotation };
+    const wrong: components['schemas']['BeckonFocusEvent'] = {
+      // @ts-expect-error nor in a payload
+      resourceId: annotation,
+    };
     // @ts-expect-error a job's id is not whoever asked for it
     const mixed: UserId = job;
     expect([text, swapped, wrong.resourceId, mixed]).toHaveLength(4);

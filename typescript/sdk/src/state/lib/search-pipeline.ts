@@ -23,9 +23,20 @@
  * `undefined`.
  */
 
-import { SEARCH_DEBOUNCE_MS, watched, type StateUnit, type Watched } from '@xynolog/core';
+import {
+  SEARCH_DEBOUNCE_MS,
+  watched,
+  type StateUnit,
+  type Watched,
+} from '@xynolog/core';
 import { BehaviorSubject, of, type Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, startWith, map } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  startWith,
+  map,
+} from 'rxjs/operators';
 
 export interface SearchState<T> {
   results: T[];
@@ -54,26 +65,31 @@ export function createSearchPipeline<T>(
 ): SearchPipeline<T> {
   const debounceMs = options.debounceMs ?? SEARCH_DEBOUNCE_MS;
   const query$ = new BehaviorSubject<string>(options.initialQuery ?? '');
-  const state$ = new BehaviorSubject<SearchState<T>>({ results: [], isSearching: false });
+  const state$ = new BehaviorSubject<SearchState<T>>({
+    results: [],
+    isSearching: false,
+  });
   let disposed = false;
 
-  const searching = query$.pipe(
-    debounceTime(debounceMs),
-    distinctUntilChanged(),
-    switchMap((q): Observable<SearchState<T>> => {
-      const trimmed = q.trim();
-      if (!trimmed) {
-        return of({ results: [], isSearching: false });
-      }
-      return fetch(trimmed).pipe(
-        map((results): SearchState<T> => ({
-          results: results ?? [],
-          isSearching: results === undefined,
-        })),
-        startWith({ results: [], isSearching: true } as SearchState<T>),
-      );
-    }),
-  ).subscribe((state) => state$.next(state));
+  const searching = query$
+    .pipe(
+      debounceTime(debounceMs),
+      distinctUntilChanged(),
+      switchMap((q): Observable<SearchState<T>> => {
+        const trimmed = q.trim();
+        if (!trimmed) {
+          return of({ results: [], isSearching: false });
+        }
+        return fetch(trimmed).pipe(
+          map((results): SearchState<T> => ({
+            results: results ?? [],
+            isSearching: results === undefined,
+          })),
+          startWith({ results: [], isSearching: true } as SearchState<T>),
+        );
+      }),
+    )
+    .subscribe((state) => state$.next(state));
 
   return {
     query$: watched(query$),

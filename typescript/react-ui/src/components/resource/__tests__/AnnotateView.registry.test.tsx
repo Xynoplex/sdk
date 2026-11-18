@@ -9,7 +9,10 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import type { AnnotationUIState } from '../../../types/annotation-props';
@@ -17,7 +20,9 @@ import { AnnotateView } from '../AnnotateView';
 import type { AnnotateMediaRendererProps } from '../annotate-renderers';
 import { resourceId, EventBus } from '@xynolog/core';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
 vi.mock('../../CodeMirrorRenderer', () => ({
   CodeMirrorRenderer: () => <div data-testid="default-text">default-cm</div>,
 }));
@@ -25,7 +30,13 @@ vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({
   SvgDrawingCanvas: () => <div data-testid="default-image">default-svg</div>,
 }));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 const uiState: AnnotationUIState = {
   selectedMotivation: 'linking',
   selectedClick: 'detail',
@@ -62,9 +73,13 @@ describe('AnnotateView — media-renderer registry', () => {
       <div data-testid="custom-text">custom: {content}</div>
     );
 
-    renderInEnglish(<AnnotateView {...base('text/plain')} renderers={{ text: CustomText }} />);
+    renderInEnglish(
+      <AnnotateView {...base('text/plain')} renderers={{ text: CustomText }} />,
+    );
 
-    expect(screen.getByTestId('custom-text')).toHaveTextContent('custom: the-body');
+    expect(screen.getByTestId('custom-text')).toHaveTextContent(
+      'custom: the-body',
+    );
     expect(screen.queryByTestId('default-text')).not.toBeInTheDocument();
   });
 
@@ -73,7 +88,12 @@ describe('AnnotateView — media-renderer registry', () => {
       <div data-testid="custom-pdf">{content}</div>
     );
 
-    renderInEnglish(<AnnotateView {...base('application/pdf')} renderers={{ pdf: CustomPdf }} />);
+    renderInEnglish(
+      <AnnotateView
+        {...base('application/pdf')}
+        renderers={{ pdf: CustomPdf }}
+      />,
+    );
 
     expect(screen.getByTestId('custom-pdf')).toBeInTheDocument();
   });
@@ -81,7 +101,9 @@ describe('AnnotateView — media-renderer registry', () => {
   it('merges over the defaults rather than replacing them: overriding text leaves image alone', () => {
     const CustomText = () => <div data-testid="custom-text" />;
 
-    renderInEnglish(<AnnotateView {...base('image/png')} renderers={{ text: CustomText }} />);
+    renderInEnglish(
+      <AnnotateView {...base('image/png')} renderers={{ text: CustomText }} />,
+    );
 
     expect(screen.getByTestId('default-image')).toBeInTheDocument();
     expect(screen.queryByTestId('custom-text')).not.toBeInTheDocument();
@@ -91,9 +113,13 @@ describe('AnnotateView — media-renderer registry', () => {
     // The browse side gives a type it cannot preview the same kind of answer.
     // Annotating a type nothing here can render is not harmless, so the
     // missing renderer must stay explicit.
-    const { container } = renderInEnglish(<AnnotateView {...base('application/octet-stream')} />);
+    const { container } = renderInEnglish(
+      <AnnotateView {...base('application/octet-stream')} />,
+    );
 
-    expect(container.querySelector('[data-mime-type="unsupported"]')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-mime-type="unsupported"]'),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Annotation not supported/)).toBeInTheDocument();
     expect(screen.getByText('Download File')).toBeInTheDocument();
   });
@@ -102,9 +128,15 @@ describe('AnnotateView — media-renderer registry', () => {
     // What the registry buys: the wrapper, the toolbar block and the content
     // div exist once, not once per render-mode branch.
     for (const mimeType of ['text/plain', 'application/pdf', 'image/png']) {
-      const { container, unmount } = renderInEnglish(<AnnotateView {...base(mimeType)} />);
-      expect(container.querySelectorAll('.xynolog-annotate-view')).toHaveLength(1);
-      expect(container.querySelectorAll('.xynolog-annotate-view__content')).toHaveLength(1);
+      const { container, unmount } = renderInEnglish(
+        <AnnotateView {...base(mimeType)} />,
+      );
+      expect(container.querySelectorAll('.xynolog-annotate-view')).toHaveLength(
+        1,
+      );
+      expect(
+        container.querySelectorAll('.xynolog-annotate-view__content'),
+      ).toHaveLength(1);
       unmount();
     }
   });

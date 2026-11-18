@@ -20,23 +20,63 @@ interface ToastProps {
 
 const icons = {
   success: (
-    <svg className="xynolog-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    <svg
+      className="xynolog-toast-icon"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M5 13l4 4L19 7"
+      />
     </svg>
   ),
   error: (
-    <svg className="xynolog-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    <svg
+      className="xynolog-toast-icon"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+      />
     </svg>
   ),
   warning: (
-    <svg className="xynolog-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    <svg
+      className="xynolog-toast-icon"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+      />
     </svg>
   ),
   info: (
-    <svg className="xynolog-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg
+      className="xynolog-toast-icon"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
     </svg>
   ),
 };
@@ -51,11 +91,7 @@ function Toast({ toast, onClose }: ToastProps) {
   }, [toast, onClose]);
 
   return (
-    <div
-      className="xynolog-toast"
-      data-variant={toast.type}
-      role="alert"
-    >
+    <div className="xynolog-toast" data-variant={toast.type} role="alert">
       <div className="xynolog-toast-icon-wrapper">{icons[toast.type]}</div>
       <p className="xynolog-toast-message">{toast.message}</p>
       <button
@@ -63,8 +99,18 @@ function Toast({ toast, onClose }: ToastProps) {
         className="xynolog-toast-close"
         aria-label="Close"
       >
-        <svg className="xynolog-toast-close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <svg
+          className="xynolog-toast-close-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>
@@ -92,7 +138,7 @@ export function ToastContainer({ toasts, onClose }: ToastContainerProps) {
         <Toast key={toast.id} toast={toast} onClose={onClose} />
       ))}
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -105,23 +151,45 @@ interface ToastContextType {
   showInfo: (message: string, duration?: number) => void;
 }
 
-const ToastContext = React.createContext<ToastContextType | undefined>(undefined);
+const ToastContext = React.createContext<ToastContextType | undefined>(
+  undefined,
+);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const showToast = React.useCallback((message: string, type: ToastType = 'info', duration?: number) => {
-    const id = Date.now().toString();
-    const newToast: ToastMessage = duration !== undefined
-      ? { id, message, type, duration }
-      : { id, message, type };
-    setToasts((prev) => [...prev, newToast]);
-  }, []);
+  const showToast = React.useCallback(
+    (message: string, type: ToastType = 'info', duration?: number) => {
+      const id = Date.now().toString();
+      const newToast: ToastMessage =
+        duration !== undefined
+          ? { id, message, type, duration }
+          : { id, message, type };
+      setToasts((prev) => [...prev, newToast]);
+    },
+    [],
+  );
 
-  const showSuccess = React.useCallback((message: string, duration?: number) => showToast(message, 'success', duration), [showToast]);
-  const showError = React.useCallback((message: string, duration?: number) => showToast(message, 'error', duration), [showToast]);
-  const showWarning = React.useCallback((message: string, duration?: number) => showToast(message, 'warning', duration), [showToast]);
-  const showInfo = React.useCallback((message: string, duration?: number) => showToast(message, 'info', duration), [showToast]);
+  const showSuccess = React.useCallback(
+    (message: string, duration?: number) =>
+      showToast(message, 'success', duration),
+    [showToast],
+  );
+  const showError = React.useCallback(
+    (message: string, duration?: number) =>
+      showToast(message, 'error', duration),
+    [showToast],
+  );
+  const showWarning = React.useCallback(
+    (message: string, duration?: number) =>
+      showToast(message, 'warning', duration),
+    [showToast],
+  );
+  const showInfo = React.useCallback(
+    (message: string, duration?: number) =>
+      showToast(message, 'info', duration),
+    [showToast],
+  );
 
   const handleClose = React.useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -129,7 +197,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const contextValue = React.useMemo(
     () => ({ showToast, showSuccess, showError, showWarning, showInfo }),
-    [showToast, showSuccess, showError, showWarning, showInfo]
+    [showToast, showSuccess, showError, showWarning, showInfo],
   );
 
   return (

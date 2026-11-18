@@ -72,9 +72,10 @@ export function HighlightPanel({
   hoveredAnnotationId,
   sourceLanguage,
 }: HighlightPanelProps) {
-
   const t = useTranslations('HighlightPanel');
-  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(null);
+  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Direct ref management
@@ -91,13 +92,16 @@ export function HighlightPanel({
   }, [annotations]);
 
   // Ref callback for entry components
-  const setEntryRef = useCallback((id: string, element: HTMLDivElement | null) => {
-    if (element) {
-      entryRefs.current.set(id, element);
-    } else {
-      entryRefs.current.delete(id);
-    }
-  }, []);
+  const setEntryRef = useCallback(
+    (id: string, element: HTMLDivElement | null) => {
+      if (element) {
+        entryRefs.current.set(id, element);
+      } else {
+        entryRefs.current.delete(id);
+      }
+    },
+    [],
+  );
 
   // Handle scrollToAnnotationId (click scroll)
   useEffect(() => {
@@ -107,7 +111,7 @@ export function HighlightPanel({
       const elementTop = element.offsetTop;
       const containerHeight = containerRef.current.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
       element.classList.remove('xynolog-annotation-pulse');
       void element.offsetWidth;
@@ -125,12 +129,14 @@ export function HighlightPanel({
     const container = containerRef.current;
     const elementRect = element.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
-    const isVisible = elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom;
+    const isVisible =
+      elementRect.top >= containerRect.top &&
+      elementRect.bottom <= containerRect.bottom;
     if (!isVisible) {
       const elementTop = element.offsetTop;
       const containerHeight = container.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
       container.scrollTo({ top: scrollTo, behavior: 'smooth' });
     }
 
@@ -139,10 +145,13 @@ export function HighlightPanel({
 
   // Subscribe to click events - update focused state
   // Event handler for annotation clicks (a named callback rather than an inline arrow function)
-  const handleAnnotationClick = useCallback(({ annotationId }: { annotationId: string }) => {
-    setFocusedAnnotationId(annotationId);
-    setTimeout(() => setFocusedAnnotationId(null), 3000);
-  }, []);
+  const handleAnnotationClick = useCallback(
+    ({ annotationId }: { annotationId: string }) => {
+      setFocusedAnnotationId(annotationId);
+      setTimeout(() => setFocusedAnnotationId(null), 3000);
+    },
+    [],
+  );
 
   useSessionEventSubscriptions(session, {
     'browse:click': handleAnnotationClick,
@@ -185,9 +194,7 @@ export function HighlightPanel({
         {/* Highlights list */}
         <div className="xynolog-panel__list">
           {sortedAnnotations.length === 0 ? (
-            <p className="xynolog-panel__empty">
-              {t('noHighlights')}
-            </p>
+            <p className="xynolog-panel__empty">{t('noHighlights')}</p>
           ) : (
             sortedAnnotations.map((highlight) => (
               <HighlightEntry

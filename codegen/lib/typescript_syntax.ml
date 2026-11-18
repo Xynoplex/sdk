@@ -9,13 +9,13 @@
    interfaces, the table's data, and a dispatch whose body is the table.
    Logic that no table varies is the SDK's own, written by hand beside it.
 
-   No formatter holds TypeScript, so how a value is laid out is stated with
-   it: on one line ([Inline]; [Packed] with no space after a comma), or a row
-   a line ([Rows]), and the column a block of rows aligns its values at. The
-   printer writes each as it is stated; between top-level declarations there
-   is a blank line. *)
-
-type quote = Single | Double
+   Prettier lays out what the printer writes (make generate runs it), so the
+   printer states only what Prettier keeps: an object, an object type, a
+   mapped type and a conditional type on one line ([Inline]) or a row a line
+   ([Rows]), a comment's lines, and a blank line between top-level
+   declarations. An array is written an element a line, and Prettier puts it
+   on one when it fits; a string is in single quotes, as Prettier's
+   configuration writes it. *)
 
 (* [Doc] is a doc comment on one line; [Block] one of several lines; [Line]
    a line comment. [Doc_prose] and [Line_prose] are a spec's prose as a doc
@@ -30,12 +30,12 @@ type comment =
   | Line_prose of Text.paragraph list
   | Gap
 
-type layout = Inline | Packed | Rows
-type key = Ident of string | Quoted of quote * string
+type layout = Inline | Rows
+type key = Ident of string | Quoted of string
 
 type type_ =
   | T_name of string
-  | T_str of quote * string
+  | T_str of string
   | T_index of type_ * type_  (** [t[k]] *)
   | T_generic of string * type_ list
   | T_union of type_ list  (** On one line. *)
@@ -80,21 +80,15 @@ type binary = And | Or | Strict_eq | Ge | Plus
 
 type expr =
   | Name of string
-  | Str of quote * string
+  | Str of string
   | Int of int
   | Hex of string  (** Hexadecimal digits, written after [0x]. *)
   | Octal of string  (** Octal digits, written after [0o]. *)
   | Bool of bool
   | Null
   | Undefined
-  | Array of { layout : layout; elements : element list }
-  | Object of {
-      layout : layout;
-      column : int option;
-          (** [Rows]: where a row's value starts, past its key. [Inline], as a
-              row's value: where its second entry starts in that row. *)
-      entries : entry list;
-    }
+  | Array of element list
+  | Object of { layout : layout; entries : entry list }
   | Json of Yojson.Safe.t  (** As JSON writes it, on one line. *)
   | Json_rows of Yojson.Safe.t  (** As JSON writes it, a member a line. *)
   | New of string * expr list
@@ -188,18 +182,13 @@ let member ?(about = []) ?(readonly = false) ?(optional = false)
   { about; readonly; key; optional; type_; member_trailing = trailing }
 
 let case ?(about = []) case = { case_about = about; case }
-let array layout values = Array { layout; elements = List.map element values }
-
-let strings ?(quote = Single) layout texts =
-  array layout (List.map (fun t -> Str (quote, t)) texts)
-
-let rows ?column entries = Object { layout = Rows; column; entries }
+let array values = Array (List.map element values)
+let strings texts = array (List.map (fun t -> Str t) texts)
+let rows entries = Object { layout = Rows; entries }
 
 (* [components['schemas'][name]]: a component schema's type. *)
 let schema name =
-  T_index
-    ( T_index (T_name "components", T_str (Single, "schemas")),
-      T_str (Single, name) )
+  T_index (T_index (T_name "components", T_str "schemas"), T_str name)
 
 let const ?(about = []) ?(export = true) ?annotation ?(as_const = false)
     ?satisfies name value =
@@ -230,7 +219,7 @@ let digits ~ok what text =
 
 (* A string in single quotes, with a quote, a backslash and the control
    characters escaped, and every other character as itself. *)
-let single text =
+let literal text =
   let out = Buffer.create (String.length text + 2) in
   Buffer.add_char out '\'';
   String.iter
@@ -247,13 +236,7 @@ let single text =
   Buffer.add_char out '\'';
   Buffer.contents out
 
-let literal quote text =
-  match quote with Single -> single text | Double -> Text.quoted text
-
-let key = function
-  | Ident name -> checked name
-  | Quoted (quote, text) -> literal quote text
-
+let key = function Ident name -> checked name | Quoted text -> literal text
 let indentation depth = String.make (2 * depth) ' '
 
 let refuse_newline what text =
@@ -329,7 +312,7 @@ let binary = function
 
 let rec type_ ~depth = function
   | T_name name -> checked name
-  | T_str (quote, text) -> literal quote text
+  | T_str text -> literal text
   | T_index (t, k) -> type_ ~depth t ^ "[" ^ type_ ~depth k ^ "]"
   | T_generic (name, args) ->
       checked name ^ "<"
@@ -364,7 +347,7 @@ let rec type_ ~depth = function
         ^ type_ ~depth value
       in
       match layout with
-      | Inline | Packed -> "{ " ^ inner ~depth ^ " }"
+      | Inline -> "{ " ^ inner ~depth ^ " }"
       | Rows ->
           "{\n"
           ^ indentation (depth + 1)
@@ -373,7 +356,7 @@ let rec type_ ~depth = function
   | T_conditional { layout; check; extends; then_; else_ } ->
       let gap =
         match layout with
-        | Inline | Packed -> " "
+        | Inline -> " "
         | Rows -> "\n" ^ indentation (depth + 1)
       in
       type_ ~depth check ^ " extends " ^ type_ ~depth extends ^ gap ^ "? "
@@ -390,7 +373,7 @@ and member_text ~depth m =
 and object_type ~depth layout members =
   match (layout, members) with
   | _, [] -> "{}"
-  | (Inline | Packed), _ ->
+  | Inline, _ ->
       List.iter
         (fun m ->
           if m.about <> [] || m.member_trailing <> "" then
@@ -440,7 +423,7 @@ let rec json_rows ~depth (value : Yojson.Safe.t) =
 
 let rec expr ~depth = function
   | Name name -> checked name
-  | Str (quote, text) -> literal quote text
+  | Str text -> literal text
   | Int n -> string_of_int n
   | Hex d ->
       "0x"
@@ -453,34 +436,21 @@ let rec expr ~depth = function
   | Bool b -> string_of_bool b
   | Null -> "null"
   | Undefined -> "undefined"
-  | Array { layout; elements } -> (
-      match (layout, elements) with
-      | _, [] -> "[]"
-      | Inline, _ ->
-          "["
-          ^ String.concat ", " (List.map (flat_element ~depth) elements)
-          ^ "]"
-      | Packed, _ ->
-          "["
-          ^ String.concat "," (List.map (flat_element ~depth) elements)
-          ^ "]"
-      | Rows, _ ->
-          "[\n"
-          ^ String.concat ""
-              (List.map
-                 (fun e ->
-                   row ~depth e.element_about
-                     (expr ~depth:(depth + 1) e.value ^ ",")
-                     e.trailing)
-                 elements)
-          ^ indentation depth ^ "]")
-  | Object { layout; column; entries } -> (
-      let head e = key e.entry_key ^ ":" in
+  | Array [] -> "[]"
+  | Array elements ->
+      "[\n"
+      ^ String.concat ""
+          (List.map
+             (fun e ->
+               row ~depth e.element_about
+                 (expr ~depth:(depth + 1) e.value ^ ",")
+                 e.trailing)
+             elements)
+      ^ indentation depth ^ "]"
+  | Object { layout; entries } -> (
       match (layout, entries) with
       | _, [] -> "{}"
-      | (Inline | Packed), _ ->
-          if column <> None then
-            invalid_arg "Typescript_syntax: an object's column is a row's";
+      | Inline, _ ->
           "{ "
           ^ String.concat ", " (List.map (inline_entry ~depth) entries)
           ^ " }"
@@ -489,33 +459,11 @@ let rec expr ~depth = function
           ^ String.concat ""
               (List.map
                  (fun e ->
-                   let lead = indentation (depth + 1) ^ head e in
-                   let lead =
-                     match column with
-                     | None -> lead ^ " "
-                     | Some col -> Text.pad lead col
-                   in
-                   String.concat ""
-                     (List.map
-                        (fun l -> l ^ "\n")
-                        (comments ~depth:(depth + 1) e.entry_about))
-                   ^ (match e.entry_value with
-                     | Object
-                         {
-                           layout = Inline;
-                           column = Some at;
-                           entries = first :: rest;
-                         } ->
-                         Text.pad
-                           (lead ^ "{ " ^ inline_entry ~depth first ^ ",")
-                           at
-                         ^ String.concat ", "
-                             (List.map (inline_entry ~depth) rest)
-                         ^ " }"
-                     | value -> lead ^ expr ~depth:(depth + 1) value)
-                   ^ ","
-                   ^ trailing_comment e.entry_trailing
-                   ^ "\n")
+                   row ~depth e.entry_about
+                     (key e.entry_key ^ ": "
+                     ^ expr ~depth:(depth + 1) e.entry_value
+                     ^ ",")
+                     e.entry_trailing)
                  entries)
           ^ indentation depth ^ "}")
   | Json v -> Yojson.Safe.to_string v
@@ -577,11 +525,6 @@ and inline_entry ~depth e =
 
 and arguments ~depth args = String.concat ", " (List.map (expr ~depth) args)
 
-and flat_element ~depth e =
-  if e.element_about <> [] || e.trailing <> "" then
-    invalid_arg "Typescript_syntax: a comment on one line";
-  expr ~depth e.value
-
 and row ~depth about text trailing =
   String.concat ""
     (List.map (fun l -> l ^ "\n") (comments ~depth:(depth + 1) about))
@@ -611,7 +554,7 @@ let import_text keyword { type_only; names; from } =
   ^ (if type_only then " type" else "")
   ^ " { "
   ^ String.concat ", " (List.map checked names)
-  ^ " } from " ^ single from ^ ";"
+  ^ " } from " ^ literal from ^ ";"
 
 let lines_of about =
   List.map (fun l -> l ^ "\n") (comments ~depth:0 about) |> String.concat ""

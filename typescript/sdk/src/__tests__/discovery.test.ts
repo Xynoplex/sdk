@@ -10,7 +10,11 @@
  * `readFile` in (in place of a file-reading transport: no fs in the sdk).
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { DISCOVERY_URL_PATH, HTTP_REQUEST_TIMEOUT_MS, type DiscoveredKB } from '@xynolog/core';
+import {
+  DISCOVERY_URL_PATH,
+  HTTP_REQUEST_TIMEOUT_MS,
+  type DiscoveredKB,
+} from '@xynolog/core';
 import {
   parseDiscoveryDocument,
   httpDiscovery,
@@ -21,43 +25,70 @@ import {
 } from '../discovery';
 
 const KB_A: DiscoveredKB = {
-  host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynolog-launcher',
-  did: 'did:web:kb-a.example', siteName: 'KB A',
+  host: 'localhost',
+  port: 4000,
+  placement: 'local',
+  managedBy: 'xynolog-launcher',
+  did: 'did:web:kb-a.example',
+  siteName: 'KB A',
 };
 const KB_B: DiscoveredKB = {
-  host: 'localhost', port: 4100, placement: 'codespace', managedBy: 'xynolog-launcher',
-  repo: 'octo/kb-b', did: 'did:web:kb-b.example',
+  host: 'localhost',
+  port: 4100,
+  placement: 'codespace',
+  managedBy: 'xynolog-launcher',
+  repo: 'octo/kb-b',
+  did: 'did:web:kb-b.example',
 };
 /** A third live KB. */
 const KB_C: DiscoveredKB = {
-  host: 'localhost', port: 4200, placement: 'local', managedBy: 'xynolog-launcher',
+  host: 'localhost',
+  port: 4200,
+  placement: 'local',
+  managedBy: 'xynolog-launcher',
   did: 'did:web:example.github.io:kb-c',
 };
 
-const doc = (kbs: DiscoveredKB[], version = 1) => JSON.stringify({ version, kbs });
+const doc = (kbs: DiscoveredKB[], version = 1) =>
+  JSON.stringify({ version, kbs });
 
 describe('parseDiscoveryDocument — the one validator', () => {
   it('parses a valid document to managed', () => {
-    expect(parseDiscoveryDocument(doc([KB_A, KB_B]))).toEqual({ kind: 'managed', kbs: [KB_A, KB_B] });
+    expect(parseDiscoveryDocument(doc([KB_A, KB_B]))).toEqual({
+      kind: 'managed',
+      kbs: [KB_A, KB_B],
+    });
   });
 
   it('an empty list is MANAGED, not absent — "launcher manages nothing"', () => {
-    expect(parseDiscoveryDocument(doc([]))).toEqual({ kind: 'managed', kbs: [] });
+    expect(parseDiscoveryDocument(doc([]))).toEqual({
+      kind: 'managed',
+      kbs: [],
+    });
   });
 
   it('junk text → absent(not-json)', () => {
-    expect(parseDiscoveryDocument('<!doctype html><html>…')).toMatchObject({ kind: 'absent', reason: 'not-json' });
+    expect(parseDiscoveryDocument('<!doctype html><html>…')).toMatchObject({
+      kind: 'absent',
+      reason: 'not-json',
+    });
   });
 
   it('unknown version → absent(unsupported-version) with a diagnostic — never a partial parse', () => {
     const state = parseDiscoveryDocument(doc([KB_A], 2));
-    expect(state).toMatchObject({ kind: 'absent', reason: 'unsupported-version' });
+    expect(state).toMatchObject({
+      kind: 'absent',
+      reason: 'unsupported-version',
+    });
     expect(state.kind === 'absent' && state.diagnostic).toContain('2');
   });
 
   it('structurally invalid entries → absent(invalid), not a filtered subset', () => {
     const bad = JSON.stringify({ version: 1, kbs: [{ host: 'localhost' }] }); // missing port/placement/managedBy
-    expect(parseDiscoveryDocument(bad)).toMatchObject({ kind: 'absent', reason: 'invalid' });
+    expect(parseDiscoveryDocument(bad)).toMatchObject({
+      kind: 'absent',
+      reason: 'invalid',
+    });
   });
 
   it('an entry with no did → absent(invalid) with an actionable diagnostic', () => {
@@ -69,7 +100,12 @@ describe('parseDiscoveryDocument — the one validator', () => {
       version: 1,
       kbs: [
         KB_A,
-        { host: 'localhost', port: 4300, placement: 'local', managedBy: 'xynolog-launcher' },
+        {
+          host: 'localhost',
+          port: 4300,
+          placement: 'local',
+          managedBy: 'xynolog-launcher',
+        },
       ],
     });
 
@@ -83,7 +119,10 @@ describe('parseDiscoveryDocument — the one validator', () => {
 describe('textDiscovery — the IO-abstracted transport', () => {
   it('null from the thunk → absent(not-found)', async () => {
     const t = textDiscovery(async () => null);
-    expect(await t.read()).toMatchObject({ kind: 'absent', reason: 'not-found' });
+    expect(await t.read()).toMatchObject({
+      kind: 'absent',
+      reason: 'not-found',
+    });
   });
 
   it('text flows through the one validator', async () => {
@@ -92,7 +131,9 @@ describe('textDiscovery — the IO-abstracted transport', () => {
   });
 
   it('a throwing thunk → absent(unreadable) with the error as diagnostic', async () => {
-    const t = textDiscovery(async () => { throw new Error('EACCES: permission denied'); });
+    const t = textDiscovery(async () => {
+      throw new Error('EACCES: permission denied');
+    });
     const state = await t.read();
     expect(state).toMatchObject({ kind: 'absent', reason: 'unreadable' });
     expect(state.kind === 'absent' && state.diagnostic).toContain('EACCES');
@@ -103,10 +144,14 @@ describe('httpDiscovery', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('JSON 200 → managed; the ETag is remembered and 304 short-circuits as unchanged', async () => {
-    const fetchSpy = vi.fn()
-      .mockResolvedValueOnce(new Response(doc([KB_A]), {
-        status: 200, headers: { 'Content-Type': 'application/json', ETag: '"v1"' },
-      }))
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(doc([KB_A]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ETag: '"v1"' },
+        }),
+      )
       .mockResolvedValueOnce(new Response(null, { status: 304 }));
     vi.stubGlobal('fetch', fetchSpy);
 
@@ -118,34 +163,67 @@ describe('httpDiscovery', () => {
     expect(secondHeaders.get('If-None-Match')).toBe('"v1"');
   });
 
-  it('reads through the fetch it is given, and not the runtime\'s', async () => {
+  it("reads through the fetch it is given, and not the runtime's", async () => {
     const runtimes = vi.fn(async () => new Response('nope', { status: 404 }));
     vi.stubGlobal('fetch', runtimes);
-    const given = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response(doc([KB_A]), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    }));
+    const given = vi.fn(
+      async (_input: string | URL | Request, _init?: RequestInit) =>
+        new Response(doc([KB_A]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
 
-    expect(await httpDiscovery(DISCOVERY_URL_PATH, given).read()).toEqual({ kind: 'managed', kbs: [KB_A] });
+    expect(await httpDiscovery(DISCOVERY_URL_PATH, given).read()).toEqual({
+      kind: 'managed',
+      kbs: [KB_A],
+    });
 
-    expect(given.mock.calls.map(([input]) => input)).toEqual([DISCOVERY_URL_PATH]);
+    expect(given.mock.calls.map(([input]) => input)).toEqual([
+      DISCOVERY_URL_PATH,
+    ]);
     expect(runtimes).not.toHaveBeenCalled();
   });
 
   it('index.html at 200 → absent(not-found) — the SPA fallback of an image without the discovery mount', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('<!doctype html><html></html>', {
-      status: 200, headers: { 'Content-Type': 'text/html' },
-    })));
-    expect(await httpDiscovery(DISCOVERY_URL_PATH).read()).toMatchObject({ kind: 'absent', reason: 'not-found' });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response('<!doctype html><html></html>', {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' },
+          }),
+      ),
+    );
+    expect(await httpDiscovery(DISCOVERY_URL_PATH).read()).toMatchObject({
+      kind: 'absent',
+      reason: 'not-found',
+    });
   });
 
   it('404 → absent(not-found)', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('nope', { status: 404 })));
-    expect(await httpDiscovery(DISCOVERY_URL_PATH).read()).toMatchObject({ kind: 'absent', reason: 'not-found' });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('nope', { status: 404 })),
+    );
+    expect(await httpDiscovery(DISCOVERY_URL_PATH).read()).toMatchObject({
+      kind: 'absent',
+      reason: 'not-found',
+    });
   });
 
   it('a network failure → absent(unreadable), never a throw', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));
-    expect(await httpDiscovery(DISCOVERY_URL_PATH).read()).toMatchObject({ kind: 'absent', reason: 'unreadable' });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new TypeError('fetch failed');
+      }),
+    );
+    expect(await httpDiscovery(DISCOVERY_URL_PATH).read()).toMatchObject({
+      kind: 'absent',
+      reason: 'unreadable',
+    });
   });
 
   it('a read has the deadline every SDK keeps, and one that passes it is unreadable, never a hang', async () => {
@@ -153,11 +231,25 @@ describe('httpDiscovery', () => {
     // signal's reason when that signal is aborted.
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     try {
-      vi.stubGlobal('fetch', vi.fn((_input: string | URL | Request, init?: RequestInit) => new Promise<Response>((_answer, fail) => {
-        init?.signal?.addEventListener('abort', () => fail(init.signal?.reason), { once: true });
-      })));
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(
+          (_input: string | URL | Request, init?: RequestInit) =>
+            new Promise<Response>((_answer, fail) => {
+              init?.signal?.addEventListener(
+                'abort',
+                () => fail(init.signal?.reason),
+                { once: true },
+              );
+            }),
+        ),
+      );
       let read: unknown = 'unsettled';
-      void httpDiscovery(DISCOVERY_URL_PATH).read().then((result) => { read = result; });
+      void httpDiscovery(DISCOVERY_URL_PATH)
+        .read()
+        .then((result) => {
+          read = result;
+        });
 
       await vi.advanceTimersByTimeAsync(HTTP_REQUEST_TIMEOUT_MS - 1);
       expect(read).toBe('unsettled');
@@ -171,8 +263,12 @@ describe('httpDiscovery', () => {
 
 describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
   /** A scriptable transport: each read() shifts the next scripted state. */
-  function scripted(states: Array<Awaited<ReturnType<DiscoveryTransport['read']>>>) {
-    const reads = vi.fn(async () => states.length > 1 ? states.shift()! : states[0]!);
+  function scripted(
+    states: Array<Awaited<ReturnType<DiscoveryTransport['read']>>>,
+  ) {
+    const reads = vi.fn(async () =>
+      states.length > 1 ? states.shift()! : states[0]!,
+    );
     return { transport: { read: reads } as DiscoveryTransport, reads };
   }
 
@@ -183,8 +279,10 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     vi.useFakeTimers();
     try {
       const emitted: DiscoveryDiff[] = [];
-      const sub = subscribeDiscovery(transport, { intervalMs: 1000 }).subscribe((d) => emitted.push(d));
-      await vi.advanceTimersByTimeAsync(0);   // the immediate initial read
+      const sub = subscribeDiscovery(transport, { intervalMs: 1000 }).subscribe(
+        (d) => emitted.push(d),
+      );
+      await vi.advanceTimersByTimeAsync(0); // the immediate initial read
       await drive(emitted);
       sub.unsubscribe();
       return emitted;
@@ -200,8 +298,8 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     const renamedA = { ...KB_A, siteName: 'KB A, renamed' };
     const { transport } = scripted([
       { kind: 'managed', kbs: [KB_A, KB_C] },
-      { kind: 'managed', kbs: [renamedA, KB_C, KB_B] },   // A updated in place, B added
-      { kind: 'managed', kbs: [KB_B] },                   // A + C removed
+      { kind: 'managed', kbs: [renamedA, KB_C, KB_B] }, // A updated in place, B added
+      { kind: 'managed', kbs: [KB_B] }, // A + C removed
     ]);
 
     const emitted = await collect(transport, async () => {
@@ -210,10 +308,21 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     });
 
     expect(emitted).toHaveLength(3);
-    expect(emitted[0]).toMatchObject({ state: { kind: 'managed' }, added: [KB_A, KB_C], updated: [], removed: [] });
-    expect(emitted[1]).toMatchObject({ added: [KB_B], updated: [renamedA], removed: [] });
+    expect(emitted[0]).toMatchObject({
+      state: { kind: 'managed' },
+      added: [KB_A, KB_C],
+      updated: [],
+      removed: [],
+    });
+    expect(emitted[1]).toMatchObject({
+      added: [KB_B],
+      updated: [renamedA],
+      removed: [],
+    });
     expect(emitted[2]!.added).toEqual([]);
-    expect(emitted[2]!.removed).toEqual(expect.arrayContaining([renamedA, KB_C]));
+    expect(emitted[2]!.removed).toEqual(
+      expect.arrayContaining([renamedA, KB_C]),
+    );
   });
 
   it('a KB that moves port is a removal plus an addition, not an update', async () => {
@@ -232,14 +341,18 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     });
 
     expect(emitted).toHaveLength(2);
-    expect(emitted[1]).toMatchObject({ added: [movedA], updated: [], removed: [KB_A] });
+    expect(emitted[1]).toMatchObject({
+      added: [movedA],
+      updated: [],
+      removed: [KB_A],
+    });
   });
 
   it('unchanged reads and identical re-reads emit nothing', async () => {
     const { transport, reads } = scripted([
       { kind: 'managed', kbs: [KB_A] },
       { kind: 'unchanged' },
-      { kind: 'managed', kbs: [KB_A] },   // same content, no 304 (textDiscovery has none)
+      { kind: 'managed', kbs: [KB_A] }, // same content, no 304 (textDiscovery has none)
     ]);
 
     const emitted = await collect(transport, async () => {
@@ -248,14 +361,14 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     });
 
     expect(reads).toHaveBeenCalledTimes(3);
-    expect(emitted).toHaveLength(1);      // only the initial emission
+    expect(emitted).toHaveLength(1); // only the initial emission
   });
 
   it('absent ↔ managed transitions emit — with removed carrying the entries that vanished', async () => {
     const { transport } = scripted([
       { kind: 'absent', reason: 'not-found' },
       { kind: 'managed', kbs: [KB_A] },
-      { kind: 'absent', reason: 'not-found' },   // launcher gone (or the SPA fallback answering)
+      { kind: 'absent', reason: 'not-found' }, // launcher gone (or the SPA fallback answering)
     ]);
 
     const emitted = await collect(transport, async () => {
@@ -265,8 +378,14 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
 
     expect(emitted).toHaveLength(3);
     expect(emitted[0]!.state).toMatchObject({ kind: 'absent' });
-    expect(emitted[1]).toMatchObject({ state: { kind: 'managed' }, added: [KB_A] });
-    expect(emitted[2]).toMatchObject({ state: { kind: 'absent' }, removed: [KB_A] });
+    expect(emitted[1]).toMatchObject({
+      state: { kind: 'managed' },
+      added: [KB_A],
+    });
+    expect(emitted[2]).toMatchObject({
+      state: { kind: 'absent' },
+      removed: [KB_A],
+    });
   });
 
   /**
@@ -278,12 +397,21 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
    */
   describe('one KB in two places', () => {
     const CLONE: DiscoveredKB = {
-      host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynolog-launcher',
-      did: 'did:web:example.github.io:kb', siteName: 'KB',
+      host: 'localhost',
+      port: 4000,
+      placement: 'local',
+      managedBy: 'xynolog-launcher',
+      did: 'did:web:example.github.io:kb',
+      siteName: 'KB',
     };
     const CODESPACE: DiscoveredKB = {
-      host: 'localhost', port: 4100, placement: 'codespace', managedBy: 'xynolog-launcher',
-      did: 'did:web:example.github.io:kb', siteName: 'KB', repo: 'octo/kb',
+      host: 'localhost',
+      port: 4100,
+      placement: 'codespace',
+      managedBy: 'xynolog-launcher',
+      did: 'did:web:example.github.io:kb',
+      siteName: 'KB',
+      repo: 'octo/kb',
     };
 
     it('reports no spurious change while both copies are present', async () => {
@@ -300,13 +428,17 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
       // returns whichever copy won last-wins, so the OTHER copy compares
       // unequal to itself and is reported `updated` on every single poll.
       expect(emitted).toHaveLength(1);
-      expect(emitted[0]).toMatchObject({ added: [CLONE, CODESPACE], updated: [], removed: [] });
+      expect(emitted[0]).toMatchObject({
+        added: [CLONE, CODESPACE],
+        updated: [],
+        removed: [],
+      });
     });
 
     it('reports the removal when one copy stops — the other copy must not mask it', async () => {
       const { transport } = scripted([
         { kind: 'managed', kbs: [CLONE, CODESPACE] },
-        { kind: 'managed', kbs: [CLONE] },            // the codespace stopped
+        { kind: 'managed', kbs: [CLONE] }, // the codespace stopped
       ]);
 
       const emitted = await collect(transport, async () => {
@@ -324,7 +456,9 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     it('is not a conflict: two copies of one KB warn about nothing', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       try {
-        const { transport } = scripted([{ kind: 'managed', kbs: [CLONE, CODESPACE] }]);
+        const { transport } = scripted([
+          { kind: 'managed', kbs: [CLONE, CODESPACE] },
+        ]);
         await collect(transport, async () => {});
         // Same did + different addresses is the COMMON case.
         // Warning here would cry wolf on a normal two-copy setup.
@@ -343,8 +477,21 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     try {
       // Same ADDRESS, different dids — the real conflict (only one process
       // binds a port).
-      const dupA: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynolog-launcher', did: 'did:web:example.github.io:kb-a' };
-      const dupB: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'codespace', managedBy: 'xynolog-launcher', repo: 'octo/other', did: 'did:web:example.github.io:other' };
+      const dupA: DiscoveredKB = {
+        host: 'localhost',
+        port: 4000,
+        placement: 'local',
+        managedBy: 'xynolog-launcher',
+        did: 'did:web:example.github.io:kb-a',
+      };
+      const dupB: DiscoveredKB = {
+        host: 'localhost',
+        port: 4000,
+        placement: 'codespace',
+        managedBy: 'xynolog-launcher',
+        repo: 'octo/other',
+        did: 'did:web:example.github.io:other',
+      };
       const { transport } = scripted([{ kind: 'managed', kbs: [dupA, dupB] }]);
 
       const emitted = await collect(transport, async () => {});
@@ -353,7 +500,10 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
       expect(String(warn.mock.calls[0]![0])).toContain('[discovery DUPLICATE]');
       expect(String(warn.mock.calls[0]![0])).toContain('localhost:4000');
       // Both claimants still reach the consumer — nothing is dropped.
-      expect(emitted[0]!.state).toMatchObject({ kind: 'managed', kbs: [dupA, dupB] });
+      expect(emitted[0]!.state).toMatchObject({
+        kind: 'managed',
+        kbs: [dupA, dupB],
+      });
     } finally {
       warn.mockRestore();
     }
@@ -362,7 +512,9 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
   it('a well-formed document warns about nothing', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
-      const { transport } = scripted([{ kind: 'managed', kbs: [KB_A, KB_B, KB_C] }]);
+      const { transport } = scripted([
+        { kind: 'managed', kbs: [KB_A, KB_B, KB_C] },
+      ]);
       await collect(transport, async () => {});
       expect(warn).not.toHaveBeenCalled();
     } finally {
@@ -374,11 +526,13 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     const { transport, reads } = scripted([{ kind: 'managed', kbs: [KB_A] }]);
     vi.useFakeTimers();
     try {
-      const sub = subscribeDiscovery(transport, { intervalMs: 1000 }).subscribe(() => {});
+      const sub = subscribeDiscovery(transport, { intervalMs: 1000 }).subscribe(
+        () => {},
+      );
       await vi.advanceTimersByTimeAsync(0);
       const before = reads.mock.calls.length;
       sub.unsubscribe();
-      expect(() => sub.unsubscribe()).not.toThrow();   // idempotent
+      expect(() => sub.unsubscribe()).not.toThrow(); // idempotent
       await vi.advanceTimersByTimeAsync(5000);
       expect(reads.mock.calls.length).toBe(before);
     } finally {

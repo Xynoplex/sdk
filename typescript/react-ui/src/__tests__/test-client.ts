@@ -32,7 +32,11 @@ import { EventBus } from '@xynolog/core';
 import type { ConnectionState, XynologError } from '@xynolog/core';
 import type { CacheState } from '@xynolog/sdk';
 import type { XynologClient, XynologSession } from '@xynolog/sdk';
-import { XynologSession as RealXynologSession, httpKb, MemorySignIn } from '@xynolog/sdk';
+import {
+  XynologSession as RealXynologSession,
+  httpKb,
+  MemorySignIn,
+} from '@xynolog/sdk';
 import type { AccessToken } from '@xynolog/core';
 
 export interface TestClient {
@@ -118,7 +122,9 @@ export function sessionOf(client: XynologClient): XynologSession {
  * is an EMISSION too, so B15-driving fixtures push
  * `{ status: 'failed', error }` themselves rather than erroring the stream.
  */
-export function asStates<T>(source: Observable<T | undefined>): Observable<CacheState<T>> {
+export function asStates<T>(
+  source: Observable<T | undefined>,
+): Observable<CacheState<T>> {
   return source.pipe(
     rxMap((v) => {
       // Passthrough for fixtures that push explicit states (a `failed`

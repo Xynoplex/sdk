@@ -13,7 +13,10 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { within } from '@testing-library/react';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import type { Annotation, AnnotationId } from '@xynolog/core';
@@ -37,13 +40,21 @@ vi.mock('../../pdf-annotation/PdfAnnotationCanvas.client', () => ({
     return <div>pdf-canvas-mock</div>;
   },
 }));
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 function fakeSession(): XynologSession {
   return {
-    client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
+    client: {
+      bus: new EventBus(),
+      browse: { click: vi.fn() },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
 }
 
@@ -58,12 +69,21 @@ function shapeAnnotation(): Annotation {
     created: '2026-07-14T00:00:00Z',
     target: {
       source: 'res-1',
-      selector: { type: 'SvgSelector', value: '<svg><rect x="1" y="1" width="5" height="5"/></svg>' },
+      selector: {
+        type: 'SvgSelector',
+        value: '<svg><rect x="1" y="1" width="5" height="5"/></svg>',
+      },
     },
   } as unknown as Annotation;
 }
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 const baseProps = {
   resourceUri: resourceId('res-1'),
@@ -79,10 +99,19 @@ describe('browse-renderers — annotation + session forwarding (dispatch contrac
 
   it('image browse mounts the read-only annotation canvas with the annotations and session', () => {
     const session = fakeSession();
-    const annotations = { ...emptyAnnotations, highlights: [shapeAnnotation()] };
+    const annotations = {
+      ...emptyAnnotations,
+      highlights: [shapeAnnotation()],
+    };
     const { container } = renderInEnglish(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content="blob:image-url" mimeType="image/png"
-        annotations={annotations} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content="blob:image-url"
+        mimeType="image/png"
+        annotations={annotations}
+        session={session}
+      />,
     );
 
     expect(within(container).getByText('svg-canvas-mock')).toBeInTheDocument();
@@ -90,16 +119,25 @@ describe('browse-renderers — annotation + session forwarding (dispatch contrac
     const props = captured.svg[0]!;
     expect(props.imageUrl).toBe('blob:image-url');
     expect(props.existingAnnotations).toEqual([shapeAnnotation()]); // the annotations arrive
-    expect(props.drawingMode).toBeNull();                           // read-only in browse
-    expect(props.session).toBe(session);                            // interaction parity
+    expect(props.drawingMode).toBeNull(); // read-only in browse
+    expect(props.session).toBe(session); // interaction parity
   });
 
   it('pdf browse forwards its annotations and the session', async () => {
     const session = fakeSession();
-    const annotations = { ...emptyAnnotations, highlights: [shapeAnnotation()] };
+    const annotations = {
+      ...emptyAnnotations,
+      highlights: [shapeAnnotation()],
+    };
     const { container } = renderInEnglish(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content="blob:pdf-url" mimeType="application/pdf"
-        annotations={annotations} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content="blob:pdf-url"
+        mimeType="application/pdf"
+        annotations={annotations}
+        session={session}
+      />,
     );
 
     await within(container).findByText('pdf-canvas-mock'); // flush the lazy canvas
@@ -107,7 +145,7 @@ describe('browse-renderers — annotation + session forwarding (dispatch contrac
     const props = captured.pdf[0]!;
     expect(props.existingAnnotations).toEqual([shapeAnnotation()]); // the annotations arrive
     expect(props.drawingMode).toBeNull();
-    expect(props.session).toBe(session);                            // without it a click is a no-op
+    expect(props.session).toBe(session); // without it a click is a no-op
     // Browse asks for the scrolling column.
     expect(props.pageLayout).toBe('scroll');
   });
@@ -123,7 +161,7 @@ describe('browse-renderers — annotation + session forwarding (dispatch contrac
         translationManager={englishTranslationManager}
         content="blob:pdf-url"
         mimeType="application/pdf"
-        resourceUri={resourceId("res-1")}
+        resourceUri={resourceId('res-1')}
         annotations={emptyAnnotations}
         uiState={{
           selectedMotivation: 'highlighting',

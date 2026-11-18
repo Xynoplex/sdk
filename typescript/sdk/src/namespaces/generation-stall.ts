@@ -27,7 +27,10 @@ import type { JobErrorCode } from '@xynolog/core';
  */
 export function deriveStallDeadlineMs(maxTokens: number | undefined): number {
   const tokens = maxTokens ?? GENERATION_STALL_ASSUMED_TOKENS_COUNT;
-  return Math.max(GENERATION_STALL_FLOOR_MS, tokens * GENERATION_STALL_PER_TOKEN_MS);
+  return Math.max(
+    GENERATION_STALL_FLOOR_MS,
+    tokens * GENERATION_STALL_PER_TOKEN_MS,
+  );
 }
 
 /**

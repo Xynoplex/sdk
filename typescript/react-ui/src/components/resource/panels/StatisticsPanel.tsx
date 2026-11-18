@@ -20,7 +20,7 @@ export function StatisticsPanel({
   comments,
   assessments,
   references,
-  tags
+  tags,
 }: StatisticsPanelProps) {
   const t = useTranslations('StatisticsPanel');
 
@@ -37,19 +37,21 @@ export function StatisticsPanel({
     });
   });
 
-  const entityTypesList = Array.from(entityTypeCounts.entries()).sort((a, b) => b[1] - a[1]); // Sort by count descending
+  const entityTypesList = Array.from(entityTypeCounts.entries()).sort(
+    (a, b) => b[1] - a[1],
+  ); // Sort by count descending
 
   return (
     <div className="xynolog-statistics-panel">
       <div className="xynolog-statistics-panel__content">
-        <h2 className="xynolog-statistics-panel__title">
-          {t('title')}
-        </h2>
+        <h2 className="xynolog-statistics-panel__title">{t('title')}</h2>
 
         <div className="xynolog-statistics-panel__list">
           {/* Highlights */}
           <div className="xynolog-statistics-panel__item">
-            <span className="xynolog-statistics-panel__label">{t('highlights')}</span>
+            <span className="xynolog-statistics-panel__label">
+              {t('highlights')}
+            </span>
             <span className="xynolog-statistics-panel__value">
               {highlights.length}
             </span>
@@ -57,7 +59,9 @@ export function StatisticsPanel({
 
           {/* Comments */}
           <div className="xynolog-statistics-panel__item">
-            <span className="xynolog-statistics-panel__label">{t('comments')}</span>
+            <span className="xynolog-statistics-panel__label">
+              {t('comments')}
+            </span>
             <span className="xynolog-statistics-panel__value">
               {comments.length}
             </span>
@@ -65,7 +69,9 @@ export function StatisticsPanel({
 
           {/* Assessments */}
           <div className="xynolog-statistics-panel__item">
-            <span className="xynolog-statistics-panel__label">{t('assessments')}</span>
+            <span className="xynolog-statistics-panel__label">
+              {t('assessments')}
+            </span>
             <span className="xynolog-statistics-panel__value">
               {assessments.length}
             </span>
@@ -81,7 +87,9 @@ export function StatisticsPanel({
 
           {/* References */}
           <div className="xynolog-statistics-panel__item">
-            <span className="xynolog-statistics-panel__label">{t('references')}</span>
+            <span className="xynolog-statistics-panel__label">
+              {t('references')}
+            </span>
             <span className="xynolog-statistics-panel__value">
               {references.length}
             </span>
@@ -89,13 +97,17 @@ export function StatisticsPanel({
             {/* Sub-categories indented */}
             <div className="xynolog-statistics-panel__subitems">
               <div className="xynolog-statistics-panel__subitem">
-                <span className="xynolog-statistics-panel__sublabel">{t('stub')}</span>
+                <span className="xynolog-statistics-panel__sublabel">
+                  {t('stub')}
+                </span>
                 <span className="xynolog-statistics-panel__subvalue">
                   {stubCount}
                 </span>
               </div>
               <div className="xynolog-statistics-panel__subitem">
-                <span className="xynolog-statistics-panel__sublabel">{t('resolved')}</span>
+                <span className="xynolog-statistics-panel__sublabel">
+                  {t('resolved')}
+                </span>
                 <span className="xynolog-statistics-panel__subvalue">
                   {resolvedCount}
                 </span>
@@ -106,14 +118,18 @@ export function StatisticsPanel({
           {/* Entity Types */}
           {entityTypesList.length > 0 && (
             <div className="xynolog-statistics-panel__entity-types">
-              <span className="xynolog-statistics-panel__label">{t('entityTypes')}</span>
+              <span className="xynolog-statistics-panel__label">
+                {t('entityTypes')}
+              </span>
               <div className="xynolog-statistics-panel__entity-list">
                 {entityTypesList.map(([type, count]) => (
                   <div
                     key={type}
                     className="xynolog-statistics-panel__entity-item"
                   >
-                    <span className="xynolog-statistics-panel__entity-name">{type}</span>
+                    <span className="xynolog-statistics-panel__entity-name">
+                      {type}
+                    </span>
                     <span className="xynolog-tag" data-variant="blue">
                       {count}
                     </span>

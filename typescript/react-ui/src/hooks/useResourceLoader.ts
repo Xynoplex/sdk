@@ -14,7 +14,13 @@ export interface UseResourceLoaderResult {
   error: Error | null;
 }
 
-const EMPTY: AnnotationsCollection = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const EMPTY: AnnotationsCollection = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 /**
  * Load a resource + its annotations from a bare client — no page, no composite
@@ -26,9 +32,16 @@ const EMPTY: AnnotationsCollection = { highlights: [], references: [], assessmen
  * emitted; `annotations` is bucketed via the shared `groupAnnotations`. A null
  * client subscribes to nothing (stays loading) and re-subscribes when one arrives.
  */
-export function useResourceLoader(client: XynologClient | null, resourceId: ResourceId): UseResourceLoaderResult {
-  const [resource, setResource] = useState<ResourceDescriptor | undefined>(undefined);
-  const [rawAnnotations, setRawAnnotations] = useState<Annotation[] | undefined>(undefined);
+export function useResourceLoader(
+  client: XynologClient | null,
+  resourceId: ResourceId,
+): UseResourceLoaderResult {
+  const [resource, setResource] = useState<ResourceDescriptor | undefined>(
+    undefined,
+  );
+  const [rawAnnotations, setRawAnnotations] = useState<
+    Annotation[] | undefined
+  >(undefined);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -36,7 +49,8 @@ export function useResourceLoader(client: XynologClient | null, resourceId: Reso
     setResource(undefined);
     setRawAnnotations(undefined);
     setError(null);
-    const onError = (e: unknown) => setError(e instanceof Error ? e : new Error(String(e)));
+    const onError = (e: unknown) =>
+      setError(e instanceof Error ? e : new Error(String(e)));
     // Failure arrives as a `failed` EMISSION — routed to the same error
     // state; pending/ready project to the value-or-undefined these setters
     // always took.
@@ -50,10 +64,15 @@ export function useResourceLoader(client: XynologClient | null, resourceId: Reso
         else setRawAnnotations(readyValue(st));
       }),
     ];
-    return () => { for (const s of subs) s.unsubscribe(); };
+    return () => {
+      for (const s of subs) s.unsubscribe();
+    };
   }, [client, resourceId]);
 
-  const annotations = useMemo(() => (rawAnnotations ? groupAnnotations(rawAnnotations) : EMPTY), [rawAnnotations]);
+  const annotations = useMemo(
+    () => (rawAnnotations ? groupAnnotations(rawAnnotations) : EMPTY),
+    [rawAnnotations],
+  );
   const loading = resource === undefined || rawAnnotations === undefined;
 
   return { resource, annotations, loading, error };

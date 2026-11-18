@@ -28,17 +28,31 @@ const annotation: Annotation = {
   type: 'Annotation',
   id: annotationId('ann-1'),
   motivation: 'commenting',
-  target: { source: resourceId('res-1'), selector: { type: 'TextQuoteSelector', exact: 'quoted' } },
+  target: {
+    source: resourceId('res-1'),
+    selector: { type: 'TextQuoteSelector', exact: 'quoted' },
+  },
   created: '2026-01-01T00:00:00Z',
 };
 
 describe('EventMap — the channels the EventStore enriches', () => {
   it('each annotation-mutating channel may carry the enriched annotation, branded', () => {
-    const added: EventMap['mark:added'] = { ...envelope, type: 'mark:added', payload: { annotation }, annotation };
-    const updated: EventMap['mark:body-updated'] = {
-      ...envelope, type: 'mark:body-updated', payload: { annotationId: annotation.id, operations: [] }, annotation,
+    const added: EventMap['mark:added'] = {
+      ...envelope,
+      type: 'mark:added',
+      payload: { annotation },
+      annotation,
     };
-    expect([added, updated].map((e) => e.annotation?.id)).toEqual(['ann-1', 'ann-1']);
+    const updated: EventMap['mark:body-updated'] = {
+      ...envelope,
+      type: 'mark:body-updated',
+      payload: { annotationId: annotation.id, operations: [] },
+      annotation,
+    };
+    expect([added, updated].map((e) => e.annotation?.id)).toEqual([
+      'ann-1',
+      'ann-1',
+    ]);
   });
 
   it('a REMOVAL is not enriched — the view no longer holds the annotation to attach', () => {
@@ -93,7 +107,7 @@ type Equal<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
  * fail against a correct generator.
  */
 type ByKey = {
-  [K in PersistedEventType]: 'annotation' extends keyof EventMap[K] ? K : never
+  [K in PersistedEventType]: 'annotation' extends keyof EventMap[K] ? K : never;
 }[PersistedEventType];
 
 describe('ENRICHED_EVENT_TYPES', () => {
@@ -105,7 +119,9 @@ describe('ENRICHED_EVENT_TYPES', () => {
   it('holds no duplicates', () => {
     // Every generated list joins the cross-list census. A repeat collapses in
     // the `[number]` union, so the TYPE cannot catch it.
-    const dups = ENRICHED_EVENT_TYPES.filter((c, i) => ENRICHED_EVENT_TYPES.indexOf(c) !== i);
+    const dups = ENRICHED_EVENT_TYPES.filter(
+      (c, i) => ENRICHED_EVENT_TYPES.indexOf(c) !== i,
+    );
     expect(dups).toEqual([]);
   });
 

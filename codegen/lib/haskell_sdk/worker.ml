@@ -85,11 +85,11 @@ let channels text =
   let* composition =
     Result.map_error refused
       (Marker.between
-         "export const JOB_COMMIT_CHANNELS: readonly (keyof EventMap)[] = "
-         ";\n" text)
+         "export const JOB_COMMIT_CHANNELS: readonly (keyof EventMap)[] =" ";\n"
+         text)
   in
   let* () =
-    if composition = "replyChannelsFor(COMMIT_OPERATIONS)" then Ok ()
+    if strip composition = "replyChannelsFor(COMMIT_OPERATIONS)" then Ok ()
     else Error (refused "unsupported commit channel composition")
   in
   let operations names =

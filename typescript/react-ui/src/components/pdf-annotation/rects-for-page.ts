@@ -19,8 +19,8 @@ function fragmentSelectors(target: Annotation['target']): { value: string }[] {
   if (!selector) return [];
   const selectors = Array.isArray(selector) ? selector : [selector];
   return selectors
-    .filter(s => s.type === 'FragmentSelector')
-    .map(s => s as { type: 'FragmentSelector'; value: string });
+    .filter((s) => s.type === 'FragmentSelector')
+    .map((s) => s as { type: 'FragmentSelector'; value: string });
 }
 
 /**
@@ -33,7 +33,10 @@ function fragmentSelectors(target: Annotation['target']): { value: string }[] {
  * Geometry stays deferred: each `coord` still goes through `pdfToCanvasCoordinates`
  * at paint time (itself covered by the coordinate-transform axioms).
  */
-export function rectsForPage(annotations: Annotation[], pageNumber: number): PageRect[] {
+export function rectsForPage(
+  annotations: Annotation[],
+  pageNumber: number,
+): PageRect[] {
   const rects: PageRect[] = [];
   for (const annotation of annotations) {
     fragmentSelectors(annotation.target).forEach((sel, selectorIndex) => {

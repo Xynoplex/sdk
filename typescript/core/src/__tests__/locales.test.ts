@@ -1,8 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import {
-  getLocaleInfo,
-  formatLocaleDisplay,
-} from '../locales';
+import { getLocaleInfo, formatLocaleDisplay } from '../locales';
 
 describe('getLocaleInfo', () => {
   test('returns info for valid code', () => {

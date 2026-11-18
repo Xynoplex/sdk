@@ -102,7 +102,11 @@ export function anchorAnnotation(
   // present and in-range, otherwise the annotation has no anchor.
   if (!quote || !quote.exact) {
     if (!position) return null;
-    if (position.start < 0 || position.end > offsets.length || position.start >= position.end) {
+    if (
+      position.start < 0 ||
+      position.end > offsets.length ||
+      position.start >= position.end
+    ) {
       return null;
     }
     return {
@@ -126,7 +130,10 @@ export function anchorAnnotation(
       Number.isInteger(position.start) &&
       position.start >= 0 &&
       probeEnd <= offsets.length &&
-      content.substring(offsets.indexAt(position.start), offsets.indexAt(probeEnd)) === exact
+      content.substring(
+        offsets.indexAt(position.start),
+        offsets.indexAt(probeEnd),
+      ) === exact
     ) {
       return {
         start: position.start,
@@ -153,7 +160,15 @@ export function anchorAnnotation(
   }
 
   if (occurrences.length > 1) {
-    const winner = pickByScore(content, offsets, occurrences, length, prefix, suffix, position?.start);
+    const winner = pickByScore(
+      content,
+      offsets,
+      occurrences,
+      length,
+      prefix,
+      suffix,
+      position?.start,
+    );
     return winner;
   }
 
@@ -162,7 +177,12 @@ export function anchorAnnotation(
   // wrong, which is an upstream concern. Render at the stored offset so the
   // highlight still appears, flagged low-confidence so the discrepancy is
   // visible and gets corrected at the source.
-  if (position && position.start >= 0 && position.end <= offsets.length && position.start < position.end) {
+  if (
+    position &&
+    position.start >= 0 &&
+    position.end <= offsets.length &&
+    position.start < position.end
+  ) {
     return {
       start: position.start,
       end: position.end,
@@ -202,7 +222,10 @@ function contextScoreAt(
   let suffixFull = true;
 
   if (prefix) {
-    const adj = content.substring(offsets.indexAt(Math.max(0, pos - lengths.prefix)), offsets.indexAt(pos));
+    const adj = content.substring(
+      offsets.indexAt(Math.max(0, pos - lengths.prefix)),
+      offsets.indexAt(pos),
+    );
     if (adj.endsWith(prefix)) {
       score += CONTEXT_FULL_WEIGHT;
       prefixFull = true;
@@ -217,7 +240,9 @@ function contextScoreAt(
   if (suffix) {
     const adj = content.substring(
       offsets.indexAt(pos + lengths.exact),
-      offsets.indexAt(Math.min(offsets.length, pos + lengths.exact + lengths.suffix)),
+      offsets.indexAt(
+        Math.min(offsets.length, pos + lengths.exact + lengths.suffix),
+      ),
     );
     if (adj.startsWith(suffix)) {
       score += CONTEXT_FULL_WEIGHT;

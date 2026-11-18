@@ -24,7 +24,12 @@ import { EventBus } from '../event-bus';
 import { XynologError } from '../errors';
 import { FaultyTransport } from '../faulty-transport';
 import { ERRORS_KEPT_FOR_FIRST_READER_COUNT } from '../client-timing';
-import { annotationId, resourceId, userId, type ResourceId } from '../identifiers';
+import {
+  annotationId,
+  resourceId,
+  userId,
+  type ResourceId,
+} from '../identifiers';
 import type { EventMap } from '../bus-protocol';
 import type { GatheredContext } from '../payload-types';
 import type { components } from '../types';
@@ -32,7 +37,14 @@ import type { components } from '../types';
 const OP = 'browse:resources-requested';
 
 /** A page of no resources, told apart from another by its `total`. */
-const pageOf = (total: number): components['schemas']['ListResourcesResponse'] => ({ resources: [], total, offset: 0, limit: 10 });
+const pageOf = (
+  total: number,
+): components['schemas']['ListResourcesResponse'] => ({
+  resources: [],
+  total,
+  offset: 0,
+  limit: 10,
+});
 
 describe('FaultyTransport.queueReply', () => {
   it('queued replies are consumed in FIFO order; an empty queue falls back to makeResponse', async () => {
@@ -130,21 +142,32 @@ describe('a reply that names what it answers for', () => {
     request: Record<string, unknown>,
   ): Promise<unknown[]> {
     const replies: unknown[] = [];
-    const heard = transport.frames(BUS_OPERATIONS[op].result).subscribe((frame) => replies.push(frame.payload));
+    const heard = transport
+      .frames(BUS_OPERATIONS[op].result)
+      .subscribe((frame) => replies.push(frame.payload));
     await new Bus(transport).request(op, request, 1_000);
     heard.unsubscribe();
     return replies;
   }
 
-  const resource = { '@context': 'https://schema.org/', '@id': resourceId('res-1'), name: 'A resource', representations: [] };
+  const resource = {
+    '@context': 'https://schema.org/',
+    '@id': resourceId('res-1'),
+    name: 'A resource',
+    representations: [],
+  };
   const context: GatheredContext = {
     focus: { kind: 'resource', resource },
     graph: { nodes: [], edges: [] },
     metadata: {},
   };
-  const candidates: components['schemas']['ScoredResource'][] = [{ ...resource, score: 0.9, matchReason: 'the same name' }];
+  const candidates: components['schemas']['ScoredResource'][] = [
+    { ...resource, score: 0.9, matchReason: 'the same name' },
+  ];
 
-  it.each<[BusOperationKey, Record<string, unknown>, unknown, Record<string, unknown>]>([
+  it.each<
+    [BusOperationKey, Record<string, unknown>, unknown, Record<string, unknown>]
+  >([
     [
       'gather:requested',
       { annotationId: 'ann-1', resourceId: 'res-1' },
@@ -163,14 +186,17 @@ describe('a reply that names what it answers for', () => {
       candidates,
       { referenceId: 'ann-1', response: candidates },
     ],
-  ])('the reply to %s states the id its request stated, beside the queued response', async (op, request, response, reply) => {
-    const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
-    transport.queueReply(op, response);
+  ])(
+    'the reply to %s states the id its request stated, beside the queued response',
+    async (op, request, response, reply) => {
+      const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
+      transport.queueReply(op, response);
 
-    expect(await repliesTo(transport, op, request)).toStrictEqual([reply]);
+      expect(await repliesTo(transport, op, request)).toStrictEqual([reply]);
 
-    transport.dispose();
-  });
+      transport.dispose();
+    },
+  );
 
   it('so does a reply makeResponse answers, and each copy of a duplicated one', async () => {
     const transport = new FaultyTransport({
@@ -180,10 +206,12 @@ describe('a reply that names what it answers for', () => {
     });
 
     const whole = { resourceId: 'res-1', response: context };
-    expect(await repliesTo(transport, 'gather:resource-requested', { resourceId: 'res-1', options: {} })).toStrictEqual([
-      whole,
-      whole,
-    ]);
+    expect(
+      await repliesTo(transport, 'gather:resource-requested', {
+        resourceId: 'res-1',
+        options: {},
+      }),
+    ).toStrictEqual([whole, whole]);
 
     transport.dispose();
   });
@@ -193,7 +221,9 @@ describe('a reply that names what it answers for', () => {
     const page = pageOf(1);
     transport.queueReply(OP, page);
 
-    expect(await repliesTo(transport, OP, { limit: 10 })).toStrictEqual([{ response: page }]);
+    expect(await repliesTo(transport, OP, { limit: 10 })).toStrictEqual([
+      { response: page },
+    ]);
 
     transport.dispose();
   });
@@ -202,7 +232,13 @@ describe('a reply that names what it answers for', () => {
     const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
     transport.queueReply('gather:resource-requested', 'scripted');
 
-    await expect(new Bus(transport).request('gather:resource-requested', { options: {} }, 1_000)).rejects.toThrow(
+    await expect(
+      new Bus(transport).request(
+        'gather:resource-requested',
+        { options: {} },
+        1_000,
+      ),
+    ).rejects.toThrow(
       'FaultyTransport: the reply to gather:resource-requested names "resourceId", which this request does not state',
     );
 
@@ -219,25 +255,40 @@ describe('a reply that names what it answers for', () => {
 
 describe('requestLog payloads', () => {
   it('carries the emitted payload on each entry, in arrival order', async () => {
-    const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS, makeResponse: () => pageOf(0) });
+    const transport = new FaultyTransport({
+      channels: BRIDGED_CHANNELS,
+      makeResponse: () => pageOf(0),
+    });
 
-    await new Bus(transport).request(OP, { limit: 10, entityType: 'Concept' }, 5_000);
+    await new Bus(transport).request(
+      OP,
+      { limit: 10, entityType: 'Concept' },
+      5_000,
+    );
     await new Bus(transport).request(OP, { limit: 25 }, 5_000);
 
     expect(transport.requestLog).toHaveLength(2);
-    expect(transport.requestLog[0]!.payload).toMatchObject({ limit: 10, entityType: 'Concept' });
+    expect(transport.requestLog[0]!.payload).toMatchObject({
+      limit: 10,
+      entityType: 'Concept',
+    });
     expect(transport.requestLog[1]!.payload).toMatchObject({ limit: 25 });
     // The key is NOT on the payload: it rides the envelope, and the log
     // records it as its own field. The entry is what went on the wire, and
     // the wire carries no routing metadata inside the message.
-    expect(transport.requestLog[0]!.payload).not.toHaveProperty('correlationId');
+    expect(transport.requestLog[0]!.payload).not.toHaveProperty(
+      'correlationId',
+    );
     expect(transport.requestLog[0]!.correlationId).toEqual(expect.any(String));
 
     transport.dispose();
   });
 
   it('snapshots the payload — a later mutation of the caller object cannot rewrite history', async () => {
-    const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS, makeResponse: () => pageOf(0) });
+    const transport = new FaultyTransport({
+      channels: BRIDGED_CHANNELS,
+      makeResponse: () => pageOf(0),
+    });
 
     const payload: Record<string, unknown> = { limit: 10 };
     await new Bus(transport).request(OP, payload, 5_000);
@@ -255,7 +306,9 @@ describe('requestLog payloads', () => {
       makeResponse: () => pageOf(0),
     });
 
-    await expect(new Bus(transport).request(OP, { limit: 3 }, 50)).rejects.toThrow();
+    await expect(
+      new Bus(transport).request(OP, { limit: 3 }, 50),
+    ).rejects.toThrow();
 
     // reject-emit never reached the gateway, but the ATTEMPT is what a
     // consumer asserting "did we send it?" needs to see.
@@ -276,7 +329,10 @@ describe('requestLog payloads', () => {
 
 describe('what a reader is given', () => {
   const RID = resourceId('res-1');
-  const FOCUS: EventMap['beckon:focus'] = { annotationId: annotationId('ann-1'), resourceId: RID };
+  const FOCUS: EventMap['beckon:focus'] = {
+    annotationId: annotationId('ann-1'),
+    resourceId: RID,
+  };
 
   function archived(of: ResourceId): EventMap['mark:archived'] {
     return {
@@ -342,17 +398,29 @@ describe('what a reader is given', () => {
   });
 
   it('refuses at the call a read of a channel it was not given and no resource scopes, as bus.unsubscribed', () => {
-    const transport = new FaultyTransport({ channels: [BUS_OPERATIONS[OP].result] });
+    const transport = new FaultyTransport({
+      channels: [BUS_OPERATIONS[OP].result],
+    });
 
-    for (const read of [() => transport.frames(OP), () => transport.stream(OP), () => transport.on(OP, () => {})]) {
-      expect(refusalOf(read)).toMatchObject({ code: 'bus.unsubscribed', details: { channel: OP } });
+    for (const read of [
+      () => transport.frames(OP),
+      () => transport.stream(OP),
+      () => transport.on(OP, () => {}),
+    ]) {
+      expect(refusalOf(read)).toMatchObject({
+        code: 'bus.unsubscribed',
+        details: { channel: OP },
+      });
     }
     transport.dispose();
   });
 
   it("gives a request's echo to a reader of a transport given the request's channel", async () => {
     const { result, failure } = BUS_OPERATIONS[OP];
-    const transport = new FaultyTransport({ channels: [OP, result, failure], makeResponse: () => pageOf(1) });
+    const transport = new FaultyTransport({
+      channels: [OP, result, failure],
+      makeResponse: () => pageOf(1),
+    });
     const echoes = collect(transport.frames(OP));
 
     await new Bus(transport).request(OP, { limit: 1 }, 1_000);
@@ -368,7 +436,9 @@ describe('what a reader is given', () => {
     const focused = collect(bridged.on('beckon:focus'));
     const sparkled = collect(bridged.on('beckon:sparkle'));
 
-    void transport.emit('beckon:sparkle', { annotationId: annotationId('ann-1') });
+    void transport.emit('beckon:sparkle', {
+      annotationId: annotationId('ann-1'),
+    });
     void transport.emit('beckon:focus', FOCUS, { scope: RID });
     void transport.emit('beckon:focus', FOCUS);
 
@@ -399,7 +469,8 @@ describe('what a reader is given', () => {
 });
 
 describe('what errors$ keeps for its first reader', () => {
-  const failure = (said: string): XynologError => new XynologError(said, 'unavailable');
+  const failure = (said: string): XynologError =>
+    new XynologError(said, 'unavailable');
 
   /** The message of every failure `transport` says on `errors$` from now on. */
   function heard(transport: FaultyTransport): string[] {
@@ -411,7 +482,10 @@ describe('what errors$ keeps for its first reader', () => {
   it('its first reader, taken late, hears the latest ERRORS_KEPT_FOR_FIRST_READER_COUNT failures before it, in order, the oldest dropped', () => {
     const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS });
     const beyond = 5;
-    const failures = Array.from({ length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond }, (_, n) => `failure ${n}`);
+    const failures = Array.from(
+      { length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond },
+      (_, n) => `failure ${n}`,
+    );
     for (const said of failures) transport.fail(failure(said));
 
     expect(heard(transport)).toEqual(failures.slice(beyond));
@@ -426,7 +500,11 @@ describe('what errors$ keeps for its first reader', () => {
     const second = heard(transport);
     transport.fail(failure('after both read'));
 
-    expect(first).toEqual(['before anyone read', 'before the second read', 'after both read']);
+    expect(first).toEqual([
+      'before anyone read',
+      'before the second read',
+      'after both read',
+    ]);
     expect(second).toEqual(['after both read']);
     transport.dispose();
   });
@@ -439,7 +517,12 @@ describe('what errors$ keeps for its first reader', () => {
 
     let ended = false;
     const messages: string[] = [];
-    transport.errors$.subscribe({ next: (said) => messages.push(said.message), complete: () => { ended = true; } });
+    transport.errors$.subscribe({
+      next: (said) => messages.push(said.message),
+      complete: () => {
+        ended = true;
+      },
+    });
     expect(messages).toEqual([]);
     expect(ended).toBe(true);
   });

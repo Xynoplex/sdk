@@ -2,22 +2,27 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { NavigationMenu } from '../NavigationMenu';
-import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../contexts/RoutingContext';
 
 describe('NavigationMenu Component', () => {
-  const mockLink = vi.fn(({ href, children, className, onClick, ...props }: LinkComponentProps) => (
-    <a
-      href={href}
-      className={className}
-      onClick={(e) => {
-        e.preventDefault();
-        if (onClick) onClick(e);
-      }}
-      {...props}
-    >
-      {children}
-    </a>
-  ));
+  const mockLink = vi.fn(
+    ({ href, children, className, onClick, ...props }: LinkComponentProps) => (
+      <a
+        href={href}
+        className={className}
+        onClick={(e) => {
+          e.preventDefault();
+          if (onClick) onClick(e);
+        }}
+        {...props}
+      >
+        {children}
+      </a>
+    ),
+  );
 
   const mockRoutes = {
     knowledge: vi.fn(() => '/knowledge'),
@@ -26,8 +31,8 @@ describe('NavigationMenu Component', () => {
 
   const mockTranslate = vi.fn((key: string) => {
     const translations: Record<string, string> = {
-      'know': 'Knowledge',
-      'moderate': 'Moderate',
+      know: 'Knowledge',
+      moderate: 'Moderate',
     };
     return translations[key] || key;
   });
@@ -49,7 +54,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       expect(screen.getByText('Knowledge')).toBeInTheDocument();
@@ -62,7 +67,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       // Knowledge and Moderate. The menu takes no permission input, so there
@@ -79,7 +84,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       expect(mockRoutes.knowledge).toHaveBeenCalled();
@@ -95,7 +100,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={routesWithoutKnowledge}
           t={mockTranslate}
-        />
+        />,
       );
 
       const knowledgeLink = screen.getByText('Knowledge').closest('a');
@@ -108,7 +113,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       expect(mockRoutes.moderate).toHaveBeenCalled();
@@ -124,13 +129,12 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={routesWithoutModerate}
           t={mockTranslate}
-        />
+        />,
       );
 
       const moderateLink = screen.getByText('Moderate').closest('a');
       expect(moderateLink).toHaveAttribute('href', '/moderate');
     });
-
   });
 
   describe('Moderation Link', () => {
@@ -145,7 +149,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       expect(screen.getByText('Moderate')).toBeInTheDocument();
@@ -160,7 +164,7 @@ describe('NavigationMenu Component', () => {
           routes={mockRoutes}
           t={mockTranslate}
           onItemClick={mockOnItemClick}
-        />
+        />,
       );
 
       const knowledgeLink = screen.getByText('Knowledge');
@@ -176,7 +180,7 @@ describe('NavigationMenu Component', () => {
           routes={mockRoutes}
           t={mockTranslate}
           onItemClick={mockOnItemClick}
-        />
+        />,
       );
 
       const moderateLink = screen.getByText('Moderate');
@@ -191,7 +195,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const knowledgeLink = screen.getByText('Knowledge').closest('a');
@@ -206,7 +210,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       expect(container.firstChild).toHaveClass('xynolog-navigation-menu');
@@ -219,7 +223,7 @@ describe('NavigationMenu Component', () => {
           routes={mockRoutes}
           t={mockTranslate}
           className="custom-nav"
-        />
+        />,
       );
 
       expect(container.firstChild).toHaveClass('xynolog-navigation-menu');
@@ -232,11 +236,11 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const links = container.querySelectorAll('a');
-      links.forEach(link => {
+      links.forEach((link) => {
         expect(link).toHaveClass('xynolog-navigation-menu__link');
       });
     });
@@ -247,11 +251,11 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const dividers = container.querySelectorAll('hr');
-      dividers.forEach(divider => {
+      dividers.forEach((divider) => {
         expect(divider).toHaveClass('xynolog-navigation-menu__divider');
       });
     });
@@ -264,7 +268,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const nav = container.querySelector('nav');
@@ -278,7 +282,7 @@ describe('NavigationMenu Component', () => {
           routes={mockRoutes}
           t={mockTranslate}
           currentPath="/knowledge"
-        />
+        />,
       );
 
       const knowledgeLink = screen.getByText('Knowledge').closest('a');
@@ -292,7 +296,7 @@ describe('NavigationMenu Component', () => {
           routes={mockRoutes}
           t={mockTranslate}
           currentPath="/knowledge"
-        />
+        />,
       );
 
       const moderateLink = screen.getByText('Moderate').closest('a');
@@ -305,7 +309,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       expect(screen.getByText('Knowledge')).toBeInTheDocument();
@@ -317,7 +321,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       const nav = container.querySelector('nav');
@@ -334,7 +338,7 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       expect(mockTranslate).toHaveBeenCalledWith('know');
@@ -344,8 +348,8 @@ describe('NavigationMenu Component', () => {
     it('should use custom translations', () => {
       const customTranslate = vi.fn((key: string) => {
         const translations: Record<string, string> = {
-          'know': 'Conocimiento',
-          'moderate': 'Moderar',
+          know: 'Conocimiento',
+          moderate: 'Moderar',
         };
         return translations[key] || key;
       });
@@ -355,24 +359,17 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={mockRoutes}
           t={customTranslate}
-        />
+        />,
       );
 
       expect(screen.getByText('Conocimiento')).toBeInTheDocument();
       expect(screen.getByText('Moderar')).toBeInTheDocument();
     });
-
   });
 
   describe('Edge Cases', () => {
     it('should handle empty routes object', () => {
-      render(
-        <NavigationMenu
-          Link={mockLink}
-          routes={{}}
-          t={mockTranslate}
-        />
-      );
+      render(<NavigationMenu Link={mockLink} routes={{}} t={mockTranslate} />);
 
       expect(screen.getByText('Knowledge')).toBeInTheDocument();
     });
@@ -391,13 +388,12 @@ describe('NavigationMenu Component', () => {
           Link={mockLink}
           routes={nullRoutes}
           t={mockTranslate}
-        />
+        />,
       );
 
       // Should fallback to default routes
       const knowledgeLink = screen.getByText('Knowledge').closest('a');
       expect(knowledgeLink).toHaveAttribute('href', '/know');
     });
-
   });
 });

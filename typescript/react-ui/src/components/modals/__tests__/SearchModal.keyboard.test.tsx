@@ -18,7 +18,8 @@ import {
 } from './search-modal-harness';
 
 vi.mock('../../../session/XynologProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../session/XynologProvider')>();
+  const actual =
+    await importOriginal<typeof import('../../../session/XynologProvider')>();
   const { searchBrowser } = await import('./search-modal-harness');
   return { ...actual, useXynolog: () => searchBrowser };
 });
@@ -33,16 +34,32 @@ async function openWith(...names: string[]) {
   const onClose = vi.fn();
   const onNavigate = vi.fn();
   renderWithProviders(
-    <SearchModal isOpen onClose={onClose} onNavigate={onNavigate} translations={searchTranslations} />,
+    <SearchModal
+      isOpen
+      onClose={onClose}
+      onNavigate={onNavigate}
+      translations={searchTranslations}
+    />,
   );
   const input = screen.getByPlaceholderText(searchTranslations.placeholder);
   fireEvent.change(input, { target: { value: 'doc' } });
-  await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), { timeout: 1500 });
-  setBrowseResults(names.map((name, index) => buildResource(`res-${index + 1}`, name)));
+  await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), {
+    timeout: 1500,
+  });
+  setBrowseResults(
+    names.map((name, index) => buildResource(`res-${index + 1}`, name)),
+  );
   if (names.length > 0) {
-    await waitFor(() => expect(screen.getByText(names.at(-1)!)).toBeInTheDocument(), { timeout: 1500 });
+    await waitFor(
+      () => expect(screen.getByText(names.at(-1)!)).toBeInTheDocument(),
+      { timeout: 1500 },
+    );
   } else {
-    await waitFor(() => expect(screen.getByText(/No results found for/)).toBeInTheDocument(), { timeout: 1500 });
+    await waitFor(
+      () =>
+        expect(screen.getByText(/No results found for/)).toBeInTheDocument(),
+      { timeout: 1500 },
+    );
   }
   return { input, onClose, onNavigate };
 }
@@ -87,7 +104,11 @@ describe('SearchModal — keyboard', () => {
   });
 
   it('opens the selected result with Enter, and closes', async () => {
-    const { input, onClose, onNavigate } = await openWith('First', 'Second', 'Third');
+    const { input, onClose, onNavigate } = await openWith(
+      'First',
+      'Second',
+      'Third',
+    );
 
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     fireEvent.keyDown(input, { key: 'Enter' });
@@ -117,12 +138,16 @@ describe('SearchModal — keyboard', () => {
     const { input } = await openWith('First', 'Second');
 
     expect(screen.getAllByText(searchTranslations.enter)).toHaveLength(1);
-    expect(within(row('First')).getByText(searchTranslations.enter)).toBeInTheDocument();
+    expect(
+      within(row('First')).getByText(searchTranslations.enter),
+    ).toBeInTheDocument();
 
     fireEvent.keyDown(input, { key: 'ArrowDown' });
 
     expect(screen.getAllByText(searchTranslations.enter)).toHaveLength(1);
-    expect(within(row('Second')).getByText(searchTranslations.enter)).toBeInTheDocument();
+    expect(
+      within(row('Second')).getByText(searchTranslations.enter),
+    ).toBeInTheDocument();
   });
 
   it('moves the same selection with the pointer as with the keys', async () => {

@@ -48,7 +48,9 @@ vi.mock('@dnd-kit/sortable', () => ({
 vi.mock('@dnd-kit/utilities', () => ({
   CSS: {
     Transform: {
-      toString: vi.fn((transform: Transform | null) => (transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined)),
+      toString: vi.fn((transform: Transform | null) =>
+        transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+      ),
     },
   },
 }));
@@ -125,15 +127,17 @@ describe('SortableResourceTab', () => {
 
     it('should not render close button when collapsed', () => {
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} isCollapsed={true} />
+        <SortableResourceTab {...defaultProps} isCollapsed={true} />,
       );
 
-      expect(screen.queryByLabelText('Close Test Document')).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Close Test Document'),
+      ).not.toBeInTheDocument();
     });
 
     it('should not render resource name text when collapsed', () => {
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} isCollapsed={true} />
+        <SortableResourceTab {...defaultProps} isCollapsed={true} />,
       );
 
       expect(screen.queryByText('Test Document')).not.toBeInTheDocument();
@@ -141,7 +145,7 @@ describe('SortableResourceTab', () => {
 
     it('should render icon when collapsed', () => {
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} isCollapsed={true} />
+        <SortableResourceTab {...defaultProps} isCollapsed={true} />,
       );
 
       expect(screen.getByText('\u{1F4C4}')).toBeInTheDocument();
@@ -151,7 +155,7 @@ describe('SortableResourceTab', () => {
   describe('Active state', () => {
     it('should have active class when isActive is true', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} isActive={true} />
+        <SortableResourceTab {...defaultProps} isActive={true} />,
       );
 
       const tab = container.querySelector('.xynolog-resource-tab');
@@ -160,7 +164,7 @@ describe('SortableResourceTab', () => {
 
     it('should not have active class when isActive is false', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} isActive={false} />
+        <SortableResourceTab {...defaultProps} isActive={false} />,
       );
 
       const tab = container.querySelector('.xynolog-resource-tab');
@@ -169,7 +173,7 @@ describe('SortableResourceTab', () => {
 
     it('should set aria-selected based on isActive', () => {
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} isActive={true} />
+        <SortableResourceTab {...defaultProps} isActive={true} />,
       );
 
       const tab = screen.getByRole('tab');
@@ -180,7 +184,7 @@ describe('SortableResourceTab', () => {
   describe('Dragging state', () => {
     it('should have dragging class when isDragging prop is true', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} isDragging={true} />
+        <SortableResourceTab {...defaultProps} isDragging={true} />,
       );
 
       const tab = container.querySelector('.xynolog-resource-tab');
@@ -194,7 +198,7 @@ describe('SortableResourceTab', () => {
       });
 
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} />
+        <SortableResourceTab {...defaultProps} />,
       );
 
       const tab = container.querySelector('.xynolog-resource-tab');
@@ -203,7 +207,7 @@ describe('SortableResourceTab', () => {
 
     it('should not have dragging class when not dragging', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} isDragging={false} />
+        <SortableResourceTab {...defaultProps} isDragging={false} />,
       );
 
       const tab = container.querySelector('.xynolog-resource-tab');
@@ -215,7 +219,7 @@ describe('SortableResourceTab', () => {
     it('should call onClose with resource id and event when clicked', () => {
       const onClose = vi.fn();
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} onClose={onClose} />
+        <SortableResourceTab {...defaultProps} onClose={onClose} />,
       );
 
       const closeButton = screen.getByLabelText('Close Test Document');
@@ -230,7 +234,7 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab
           {...defaultProps}
           translations={{ closeResource: 'Fermer la ressource' }}
-        />
+        />,
       );
 
       const closeButton = screen.getByTitle('Fermer la ressource');
@@ -238,7 +242,8 @@ describe('SortableResourceTab', () => {
     });
 
     it('takes its close title from its caller', () => {
-      const { translations: _translations, ...withoutTranslations } = defaultProps;
+      const { translations: _translations, ...withoutTranslations } =
+        defaultProps;
 
       const elements = [
         // @ts-expect-error no translations
@@ -255,7 +260,7 @@ describe('SortableResourceTab', () => {
     it('should call onReorder with "up" on Alt+ArrowUp', () => {
       const onReorder = vi.fn();
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} onReorder={onReorder} />
+        <SortableResourceTab {...defaultProps} onReorder={onReorder} />,
       );
 
       const tab = screen.getByRole('tab');
@@ -267,7 +272,7 @@ describe('SortableResourceTab', () => {
     it('should call onReorder with "down" on Alt+ArrowDown', () => {
       const onReorder = vi.fn();
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} onReorder={onReorder} />
+        <SortableResourceTab {...defaultProps} onReorder={onReorder} />,
       );
 
       const tab = screen.getByRole('tab');
@@ -279,7 +284,7 @@ describe('SortableResourceTab', () => {
     it('should not call onReorder without Alt key', () => {
       const onReorder = vi.fn();
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} onReorder={onReorder} />
+        <SortableResourceTab {...defaultProps} onReorder={onReorder} />,
       );
 
       const tab = screen.getByRole('tab');
@@ -291,7 +296,7 @@ describe('SortableResourceTab', () => {
     it('should not call onReorder for non-arrow keys with Alt', () => {
       const onReorder = vi.fn();
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} onReorder={onReorder} />
+        <SortableResourceTab {...defaultProps} onReorder={onReorder} />,
       );
 
       const tab = screen.getByRole('tab');
@@ -302,7 +307,7 @@ describe('SortableResourceTab', () => {
 
     it('should not error when onReorder is not provided', () => {
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} onReorder={undefined} />
+        <SortableResourceTab {...defaultProps} onReorder={undefined} />,
       );
 
       const tab = screen.getByRole('tab');
@@ -321,16 +326,19 @@ describe('SortableResourceTab', () => {
 
     it('should have aria-label with position info', () => {
       renderWithProviders(
-        <SortableResourceTab {...defaultProps} index={1} totalCount={5} />
+        <SortableResourceTab {...defaultProps} index={1} totalCount={5} />,
       );
 
       const tab = screen.getByRole('tab');
-      expect(tab).toHaveAttribute('aria-label', 'Test Document, position 2 of 5');
+      expect(tab).toHaveAttribute(
+        'aria-label',
+        'Test Document, position 2 of 5',
+      );
     });
 
     it('should have aria-hidden on icon', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} />
+        <SortableResourceTab {...defaultProps} />,
       );
 
       const icon = container.querySelector('.xynolog-resource-tab__icon');
@@ -348,42 +356,52 @@ describe('SortableResourceTab', () => {
   describe('Styling', () => {
     it('should have base tab class', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} />
+        <SortableResourceTab {...defaultProps} />,
       );
 
-      expect(container.querySelector('.xynolog-resource-tab')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-resource-tab'),
+      ).toBeInTheDocument();
     });
 
     it('should have proper link class', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} />
+        <SortableResourceTab {...defaultProps} />,
       );
 
-      expect(container.querySelector('.xynolog-resource-tab__link')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-resource-tab__link'),
+      ).toBeInTheDocument();
     });
 
     it('should have proper icon class', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} />
+        <SortableResourceTab {...defaultProps} />,
       );
 
-      expect(container.querySelector('.xynolog-resource-tab__icon')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-resource-tab__icon'),
+      ).toBeInTheDocument();
     });
 
     it('should have proper text class', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} />
+        <SortableResourceTab {...defaultProps} />,
       );
 
-      expect(container.querySelector('.xynolog-resource-tab__text')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-resource-tab__text'),
+      ).toBeInTheDocument();
     });
 
     it('should have proper close button class', () => {
       const { container } = renderWithProviders(
-        <SortableResourceTab {...defaultProps} />
+        <SortableResourceTab {...defaultProps} />,
       );
 
-      expect(container.querySelector('.xynolog-resource-tab__close')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-resource-tab__close'),
+      ).toBeInTheDocument();
     });
   });
 

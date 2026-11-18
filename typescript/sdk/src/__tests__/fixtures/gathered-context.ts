@@ -23,7 +23,10 @@ export function resourceContextFor(rid: string): GatheredContext {
   };
 }
 
-export function annotationContextFor(rid: string, aid: string): GatheredContext {
+export function annotationContextFor(
+  rid: string,
+  aid: string,
+): GatheredContext {
   return {
     focus: {
       kind: 'annotation',

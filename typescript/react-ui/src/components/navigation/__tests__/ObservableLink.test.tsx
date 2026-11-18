@@ -7,7 +7,7 @@ import { ObservableLink } from '../ObservableLink';
 describe('ObservableLink', () => {
   it('renders anchor with href', () => {
     renderWithProviders(
-      <ObservableLink href="/discover">Discover</ObservableLink>
+      <ObservableLink href="/discover">Discover</ObservableLink>,
     );
 
     const link = screen.getByRole('link', { name: 'Discover' });
@@ -18,7 +18,7 @@ describe('ObservableLink', () => {
     renderWithProviders(
       <ObservableLink href="/test">
         <span data-testid="child">Click me</span>
-      </ObservableLink>
+      </ObservableLink>,
     );
 
     expect(screen.getByTestId('child')).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('ObservableLink', () => {
       <ObservableLink href="/discover" label="Discover">
         Discover Resources
       </ObservableLink>,
-      { returnShellBus: true }
+      { returnShellBus: true },
     );
 
     const subscription = browser!.stream('nav:link-clicked').subscribe(handler);
@@ -54,7 +54,7 @@ describe('ObservableLink', () => {
     renderWithProviders(
       <ObservableLink href="/test" onClick={onClick}>
         Click
-      </ObservableLink>
+      </ObservableLink>,
     );
 
     const link = screen.getByRole('link');
@@ -73,7 +73,7 @@ describe('ObservableLink', () => {
         data-testid="my-link"
       >
         External
-      </ObservableLink>
+      </ObservableLink>,
     );
 
     const link = screen.getByTestId('my-link');

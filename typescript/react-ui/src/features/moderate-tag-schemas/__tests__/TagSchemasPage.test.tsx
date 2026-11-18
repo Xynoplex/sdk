@@ -8,7 +8,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { TagSchemasPage } from '../components/TagSchemasPage';
-import type { TagSchemasPageProps, TagSchema } from '../components/TagSchemasPage';
+import type {
+  TagSchemasPageProps,
+  TagSchema,
+} from '../components/TagSchemasPage';
 
 const mockSchemas: TagSchema[] = [
   {
@@ -20,14 +23,18 @@ const mockSchemas: TagSchema[] = [
       {
         name: 'Issue',
         description: 'The legal question',
-        examples: ['What is the central legal question?', 'What must the court decide?', 'What is the dispute?']
+        examples: [
+          'What is the central legal question?',
+          'What must the court decide?',
+          'What is the dispute?',
+        ],
       },
       {
         name: 'Rule',
         description: 'The relevant law',
-        examples: ['What law applies?', 'What is the legal standard?']
-      }
-    ]
+        examples: ['What law applies?', 'What is the legal standard?'],
+      },
+    ],
   },
   {
     id: 'scientific-imrad',
@@ -38,9 +45,9 @@ const mockSchemas: TagSchema[] = [
       {
         name: 'Introduction',
         description: 'Background and context',
-        examples: ['What is the research question?', 'Why is this important?']
-      }
-    ]
+        examples: ['What is the research question?', 'Why is this important?'],
+      },
+    ],
   },
   {
     id: 'argument-toulmin',
@@ -51,13 +58,15 @@ const mockSchemas: TagSchema[] = [
       {
         name: 'Claim',
         description: 'The main assertion',
-        examples: ['What is being argued?']
-      }
-    ]
-  }
+        examples: ['What is being argued?'],
+      },
+    ],
+  },
 ];
 
-const createMockProps = (overrides?: Partial<TagSchemasPageProps>): TagSchemasPageProps => ({
+const createMockProps = (
+  overrides?: Partial<TagSchemasPageProps>,
+): TagSchemasPageProps => ({
   schemas: mockSchemas,
   isLoading: false,
   theme: 'light',
@@ -80,7 +89,9 @@ describe('TagSchemasPage', () => {
       render(<TagSchemasPage {...props} />);
 
       expect(screen.getByText('Tag Schemas')).toBeInTheDocument();
-      expect(screen.getByText('View available tag schemas for content analysis')).toBeInTheDocument();
+      expect(
+        screen.getByText('View available tag schemas for content analysis'),
+      ).toBeInTheDocument();
     });
 
     it('renders loading state', () => {
@@ -95,7 +106,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps({ isLoading: true });
       render(<TagSchemasPage {...props} />);
 
-      expect(screen.queryByText('Legal Analysis (IRAC)')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Legal Analysis (IRAC)'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -106,16 +119,26 @@ describe('TagSchemasPage', () => {
 
       expect(screen.getByText('Legal Analysis (IRAC)')).toBeInTheDocument();
       expect(screen.getByText('Scientific Paper (IMRAD)')).toBeInTheDocument();
-      expect(screen.getByText('Argument Structure (Toulmin)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Argument Structure (Toulmin)'),
+      ).toBeInTheDocument();
     });
 
     it('displays schema descriptions', () => {
       const props = createMockProps();
       render(<TagSchemasPage {...props} />);
 
-      expect(screen.getByText('Issue, Rule, Application, Conclusion framework')).toBeInTheDocument();
-      expect(screen.getByText('Introduction, Methods, Results, Discussion structure')).toBeInTheDocument();
-      expect(screen.getByText('Claim, Evidence, Warrant framework')).toBeInTheDocument();
+      expect(
+        screen.getByText('Issue, Rule, Application, Conclusion framework'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Introduction, Methods, Results, Discussion structure',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Claim, Evidence, Warrant framework'),
+      ).toBeInTheDocument();
     });
 
     it('displays domain badges', () => {
@@ -131,7 +154,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps({ schemas: [] });
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const schemaCards = container.querySelectorAll('.bg-white.dark\\:bg-gray-800');
+      const schemaCards = container.querySelectorAll(
+        '.bg-white.dark\\:bg-gray-800',
+      );
       expect(schemaCards.length).toBe(0);
     });
 
@@ -142,7 +167,9 @@ describe('TagSchemasPage', () => {
       render(<TagSchemasPage {...props} />);
 
       expect(screen.getByText('Legal Analysis (IRAC)')).toBeInTheDocument();
-      expect(screen.queryByText('Scientific Paper (IMRAD)')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Scientific Paper (IMRAD)'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -151,7 +178,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const purpleIcon = container.querySelector('.xynolog-schema-domain--legal');
+      const purpleIcon = container.querySelector(
+        '.xynolog-schema-domain--legal',
+      );
       expect(purpleIcon).toBeInTheDocument();
     });
 
@@ -159,7 +188,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const greenIcon = container.querySelector('.xynolog-schema-domain--scientific');
+      const greenIcon = container.querySelector(
+        '.xynolog-schema-domain--scientific',
+      );
       expect(greenIcon).toBeInTheDocument();
     });
 
@@ -167,7 +198,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const orangeIcon = container.querySelector('.xynolog-schema-domain--general');
+      const orangeIcon = container.querySelector(
+        '.xynolog-schema-domain--general',
+      );
       expect(orangeIcon).toBeInTheDocument();
     });
 
@@ -175,9 +208,15 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const legalBadge = container.querySelector('.xynolog-schema__badge.xynolog-schema-domain--legal');
-      const scientificBadge = container.querySelector('.xynolog-schema__badge.xynolog-schema-domain--scientific');
-      const generalBadge = container.querySelector('.xynolog-schema__badge.xynolog-schema-domain--general');
+      const legalBadge = container.querySelector(
+        '.xynolog-schema__badge.xynolog-schema-domain--legal',
+      );
+      const scientificBadge = container.querySelector(
+        '.xynolog-schema__badge.xynolog-schema-domain--scientific',
+      );
+      const generalBadge = container.querySelector(
+        '.xynolog-schema__badge.xynolog-schema-domain--general',
+      );
 
       expect(legalBadge).toBeInTheDocument();
       expect(scientificBadge).toBeInTheDocument();
@@ -217,8 +256,12 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       render(<TagSchemasPage {...props} />);
 
-      expect(screen.getByText('What is the central legal question?')).toBeInTheDocument();
-      expect(screen.getByText('What must the court decide?')).toBeInTheDocument();
+      expect(
+        screen.getByText('What is the central legal question?'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('What must the court decide?'),
+      ).toBeInTheDocument();
     });
 
     it('shows "+N more" when more than 2 examples', () => {
@@ -232,7 +275,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       render(<TagSchemasPage {...props} />);
 
-      const ruleSection = screen.getByText('Rule').closest('.xynolog-schema__category');
+      const ruleSection = screen
+        .getByText('Rule')
+        .closest('.xynolog-schema__category');
       expect(ruleSection).toBeInTheDocument();
       expect(ruleSection?.textContent).not.toContain('more');
     });
@@ -277,7 +322,7 @@ describe('TagSchemasPage', () => {
 
     it('does not thread showLineNumbers to toolbar panels — the setting is context-backed', () => {
       const ToolbarPanels = vi.fn(() => <div data-testid="toolbar-panels" />);
-      const props = createMockProps({ToolbarPanels });
+      const props = createMockProps({ ToolbarPanels });
       render(<TagSchemasPage {...props} />);
 
       expect(ToolbarPanels).toHaveBeenCalledWith(
@@ -285,7 +330,6 @@ describe('TagSchemasPage', () => {
         undefined,
       );
     });
-
   });
 
   describe('Layout and Structure', () => {
@@ -343,7 +387,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps({ theme: 'dark' });
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const categoryContainer = container.querySelector('.xynolog-schema__categories');
+      const categoryContainer = container.querySelector(
+        '.xynolog-schema__categories',
+      );
       expect(categoryContainer).toBeInTheDocument();
       // Dark mode is handled by CSS, not inline classes
     });
@@ -356,7 +402,7 @@ describe('TagSchemasPage', () => {
         name: 'Empty Schema',
         description: 'A schema with no tags',
         domain: 'general',
-        tags: []
+        tags: [],
       };
       const props = createMockProps({ schemas: [emptySchema] });
       render(<TagSchemasPage {...props} />);
@@ -370,11 +416,13 @@ describe('TagSchemasPage', () => {
         name: 'Schema',
         description: 'Schema',
         domain: 'general',
-        tags: [{
-          name: 'Tag',
-          description: 'Description',
-          examples: []
-        }]
+        tags: [
+          {
+            name: 'Tag',
+            description: 'Description',
+            examples: [],
+          },
+        ],
       };
       const props = createMockProps({ schemas: [schemaWithNoExamples] });
       render(<TagSchemasPage {...props} />);
@@ -388,11 +436,13 @@ describe('TagSchemasPage', () => {
         name: 'Schema',
         description: 'Schema',
         domain: 'general',
-        tags: [{
-          name: 'Tag',
-          description: 'Description',
-          examples: ['Only example']
-        }]
+        tags: [
+          {
+            name: 'Tag',
+            description: 'Description',
+            examples: ['Only example'],
+          },
+        ],
       };
       const props = createMockProps({ schemas: [schemaWithOneExample] });
       render(<TagSchemasPage {...props} />);
@@ -413,7 +463,9 @@ describe('TagSchemasPage', () => {
 
       expect(screen.getByText('Custom Title')).toBeInTheDocument();
       expect(screen.getByText('Custom Description')).toBeInTheDocument();
-      expect(screen.getAllByText('Custom Categories').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Custom Categories').length).toBeGreaterThan(
+        0,
+      );
     });
 
     it('handles all props being defined', () => {

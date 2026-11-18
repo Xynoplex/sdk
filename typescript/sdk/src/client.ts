@@ -13,7 +13,13 @@
  */
 
 import type { BaseUrl, AccessToken, CacheQuery } from '@xynolog/core';
-import { BRIDGED_CHANNELS, Bus, EventBus, accessToken, baseUrl } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  Bus,
+  EventBus,
+  accessToken,
+  baseUrl,
+} from '@xynolog/core';
 import { sealPlaces, type CachePersistence } from './cache-persister';
 import { BehaviorSubject } from 'rxjs';
 import { BrowseNamespace, type BROWSE_QUERIES } from './namespaces/browse';
@@ -27,17 +33,18 @@ import { FrameNamespace } from './namespaces/frame';
 import { JobNamespace } from './namespaces/job';
 import { AuthNamespace } from './namespaces/auth';
 import { SystemNamespace } from './namespaces/system';
-import type { IGatewayOperations, IContentTransport, ITransport } from '@xynolog/core';
+import type {
+  IGatewayOperations,
+  IContentTransport,
+  ITransport,
+} from '@xynolog/core';
 
 // Local imports of the HTTP adapters from @xynolog/http-transport — needed
 // here so `XynologClient.fromHttp(...)` can construct them. The same
 // names are re-exported below for consumer convenience, so
 // `import { XynologClient, HttpTransport } from '@xynolog/sdk'` Just Works
 // without a separate http-transport import.
-import {
-  HttpTransport,
-  HttpContentTransport,
-} from '@xynolog/http-transport';
+import { HttpTransport, HttpContentTransport } from '@xynolog/http-transport';
 
 // Convenience re-exports of the HTTP adapters. Non-HTTP transports are
 // wired directly by callers; the sdk does not pre-bundle them.
@@ -65,7 +72,9 @@ type AnsweredTwice =
   | ((typeof BROWSE_QUERIES)[number] & (typeof MATCH_QUERIES)[number])
   | ((typeof GATHER_QUERIES)[number] & (typeof MATCH_QUERIES)[number]);
 type LiveQueryCensusDrift = Exclude<CacheQuery, AnsweredQuery> | AnsweredTwice;
-export const liveQueryCensus: [LiveQueryCensusDrift] extends [never] ? 'in-census' : LiveQueryCensusDrift = 'in-census';
+export const liveQueryCensus: [LiveQueryCensusDrift] extends [never]
+  ? 'in-census'
+  : LiveQueryCensusDrift = 'in-census';
 
 export class XynologClient {
   /**
@@ -177,28 +186,47 @@ export class XynologClient {
     this.transport.bridgeInto(this.bus);
     this.wire = new Bus(this.transport);
 
-    this.frame  = new FrameNamespace(this.transport);
+    this.frame = new FrameNamespace(this.transport);
     // What every namespace holding live queries takes.
     const liveQueryTiming = {
-      ...(options?.busTimeoutMs !== undefined ? { busTimeoutMs: options.busTimeoutMs } : {}),
-      ...(options?.invalidationWindowMs !== undefined ? { invalidationWindowMs: options.invalidationWindowMs } : {}),
+      ...(options?.busTimeoutMs !== undefined
+        ? { busTimeoutMs: options.busTimeoutMs }
+        : {}),
+      ...(options?.invalidationWindowMs !== undefined
+        ? { invalidationWindowMs: options.invalidationWindowMs }
+        : {}),
     };
     this.browse = new BrowseNamespace(this.transport, this.bus, this.content, {
-      ...(options?.cachePersistence ? { cachePersistence: options.cachePersistence } : {}),
+      ...(options?.cachePersistence
+        ? { cachePersistence: options.cachePersistence }
+        : {}),
       ...liveQueryTiming,
     });
     const jobFollowTiming = {
-      ...(options?.jobSilenceMs !== undefined ? { jobSilenceMs: options.jobSilenceMs } : {}),
-      ...(options?.jobStatusPollMs !== undefined ? { jobStatusPollMs: options.jobStatusPollMs } : {}),
+      ...(options?.jobSilenceMs !== undefined
+        ? { jobSilenceMs: options.jobSilenceMs }
+        : {}),
+      ...(options?.jobStatusPollMs !== undefined
+        ? { jobStatusPollMs: options.jobStatusPollMs }
+        : {}),
     };
-    this.mark   = new MarkNamespace(this.transport, this.bus, jobFollowTiming);
-    this.bind   = new BindNamespace(this.transport, this.bus);
-    this.gather = new GatherNamespace(this.transport, this.bus, liveQueryTiming);
-    this.match  = new MatchNamespace(this.transport, this.bus, liveQueryTiming);
-    this.yield  = new YieldNamespace(this.transport, this.bus, this.content, jobFollowTiming);
+    this.mark = new MarkNamespace(this.transport, this.bus, jobFollowTiming);
+    this.bind = new BindNamespace(this.transport, this.bus);
+    this.gather = new GatherNamespace(
+      this.transport,
+      this.bus,
+      liveQueryTiming,
+    );
+    this.match = new MatchNamespace(this.transport, this.bus, liveQueryTiming);
+    this.yield = new YieldNamespace(
+      this.transport,
+      this.bus,
+      this.content,
+      jobFollowTiming,
+    );
     this.beckon = new BeckonNamespace(this.transport, this.bus);
-    this.job    = new JobNamespace(this.transport, this.bus);
-    this.auth   = gateway ? new AuthNamespace(gateway)  : undefined;
+    this.job = new JobNamespace(this.transport, this.bus);
+    this.auth = gateway ? new AuthNamespace(gateway) : undefined;
     this.system = gateway ? new SystemNamespace(gateway) : undefined;
   }
 
@@ -262,16 +290,24 @@ export class XynologClient {
     token?: AccessToken | string | null;
     fetch?: typeof fetch;
   }): XynologClient {
-    const url = typeof opts.baseUrl === 'string' ? baseUrl(opts.baseUrl) : opts.baseUrl;
-    const tok = opts.token == null
-      ? null
-      : (typeof opts.token === 'string' ? accessToken(opts.token) : opts.token);
+    const url =
+      typeof opts.baseUrl === 'string' ? baseUrl(opts.baseUrl) : opts.baseUrl;
+    const tok =
+      opts.token == null
+        ? null
+        : typeof opts.token === 'string'
+          ? accessToken(opts.token)
+          : opts.token;
     const token$ = new BehaviorSubject<AccessToken | null>(tok);
-    const transport = new HttpTransport({ baseUrl: url, token$, channels: BRIDGED_CHANNELS, ...(opts.fetch ? { fetch: opts.fetch } : {}) });
+    const transport = new HttpTransport({
+      baseUrl: url,
+      token$,
+      channels: BRIDGED_CHANNELS,
+      ...(opts.fetch ? { fetch: opts.fetch } : {}),
+    });
     const content = new HttpContentTransport(transport);
     // HttpTransport implements both ITransport and IGatewayOperations;
     // pass it twice so `client.auth` / `client.system` are wired.
     return new XynologClient(transport, content, transport);
   }
-
 }

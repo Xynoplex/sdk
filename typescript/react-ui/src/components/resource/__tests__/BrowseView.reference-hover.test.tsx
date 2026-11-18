@@ -16,14 +16,22 @@ import { asStates } from '../../../__tests__/test-client';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BehaviorSubject } from 'rxjs';
-import type { Annotation, AnnotationId, ResourceDescriptor } from '@xynolog/core';
+import type {
+  Annotation,
+  AnnotationId,
+  ResourceDescriptor,
+} from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import { BrowseView } from '../BrowseView';
 import { resourceId, EventBus } from '@xynolog/core';
 import { englishTranslationManager } from '../../../test-utils';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 // jsdom has no Range API — the overlay is not under test here.
 vi.mock('../../../lib/annotation-overlay', () => ({
@@ -35,7 +43,10 @@ vi.mock('../../../lib/annotation-overlay', () => ({
   toOverlayAnnotations: vi.fn(() => []),
 }));
 
-const REFERENT = { '@id': 'res-target', name: 'Target Doc' } as unknown as ResourceDescriptor;
+const REFERENT = {
+  '@id': 'res-target',
+  name: 'Target Doc',
+} as unknown as ResourceDescriptor;
 const DWELL = 100;
 
 const makeAnnotation = (id: string, body: Annotation['body']): Annotation => ({
@@ -45,15 +56,26 @@ const makeAnnotation = (id: string, body: Annotation['body']): Annotation => ({
   motivation: 'linking',
   creator: { '@type': 'Person', name: 'u' },
   created: '2024-01-01T00:00:00Z',
-  target: { source: resourceId('res-1'), selector: { type: 'TextPositionSelector', start: 0, end: 4 } },
+  target: {
+    source: resourceId('res-1'),
+    selector: { type: 'TextPositionSelector', start: 0, end: 4 },
+  },
   body,
 });
 
-const resolvedRef = makeAnnotation('ref-resolved', [{ type: 'SpecificResource', source: resourceId('res-target'), purpose: 'linking' }]);
+const resolvedRef = makeAnnotation('ref-resolved', [
+  {
+    type: 'SpecificResource',
+    source: resourceId('res-target'),
+    purpose: 'linking',
+  },
+]);
 const stubRef = makeAnnotation('ref-stub', []);
 
 function setup(onReferenceHover?: (h: unknown) => void) {
-  const referent$ = new BehaviorSubject<ResourceDescriptor | undefined>(undefined);
+  const referent$ = new BehaviorSubject<ResourceDescriptor | undefined>(
+    undefined,
+  );
   const beckonHover = vi.fn();
   const browseResource = vi.fn(() => asStates(referent$));
   const session = {
@@ -69,8 +91,14 @@ function setup(onReferenceHover?: (h: unknown) => void) {
       translationManager={englishTranslationManager}
       content="some text"
       mimeType="text/plain"
-      resourceUri={resourceId("res-1")}
-      annotations={{ highlights: [], references: [resolvedRef, stubRef], assessments: [], comments: [], tags: [] }}
+      resourceUri={resourceId('res-1')}
+      annotations={{
+        highlights: [],
+        references: [resolvedRef, stubRef],
+        assessments: [],
+        comments: [],
+        tags: [],
+      }}
       annotateMode={false}
       hoverDelayMs={DWELL}
       session={session}
@@ -89,25 +117,31 @@ function setup(onReferenceHover?: (h: unknown) => void) {
 }
 
 describe('BrowseView — onReferenceHover', () => {
-  beforeEach(() => { vi.useFakeTimers(); });
-  afterEach(() => { vi.useRealTimers(); });
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it('fires once after dwell + descriptor resolve, with {annotation, referent, anchorRect}', () => {
     const onReferenceHover = vi.fn();
     const { content, referent$, hoverTarget } = setup(onReferenceHover);
 
-    fireEvent.mouseOver(content, { target: hoverTarget('ref-resolved').target });
-    vi.advanceTimersByTime(DWELL + 10);        // dwell fires → subscribe starts
+    fireEvent.mouseOver(content, {
+      target: hoverTarget('ref-resolved').target,
+    });
+    vi.advanceTimersByTime(DWELL + 10); // dwell fires → subscribe starts
     expect(onReferenceHover).not.toHaveBeenCalled(); // descriptor not resolved yet
 
-    referent$.next(REFERENT);                  // descriptor lands
+    referent$.next(REFERENT); // descriptor lands
     expect(onReferenceHover).toHaveBeenCalledTimes(1);
     const hover = onReferenceHover.mock.calls[0]![0];
     expect(hover.annotation.id).toBe('ref-resolved');
     expect(hover.referent).toBe(REFERENT);
     expect(typeof hover.anchorRect.top).toBe('number'); // DOMRect from the hovered span
 
-    referent$.next({ ...REFERENT });           // later cache emissions must NOT re-fire
+    referent$.next({ ...REFERENT }); // later cache emissions must NOT re-fire
     expect(onReferenceHover).toHaveBeenCalledTimes(1);
   });
 
@@ -130,10 +164,10 @@ describe('BrowseView — onReferenceHover', () => {
 
     const { target } = hoverTarget('ref-resolved');
     fireEvent.mouseOver(content, { target });
-    vi.advanceTimersByTime(DWELL + 10);        // dwell fired, load in flight
-    fireEvent.mouseOut(content, { target });   // leave first
+    vi.advanceTimersByTime(DWELL + 10); // dwell fired, load in flight
+    fireEvent.mouseOut(content, { target }); // leave first
 
-    referent$.next(REFERENT);                  // late resolve
+    referent$.next(REFERENT); // late resolve
     expect(onReferenceHover).not.toHaveBeenCalled(); // cancelled — and no stray null either
   });
 
@@ -155,7 +189,9 @@ describe('BrowseView — onReferenceHover', () => {
   it('without onReferenceHover, hover still emits beckon:hover and loads nothing', () => {
     const { content, beckonHover, browseResource, hoverTarget } = setup();
 
-    fireEvent.mouseOver(content, { target: hoverTarget('ref-resolved').target });
+    fireEvent.mouseOver(content, {
+      target: hoverTarget('ref-resolved').target,
+    });
     vi.advanceTimersByTime(DWELL + 10);
 
     expect(beckonHover).toHaveBeenCalledWith('ref-resolved');

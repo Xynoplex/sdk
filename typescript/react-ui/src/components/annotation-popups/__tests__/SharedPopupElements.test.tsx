@@ -10,7 +10,10 @@ import {
 } from '../SharedPopupElements';
 
 // HeadlessUI's dialog as plain elements: this suite is about what is rendered inside it
-vi.mock('@headlessui/react', () => import('../../../__tests__/plain-headlessui'));
+vi.mock(
+  '@headlessui/react',
+  () => import('../../../__tests__/plain-headlessui'),
+);
 
 describe('SelectedTextDisplay', () => {
   it('should render the selected text with quotes', () => {
@@ -26,21 +29,33 @@ describe('SelectedTextDisplay', () => {
   });
 
   it('should have proper container class', () => {
-    const { container } = renderWithProviders(<SelectedTextDisplay exact="test" />);
+    const { container } = renderWithProviders(
+      <SelectedTextDisplay exact="test" />,
+    );
 
-    expect(container.querySelector('.xynolog-selected-text-display')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-selected-text-display'),
+    ).toBeInTheDocument();
   });
 
   it('should have proper label class', () => {
-    const { container } = renderWithProviders(<SelectedTextDisplay exact="test" />);
+    const { container } = renderWithProviders(
+      <SelectedTextDisplay exact="test" />,
+    );
 
-    expect(container.querySelector('.xynolog-selected-text-display__label')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-selected-text-display__label'),
+    ).toBeInTheDocument();
   });
 
   it('should have proper content class', () => {
-    const { container } = renderWithProviders(<SelectedTextDisplay exact="test" />);
+    const { container } = renderWithProviders(
+      <SelectedTextDisplay exact="test" />,
+    );
 
-    expect(container.querySelector('.xynolog-selected-text-display__content')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-selected-text-display__content'),
+    ).toBeInTheDocument();
   });
 
   it('should handle empty string', () => {
@@ -50,7 +65,9 @@ describe('SelectedTextDisplay', () => {
   });
 
   it('should handle special characters in text', () => {
-    renderWithProviders(<SelectedTextDisplay exact="<script>alert('xss')</script>" />);
+    renderWithProviders(
+      <SelectedTextDisplay exact="<script>alert('xss')</script>" />,
+    );
 
     expect(screen.getByText('Selected text:')).toBeInTheDocument();
   });
@@ -64,7 +81,9 @@ describe('EntityTypeBadges', () => {
   });
 
   it('should render multiple comma-separated entity types as badges', () => {
-    renderWithProviders(<EntityTypeBadges entityTypes="Person,Organization,Place" />);
+    renderWithProviders(
+      <EntityTypeBadges entityTypes="Person,Organization,Place" />,
+    );
 
     expect(screen.getByText('Person')).toBeInTheDocument();
     expect(screen.getByText('Organization')).toBeInTheDocument();
@@ -72,7 +91,9 @@ describe('EntityTypeBadges', () => {
   });
 
   it('should trim whitespace from entity types', () => {
-    renderWithProviders(<EntityTypeBadges entityTypes="Person , Organization , Place" />);
+    renderWithProviders(
+      <EntityTypeBadges entityTypes="Person , Organization , Place" />,
+    );
 
     expect(screen.getByText('Person')).toBeInTheDocument();
     expect(screen.getByText('Organization')).toBeInTheDocument();
@@ -80,23 +101,33 @@ describe('EntityTypeBadges', () => {
   });
 
   it('should return null for empty string', () => {
-    const { container } = renderWithProviders(<EntityTypeBadges entityTypes="" />);
+    const { container } = renderWithProviders(
+      <EntityTypeBadges entityTypes="" />,
+    );
 
-    expect(container.querySelector('.xynolog-entity-type-badges')).not.toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-entity-type-badges'),
+    ).not.toBeInTheDocument();
   });
 
   it('should have proper container class', () => {
-    const { container } = renderWithProviders(<EntityTypeBadges entityTypes="Person" />);
+    const { container } = renderWithProviders(
+      <EntityTypeBadges entityTypes="Person" />,
+    );
 
-    expect(container.querySelector('.xynolog-entity-type-badges')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-entity-type-badges'),
+    ).toBeInTheDocument();
   });
 
   it('should have proper badge class on each badge', () => {
     const { container } = renderWithProviders(
-      <EntityTypeBadges entityTypes="Person,Organization" />
+      <EntityTypeBadges entityTypes="Person,Organization" />,
     );
 
-    const badges = container.querySelectorAll('.xynolog-entity-type-badges__badge');
+    const badges = container.querySelectorAll(
+      '.xynolog-entity-type-badges__badge',
+    );
     expect(badges).toHaveLength(2);
   });
 });
@@ -104,7 +135,7 @@ describe('EntityTypeBadges', () => {
 describe('PopupHeader', () => {
   it('should render the title', () => {
     renderWithProviders(
-      <PopupHeader title="Annotation Details" onClose={vi.fn()} />
+      <PopupHeader title="Annotation Details" onClose={vi.fn()} />,
     );
 
     expect(screen.getByText('Annotation Details')).toBeInTheDocument();
@@ -112,7 +143,11 @@ describe('PopupHeader', () => {
 
   it('should render selected text when provided', () => {
     renderWithProviders(
-      <PopupHeader title="Details" selectedText="highlighted text" onClose={vi.fn()} />
+      <PopupHeader
+        title="Details"
+        selectedText="highlighted text"
+        onClose={vi.fn()}
+      />,
     );
 
     expect(screen.getByText(/highlighted text/)).toBeInTheDocument();
@@ -120,16 +155,16 @@ describe('PopupHeader', () => {
 
   it('should not render selected text subtitle when not provided', () => {
     const { container } = renderWithProviders(
-      <PopupHeader title="Details" onClose={vi.fn()} />
+      <PopupHeader title="Details" onClose={vi.fn()} />,
     );
 
-    expect(container.querySelector('.xynolog-popup-header__subtitle')).not.toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-popup-header__subtitle'),
+    ).not.toBeInTheDocument();
   });
 
   it('should render close button', () => {
-    renderWithProviders(
-      <PopupHeader title="Details" onClose={vi.fn()} />
-    );
+    renderWithProviders(<PopupHeader title="Details" onClose={vi.fn()} />);
 
     const closeButton = screen.getByRole('button');
     expect(closeButton).toBeInTheDocument();
@@ -147,26 +182,32 @@ describe('PopupHeader', () => {
 
   it('should have proper header class', () => {
     const { container } = renderWithProviders(
-      <PopupHeader title="Details" onClose={vi.fn()} />
+      <PopupHeader title="Details" onClose={vi.fn()} />,
     );
 
-    expect(container.querySelector('.xynolog-popup-header')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-popup-header'),
+    ).toBeInTheDocument();
   });
 
   it('should have proper title class', () => {
     const { container } = renderWithProviders(
-      <PopupHeader title="Details" onClose={vi.fn()} />
+      <PopupHeader title="Details" onClose={vi.fn()} />,
     );
 
-    expect(container.querySelector('.xynolog-popup-header__title')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-popup-header__title'),
+    ).toBeInTheDocument();
   });
 
   it('should have proper close button class', () => {
     const { container } = renderWithProviders(
-      <PopupHeader title="Details" onClose={vi.fn()} />
+      <PopupHeader title="Details" onClose={vi.fn()} />,
     );
 
-    expect(container.querySelector('.xynolog-popup-header__close-button')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-popup-header__close-button'),
+    ).toBeInTheDocument();
   });
 });
 
@@ -181,7 +222,7 @@ describe('PopupContainer', () => {
     renderWithProviders(
       <PopupContainer {...defaultProps}>
         <div>Popup content</div>
-      </PopupContainer>
+      </PopupContainer>,
     );
 
     expect(screen.getByText('Popup content')).toBeInTheDocument();
@@ -191,7 +232,7 @@ describe('PopupContainer', () => {
     renderWithProviders(
       <PopupContainer {...defaultProps} isOpen={false}>
         <div>Popup content</div>
-      </PopupContainer>
+      </PopupContainer>,
     );
 
     expect(screen.queryByText('Popup content')).not.toBeInTheDocument();
@@ -201,7 +242,7 @@ describe('PopupContainer', () => {
     renderWithProviders(
       <PopupContainer {...defaultProps}>
         <div>Content</div>
-      </PopupContainer>
+      </PopupContainer>,
     );
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -211,17 +252,19 @@ describe('PopupContainer', () => {
     const { container } = renderWithProviders(
       <PopupContainer {...defaultProps}>
         <div>Content</div>
-      </PopupContainer>
+      </PopupContainer>,
     );
 
-    expect(container.querySelector('.xynolog-popup-backdrop')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-popup-backdrop'),
+    ).toBeInTheDocument();
   });
 
   it('should set data-wide to false by default', () => {
     const { container } = renderWithProviders(
       <PopupContainer {...defaultProps}>
         <div>Content</div>
-      </PopupContainer>
+      </PopupContainer>,
     );
 
     const panel = container.querySelector('.xynolog-popup-panel');
@@ -232,7 +275,7 @@ describe('PopupContainer', () => {
     const { container } = renderWithProviders(
       <PopupContainer {...defaultProps} wide>
         <div>Content</div>
-      </PopupContainer>
+      </PopupContainer>,
     );
 
     const panel = container.querySelector('.xynolog-popup-panel');
@@ -243,10 +286,12 @@ describe('PopupContainer', () => {
     const { container } = renderWithProviders(
       <PopupContainer {...defaultProps}>
         <div>Content</div>
-      </PopupContainer>
+      </PopupContainer>,
     );
 
-    const panel = container.querySelector('.xynolog-popup-panel') as HTMLElement;
+    const panel = container.querySelector(
+      '.xynolog-popup-panel',
+    ) as HTMLElement;
     expect(panel?.style.position).toBe('fixed');
   });
 });

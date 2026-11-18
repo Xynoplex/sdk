@@ -98,14 +98,26 @@ describe('JsonLdView', () => {
   describe('Rendering', () => {
     it('should render the JSON-LD title', () => {
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       expect(screen.getByText('JSON-LD')).toBeInTheDocument();
     });
 
     it('should render the back button', () => {
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       const backButton = screen.getByTitle('Go back (Escape)');
       expect(backButton).toBeInTheDocument();
@@ -113,7 +125,13 @@ describe('JsonLdView', () => {
 
     it('should render the copy button', () => {
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       expect(screen.getByText(/Copy/)).toBeInTheDocument();
     });
@@ -121,7 +139,11 @@ describe('JsonLdView', () => {
     it('should render editor container', () => {
       const annotation = createMockAnnotation();
       const { container } = render(
-        <JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
       );
 
       const editorDiv = container.querySelector('.xynolog-jsonld-view__editor');
@@ -133,7 +155,13 @@ describe('JsonLdView', () => {
     it('should call onBack when back button is clicked', async () => {
       const onBack = vi.fn();
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={onBack} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={onBack}
+          showLineNumbers={false}
+        />,
+      );
 
       const backButton = screen.getByTitle('Go back (Escape)');
       await userEvent.click(backButton);
@@ -144,7 +172,13 @@ describe('JsonLdView', () => {
     it('should call onBack when Escape key is pressed', () => {
       const onBack = vi.fn();
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={onBack} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={onBack}
+          showLineNumbers={false}
+        />,
+      );
 
       fireEvent.keyDown(window, { key: 'Escape' });
 
@@ -154,7 +188,13 @@ describe('JsonLdView', () => {
     it('should not call onBack for non-Escape keys', () => {
       const onBack = vi.fn();
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={onBack} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={onBack}
+          showLineNumbers={false}
+        />,
+      );
 
       fireEvent.keyDown(window, { key: 'Enter' });
 
@@ -164,9 +204,19 @@ describe('JsonLdView', () => {
 
   describe('Copy to clipboard', () => {
     it('renders no copy control where the page has no Clipboard API, as on an origin that is not a secure context', () => {
-      Object.defineProperty(navigator, 'clipboard', { value: undefined, writable: true, configurable: true });
+      Object.defineProperty(navigator, 'clipboard', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
 
-      render(<JsonLdView annotation={createMockAnnotation()} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={createMockAnnotation()}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       // A control that would fail silently is worse than none.
       expect(screen.queryByText(/Copy/)).not.toBeInTheDocument();
@@ -175,7 +225,13 @@ describe('JsonLdView', () => {
 
     it('should copy annotation JSON to clipboard when copy button is clicked', async () => {
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       const copyButton = screen.getByText(/Copy/);
       await userEvent.click(copyButton);
@@ -187,7 +243,13 @@ describe('JsonLdView', () => {
 
     it('should copy formatted JSON with indentation', async () => {
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       const copyButton = screen.getByText(/Copy/);
       await userEvent.click(copyButton);
@@ -199,11 +261,19 @@ describe('JsonLdView', () => {
     });
 
     it('should handle clipboard API errors gracefully', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       mockClipboard.writeText.mockRejectedValue(new Error('Clipboard error'));
 
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       const copyButton = screen.getByText(/Copy/);
       await userEvent.click(copyButton);
@@ -211,7 +281,7 @@ describe('JsonLdView', () => {
       await waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to copy JSON-LD:',
-          expect.any(Error)
+          expect.any(Error),
         );
       });
 
@@ -224,26 +294,48 @@ describe('JsonLdView', () => {
     // come from the viewer, and its colours from the page's theme attribute,
     // through the CSS variables the JSON theme is written in.
     it('renders with no provider above it', () => {
-      expect(() => render(
-        <JsonLdView annotation={createMockAnnotation()} onBack={vi.fn()} showLineNumbers={false} />,
-      )).not.toThrow();
+      expect(() =>
+        render(
+          <JsonLdView
+            annotation={createMockAnnotation()}
+            onBack={vi.fn()}
+            showLineNumbers={false}
+          />,
+        ),
+      ).not.toThrow();
     });
 
     it('is built with the JSON theme, whichever theme the page is in', () => {
-      render(<JsonLdView annotation={createMockAnnotation()} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={createMockAnnotation()}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       expect(editorExtensions()).toContain(jsonTheme);
     });
 
     it('shows line numbers when it is told to, and not otherwise', () => {
       const { unmount } = render(
-        <JsonLdView annotation={createMockAnnotation()} onBack={vi.fn()} showLineNumbers />,
+        <JsonLdView
+          annotation={createMockAnnotation()}
+          onBack={vi.fn()}
+          showLineNumbers
+        />,
       );
       expect(lineNumbers).toHaveBeenCalledOnce();
       unmount();
 
       vi.mocked(lineNumbers).mockClear();
-      render(<JsonLdView annotation={createMockAnnotation()} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={createMockAnnotation()}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
       expect(lineNumbers).not.toHaveBeenCalled();
     });
   });
@@ -252,7 +344,11 @@ describe('JsonLdView', () => {
     it('should have proper view structure', () => {
       const annotation = createMockAnnotation();
       const { container } = render(
-        <JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
       );
 
       const view = container.firstChild as HTMLElement;
@@ -262,7 +358,11 @@ describe('JsonLdView', () => {
     it('should have proper header class', () => {
       const annotation = createMockAnnotation();
       const { container } = render(
-        <JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
       );
 
       const header = container.querySelector('.xynolog-jsonld-view__header');
@@ -271,7 +371,13 @@ describe('JsonLdView', () => {
 
     it('should have proper back button class', () => {
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       const backButton = screen.getByTitle('Go back (Escape)');
       expect(backButton).toHaveClass('xynolog-jsonld-view__back-button');
@@ -279,7 +385,13 @@ describe('JsonLdView', () => {
 
     it('should have proper copy button class', () => {
       const annotation = createMockAnnotation();
-      render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
+      render(
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
+      );
 
       const copyButton = screen.getByTitle('Copy to clipboard');
       expect(copyButton).toHaveClass('xynolog-jsonld-view__copy-button');
@@ -291,7 +403,11 @@ describe('JsonLdView', () => {
       const onBack = vi.fn();
       const annotation = createMockAnnotation();
       const { unmount } = render(
-        <JsonLdView annotation={annotation} onBack={onBack} showLineNumbers={false} />
+        <JsonLdView
+          annotation={annotation}
+          onBack={onBack}
+          showLineNumbers={false}
+        />,
       );
 
       unmount();
@@ -303,7 +419,11 @@ describe('JsonLdView', () => {
     it('should unmount without errors', () => {
       const annotation = createMockAnnotation();
       const { unmount } = render(
-        <JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />
+        <JsonLdView
+          annotation={annotation}
+          onBack={vi.fn()}
+          showLineNumbers={false}
+        />,
       );
 
       expect(() => unmount()).not.toThrow();

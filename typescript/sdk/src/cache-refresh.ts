@@ -1,5 +1,14 @@
 import { Observable } from 'rxjs';
-import { CACHE_REFRESH, CACHE_REFRESH_CHANNELS, FrameRefusal, INVALIDATION_WINDOW_MS, faultOf, isAnnotationId, isObject, isResourceId } from '@xynolog/core';
+import {
+  CACHE_REFRESH,
+  CACHE_REFRESH_CHANNELS,
+  FrameRefusal,
+  INVALIDATION_WINDOW_MS,
+  faultOf,
+  isAnnotationId,
+  isObject,
+  isResourceId,
+} from '@xynolog/core';
 import type {
   Annotation,
   AnnotationId,
@@ -19,7 +28,10 @@ import type {
  * more inside it are owed, and run as one when it closes, which opens the next.
  */
 class InvalidationWindows {
-  private readonly open = new Map<string, { owed: (() => void) | null; timer: ReturnType<typeof setTimeout> }>();
+  private readonly open = new Map<
+    string,
+    { owed: (() => void) | null; timer: ReturnType<typeof setTimeout> }
+  >();
 
   constructor(private readonly windowMs: number) {}
 
@@ -67,7 +79,11 @@ class Unreadable extends Error {}
  * present and is no object, or the one it ends at that is not what `is`
  * reads, makes the event `Unreadable`.
  */
-function memberAt<T>(event: unknown, way: CacheRefreshWay | undefined, is: (value: unknown) => value is T): T | undefined {
+function memberAt<T>(
+  event: unknown,
+  way: CacheRefreshWay | undefined,
+  is: (value: unknown) => value is T,
+): T | undefined {
   if (way === undefined) return undefined;
   let member = event;
   for (const name of way) {
@@ -80,9 +96,12 @@ function memberAt<T>(event: unknown, way: CacheRefreshWay | undefined, is: (valu
   return member;
 }
 
-const isResource = (value: unknown): value is ResourceId => typeof value === 'string' && isResourceId(value);
-const isAnnotationIdentifier = (value: unknown): value is AnnotationId => typeof value === 'string' && isAnnotationId(value);
-const isAnnotation = (value: unknown): value is Annotation => faultOf('Annotation', value) === undefined;
+const isResource = (value: unknown): value is ResourceId =>
+  typeof value === 'string' && isResourceId(value);
+const isAnnotationIdentifier = (value: unknown): value is AnnotationId =>
+  typeof value === 'string' && isAnnotationId(value);
+const isAnnotation = (value: unknown): value is Annotation =>
+  faultOf('Annotation', value) === undefined;
 
 /**
  * What an event on `channel` names, read by the ways of its row
@@ -91,14 +110,26 @@ const isAnnotation = (value: unknown): value is Annotation => faultOf('Annotatio
  * enriched row carries is present: read there as what it carries, so one
  * present and not an Annotation is unreadable either way.
  */
-function subjectOf(channel: CacheRefreshChannel, event: unknown): RefreshSubject | undefined {
+function subjectOf(
+  channel: CacheRefreshChannel,
+  event: unknown,
+): RefreshSubject | undefined {
   const rows: readonly CacheRefresh[] = CACHE_REFRESH[channel];
   const enriched = rows.find((row) => row.when === 'enriched');
   try {
-    const row = enriched === undefined ? rows[0] : memberAt(event, enriched.carries, isAnnotation) === undefined ? rows.find((other) => other.when === 'unenriched') : enriched;
+    const row =
+      enriched === undefined
+        ? rows[0]
+        : memberAt(event, enriched.carries, isAnnotation) === undefined
+          ? rows.find((other) => other.when === 'unenriched')
+          : enriched;
     if (!row) throw new Error(`The refresh table has no row for ${channel}`);
     const resource = memberAt(event, row.names.resource, isResource);
-    const annotation = memberAt(event, row.names.annotation, isAnnotationIdentifier);
+    const annotation = memberAt(
+      event,
+      row.names.annotation,
+      isAnnotationIdentifier,
+    );
     const written = memberAt(event, row.carries, isAnnotation);
     return {
       ...(row.when === undefined ? {} : { when: row.when }),
@@ -174,7 +205,12 @@ export class CacheRefresher<Q extends CacheQuery> {
    * refresh, and refreshing it anyway costs every viewer a request per
    * resource another principal imports.
    */
-  held<K>(cache: { known(key: K): boolean }, key: K, window: string, invalidate: () => void): void {
+  held<K>(
+    cache: { known(key: K): boolean },
+    key: K,
+    window: string,
+    invalidate: () => void,
+  ): void {
     if (cache.known(key)) this.windows.run(window, invalidate);
   }
 
@@ -200,20 +236,32 @@ export class CacheRefresher<Q extends CacheQuery> {
   }
 
   /** Apply the table's row for `trigger` to what `subject` names. */
-  private refresh(trigger: CacheRefreshTrigger, subject: RefreshSubject = {}): void {
+  private refresh(
+    trigger: CacheRefreshTrigger,
+    subject: RefreshSubject = {},
+  ): void {
     const rows: readonly CacheRefresh[] = CACHE_REFRESH[trigger];
     const row = rows.find((candidate) => candidate.when === subject.when);
-    if (!row) throw new Error(`The refresh table has no row for ${trigger}${subject.when ? ` (${subject.when})` : ''}`);
+    if (!row)
+      throw new Error(
+        `The refresh table has no row for ${trigger}${subject.when ? ` (${subject.when})` : ''}`,
+      );
     for (const query of row.writes) {
       if (!this.answers(query)) continue;
       const write = this.acts[query].write;
-      if (!write) throw new Error(`The refresh table writes ${query}, which no event carries a value for`);
+      if (!write)
+        throw new Error(
+          `The refresh table writes ${query}, which no event carries a value for`,
+        );
       write(subject);
     }
     for (const query of row.removes) {
       if (!this.answers(query)) continue;
       const remove = this.acts[query].remove;
-      if (!remove) throw new Error(`The refresh table removes ${query}, which no event reports gone`);
+      if (!remove)
+        throw new Error(
+          `The refresh table removes ${query}, which no event reports gone`,
+        );
       remove(subject);
     }
     for (const query of row.refetches) {
@@ -225,7 +273,8 @@ export class CacheRefresher<Q extends CacheQuery> {
   private refreshOn(channel: CacheRefreshChannel): void {
     this.subs.push(
       this.bus.on(channel).subscribe((event) => {
-        const subject = event instanceof FrameRefusal ? undefined : subjectOf(channel, event);
+        const subject =
+          event instanceof FrameRefusal ? undefined : subjectOf(channel, event);
         // An event that cannot be read: something changed and nothing says what.
         if (subject === undefined) this.refresh('unreadable');
         else this.refresh(channel, subject);
@@ -251,9 +300,14 @@ export class CacheRefresher<Q extends CacheQuery> {
  * subscription matrix. Acquisition cannot fail.
  */
 export class ScopedSources {
-  private readonly scoped = new WeakMap<Observable<unknown>, Observable<unknown>>();
+  private readonly scoped = new WeakMap<
+    Observable<unknown>,
+    Observable<unknown>
+  >();
 
-  constructor(private readonly transport: Pick<ITransport, 'subscribeToResource'>) {}
+  constructor(
+    private readonly transport: Pick<ITransport, 'subscribeToResource'>,
+  ) {}
 
   of<S>(resourceId: ResourceId, source: Observable<S>): Observable<S> {
     let scoped = this.scoped.get(source) as Observable<S> | undefined;

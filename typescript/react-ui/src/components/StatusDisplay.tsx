@@ -19,7 +19,7 @@ interface StatusData {
 export function StatusDisplay({
   isFullyAuthenticated = false,
   isAuthenticated = false,
-  hasValidGatewayToken = false
+  hasValidGatewayToken = false,
 }: StatusDisplayProps) {
   const xynolog = useObservable(useXynolog().activeSession$)?.client;
   const [data, setData] = useState<StatusData | null>(null);
@@ -27,10 +27,14 @@ export function StatusDisplay({
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!xynolog) { setLoading(false); return; }
+    if (!xynolog) {
+      setLoading(false);
+      return;
+    }
 
     const fetchStatus = () => {
-      xynolog.system!.status()
+      xynolog
+        .system!.status()
         .then((result) => {
           setData(result as StatusData);
           setError(null);
@@ -66,7 +70,10 @@ export function StatusDisplay({
 
     if (error) {
       const errorMessage = error.message;
-      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+      if (
+        errorMessage.includes('401') ||
+        errorMessage.includes('Unauthorized')
+      ) {
         return '🚀 Frontend Status: Ready • Gateway: Please sign out and sign in again';
       }
       return '🚀 Frontend Status: Ready • Gateway: Connection failed';
@@ -75,7 +82,8 @@ export function StatusDisplay({
     return '🚀 Frontend Status: Ready • Gateway: Unknown';
   };
 
-  const getStatusType = (): 'warning' | 'info' | 'success' | 'loading' | 'error' => {
+  const getStatusType = ():
+    'warning' | 'info' | 'success' | 'loading' | 'error' => {
     if (isAuthenticated && !hasValidGatewayToken) {
       return 'warning';
     }
@@ -108,11 +116,12 @@ export function StatusDisplay({
         {getStatusContent()}
       </p>
       {!isFullyAuthenticated ? (
-        <p className="xynolog-status-hint">
-          Sign in to view gateway status
-        </p>
+        <p className="xynolog-status-hint">Sign in to view gateway status</p>
       ) : error ? (
-        <p className="xynolog-status-hint xynolog-status-error-hint" role="alert">
+        <p
+          className="xynolog-status-hint xynolog-status-error-hint"
+          role="alert"
+        >
           <span className="sr-only">Error: </span>
           Check that the gateway server is running and accessible
         </p>

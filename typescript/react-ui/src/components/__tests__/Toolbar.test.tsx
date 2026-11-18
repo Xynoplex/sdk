@@ -7,14 +7,14 @@ import { Toolbar } from '../Toolbar';
 describe('Toolbar', () => {
   describe('document context', () => {
     it('renders all document context buttons when not archived', () => {
-      renderWithProviders(
-        <Toolbar context="document" activePanel={null} />
-      );
+      renderWithProviders(<Toolbar context="document" activePanel={null} />);
 
       expect(screen.getByLabelText('Toolbar.annotations')).toBeInTheDocument();
       expect(screen.getByLabelText('Toolbar.resourceInfo')).toBeInTheDocument();
       expect(screen.getByLabelText('Toolbar.history')).toBeInTheDocument();
-      expect(screen.getByLabelText('Toolbar.collaboration')).toBeInTheDocument();
+      expect(
+        screen.getByLabelText('Toolbar.collaboration'),
+      ).toBeInTheDocument();
       expect(screen.getByLabelText('JSON-LD')).toBeInTheDocument();
       expect(screen.getByLabelText('Toolbar.userAccount')).toBeInTheDocument();
       expect(screen.getByLabelText('Toolbar.settings')).toBeInTheDocument();
@@ -22,10 +22,12 @@ describe('Toolbar', () => {
 
     it('hides annotations button when archived', () => {
       renderWithProviders(
-        <Toolbar context="document" activePanel={null} isArchived={true} />
+        <Toolbar context="document" activePanel={null} isArchived={true} />,
       );
 
-      expect(screen.queryByLabelText('Toolbar.annotations')).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Toolbar.annotations'),
+      ).not.toBeInTheDocument();
       // Other document buttons should still be present
       expect(screen.getByLabelText('Toolbar.resourceInfo')).toBeInTheDocument();
       expect(screen.getByLabelText('Toolbar.history')).toBeInTheDocument();
@@ -34,27 +36,31 @@ describe('Toolbar', () => {
 
   describe('simple context', () => {
     it('renders only user and settings in simple context', () => {
-      renderWithProviders(
-        <Toolbar context="simple" activePanel={null} />
-      );
+      renderWithProviders(<Toolbar context="simple" activePanel={null} />);
 
       expect(screen.getByLabelText('Toolbar.userAccount')).toBeInTheDocument();
       expect(screen.getByLabelText('Toolbar.settings')).toBeInTheDocument();
 
       // Document-specific buttons should not be present
-      expect(screen.queryByLabelText('Toolbar.annotations')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Toolbar.resourceInfo')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Toolbar.history')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Toolbar.collaboration')).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Toolbar.annotations'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Toolbar.resourceInfo'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Toolbar.history'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Toolbar.collaboration'),
+      ).not.toBeInTheDocument();
       expect(screen.queryByLabelText('JSON-LD')).not.toBeInTheDocument();
     });
   });
 
   describe('active panel', () => {
     it('marks active panel button as pressed', () => {
-      renderWithProviders(
-        <Toolbar context="document" activePanel="info" />
-      );
+      renderWithProviders(<Toolbar context="document" activePanel="info" />);
 
       const infoButton = screen.getByLabelText('Toolbar.resourceInfo');
       expect(infoButton).toHaveAttribute('aria-pressed', 'true');
@@ -70,7 +76,7 @@ describe('Toolbar', () => {
 
       const { browser } = renderWithProviders(
         <Toolbar context="document" activePanel={null} />,
-        { returnShellBus: true }
+        { returnShellBus: true },
       );
 
       const subscription = browser!.stream('panel:toggle').subscribe(handler);
@@ -89,7 +95,7 @@ describe('Toolbar', () => {
   describe('accessibility', () => {
     it('buttons have aria-label and aria-pressed', () => {
       renderWithProviders(
-        <Toolbar context="document" activePanel="settings" />
+        <Toolbar context="document" activePanel="settings" />,
       );
 
       const buttons = screen.getAllByRole('button');

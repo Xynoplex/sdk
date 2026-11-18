@@ -30,7 +30,12 @@
  * one `replaceChild` per annotated text node.
  */
 
-import { getTextPositionSelector, getTargetSelector, getExactText, getBodySource } from '@xynolog/core';
+import {
+  getTextPositionSelector,
+  getTargetSelector,
+  getExactText,
+  getBodySource,
+} from '@xynolog/core';
 import { ANNOTATORS } from './annotation-registry';
 
 import type { Annotation, TextOffsets } from '@xynolog/core';
@@ -73,7 +78,7 @@ export interface ResolvedAnnotationSpan {
  */
 export function buildSourceToRenderedMap(
   markdownSource: string,
-  container: HTMLElement
+  container: HTMLElement,
 ): Map<number, number> {
   // Extract all rendered text by walking DOM text nodes
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
@@ -87,7 +92,10 @@ export function buildSourceToRenderedMap(
   let renderedPos = 0;
   let sourcePos = 0;
 
-  while (sourcePos < markdownSource.length && renderedPos < renderedText.length) {
+  while (
+    sourcePos < markdownSource.length &&
+    renderedPos < renderedText.length
+  ) {
     if (markdownSource[sourcePos] === renderedText[renderedPos]) {
       map.set(sourcePos, renderedPos);
       renderedPos++;
@@ -147,7 +155,7 @@ export function buildTextNodeIndex(container: HTMLElement): TextNodeEntry[] {
 export function resolveAnnotationSpans(
   annotations: OverlayAnnotation[],
   offsets: TextOffsets,
-  sourceToRendered: Map<number, number>
+  sourceToRendered: Map<number, number>,
 ): ResolvedAnnotationSpan[] {
   const spans: ResolvedAnnotationSpan[] = [];
 
@@ -155,7 +163,13 @@ export function resolveAnnotationSpans(
     if (annotation.length <= 0) continue;
     const startOffset = annotation.offset;
     const endOffset = annotation.offset + annotation.length;
-    if (!Number.isInteger(startOffset) || !Number.isInteger(endOffset) || startOffset < 0 || endOffset > offsets.length) continue;
+    if (
+      !Number.isInteger(startOffset) ||
+      !Number.isInteger(endOffset) ||
+      startOffset < 0 ||
+      endOffset > offsets.length
+    )
+      continue;
     const start = sourceToRendered.get(offsets.indexAt(startOffset));
     const last = sourceToRendered.get(offsets.indexAt(endOffset) - 1);
     if (start === undefined || last === undefined || last < start) continue;
@@ -183,12 +197,14 @@ export function resolveAnnotationSpans(
  */
 export function applyHighlights(
   spans: ResolvedAnnotationSpan[],
-  textNodeIndex: TextNodeEntry[]
+  textNodeIndex: TextNodeEntry[],
 ): void {
   if (spans.length === 0) return;
 
   for (const entry of textNodeIndex) {
-    const covering = spans.filter((s) => s.start < entry.end && s.end > entry.start);
+    const covering = spans.filter(
+      (s) => s.start < entry.end && s.end > entry.start,
+    );
     if (covering.length === 0) continue;
 
     // Segment boundaries inside this node: node edges plus every covering
@@ -206,7 +222,9 @@ export function applyHighlights(
     for (let i = 0; i < bounds.length - 1; i++) {
       const segStart = bounds[i]!;
       const segEnd = bounds[i + 1]!;
-      let segment: Node = document.createTextNode(text.slice(segStart - entry.start, segEnd - entry.start));
+      let segment: Node = document.createTextNode(
+        text.slice(segStart - entry.start, segEnd - entry.start),
+      );
 
       // Wrap back-to-front so the last-listed covering annotation is innermost.
       for (let k = covering.length - 1; k >= 0; k--) {
@@ -251,23 +269,26 @@ export function clearHighlights(container: HTMLElement): void {
  * Extracts TextPositionSelector offsets, in code points as the selector has
  * them, and annotation type.
  */
-export function toOverlayAnnotations(annotations: Annotation[]): OverlayAnnotation[] {
-  return annotations
-    .map(ann => {
-      const targetSelector = getTargetSelector(ann.target);
-      const posSelector = getTextPositionSelector(targetSelector);
-      const start = posSelector?.start ?? 0;
-      const end = posSelector?.end ?? 0;
+export function toOverlayAnnotations(
+  annotations: Annotation[],
+): OverlayAnnotation[] {
+  return annotations.map((ann) => {
+    const targetSelector = getTargetSelector(ann.target);
+    const posSelector = getTextPositionSelector(targetSelector);
+    const start = posSelector?.start ?? 0;
+    const end = posSelector?.end ?? 0;
 
-      const type = Object.values(ANNOTATORS).find(a => a.matchesAnnotation(ann))?.internalType || 'highlight';
+    const type =
+      Object.values(ANNOTATORS).find((a) => a.matchesAnnotation(ann))
+        ?.internalType || 'highlight';
 
-      return {
-        id: ann.id,
-        exact: getExactText(targetSelector),
-        offset: start,
-        length: end - start,
-        type,
-        source: getBodySource(ann.body)
-      };
-    });
+    return {
+      id: ann.id,
+      exact: getExactText(targetSelector),
+      offset: start,
+      length: end - start,
+      type,
+      source: getBodySource(ann.body),
+    };
+  });
 }

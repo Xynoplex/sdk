@@ -120,10 +120,14 @@ describe('useSessionExpiry', () => {
 
       expect(result.current.timeRemaining).toBe(30 * 60 * 1000);
 
-      act(() => { vi.advanceTimersByTime(1000); });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(result.current.timeRemaining).toBe(30 * 60 * 1000 - 1000);
 
-      act(() => { vi.advanceTimersByTime(1000); });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(result.current.timeRemaining).toBe(30 * 60 * 1000 - 2000);
     });
 
@@ -135,7 +139,9 @@ describe('useSessionExpiry', () => {
 
       expect(result.current.isExpiringSoon).toBe(false);
 
-      act(() => { vi.advanceTimersByTime(3000); });
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
       expect(result.current.isExpiringSoon).toBe(true);
     });
 
@@ -148,7 +154,9 @@ describe('useSessionExpiry', () => {
       expect(result.current.timeRemaining).toBe(2000);
       expect(result.current.isExpiringSoon).toBe(true);
 
-      act(() => { vi.advanceTimersByTime(3000); });
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
 
       expect(result.current.timeRemaining).toBe(0);
       expect(result.current.isExpiringSoon).toBe(false);
@@ -163,7 +171,9 @@ describe('useSessionExpiry', () => {
       for (let i = 5; i >= 0; i--) {
         expect(result.current.timeRemaining).toBe(i * 1000);
         if (i > 0) {
-          act(() => { vi.advanceTimersByTime(1000); });
+          act(() => {
+            vi.advanceTimersByTime(1000);
+          });
         }
       }
     });
@@ -223,27 +233,35 @@ describe('useSessionExpiry', () => {
 
   describe('Session Changes', () => {
     it('should update when expiresAt changes on the session', () => {
-      const { browser, setExpiresAt } = buildBrowser(new Date('2024-01-01T12:30:00Z'));
+      const { browser, setExpiresAt } = buildBrowser(
+        new Date('2024-01-01T12:30:00Z'),
+      );
       const { result } = renderHook(() => useSessionExpiry(), {
         wrapper: makeWrapper(browser),
       });
 
       expect(result.current.timeRemaining).toBe(30 * 60 * 1000);
 
-      act(() => { setExpiresAt(new Date('2024-01-01T12:15:00Z')); });
+      act(() => {
+        setExpiresAt(new Date('2024-01-01T12:15:00Z'));
+      });
 
       expect(result.current.timeRemaining).toBe(15 * 60 * 1000);
     });
 
     it('should clear timer when expiresAt becomes null', () => {
-      const { browser, setExpiresAt } = buildBrowser(new Date('2024-01-01T12:30:00Z'));
+      const { browser, setExpiresAt } = buildBrowser(
+        new Date('2024-01-01T12:30:00Z'),
+      );
       const { result } = renderHook(() => useSessionExpiry(), {
         wrapper: makeWrapper(browser),
       });
 
       expect(result.current.timeRemaining).toBe(30 * 60 * 1000);
 
-      act(() => { setExpiresAt(null); });
+      act(() => {
+        setExpiresAt(null);
+      });
 
       expect(result.current.timeRemaining).toBeNull();
       expect(result.current.isExpiringSoon).toBe(false);
@@ -257,7 +275,9 @@ describe('useSessionExpiry', () => {
 
       expect(result.current.timeRemaining).toBeNull();
 
-      act(() => { setExpiresAt(new Date('2024-01-01T12:30:00Z')); });
+      act(() => {
+        setExpiresAt(new Date('2024-01-01T12:30:00Z'));
+      });
 
       expect(result.current.timeRemaining).toBe(30 * 60 * 1000);
     });
@@ -273,7 +293,9 @@ describe('useSessionExpiry', () => {
       const initialTime = result.current.timeRemaining;
       unmount();
 
-      act(() => { vi.advanceTimersByTime(5000); });
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
 
       expect(initialTime).toBe(30 * 60 * 1000);
     });

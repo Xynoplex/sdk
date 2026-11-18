@@ -19,10 +19,34 @@ import type {
 } from '@xynolog/core';
 import type { ITransport, IContentTransport } from '@xynolog/core';
 import { Bus, BusRequestError, LIMITS_OPERATIONS } from '@xynolog/core';
-import { PERSISTED_QUERIES, type CacheQuery, type CacheRefresh, type CacheValues, type PersistedQuery } from '@xynolog/core';
-import { CacheRefresher, ScopedSources, type QueryActs, type RefreshSubject } from '../cache-refresh';
-import { createCache, createPersistableCache, type CacheState, type Cache, type PersistableCache } from '../cache';
-import { WHOLE_KEY, keptPersister, refusedSaveOf, type CachePersistence, type KeptKey, type WholeKey } from '../cache-persister';
+import {
+  PERSISTED_QUERIES,
+  type CacheQuery,
+  type CacheRefresh,
+  type CacheValues,
+  type PersistedQuery,
+} from '@xynolog/core';
+import {
+  CacheRefresher,
+  ScopedSources,
+  type QueryActs,
+  type RefreshSubject,
+} from '../cache-refresh';
+import {
+  createCache,
+  createPersistableCache,
+  type CacheState,
+  type Cache,
+  type PersistableCache,
+} from '../cache';
+import {
+  WHOLE_KEY,
+  keptPersister,
+  refusedSaveOf,
+  type CachePersistence,
+  type KeptKey,
+  type WholeKey,
+} from '../cache-persister';
 import type {
   BrowseNamespace as IBrowseNamespace,
   AnnotationHistoryResponse,
@@ -38,14 +62,28 @@ type EngineLimits = components['schemas']['EngineLimits'];
  * `client.ts` holds the namespaces to answering every one between them.
  */
 export const BROWSE_QUERIES = [
-  'resource', 'annotations', 'annotation', 'events', 'resources', 'entityTypes', 'tagSchemas', 'engines',
+  'resource',
+  'annotations',
+  'annotation',
+  'events',
+  'resources',
+  'entityTypes',
+  'tagSchemas',
+  'engines',
 ] as const satisfies readonly CacheQuery[];
 type BrowseQuery = (typeof BROWSE_QUERIES)[number];
 
 /** The engines, each with the limits reported for it. */
-function joinLimits(engines: EngineEntry[], reported: EngineLimits[]): EngineWithLimits[] {
+function joinLimits(
+  engines: EngineEntry[],
+  reported: EngineLimits[],
+): EngineWithLimits[] {
   return engines.map((entry) => {
-    const report = reported.find((r) => r.engine.provider === entry.engine.provider && r.engine.model === entry.engine.model);
+    const report = reported.find(
+      (r) =>
+        r.engine.provider === entry.engine.provider &&
+        r.engine.model === entry.engine.model,
+    );
     return report ? { ...entry, limits: report.limits } : entry;
   });
 }
@@ -62,7 +100,10 @@ export class BrowseNamespace implements IBrowseNamespace {
 
   private readonly resourceCache: Cache<ResourceId, CacheValues['resource']>;
   private readonly resourceListCache: Cache<string, CacheValues['resources']>;
-  private readonly annotationListCache: Cache<ResourceId, CacheValues['annotations']>;
+  private readonly annotationListCache: Cache<
+    ResourceId,
+    CacheValues['annotations']
+  >;
   /**
    * Annotation-detail cache keyed by `annotationId` only — the resourceId
    * is a routing hint for the gateway fetch, not an identity component.
@@ -70,16 +111,25 @@ export class BrowseNamespace implements IBrowseNamespace {
    * fetch names it in its request, and an event that names only a resource
    * finds that resource's annotations through it.
    */
-  private readonly annotationDetailCache: Cache<AnnotationId, CacheValues['annotation']>;
+  private readonly annotationDetailCache: Cache<
+    AnnotationId,
+    CacheValues['annotation']
+  >;
   private readonly annotationResources = new Map<AnnotationId, ResourceId>();
-  private readonly entityTypesCache: Cache<WholeKey, CacheValues['entityTypes']>;
+  private readonly entityTypesCache: Cache<
+    WholeKey,
+    CacheValues['entityTypes']
+  >;
   private readonly tagSchemasCache: Cache<WholeKey, CacheValues['tagSchemas']>;
   private readonly enginesCache: Cache<WholeKey, CacheValues['engines']>;
   /** Each key holder's limits report, by the operation it answers. */
   private readonly limitsCache: Cache<LimitsOperation, EngineLimits[]>;
   /** The engines, joined with the limits reports as each arrives. */
   private readonly engines$: Observable<CacheState<EngineWithLimits[]>>;
-  private readonly resourceEventsCache: Cache<ResourceId, CacheValues['events']>;
+  private readonly resourceEventsCache: Cache<
+    ResourceId,
+    CacheValues['events']
+  >;
 
   /** Filter-blob memory so `invalidateResourceLists` can replay per-key. */
   private readonly resourceListFilters = new Map<string, ResourceListFilters>();
@@ -93,7 +143,10 @@ export class BrowseNamespace implements IBrowseNamespace {
    * identity — React hooks depending on the observable reference,
    * `distinctUntilChanged` at a higher level — would misbehave.
    */
-  private readonly annotationListObs = new Map<ResourceId, Observable<CacheState<Annotation[]>>>();
+  private readonly annotationListObs = new Map<
+    ResourceId,
+    Observable<CacheState<Annotation[]>>
+  >();
 
   /** Subscribing to a resource-scoped query acquires the resource's scope. */
   private readonly scoped: ScopedSources;
@@ -119,10 +172,28 @@ export class BrowseNamespace implements IBrowseNamespace {
    * whatever the key holds (B8), for direct callers.
    */
   private readonly refetchKey = {
-    resource: (rId: ResourceId) => this.refresher.held(this.resourceCache, rId, `resource/${rId}`, () => this.invalidateResourceDetail(rId)),
-    annotations: (rId: ResourceId) => this.refresher.held(this.annotationListCache, rId, `annotations/${rId}`, () => this.invalidateAnnotationList(rId)),
-    annotation: (aId: AnnotationId) => this.refresher.held(this.annotationDetailCache, aId, `annotation/${aId}`, () => this.annotationDetailCache.invalidate(aId)),
-    events: (rId: ResourceId) => this.refresher.held(this.resourceEventsCache, rId, `events/${rId}`, () => this.invalidateResourceEvents(rId)),
+    resource: (rId: ResourceId) =>
+      this.refresher.held(this.resourceCache, rId, `resource/${rId}`, () =>
+        this.invalidateResourceDetail(rId),
+      ),
+    annotations: (rId: ResourceId) =>
+      this.refresher.held(
+        this.annotationListCache,
+        rId,
+        `annotations/${rId}`,
+        () => this.invalidateAnnotationList(rId),
+      ),
+    annotation: (aId: AnnotationId) =>
+      this.refresher.held(
+        this.annotationDetailCache,
+        aId,
+        `annotation/${aId}`,
+        () => this.annotationDetailCache.invalidate(aId),
+      ),
+    events: (rId: ResourceId) =>
+      this.refresher.held(this.resourceEventsCache, rId, `events/${rId}`, () =>
+        this.invalidateResourceEvents(rId),
+      ),
   };
 
   /**
@@ -131,14 +202,21 @@ export class BrowseNamespace implements IBrowseNamespace {
    * are coupled to. Empty while persistence is off (both are then vacuously
    * true).
    */
-  private readonly keptCaches: Array<{ readonly cache: { persistencePending(): boolean }; fetching(): boolean }> = [];
+  private readonly keptCaches: Array<{
+    readonly cache: { persistencePending(): boolean };
+    fetching(): boolean;
+  }> = [];
 
   /**
    * B17 — what keeps each persisted query's values, by its name in
    * protocol/specs/src/client/refresh.json: given where, it starts keeping
    * them and hands back the kept cache.
    */
-  private readonly keepers: { [Q in PersistedQuery]: (persistence: CachePersistence) => PersistableCache<KeptKey<Q>, CacheValues[Q]> };
+  private readonly keepers: {
+    [Q in PersistedQuery]: (
+      persistence: CachePersistence,
+    ) => PersistableCache<KeptKey<Q>, CacheValues[Q]>;
+  };
 
   private readonly wire: Bus;
 
@@ -166,7 +244,10 @@ export class BrowseNamespace implements IBrowseNamespace {
     this.busTimeoutMs = options?.busTimeoutMs;
     this.scoped = new ScopedSources(this.transport);
 
-    const resource = createPersistableCache<ResourceId, CacheValues['resource']>(async (id) => {
+    const resource = createPersistableCache<
+      ResourceId,
+      CacheValues['resource']
+    >(async (id) => {
       const result = await this.wire.request(
         'browse:resource-requested',
         { resourceId: id },
@@ -176,32 +257,43 @@ export class BrowseNamespace implements IBrowseNamespace {
     });
     this.resourceCache = resource.cache;
 
-    this.resourceListCache = createCache<string, CacheValues['resources']>(async (key) => {
-      const filters = this.resourceListFilters.get(key) ?? {};
-      const result = await this.wire.request(
-        'browse:resources-requested',
-        {
-          archived: filters.archived,
-          entityType: filters.entityType,
-          limit: filters.limit ?? 100,
-          offset: filters.offset ?? 0,
-        },
-        this.busTimeoutMs,
-      );
-      // Brand the wire type (unbranded @id: string) to the SDK's ResourceDescriptor
-      // (@id: ResourceId) at the boundary — same as resourceCache above.
-      return { ...result, resources: result.resources as ResourceDescriptor[] };
-    });
-
-    const annotations = createPersistableCache<ResourceId, CacheValues['annotations']>(
-      (resourceId) => this.content.getAnnotations(resourceId),
+    this.resourceListCache = createCache<string, CacheValues['resources']>(
+      async (key) => {
+        const filters = this.resourceListFilters.get(key) ?? {};
+        const result = await this.wire.request(
+          'browse:resources-requested',
+          {
+            archived: filters.archived,
+            entityType: filters.entityType,
+            limit: filters.limit ?? 100,
+            offset: filters.offset ?? 0,
+          },
+          this.busTimeoutMs,
+        );
+        // Brand the wire type (unbranded @id: string) to the SDK's ResourceDescriptor
+        // (@id: ResourceId) at the boundary — same as resourceCache above.
+        return {
+          ...result,
+          resources: result.resources as ResourceDescriptor[],
+        };
+      },
     );
+
+    const annotations = createPersistableCache<
+      ResourceId,
+      CacheValues['annotations']
+    >((resourceId) => this.content.getAnnotations(resourceId));
     this.annotationListCache = annotations.cache;
 
-    const annotation = createPersistableCache<AnnotationId, CacheValues['annotation']>(async (annotationId) => {
+    const annotation = createPersistableCache<
+      AnnotationId,
+      CacheValues['annotation']
+    >(async (annotationId) => {
       const resourceId = this.annotationResources.get(annotationId);
       if (!resourceId) {
-        throw new Error(`Cannot fetch annotation ${annotationId}: no resourceId known`);
+        throw new Error(
+          `Cannot fetch annotation ${annotationId}: no resourceId known`,
+        );
       }
       const result = await this.wire.request(
         'browse:annotation-requested',
@@ -212,7 +304,10 @@ export class BrowseNamespace implements IBrowseNamespace {
     });
     this.annotationDetailCache = annotation.cache;
 
-    const entityTypes = createPersistableCache<WholeKey, CacheValues['entityTypes']>(async () => {
+    const entityTypes = createPersistableCache<
+      WholeKey,
+      CacheValues['entityTypes']
+    >(async () => {
       const result = await this.wire.request(
         'browse:entity-types-requested',
         {},
@@ -222,7 +317,10 @@ export class BrowseNamespace implements IBrowseNamespace {
     });
     this.entityTypesCache = entityTypes.cache;
 
-    const tagSchemas = createPersistableCache<WholeKey, CacheValues['tagSchemas']>(async () => {
+    const tagSchemas = createPersistableCache<
+      WholeKey,
+      CacheValues['tagSchemas']
+    >(async () => {
       const result = await this.wire.request(
         'browse:tag-schemas-requested',
         {},
@@ -232,10 +330,20 @@ export class BrowseNamespace implements IBrowseNamespace {
     });
     this.tagSchemasCache = tagSchemas.cache;
 
-    const keeping = <Q extends PersistedQuery>(query: Q, made: PersistableCache<KeptKey<Q>, CacheValues[Q]>) => (persistence: CachePersistence): PersistableCache<KeptKey<Q>, CacheValues[Q]> => {
-      made.attach(keptPersister(query, persistence), refusedSaveOf(persistence));
-      return made;
-    };
+    const keeping =
+      <Q extends PersistedQuery>(
+        query: Q,
+        made: PersistableCache<KeptKey<Q>, CacheValues[Q]>,
+      ) =>
+      (
+        persistence: CachePersistence,
+      ): PersistableCache<KeptKey<Q>, CacheValues[Q]> => {
+        made.attach(
+          keptPersister(query, persistence),
+          refusedSaveOf(persistence),
+        );
+        return made;
+      };
     this.keepers = {
       resource: keeping('resource', resource),
       annotations: keeping('annotations', annotations),
@@ -243,44 +351,70 @@ export class BrowseNamespace implements IBrowseNamespace {
       entityTypes: keeping('entityTypes', entityTypes),
       tagSchemas: keeping('tagSchemas', tagSchemas),
     };
-    if (options?.cachePersistence) this.attachPersistence(options.cachePersistence);
+    if (options?.cachePersistence)
+      this.attachPersistence(options.cachePersistence);
 
-    this.enginesCache = createCache<WholeKey, CacheValues['engines']>(async () => {
-      const result = await this.wire.request(
-        'browse:engines-requested',
-        {},
-        this.busTimeoutMs,
-      );
-      // Entries pass through unreshaped: `{ engine, jobs? }` — the jobs are
-      // the point of the wrapper.
-      return result.engines;
-    });
+    this.enginesCache = createCache<WholeKey, CacheValues['engines']>(
+      async () => {
+        const result = await this.wire.request(
+          'browse:engines-requested',
+          {},
+          this.busTimeoutMs,
+        );
+        // Entries pass through unreshaped: `{ engine, jobs? }` — the jobs are
+        // the point of the wrapper.
+        return result.engines;
+      },
+    );
 
     // The services holding the inference credentials report their models'
     // limits; nothing else can discover them. One that is down or silent
     // reports nothing, so its engines show no limits, and it delays only its
     // own report, never the engines.
-    this.limitsCache = createCache<LimitsOperation, EngineLimits[]>(async (operation) =>
-      this.wire.request(operation, {}, this.busTimeoutMs).then((result) => result.limits, () => []));
+    this.limitsCache = createCache<LimitsOperation, EngineLimits[]>(
+      async (operation) =>
+        this.wire.request(operation, {}, this.busTimeoutMs).then(
+          (result) => result.limits,
+          () => [],
+        ),
+    );
 
     this.engines$ = combineLatest([
       this.enginesCache.observe(WHOLE_KEY),
-      ...LIMITS_OPERATIONS.map((operation) => this.limitsCache.observe(operation)),
-    ]).pipe(map(([engines, ...reports]): CacheState<EngineWithLimits[]> =>
-      engines.status === 'ready'
-        ? { status: 'ready', value: joinLimits(engines.value, reports.flatMap((r) => (r.status === 'ready' ? r.value : []))) }
-        : engines));
+      ...LIMITS_OPERATIONS.map((operation) =>
+        this.limitsCache.observe(operation),
+      ),
+    ]).pipe(
+      map(([engines, ...reports]): CacheState<EngineWithLimits[]> =>
+        engines.status === 'ready'
+          ? {
+              status: 'ready',
+              value: joinLimits(
+                engines.value,
+                reports.flatMap((r) => (r.status === 'ready' ? r.value : [])),
+              ),
+            }
+          : engines,
+      ),
+    );
 
-    this.resourceEventsCache = createCache<ResourceId, CacheValues['events']>(async (resourceId) => {
-      const result = await this.wire.request(
-        'browse:events-requested',
-        { resourceId },
-        this.busTimeoutMs,
-      );
-      return result.events;
-    });
+    this.resourceEventsCache = createCache<ResourceId, CacheValues['events']>(
+      async (resourceId) => {
+        const result = await this.wire.request(
+          'browse:events-requested',
+          { resourceId },
+          this.busTimeoutMs,
+        );
+        return result.events;
+      },
+    );
 
-    this.refresher = new CacheRefresher<BrowseQuery>(this.transport, this.bus, this.refreshActs(), options?.invalidationWindowMs);
+    this.refresher = new CacheRefresher<BrowseQuery>(
+      this.transport,
+      this.bus,
+      this.refreshActs(),
+      options?.invalidationWindowMs,
+    );
   }
 
   // ── Live queries ────────────────────────────────────────────────────────
@@ -289,7 +423,10 @@ export class BrowseNamespace implements IBrowseNamespace {
   // (`pending` during initial load), and `.fresh()` is the one-shot read.
 
   resource(resourceId: ResourceId): CacheObservable<ResourceDescriptor> {
-    return CacheObservable.from(this.scoped.of(resourceId, this.resourceCache.observe(resourceId)), () => this.resourceCache.fetch(resourceId));
+    return CacheObservable.from(
+      this.scoped.of(resourceId, this.resourceCache.observe(resourceId)),
+      () => this.resourceCache.fetch(resourceId),
+    );
   }
 
   resources(filters?: ResourceListFilters): CacheObservable<ResourceList> {
@@ -297,34 +434,59 @@ export class BrowseNamespace implements IBrowseNamespace {
     // Remember the filter blob so `invalidateResourceLists` can drive
     // per-key SWR refetches without the caller re-passing filters.
     this.resourceListFilters.set(key, filters ?? {});
-    return CacheObservable.from(this.resourceListCache.observe(key), () => this.resourceListCache.fetch(key));
+    return CacheObservable.from(this.resourceListCache.observe(key), () =>
+      this.resourceListCache.fetch(key),
+    );
   }
 
   annotations(resourceId: ResourceId): CacheObservable<Annotation[]> {
     let obs = this.annotationListObs.get(resourceId);
     if (!obs) {
-      obs = this.annotationListCache.observe(resourceId).pipe(
-        map((s): CacheState<Annotation[]> => (s.status === 'ready' ? { status: 'ready', value: s.value.annotations as Annotation[] } : s)),
-      );
+      obs = this.annotationListCache
+        .observe(resourceId)
+        .pipe(
+          map((s): CacheState<Annotation[]> =>
+            s.status === 'ready'
+              ? { status: 'ready', value: s.value.annotations as Annotation[] }
+              : s,
+          ),
+        );
       this.annotationListObs.set(resourceId, obs);
     }
-    return CacheObservable.from(this.scoped.of(resourceId, obs), () => this.annotationListCache.fetch(resourceId).then((r) => r.annotations as Annotation[]));
+    return CacheObservable.from(this.scoped.of(resourceId, obs), () =>
+      this.annotationListCache
+        .fetch(resourceId)
+        .then((r) => r.annotations as Annotation[]),
+    );
   }
 
-  annotation(resourceId: ResourceId, annotationId: AnnotationId): CacheObservable<Annotation> {
+  annotation(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+  ): CacheObservable<Annotation> {
     // Record the routing hint so the cache's fetchFn (which only sees
     // the cache key, `annotationId`) can look up the resourceId it
     // needs for the bus request.
     this.annotationResources.set(annotationId, resourceId);
-    return CacheObservable.from(this.scoped.of(resourceId, this.annotationDetailCache.observe(annotationId)), () => this.annotationDetailCache.fetch(annotationId));
+    return CacheObservable.from(
+      this.scoped.of(
+        resourceId,
+        this.annotationDetailCache.observe(annotationId),
+      ),
+      () => this.annotationDetailCache.fetch(annotationId),
+    );
   }
 
   entityTypes(): CacheObservable<string[]> {
-    return CacheObservable.from(this.entityTypesCache.observe(WHOLE_KEY), () => this.entityTypesCache.fetch(WHOLE_KEY));
+    return CacheObservable.from(this.entityTypesCache.observe(WHOLE_KEY), () =>
+      this.entityTypesCache.fetch(WHOLE_KEY),
+    );
   }
 
   tagSchemas(): CacheObservable<TagSchema[]> {
-    return CacheObservable.from(this.tagSchemasCache.observe(WHOLE_KEY), () => this.tagSchemasCache.fetch(WHOLE_KEY));
+    return CacheObservable.from(this.tagSchemasCache.observe(WHOLE_KEY), () =>
+      this.tagSchemasCache.fetch(WHOLE_KEY),
+    );
   }
 
   /**
@@ -339,14 +501,19 @@ export class BrowseNamespace implements IBrowseNamespace {
     return CacheObservable.from(this.engines$, async () => {
       const [engines, ...reports] = await Promise.all([
         this.enginesCache.fetch(WHOLE_KEY),
-        ...LIMITS_OPERATIONS.map((operation) => this.limitsCache.fetch(operation)),
+        ...LIMITS_OPERATIONS.map((operation) =>
+          this.limitsCache.fetch(operation),
+        ),
       ]);
       return joinLimits(engines, reports.flat());
     });
   }
 
   events(resourceId: ResourceId): CacheObservable<AttributedEvent[]> {
-    return CacheObservable.from(this.scoped.of(resourceId, this.resourceEventsCache.observe(resourceId)), () => this.resourceEventsCache.fetch(resourceId));
+    return CacheObservable.from(
+      this.scoped.of(resourceId, this.resourceEventsCache.observe(resourceId)),
+      () => this.resourceEventsCache.fetch(resourceId),
+    );
   }
 
   // ── One-shot reads ──────────────────────────────────────────────────────
@@ -377,7 +544,9 @@ export class BrowseNamespace implements IBrowseNamespace {
    * checksum). A quote is cut from this text when an annotation is made and
    * never again, so a viewer annotates only once it holds the text.
    */
-  async resourceAnchoredText(resourceId: ResourceId): Promise<AnchoredTextAnswer> {
+  async resourceAnchoredText(
+    resourceId: ResourceId,
+  ): Promise<AnchoredTextAnswer> {
     return this.content.getAnchoredText(resourceId);
   }
 
@@ -411,7 +580,10 @@ export class BrowseNamespace implements IBrowseNamespace {
     return result.events;
   }
 
-  async annotationHistory(resourceId: ResourceId, annotationId: AnnotationId): Promise<AnnotationHistoryResponse> {
+  async annotationHistory(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+  ): Promise<AnnotationHistoryResponse> {
     return this.wire.request(
       'browse:annotation-history-requested',
       { resourceId, annotationId },
@@ -446,7 +618,10 @@ export class BrowseNamespace implements IBrowseNamespace {
    * geometry and stays a local-only extra; it never crosses a wire.
    */
   click(annotationId: AnnotationId, anchorRect?: AnchorRect): void {
-    this.bus.emit('browse:click', { annotationId, ...(anchorRect ? { anchorRect } : {}) });
+    this.bus.emit('browse:click', {
+      annotationId,
+      ...(anchorRect ? { anchorRect } : {}),
+    });
   }
 
   openResource(resourceId: ResourceId): void {
@@ -482,7 +657,11 @@ export class BrowseNamespace implements IBrowseNamespace {
     if (!this.annotationDetailCache.known(annotationId)) return;
     this.annotationDetailCache.remove(
       annotationId,
-      new BusRequestError(`Annotation ${annotationId} was removed`, 'bus.not-found', { annotationId }),
+      new BusRequestError(
+        `Annotation ${annotationId} was removed`,
+        'bus.not-found',
+        { annotationId },
+      ),
     );
   }
 
@@ -504,7 +683,8 @@ export class BrowseNamespace implements IBrowseNamespace {
 
   invalidateEngines(): void {
     this.enginesCache.invalidate(WHOLE_KEY);
-    for (const operation of LIMITS_OPERATIONS) this.limitsCache.invalidate(operation);
+    for (const operation of LIMITS_OPERATIONS)
+      this.limitsCache.invalidate(operation);
   }
 
   /**
@@ -515,7 +695,10 @@ export class BrowseNamespace implements IBrowseNamespace {
    * cannot lead the persisted content.
    */
   persistenceSettled(): boolean {
-    return !this.refresher.owesRefetch() && this.keptCaches.every((kept) => !kept.cache.persistencePending());
+    return (
+      !this.refresher.owesRefetch() &&
+      this.keptCaches.every((kept) => !kept.cache.persistencePending())
+    );
   }
 
   /**
@@ -526,7 +709,10 @@ export class BrowseNamespace implements IBrowseNamespace {
    * save owed.
    */
   fetchesSettled(): boolean {
-    return !this.refresher.owesRefetch() && this.keptCaches.every((kept) => !kept.fetching());
+    return (
+      !this.refresher.owesRefetch() &&
+      this.keptCaches.every((kept) => !kept.fetching())
+    );
   }
 
   /**
@@ -537,14 +723,18 @@ export class BrowseNamespace implements IBrowseNamespace {
    * the client was made. Once per namespace: a second call throws.
    */
   attachPersistence(persistence: CachePersistence): void {
-    for (const query of PERSISTED_QUERIES) this.keptCaches.push(this.keepers[query](persistence));
+    for (const query of PERSISTED_QUERIES)
+      this.keptCaches.push(this.keepers[query](persistence));
   }
 
   invalidateResourceEvents(resourceId: ResourceId): void {
     this.resourceEventsCache.invalidate(resourceId);
   }
 
-  updateAnnotationInPlace(resourceId: ResourceId, annotation: Annotation): void {
+  updateAnnotationInPlace(
+    resourceId: ResourceId,
+    annotation: Annotation,
+  ): void {
     this.writeAnnotationIntoList(resourceId, annotation);
     this.writeAnnotationDetail(resourceId, annotation);
   }
@@ -554,7 +744,10 @@ export class BrowseNamespace implements IBrowseNamespace {
    * at the end. A list being fetched has it patched into what the fetch
    * answers, so neither the event nor the answer is lost.
    */
-  private writeAnnotationIntoList(resourceId: ResourceId, annotation: Annotation): void {
+  private writeAnnotationIntoList(
+    resourceId: ResourceId,
+    annotation: Annotation,
+  ): void {
     this.annotationListCache.patch(resourceId, (list) => {
       const idx = list.annotations.findIndex((a) => a.id === annotation.id);
       const annotations =
@@ -566,7 +759,10 @@ export class BrowseNamespace implements IBrowseNamespace {
   }
 
   /** Write-through to the annotation's own key, so its observers see the new value without a refetch. */
-  private writeAnnotationDetail(resourceId: ResourceId, annotation: Annotation): void {
+  private writeAnnotationDetail(
+    resourceId: ResourceId,
+    annotation: Annotation,
+  ): void {
     const aId = annotation.id;
     this.annotationResources.set(aId, resourceId);
     this.annotationDetailCache.set(aId, annotation);
@@ -607,47 +803,115 @@ export class BrowseNamespace implements IBrowseNamespace {
   // applies its rows to these.
 
   private refreshActs(): Record<BrowseQuery, QueryActs> {
-    const resources = (cache: { keys(): ResourceId[] }, subject: RefreshSubject, reach: CacheRefresh['reach']): ResourceId[] =>
-      reach === 'held' ? cache.keys() : subject.resource ? [subject.resource] : [];
+    const resources = (
+      cache: { keys(): ResourceId[] },
+      subject: RefreshSubject,
+      reach: CacheRefresh['reach'],
+    ): ResourceId[] =>
+      reach === 'held'
+        ? cache.keys()
+        : subject.resource
+          ? [subject.resource]
+          : [];
     // B13b: the event carries the value.
-    const written = (query: BrowseQuery, { resource, written }: RefreshSubject): { resource: ResourceId; written: Annotation } => {
-      if (!resource || !written) throw new Error(`An event that writes ${query} names a resource and carries the annotation`);
+    const written = (
+      query: BrowseQuery,
+      { resource, written }: RefreshSubject,
+    ): { resource: ResourceId; written: Annotation } => {
+      if (!resource || !written)
+        throw new Error(
+          `An event that writes ${query} names a resource and carries the annotation`,
+        );
       return { resource, written };
     };
     return {
-      resource: { refetch: (subject, reach) => resources(this.resourceCache, subject, reach).forEach(this.refetchKey.resource) },
+      resource: {
+        refetch: (subject, reach) =>
+          resources(this.resourceCache, subject, reach).forEach(
+            this.refetchKey.resource,
+          ),
+      },
       annotations: {
-        refetch: (subject, reach) => resources(this.annotationListCache, subject, reach).forEach(this.refetchKey.annotations),
+        refetch: (subject, reach) =>
+          resources(this.annotationListCache, subject, reach).forEach(
+            this.refetchKey.annotations,
+          ),
         write: (subject) => {
-          const { resource, written: annotation } = written('annotations', subject);
+          const { resource, written: annotation } = written(
+            'annotations',
+            subject,
+          );
           this.writeAnnotationIntoList(resource, annotation);
         },
       },
       annotation: {
-        refetch: (subject, reach) => this.annotationsReached(subject, reach).forEach(this.refetchKey.annotation),
+        refetch: (subject, reach) =>
+          this.annotationsReached(subject, reach).forEach(
+            this.refetchKey.annotation,
+          ),
         write: (subject) => {
-          const { resource, written: annotation } = written('annotation', subject);
+          const { resource, written: annotation } = written(
+            'annotation',
+            subject,
+          );
           this.writeAnnotationDetail(resource, annotation);
         },
         // B13a: the event says the entity is gone.
         remove: ({ annotation }) => {
-          if (!annotation) throw new Error('An event that removes an annotation names it');
+          if (!annotation)
+            throw new Error('An event that removes an annotation names it');
           this.removeAnnotationDetail(annotation);
         },
       },
-      events: { refetch: (subject, reach) => resources(this.resourceEventsCache, subject, reach).forEach(this.refetchKey.events) },
+      events: {
+        refetch: (subject, reach) =>
+          resources(this.resourceEventsCache, subject, reach).forEach(
+            this.refetchKey.events,
+          ),
+      },
       // Its keys are the lists the cache knows: `invalidateAll` reaches no other.
-      resources: { refetch: () => this.refresher.windowed('resource-lists', () => this.invalidateResourceLists()) },
-      entityTypes: { refetch: () => this.refresher.held(this.entityTypesCache, WHOLE_KEY, 'entityTypes', () => this.invalidateEntityTypes()) },
-      tagSchemas: { refetch: () => this.refresher.held(this.tagSchemasCache, WHOLE_KEY, 'tagSchemas', () => this.invalidateTagSchemas()) },
-      engines: { refetch: () => this.refresher.held(this.enginesCache, WHOLE_KEY, 'engines', () => this.invalidateEngines()) },
+      resources: {
+        refetch: () =>
+          this.refresher.windowed('resource-lists', () =>
+            this.invalidateResourceLists(),
+          ),
+      },
+      entityTypes: {
+        refetch: () =>
+          this.refresher.held(
+            this.entityTypesCache,
+            WHOLE_KEY,
+            'entityTypes',
+            () => this.invalidateEntityTypes(),
+          ),
+      },
+      tagSchemas: {
+        refetch: () =>
+          this.refresher.held(
+            this.tagSchemasCache,
+            WHOLE_KEY,
+            'tagSchemas',
+            () => this.invalidateTagSchemas(),
+          ),
+      },
+      engines: {
+        refetch: () =>
+          this.refresher.held(this.enginesCache, WHOLE_KEY, 'engines', () =>
+            this.invalidateEngines(),
+          ),
+      },
     };
   }
 
   /** The annotation the event names; when it names none, each one held of the resource it names. */
-  private annotationsReached({ annotation, resource }: RefreshSubject, reach: CacheRefresh['reach']): AnnotationId[] {
+  private annotationsReached(
+    { annotation, resource }: RefreshSubject,
+    reach: CacheRefresh['reach'],
+  ): AnnotationId[] {
     if (reach === 'held') return this.annotationDetailCache.keys();
     if (annotation) return [annotation];
-    return [...this.annotationResources].flatMap(([held, of]) => (of === resource ? [held] : []));
+    return [...this.annotationResources].flatMap(([held, of]) =>
+      of === resource ? [held] : [],
+    );
   }
 }

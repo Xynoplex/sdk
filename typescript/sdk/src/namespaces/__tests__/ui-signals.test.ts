@@ -16,7 +16,11 @@ import { MarkNamespace } from '../mark';
 import { MatchNamespace } from '../match';
 import { YieldNamespace } from '../yield';
 import type { ITransport, IContentTransport } from '@xynolog/core';
-import { inMemoryTransport, gatewayOperationSpies, contentTransportSpies } from '../../__tests__/helpers/in-memory-transport';
+import {
+  inMemoryTransport,
+  gatewayOperationSpies,
+  contentTransportSpies,
+} from '../../__tests__/helpers/in-memory-transport';
 
 function makeMockTransport(): ITransport {
   // `emit` is a typed spy because these tests assert WHETHER it was called —
@@ -25,7 +29,9 @@ function makeMockTransport(): ITransport {
   return {
     ...inMemoryTransport(),
     emit: vi.fn<ITransport['emit']>(async () => 1),
-    subscribeToResource: vi.fn<ITransport['subscribeToResource']>(() => () => {}),
+    subscribeToResource: vi.fn<ITransport['subscribeToResource']>(
+      () => () => {},
+    ),
     bridgeInto: vi.fn<ITransport['bridgeInto']>(),
     dispose: vi.fn<ITransport['dispose']>(),
     ...gatewayOperationSpies(),
@@ -67,7 +73,9 @@ describe('UI signal wrappers', () => {
 
       beckon.hover(AID);
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith('beckon:hover', { annotationId: AID });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('beckon:hover', {
+        annotationId: AID,
+      });
     });
 
     it('emits beckon:hover with null on unhover', () => {
@@ -77,7 +85,9 @@ describe('UI signal wrappers', () => {
 
       beckon.hover(null);
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith('beckon:hover', { annotationId: null });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('beckon:hover', {
+        annotationId: null,
+      });
     });
   });
 
@@ -137,9 +147,13 @@ describe('UI signal wrappers', () => {
       browse.resourceViewed(RID);
 
       // Sent on the wire with no envelope: a report, answered by nobody.
-      expect(transport.emit).toHaveBeenCalledExactlyOnceWith('browse:resource-viewed', {
-        resourceId: RID,
-      }, undefined);
+      expect(transport.emit).toHaveBeenCalledExactlyOnceWith(
+        'browse:resource-viewed',
+        {
+          resourceId: RID,
+        },
+        undefined,
+      );
     });
   });
 
@@ -173,7 +187,9 @@ describe('UI signal wrappers', () => {
 
       beckon.sparkle(AID);
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith('beckon:sparkle', { annotationId: AID });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('beckon:sparkle', {
+        annotationId: AID,
+      });
       // NEVER the wire: the just-created-annotation affordance is this
       // viewer's own. The wire path is `beckon.sparkleAll()`.
       expect(transport.emit).not.toHaveBeenCalled();
@@ -194,9 +210,13 @@ describe('UI signal wrappers', () => {
 
       await expect(beckon.openResource(RID)).resolves.toBe(3);
 
-      expect(transport.emit).toHaveBeenCalledExactlyOnceWith('browse:resource-open', {
-        resourceId: RID,
-      }, undefined);
+      expect(transport.emit).toHaveBeenCalledExactlyOnceWith(
+        'browse:resource-open',
+        {
+          resourceId: RID,
+        },
+        undefined,
+      );
       // The drive is for OTHER participants; it must not loop back locally
       // (arrivals come in bridged, like any remote emit).
       expect(localSpy).not.toHaveBeenCalled();
@@ -213,9 +233,13 @@ describe('UI signal wrappers', () => {
 
       await expect(beckon.click(AID)).resolves.toBe(4);
 
-      expect(transport.emit).toHaveBeenCalledExactlyOnceWith('browse:click', {
-        annotationId: AID,
-      }, undefined);
+      expect(transport.emit).toHaveBeenCalledExactlyOnceWith(
+        'browse:click',
+        {
+          annotationId: AID,
+        },
+        undefined,
+      );
       // Same cross-namespace rule as openResource: `browse.click()` opens it
       // for me, `beckon.click()` opens it for everyone else. No audience
       // marker — beckon has no local `click` sibling to disambiguate from.
@@ -233,9 +257,13 @@ describe('UI signal wrappers', () => {
 
       await expect(beckon.sparkleAll(AID)).resolves.toBe(2);
 
-      expect(transport.emit).toHaveBeenCalledExactlyOnceWith('beckon:sparkle', {
-        annotationId: AID,
-      }, undefined);
+      expect(transport.emit).toHaveBeenCalledExactlyOnceWith(
+        'beckon:sparkle',
+        {
+          annotationId: AID,
+        },
+        undefined,
+      );
       expect(localSpy).not.toHaveBeenCalled();
     });
   });
@@ -249,10 +277,14 @@ describe('UI signal wrappers', () => {
 
       await expect(beckon.attention(RID, AID)).resolves.toBe(4);
 
-      expect(transport.emit).toHaveBeenCalledExactlyOnceWith('beckon:focus', {
-        annotationId: AID,
-        resourceId: RID,
-      }, undefined);
+      expect(transport.emit).toHaveBeenCalledExactlyOnceWith(
+        'beckon:focus',
+        {
+          annotationId: AID,
+          resourceId: RID,
+        },
+        undefined,
+      );
     });
   });
 
@@ -294,7 +326,11 @@ describe('UI signal wrappers', () => {
     it('emits yield:clone with no payload (local bus)', () => {
       const bus = new EventBus();
       const spy = busSpy(bus, 'yield:clone');
-      const yieldNs = new YieldNamespace(makeMockTransport(), bus, makeMockContent());
+      const yieldNs = new YieldNamespace(
+        makeMockTransport(),
+        bus,
+        makeMockContent(),
+      );
 
       yieldNs.clone();
 
@@ -317,7 +353,11 @@ describe('UI signal wrappers', () => {
       };
       match.requestSearch(payload, 'corr-1');
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith('match:search-requested', payload, { correlationId: 'corr-1' });
+      expect(spy).toHaveBeenCalledExactlyOnceWith(
+        'match:search-requested',
+        payload,
+        { correlationId: 'corr-1' },
+      );
     });
   });
 
@@ -331,7 +371,13 @@ describe('UI signal wrappers', () => {
         source: resourceId('res-1'),
         motivation: 'commenting' as const,
         selector: { type: 'TextQuoteSelector' as const, exact: 'x' },
-        body: [{ type: 'TextualBody' as const, value: 'hi', purpose: 'commenting' as const }],
+        body: [
+          {
+            type: 'TextualBody' as const,
+            value: 'hi',
+            purpose: 'commenting' as const,
+          },
+        ],
       };
       mark.submit(payload);
 

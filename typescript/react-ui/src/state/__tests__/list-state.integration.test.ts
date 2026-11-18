@@ -25,7 +25,10 @@ interface Deferred {
 function deferred(): Deferred {
   let resolve!: (v: string[]) => void;
   let reject!: (e: Error) => void;
-  const promise = new Promise<string[]>((res, rej) => { resolve = res; reject = rej; });
+  const promise = new Promise<string[]>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
   return { resolve, reject, promise };
 }
 
@@ -33,7 +36,10 @@ function deferred(): Deferred {
 const settle = () => new Promise<void>((r) => setTimeout(r, 0));
 
 /** A real cache whose fetches the test resolves by hand, in call order. */
-function harness(): { cache: Cache<string, string[]>; calls: Array<{ key: string; d: Deferred }> } {
+function harness(): {
+  cache: Cache<string, string[]>;
+  calls: Array<{ key: string; d: Deferred }>;
+} {
   const calls: Array<{ key: string; d: Deferred }> = [];
   const cache = createCache<string, string[]>((key) => {
     const d = deferred();
@@ -46,7 +52,10 @@ function harness(): { cache: Cache<string, string[]>; calls: Array<{ key: string
 describe('trackList × createCache (integration)', () => {
   it('fresh key: loading until the real fetch resolves', async () => {
     const { cache, calls } = harness();
-    const { state, dispose } = trackList<string[]>(() => cache.observe('recent'), []);
+    const { state, dispose } = trackList<string[]>(
+      () => cache.observe('recent'),
+      [],
+    );
 
     expect(await firstValueFrom(state.loading$)).toBe(true);
     expect(calls).toHaveLength(1);
@@ -94,7 +103,10 @@ describe('trackList × createCache (integration)', () => {
 
   it('stable key never re-enters loading across the cache lifecycle', async () => {
     const { cache, calls } = harness();
-    const { state, dispose } = trackList<string[]>(() => cache.observe('recent'), []);
+    const { state, dispose } = trackList<string[]>(
+      () => cache.observe('recent'),
+      [],
+    );
     const seen: boolean[] = [];
     state.loading$.subscribe((l) => seen.push(l));
 
@@ -114,7 +126,10 @@ describe('trackList × createCache (integration)', () => {
 
   it('lost reply: B14 retry, then B15 lands on error$ — and retry() recovers through observe()', async () => {
     const { cache, calls } = harness();
-    const { state, dispose } = trackList<string[]>(() => cache.observe('recent'), []);
+    const { state, dispose } = trackList<string[]>(
+      () => cache.observe('recent'),
+      [],
+    );
 
     calls[0]!.d.reject(new Error('lost reply'));
     await settle(); // B14 re-issues once

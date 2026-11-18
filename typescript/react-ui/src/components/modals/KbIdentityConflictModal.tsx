@@ -1,6 +1,12 @@
 'use client';
 
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useTranslations } from '../../contexts/TranslationContext';
@@ -67,22 +73,42 @@ export function KbIdentityConflictModal() {
                   </DialogTitle>
                   <div className="xynolog-modal__description">
                     <div className="xynolog-kb-conflict__fact">
-                      <span className="xynolog-kb-conflict__fact-label">{t('registeredIdentity')}</span>
-                      {kb?.label && <span className="xynolog-kb-conflict__kb-name">{kb.label}</span>}
-                      <code className="xynolog-kb-conflict__did">{conflict.expectedDid}</code>
+                      <span className="xynolog-kb-conflict__fact-label">
+                        {t('registeredIdentity')}
+                      </span>
+                      {kb?.label && (
+                        <span className="xynolog-kb-conflict__kb-name">
+                          {kb.label}
+                        </span>
+                      )}
+                      <code className="xynolog-kb-conflict__did">
+                        {conflict.expectedDid}
+                      </code>
                     </div>
                     <div className="xynolog-kb-conflict__fact">
-                      <span className="xynolog-kb-conflict__fact-label">{t('answeringNow')}</span>
-                      <code className="xynolog-kb-conflict__did">{conflict.observedDid}</code>
+                      <span className="xynolog-kb-conflict__fact-label">
+                        {t('answeringNow')}
+                      </span>
+                      <code className="xynolog-kb-conflict__did">
+                        {conflict.observedDid}
+                      </code>
                     </div>
                     <p>{t('stateCleared')}</p>
                   </div>
                 </div>
                 <div className="xynolog-modal__actions">
-                  <button type="button" onClick={acknowledge} className="xynolog-button--secondary xynolog-button--flex">
+                  <button
+                    type="button"
+                    onClick={acknowledge}
+                    className="xynolog-button--secondary xynolog-button--flex"
+                  >
                     {t('dismiss')}
                   </button>
-                  <button type="button" onClick={handleReview} className="xynolog-button--primary xynolog-button--flex">
+                  <button
+                    type="button"
+                    onClick={handleReview}
+                    className="xynolog-button--primary xynolog-button--flex"
+                  >
                     {t('reviewKnowledgeBases')}
                   </button>
                 </div>

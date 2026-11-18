@@ -4,7 +4,10 @@ import React from 'react';
 import { XynologBranding } from '../branding/XynologBranding';
 import { NavigationMenu } from '../navigation/NavigationMenu';
 import { useDropdown } from '../../hooks/useUI';
-import type { LinkComponentProps, RouteBuilder } from '../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../contexts/RoutingContext';
 import type { TranslateFn } from '../../types/translation';
 import './Header.css';
 
@@ -29,7 +32,7 @@ export function UnifiedHeader({
   brandingLink = '/',
   variant = 'standalone',
   isAuthenticated = false,
-  currentPath
+  currentPath,
 }: UnifiedHeaderProps) {
   const { isOpen, toggle, close, dropdownRef } = useDropdown();
 
@@ -84,12 +87,12 @@ export function UnifiedHeader({
   }
 
   const content = (
-    <div
-      className="xynolog-unified-header__content"
-      data-variant={variant}
-    >
+    <div className="xynolog-unified-header__content" data-variant={variant}>
       {showBranding && (
-        <div className="xynolog-unified-header__branding-wrapper" ref={dropdownRef}>
+        <div
+          className="xynolog-unified-header__branding-wrapper"
+          ref={dropdownRef}
+        >
           <button
             onClick={toggle}
             className="xynolog-unified-header__branding-button"
@@ -119,13 +122,13 @@ export function UnifiedHeader({
               aria-labelledby="nav-menu-button-2"
             >
               <NavigationMenu
-              Link={Link}
-              routes={routes}
-              t={t}
-              brandingLink={brandingLink}
-              onItemClick={close}
-              currentPath={currentPath}
-            />
+                Link={Link}
+                routes={routes}
+                t={t}
+                brandingLink={brandingLink}
+                onItemClick={close}
+                currentPath={currentPath}
+              />
             </div>
           )}
         </div>
@@ -139,9 +142,7 @@ export function UnifiedHeader({
         className="xynolog-unified-header xynolog-unified-header--standalone"
         data-variant="standalone"
       >
-        <div className="xynolog-unified-header__container">
-          {content}
-        </div>
+        <div className="xynolog-unified-header__container">{content}</div>
       </header>
     );
   }

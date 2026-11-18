@@ -22,7 +22,9 @@ export type GatheredContext = components['schemas']['GatheredContext'];
  * `undefined` and names the members themselves, which is what a mapping keyed by
  * this union has to be total over.
  */
-export type CommandErrorCode = NonNullable<components['schemas']['CommandError']['code']>;
+export type CommandErrorCode = NonNullable<
+  components['schemas']['CommandError']['code']
+>;
 
 // What a job is asked with and what it reports, under the spec's own names —
 // the wire owns these shapes, and a differently-named local alias is a rename
@@ -66,7 +68,9 @@ export type EngineEntry = components['schemas']['EngineEntry'];
  * the inference credentials report the limits (`LIMITS_OPERATIONS`). Absent
  * `limits` means no key holder reported that engine.
  */
-export type EngineWithLimits = EngineEntry & { limits?: components['schemas']['InferenceLimits'] };
+export type EngineWithLimits = EngineEntry & {
+  limits?: components['schemas']['InferenceLimits'];
+};
 
 /**
  * What a knowledge base says of itself (`browse:kb-result`): its committed

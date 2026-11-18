@@ -27,7 +27,13 @@ interface LocateCase {
 }
 
 const table: { cases: LocateCase[] } = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/annotations/pdf-locate-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/annotations/pdf-locate-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
 describe('locating a span of a PDF (protocol/specs/src/annotations/pdf-locate-cases.json)', () => {
@@ -35,12 +41,21 @@ describe('locating a span of a PDF (protocol/specs/src/annotations/pdf-locate-ca
     expect(table.cases.length).toBeGreaterThan(0);
   });
 
-  for (const { why, anchored, span, overlapping, rects, fragments } of table.cases) {
+  for (const {
+    why,
+    anchored,
+    span,
+    overlapping,
+    rects,
+    fragments,
+  } of table.cases) {
     it(why, () => {
       const located = locate(anchored, span.start, span.end);
       expect(located.overlap, 'overlapping').toStrictEqual(overlapping);
       expect(located.rects, 'rects').toStrictEqual(rects);
-      expect(rects.map(createFragmentSelector), 'fragments').toStrictEqual(fragments);
+      expect(rects.map(createFragmentSelector), 'fragments').toStrictEqual(
+        fragments,
+      );
     });
   }
 });

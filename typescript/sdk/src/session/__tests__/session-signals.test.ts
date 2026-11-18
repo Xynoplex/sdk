@@ -17,7 +17,9 @@ beforeEach(() => {
 });
 
 /** Every value `subject` emits from here on, the current one included. */
-function collect<T>(subject: { subscribe(next: (value: T) => void): unknown }): T[] {
+function collect<T>(subject: {
+  subscribe(next: (value: T) => void): unknown;
+}): T[] {
   const seen: T[] = [];
   subject.subscribe((value) => seen.push(value));
   return seen;
@@ -49,7 +51,10 @@ describe('SessionSignals — permission denied', () => {
   it("raising it is one emission that carries the gateway's own words as the detail", () => {
     const seen = collect(signals.permissionDenied$);
     signals.notifyPermissionDenied('Archiving needs the curator role.');
-    expect(seen).toEqual([null, { detail: 'Archiving needs the curator role.' }]);
+    expect(seen).toEqual([
+      null,
+      { detail: 'Archiving needs the curator role.' },
+    ]);
   });
 
   it('acknowledging it is one emission back to null', () => {
@@ -61,7 +66,10 @@ describe('SessionSignals — permission denied', () => {
 });
 
 describe('SessionSignals — KB identity conflict', () => {
-  const conflict = { expectedDid: 'did:web:a.example', observedDid: 'did:web:b.example' };
+  const conflict = {
+    expectedDid: 'did:web:a.example',
+    observedDid: 'did:web:b.example',
+  };
 
   it('raising it is one emission that carries both dids', () => {
     const seen = collect(signals.kbIdentityConflict$);
@@ -81,11 +89,19 @@ describe('SessionSignals — StateUnit axioms', () => {
   it('satisfies the StateUnit axioms, and hands out no notice that a reader could write', () => {
     assertStateUnitAxioms<SessionSignals>({
       setup: () => createSessionSignals(),
-      surfaces: (u) => [u.sessionEnded$, u.permissionDenied$, u.kbIdentityConflict$],
+      surfaces: (u) => [
+        u.sessionEnded$,
+        u.permissionDenied$,
+        u.kbIdentityConflict$,
+      ],
       invocations: (u) => [
         () => u.notifySessionEnded('expired'),
         () => u.notifyPermissionDenied(null),
-        () => u.notifyKbIdentityConflict({ expectedDid: 'did:web:kb.example.org', observedDid: 'did:web:other.example.org' }),
+        () =>
+          u.notifyKbIdentityConflict({
+            expectedDid: 'did:web:kb.example.org',
+            observedDid: 'did:web:other.example.org',
+          }),
         () => u.acknowledgeSessionEnded(),
         () => u.acknowledgePermissionDenied(),
         () => u.acknowledgeKbIdentityConflict(),

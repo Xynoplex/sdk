@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 
 import type { Annotation, AnnotationId, EventBus } from '@xynolog/core';
@@ -20,7 +23,9 @@ import { getAnnotationExactText, resourceId } from '@xynolog/core';
 import type { MockedFunction } from 'vitest';
 import { AssessmentEntry } from '../AssessmentEntry';
 
-const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<typeof getAnnotationExactText>;
+const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<
+  typeof getAnnotationExactText
+>;
 
 const createMockAssessment = (overrides?: Partial<Annotation>): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
@@ -69,15 +74,21 @@ describe('AssessmentEntry', () => {
 
   describe('Rendering', () => {
     it('should render the selected text in quotes', () => {
-      renderWithProviders(<AssessmentEntry {...defaultProps} session={session} />);
+      renderWithProviders(
+        <AssessmentEntry {...defaultProps} session={session} />,
+      );
 
       expect(screen.getByText(/Selected passage text/)).toBeInTheDocument();
     });
 
     it('should render the assessment body text', () => {
-      renderWithProviders(<AssessmentEntry {...defaultProps} session={session} />);
+      renderWithProviders(
+        <AssessmentEntry {...defaultProps} session={session} />,
+      );
 
-      expect(screen.getByText('This passage needs clarification')).toBeInTheDocument();
+      expect(
+        screen.getByText('This passage needs clarification'),
+      ).toBeInTheDocument();
     });
 
     it('should handle a TextualBody directly on body', () => {
@@ -89,7 +100,11 @@ describe('AssessmentEntry', () => {
       });
 
       renderWithProviders(
-        <AssessmentEntry assessment={assessment} isFocused={false} session={session} />
+        <AssessmentEntry
+          assessment={assessment}
+          isFocused={false}
+          session={session}
+        />,
       );
 
       expect(screen.getByText('Direct body assessment')).toBeInTheDocument();
@@ -104,7 +119,11 @@ describe('AssessmentEntry', () => {
       });
 
       renderWithProviders(
-        <AssessmentEntry assessment={assessment} isFocused={false} session={session} />
+        <AssessmentEntry
+          assessment={assessment}
+          isFocused={false}
+          session={session}
+        />,
       );
 
       expect(screen.getByText('Array body assessment')).toBeInTheDocument();
@@ -114,14 +133,20 @@ describe('AssessmentEntry', () => {
       const longText = 'X'.repeat(150);
       mockGetAnnotationExactText.mockReturnValue(longText);
 
-      renderWithProviders(<AssessmentEntry {...defaultProps} session={session} />);
+      renderWithProviders(
+        <AssessmentEntry {...defaultProps} session={session} />,
+      );
 
-      expect(screen.getByText(new RegExp(`"${'X'.repeat(100)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'X'.repeat(100)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
     it('should show creator name', () => {
-      renderWithProviders(<AssessmentEntry {...defaultProps} session={session} />);
+      renderWithProviders(
+        <AssessmentEntry {...defaultProps} session={session} />,
+      );
 
       expect(screen.getByText(/reviewer@example.com/)).toBeInTheDocument();
     });
@@ -131,10 +156,16 @@ describe('AssessmentEntry', () => {
       delete (assessment as Record<string, unknown>).creator;
 
       const { container } = renderWithProviders(
-        <AssessmentEntry assessment={assessment} isFocused={false} session={session} />
+        <AssessmentEntry
+          assessment={assessment}
+          isFocused={false}
+          session={session}
+        />,
       );
 
-      const metadata = container.querySelector('.xynolog-annotation-entry__metadata');
+      const metadata = container.querySelector(
+        '.xynolog-annotation-entry__metadata',
+      );
       expect(metadata).toBeInTheDocument();
       expect(metadata?.textContent).not.toMatch(/By|Unknown/);
     });
@@ -144,19 +175,29 @@ describe('AssessmentEntry', () => {
       delete (assessment as Record<string, unknown>).body;
 
       const { container } = renderWithProviders(
-        <AssessmentEntry assessment={assessment} isFocused={false} session={session} />
+        <AssessmentEntry
+          assessment={assessment}
+          isFocused={false}
+          session={session}
+        />,
       );
 
       // Body section should not render
-      expect(container.querySelector('.xynolog-annotation-entry__body')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-annotation-entry__body'),
+      ).not.toBeInTheDocument();
     });
 
     it('should not render quote section when selectedText is empty', () => {
       mockGetAnnotationExactText.mockReturnValue('');
 
-      const { container } = renderWithProviders(<AssessmentEntry {...defaultProps} session={session} />);
+      const { container } = renderWithProviders(
+        <AssessmentEntry {...defaultProps} session={session} />,
+      );
 
-      expect(container.querySelector('.xynolog-annotation-entry__quote')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-annotation-entry__quote'),
+      ).not.toBeInTheDocument();
     });
 
     it('should format relative time for recent assessments', () => {
@@ -165,7 +206,11 @@ describe('AssessmentEntry', () => {
       });
 
       renderWithProviders(
-        <AssessmentEntry assessment={recentAssessment} isFocused={false} session={session} />
+        <AssessmentEntry
+          assessment={recentAssessment}
+          isFocused={false}
+          session={session}
+        />,
       );
 
       expect(screen.getByText(/just now/)).toBeInTheDocument();
@@ -177,7 +222,7 @@ describe('AssessmentEntry', () => {
       const clickHandler = vi.fn();
 
       const { container } = renderWithProviders(
-        <AssessmentEntry {...defaultProps} session={session} />
+        <AssessmentEntry {...defaultProps} session={session} />,
       );
 
       const subscription = eventBus.on('browse:click').subscribe(clickHandler);
@@ -196,7 +241,11 @@ describe('AssessmentEntry', () => {
   describe('Hover state', () => {
     it('should apply pulse class when isHovered is true', () => {
       const { container } = renderWithProviders(
-        <AssessmentEntry {...defaultProps} session={session} isHovered={true} />
+        <AssessmentEntry
+          {...defaultProps}
+          session={session}
+          isHovered={true}
+        />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -205,7 +254,11 @@ describe('AssessmentEntry', () => {
 
     it('should not apply pulse class when isHovered is false', () => {
       const { container } = renderWithProviders(
-        <AssessmentEntry {...defaultProps} session={session} isHovered={false} />
+        <AssessmentEntry
+          {...defaultProps}
+          session={session}
+          isHovered={false}
+        />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -216,7 +269,11 @@ describe('AssessmentEntry', () => {
   describe('Focus state', () => {
     it('should set data-focused to true when focused', () => {
       const { container } = renderWithProviders(
-        <AssessmentEntry {...defaultProps} session={session} isFocused={true} />
+        <AssessmentEntry
+          {...defaultProps}
+          session={session}
+          isFocused={true}
+        />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -224,7 +281,9 @@ describe('AssessmentEntry', () => {
     });
 
     it('should set data-type to assessment', () => {
-      const { container } = renderWithProviders(<AssessmentEntry {...defaultProps} session={session} />);
+      const { container } = renderWithProviders(
+        <AssessmentEntry {...defaultProps} session={session} />,
+      );
 
       const entry = container.firstChild as HTMLElement;
       expect(entry).toHaveAttribute('data-type', 'assessment');

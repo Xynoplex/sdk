@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
+import {
+  Dialog,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 
 interface SelectedTextDisplayProps {
   exact: string;
@@ -11,9 +16,7 @@ export function SelectedTextDisplay({ exact }: SelectedTextDisplayProps) {
   return (
     <div className="xynolog-selected-text-display">
       <p className="xynolog-selected-text-display__label">Selected text:</p>
-      <p className="xynolog-selected-text-display__content">
-        "{exact}"
-      </p>
+      <p className="xynolog-selected-text-display__content">"{exact}"</p>
     </div>
   );
 }
@@ -28,10 +31,7 @@ export function EntityTypeBadges({ entityTypes }: EntityTypeBadgesProps) {
   return (
     <div className="xynolog-entity-type-badges">
       {entityTypes.split(',').map((type, index) => (
-        <span
-          key={index}
-          className="xynolog-entity-type-badges__badge"
-        >
+        <span key={index} className="xynolog-entity-type-badges__badge">
           {type.trim()}
         </span>
       ))}
@@ -45,7 +45,11 @@ interface PopupHeaderProps {
   onClose: () => void;
 }
 
-export function PopupHeader({ title, selectedText, onClose }: PopupHeaderProps) {
+export function PopupHeader({
+  title,
+  selectedText,
+  onClose,
+}: PopupHeaderProps) {
   return (
     <div className="xynolog-popup-header">
       <h3 className="xynolog-popup-header__title">
@@ -56,10 +60,7 @@ export function PopupHeader({ title, selectedText, onClose }: PopupHeaderProps) 
           </span>
         )}
       </h3>
-      <button
-        onClick={onClose}
-        className="xynolog-popup-header__close-button"
-      >
+      <button onClick={onClose} className="xynolog-popup-header__close-button">
         ✕
       </button>
     </div>
@@ -74,7 +75,13 @@ interface PopupContainerProps {
   wide?: boolean; // Optional prop to make the popup wider
 }
 
-export function PopupContainer({ children, position, onClose, isOpen, wide = false }: PopupContainerProps) {
+export function PopupContainer({
+  children,
+  position,
+  onClose,
+  isOpen,
+  wide = false,
+}: PopupContainerProps) {
   const popupWidth = wide ? 800 : 400;
   const popupHeight = wide ? 700 : 500;
 
@@ -89,7 +96,7 @@ export function PopupContainer({ children, position, onClose, isOpen, wide = fal
       <Dialog as="div" className="xynolog-popup-overlay" onClose={onClose}>
         {/* Backdrop */}
         <TransitionChild
-                   enter="ease-out duration-200"
+          enter="ease-out duration-200"
           enterFrom="opacity-0"
           enterTo="opacity-100"
           leave="ease-in duration-150"
@@ -102,7 +109,7 @@ export function PopupContainer({ children, position, onClose, isOpen, wide = fal
         {/* Popup positioned at cursor */}
         <div className="xynolog-popup-container">
           <TransitionChild
-                       enter="ease-out duration-200"
+            enter="ease-out duration-200"
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
             leave="ease-in duration-150"

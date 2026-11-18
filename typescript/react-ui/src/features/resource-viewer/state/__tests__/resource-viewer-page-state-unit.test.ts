@@ -4,9 +4,18 @@ import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { annotationId, resourceId as makeResourceId } from '@xynolog/core';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
-import { createResourceViewerPageStateUnit, type ResourceViewerPageStateUnit } from '../resource-viewer-page-state-unit';
-import { assertStateUnitAxioms, disposeProbe } from '@xynolog/core/testing/axioms';
-import { makeTestSession, type TestSession } from '../../../../__tests__/test-client';
+import {
+  createResourceViewerPageStateUnit,
+  type ResourceViewerPageStateUnit,
+} from '../resource-viewer-page-state-unit';
+import {
+  assertStateUnitAxioms,
+  disposeProbe,
+} from '@xynolog/core/testing/axioms';
+import {
+  makeTestSession,
+  type TestSession,
+} from '../../../../__tests__/test-client';
 
 const RID = makeResourceId('res-1');
 
@@ -22,16 +31,23 @@ function mockBrowse(): ShellStateUnit {
   } as unknown as ShellStateUnit;
 }
 
-function clientWithNamespaces(overrides: {
-  annotations$?: BehaviorSubject<unknown[] | undefined>;
-  entityTypes$?: BehaviorSubject<string[] | undefined>;
-  events$?: BehaviorSubject<unknown[] | undefined>;
-  referencedBy$?: BehaviorSubject<unknown[] | undefined>;
-} = {}): TestSession {
-  const annotations$ = overrides.annotations$ ?? new BehaviorSubject<unknown[] | undefined>([]);
-  const entityTypes$ = overrides.entityTypes$ ?? new BehaviorSubject<string[] | undefined>(['Person']);
-  const events$ = overrides.events$ ?? new BehaviorSubject<unknown[] | undefined>([]);
-  const referencedBy$ = overrides.referencedBy$ ?? new BehaviorSubject<unknown[] | undefined>([]);
+function clientWithNamespaces(
+  overrides: {
+    annotations$?: BehaviorSubject<unknown[] | undefined>;
+    entityTypes$?: BehaviorSubject<string[] | undefined>;
+    events$?: BehaviorSubject<unknown[] | undefined>;
+    referencedBy$?: BehaviorSubject<unknown[] | undefined>;
+  } = {},
+): TestSession {
+  const annotations$ =
+    overrides.annotations$ ?? new BehaviorSubject<unknown[] | undefined>([]);
+  const entityTypes$ =
+    overrides.entityTypes$ ??
+    new BehaviorSubject<string[] | undefined>(['Person']);
+  const events$ =
+    overrides.events$ ?? new BehaviorSubject<unknown[] | undefined>([]);
+  const referencedBy$ =
+    overrides.referencedBy$ ?? new BehaviorSubject<unknown[] | undefined>([]);
 
   return makeTestSession({
     browse: {
@@ -56,11 +72,18 @@ function clientWithNamespaces(overrides: {
 describe('createResourceViewerPageStateUnit', () => {
   let tc: TestSession;
 
-  afterEach(() => { tc?.bus.destroy(); });
+  afterEach(() => {
+    tc?.bus.destroy();
+  });
 
   it('exposes flow VMs', () => {
     tc = clientWithNamespaces();
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     expect(stateUnit.beckon).toBeDefined();
     expect(stateUnit.mark).toBeDefined();
@@ -76,7 +99,12 @@ describe('createResourceViewerPageStateUnit', () => {
       { id: 'a1', motivation: 'highlighting' },
     ]);
     tc = clientWithNamespaces({ annotations$ });
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     const anns = await firstValueFrom(stateUnit.annotations.value$);
     expect(anns).toHaveLength(1);
@@ -86,21 +114,42 @@ describe('createResourceViewerPageStateUnit', () => {
 
   it('groups annotations by type', async () => {
     const annotations$ = new BehaviorSubject<unknown[] | undefined>([
-      { id: 'a1', motivation: 'highlighting', target: { selector: { type: 'TextQuoteSelector', exact: 'x' } } },
-      { id: 'a2', motivation: 'commenting', body: [{ type: 'TextualBody', value: 'note' }], target: { selector: { type: 'TextQuoteSelector', exact: 'y' } } },
+      {
+        id: 'a1',
+        motivation: 'highlighting',
+        target: { selector: { type: 'TextQuoteSelector', exact: 'x' } },
+      },
+      {
+        id: 'a2',
+        motivation: 'commenting',
+        body: [{ type: 'TextualBody', value: 'note' }],
+        target: { selector: { type: 'TextQuoteSelector', exact: 'y' } },
+      },
     ]);
     tc = clientWithNamespaces({ annotations$ });
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     const groups = await firstValueFrom(stateUnit.annotationGroups$);
-    expect(groups.highlights.length + groups.comments.length).toBeGreaterThanOrEqual(1);
+    expect(
+      groups.highlights.length + groups.comments.length,
+    ).toBeGreaterThanOrEqual(1);
 
     stateUnit.dispose();
   });
 
   it('exposes entity types', async () => {
     tc = clientWithNamespaces();
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     const types = await firstValueFrom(stateUnit.entityTypes.value$);
     expect(types).toEqual(['Person']);
@@ -109,9 +158,16 @@ describe('createResourceViewerPageStateUnit', () => {
   });
 
   it('exposes events from browse namespace', async () => {
-    const events$ = new BehaviorSubject<unknown[] | undefined>([{ id: 'e1', type: 'mark:added' }]);
+    const events$ = new BehaviorSubject<unknown[] | undefined>([
+      { id: 'e1', type: 'mark:added' },
+    ]);
     tc = clientWithNamespaces({ events$ });
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     const events = await firstValueFrom(stateUnit.events.value$);
     expect(events).toEqual([{ id: 'e1', type: 'mark:added' }]);
@@ -120,9 +176,16 @@ describe('createResourceViewerPageStateUnit', () => {
   });
 
   it('exposes referencedBy from browse namespace', async () => {
-    const referencedBy$ = new BehaviorSubject<unknown[] | undefined>([{ resourceId: 'r2' }]);
+    const referencedBy$ = new BehaviorSubject<unknown[] | undefined>([
+      { resourceId: 'r2' },
+    ]);
     tc = clientWithNamespaces({ referencedBy$ });
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     const refs = await firstValueFrom(stateUnit.referencedBy.value$);
     expect(refs).toEqual([{ resourceId: 'r2' }]);
@@ -132,7 +195,12 @@ describe('createResourceViewerPageStateUnit', () => {
 
   it('wizard initializes closed', async () => {
     tc = clientWithNamespaces();
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     const wizard = await firstValueFrom(stateUnit.wizard$);
     expect(wizard.open).toBe(false);
@@ -142,7 +210,12 @@ describe('createResourceViewerPageStateUnit', () => {
 
   it("bind:initiate opens the wizard and gathers the annotation's context", async () => {
     tc = clientWithNamespaces();
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     tc.bus.emit('bind:initiate', {
       annotationId: annotationId('ann-1'),
@@ -151,16 +224,27 @@ describe('createResourceViewerPageStateUnit', () => {
       entityTypes: ['Person'],
     });
 
-    const wizard = await firstValueFrom(stateUnit.wizard$.pipe(filter((w) => w.open)));
+    const wizard = await firstValueFrom(
+      stateUnit.wizard$.pipe(filter((w) => w.open)),
+    );
     expect(wizard.annotationId).toBe('ann-1');
-    expect(tc.client.gather.annotation).toHaveBeenCalledExactlyOnceWith(RID, 'ann-1', { contextWindow: 2000 });
+    expect(tc.client.gather.annotation).toHaveBeenCalledExactlyOnceWith(
+      RID,
+      'ann-1',
+      { contextWindow: 2000 },
+    );
 
     stateUnit.dispose();
   });
 
-  it("bind:initiate for another resource opens nothing and gathers nothing: viewers may share a client", async () => {
+  it('bind:initiate for another resource opens nothing and gathers nothing: viewers may share a client', async () => {
     tc = clientWithNamespaces();
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     tc.bus.emit('bind:initiate', {
       annotationId: annotationId('ann-1'),
@@ -177,7 +261,12 @@ describe('createResourceViewerPageStateUnit', () => {
 
   it('closeWizard resets wizard state', async () => {
     tc = clientWithNamespaces();
-    const stateUnit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const stateUnit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     tc.bus.emit('bind:initiate', {
       annotationId: annotationId('ann-1'),
@@ -189,7 +278,9 @@ describe('createResourceViewerPageStateUnit', () => {
     await firstValueFrom(stateUnit.wizard$.pipe(filter((w) => w.open)));
     stateUnit.closeWizard();
 
-    const wizard = await firstValueFrom(stateUnit.wizard$.pipe(filter((w) => !w.open)));
+    const wizard = await firstValueFrom(
+      stateUnit.wizard$.pipe(filter((w) => !w.open)),
+    );
     expect(wizard.open).toBe(false);
 
     stateUnit.dispose();
@@ -228,7 +319,12 @@ describe('createResourceViewerPageStateUnit — list failure states', () => {
       start: () => {
         const subject = new BehaviorSubject<unknown[] | undefined>(undefined);
         const tc = clientWithNamespaces({ annotations$: subject });
-        const unit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+        const unit = createResourceViewerPageStateUnit(
+          tc.session,
+          RID,
+          'en',
+          mockBrowse(),
+        );
         return { subject, tc, unit, list: unit.annotations };
       },
     },
@@ -237,7 +333,12 @@ describe('createResourceViewerPageStateUnit — list failure states', () => {
       start: () => {
         const subject = new BehaviorSubject<string[] | undefined>(undefined);
         const tc = clientWithNamespaces({ entityTypes$: subject });
-        const unit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+        const unit = createResourceViewerPageStateUnit(
+          tc.session,
+          RID,
+          'en',
+          mockBrowse(),
+        );
         return { subject, tc, unit, list: unit.entityTypes };
       },
     },
@@ -246,7 +347,12 @@ describe('createResourceViewerPageStateUnit — list failure states', () => {
       start: () => {
         const subject = new BehaviorSubject<unknown[] | undefined>(undefined);
         const tc = clientWithNamespaces({ events$: subject });
-        const unit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+        const unit = createResourceViewerPageStateUnit(
+          tc.session,
+          RID,
+          'en',
+          mockBrowse(),
+        );
         return { subject, tc, unit, list: unit.events };
       },
     },
@@ -255,36 +361,52 @@ describe('createResourceViewerPageStateUnit — list failure states', () => {
       start: () => {
         const subject = new BehaviorSubject<unknown[] | undefined>(undefined);
         const tc = clientWithNamespaces({ referencedBy$: subject });
-        const unit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+        const unit = createResourceViewerPageStateUnit(
+          tc.session,
+          RID,
+          'en',
+          mockBrowse(),
+        );
         return { subject, tc, unit, list: unit.referencedBy };
       },
     },
   ];
 
-  it.each(LIST_CASES)('$name: stops reporting loading and surfaces the reason on terminal failure', async ({ start }) => {
-    const { subject, tc, unit, list } = start();
+  it.each(LIST_CASES)(
+    '$name: stops reporting loading and surfaces the reason on terminal failure',
+    async ({ start }) => {
+      const { subject, tc, unit, list } = start();
 
-    expect(await firstValueFrom(list.loading$)).toBe(true);
-    expect(await firstValueFrom(list.error$)).toBeNull();
+      expect(await firstValueFrom(list.loading$)).toBe(true);
+      expect(await firstValueFrom(list.error$)).toBeNull();
 
-    subject.next({ status: 'failed', error: new Error('Resource not found') } as never);
+      subject.next({
+        status: 'failed',
+        error: new Error('Resource not found'),
+      } as never);
 
-    expect(await firstValueFrom(list.loading$)).toBe(false);
-    expect((await firstValueFrom(list.error$))?.message).toBe('Resource not found');
+      expect(await firstValueFrom(list.loading$)).toBe(false);
+      expect((await firstValueFrom(list.error$))?.message).toBe(
+        'Resource not found',
+      );
 
-    unit.dispose();
-    tc.bus.destroy();
-  });
+      unit.dispose();
+      tc.bus.destroy();
+    },
+  );
 
-  it.each(LIST_CASES)('$name: keeps an empty value alongside the failure, so callers still render a list', async ({ start }) => {
-    const { subject, tc, unit, list } = start();
+  it.each(LIST_CASES)(
+    '$name: keeps an empty value alongside the failure, so callers still render a list',
+    async ({ start }) => {
+      const { subject, tc, unit, list } = start();
 
-    subject.next({ status: 'failed', error: new Error('boom') } as never);
+      subject.next({ status: 'failed', error: new Error('boom') } as never);
 
-    expect(await firstValueFrom(list.value$)).toEqual([]);
-    unit.dispose();
-    tc.bus.destroy();
-  });
+      expect(await firstValueFrom(list.value$)).toEqual([]);
+      unit.dispose();
+      tc.bus.destroy();
+    },
+  );
 
   it('retry() clears the error, re-enters loading, and re-subscribes so a fresh attempt can succeed', async () => {
     // Failure is an EMISSION and recovery is a fresh SUBSCRIPTION —
@@ -292,9 +414,21 @@ describe('createResourceViewerPageStateUnit — list failure states', () => {
     const attempts: Array<BehaviorSubject<unknown>> = [];
     const tc = makeTestSession({
       browse: {
-        annotations: () => new BehaviorSubject<unknown>({ status: 'ready', value: [] }).asObservable(),
-        entityTypes: () => new BehaviorSubject<unknown>({ status: 'ready', value: [] }).asObservable(),
-        events: () => new BehaviorSubject<unknown>({ status: 'ready', value: [] }).asObservable(),
+        annotations: () =>
+          new BehaviorSubject<unknown>({
+            status: 'ready',
+            value: [],
+          }).asObservable(),
+        entityTypes: () =>
+          new BehaviorSubject<unknown>({
+            status: 'ready',
+            value: [],
+          }).asObservable(),
+        events: () =>
+          new BehaviorSubject<unknown>({
+            status: 'ready',
+            value: [],
+          }).asObservable(),
       },
       mark: { annotation: vi.fn(), delete: vi.fn() },
       gather: {
@@ -309,7 +443,12 @@ describe('createResourceViewerPageStateUnit — list failure states', () => {
       yield: { fromContext: vi.fn(() => new Observable(() => {})) },
       bind: { body: vi.fn().mockResolvedValue(undefined) },
     });
-    const unit = createResourceViewerPageStateUnit(tc.session, RID, 'en', mockBrowse());
+    const unit = createResourceViewerPageStateUnit(
+      tc.session,
+      RID,
+      'en',
+      mockBrowse(),
+    );
 
     attempts[0]!.next({ status: 'failed', error: new Error('nope') });
     expect(await firstValueFrom(unit.referencedBy.error$)).not.toBeNull();
@@ -319,7 +458,10 @@ describe('createResourceViewerPageStateUnit — list failure states', () => {
     expect(await firstValueFrom(unit.referencedBy.error$)).toBeNull();
     expect(await firstValueFrom(unit.referencedBy.loading$)).toBe(true);
 
-    attempts[attempts.length - 1]!.next({ status: 'ready', value: [{ id: 'ref-1' }] });
+    attempts[attempts.length - 1]!.next({
+      status: 'ready',
+      value: [{ id: 'ref-1' }],
+    });
     expect(await firstValueFrom(unit.referencedBy.loading$)).toBe(false);
     expect(await firstValueFrom(unit.referencedBy.value$)).toHaveLength(1);
 
@@ -336,7 +478,12 @@ describe('ResourceViewerPageStateUnit — StateUnit axioms', () => {
         const browse = disposeProbe();
         const tc = clientWithNamespaces();
         return {
-          unit: createResourceViewerPageStateUnit(tc.session, RID, 'en', browse as unknown as ShellStateUnit),
+          unit: createResourceViewerPageStateUnit(
+            tc.session,
+            RID,
+            'en',
+            browse as unknown as ShellStateUnit,
+          ),
           passedIn: [browse],
           teardown: () => tc.bus.destroy(),
         };

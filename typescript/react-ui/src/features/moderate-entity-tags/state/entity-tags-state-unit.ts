@@ -32,7 +32,10 @@ export function createEntityTagsStateUnit(
   const error$ = new BehaviorSubject<string>('');
   const isAdding$ = new BehaviorSubject<boolean>(false);
 
-  const entityTypes = trackList<string[]>(() => client.browse.entityTypes(), []);
+  const entityTypes = trackList<string[]>(
+    () => client.browse.entityTypes(),
+    [],
+  );
   disposer.add(entityTypes.dispose);
 
   const addTag = async (): Promise<void> => {
@@ -44,7 +47,9 @@ export function createEntityTagsStateUnit(
       await client.frame.addEntityType(tag);
       newTag$.next('');
     } catch (err) {
-      error$.next(err instanceof Error ? err.message : 'Failed to add entity type');
+      error$.next(
+        err instanceof Error ? err.message : 'Failed to add entity type',
+      );
     } finally {
       isAdding$.next(false);
     }

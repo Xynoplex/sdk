@@ -35,8 +35,11 @@ function makeTransport() {
     // compile error rather than something a cast on the transport hides.
     // A push verb, not a handle: `on` is read-only by design, and the write
     // path is `emit`.
-    push: <K extends keyof EventMap>(channel: K, payload: EventMap[K], correlationId?: string) =>
-      bus.emit(channel, payload, { correlationId }),
+    push: <K extends keyof EventMap>(
+      channel: K,
+      payload: EventMap[K],
+      correlationId?: string,
+    ) => bus.emit(channel, payload, { correlationId }),
     getLastChannel: () => lastChannel,
     getLastPayload: () => lastPayload,
     getLastCorrelationId: () => lastCorrelationId,
@@ -54,7 +57,13 @@ describe('gather.resource', () => {
   }
 
   it('emits gather:resource-requested with defaulted options and resolves the response', async () => {
-    const { gather, push, getLastChannel, getLastPayload, getLastCorrelationId } = makeGather();
+    const {
+      gather,
+      push,
+      getLastChannel,
+      getLastPayload,
+      getLastCorrelationId,
+    } = makeGather();
     const rid = makeResourceId('r1');
 
     const promise = gather.resource(rid);
@@ -64,7 +73,12 @@ describe('gather.resource', () => {
     const payload = getLastPayload()!;
     expect(payload).toMatchObject({
       resourceId: rid,
-      options: { depth: 2, maxResources: 10, includeContent: true, includeSummary: false },
+      options: {
+        depth: 2,
+        maxResources: 10,
+        includeContent: true,
+        includeSummary: false,
+      },
     });
     const cid = getLastCorrelationId()!;
     expect(typeof cid).toBe('string');
@@ -86,7 +100,12 @@ describe('gather.resource', () => {
     });
     await Promise.resolve();
     expect(getLastPayload()).toMatchObject({
-      options: { depth: 1, maxResources: 5, includeContent: false, includeSummary: true },
+      options: {
+        depth: 1,
+        maxResources: 5,
+        includeContent: false,
+        includeSummary: true,
+      },
     });
   });
 
@@ -96,15 +115,22 @@ describe('gather.resource', () => {
     await Promise.resolve();
     const cid = getLastCorrelationId()!;
 
-    push('gather:resource-failed', {
-      resourceId: makeResourceId('r3'),
-      message: 'graph traversal failed',
-      // No `code`: the contract declares only 'peer-unavailable' | 'not-found',
-      // and the wire never carries 'gather.failed'. An absent code is exactly
-      // the case the SDK maps to `bus.rejected`, which is what this asserts.
-    }, cid);
+    push(
+      'gather:resource-failed',
+      {
+        resourceId: makeResourceId('r3'),
+        message: 'graph traversal failed',
+        // No `code`: the contract declares only 'peer-unavailable' | 'not-found',
+        // and the wire never carries 'gather.failed'. An absent code is exactly
+        // the case the SDK maps to `bus.rejected`, which is what this asserts.
+      },
+      cid,
+    );
 
     const err = await captured;
-    expect(err).toMatchObject({ code: 'bus.rejected', message: 'graph traversal failed' });
+    expect(err).toMatchObject({
+      code: 'bus.rejected',
+      message: 'graph traversal failed',
+    });
   });
 });

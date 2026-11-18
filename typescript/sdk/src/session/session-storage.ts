@@ -37,7 +37,9 @@ export interface SessionStorage {
    * environment has no other context: a client then works correctly within
    * its own.
    */
-  subscribe(handler: (key: string, newValue: string | null) => void): (() => void) | null;
+  subscribe(
+    handler: (key: string, newValue: string | null) => void,
+  ): (() => void) | null;
 }
 
 /** Map-backed `SessionStorage`. No other context writes it. */
@@ -62,7 +64,9 @@ export class InMemorySessionStorage implements SessionStorage {
     else this.map.set(key, next);
   }
 
-  subscribe(_handler: (key: string, newValue: string | null) => void): (() => void) | null {
+  subscribe(
+    _handler: (key: string, newValue: string | null) => void,
+  ): (() => void) | null {
     return null;
   }
 }

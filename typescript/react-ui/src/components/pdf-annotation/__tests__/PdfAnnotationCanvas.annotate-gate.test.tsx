@@ -25,7 +25,9 @@ vi.mock('../../../lib/browser-pdfjs', () => ({
   loadPdfDocument: vi.fn().mockResolvedValue({
     numPages: 2,
     getPage: vi.fn().mockResolvedValue({
-      getViewport: vi.fn().mockReturnValue({ width: 612, height: 792, scale: 1.0, rotation: 0 }),
+      getViewport: vi
+        .fn()
+        .mockReturnValue({ width: 612, height: 792, scale: 1.0, rotation: 0 }),
     }),
   }),
   renderPdfPageToDataUrl: vi.fn().mockResolvedValue({
@@ -43,7 +45,8 @@ const answered = () => act(() => vi.advanceTimersByTimeAsync(0));
 const pass = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
 
 const root = () => document.querySelector('.xynolog-pdf-annotation-canvas');
-const page = () => document.querySelector('.xynolog-pdf-annotation-canvas__container');
+const page = () =>
+  document.querySelector('.xynolog-pdf-annotation-canvas__container');
 const notice = () => document.querySelector('.xynolog-anchored-text-notice');
 
 /** "Hello world" on one line of page 1, at y=700 in PDF points — canvas
@@ -60,10 +63,16 @@ const HELLO_WORLD: AnchoredTextAnswer = {
 
 /** The canvas with a tool chosen, over a session whose anchored-text read is
  *  `ask`. `request` is where a drawn rectangle arrives. */
-function mount(ask: XynologSession['client']['browse']['resourceAnchoredText']) {
+function mount(
+  ask: XynologSession['client']['browse']['resourceAnchoredText'],
+) {
   const request = vi.fn();
   const session = {
-    client: { browse: { resourceAnchoredText: ask }, mark: { request }, beckon: { hover: vi.fn() } },
+    client: {
+      browse: { resourceAnchoredText: ask },
+      mark: { request },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
   const view = renderInEnglish(
     <PdfAnnotationCanvas
@@ -81,10 +90,15 @@ function mount(ask: XynologSession['client']['browse']['resourceAnchoredText']) 
  *  out, so the image is first given the page's own size: display pixels are
  *  then PDF points, and the drag's coordinates the canvas's. */
 function dragAroundHelloWorld() {
-  const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
+  const img = document.querySelector(
+    '.xynolog-pdf-annotation-canvas__image',
+  ) as HTMLImageElement;
   expect(img).toBeInTheDocument();
   Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
-  Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
+  Object.defineProperty(img, 'clientHeight', {
+    value: 792,
+    configurable: true,
+  });
   fireEvent.load(img);
 
   fireEvent.mouseDown(page()!, { clientX: 70, clientY: 78 });
@@ -101,7 +115,10 @@ describe('PdfAnnotationCanvas — annotating waits for the text', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { cb(0); return 0; });
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -111,7 +128,12 @@ describe('PdfAnnotationCanvas — annotating waits for the text', () => {
   test('annotating is off before the first answer arrives, and a drag then makes no annotation', async () => {
     // The server may hold an ask while the Smelter reads a document just
     // uploaded. This one is never answered.
-    const ask = vi.fn(() => new Promise<AnchoredTextAnswer>(() => { /* never answered */ }));
+    const ask = vi.fn(
+      () =>
+        new Promise<AnchoredTextAnswer>(() => {
+          /* never answered */
+        }),
+    );
     const { request } = mount(ask);
     await answered();
 
@@ -126,7 +148,8 @@ describe('PdfAnnotationCanvas — annotating waits for the text', () => {
   });
 
   test('`not-yet` is asked again after the wait, and annotating turns on when the text lands, the first drag carrying its quote', async () => {
-    const ask = vi.fn()
+    const ask = vi
+      .fn()
       .mockResolvedValueOnce({ kind: 'not-yet' })
       .mockResolvedValue(HELLO_WORLD);
     const { request } = mount(ask);
@@ -159,7 +182,8 @@ describe('PdfAnnotationCanvas — annotating waits for the text', () => {
   });
 
   test('a failed ask is asked again after the wait, and annotating turns on when the text lands, the first drag carrying its quote', async () => {
-    const ask = vi.fn()
+    const ask = vi
+      .fn()
       .mockRejectedValueOnce(new Error('no answer'))
       .mockResolvedValue(HELLO_WORLD);
     const { request } = mount(ask);
@@ -186,43 +210,52 @@ describe('PdfAnnotationCanvas — annotating waits for the text', () => {
   test.each<[string, AnchoredTextAnswer]>([
     ['`declined`', { kind: 'declined', declined: 'no-text-layer' }],
     ['`unknown`', { kind: 'unknown' }],
-  ])('%s leaves annotating off, says the text could not be read, and is not asked again', async (_name, answer) => {
-    const ask = vi.fn().mockResolvedValue(answer);
-    const { request } = mount(ask);
-    await answered();
+  ])(
+    '%s leaves annotating off, says the text could not be read, and is not asked again',
+    async (_name, answer) => {
+      const ask = vi.fn().mockResolvedValue(answer);
+      const { request } = mount(ask);
+      await answered();
 
-    expect(root()).toHaveAttribute('data-annotate-deferred', 'true');
-    expect(page()).toHaveAttribute('data-drawing-mode', 'none');
-    expect(notice()).toHaveAttribute('data-anchored-text', 'never');
-    expect(notice()).toHaveTextContent(/could not be read/i);
+      expect(root()).toHaveAttribute('data-annotate-deferred', 'true');
+      expect(page()).toHaveAttribute('data-drawing-mode', 'none');
+      expect(notice()).toHaveAttribute('data-anchored-text', 'never');
+      expect(notice()).toHaveTextContent(/could not be read/i);
 
-    dragAroundHelloWorld();
-    expect(request).not.toHaveBeenCalled();
+      dragAroundHelloWorld();
+      expect(request).not.toHaveBeenCalled();
 
-    await pass(ANCHORED_TEXT_REASK_MS * 10);
-    expect(ask).toHaveBeenCalledTimes(1);
-    expect(root()).toHaveAttribute('data-annotate-deferred', 'true');
-  });
+      await pass(ANCHORED_TEXT_REASK_MS * 10);
+      expect(ask).toHaveBeenCalledTimes(1);
+      expect(root()).toHaveAttribute('data-annotate-deferred', 'true');
+    },
+  );
 
   test.each<[string, AnchoredTextAnswer]>([
     ['`no-map`', { kind: 'no-map' }],
-    ['an `extracted` answer whose text is empty', { kind: 'extracted', method: 'ocr', text: '', items: [] }],
-  ])('%s turns annotating on, and a rectangle is made with no quote', async (_name, answer) => {
-    const ask = vi.fn().mockResolvedValue(answer);
-    const { request } = mount(ask);
-    await answered();
+    [
+      'an `extracted` answer whose text is empty',
+      { kind: 'extracted', method: 'ocr', text: '', items: [] },
+    ],
+  ])(
+    '%s turns annotating on, and a rectangle is made with no quote',
+    async (_name, answer) => {
+      const ask = vi.fn().mockResolvedValue(answer);
+      const { request } = mount(ask);
+      await answered();
 
-    expect(root()).toHaveAttribute('data-annotate-deferred', 'false');
-    expect(page()).toHaveAttribute('data-drawing-mode', 'rectangle');
-    expect(notice()).not.toBeInTheDocument();
+      expect(root()).toHaveAttribute('data-annotate-deferred', 'false');
+      expect(page()).toHaveAttribute('data-drawing-mode', 'rectangle');
+      expect(notice()).not.toBeInTheDocument();
 
-    dragAroundHelloWorld();
-    expect(request).toHaveBeenCalledTimes(1);
-    expect(request.mock.calls[0]?.[1]).toEqual([A_RECTANGLE]);
+      dragAroundHelloWorld();
+      expect(request).toHaveBeenCalledTimes(1);
+      expect(request.mock.calls[0]?.[1]).toEqual([A_RECTANGLE]);
 
-    await pass(ANCHORED_TEXT_REASK_MS * 10);
-    expect(ask).toHaveBeenCalledTimes(1);
-  });
+      await pass(ANCHORED_TEXT_REASK_MS * 10);
+      expect(ask).toHaveBeenCalledTimes(1);
+    },
+  );
 
   test('a canvas that unmounts while it waits asks nothing more', async () => {
     const ask = vi.fn().mockResolvedValue({ kind: 'not-yet' });
@@ -253,7 +286,9 @@ describe('PdfAnnotationCanvas — annotating waits for the text', () => {
     // The overlay is there to draw on, and the drag leaves nothing on it: not
     // even the dashed outline a rectangle keeps once it is drawn.
     dragAroundHelloWorld();
-    const overlay = document.querySelector('.xynolog-pdf-annotation-canvas__svg');
+    const overlay = document.querySelector(
+      '.xynolog-pdf-annotation-canvas__svg',
+    );
     expect(overlay).toBeInTheDocument();
     expect(overlay?.querySelectorAll('rect')).toHaveLength(0);
   });
