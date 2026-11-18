@@ -71,6 +71,11 @@
  (libraries xynolog_codegen yojson alcotest))
 
 (test
+(name schema)
+ (modules schema)
+ (libraries xynolog_codegen alcotest))
+
+(test
  (name merge_laws)
  (modules merge_laws)
  (libraries xynolog_codegen alcotest qcheck-core qcheck-alcotest))

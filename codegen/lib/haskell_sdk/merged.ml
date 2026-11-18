@@ -9,29 +9,33 @@
 
 let path = "haskell/sdk/test/fixtures/merged-schemas.json"
 
-(* The nodes of [schema] that state an [allOf], each with its path below the
-   schema [at] reversed, among the schemas the SDK's schemas hold: those of
-   properties, additionalProperties, items, allOf, anyOf and oneOf. *)
-let rec stating_all_of at : Schema.t -> (string list * Schema.t) list = function
-  | Boolean_schema _ -> []
-  | Schema s as node ->
-      let below key = Option.fold ~none:[] ~some:(stating_all_of (key :: at)) in
+(* The nodes of a schema that state an [allOf], each with its path from the
+   schema, given the path [at] to the schema reversed, among the schemas the
+   SDK's schemas hold: those of properties, additionalProperties, items,
+   allOf, anyOf and oneOf. *)
+let stating_all_of : Schema.t -> string list -> (string list * Schema.t) list =
+  Schema.para
+    ~boolean:(fun _ _ -> [])
+    ~schema:(fun s at ->
+      let below key =
+        Option.fold ~none:[] ~some:(fun (_, walk) -> walk (key :: at))
+      in
       let each key =
         Option.fold ~none:[] ~some:(fun parts ->
             List.concat
               (List.mapi
-                 (fun i part ->
-                   stating_all_of (string_of_int i :: key :: at) part)
+                 (fun i (_, walk) -> walk (string_of_int i :: key :: at))
                  parts))
       in
-      (if Option.is_some s.all_of then [ (List.rev at, node) ] else [])
+      (if Option.is_some s.all_of then
+         [ (List.rev at, Schema.Schema (Schema.map fst s)) ]
+       else [])
       @ List.concat_map
-          (fun (key, property) ->
-            stating_all_of (key :: "properties" :: at) property)
+          (fun (key, (_, walk)) -> walk (key :: "properties" :: at))
           (Option.value s.properties ~default:[])
       @ below "additionalProperties" s.additional_properties
       @ below "items" s.items @ each "allOf" s.all_of @ each "anyOf" s.any_of
-      @ each "oneOf" s.one_of
+      @ each "oneOf" s.one_of)
 
 let comment =
   String.concat " "
@@ -74,7 +78,7 @@ let file definitions =
                `List
                  (List.concat_map
                     (fun (name, schema) ->
-                      List.map (entry name) (stating_all_of [] schema))
+                      List.map (entry name) (stating_all_of schema []))
                     definitions) );
            ])
       ^ "\n";

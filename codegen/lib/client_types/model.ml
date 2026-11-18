@@ -54,38 +54,46 @@ let derive (spec : Spec.t) =
   let described s =
     List.filter (fun k -> k <> "description") (Schema.keywords s)
   in
-  let rec held file pointer = function
-    | Schema.Schema ({ ref_ = Some ref_; _ } as s) when described s = [ "$ref" ]
-      ->
-        let target, _ = Decode.resolve ref_ in
-        let union =
-          match schema target with
-          | Some (Schema.Schema { one_of = Some _; _ }) -> true
-          | _ -> false
-        in
-        Some (Named { name = name_of target; union })
-    | Schema.Schema ({ type_ = Some [ Array ]; items = None; _ } as s)
-      when described s = [ "type" ] ->
-        Some Open_list
-    | Schema.Schema ({ type_ = Some [ String ]; enum = Some literals; _ } as s)
-      when described s = [ "type"; "enum" ] -> (
-        match words_of literals with
-        | Some words -> Some (Word words)
-        | None ->
-            refuse file pointer "is no enum of words";
-            None)
-    | Schema.Schema ({ type_ = Some [ Object ]; _ } as s) ->
-        Option.map (fun members -> Inline members) (fields file pointer s)
-    | Schema.Schema ({ type_ = Some [ t ]; _ } as s)
-      when List.for_all
-             (fun k -> List.mem k [ "type"; "minimum"; "maximum" ])
-             (described s)
-           && t <> Schema.Array ->
-        Some (Scalar t)
-    | _ ->
+  let rec held (member : Schema.t) : string -> string -> held option =
+    Schema.para
+      ~boolean:(fun _ file pointer ->
         refuse file pointer "holds what no client type's member is stated as";
-        None
-  and fields file pointer (s : Schema.schema) =
+        None)
+      ~schema:(fun l file pointer ->
+        match l with
+        | { ref_ = Some ref_; _ } when described l = [ "$ref" ] ->
+            let target, _ = Decode.resolve ref_ in
+            let union =
+              match schema target with
+              | Some (Schema.Schema { one_of = Some _; _ }) -> true
+              | _ -> false
+            in
+            Some (Named { name = name_of target; union })
+        | { type_ = Some [ Array ]; items = None; _ }
+          when described l = [ "type" ] ->
+            Some Open_list
+        | { type_ = Some [ String ]; enum = Some literals; _ }
+          when described l = [ "type"; "enum" ] -> (
+            match words_of literals with
+            | Some words -> Some (Word words)
+            | None ->
+                refuse file pointer "is no enum of words";
+                None)
+        | { type_ = Some [ Object ]; _ } ->
+            Option.map (fun members -> Inline members) (fields file pointer l)
+        | { type_ = Some [ t ]; _ }
+          when List.for_all
+                 (fun k -> List.mem k [ "type"; "minimum"; "maximum" ])
+                 (described l)
+               && t <> Schema.Array ->
+            Some (Scalar t)
+        | _ ->
+            refuse file pointer
+              "holds what no client type's member is stated as";
+            None)
+      member
+  (* [s]'s members, each member's schema beside what it holds. *)
+  and fields file pointer s =
     match (s.properties, described s) with
     | Some properties, keywords
       when List.for_all
@@ -100,46 +108,62 @@ let derive (spec : Spec.t) =
           required;
         Some
           (List.filter_map
-             (fun (name, member) ->
+             (fun (name, (_, held)) ->
                Option.map
                  (fun held -> { name; held; required = List.mem name required })
-                 (held file
-                    (pointer ^ "/properties/" ^ Decode.escape name)
-                    member))
+                 (held file (pointer ^ "/properties/" ^ Decode.escape name)))
              properties)
     | _ ->
         refuse file pointer "is no object of named members";
         None
   in
+  (* The members of an object stated in place. *)
+  let members file pointer s =
+    fields file pointer (Schema.map (fun member -> (member, held member)) s)
+  in
   (* An object's members, with those of each schema it is all of, in order. *)
-  let rec object_ file pointer = function
-    | Schema.Schema ({ all_of = Some parts; _ } as s)
-      when List.for_all (fun k -> List.mem k [ "title"; "allOf" ]) (described s)
-      ->
-        let members =
-          List.concat
-            (List.mapi
-               (fun i part ->
-                 let at = Printf.sprintf "%s/allOf/%d" pointer i in
-                 match part with
-                 | Schema.Schema ({ ref_ = Some ref_; _ } as r)
-                   when Schema.keywords r = [ "$ref" ] -> (
-                     let target, _ = Decode.resolve ref_ in
-                     match schema target with
-                     | Some s -> Option.value (object_ target "" s) ~default:[]
-                     | None -> [])
-                 | part -> Option.value (object_ file at part) ~default:[])
-               parts)
-        in
-        let names = List.map (fun m -> m.name) members in
-        if List.length (List.sort_uniq compare names) <> List.length names then
-          refuse file pointer "states a member twice among what it is all of";
-        Some members
-    | Schema.Schema ({ type_ = Some [ Object ]; _ } as s) ->
-        fields file pointer s
-    | _ ->
-        refuse file pointer "is no object";
-        None
+  let object_ =
+    let rec object_ (t : Schema.t) : string -> string -> member list option =
+      Schema.para
+        ~boolean:(fun _ file pointer ->
+          refuse file pointer "is no object";
+          None)
+        ~schema:(fun l file pointer ->
+          let s = Schema.map fst l in
+          match l.all_of with
+          | Some parts
+            when List.for_all
+                   (fun k -> List.mem k [ "title"; "allOf" ])
+                   (described s) ->
+              let members =
+                List.concat
+                  (List.mapi
+                     (fun i (part, objected) ->
+                       let at = Printf.sprintf "%s/allOf/%d" pointer i in
+                       match part with
+                       | Schema.Schema ({ ref_ = Some ref_; _ } as r)
+                         when Schema.keywords r = [ "$ref" ] -> (
+                           let target, _ = Decode.resolve ref_ in
+                           match schema target with
+                           | Some s ->
+                               Option.value (object_ s target "") ~default:[]
+                           | None -> [])
+                       | _ -> Option.value (objected file at) ~default:[])
+                     parts)
+              in
+              let names = List.map (fun m -> m.name) members in
+              if List.length (List.sort_uniq compare names) <> List.length names
+              then
+                refuse file pointer
+                  "states a member twice among what it is all of";
+              Some members
+          | _ when s.type_ = Some [ Object ] -> members file pointer s
+          | _ ->
+              refuse file pointer "is no object";
+              None)
+        t
+    in
+    fun file pointer t -> object_ t file pointer
   in
   let shape file = function
     | Schema.Schema ({ type_ = Some [ String ]; enum = Some literals; _ } as s)
@@ -177,7 +201,7 @@ let derive (spec : Spec.t) =
                          Option.map
                            (fun members ->
                              (word, List.filter (fun m -> m.name <> tag) members))
-                           (fields file at b)
+                           (members file at b)
                      | _ ->
                          refuse file at
                            ("is no branch whose required " ^ tag
@@ -204,7 +228,7 @@ let derive (spec : Spec.t) =
   in
   let form =
     match schema form with
-    | Some (Schema.Schema s) -> Option.value (fields form "" s) ~default:[]
+    | Some (Schema.Schema s) -> Option.value (members form "" s) ~default:[]
     | _ ->
         refuse form "" "is no JSON Schema";
         []
