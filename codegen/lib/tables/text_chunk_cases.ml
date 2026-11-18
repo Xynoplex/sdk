@@ -68,7 +68,6 @@ let refused_item =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
   defaults : defaults;
   cases : case list;
   refused : refused_item list;
@@ -78,7 +77,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         defaults = Decode.required o "defaults" defaults;
         cases = Decode.required o "cases" (Decode.list case);
         refused = Decode.required o "refused" (Decode.list refused_item);

@@ -29,8 +29,6 @@ let agent =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
-  absent : Case_table.explanations;
   person : string;
   people : people_item list;
   agent : string;
@@ -41,8 +39,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
-        absent = Decode.required o "absent" Case_table.explanations;
         person = Decode.required o "person" Decode.string;
         people = Decode.required o "people" (Decode.list people_item);
         agent = Decode.required o "agent" Decode.string;

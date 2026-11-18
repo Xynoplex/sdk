@@ -321,14 +321,7 @@ private val MAKERS: Map<String, Over.(JsonObject) -> Made> = mapOf(
     "sessionSignals" to { _ -> signals() },
 )
 
-/** The units the names table says Kotlin has: neither absent nor yet to be reached. */
-private val HAS: Set<String> = NAMES.getValue("stateUnits").jsonArray.map { it.jsonObject }
-    .filter { row -> listOf("absent", "notYetReached").none { row[it]?.jsonObject?.containsKey("kotlin") == true } }
-    .map { it.getValue("unit").text() }
-    .toSet()
-
 private val CASES: List<JsonObject> = TABLE.getValue("cases").jsonArray.map { it.jsonObject }
-private val RUN: List<JsonObject> = CASES.filter { it.getValue("unit").text() in HAS }
 
 private fun answersOf(stated: String): Answers = Answers.entries.single { it.name.lowercase() == stated }
 
@@ -465,15 +458,15 @@ private class Steps(
 }
 
 /**
- * protocol/specs/src/client/state-units.json, run against Kotlin's units: each case of
- * a unit the names table says Kotlin has, step by step, as the table's
- * `$comment` reads them, on a clock only the steps move.
+ * protocol/specs/src/client/state-units.json, run against Kotlin's units: each case,
+ * step by step, as the table's `$comment` reads them, on a clock only the steps
+ * move.
  */
 class StateUnitCasesTest {
     @Test
-    fun kotlinMakesEachUnitItHasCasesOfAndNoOther() {
+    fun kotlinMakesEachUnitTheTableHasCasesOfAndNoOther() {
         // A unit the table states no case of (the cache and the session, whose behaviour their own tables hold) needs no maker here.
-        assertEquals(RUN.map { it.getValue("unit").text() }.toSet(), MAKERS.keys)
+        assertEquals(CASES.map { it.getValue("unit").text() }.toSet(), MAKERS.keys)
     }
 
     @Test
@@ -484,11 +477,11 @@ class StateUnitCasesTest {
 
     @TestFactory
     fun aUnitDoesWhatItsCaseSays(): List<DynamicTest> =
-        RUN.map { case -> DynamicTest.dynamicTest("${case.getValue("unit").text()}: ${case.getValue("case").text()}") { play(case) } }
+        CASES.map { case -> DynamicTest.dynamicTest("${case.getValue("unit").text()}: ${case.getValue("case").text()}") { play(case) } }
 
     @Test
     fun theRunnerFailsACaseWhoseCheckIsWrong() {
-        val case = RUN.first { it.getValue("unit").text() == "match" }
+        val case = CASES.first { it.getValue("unit").text() == "match" }
         val told = JsonObject(
             case + ("steps" to JsonArray(case.getValue("steps").jsonArray.map { step -> if (step is JsonObject && "heard" in step) JsonObject(step + ("heard" to JsonArray(emptyList()))) else step })),
         )

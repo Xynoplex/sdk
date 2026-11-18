@@ -60,9 +60,6 @@ from xynolog.types import (
     TagSchema,
 )
 
-# The SDK this runner is, as the table's `absent` names it.
-SDK: Final = "python"
-
 TABLE = read(SPEC / "client/surface.json")
 
 
@@ -478,14 +475,10 @@ async def held_to(world: World, at: int, step: JsonObject, sends: JsonValue, why
 
 
 def cases() -> list[tuple[str, str, JsonObject, JsonObject]]:
-    """Every case of every row this SDK has: the namespace, the method, the row and the case."""
+    """Every case of every row: the namespace, the method, the row and the case."""
     found_cases: list[tuple[str, str, JsonObject, JsonObject]] = []
     for namespace in objects(TABLE["namespaces"], "namespaces"):
         for row in objects(namespace["methods"], "methods"):
-            absent = row.get("absent", {})
-            assert isinstance(absent, dict)
-            if SDK in absent:
-                continue
             for case in objects(row["cases"], "cases"):
                 found_cases.append((text(namespace["namespace"], "namespace"), text(row["method"], "method"), row, case))
     return found_cases

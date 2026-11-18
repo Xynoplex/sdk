@@ -255,15 +255,10 @@ class SurfaceTest {
     private val table = Spec.read("client/surface.json").jsonObject
     private val fixtures = table.getValue("fixtures").jsonObject
 
-    /** What a row says of this SDK: whether it lacks the method, or is still to have it. */
-    private fun JsonObject.namesKotlinIn(key: String) = "kotlin" in (this[key]?.jsonObject ?: JsonObject(emptyMap()))
-
-    /** Each method the table says this SDK has, with its row. */
+    /** Each method the table has, with its row. */
     private val rows: Map<String, JsonObject> = table.getValue("namespaces").jsonArray.map { it.jsonObject }
-        .filterNot { it.namesKotlinIn("notYetReached") }
         .flatMap { namespace ->
             namespace.getValue("methods").jsonArray.map { it.jsonObject }
-                .filterNot { it.namesKotlinIn("absent") || it.namesKotlinIn("notYetReached") }
                 .map { row -> "${namespace.getValue("namespace").jsonPrimitive.content}.${row.getValue("method").jsonPrimitive.content}" to row }
         }.toMap()
 

@@ -83,7 +83,6 @@ let retry_after_item =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
   rules : rule list;
   retry_after : retry_after_item list;
 }
@@ -92,7 +91,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         rules = Decode.required o "rules" (Decode.list rule);
         retry_after =
           Decode.required o "retryAfter" (Decode.list retry_after_item);

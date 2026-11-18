@@ -752,24 +752,6 @@ let namespace =
         methods = Decode.required o "methods" (Decode.list method_);
       })
 
-type absent = {
-  typescript : string option;
-  python : string option;
-  swift : string option;
-  rust : string option;
-  go : string option;
-}
-
-let absent =
-  Decode.obj (fun o : absent ->
-      {
-        typescript = Decode.optional o "typescript" Decode.string;
-        python = Decode.optional o "python" Decode.string;
-        swift = Decode.optional o "swift" Decode.string;
-        rust = Decode.optional o "rust" Decode.string;
-        go = Decode.optional o "go" Decode.string;
-      })
-
 type go = { name : string; why : string }
 
 let go =
@@ -806,18 +788,12 @@ let takes =
         yield = Decode.required o "yield" Decode.string;
       })
 
-type member = {
-  member : string;
-  absent : absent option;
-  named : named option;
-  takes : takes option;
-}
+type member = { member : string; named : named option; takes : takes option }
 
 let member =
   Decode.obj (fun o : member ->
       {
         member = Decode.required o "member" Decode.string;
-        absent = Decode.optional o "absent" absent;
         named = Decode.optional o "named" named;
         takes = Decode.optional o "takes" takes;
       })
@@ -878,43 +854,11 @@ let made_by =
         csharp = Decode.optional o "csharp" Decode.string;
       })
 
-type state_unit_member_absent = {
-  typescript : string;
-  rust : string option;
-  go : string;
-  kotlin : string;
-  swift : string;
-  csharp : string;
-  haskell : string option;
-  ocaml : string;
-  python : string option;
-}
-
-let state_unit_member_absent =
-  Decode.obj (fun o : state_unit_member_absent ->
-      {
-        typescript = Decode.required o "typescript" Decode.string;
-        rust = Decode.optional o "rust" Decode.string;
-        go = Decode.required o "go" Decode.string;
-        kotlin = Decode.required o "kotlin" Decode.string;
-        swift = Decode.required o "swift" Decode.string;
-        csharp = Decode.required o "csharp" Decode.string;
-        haskell = Decode.optional o "haskell" Decode.string;
-        ocaml = Decode.required o "ocaml" Decode.string;
-        python = Decode.optional o "python" Decode.string;
-      })
-
-type state_unit_member = {
-  member : string;
-  absent : state_unit_member_absent option;
-}
+type state_unit_member = { member : string }
 
 let state_unit_member =
   Decode.obj (fun o : state_unit_member ->
-      {
-        member = Decode.required o "member" Decode.string;
-        absent = Decode.optional o "absent" state_unit_member_absent;
-      })
+      { member = Decode.required o "member" Decode.string })
 
 type state_unit = {
   unit : string;
@@ -960,36 +904,11 @@ let wire_made =
         kotlin = Decode.required o "kotlin" Decode.string;
       })
 
-type wire_member_absent = {
-  ocaml : string;
-  haskell : string;
-  csharp : string;
-  swift : string;
-  typescript : string;
-  python : string;
-  kotlin : string;
-}
-
-let wire_member_absent =
-  Decode.obj (fun o : wire_member_absent ->
-      {
-        ocaml = Decode.required o "ocaml" Decode.string;
-        haskell = Decode.required o "haskell" Decode.string;
-        csharp = Decode.required o "csharp" Decode.string;
-        swift = Decode.required o "swift" Decode.string;
-        typescript = Decode.required o "typescript" Decode.string;
-        python = Decode.required o "python" Decode.string;
-        kotlin = Decode.required o "kotlin" Decode.string;
-      })
-
-type wire_member = { member : string; absent : wire_member_absent option }
+type wire_member = { member : string }
 
 let wire_member =
   Decode.obj (fun o : wire_member ->
-      {
-        member = Decode.required o "member" Decode.string;
-        absent = Decode.optional o "absent" wire_member_absent;
-      })
+      { member = Decode.required o "member" Decode.string })
 
 type wire = { docs : string; made : wire_made; members : wire_member list }
 
@@ -1073,23 +992,16 @@ let where =
         kotlin = Decode.required o "kotlin" (Decode.list Decode.string);
       })
 
-type module_member_reader = {
-  member : string;
-  absent : (string * string) list option;
-}
+type module_member_reader = { member : string }
 
 let module_member_reader =
   Decode.obj (fun o : module_member_reader ->
       Decode.required o "kind" (Decode.literal "reader");
-      {
-        member = Decode.required o "member" Decode.string;
-        absent = Decode.optional o "absent" (Decode.map Decode.string);
-      })
+      { member = Decode.required o "member" Decode.string })
 
 type module_member_function = {
   member : string;
   named : (string * string) list option;
-  absent : (string * string) list option;
 }
 
 let module_member_function =
@@ -1098,7 +1010,6 @@ let module_member_function =
       {
         member = Decode.required o "member" Decode.string;
         named = Decode.optional o "named" (Decode.map Decode.string);
-        absent = Decode.optional o "absent" (Decode.map Decode.string);
       })
 
 type fields_named_go = { kb_id : string }
@@ -1115,7 +1026,6 @@ let fields_named =
 
 type module_member_type = {
   member : string;
-  absent : (string * string) list option;
   named : (string * string) list option;
   fields_named : fields_named option;
   fields : string list option;
@@ -1126,7 +1036,6 @@ let module_member_type =
       Decode.required o "kind" (Decode.literal "type");
       {
         member = Decode.required o "member" Decode.string;
-        absent = Decode.optional o "absent" (Decode.map Decode.string);
         named = Decode.optional o "named" (Decode.map Decode.string);
         fields_named = Decode.optional o "fieldsNamed" fields_named;
         fields = Decode.optional o "fields" (Decode.list Decode.string);
@@ -1134,7 +1043,6 @@ let module_member_type =
 
 type module_member_constant = {
   member : string;
-  absent : (string * string) list option;
   named : (string * string) list option;
 }
 
@@ -1143,7 +1051,6 @@ let module_member_constant =
       Decode.required o "kind" (Decode.literal "constant");
       {
         member = Decode.required o "member" Decode.string;
-        absent = Decode.optional o "absent" (Decode.map Decode.string);
         named = Decode.optional o "named" (Decode.map Decode.string);
       })
 
@@ -1164,19 +1071,12 @@ let module__member =
         fun c -> (Constant (module_member_constant c) : module__member) );
     ]
 
-type not_yet_reached = { ocaml : string }
-
-let not_yet_reached =
-  Decode.obj (fun o : not_yet_reached ->
-      { ocaml = Decode.required o "ocaml" Decode.string })
-
 type module_ = {
   module_ : string;
   docs : string;
   where : where;
   whole : string list option;
   members : module__member list;
-  not_yet_reached : not_yet_reached option;
 }
 
 let module_ =
@@ -1187,7 +1087,6 @@ let module_ =
         where = Decode.required o "where" where;
         whole = Decode.optional o "whole" (Decode.list Decode.string);
         members = Decode.required o "members" (Decode.list module__member);
-        not_yet_reached = Decode.optional o "notYetReached" not_yet_reached;
       })
 
 type clock_item = {

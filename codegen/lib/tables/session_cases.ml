@@ -121,7 +121,6 @@ let refusal_item =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
   told : Schema.t;
   refresh_schedule : refresh_schedule_item list;
   token_expiry : token_expiry_item list;
@@ -133,7 +132,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         told = Decode.required o "told" Schema.decode;
         refresh_schedule =
           Decode.required o "refreshSchedule"
