@@ -51,7 +51,3 @@ opentelemetry = { workspace = true, features = ["trace"] }
 xynolog = { path = ".", features = ["testing", "charsets"] }
 # The multi-threaded runtime is for the tests that hold a unit to the order it hears things in.
 tokio = { workspace = true, features = ["test-util", "rt-multi-thread"] }
-
-[build-dependencies]
-xynolog-codegen.workspace = true
-serde_json.workspace = true

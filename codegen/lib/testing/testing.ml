@@ -147,7 +147,7 @@ let haskell t =
     text =
       H.text
         {
-          banner = Banner.haskell_lines ~from_ __FILE__;
+          banner = Banner.lines ~from_ __FILE__;
           extensions = [ "OverloadedStrings" ];
           name = "Xynolog.Internal.Generated.Testing";
           imports =

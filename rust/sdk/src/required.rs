@@ -1,7 +1,7 @@
 //! The first fault of a value as one of the protocol's shapes. Every SDK
 //! holds what it reads to the table of what each component schema requires
-//! (`SCHEMAS`, which the build writes from src/required-schemas.json, by the
-//! rules of codegen/lib/required/shape.ml) before it decodes it, and
+//! (`SCHEMAS`, which codegen/lib/required writes, by the rules of
+//! codegen/lib/required/shape.ml) before it decodes it, and
 //! names the first fault it finds the same way: a member the value lacks, or
 //! one that is not what its schema allows. What serde refuses that the table
 //! does not state is a fault of the value itself, and nothing of serde's own
@@ -117,7 +117,7 @@ pub(crate) const NONE: Shape = Shape {
     all_of: &[],
 };
 
-include!(concat!(env!("OUT_DIR"), "/required.rs"));
+include!("generated/required.rs");
 
 /// The first thing wrong with a value: the way to the member it is at (the
 /// names of the members it is within, and its own, joined by dots; empty for

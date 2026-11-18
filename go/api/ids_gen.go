@@ -1,8 +1,7 @@
 // Code generated from protocol/specs/src/identifiers/kinds.json and each kind's schema — DO NOT EDIT.
 //
 // Regenerate: make generate (codegen/lib/identifiers/go.ml)
-// The TypeScript and Python kinds are generated from the same table, and Rust's
-// by its SDK's build script.
+// The TypeScript, Python and Rust kinds are generated from the same table.
 
 package api
 

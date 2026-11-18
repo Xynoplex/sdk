@@ -2,9 +2,8 @@ import Foundation
 
 // The first fault of a value as one of the protocol's component schemas. Every SDK holds what it
 // reads to the table of what each schema requires, names the first fault it finds the same way,
-// and leaves out of what it reads a member the table reads as absent. The table is generated at
-// build time (requiredSchemas, from the SDK's copy of it,
-// Sources/XynologCodegen/required-schemas.json), by the rules of
+// and leaves out of what it reads a member the table reads as absent. The table is generated
+// (requiredSchemas, in Generated/Models.swift, written by codegen/lib/swift_sdk), by the rules of
 // codegen/lib/required/shape.ml, which states what each part of a shape means and
 // the order a reader walks them in.
 

@@ -8,6 +8,7 @@
 module Flat = Flat
 module Owner_only = Owner_only
 module Contract = Contract
+module Rust = Rust
 
 let schema_file = "sign-in-store/SignIn.json"
 let snake name = String.lowercase_ascii (Text.upper_snake name)
@@ -417,7 +418,7 @@ let haskell (o : Owner_only.t) (names : Contract.t) =
           text =
             H.text
               {
-                banner = Banner.haskell_lines ~from_:Contract.file __FILE__;
+                banner = Banner.lines ~from_:Contract.file __FILE__;
                 extensions = [];
                 name = "Xynolog.Internal.Generated.SignInStore";
                 imports = [];
@@ -464,6 +465,7 @@ let files ~root (spec : Spec.t) =
             python_entry entry;
             python_owner_only o;
             typescript entry o names;
+            Rust.file o;
           ]
           @ ocaml_owner_only o @ haskell_files)
         (haskell o names)

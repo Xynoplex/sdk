@@ -41,9 +41,9 @@ let text (t : Table.t) =
           "Code generated from protocol/specs/src/errors/codes.json; DO NOT \
            EDIT.\n\n\
            Regenerate: make generate (codegen/lib/error_codes/go.ml)\n\
-           The TypeScript and Python vocabularies are generated from the same \
-           table,\n\
-           and Rust's by its SDK's build script.";
+           The TypeScript, Python and Rust vocabularies are generated from the \
+           same\n\
+           table.";
       package = "xynolog";
       imports = [ [ "github.com/xynolog/sdk/go/api" ] ];
       decls =

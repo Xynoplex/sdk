@@ -7,8 +7,7 @@
 
 module H = Haskell_syntax
 
-let banner =
-  Banner.haskell_lines ~from_:("protocol/specs/src/" ^ Table.file) __FILE__
+let banner = Banner.lines ~from_:("protocol/specs/src/" ^ Table.file) __FILE__
 
 (* A budget's members, each with its field's name. *)
 let budget = [ "attempts"; "initialDelayMs"; "maxDelayMs" ]

@@ -29,5 +29,7 @@ let all =
     { name = "client-types"; files = Client_types.files };
     { name = "testing"; files = Testing.files };
     { name = "ocaml-sdk"; files = Ocaml_sdk.files };
+    { name = "rust-types"; files = Rust_types.files };
+    { name = "swift-sdk"; files = Swift_sdk.files };
     { name = "haskell-sdk"; files = Haskell_sdk.files };
   ]

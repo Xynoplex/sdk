@@ -475,7 +475,7 @@ let haskell t =
       H.text
         {
           banner =
-            Banner.haskell_lines
+            Banner.lines
               ~from_:(file ^ " and " ^ Cache_refresh.Table.file)
               __FILE__;
           extensions = [ "OverloadedStrings" ];
@@ -524,7 +524,7 @@ let haskell_keys (table : T.t) =
     text =
       H.text
         {
-          banner = Banner.haskell_lines ~from_:file __FILE__;
+          banner = Banner.lines ~from_:file __FILE__;
           extensions = [ "OverloadedStrings" ];
           name = "Xynolog.Internal.Generated.Stored";
           imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
