@@ -43,7 +43,7 @@ func NewTestSession(config TestSessionConfig) (TestSession, error) {
 	kb := api.KbTarget{Id: "test-kb", Label: "Test KB"}
 	if config.Kb != nil {
 		kb = *config.Kb
-	} else if err := kb.Endpoint.FromHttpEndpoint(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "localhost", Port: 4000, Protocol: api.HttpEndpointProtocolHttp}); err != nil {
+	} else if err := kb.Endpoint.From(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "localhost", Port: 4000, Protocol: api.HttpEndpointProtocolHttp}); err != nil {
 		// An endpoint of a host, a port and two of the spec's own words always
 		// encodes.
 		panic(err)

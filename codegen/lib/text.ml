@@ -214,3 +214,18 @@ let snake name =
       Buffer.add_char out (Char.lowercase_ascii c))
     name;
   Buffer.contents out
+
+(* [job:create] as [JobCreate]: every run of letters and digits, its first
+   letter upper case. *)
+let pascal word =
+  let b = Buffer.create (String.length word) in
+  let upper = ref true in
+  String.iter
+    (fun c ->
+      match c with
+      | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' ->
+          Buffer.add_char b (if !upper then Char.uppercase_ascii c else c);
+          upper := false
+      | _ -> upper := true)
+    word;
+  Buffer.contents b

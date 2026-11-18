@@ -1,13 +1,13 @@
 (* The vocabularies as the Go SDK reads them (go/errors.go): a named type per
    vocabulary with a constant per code, the bus code a wire code becomes, and
-   the transport code an HTTP status becomes. A wire code's constant,
-   api.CommandErrorCode and the code in Pascal case, is the name oapi-codegen
-   gives it in package api, and the Go build is what holds the two together. *)
+   the transport code an HTTP status becomes. A wire code's constant is the
+   one the Go types group writes in package api for CommandErrorCode's value,
+   named by the same rule ([Naming.variant]). *)
 
 module G = Go_syntax
 
 let path = "go/errorcodes_gen.go"
-let wire_constant wire = G.Name ("api.CommandErrorCode" ^ Table.pascal wire)
+let wire_constant wire = G.Name ("api.CommandErrorCode" ^ Naming.variant wire)
 
 (* A vocabulary: its type, and a constant per code in the table's order, each
    under its comment. *)

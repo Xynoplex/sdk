@@ -83,7 +83,7 @@ func worldOver(t *testing.T, transport *xynologtest.FaultyTransport, timing xyno
 func highlighting(t *testing.T, c *xynolog.Client) *xynolog.Delegation[api.MarkJobCompleteCommand] {
 	t.Helper()
 	var params api.MarkJobParams
-	if err := params.FromHighlightingJobParams(api.HighlightingJobParams{Motivation: api.HighlightingJobParamsMotivationHighlighting}); err != nil {
+	if err := params.From(api.HighlightingJobParams{Motivation: api.HighlightingJobParamsMotivationHighlighting}); err != nil {
 		t.Fatal(err)
 	}
 	return c.Mark.Delegate(resourceOf(t, "res-1"), params)
@@ -289,7 +289,8 @@ func TestAJobReportsItsProgressAndEndsWithItsCompletion(t *testing.T) {
 	if last.Data.JobId.String() != "job-1" || last.Data.ResourceId.String() != "res-1" || last.Data.Result == nil {
 		t.Fatalf("the completion is %+v", last.Data)
 	}
-	if counts, err := last.Data.Result.AsMarkJobDone(); err != nil || counts.Found != 3 || counts.Persisted != 2 || counts.Errors == nil || *counts.Errors != 1 {
+	var counts api.MarkJobDone
+	if err := last.Data.Result.As(&counts); err != nil || counts.Found != 3 || counts.Persisted != 2 || counts.Errors == nil || *counts.Errors != 1 {
 		t.Fatalf("the completion's result reads as %+v (%v)", counts, err)
 	}
 	if asked := requestsOn(fake, jobStatus); len(asked) != 0 {
@@ -333,7 +334,8 @@ func TestWaitedForAJobGivesItsCompletion(t *testing.T) {
 	if got.done.JobId.String() != "job-1" || got.done.JobType != api.MarkJobCompleteCommandJobTypeMark || got.done.ResourceId.String() != "res-1" || got.done.Result == nil {
 		t.Fatalf("the completion is %+v", got.done)
 	}
-	if counts, err := got.done.Result.AsMarkJobDone(); err != nil || counts.Found != 2 || counts.Persisted != 2 {
+	var counts api.MarkJobDone
+	if err := got.done.Result.As(&counts); err != nil || counts.Found != 2 || counts.Persisted != 2 {
 		t.Fatalf("the result reads as %+v (%v)", counts, err)
 	}
 }
@@ -376,7 +378,8 @@ func TestWaitedForAGenerationGivesTheResourceItMade(t *testing.T) {
 	if got.err != nil || got.done.JobType != api.YieldJobCompleteCommandJobTypeYield || got.done.Result == nil {
 		t.Fatalf("the completion is %+v (%v)", got.done, got.err)
 	}
-	if done, err := got.done.Result.AsYieldJobDone(); err != nil || done.ResourceId.String() != "res-summary" || done.ResourceName != "A summary" || done.Truncated {
+	var done api.YieldJobDone
+	if err := got.done.Result.As(&done); err != nil || done.ResourceId.String() != "res-summary" || done.ResourceName != "A summary" || done.Truncated {
 		t.Fatalf("the result reads as %+v (%v)", done, err)
 	}
 }
@@ -505,7 +508,8 @@ func TestAStatusCarriesTheResultItsJobWasStoredWithAndAnEmptyOneIsNone(t *testin
 				t.Fatalf("the completion's result is %v, want one: %v", done.Data.Result, c.reads)
 			}
 			if c.reads {
-				if counts, err := done.Data.Result.AsMarkJobDone(); err != nil || counts.Found != 3 || counts.Persisted != 2 {
+				var counts api.MarkJobDone
+				if err := done.Data.Result.As(&counts); err != nil || counts.Found != 3 || counts.Persisted != 2 {
 					t.Fatalf("the result reads as %+v (%v)", counts, err)
 				}
 			}
@@ -698,7 +702,7 @@ func TestAnOptionOfAJobGivenAsNothingIsNotSent(t *testing.T) {
 	fake.QueueReply(jobCreate, json.RawMessage(`{"jobId":"job-2"}`))
 	var params api.MarkJobParams
 	density := 1.5
-	if err := params.FromCommentingJobParams(api.CommentingJobParams{Motivation: api.CommentingJobParamsMotivationCommenting, Density: &density}); err != nil {
+	if err := params.From(api.CommentingJobParams{Motivation: api.CommentingJobParamsMotivationCommenting, Density: &density}); err != nil {
 		t.Fatal(err)
 	}
 	commenting := waiting(c.Mark.Delegate(resourceOf(t, "res-1"), params))
@@ -791,7 +795,8 @@ func TestAFrameThatIsNotItsChannelsIsReportedAsRefusedAndFollowedPast(t *testing
 		t.Fatalf("the follower gave %v, want %v", got.kinds, want)
 	}
 	done := got.seen[3].(xynolog.JobCompleted[api.MarkJobCompleteCommand])
-	if counts, err := done.Data.Result.AsMarkJobDone(); err != nil || counts.Found != 1 {
+	var counts api.MarkJobDone
+	if err := done.Data.Result.As(&counts); err != nil || counts.Found != 1 {
 		t.Fatalf("the completion followed is %+v (%v)", counts, err)
 	}
 }
