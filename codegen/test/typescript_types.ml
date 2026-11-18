@@ -48,6 +48,20 @@ let cases =
         in
         has text "'@type': string;";
         has text "'@id'?: string;");
+    case "a member is described by what it states, not by what it names"
+      (fun () ->
+        let text =
+          written
+            [
+              ( "S",
+                {|{"type": "object", "properties": {"a": {"allOf": [{"$ref": "A.json"}], "nullable": true}, "b": {"type": "string", "description": "What a b is."}}}|}
+              );
+              ("A", {|{"type": "string", "description": "What an A is."}|});
+            ]
+            "S"
+        in
+        lacks text "What an A is.";
+        has text "What a b is.");
     case "a schema that states nothing is unknown" (fun () ->
         equal "unknown" (one "{}"));
     case "a kind of id is text of a type of its own" (fun () ->

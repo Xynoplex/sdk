@@ -22,15 +22,6 @@ let about description =
       in
       [ T.Doc_prose paragraphs ]
 
-(* What [s] says of itself, or, when it only admits null beside another
-   schema, what that schema says. *)
-let description (s : D.t) =
-  match s with
-  | D.Node { description = Some d; _ } -> Some d
-  | D.Node { any_of = Some [ D.Null; D.Node { description; _ } ]; _ } ->
-      description
-  | _ -> None
-
 let key name = if T.identifier name then T.Ident name else T.Quoted name
 
 (* [t] where it is an operand of [&] or of [[]], parenthesized when it is
@@ -103,7 +94,7 @@ and object_of (n : D.node) : T.type_ =
     List.map
       (fun (name, s) ->
         T.member (key name) (type_of s)
-          ~about:(about (description s))
+          ~about:(about (View.description s))
           ~optional:(not (List.mem name required)))
       (Option.value n.properties ~default:[])
   in
@@ -139,7 +130,7 @@ let text (spec : Spec.t) =
     let s = definitions.schema name in
     T.member (key name)
       (if List.mem name kinds then branded definitions name else type_of s)
-      ~about:(about (description s))
+      ~about:(about (View.description s))
   in
   T.text
     {
