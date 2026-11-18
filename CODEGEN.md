@@ -18,8 +18,8 @@ Generation runs as part of building the SDK artifact, with language-native tools
 | Python | OpenAPI models | Drift check and package build; wheel carries generated models |
 | Go | REST client and registry tables | SDK-owned generators; module artifact carries generated Go source |
 | Rust | Wire types, bus operations, and protocol tables | Cargo build script; the crate carries the pinned inputs and generator dependency |
-| C# | API and protocol types | .NET package build from the pinned submodule |
-| Kotlin | API types and tables | Gradle generation task before compilation; Maven artifact carries compiled output |
+| C# | API and protocol types | Repository generator (`codegen/`), committed under `src/Xynolog/Generated` and held by `make check-generated`; NuGet package carries compiled output |
+| Kotlin | API types and tables | Repository generator (`codegen/`), committed under `src/generated` and held by `make check-generated`; Maven artifact carries compiled output |
 | Swift | Wire models and protocol tables | SwiftPM plugin; source archive carries the same pinned Protocol tree at the package's expected relative path |
 | Haskell | Protocol and conformance tables | SDK-owned generator and checks |
 | OCaml | Bus registry and protocol tables | SDK-owned generator and checks |

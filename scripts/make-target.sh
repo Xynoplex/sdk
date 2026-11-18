@@ -97,7 +97,7 @@ case "${1:-}" in
       dotnet build -p:RestoreLockedMode=true
       dotnet test --no-build --settings test.runsettings
       # The generated files too, but not those a package compiles in.
-      dotnet format --no-restore --verify-no-changes --include-generated --exclude "$HOME/.nuget/packages"'
+      dotnet format --no-restore --verify-no-changes --include-generated --exclude "$HOME/.nuget/packages"' --memory 4g
     ;;
   test-kotlin)
     bash "$ROOT/scripts/bundle-protocol.sh"
