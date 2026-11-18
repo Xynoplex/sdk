@@ -140,7 +140,7 @@ case "${1:-}" in
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/ocaml/sdk
       dune build @all @opam
-      python3 test/check-format.py
+      dune build @fmt
       python3 test/check-installed-api.py
       python3 probes/check-interface.py
       python3 api.py
@@ -149,17 +149,19 @@ case "${1:-}" in
     ;;
   test-codegen)
     # The generator's model reads every file of the pinned Protocol, and
-    # refuses a copy of it that has what the model does not know. Every sdk
-    # path the pinned Protocol names is one this checkout has.
+    # refuses a copy of it that has what the model does not know. Every case
+    # table is run by a named test of each SDK, or absent from it for a
+    # reason, and every surface item an SDK lacks is one Protocol has, with a
+    # reason. Every sdk path the pinned Protocol names is one this checkout
+    # has.
     ocaml_toolchain_image
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/codegen
       dune build @all @opam
-      # ocamlformat --check names no file it fails, so each is checked alone.
-      unformatted="$(dune exec -- sh -c "for file; do ocamlformat --check \"\$file\" || echo \"\$file\"; done" sh $(find bin lib test -name "*.ml*" | sort))"
-      if [ -n "$unformatted" ]; then echo "not as ocamlformat lays them out:"; echo "$unformatted"; exit 1; fi
+      dune build @fmt
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
+      dune exec -- ./test/coverage_census.exe ..
       dune exec -- xynolog-codegen read ..
       python3 check-boundary.py ..
       python3 check-protocol-paths.py .. ../protocol' --memory 4g

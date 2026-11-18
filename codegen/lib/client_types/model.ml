@@ -121,49 +121,26 @@ let derive (spec : Spec.t) =
   let members file pointer s =
     fields file pointer (Schema.map (fun member -> (member, held member)) s)
   in
-  (* An object's members, with those of each schema it is all of, in order. *)
-  let object_ =
-    let rec object_ (t : Schema.t) : string -> string -> member list option =
-      Schema.para
-        ~boolean:(fun _ file pointer ->
-          refuse file pointer "is no object";
-          None)
-        ~schema:(fun l file pointer ->
-          let s = Schema.map fst l in
-          match l.all_of with
-          | Some parts
-            when List.for_all
-                   (fun k -> List.mem k [ "title"; "allOf" ])
-                   (described s) ->
-              let members =
-                List.concat
-                  (List.mapi
-                     (fun i (part, objected) ->
-                       let at = Printf.sprintf "%s/allOf/%d" pointer i in
-                       match part with
-                       | Schema.Schema ({ ref_ = Some ref_; _ } as r)
-                         when Schema.keywords r = [ "$ref" ] -> (
-                           let target, _ = Decode.resolve ref_ in
-                           match schema target with
-                           | Some s ->
-                               Option.value (object_ s target "") ~default:[]
-                           | None -> [])
-                       | _ -> Option.value (objected file at) ~default:[])
-                     parts)
-              in
-              let names = List.map (fun m -> m.name) members in
-              if List.length (List.sort_uniq compare names) <> List.length names
-              then
-                refuse file pointer
-                  "states a member twice among what it is all of";
-              Some members
-          | _ when s.type_ = Some [ Object ] -> members file pointer s
-          | _ ->
-              refuse file pointer "is no object";
-              None)
-        t
-    in
-    fun file pointer t -> object_ t file pointer
+  (* An object's members: one that is all of some schemas, those of what they
+     merge to ([Normalize]), in the order they state them. *)
+  let object_ file pointer : Schema.t -> member list option = function
+    | Schema.Schema ({ all_of = Some _; _ } as s) as t
+      when List.for_all (fun k -> List.mem k [ "title"; "allOf" ]) (described s)
+      -> (
+        let find (r : Decode.reference) =
+          match schema (fst (Decode.resolve r)) with
+          | Some s -> Ok s
+          | None -> Error ("refers to " ^ r.target ^ ", which is no schema")
+        in
+        match Normalize.normalize ~find t with
+        | Ok merged -> members file pointer merged
+        | Error message ->
+            refuse file pointer message;
+            None)
+    | Schema.Schema s when s.type_ = Some [ Object ] -> members file pointer s
+    | _ ->
+        refuse file pointer "is no object";
+        None
   in
   let shape file = function
     | Schema.Schema ({ type_ = Some [ String ]; enum = Some literals; _ } as s)

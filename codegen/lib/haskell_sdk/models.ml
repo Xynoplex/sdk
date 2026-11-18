@@ -78,8 +78,10 @@ let find state name =
   | Some s -> Ok s
   | None -> Error ("unknown schema reference: " ^ name)
 
-let normalize state schema = Normalize.normalize ~find:(find state) schema
-let referenced = Normalize.referenced
+let normalize state schema =
+  Normalize.normalize
+    ~find:(fun r -> find state (Definitions.referenced r))
+    schema
 
 let scalar_type : Schema.type_name -> H.type_ option = function
   | String -> Some (T_name "Text")
@@ -137,7 +139,7 @@ let rec type_of state proposed original : (H.type_, string) result =
   let* raw = Normalize.layer original in
   match raw.ref_ with
   | Some r ->
-      let target = referenced r in
+      let target = Definitions.referenced r in
       let* _ = find state target in
       depend state target;
       Ok (H.T_name target)
@@ -149,7 +151,7 @@ let rec type_of state proposed original : (H.type_, string) result =
 and structural state proposed original =
   let* s = normalize state original in
   match s.ref_ with
-  | Some r -> Ok (H.T_name (referenced r))
+  | Some r -> Ok (H.T_name (Definitions.referenced r))
   | None when s.one_of <> None || s.any_of <> None || s.enum <> None ->
       inline state proposed original
   | None -> (
@@ -220,7 +222,7 @@ and declare state name original =
                 ~owner:
                   (Inherited.of_schemas
                      ~find:(fun n -> Named.find n state.definitions)
-                     ~referenced name original)
+                     ~referenced:Definitions.referenced name original)
                 s
           | _ -> scalar state name original (Names.mem name state.identifiers))
     in

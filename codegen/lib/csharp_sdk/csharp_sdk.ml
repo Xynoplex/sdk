@@ -199,7 +199,7 @@ let failure_codes (spec : Spec.t) (models : Models.t) =
     List.map
       (fun code ->
         let failure : Error_codes.Table.code = List.assoc code t.wire in
-        ( C.Value (Name (code_type ^ "." ^ Models.pascal code)),
+        ( C.Value (Name (code_type ^ "." ^ Models.enum_constant code)),
           C.Str failure.code ))
       wire_codes
   in

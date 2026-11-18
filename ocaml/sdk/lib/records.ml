@@ -3128,7 +3128,7 @@ end
 module Knowledge_base = struct
   type t = {
     id : string;
-    label : Yojson.Raw.t;
+    label : string;
     endpoint : Yojson.Raw.t;
     did : string;
     last_read : Yojson.Raw.t Types.presence;
@@ -3140,7 +3140,7 @@ module Knowledge_base = struct
     let record =
       {
         id = required reader string "id";
-        label = required reader raw "label";
+        label = required reader string "label";
         endpoint = required reader raw "endpoint";
         did = required reader string "did";
         last_read = optional reader raw "lastRead";

@@ -268,7 +268,9 @@ let error_codes models ~shapes ~table (codes : Error_codes.Table.t) ~wire_codes
   let enums =
     List.map
       (fun (family, listed) ->
-        string_enumeration [ "public" ] (M.pascal family ^ "ErrorCode") listed)
+        string_enumeration [ "public" ]
+          (Text.pascal family ^ "ErrorCode")
+          listed)
       (List.sort (fun (a, _) (b, _) -> String.compare a b) (families table))
   in
   let returns (code : Error_codes.Table.code) =
@@ -708,7 +710,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
         replies := op.result :: op.failure :: !replies;
         if String.ends_with ~suffix:":limits-requested" op.request then
           limits := name (M.member_name op.request) :: !limits;
-        let answer = Option.map (M.merged models) result.schema in
+        let answer = Option.map D.meant result.schema in
         (match answer with
         | Some (D.Node { one_of = Some _; _ } | D.Node { any_of = Some _; _ })
           ->
@@ -724,7 +726,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
              | Some s -> s
              | None -> refuse "reply names without request schema"
            in
-           let properties = properties_of (M.merged models request_schema) in
+           let properties = properties_of (D.meant request_schema) in
            if
              not
                (List.for_all (fun r -> List.mem_assoc r properties) reply_names)
@@ -758,7 +760,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
         and response = Hashtbl.find rows op.result in
         let failure_schema =
           match (Hashtbl.find rows op.failure).schema with
-          | Some s -> M.merged models s
+          | Some s -> D.meant s
           | None -> refuse "failure channel has no schema"
         in
         (match List.assoc_opt "message" (properties_of failure_schema) with
@@ -1030,7 +1032,7 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
           Some (q.name, key, stored_type models ~of_:q.name q.value.target))
       refresh.queries
   in
-  let kept_name q = "Kept" ^ M.pascal q in
+  let kept_name q = "Kept" ^ Text.pascal q in
   let version =
     let document = stored.cache_document in
     let items = document.properties.entries.items in

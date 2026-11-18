@@ -23,6 +23,10 @@ Pointer of the value refused; nothing is defaulted.
   table that Protocol adds stops the run until the module knows it.
 - `Spec`: every file accounted for, and every `$ref` resolved to a file of
   the kind its place calls for.
+- `Normalize`: what an `allOf` means, its parts merged keyword by keyword
+  into the one schema they describe, which every group's writers read and
+  none decides itself. `Inherited` is which schema states each property it
+  merges, so a writer names a type for the schema that states it.
 
 ## The groups
 
@@ -170,9 +174,8 @@ per language it writes:
   the client registry's records, the stored session's, the HTTP routes'
   bodies and the bus's envelopes, each `allOf` merged into one object, a
   module per cycle of references, with `Xynolog.Types`, the schemas it
-  validates against and the round trips its tests drive; each `allOf` in
-  those schemas as the generator merges it, which the SDK's runtime merge
-  must give (`test/fixtures/merged-schemas.json`); its HTTP routes and
+  validates against, each `allOf` in them merged, and the round trips its
+  tests drive; its HTTP routes and
   what a refused credential is, from the reference transport; its
   transport's facts, from `TRANSPORT-HTTP.md`; its bus's channels and
   operations, with each operation's failure; the worker's channels and
@@ -205,8 +208,8 @@ per language it writes:
   which `identifiers` writes. A union embeds the hand-written generic
   `union` (`go/api/union.go`); `Go_syntax` is the Go it is built of, laid out
   as gofmt leaves it. It reads the schemas as Rust's types do, through `View`
-  (a `$ref`'s schema, a union's members, an `allOf` as one object) and names
-  what it writes in place by `Naming`.
+  (a `$ref`'s schema, a union's members) and `Definitions.meant` (an `allOf`
+  as `Normalize` merges it), and names what it writes in place by `Naming`.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
@@ -214,7 +217,7 @@ of printable ASCII, a camel-case name in upper or lower snake case, and a
 comment as Go, Python and TypeScript write one. `Ocaml_syntax` builds an
 OCaml module as compiler-libs' Parsetree, prints it with Pprintast and lays
 it out with ocamlformat-lib, so a generated module is one the SDK's
-`ocamlformat --check` leaves as it is. `Python_layout` lays a Python
+`dune build @fmt` leaves as it is. `Python_layout` lays a Python
 statement out as ruff's formatter does at the SDK's line length, so a
 generated module is one `ruff format` leaves as it is. `Swift_syntax` is
 the Swift a writer builds, printed as swift-format 6.4.2 lays it out under
@@ -226,6 +229,33 @@ line, an ambiguous character, the order of its imports and of its `__all__`,
 and an exemption it does not use), and every other rule holds it. `Output` is
 the drift gate.
 
+## Coverage
+
+Protocol's tables name no consumer: which SDK runs or has what Protocol
+states is sdk's to record, so renaming a test, or an SDK gaining an item of
+the client surface, is a change here alone. [`test/coverage_sdk.ml`](test/coverage_sdk.ml)
+names the SDKs the records speak of.
+
+- [`test/case_coverage.ml`](test/case_coverage.ml): for each case table of
+  the pinned Protocol and each SDK, the tests that run it, or why the SDK
+  runs none: absent, where the SDK has no counterpart of what the table
+  states, or not yet reached, where it has one and does not run the table
+  yet. A test named there runs every case of its table.
+- [`test/surface_coverage.ml`](test/surface_coverage.ml): each item of the
+  client surface (`client/surface.json`) some SDK lacks, with each SDK that
+  lacks it and why: absent, or not yet reached. An item it does not name is
+  one every SDK has.
+
+`coverage_census.exe` holds both. Its case tables are the model's tables
+whose file name ends in `cases.json` (`specs/README.md`, "Case tables"), and
+it names each of them and no other. Its SDKs are the Makefile's `LANGUAGES`,
+and the compiler holds every table to a coverage for each one. A named test
+is a file this checkout has under the SDK's directory, and it names its
+table's path. Every surface item named is one the surface has, named once,
+and each SDK lacking it once; that an SDK has an item named nowhere is its own
+surface test's to hold. The readers `annotations/reader-cases.json` names are
+the annotations module's readers that no SDK lacks.
+
 ## Running it
 
 ```sh
@@ -234,7 +264,8 @@ make test-codegen
 
 builds the project, checks its formatting, runs its tests, and reads the
 pinned Protocol with `xynolog-codegen read`, in the toolchain's container.
-`check-protocol-paths.py` then holds every sdk file the pinned Protocol names,
+`coverage_census.exe` holds the coverage records to the pinned Protocol
+and to the checkout, and `check-protocol-paths.py` then holds every sdk file the pinned Protocol names,
 as `sdk/<path>` or as a link into this repository, to the files this checkout
 has.
 
