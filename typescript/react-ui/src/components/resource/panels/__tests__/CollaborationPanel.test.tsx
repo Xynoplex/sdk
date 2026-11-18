@@ -6,38 +6,40 @@ import { CollaborationPanel } from '../CollaborationPanel';
 
 // Mock TranslationContext
 vi.mock('../../../../contexts/TranslationContext', () => ({
-  useTranslations: vi.fn(() => (key: string, params?: Record<string, unknown>) => {
-    const translations: Record<string, string> = {
-      connectionStatus: 'Connection Status',
-      live: 'Live',
-      disconnected: 'Disconnected',
-      events: '{count} event(s)',
-      lastSync: 'Last sync:',
-      noActivity: 'No activity',
-      justNow: 'just now',
-      secondsAgo: '{count} seconds ago',
-      minuteAgo: '1 minute ago',
-      minutesAgo: '{count} minutes ago',
-      hourAgo: '1 hour ago',
-      hoursAgo: '{count} hours ago',
-      realtimeActive: 'Real-time synchronization active',
-      reconnecting: 'Reconnecting...',
-      sharing: 'Sharing',
-      collaborationComingSoon: 'Multi-user collaboration coming soon',
-      engines: 'Engines',
-      ceilings: '{{contextTokens}} in / {{maxOutputTokens}} out',
-      sharedWindow: '{{contextTokens}} window',
-    };
-    let result = translations[key] || key;
-    // Replace {count} with actual count value if provided
-    if (params?.count !== undefined) {
-      result = result.replace('{count}', String(params.count));
-    }
-    for (const [k, v] of Object.entries(params ?? {})) {
-      result = result.replace(`{{${k}}}`, String(v));
-    }
-    return result;
-  }),
+  useTranslations: vi.fn(
+    () => (key: string, params?: Record<string, unknown>) => {
+      const translations: Record<string, string> = {
+        connectionStatus: 'Connection Status',
+        live: 'Live',
+        disconnected: 'Disconnected',
+        events: '{count} event(s)',
+        lastSync: 'Last sync:',
+        noActivity: 'No activity',
+        justNow: 'just now',
+        secondsAgo: '{count} seconds ago',
+        minuteAgo: '1 minute ago',
+        minutesAgo: '{count} minutes ago',
+        hourAgo: '1 hour ago',
+        hoursAgo: '{count} hours ago',
+        realtimeActive: 'Real-time synchronization active',
+        reconnecting: 'Reconnecting...',
+        sharing: 'Sharing',
+        collaborationComingSoon: 'Multi-user collaboration coming soon',
+        engines: 'Engines',
+        ceilings: '{{contextTokens}} in / {{maxOutputTokens}} out',
+        sharedWindow: '{{contextTokens}} window',
+      };
+      let result = translations[key] || key;
+      // Replace {count} with actual count value if provided
+      if (params?.count !== undefined) {
+        result = result.replace('{count}', String(params.count));
+      }
+      for (const [k, v] of Object.entries(params ?? {})) {
+        result = result.replace(`{{${k}}}`, String(v));
+      }
+      return result;
+    },
+  ),
 }));
 
 describe('CollaborationPanel Component', () => {
@@ -62,7 +64,9 @@ describe('CollaborationPanel Component', () => {
   // ceilings. Absence is meaningful and must degrade quietly — the field is
   // absent whenever discovery could not answer *right now*.
   describe('Engines', () => {
-    const engineEntry = (over: Partial<EngineWithLimits> = {}): EngineWithLimits => ({
+    const engineEntry = (
+      over: Partial<EngineWithLimits> = {},
+    ): EngineWithLimits => ({
       engine: { provider: 'anthropic', model: 'claude-sonnet-5' },
       jobs: [{ jobType: 'yield' }],
       limits: { contextTokens: 200_000, maxOutputTokens: 64_000 },
@@ -70,7 +74,9 @@ describe('CollaborationPanel Component', () => {
     });
 
     it('renders one row per engine with provider, model and ceilings', () => {
-      render(<CollaborationPanel {...defaultProps} engines={[engineEntry()]} />);
+      render(
+        <CollaborationPanel {...defaultProps} engines={[engineEntry()]} />,
+      );
 
       expect(screen.getByText('Engines')).toBeInTheDocument();
       const row = screen.getByTestId('xynolog-engine-row');
@@ -110,16 +116,25 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
       expect(screen.queryByText('Engines')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('xynolog-engine-row')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('xynolog-engine-row'),
+      ).not.toBeInTheDocument();
       // The other sections render regardless.
       expect(screen.getByText('Connection Status')).toBeInTheDocument();
     });
 
     it('lists every engine, one row each', () => {
-      const llama = engineEntry({ engine: { provider: 'ollama', model: 'llama3' } });
+      const llama = engineEntry({
+        engine: { provider: 'ollama', model: 'llama3' },
+      });
       delete llama.jobs;
       delete llama.limits;
-      render(<CollaborationPanel {...defaultProps} engines={[engineEntry(), llama]} />);
+      render(
+        <CollaborationPanel
+          {...defaultProps}
+          engines={[engineEntry(), llama]}
+        />,
+      );
 
       const rows = screen.getAllByTestId('xynolog-engine-row');
       expect(rows).toHaveLength(2);
@@ -143,7 +158,9 @@ describe('CollaborationPanel Component', () => {
     it('should render coming soon message', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
-      expect(screen.getByText('Multi-user collaboration coming soon')).toBeInTheDocument();
+      expect(
+        screen.getByText('Multi-user collaboration coming soon'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -161,17 +178,25 @@ describe('CollaborationPanel Component', () => {
     });
 
     it('should show indicator when disconnected', () => {
-      const { container } = render(<CollaborationPanel {...defaultProps} state="degraded" />);
+      const { container } = render(
+        <CollaborationPanel {...defaultProps} state="degraded" />,
+      );
 
-      const indicator = container.querySelector('.xynolog-collaboration-panel__dot');
+      const indicator = container.querySelector(
+        '.xynolog-collaboration-panel__dot',
+      );
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveAttribute('data-connected', 'false');
     });
 
     it('should show indicator when connected', () => {
-      const { container } = render(<CollaborationPanel {...defaultProps} state="open" />);
+      const { container } = render(
+        <CollaborationPanel {...defaultProps} state="open" />,
+      );
 
-      const indicator = container.querySelector('.xynolog-collaboration-panel__dot');
+      const indicator = container.querySelector(
+        '.xynolog-collaboration-panel__dot',
+      );
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveAttribute('data-connected', 'true');
     });
@@ -180,7 +205,9 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} state="degraded" />);
 
       const statusText = screen.getByText('Disconnected');
-      expect(statusText).toHaveClass('xynolog-collaboration-panel__status-text');
+      expect(statusText).toHaveClass(
+        'xynolog-collaboration-panel__status-text',
+      );
       expect(statusText).toHaveAttribute('data-connected', 'false');
     });
 
@@ -188,7 +215,9 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} state="open" />);
 
       const statusText = screen.getByText('Live');
-      expect(statusText).toHaveClass('xynolog-collaboration-panel__status-text');
+      expect(statusText).toHaveClass(
+        'xynolog-collaboration-panel__status-text',
+      );
       expect(statusText).toHaveAttribute('data-connected', 'true');
     });
 
@@ -204,7 +233,9 @@ describe('CollaborationPanel Component', () => {
     });
 
     it('shows Live during `connecting` and `initial`', () => {
-      const { rerender } = render(<CollaborationPanel {...defaultProps} state="connecting" />);
+      const { rerender } = render(
+        <CollaborationPanel {...defaultProps} state="connecting" />,
+      );
       expect(screen.getByText('Live')).toBeInTheDocument();
       rerender(<CollaborationPanel {...defaultProps} state="initial" />);
       expect(screen.getByText('Live')).toBeInTheDocument();
@@ -223,25 +254,37 @@ describe('CollaborationPanel Component', () => {
 
   describe('Event Count', () => {
     it('should not show event count when zero', () => {
-      render(<CollaborationPanel {...defaultProps} state="open" eventCount={0} />);
+      render(
+        <CollaborationPanel {...defaultProps} state="open" eventCount={0} />,
+      );
 
       expect(screen.queryByText(/event/i)).not.toBeInTheDocument();
     });
 
     it('should show event count when connected and greater than zero', () => {
-      render(<CollaborationPanel {...defaultProps} state="open" eventCount={5} />);
+      render(
+        <CollaborationPanel {...defaultProps} state="open" eventCount={5} />,
+      );
 
       expect(screen.getByText(/event/i)).toBeInTheDocument();
     });
 
     it('should not show event count when disconnected', () => {
-      render(<CollaborationPanel {...defaultProps} state="degraded" eventCount={5} />);
+      render(
+        <CollaborationPanel
+          {...defaultProps}
+          state="degraded"
+          eventCount={5}
+        />,
+      );
 
       expect(screen.queryByText(/event/i)).not.toBeInTheDocument();
     });
 
     it('should display correct event count', () => {
-      render(<CollaborationPanel {...defaultProps} state="open" eventCount={42} />);
+      render(
+        <CollaborationPanel {...defaultProps} state="open" eventCount={42} />,
+      );
 
       // The translation will have ${count} in it
       expect(screen.getByText(/event/i)).toBeInTheDocument();
@@ -265,7 +308,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={fiveSecondsAgo.toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText('just now')).toBeInTheDocument();
@@ -281,7 +324,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={thirtySecondsAgo.toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText(/seconds ago/i)).toBeInTheDocument();
@@ -297,7 +340,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={oneMinuteAgo.toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText('1 minute ago')).toBeInTheDocument();
@@ -313,7 +356,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={thirtyMinutesAgo.toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText(/minutes ago/i)).toBeInTheDocument();
@@ -329,7 +372,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={oneHourAgo.toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText('1 hour ago')).toBeInTheDocument();
@@ -345,7 +388,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={fiveHoursAgo.toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText(/hours ago/i)).toBeInTheDocument();
@@ -361,7 +404,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={fiveDaysAgo.toISOString()}
-        />
+        />,
       );
 
       // Should show a formatted date
@@ -374,7 +417,9 @@ describe('CollaborationPanel Component', () => {
     it('should show "real-time active" when connected', () => {
       render(<CollaborationPanel {...defaultProps} state="open" />);
 
-      expect(screen.getByText('Real-time synchronization active')).toBeInTheDocument();
+      expect(
+        screen.getByText('Real-time synchronization active'),
+      ).toBeInTheDocument();
     });
 
     it('should show "reconnecting" when disconnected', () => {
@@ -386,7 +431,9 @@ describe('CollaborationPanel Component', () => {
 
   describe('Dynamic Updates', () => {
     it('should update when connection status changes', () => {
-      const { rerender } = render(<CollaborationPanel {...defaultProps} state="degraded" />);
+      const { rerender } = render(
+        <CollaborationPanel {...defaultProps} state="degraded" />,
+      );
 
       expect(screen.getByText('Disconnected')).toBeInTheDocument();
 
@@ -398,12 +445,14 @@ describe('CollaborationPanel Component', () => {
 
     it('should update when event count changes', () => {
       const { rerender } = render(
-        <CollaborationPanel {...defaultProps} state="open" eventCount={5} />
+        <CollaborationPanel {...defaultProps} state="open" eventCount={5} />,
       );
 
       expect(screen.getByText(/event/i)).toBeInTheDocument();
 
-      rerender(<CollaborationPanel {...defaultProps} state="open" eventCount={10} />);
+      rerender(
+        <CollaborationPanel {...defaultProps} state="open" eventCount={10} />,
+      );
 
       expect(screen.getByText(/event/i)).toBeInTheDocument();
     });
@@ -416,7 +465,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={new Date('2024-01-01T11:59:00Z').toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText('1 minute ago')).toBeInTheDocument();
@@ -425,7 +474,7 @@ describe('CollaborationPanel Component', () => {
         <CollaborationPanel
           {...defaultProps}
           lastEventTimestamp={new Date('2024-01-01T11:59:55Z').toISOString()}
-        />
+        />,
       );
 
       expect(screen.getByText('just now')).toBeInTheDocument();
@@ -444,7 +493,7 @@ describe('CollaborationPanel Component', () => {
           <CollaborationPanel
             {...defaultProps}
             lastEventTimestamp={veryOld.toISOString()}
-          />
+          />,
         );
       }).not.toThrow();
     });
@@ -460,7 +509,7 @@ describe('CollaborationPanel Component', () => {
           <CollaborationPanel
             {...defaultProps}
             lastEventTimestamp={future.toISOString()}
-          />
+          />,
         );
       }).not.toThrow();
     });
@@ -468,7 +517,10 @@ describe('CollaborationPanel Component', () => {
     it('should handle invalid timestamp strings', () => {
       expect(() => {
         render(
-          <CollaborationPanel {...defaultProps} lastEventTimestamp="invalid-date" />
+          <CollaborationPanel
+            {...defaultProps}
+            lastEventTimestamp="invalid-date"
+          />,
         );
       }).not.toThrow();
     });
@@ -476,7 +528,11 @@ describe('CollaborationPanel Component', () => {
     it('should handle very large event counts', () => {
       expect(() => {
         render(
-          <CollaborationPanel {...defaultProps} state="open" eventCount={999999} />
+          <CollaborationPanel
+            {...defaultProps}
+            state="open"
+            eventCount={999999}
+          />,
         );
       }).not.toThrow();
     });
@@ -484,7 +540,7 @@ describe('CollaborationPanel Component', () => {
     it('should handle negative event counts', () => {
       expect(() => {
         render(
-          <CollaborationPanel {...defaultProps} state="open" eventCount={-5} />
+          <CollaborationPanel {...defaultProps} state="open" eventCount={-5} />,
         );
       }).not.toThrow();
     });
@@ -508,7 +564,9 @@ describe('CollaborationPanel Component', () => {
     it('should have proper section divider', () => {
       const { container } = render(<CollaborationPanel {...defaultProps} />);
 
-      const section = container.querySelector('.xynolog-collaboration-panel__section--bordered');
+      const section = container.querySelector(
+        '.xynolog-collaboration-panel__section--bordered',
+      );
       expect(section).toBeInTheDocument();
     });
 
@@ -523,7 +581,9 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
       const statusText = screen.getByText('Disconnected');
-      const statusContainer = statusText.closest('.xynolog-collaboration-panel__status-text');
+      const statusContainer = statusText.closest(
+        '.xynolog-collaboration-panel__status-text',
+      );
       expect(statusContainer).toBeInTheDocument();
     });
   });
@@ -532,15 +592,23 @@ describe('CollaborationPanel Component', () => {
     it('should have semantic heading structure', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
-      expect(screen.getByText('Connection Status')).toHaveClass('xynolog-collaboration-panel__heading');
-      expect(screen.getByText('Sharing')).toHaveClass('xynolog-collaboration-panel__heading');
+      expect(screen.getByText('Connection Status')).toHaveClass(
+        'xynolog-collaboration-panel__heading',
+      );
+      expect(screen.getByText('Sharing')).toHaveClass(
+        'xynolog-collaboration-panel__heading',
+      );
     });
 
     it('should have visible status indicators', () => {
-      const { container } = render(<CollaborationPanel {...defaultProps} state="open" />);
+      const { container } = render(
+        <CollaborationPanel {...defaultProps} state="open" />,
+      );
 
       // Should have a visible status dot
-      const indicator = container.querySelector('.xynolog-collaboration-panel__dot');
+      const indicator = container.querySelector(
+        '.xynolog-collaboration-panel__dot',
+      );
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveAttribute('data-connected', 'true');
     });
@@ -549,30 +617,61 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
       const section = screen.getByText('Connection Status').closest('div');
-      expect(section?.querySelector('.xynolog-collaboration-panel__details')).toBeInTheDocument();
+      expect(
+        section?.querySelector('.xynolog-collaboration-panel__details'),
+      ).toBeInTheDocument();
     });
   });
 
   describe('Time Formatting Logic', () => {
     it('should calculate time differences correctly', () => {
       const testCases = [
-        { now: '2024-01-01T12:00:00Z', then: '2024-01-01T12:00:00Z', expected: 'just now' },
-        { now: '2024-01-01T12:00:00Z', then: '2024-01-01T11:59:59Z', expected: 'just now' },
-        { now: '2024-01-01T12:00:00Z', then: '2024-01-01T11:59:30Z', expected: /seconds ago/ },
-        { now: '2024-01-01T12:00:00Z', then: '2024-01-01T11:59:00Z', expected: '1 minute ago' },
-        { now: '2024-01-01T12:00:00Z', then: '2024-01-01T11:30:00Z', expected: /minutes ago/ },
-        { now: '2024-01-01T12:00:00Z', then: '2024-01-01T11:00:00Z', expected: '1 hour ago' },
-        { now: '2024-01-01T12:00:00Z', then: '2024-01-01T07:00:00Z', expected: /hours ago/ },
+        {
+          now: '2024-01-01T12:00:00Z',
+          then: '2024-01-01T12:00:00Z',
+          expected: 'just now',
+        },
+        {
+          now: '2024-01-01T12:00:00Z',
+          then: '2024-01-01T11:59:59Z',
+          expected: 'just now',
+        },
+        {
+          now: '2024-01-01T12:00:00Z',
+          then: '2024-01-01T11:59:30Z',
+          expected: /seconds ago/,
+        },
+        {
+          now: '2024-01-01T12:00:00Z',
+          then: '2024-01-01T11:59:00Z',
+          expected: '1 minute ago',
+        },
+        {
+          now: '2024-01-01T12:00:00Z',
+          then: '2024-01-01T11:30:00Z',
+          expected: /minutes ago/,
+        },
+        {
+          now: '2024-01-01T12:00:00Z',
+          then: '2024-01-01T11:00:00Z',
+          expected: '1 hour ago',
+        },
+        {
+          now: '2024-01-01T12:00:00Z',
+          then: '2024-01-01T07:00:00Z',
+          expected: /hours ago/,
+        },
       ];
 
       testCases.forEach(({ now, then, expected }) => {
         vi.setSystemTime(new Date(now));
 
         const { unmount } = render(
-          <CollaborationPanel {...defaultProps} lastEventTimestamp={then} />
+          <CollaborationPanel {...defaultProps} lastEventTimestamp={then} />,
         );
 
-        const lastSyncText = screen.getByText(/Last sync:/i).parentElement?.textContent;
+        const lastSyncText =
+          screen.getByText(/Last sync:/i).parentElement?.textContent;
         if (typeof expected === 'string') {
           expect(lastSyncText).toContain(expected);
         } else {

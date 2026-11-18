@@ -7,7 +7,7 @@ export const faviconPaths = {
   favicon16: '/favicons/favicon-16x16.png',
   androidChrome192: '/favicons/android-chrome-192x192.png',
   androidChrome512: '/favicons/android-chrome-512x512.png',
-  manifest: '/favicons/site.webmanifest'
+  manifest: '/favicons/site.webmanifest',
 } as const;
 
 // Export React component for inline use

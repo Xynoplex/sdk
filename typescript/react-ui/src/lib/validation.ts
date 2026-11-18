@@ -38,16 +38,25 @@ export const ImageURLSchema = {
     ];
 
     const lowerUrl = url.toLowerCase();
-    if (suspiciousPatterns.some(pattern => lowerUrl.includes(pattern))) {
+    if (suspiciousPatterns.some((pattern) => lowerUrl.includes(pattern))) {
       throw new Error('Invalid or potentially unsafe image URL');
     }
 
     // Check file extension or known profile image domains
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico'];
-    const hasExtension = imageExtensions.some(ext => lowerUrl.includes(ext));
-    const isProfileImage = parsed.hostname === 'googleusercontent.com' ||
-                          parsed.hostname.endsWith('.googleusercontent.com') ||
-                          parsed.hostname === 'avatars.githubusercontent.com';
+    const imageExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.svg',
+      '.ico',
+    ];
+    const hasExtension = imageExtensions.some((ext) => lowerUrl.includes(ext));
+    const isProfileImage =
+      parsed.hostname === 'googleusercontent.com' ||
+      parsed.hostname.endsWith('.googleusercontent.com') ||
+      parsed.hostname === 'avatars.githubusercontent.com';
 
     if (!hasExtension && !isProfileImage) {
       throw new Error('URL must point to an image file');

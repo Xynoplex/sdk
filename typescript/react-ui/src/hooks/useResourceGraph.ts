@@ -27,11 +27,15 @@ export function useResourceGraph(id: ResourceId): UseResourceGraphResult {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!xynolog || !id) { setLoading(false); return; }
+    if (!xynolog || !id) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
-    xynolog.browse.resourceGraph(id)
+    xynolog.browse
+      .resourceGraph(id)
       .then((g) => {
         if (cancelled) return;
         setGraph(g);
@@ -43,7 +47,9 @@ export function useResourceGraph(id: ResourceId): UseResourceGraphResult {
         setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [xynolog, id]);
 
   return { graph, loading, error };

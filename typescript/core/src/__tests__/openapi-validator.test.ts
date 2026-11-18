@@ -15,10 +15,12 @@ import { validators, formatErrors } from '../openapi';
 
 describe('generated spec validators', () => {
   it('accepts a well-formed request body', () => {
-    expect(validators.CreateAnnotationRequest({
-      target: { source: 'res-1' },
-      motivation: 'linking',
-    })).toBe(true);
+    expect(
+      validators.CreateAnnotationRequest({
+        target: { source: 'res-1' },
+        motivation: 'linking',
+      }),
+    ).toBe(true);
   });
 
   it('rejects a malformed body and says what is wrong', () => {
@@ -29,18 +31,24 @@ describe('generated spec validators', () => {
 
   it('names a property the schema does not declare', () => {
     const validate = validators.DispatcherHealth;
-    expect(validate({ status: 'ok', queue: 'jetstream', password: 'x' })).toBe(false);
-    expect(formatErrors(validate.errors)).toBe('root: unknown property password');
+    expect(validate({ status: 'ok', queue: 'jetstream', password: 'x' })).toBe(
+      false,
+    );
+    expect(formatErrors(validate.errors)).toBe(
+      'root: unknown property password',
+    );
   });
 
   it('validates a discriminated union member', () => {
     // `discriminator` is allowlisted as annotation-only, so the sibling oneOf
     // stays the validation authority (OpenAPI's own semantics for it).
-    expect(validators.AnnotationBody({
-      type: 'TextualBody',
-      value: 'Person',
-      purpose: 'tagging',
-    })).toBe(true);
+    expect(
+      validators.AnnotationBody({
+        type: 'TextualBody',
+        value: 'Person',
+        purpose: 'tagging',
+      }),
+    ).toBe(true);
   });
 
   it('validates the OpenAPI 3.0 nullable-$ref idiom (nullable beside allOf)', () => {
@@ -49,11 +57,20 @@ describe('generated spec validators', () => {
     //
     // `GetAnnotationResponse` is the exemplar: it uses the idiom on two
     // properties.
-    expect(validators.GetAnnotationResponse({
-      annotation: { '@context': 'http://www.w3.org/ns/anno.jsonld', type: 'Annotation', id: 'ann-1', motivation: 'linking', created: '2026-01-01T00:00:00.000Z', target: { type: 'SpecificResource', source: 'res-1' } },
-      resource: null,
-      resolvedResource: null,
-    })).toBe(true);
+    expect(
+      validators.GetAnnotationResponse({
+        annotation: {
+          '@context': 'http://www.w3.org/ns/anno.jsonld',
+          type: 'Annotation',
+          id: 'ann-1',
+          motivation: 'linking',
+          created: '2026-01-01T00:00:00.000Z',
+          target: { type: 'SpecificResource', source: 'res-1' },
+        },
+        resource: null,
+        resolvedResource: null,
+      }),
+    ).toBe(true);
     expect(validators.BeckonHoverEvent({ annotationId: null })).toBe(true);
   });
 
@@ -62,7 +79,12 @@ describe('generated spec validators', () => {
     // the check that the `oneOf` actually admits the absence members and
     // rejects null — the generated TS types would agree with a wrong
     // schema, since both derive from it.
-    expect(validators.AnchoredTextAnswer({ kind: 'declined', declined: 'no-text-layer' })).toBe(true);
+    expect(
+      validators.AnchoredTextAnswer({
+        kind: 'declined',
+        declined: 'no-text-layer',
+      }),
+    ).toBe(true);
     expect(validators.AnchoredTextAnswer({ kind: 'not-yet' })).toBe(true);
     expect(validators.AnchoredTextAnswer(null)).toBe(false);
   });

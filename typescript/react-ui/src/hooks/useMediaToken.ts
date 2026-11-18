@@ -20,7 +20,10 @@ interface Minted {
  * client explicitly (not `useXynolog()`), so a bring-your-own-session host can
  * use it with a bare session; the batteries-included page passes `session.client`.
  */
-export function useMediaToken(client: XynologClient | null, id: ResourceId): UseMediaTokenResult {
+export function useMediaToken(
+  client: XynologClient | null,
+  id: ResourceId,
+): UseMediaTokenResult {
   const [minted, setMinted] = useState<Minted | null>(null);
   // `auth` is only constructed when the client was given an IGatewayOperations
   // — a host on a bare transport has none, and cannot mint tokens at all.
@@ -29,15 +32,26 @@ export function useMediaToken(client: XynologClient | null, id: ResourceId): Use
   useEffect(() => {
     if (!client || !auth || !id) return;
     let cancelled = false;
-    auth.mediaToken(id)
-      .then(({ token }) => { if (!cancelled) setMinted({ client, id, token }); })
-      .catch(() => { if (!cancelled) setMinted({ client, id, token: undefined }); });
+    auth
+      .mediaToken(id)
+      .then(({ token }) => {
+        if (!cancelled) setMinted({ client, id, token });
+      })
+      .catch(() => {
+        if (!cancelled) setMinted({ client, id, token: undefined });
+      });
 
-    const refreshInterval = setInterval(() => {
-      auth.mediaToken(id)
-        .then(({ token }) => { if (!cancelled) setMinted({ client, id, token }); })
-        .catch(() => {});
-    }, 4 * 60 * 1000);
+    const refreshInterval = setInterval(
+      () => {
+        auth
+          .mediaToken(id)
+          .then(({ token }) => {
+            if (!cancelled) setMinted({ client, id, token });
+          })
+          .catch(() => {});
+      },
+      4 * 60 * 1000,
+    );
 
     return () => {
       cancelled = true;

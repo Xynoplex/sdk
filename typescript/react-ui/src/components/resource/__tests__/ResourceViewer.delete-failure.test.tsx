@@ -13,9 +13,16 @@
 import { describe, it, expect, vi } from 'vitest';
 import { screen, act, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { Annotation, ResourceDescriptor as XynologResource } from '@xynolog/core';
+import type {
+  Annotation,
+  ResourceDescriptor as XynologResource,
+} from '@xynolog/core';
 import { annotationId, resourceId } from '@xynolog/core';
-import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  createTestXynologWrapper,
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import { ResourceViewer } from '../ResourceViewer';
 
 const resource: XynologResource & { content: string } = {
@@ -35,17 +42,30 @@ const highlight: Annotation = {
   id: annotationId('ann-1'),
   motivation: 'highlighting',
   created: '2026-01-01T00:00:00.000Z',
-  target: { source: resourceId('res-1'), selector: { type: 'TextPositionSelector', start: 0, end: 4 } },
+  target: {
+    source: resourceId('res-1'),
+    selector: { type: 'TextPositionSelector', start: 0, end: 4 },
+  },
 };
 
-const annotations = { highlights: [highlight], references: [], assessments: [], comments: [], tags: [] };
+const annotations = {
+  highlights: [highlight],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 describe('ResourceViewer — a refused delete', () => {
   it('reports mark:delete-error, stamped with the resource, instead of dropping the rejection', async () => {
     const { session, eventBus, client } = createTestXynologWrapper();
-    vi.spyOn(client.mark, 'delete').mockRejectedValue(new Error('the knowledge base refused the delete'));
+    vi.spyOn(client.mark, 'delete').mockRejectedValue(
+      new Error('the knowledge base refused the delete'),
+    );
     const reported: unknown[] = [];
-    const sub = eventBus.on('mark:delete-error').subscribe((e) => reported.push(e));
+    const sub = eventBus
+      .on('mark:delete-error')
+      .subscribe((e) => reported.push(e));
 
     renderInEnglish(
       <ResourceViewer
@@ -66,9 +86,17 @@ describe('ResourceViewer — a refused delete', () => {
     });
     fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
 
-    expect(client.mark.delete).toHaveBeenCalledWith(resourceId('res-1'), annotationId('ann-1'));
+    expect(client.mark.delete).toHaveBeenCalledWith(
+      resourceId('res-1'),
+      annotationId('ann-1'),
+    );
     await waitFor(() => {
-      expect(reported).toEqual([{ resourceId: 'res-1', message: 'the knowledge base refused the delete' }]);
+      expect(reported).toEqual([
+        {
+          resourceId: 'res-1',
+          message: 'the knowledge base refused the delete',
+        },
+      ]);
     });
     sub.unsubscribe();
   });

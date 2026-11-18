@@ -48,7 +48,10 @@ export interface ListState<T> {
  * Returns the state plus its own `dispose`; the owning state unit is expected
  * to register that with its disposer.
  */
-export function trackList<T>(open: () => Observable<CacheState<T>>, empty: T): {
+export function trackList<T>(
+  open: () => Observable<CacheState<T>>,
+  empty: T,
+): {
   state: ListState<T>;
   dispose: () => void;
 } {

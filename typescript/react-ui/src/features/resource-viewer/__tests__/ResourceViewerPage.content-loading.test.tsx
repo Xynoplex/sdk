@@ -14,7 +14,11 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
 import type { ResourceDescriptor } from '@xynolog/core';
 import { XynologBrowser, createSessionSignals } from '@xynolog/sdk';
-import { createTestSession, inMemoryContent, stubGateway } from '@xynolog/sdk/testing';
+import {
+  createTestSession,
+  inMemoryContent,
+  stubGateway,
+} from '@xynolog/sdk/testing';
 import { ResourceViewerPage } from '../components/ResourceViewerPage';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { renderWithProviders } from '../../../test-utils';
@@ -96,7 +100,10 @@ async function mountPageFor(mediaType: string, bytes: string) {
     content,
   });
   const resourceViewed = vi.spyOn(client.browse, 'resourceViewed');
-  const browser = new XynologBrowser({ storage, sessionFactory: () => session });
+  const browser = new XynologBrowser({
+    storage,
+    sessionFactory: () => session,
+  });
   browser.activeSession$.next(session);
   browser.activeSignals$.next(createSessionSignals());
   cleanups.push(async () => {
@@ -121,8 +128,13 @@ async function mountPageFor(mediaType: string, bytes: string) {
         resource={resource}
         rUri={resourceId}
         locale="en"
-        Link={({ href, children }: LinkComponentProps) => <a href={href}>{children}</a>}
-        routes={{ resourceDetail: (id: string) => `/know/resource/${id}`, knowledge: () => '/know' }}
+        Link={({ href, children }: LinkComponentProps) => (
+          <a href={href}>{children}</a>
+        )}
+        routes={{
+          resourceDetail: (id: string) => `/know/resource/${id}`,
+          knowledge: () => '/know',
+        }}
         ToolbarPanels={() => null}
         refetchDocument={vi.fn().mockResolvedValue(undefined)}
         streamStatus="open"
@@ -135,14 +147,17 @@ async function mountPageFor(mediaType: string, bytes: string) {
 }
 
 /** Let every already-started fetch settle, so a late duplicate is counted. */
-const settle = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+const settle = () =>
+  act(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
 
 const viewerContent = () => screen.getByTestId('resource-viewer').textContent;
 
 describe('ResourceViewerPage — one owner of content loading', () => {
   it('a PDF is never fetched as a representation: its bytes travel by the media-token URL', async () => {
-    const { resourceId, client, getBinary, getMediaToken } =
-      await mountPageFor('application/pdf', '%PDF-1.7 fixture bytes');
+    const { resourceId, client, getBinary, getMediaToken } = await mountPageFor(
+      'application/pdf',
+      '%PDF-1.7 fixture bytes',
+    );
 
     const url = `${client.baseUrl}/api/resources/${resourceId}?token=tok-1`;
     await waitFor(() => expect(viewerContent()).toBe(url));
@@ -153,7 +168,10 @@ describe('ResourceViewerPage — one owner of content loading', () => {
   });
 
   it('a text resource is fetched exactly once, and mints no media token', async () => {
-    const { getBinary, getMediaToken } = await mountPageFor('text/plain', 'hello');
+    const { getBinary, getMediaToken } = await mountPageFor(
+      'text/plain',
+      'hello',
+    );
 
     await waitFor(() => expect(viewerContent()).toBe('hello'));
     await settle();
@@ -173,7 +191,10 @@ describe('ResourceViewerPage — a type with no preview loads nothing', () => {
     ['text/csv', 'decodable text the viewer does not render'],
     ['text/x-custom', 'a registry miss'],
   ])('%s (%s): no representation fetch, no media token', async (mediaType) => {
-    const { getBinary, getMediaToken } = await mountPageFor(mediaType, 'fixture bytes');
+    const { getBinary, getMediaToken } = await mountPageFor(
+      mediaType,
+      'fixture bytes',
+    );
 
     await screen.findByTestId('resource-viewer');
     await settle();
@@ -186,12 +207,17 @@ describe('ResourceViewerPage — a type with no preview loads nothing', () => {
   // Nothing to wait for is not the same as never loaded: the fallback is on
   // screen at once, so the arrival is announced and reported like any other.
   it('still counts as loaded: announced, and reported viewed once', async () => {
-    const { resourceId, resourceViewed } = await mountPageFor('application/zip', 'fixture bytes');
+    const { resourceId, resourceViewed } = await mountPageFor(
+      'application/zip',
+      'fixture bytes',
+    );
 
     await screen.findByTestId('resource-viewer');
     await settle();
 
-    expect(announcements.announceResourceLoaded).toHaveBeenCalledWith('Fixture');
+    expect(announcements.announceResourceLoaded).toHaveBeenCalledWith(
+      'Fixture',
+    );
     expect(resourceViewed).toHaveBeenCalledTimes(1);
     expect(resourceViewed).toHaveBeenCalledWith(resourceId);
   });
@@ -201,14 +227,19 @@ describe('ResourceViewerPage — a type with no preview loads nothing', () => {
 // zero-byte document that has been fetched is on screen like any other.
 describe('ResourceViewerPage — an empty document is a loaded document', () => {
   it('a zero-byte text resource is announced, and reported viewed once', async () => {
-    const { resourceId, getBinary, resourceViewed } = await mountPageFor('text/plain', '');
+    const { resourceId, getBinary, resourceViewed } = await mountPageFor(
+      'text/plain',
+      '',
+    );
 
     await waitFor(() => expect(resourceViewed).toHaveBeenCalledTimes(1));
     await settle();
 
     expect(resourceViewed).toHaveBeenCalledTimes(1);
     expect(resourceViewed).toHaveBeenCalledWith(resourceId);
-    expect(announcements.announceResourceLoaded).toHaveBeenCalledWith('Fixture');
+    expect(announcements.announceResourceLoaded).toHaveBeenCalledWith(
+      'Fixture',
+    );
     expect(getBinary).toHaveBeenCalledTimes(1);
     expect(viewerContent()).toBe('');
   });

@@ -19,7 +19,10 @@ import { useObservable } from '../../../hooks/useObservable';
  *
  * @emits browse:resource-viewed - The resource this page shows, once it has loaded. Payload: { resourceId: string }
  */
-export function useResourceViewedReport(rid: ResourceId, loaded: boolean): void {
+export function useResourceViewedReport(
+  rid: ResourceId,
+  loaded: boolean,
+): void {
   const xynolog = useXynolog();
   const session = useObservable(xynolog.activeSession$);
   // Brand once at the boundary: the caller already holds a ResourceId; this

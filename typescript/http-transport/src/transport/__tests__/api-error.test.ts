@@ -30,7 +30,13 @@ describe('APIError', () => {
     ];
 
     it.each(cases)('status %d maps to %s', (status, expectedCode) => {
-      const err = APIError.fromStatus('msg', status, 'Status Text', undefined, undefined);
+      const err = APIError.fromStatus(
+        'msg',
+        status,
+        'Status Text',
+        undefined,
+        undefined,
+      );
       expect(err.code).toBe(expectedCode);
     });
   });
@@ -41,26 +47,62 @@ describe('APIError', () => {
     // 429 from any other limit is `rate-limited` still.
     it.each<[string, number, unknown, TransportErrorCode]>([
       ['a 401', 401, undefined, 'unauthorized'],
-      ['a 429 refusal-rate', 429, { error: 'refused', code: 'refusal-rate' }, 'unauthorized'],
-      ['a 429 emit-rate', 429, { error: 'slow down', code: 'emit-rate' }, 'rate-limited'],
+      [
+        'a 429 refusal-rate',
+        429,
+        { error: 'refused', code: 'refusal-rate' },
+        'unauthorized',
+      ],
+      [
+        'a 429 emit-rate',
+        429,
+        { error: 'slow down', code: 'emit-rate' },
+        'rate-limited',
+      ],
       ['a 429 that names no limit', 429, 'Too Many Requests', 'rate-limited'],
-      ['a 503 that names refusal-rate', 503, { error: 'refused', code: 'refusal-rate' }, 'unavailable'],
+      [
+        'a 503 that names refusal-rate',
+        503,
+        { error: 'refused', code: 'refusal-rate' },
+        'unavailable',
+      ],
     ])('%s is %s', (_what, status, body, expectedCode) => {
-      const err = APIError.fromStatus('msg', status, 'Status Text', body, undefined);
+      const err = APIError.fromStatus(
+        'msg',
+        status,
+        'Status Text',
+        body,
+        undefined,
+      );
       expect(err.code).toBe(expectedCode);
       expect(err.status).toBe(status);
     });
 
     it('keeps its 429 and its wait when the gateway states them', () => {
-      const err = APIError.refusal(429, 'Too Many Requests', { error: 'refused', code: 'refusal-rate' }, '1');
-      expect(err).toMatchObject({ code: 'unauthorized', status: 429, retryAfterMs: 1000, message: 'refused' });
+      const err = APIError.refusal(
+        429,
+        'Too Many Requests',
+        { error: 'refused', code: 'refusal-rate' },
+        '1',
+      );
+      expect(err).toMatchObject({
+        code: 'unauthorized',
+        status: 429,
+        retryAfterMs: 1000,
+        message: 'refused',
+      });
     });
   });
 
   describe('refusalBody', () => {
     it('is the JSON a body carries, its text when it carries none, and none when it is empty', () => {
-      expect(refusalBody('{"error":"refused","code":"refusal-rate"}')).toEqual({ error: 'refused', code: 'refusal-rate' });
-      expect(refusalBody('<html>bad gateway</html>')).toBe('<html>bad gateway</html>');
+      expect(refusalBody('{"error":"refused","code":"refusal-rate"}')).toEqual({
+        error: 'refused',
+        code: 'refusal-rate',
+      });
+      expect(refusalBody('<html>bad gateway</html>')).toBe(
+        '<html>bad gateway</html>',
+      );
       expect(refusalBody('')).toBeUndefined();
     });
   });
@@ -72,55 +114,95 @@ describe('APIError', () => {
       expect(err.message).toBe('You may not write here');
       expect(err.code).toBe('forbidden');
       expect(err.status).toBe(403);
-      expect(err.details).toEqual({ status: 403, statusText: 'Forbidden', body });
+      expect(err.details).toEqual({
+        status: 403,
+        statusText: 'Forbidden',
+        body,
+      });
       expect(err.retryAfterMs).toBe(7000);
     });
 
-    it.each([['text', 'Bad Gateway'], ['a body with no `error`', { message: 'not the gateway\'s member' }], ['nothing', undefined]])(
-      'is worded by its status when the body is %s',
-      (_what, body) => {
-        expect(APIError.refusal(502, 'Bad Gateway', body, null).message).toBe('HTTP 502: Bad Gateway');
-      },
-    );
+    it.each([
+      ['text', 'Bad Gateway'],
+      ['a body with no `error`', { message: "not the gateway's member" }],
+      ['nothing', undefined],
+    ])('is worded by its status when the body is %s', (_what, body) => {
+      expect(APIError.refusal(502, 'Bad Gateway', body, null).message).toBe(
+        'HTTP 502: Bad Gateway',
+      );
+    });
   });
 
   describe('withoutResponse', () => {
     it('is `unavailable`: nothing answered', () => {
-      expect(APIError.withoutResponse('msg', 'network-error').code).toBe('unavailable');
+      expect(APIError.withoutResponse('msg', 'network-error').code).toBe(
+        'unavailable',
+      );
     });
 
     it('has no status, body, or retry wait to report', () => {
-      const err = APIError.withoutResponse('Network error during upload', 'network-error');
+      const err = APIError.withoutResponse(
+        'Network error during upload',
+        'network-error',
+      );
       expect(err).toBeInstanceOf(APIError);
       expect(err.name).toBe('APIError');
       expect(err.message).toBe('Network error during upload');
       expect(err.status).toBe(0);
       expect(err.statusText).toBe('network-error');
       expect(err.retryAfterMs).toBeUndefined();
-      expect(err.details).toEqual({ status: 0, statusText: 'network-error', body: undefined });
+      expect(err.details).toEqual({
+        status: 0,
+        statusText: 'network-error',
+        body: undefined,
+      });
     });
   });
 
   describe('shape', () => {
     it('exposes status and statusText as readonly fields', () => {
-      const err = APIError.fromStatus('Not Found', 404, 'Not Found', undefined, undefined);
+      const err = APIError.fromStatus(
+        'Not Found',
+        404,
+        'Not Found',
+        undefined,
+        undefined,
+      );
       expect(err.status).toBe(404);
       expect(err.statusText).toBe('Not Found');
     });
 
     it('preserves message', () => {
-      const err = APIError.fromStatus('the message', 500, 'Internal Server Error', undefined, undefined);
+      const err = APIError.fromStatus(
+        'the message',
+        500,
+        'Internal Server Error',
+        undefined,
+        undefined,
+      );
       expect(err.message).toBe('the message');
     });
 
     it('sets name to APIError', () => {
-      const err = APIError.fromStatus('m', 400, 'Bad Request', undefined, undefined);
+      const err = APIError.fromStatus(
+        'm',
+        400,
+        'Bad Request',
+        undefined,
+        undefined,
+      );
       expect(err.name).toBe('APIError');
     });
 
     it('packs status, statusText, and body into `details`', () => {
       const body = { error: 'denied', detail: 'token expired' };
-      const err = APIError.fromStatus('Unauthorized', 401, 'Unauthorized', body, undefined);
+      const err = APIError.fromStatus(
+        'Unauthorized',
+        401,
+        'Unauthorized',
+        body,
+        undefined,
+      );
       expect(err.details).toEqual({
         status: 401,
         statusText: 'Unauthorized',
@@ -129,7 +211,13 @@ describe('APIError', () => {
     });
 
     it('omits body in details when not provided', () => {
-      const err = APIError.fromStatus('m', 500, 'Internal Server Error', undefined, undefined);
+      const err = APIError.fromStatus(
+        'm',
+        500,
+        'Internal Server Error',
+        undefined,
+        undefined,
+      );
       expect(err.details).toEqual({
         status: 500,
         statusText: 'Internal Server Error',
@@ -140,7 +228,13 @@ describe('APIError', () => {
 
   describe('hierarchy', () => {
     it('extends XynologError', () => {
-      const err = APIError.fromStatus('m', 401, 'Unauthorized', undefined, undefined);
+      const err = APIError.fromStatus(
+        'm',
+        401,
+        'Unauthorized',
+        undefined,
+        undefined,
+      );
       expect(err).toBeInstanceOf(APIError);
       expect(err).toBeInstanceOf(XynologError);
       expect(err).toBeInstanceOf(Error);

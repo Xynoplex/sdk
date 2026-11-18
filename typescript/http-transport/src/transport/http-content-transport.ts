@@ -40,9 +40,25 @@
  * `protocol/specs/src/client/timing.json`): how long it takes is how large it is.
  */
 
-import type { AccessToken, AnchoredTextAnswer, ResourceId, PutBinaryOptions, PutBinaryProgress, components } from '@xynolog/core';
-import { REQUEST_RETRY_PAUSE_MS, RETRY_RULES, busLog, uuidV4 } from '@xynolog/core';
-import { SpanKind, getActiveTraceparent, withSpan } from '@xynolog/observability';
+import type {
+  AccessToken,
+  AnchoredTextAnswer,
+  ResourceId,
+  PutBinaryOptions,
+  PutBinaryProgress,
+  components,
+} from '@xynolog/core';
+import {
+  REQUEST_RETRY_PAUSE_MS,
+  RETRY_RULES,
+  busLog,
+  uuidV4,
+} from '@xynolog/core';
+import {
+  SpanKind,
+  getActiveTraceparent,
+  withSpan,
+} from '@xynolog/observability';
 import type { HttpTransport } from './http-transport';
 import { APIError, refusalBody } from './api-error';
 import { declaredBody } from './declared-body';
@@ -58,7 +74,8 @@ export class HttpContentTransport implements IContentTransport {
     request: PutBinaryRequest,
     options?: PutBinaryOptions,
   ): Promise<{ resourceId: ResourceId }> {
-    const sizeBytes = request.file instanceof File ? request.file.size : request.file.length;
+    const sizeBytes =
+      request.file instanceof File ? request.file.size : request.file.length;
     busLog('PUT', 'content', {
       name: request.name,
       format: request.format,
@@ -71,18 +88,42 @@ export class HttpContentTransport implements IContentTransport {
         const formData = buildFormData(request);
         const token = options?.auth ?? this.transport.getToken();
         // One key for this upload, the same on every attempt at it.
-        const headers = { ...this.requestHeaders(token), 'Idempotency-Key': uuidV4() };
+        const headers = {
+          ...this.requestHeaders(token),
+          'Idempotency-Key': uuidV4(),
+        };
         const path = '/resources';
         const url = `${this.transport.baseUrl}${path}`;
 
-        if (typeof XMLHttpRequest !== 'undefined' && (options?.onProgress || options?.signal)) {
+        if (
+          typeof XMLHttpRequest !== 'undefined' &&
+          (options?.onProgress || options?.signal)
+        ) {
           const { signal } = options;
-          const onProgress = options.onProgress ? neverLess(options.onProgress) : undefined;
+          const onProgress = options.onProgress
+            ? neverLess(options.onProgress)
+            : undefined;
           const report = (err: APIError): void => this.transport.pushError(err);
-          const send = (sentHeaders: Record<string, string>, onApiError: XhrUploadOptions['onApiError']) =>
-            uploadViaXhr({ url, formData, headers: sentHeaders, onProgress, signal, onApiError });
+          const send = (
+            sentHeaders: Record<string, string>,
+            onApiError: XhrUploadOptions['onApiError'],
+          ) =>
+            uploadViaXhr({
+              url,
+              formData,
+              headers: sentHeaders,
+              onProgress,
+              signal,
+              onApiError,
+            });
           const sentAgain = (err: APIError, unanswered: boolean): boolean =>
-            !signal?.aborted && (unanswered || RETRY_RULES.transport.retryable({ status: err.status, method: 'POST', keyed: true }));
+            !signal?.aborted &&
+            (unanswered ||
+              RETRY_RULES.transport.retryable({
+                status: err.status,
+                method: 'POST',
+                keyed: true,
+              }));
           // One more sending, as through ky: either a refused credential is
           // renewed once and the upload sent with the token given
           // (protocol/contract/TRANSPORT-CONTRACT.md § A refused credential),
@@ -98,14 +139,20 @@ export class HttpContentTransport implements IContentTransport {
             });
           } catch (error) {
             if (error instanceof APIError && error.code === 'unauthorized') {
-              const renewed = await this.transport.renewal(token === undefined ? null : token);
+              const renewed = await this.transport.renewal(
+                token === undefined ? null : token,
+              );
               if (renewed === null) {
                 report(error);
                 throw error;
               }
-              return send({ ...headers, Authorization: `Bearer ${renewed}` }, report);
+              return send(
+                { ...headers, Authorization: `Bearer ${renewed}` },
+                report,
+              );
             }
-            if (!(error instanceof APIError) || error !== held.failure) throw error;
+            if (!(error instanceof APIError) || error !== held.failure)
+              throw error;
             await pause(pauseBefore(error), signal);
             return send(headers, report);
           }
@@ -129,7 +176,8 @@ export class HttpContentTransport implements IContentTransport {
               ...(options?.signal ? { signal: options.signal } : {}),
             }),
             (failure) => this.transport.pushError(failure),
-          ));
+          ),
+        );
 
         return { resourceId: result.resourceId };
       },
@@ -155,12 +203,19 @@ export class HttpContentTransport implements IContentTransport {
         // verbatim with their real Content-Type.
         const path = this.pathOf(resourceId);
         const response = await this.transport.ask('GET', path, (http) =>
-          http.get(`${this.transport.baseUrl}${path}`, { headers: this.requestHeaders(options?.auth) }));
-        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+          http.get(`${this.transport.baseUrl}${path}`, {
+            headers: this.requestHeaders(options?.auth),
+          }),
+        );
+        const contentType =
+          response.headers.get('content-type') || 'application/octet-stream';
         const data = await response.arrayBuffer();
         return { data, contentType };
       },
-      { kind: SpanKind.CLIENT, attrs: { 'resource.id': resourceId as unknown as string } },
+      {
+        kind: SpanKind.CLIENT,
+        attrs: { 'resource.id': resourceId as unknown as string },
+      },
     );
   }
 
@@ -175,8 +230,12 @@ export class HttpContentTransport implements IContentTransport {
         // Pure pipe: no Accept header (see getBinary).
         const path = this.pathOf(resourceId);
         const response = await this.transport.ask('GET', path, (http) =>
-          http.get(`${this.transport.baseUrl}${path}`, { headers: this.requestHeaders(options?.auth) }));
-        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+          http.get(`${this.transport.baseUrl}${path}`, {
+            headers: this.requestHeaders(options?.auth),
+          }),
+        );
+        const contentType =
+          response.headers.get('content-type') || 'application/octet-stream';
         if (!response.body) {
           throw new Error('Response body is null - cannot create stream');
         }
@@ -184,7 +243,10 @@ export class HttpContentTransport implements IContentTransport {
       },
       {
         kind: SpanKind.CLIENT,
-        attrs: { 'resource.id': resourceId as unknown as string, 'content.stream': true },
+        attrs: {
+          'resource.id': resourceId as unknown as string,
+          'content.stream': true,
+        },
       },
     );
   }
@@ -204,10 +266,21 @@ export class HttpContentTransport implements IContentTransport {
       () => {
         const path = `${this.pathOf(resourceId)}/jsonld`;
         return this.transport.ask('GET', path, async (http) =>
-          declaredBody('GetResourceResponse', 'GET', path, await http.get(`${this.transport.baseUrl}${path}`, { headers: this.requestHeaders(options?.auth) }), (failure) =>
-            this.transport.pushError(failure)));
+          declaredBody(
+            'GetResourceResponse',
+            'GET',
+            path,
+            await http.get(`${this.transport.baseUrl}${path}`, {
+              headers: this.requestHeaders(options?.auth),
+            }),
+            (failure) => this.transport.pushError(failure),
+          ),
+        );
       },
-      { kind: SpanKind.CLIENT, attrs: { 'resource.id': resourceId as unknown as string } },
+      {
+        kind: SpanKind.CLIENT,
+        attrs: { 'resource.id': resourceId as unknown as string },
+      },
     );
   }
 
@@ -225,10 +298,21 @@ export class HttpContentTransport implements IContentTransport {
       () => {
         const path = `${this.pathOf(resourceId)}/annotations`;
         return this.transport.ask('GET', path, async (http) =>
-          declaredBody('GetAnnotationsResponse', 'GET', path, await http.get(`${this.transport.baseUrl}${path}`, { headers: this.requestHeaders(options?.auth) }), (failure) =>
-            this.transport.pushError(failure)));
+          declaredBody(
+            'GetAnnotationsResponse',
+            'GET',
+            path,
+            await http.get(`${this.transport.baseUrl}${path}`, {
+              headers: this.requestHeaders(options?.auth),
+            }),
+            (failure) => this.transport.pushError(failure),
+          ),
+        );
       },
-      { kind: SpanKind.CLIENT, attrs: { 'resource.id': resourceId as unknown as string } },
+      {
+        kind: SpanKind.CLIENT,
+        attrs: { 'resource.id': resourceId as unknown as string },
+      },
     );
   }
 
@@ -250,10 +334,21 @@ export class HttpContentTransport implements IContentTransport {
       () => {
         const path = `${this.pathOf(resourceId)}/anchored-text`;
         return this.transport.ask('GET', path, async (http) =>
-          declaredBody('AnchoredTextAnswer', 'GET', path, await http.get(`${this.transport.baseUrl}${path}`, { headers: this.requestHeaders(options?.auth) }), (failure) =>
-            this.transport.pushError(failure)));
+          declaredBody(
+            'AnchoredTextAnswer',
+            'GET',
+            path,
+            await http.get(`${this.transport.baseUrl}${path}`, {
+              headers: this.requestHeaders(options?.auth),
+            }),
+            (failure) => this.transport.pushError(failure),
+          ),
+        );
       },
-      { kind: SpanKind.CLIENT, attrs: { 'resource.id': resourceId as unknown as string } },
+      {
+        kind: SpanKind.CLIENT,
+        attrs: { 'resource.id': resourceId as unknown as string },
+      },
     );
   }
 
@@ -274,7 +369,9 @@ export class HttpContentTransport implements IContentTransport {
   /** Auth header + W3C trace propagation for the active span. */
   private requestHeaders(override?: AccessToken): Record<string, string> {
     const token = override ?? this.transport.getToken();
-    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
     const trace = getActiveTraceparent();
     if (trace) {
       headers['traceparent'] = trace.traceparent;
@@ -296,7 +393,9 @@ function buildFormData(request: PutBinaryRequest): FormData {
     // `Buffer` is a Node global; referencing it bare in the browser throws
     // ReferenceError before the isBuffer call. Browser uploads always hit
     // the File branch above; this branch is for Node-side workers.
-    const blob = new Blob([new Uint8Array(request.file)], { type: request.format });
+    const blob = new Blob([new Uint8Array(request.file)], {
+      type: request.format,
+    });
     formData.append('file', blob, request.name);
   } else {
     throw new Error('file must be a File or Buffer');
@@ -306,14 +405,20 @@ function buildFormData(request: PutBinaryRequest): FormData {
     formData.append('entityTypes', JSON.stringify(request.entityTypes));
   }
   if (request.language) formData.append('language', request.language);
-  if (request.sourceAnnotationId) formData.append('sourceAnnotationId', String(request.sourceAnnotationId));
-  if (request.sourceResourceId) formData.append('sourceResourceId', String(request.sourceResourceId));
-  if (request.generationPrompt) formData.append('generationPrompt', request.generationPrompt);
-  if (request.generator) formData.append('generator', JSON.stringify(request.generator));
+  if (request.sourceAnnotationId)
+    formData.append('sourceAnnotationId', String(request.sourceAnnotationId));
+  if (request.sourceResourceId)
+    formData.append('sourceResourceId', String(request.sourceResourceId));
+  if (request.generationPrompt)
+    formData.append('generationPrompt', request.generationPrompt);
+  if (request.generator)
+    formData.append('generator', JSON.stringify(request.generator));
   if (request.jobId) formData.append('jobId', request.jobId);
   if (request.cloneToken) formData.append('cloneToken', request.cloneToken);
-  if (request.archiveOriginal !== undefined) formData.append('archiveOriginal', String(request.archiveOriginal));
-  if (request.isDraft !== undefined) formData.append('isDraft', String(request.isDraft));
+  if (request.archiveOriginal !== undefined)
+    formData.append('archiveOriginal', String(request.archiveOriginal));
+  if (request.isDraft !== undefined)
+    formData.append('isDraft', String(request.isDraft));
 
   return formData;
 }
@@ -344,10 +449,14 @@ async function inPieces(
   form: FormData,
   onProgress: PutBinaryProgress,
   signal: AbortSignal | undefined,
-): Promise<{ body: ReadableStream<Uint8Array>; headers: Record<string, string> }> {
+): Promise<{
+  body: ReadableStream<Uint8Array>;
+  headers: Record<string, string>;
+}> {
   const encoded = new Response(form);
   const contentType = encoded.headers.get('content-type');
-  if (!contentType) throw new Error('the runtime encoded a form without naming its boundary');
+  if (!contentType)
+    throw new Error('the runtime encoded a form without naming its boundary');
   const bytes = new Uint8Array(await encoded.arrayBuffer());
   let handed = 0;
   const body = new ReadableStream<Uint8Array>(
@@ -363,7 +472,13 @@ async function inPieces(
     },
     { highWaterMark: 0 },
   );
-  return { body, headers: { 'Content-Type': contentType, 'Content-Length': String(bytes.byteLength) } };
+  return {
+    body,
+    headers: {
+      'Content-Type': contentType,
+      'Content-Length': String(bytes.byteLength),
+    },
+  };
 }
 
 /**
@@ -371,7 +486,9 @@ async function inPieces(
  * the `Retry-After` the gateway's answer states when that is longer.
  */
 function pauseBefore(failure: APIError): number {
-  return failure.retryAfterMs === undefined ? REQUEST_RETRY_PAUSE_MS : Math.max(failure.retryAfterMs, REQUEST_RETRY_PAUSE_MS);
+  return failure.retryAfterMs === undefined
+    ? REQUEST_RETRY_PAUSE_MS
+    : Math.max(failure.retryAfterMs, REQUEST_RETRY_PAUSE_MS);
 }
 
 /** Waits `ms`, or rejects with `signal`'s reason once its caller cancels. */
@@ -431,7 +548,9 @@ interface XhrUploadOptions {
  * that failed, and an answer that is not its declared body. A cancellation
  * rejects with the signal's reason, and `onApiError` is not told of it.
  */
-function uploadViaXhr(opts: XhrUploadOptions): Promise<{ resourceId: ResourceId }> {
+function uploadViaXhr(
+  opts: XhrUploadOptions,
+): Promise<{ resourceId: ResourceId }> {
   const { url, formData, headers, onProgress, signal, onApiError } = opts;
 
   return new Promise((resolve, reject) => {
@@ -469,11 +588,26 @@ function uploadViaXhr(opts: XhrUploadOptions): Promise<{ resourceId: ResourceId 
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        const answer = { status: xhr.status, statusText: xhr.statusText, json: async (): Promise<unknown> => JSON.parse(xhr.responseText) };
-        declaredBody('CreateResourceResponse', 'POST', '/resources', answer, (err) => onApiError(err, false)).then((body) => resolve({ resourceId: body.resourceId }), reject);
+        const answer = {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          json: async (): Promise<unknown> => JSON.parse(xhr.responseText),
+        };
+        declaredBody(
+          'CreateResourceResponse',
+          'POST',
+          '/resources',
+          answer,
+          (err) => onApiError(err, false),
+        ).then((body) => resolve({ resourceId: body.resourceId }), reject);
         return;
       }
-      const err = APIError.refusal(xhr.status, xhr.statusText, refusalBody(xhr.responseText), xhr.getResponseHeader('retry-after'));
+      const err = APIError.refusal(
+        xhr.status,
+        xhr.statusText,
+        refusalBody(xhr.responseText),
+        xhr.getResponseHeader('retry-after'),
+      );
       onApiError(err, false);
       reject(err);
     };
@@ -481,7 +615,10 @@ function uploadViaXhr(opts: XhrUploadOptions): Promise<{ resourceId: ResourceId 
     xhr.onerror = () => {
       // Network-level failure (DNS, TCP reset, CORS). XHR gives no status
       // here; the vocabulary files a failed network under `unavailable`.
-      const err = APIError.withoutResponse('Network error during upload', 'network-error');
+      const err = APIError.withoutResponse(
+        'Network error during upload',
+        'network-error',
+      );
       onApiError(err, true);
       reject(err);
     };

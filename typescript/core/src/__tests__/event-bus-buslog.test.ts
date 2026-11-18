@@ -26,21 +26,25 @@ describe('EventBus busLog integration', () => {
   let debugSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    savedFlag = (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__;
+    savedFlag = (globalThis as { __XYNOLOG_BUS_LOG__?: boolean })
+      .__XYNOLOG_BUS_LOG__;
     debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
   });
 
   afterEach(() => {
     if (savedFlag === undefined) {
-      delete (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__;
+      delete (globalThis as { __XYNOLOG_BUS_LOG__?: boolean })
+        .__XYNOLOG_BUS_LOG__;
     } else {
-      (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = savedFlag as boolean;
+      (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ =
+        savedFlag as boolean;
     }
     debugSpy.mockRestore();
   });
 
   it('emits a [bus EMIT] line on console.debug when the flag is set', () => {
-    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = true;
+    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ =
+      true;
 
     const bus = new EventBus();
     bus.emit('beckon:hover', { annotationId: 'ann-1' as never });
@@ -52,7 +56,8 @@ describe('EventBus busLog integration', () => {
   });
 
   it('does NOT log when the flag is not set', () => {
-    delete (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__;
+    delete (globalThis as { __XYNOLOG_BUS_LOG__?: boolean })
+      .__XYNOLOG_BUS_LOG__;
 
     const bus = new EventBus();
     bus.emit('beckon:hover', { annotationId: 'ann-1' as never });
@@ -61,7 +66,8 @@ describe('EventBus busLog integration', () => {
   });
 
   it('still delivers payloads to subscribers when the flag is set', () => {
-    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = true;
+    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ =
+      true;
 
     const bus = new EventBus();
     const seen: unknown[] = [];
@@ -72,10 +78,13 @@ describe('EventBus busLog integration', () => {
   });
 
   it('logs an emit into a resource scope, with its scope, as it logs a global one', () => {
-    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = true;
+    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ =
+      true;
 
     const bus = new EventBus();
-    bus.scope(RID).emit('beckon:hover', { annotationId: annotationId('ann-1') });
+    bus
+      .scope(RID)
+      .emit('beckon:hover', { annotationId: annotationId('ann-1') });
 
     expect(debugSpy).toHaveBeenCalledTimes(1);
     const line = debugSpy.mock.calls[0]?.[0] as string;
@@ -106,7 +115,9 @@ describe('EventBus dropped-reply detection', () => {
     // A channel deliberately absent from BRIDGED_CHANNELS — the genuine
     // "missing forwarder" gap the detector exists to catch. Synthetic (not a
     // real EventName) so it can never be bridged out from under this test.
-    bus.emit('test:unbridged-reply-a' as never, { response: {} } as never, { correlationId: 'deadbeef-1' });
+    bus.emit('test:unbridged-reply-a' as never, { response: {} } as never, {
+      correlationId: 'deadbeef-1',
+    });
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
     const line = warnSpy.mock.calls[0]?.[0] as string;
@@ -125,7 +136,15 @@ describe('EventBus dropped-reply detection', () => {
       {
         resourceId: RID,
         response: {
-          focus: { kind: 'resource', resource: { '@context': 'https://schema.org/', '@id': RID, name: 'A resource', representations: [] } },
+          focus: {
+            kind: 'resource',
+            resource: {
+              '@context': 'https://schema.org/',
+              '@id': RID,
+              name: 'A resource',
+              representations: [],
+            },
+          },
           graph: { nodes: [], edges: [] },
           metadata: {},
         },
@@ -139,40 +158,65 @@ describe('EventBus dropped-reply detection', () => {
   it('does NOT warn when the reply has an observer', () => {
     const bus = new EventBus();
     bus.on('gather:resource-failed').subscribe(() => {});
-    bus.emit('gather:resource-failed', { message: 'no context was gathered', resourceId: RID }, { correlationId: 'deadbeef-2' });
+    bus.emit(
+      'gather:resource-failed',
+      { message: 'no context was gathered', resourceId: RID },
+      { correlationId: 'deadbeef-2' },
+    );
 
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
   it('does NOT warn for a non-reply emit (no correlationId) with no observers', () => {
     const bus = new EventBus();
-    bus.emit('match:search-results', { referenceId: annotationId('ann-1'), response: [] });
+    bus.emit('match:search-results', {
+      referenceId: annotationId('ann-1'),
+      response: [],
+    });
 
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
   it('WARNs for a global reply whose only observer reads a resource scope, which never receives it', () => {
     const bus = new EventBus();
-    bus.scope(RID).on('nav:push').subscribe(() => {});
+    bus
+      .scope(RID)
+      .on('nav:push')
+      .subscribe(() => {});
     bus.emit('nav:push', { path: '/know' }, { correlationId: 'deadbeef-6' });
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0]?.[0] as string).toContain('[bus DROP] nav:push');
+    expect(warnSpy.mock.calls[0]?.[0] as string).toContain(
+      '[bus DROP] nav:push',
+    );
   });
 
   it('WARNs for a reply emitted into a resource scope nobody reads, though the channel is read globally', () => {
     const bus = new EventBus();
     bus.on('panel:toggle').subscribe(() => {});
-    bus.scope(RID).emit('panel:toggle', { panel: 'info' }, { correlationId: 'deadbeef-7' });
+    bus
+      .scope(RID)
+      .emit('panel:toggle', { panel: 'info' }, { correlationId: 'deadbeef-7' });
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0]?.[0] as string).toContain('[bus DROP] panel:toggle');
+    expect(warnSpy.mock.calls[0]?.[0] as string).toContain(
+      '[bus DROP] panel:toggle',
+    );
   });
 
   it('does NOT warn for a reply emitted into a resource scope that is read there', () => {
     const bus = new EventBus();
-    bus.scope(RID).on('settings:theme-changed').subscribe(() => {});
-    bus.scope(RID).emit('settings:theme-changed', { theme: 'dark' }, { correlationId: 'deadbeef-8' });
+    bus
+      .scope(RID)
+      .on('settings:theme-changed')
+      .subscribe(() => {});
+    bus
+      .scope(RID)
+      .emit(
+        'settings:theme-changed',
+        { theme: 'dark' },
+        { correlationId: 'deadbeef-8' },
+      );
 
     expect(warnSpy).not.toHaveBeenCalled();
   });
@@ -185,8 +229,12 @@ describe('EventBus dropped-reply detection', () => {
 
   it('warns only once per channel (a missing wiring is reported, not spammed)', () => {
     const bus = new EventBus();
-    bus.emit('test:unbridged-reply-b' as never, {} as never, { correlationId: 'deadbeef-3' });
-    bus.emit('test:unbridged-reply-b' as never, {} as never, { correlationId: 'deadbeef-4' });
+    bus.emit('test:unbridged-reply-b' as never, {} as never, {
+      correlationId: 'deadbeef-3',
+    });
+    bus.emit('test:unbridged-reply-b' as never, {} as never, {
+      correlationId: 'deadbeef-4',
+    });
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
   });

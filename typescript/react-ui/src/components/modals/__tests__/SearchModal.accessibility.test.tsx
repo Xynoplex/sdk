@@ -20,7 +20,8 @@ import {
 } from './search-modal-harness';
 
 vi.mock('../../../session/XynologProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../session/XynologProvider')>();
+  const actual =
+    await importOriginal<typeof import('../../../session/XynologProvider')>();
   const { searchBrowser } = await import('./search-modal-harness');
   return { ...actual, useXynolog: () => searchBrowser };
 });
@@ -29,7 +30,12 @@ expect.extend(toHaveNoViolations);
 
 function open() {
   renderWithProviders(
-    <SearchModal isOpen onClose={vi.fn()} onNavigate={vi.fn()} translations={searchTranslations} />,
+    <SearchModal
+      isOpen
+      onClose={vi.fn()}
+      onNavigate={vi.fn()}
+      translations={searchTranslations}
+    />,
   );
   return screen.getByRole('textbox', { name: searchTranslations.title });
 }
@@ -37,9 +43,16 @@ function open() {
 /** Search, and answer with one result per name. */
 async function search(input: HTMLElement, ...names: string[]) {
   fireEvent.change(input, { target: { value: 'doc' } });
-  await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), { timeout: 1500 });
-  setBrowseResults(names.map((name, index) => buildResource(`res-${index + 1}`, name)));
-  await waitFor(() => expect(screen.getByText(names.at(-1)!)).toBeInTheDocument(), { timeout: 1500 });
+  await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), {
+    timeout: 1500,
+  });
+  setBrowseResults(
+    names.map((name, index) => buildResource(`res-${index + 1}`, name)),
+  );
+  await waitFor(
+    () => expect(screen.getByText(names.at(-1)!)).toBeInTheDocument(),
+    { timeout: 1500 },
+  );
 }
 
 describe('SearchModal — Accessibility', () => {
@@ -50,7 +63,9 @@ describe('SearchModal — Accessibility', () => {
   it('is a modal dialog, named by its title', () => {
     open();
 
-    const dialog = screen.getByRole('dialog', { name: searchTranslations.title });
+    const dialog = screen.getByRole('dialog', {
+      name: searchTranslations.title,
+    });
     expect(dialog).toHaveAttribute('aria-modal', 'true');
   });
 

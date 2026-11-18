@@ -14,7 +14,9 @@ export interface KeyboardShortcut {
 }
 
 // Platform detection
-const isMac = typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+const isMac =
+  typeof window !== 'undefined' &&
+  navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
 /**
  * Hook for managing keyboard shortcuts
@@ -40,7 +42,9 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
     }
 
     // Get the active shortcuts
-    const activeShortcuts = shortcutsRef.current.filter(s => s.enabled !== false);
+    const activeShortcuts = shortcutsRef.current.filter(
+      (s) => s.enabled !== false,
+    );
 
     for (const shortcut of activeShortcuts) {
       // Check if the key matches
@@ -81,26 +85,29 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
 export function useDoubleKeyPress(
   key: string,
   handler: () => void,
-  timeout: number = 300
+  timeout: number = 300,
 ) {
   const lastPressRef = useRef<number>(0);
   const handlerRef = useRef(handler);
   handlerRef.current = handler;
 
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key !== key) return;
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key !== key) return;
 
-    const now = Date.now();
-    const timeSinceLastPress = now - lastPressRef.current;
+      const now = Date.now();
+      const timeSinceLastPress = now - lastPressRef.current;
 
-    if (timeSinceLastPress < timeout) {
-      // Double press detected
-      handlerRef.current();
-      lastPressRef.current = 0; // Reset
-    } else {
-      lastPressRef.current = now;
-    }
-  }, [key, timeout]);
+      if (timeSinceLastPress < timeout) {
+        // Double press detected
+        handlerRef.current();
+        lastPressRef.current = 0; // Reset
+      } else {
+        lastPressRef.current = now;
+      }
+    },
+    [key, timeout],
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -127,9 +134,10 @@ export function getShortcutDisplay(shortcut: KeyboardShortcut): string {
   }
 
   // Capitalize the key
-  const key = shortcut.key.length === 1
-    ? shortcut.key.toUpperCase()
-    : shortcut.key.charAt(0).toUpperCase() + shortcut.key.slice(1);
+  const key =
+    shortcut.key.length === 1
+      ? shortcut.key.toUpperCase()
+      : shortcut.key.charAt(0).toUpperCase() + shortcut.key.slice(1);
   parts.push(key);
 
   return parts.join(isMac ? '' : '+');

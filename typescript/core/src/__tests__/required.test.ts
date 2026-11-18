@@ -5,7 +5,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { faultOf, readOfShape, said, type Fault, type Shape } from '../required';
+import {
+  faultOf,
+  readOfShape,
+  said,
+  type Fault,
+  type Shape,
+} from '../required';
 
 const lacks = (member: string): Fault => ({ member, reason: 'lacks' });
 const malformed = (member: string): Fault => ({ member, reason: 'malformed' });
@@ -15,44 +21,107 @@ describe('faultOf', () => {
     for (const [text, fault] of [
       ['{"@id":"r","name":"n","representations":[]}', lacks('@context')],
       ['{"@context":"c","@id":"r","name":"n","representations":[]}', undefined],
-      ['{"@context":"c","@id":"r","name":null,"representations":[]}', lacks('name')],
-      ['{"@context":"c","@id":"r","name":7,"representations":[]}', malformed('name')],
-      ['{"@context":"c","@id":"r","name":"n","representations":"text"}', malformed('representations')],
-      ['{"@context":"c","@id":"r","name":"n","representations":[null]}', malformed('representations')],
-      ['{"@context":"c","@id":"r","name":"n","representations":{}}', lacks('representations.mediaType')],
-      ['{"@context":"c","@id":"r","name":"n","representations":[{}]}', lacks('representations.mediaType')],
-      ['{"@context":"c","@id":"r","name":"n","representations":[{"mediaType":"text/plain","byteSize":1.5}]}', malformed('representations.byteSize')],
-      ['{"@context":"c","@id":"r","name":"n","representations":[{"mediaType":"text/plain","byteSize":2.0}]}', undefined],
-      ['{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":{"@type":"Organization"}}', lacks('wasAttributedTo.name')],
-      ['{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":[{"@type":"Person"},{"@type":"Organization"}]}', lacks('wasAttributedTo.name')],
-      ['{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":{"@type":"Person"}}', undefined],
-      ['{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":"a person"}', malformed('wasAttributedTo')],
+      [
+        '{"@context":"c","@id":"r","name":null,"representations":[]}',
+        lacks('name'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":7,"representations":[]}',
+        malformed('name'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":"text"}',
+        malformed('representations'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[null]}',
+        malformed('representations'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":{}}',
+        lacks('representations.mediaType'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[{}]}',
+        lacks('representations.mediaType'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[{"mediaType":"text/plain","byteSize":1.5}]}',
+        malformed('representations.byteSize'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[{"mediaType":"text/plain","byteSize":2.0}]}',
+        undefined,
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":{"@type":"Organization"}}',
+        lacks('wasAttributedTo.name'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":[{"@type":"Person"},{"@type":"Organization"}]}',
+        lacks('wasAttributedTo.name'),
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":{"@type":"Person"}}',
+        undefined,
+      ],
+      [
+        '{"@context":"c","@id":"r","name":"n","representations":[],"wasAttributedTo":"a person"}',
+        malformed('wasAttributedTo'),
+      ],
       ['{"@context":1998,"@id":"r","representations":[]}', lacks('name')],
       ['"a resource"', malformed('')],
     ] as const) {
-      expect(faultOf('ResourceDescriptor', JSON.parse(text)), text).toEqual(fault);
+      expect(faultOf('ResourceDescriptor', JSON.parse(text)), text).toEqual(
+        fault,
+      );
     }
   });
 
   it('lets a member that may be null hold null, and still requires it', () => {
-    const user = { did: 'did:web:example.org:users:a', domain: 'example.org', email: null, name: null, image: null };
+    const user = {
+      did: 'did:web:example.org:users:a',
+      domain: 'example.org',
+      email: null,
+      name: null,
+      image: null,
+    };
     expect(faultOf('UserResponse', user)).toBeUndefined();
-    expect(faultOf('UserResponse', { ...user, image: undefined })).toEqual(lacks('image'));
-    expect(faultOf('UserResponse', { ...user, image: 5 })).toEqual(malformed('image'));
+    expect(faultOf('UserResponse', { ...user, image: undefined })).toEqual(
+      lacks('image'),
+    );
+    expect(faultOf('UserResponse', { ...user, image: 5 })).toEqual(
+      malformed('image'),
+    );
   });
 
   it('holds a value to each part of a composite, and each value of a map', () => {
-    expect(faultOf('GatherFailed', { message: 'no context' })).toEqual(lacks('annotationId'));
-    expect(faultOf('BrowseProfilesResult', { response: { profiles: { 'did:web:example.org:users:a': {} } } })).toEqual(lacks('response.profiles.name'));
-    expect(faultOf('BrowseProfilesResult', { response: { profiles: { 'did:web:example.org:users:a': null } } })).toEqual(malformed('response.profiles'));
+    expect(faultOf('GatherFailed', { message: 'no context' })).toEqual(
+      lacks('annotationId'),
+    );
+    expect(
+      faultOf('BrowseProfilesResult', {
+        response: { profiles: { 'did:web:example.org:users:a': {} } },
+      }),
+    ).toEqual(lacks('response.profiles.name'));
+    expect(
+      faultOf('BrowseProfilesResult', {
+        response: { profiles: { 'did:web:example.org:users:a': null } },
+      }),
+    ).toEqual(malformed('response.profiles'));
   });
 });
 
 describe('readOfShape', () => {
-  const faultsAs = (shape: Shape, cases: readonly (readonly [string, Fault | undefined])[]): void => {
+  const faultsAs = (
+    shape: Shape,
+    cases: readonly (readonly [string, Fault | undefined])[],
+  ): void => {
     for (const [text, fault] of cases) {
       const reading = readOfShape(shape, JSON.parse(text));
-      expect('fault' in reading ? reading.fault : undefined, text).toEqual(fault);
+      expect('fault' in reading ? reading.fault : undefined, text).toEqual(
+        fault,
+      );
     }
   };
 
@@ -66,7 +135,15 @@ describe('readOfShape', () => {
     const anyThenDigits: Shape = {
       kinds: ['string', 'null'],
       pattern: [
-        { of: [[0, 9], [11, 12], [14, 8231], [8234, 1114111]], min: 1 },
+        {
+          of: [
+            [0, 9],
+            [11, 12],
+            [14, 8231],
+            [8234, 1114111],
+          ],
+          min: 1,
+        },
         { of: [[45, 45]], min: 1, max: 1 },
         { of: [[48, 57]], min: 1 },
       ],
@@ -97,13 +174,21 @@ describe('readOfShape', () => {
   });
 
   it('refuses a member a closed object does not name, after the members it describes, the first by code point', () => {
-    faultsAs({ kinds: ['object'], required: ['a'], members: { a: { kinds: ['string'] } }, closed: ['a'] }, [
-      ['{"a":"x"}', undefined],
-      ['{"b":1}', lacks('a')],
-      ['{"a":1,"b":1}', malformed('a')],
-      ['{"a":"x","z":1,"b":1}', malformed('b')],
-      ['{"a":"x","\\ud83d\\ude00":1,"\\uff61":1}', malformed('\uff61')],
-    ]);
+    faultsAs(
+      {
+        kinds: ['object'],
+        required: ['a'],
+        members: { a: { kinds: ['string'] } },
+        closed: ['a'],
+      },
+      [
+        ['{"a":"x"}', undefined],
+        ['{"b":1}', lacks('a')],
+        ['{"a":1,"b":1}', malformed('a')],
+        ['{"a":"x","z":1,"b":1}', malformed('b')],
+        ['{"a":"x","\\ud83d\\ude00":1,"\\uff61":1}', malformed('\uff61')],
+      ],
+    );
     faultsAs({ kinds: ['object'], closed: [] }, [
       ['{}', undefined],
       ['{"x":1}', malformed('x')],
@@ -111,19 +196,36 @@ describe('readOfShape', () => {
   });
 
   it('reads a member that holds a text none of its recognized texts as absent, wherever it is, and leaves the rest as it is', () => {
-    const coded: Shape = { kinds: ['object'], members: { code: { kinds: ['string'], recognized: ['not-found'] } } };
-    const shape: Shape = { kinds: ['array'], items: { allOf: [coded, { kinds: ['object'], required: ['message'] }] } };
-    const value = [{ message: 'a', code: 'not-found' }, { message: 'b', code: 'not-invented-yet' }];
-    expect(readOfShape(shape, value)).toEqual({ read: [{ message: 'a', code: 'not-found' }, { message: 'b' }] });
+    const coded: Shape = {
+      kinds: ['object'],
+      members: { code: { kinds: ['string'], recognized: ['not-found'] } },
+    };
+    const shape: Shape = {
+      kinds: ['array'],
+      items: { allOf: [coded, { kinds: ['object'], required: ['message'] }] },
+    };
+    const value = [
+      { message: 'a', code: 'not-found' },
+      { message: 'b', code: 'not-invented-yet' },
+    ];
+    expect(readOfShape(shape, value)).toEqual({
+      read: [{ message: 'a', code: 'not-found' }, { message: 'b' }],
+    });
     expect(value[1]).toEqual({ message: 'b', code: 'not-invented-yet' });
-    expect(readOfShape(shape, [{ message: 'c', code: 7 }])).toEqual({ fault: malformed('code') });
+    expect(readOfShape(shape, [{ message: 'c', code: 7 }])).toEqual({
+      fault: malformed('code'),
+    });
   });
 });
 
 describe('said', () => {
   it('says each fault as every SDK says it', () => {
-    expect(said(lacks('representations.mediaType'))).toBe('it has no `representations.mediaType`');
-    expect(said(malformed('representations'))).toBe('its `representations` is malformed');
+    expect(said(lacks('representations.mediaType'))).toBe(
+      'it has no `representations.mediaType`',
+    );
+    expect(said(malformed('representations'))).toBe(
+      'its `representations` is malformed',
+    );
     expect(said(malformed(''))).toBe('it is malformed');
   });
 });

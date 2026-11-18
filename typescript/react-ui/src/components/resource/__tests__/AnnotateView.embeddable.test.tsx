@@ -14,9 +14,17 @@ import type { AnnotationUIState } from '../../../types/annotation-props';
 import { AnnotateView } from '../AnnotateView';
 import { resourceId, EventBus } from '@xynolog/core';
 
-vi.mock('../../CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () => <div>cm-mock</div> }));
+vi.mock('../../CodeMirrorRenderer', () => ({
+  CodeMirrorRenderer: () => <div>cm-mock</div>,
+}));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 const uiState: AnnotationUIState = {
   selectedMotivation: 'linking',
   selectedClick: 'detail',
@@ -37,7 +45,8 @@ function fakeSession(): XynologSession {
 describe('AnnotateView — embeddable (session prop, no session provider)', () => {
   it('renders (incl. the real AnnotateToolbar) fed only a session, no session provider', () => {
     render(
-      <AnnotateView resourceUri={resourceId("res-1")}
+      <AnnotateView
+        resourceUri={resourceId('res-1')}
         translationManager={englishTranslationManager}
         content="hello"
         mimeType="text/plain"
@@ -54,7 +63,15 @@ describe('AnnotateView — embeddable (session prop, no session provider)', () =
   it('does not compile without a language: react-ui assumes none', () => {
     const elements = [
       // @ts-expect-error no language
-      <AnnotateView resourceUri={resourceId('res-1')} content="hello" mimeType="text/plain" annotations={emptyAnnotations} uiState={uiState} annotateMode={true} session={fakeSession()} />,
+      <AnnotateView
+        resourceUri={resourceId('res-1')}
+        content="hello"
+        mimeType="text/plain"
+        annotations={emptyAnnotations}
+        uiState={uiState}
+        annotateMode={true}
+        session={fakeSession()}
+      />,
     ];
     expect(elements).toHaveLength(1);
   });

@@ -10,5 +10,9 @@ export interface TranslationManager {
    * @param params - Optional parameters for interpolation
    * @returns Translated string
    */
-  t: (namespace: string, key: string, params?: Record<string, unknown>) => string;
+  t: (
+    namespace: string,
+    key: string,
+    params?: Record<string, unknown>,
+  ) => string;
 }

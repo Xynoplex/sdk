@@ -64,7 +64,10 @@ export type ChannelRefinements = {
     };
   };
   'browse:annotation-result': {
-    response: Omit<Schemas['GetAnnotationResponse'], 'annotation' | 'resource' | 'resolvedResource'> & {
+    response: Omit<
+      Schemas['GetAnnotationResponse'],
+      'annotation' | 'resource' | 'resolvedResource'
+    > & {
       annotation: Annotation;
       resource: ResourceDescriptor | null;
       resolvedResource: ResourceDescriptor | null;
@@ -72,12 +75,18 @@ export type ChannelRefinements = {
   };
   'browse:click': Schemas['BrowseClickEvent'] & { anchorRect?: AnchorRect };
   'panel:open': Schemas['BrowsePanelOpenEvent'] & { anchorRect?: AnchorRect };
-  'nav:external': Schemas['BrowseExternalNavigateEvent'] & { cancelFallback: () => void };
+  'nav:external': Schemas['BrowseExternalNavigateEvent'] & {
+    cancelFallback: () => void;
+  };
 };
 
 /** Each persisted event whose payload this layer narrows, and the payload it is. */
 export type EventPayloadRefinements = {
   'mark:added': Schemas['AnnotationAddedPayload'] & { annotation: Annotation };
-  'mark:removed': Schemas['AnnotationRemovedPayload'] & { annotationId: AnnotationId };
-  'mark:body-updated': Schemas['AnnotationBodyUpdatedPayload'] & { annotationId: AnnotationId };
+  'mark:removed': Schemas['AnnotationRemovedPayload'] & {
+    annotationId: AnnotationId;
+  };
+  'mark:body-updated': Schemas['AnnotationBodyUpdatedPayload'] & {
+    annotationId: AnnotationId;
+  };
 };

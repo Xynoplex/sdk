@@ -30,7 +30,13 @@ import {
 } from '../index';
 
 const table: { readers: string[] } = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/annotations/reader-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/annotations/reader-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
 /** Each reader the SDK exports, under the name the table gives it, beside core's. */
@@ -60,7 +66,7 @@ describe('the annotation readers the SDK exports', () => {
     expect(Object.keys(READERS).sort()).toEqual([...table.readers].sort());
   });
 
-  it('are each core\'s own function', () => {
+  it("are each core's own function", () => {
     for (const [name, [exported, own]] of Object.entries(READERS)) {
       expect(exported, name).toBe(own);
       expect(typeof exported, name).toBe('function');

@@ -1,8 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { SelectionMotivation, ClickAction, ShapeType } from '../components/annotation/AnnotateToolbar';
-import { getSelectedShapeForSelectorType, saveSelectedShapeForSelectorType, type SelectorType } from '../lib/media-shapes';
+import type {
+  SelectionMotivation,
+  ClickAction,
+  ShapeType,
+} from '../components/annotation/AnnotateToolbar';
+import {
+  getSelectedShapeForSelectorType,
+  saveSelectedShapeForSelectorType,
+  type SelectorType,
+} from '../lib/media-shapes';
 
 const MODE_KEY = 'annotateMode';
 const CLICK_KEY = 'xynolog-toolbar-click';
@@ -31,7 +39,9 @@ export interface ToolbarPrefs {
  * `selectorType` scopes the SHAPE pref exactly as before: per selector type
  * (persisted only for 'svg'; 'fragment' is always rectangle).
  */
-export function useToolbarPrefs(selectorType: SelectorType = 'text'): ToolbarPrefs {
+export function useToolbarPrefs(
+  selectorType: SelectorType = 'text',
+): ToolbarPrefs {
   const [annotateMode, setAnnotateModeState] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem(MODE_KEY) === 'true';
@@ -40,13 +50,17 @@ export function useToolbarPrefs(selectorType: SelectorType = 'text'): ToolbarPre
   });
   const setAnnotateMode = useCallback((mode: boolean) => {
     setAnnotateModeState(mode);
-    if (typeof window !== 'undefined') localStorage.setItem(MODE_KEY, mode.toString());
+    if (typeof window !== 'undefined')
+      localStorage.setItem(MODE_KEY, mode.toString());
   }, []);
 
   const [clickAction, setClickActionState] = useState<ClickAction>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(CLICK_KEY);
-      if (stored && ['detail', 'follow', 'jsonld', 'deleting'].includes(stored)) {
+      if (
+        stored &&
+        ['detail', 'follow', 'jsonld', 'deleting'].includes(stored)
+      ) {
         return stored as ClickAction;
       }
     }
@@ -57,30 +71,61 @@ export function useToolbarPrefs(selectorType: SelectorType = 'text'): ToolbarPre
     if (typeof window !== 'undefined') localStorage.setItem(CLICK_KEY, action);
   }, []);
 
-  const [selectionMotivation, setSelectionMotivationState] = useState<SelectionMotivation | null>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(SELECTION_KEY);
-      if (stored === 'null') return null;
-      if (stored && ['linking', 'highlighting', 'assessing', 'commenting', 'tagging'].includes(stored)) {
-        return stored as SelectionMotivation;
+  const [selectionMotivation, setSelectionMotivationState] =
+    useState<SelectionMotivation | null>(() => {
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem(SELECTION_KEY);
+        if (stored === 'null') return null;
+        if (
+          stored &&
+          [
+            'linking',
+            'highlighting',
+            'assessing',
+            'commenting',
+            'tagging',
+          ].includes(stored)
+        ) {
+          return stored as SelectionMotivation;
+        }
       }
-    }
-    return 'linking';
-  });
-  const setSelectionMotivation = useCallback((motivation: SelectionMotivation | null) => {
-    setSelectionMotivationState(motivation);
-    if (typeof window !== 'undefined') localStorage.setItem(SELECTION_KEY, motivation === null ? 'null' : motivation);
-  }, []);
+      return 'linking';
+    });
+  const setSelectionMotivation = useCallback(
+    (motivation: SelectionMotivation | null) => {
+      setSelectionMotivationState(motivation);
+      if (typeof window !== 'undefined')
+        localStorage.setItem(
+          SELECTION_KEY,
+          motivation === null ? 'null' : motivation,
+        );
+    },
+    [],
+  );
 
-  const [shape, setShapeState] = useState<ShapeType>(() => getSelectedShapeForSelectorType(selectorType));
+  const [shape, setShapeState] = useState<ShapeType>(() =>
+    getSelectedShapeForSelectorType(selectorType),
+  );
   // Re-derive the shape when the selector type changes (e.g. PDF ↔ image).
   useEffect(() => {
     setShapeState(getSelectedShapeForSelectorType(selectorType));
   }, [selectorType]);
-  const setShape = useCallback((s: ShapeType) => {
-    setShapeState(s);
-    saveSelectedShapeForSelectorType(selectorType, s);
-  }, [selectorType]);
+  const setShape = useCallback(
+    (s: ShapeType) => {
+      setShapeState(s);
+      saveSelectedShapeForSelectorType(selectorType, s);
+    },
+    [selectorType],
+  );
 
-  return { annotateMode, setAnnotateMode, clickAction, setClickAction, selectionMotivation, setSelectionMotivation, shape, setShape };
+  return {
+    annotateMode,
+    setAnnotateMode,
+    clickAction,
+    setClickAction,
+    selectionMotivation,
+    setSelectionMotivation,
+    shape,
+    setShape,
+  };
 }

@@ -62,7 +62,9 @@ export interface InMemoryTransportOptions {
   errors$?: Observable<XynologError>;
 }
 
-export function inMemoryTransport(options: InMemoryTransportOptions = {}): ITransport {
+export function inMemoryTransport(
+  options: InMemoryTransportOptions = {},
+): ITransport {
   const {
     bus = new EventBus(),
     onEmit,
@@ -74,7 +76,9 @@ export function inMemoryTransport(options: InMemoryTransportOptions = {}): ITran
 
   // The bus is this transport's wire: what it gives is what was emitted on it,
   // a refusal among it, as a transport delivers one in place of a frame it refused.
-  const frames = <K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> => bus.frames(channel);
+  const frames = <K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> => bus.frames(channel);
 
   return {
     baseUrl: baseUrl('http://transport.test'),
@@ -116,7 +120,8 @@ export function gatewayOperationSpies(
 ): IGatewayOperations {
   return {
     getCurrentUser: vi.fn<IGatewayOperations['getCurrentUser']>(),
-    getProtectedResourceMetadata: vi.fn<IGatewayOperations['getProtectedResourceMetadata']>(),
+    getProtectedResourceMetadata:
+      vi.fn<IGatewayOperations['getProtectedResourceMetadata']>(),
     getMediaToken: vi.fn<IGatewayOperations['getMediaToken']>(),
     healthCheck: vi.fn<IGatewayOperations['healthCheck']>(),
     getStatus: vi.fn<IGatewayOperations['getStatus']>(),

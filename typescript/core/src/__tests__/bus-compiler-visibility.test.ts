@@ -47,7 +47,9 @@ describe('the compiler can see every bus call site', () => {
   test('no bus verb is reached through an any-typed receiver', () => {
     const offenders: string[] = [];
     for (const file of typeScriptFiles('typescript')) {
-      for (const m of stripComments(readFileSync(join(REPO, file), 'utf-8')).matchAll(BLINDED)) {
+      for (const m of stripComments(
+        readFileSync(join(REPO, file), 'utf-8'),
+      ).matchAll(BLINDED)) {
         offenders.push(`${file} — ${m[0].trim()}`);
       }
     }

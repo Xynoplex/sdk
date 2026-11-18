@@ -9,6 +9,8 @@ import { operationLimits } from '../openapi';
 
 describe('protocol limits', () => {
   it('a reply outlives two Bus.request deadlines', () => {
-    expect(operationLimits['POST /bus/subscribe'].replyRetentionSeconds * 1000).toBeGreaterThanOrEqual(2 * BUS_REQUEST_TIMEOUT_MS);
+    expect(
+      operationLimits['POST /bus/subscribe'].replyRetentionSeconds * 1000,
+    ).toBeGreaterThanOrEqual(2 * BUS_REQUEST_TIMEOUT_MS);
   });
 });

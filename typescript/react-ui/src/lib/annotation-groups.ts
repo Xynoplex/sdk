@@ -1,5 +1,11 @@
 import type { Annotation } from '@xynolog/core';
-import { isHighlight, isComment, isAssessment, isReference, isTag } from '@xynolog/core';
+import {
+  isHighlight,
+  isComment,
+  isAssessment,
+  isReference,
+  isTag,
+} from '@xynolog/core';
 import type { AnnotationsCollection } from '../types/annotation-props';
 
 /**
@@ -7,8 +13,16 @@ import type { AnnotationsCollection } from '../types/annotation-props';
  * Shared by the composite page state unit and the standalone `useResourceLoader`
  * so the grouping lives in exactly one place.
  */
-export function groupAnnotations(annotations: Annotation[]): AnnotationsCollection {
-  const groups: AnnotationsCollection = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+export function groupAnnotations(
+  annotations: Annotation[],
+): AnnotationsCollection {
+  const groups: AnnotationsCollection = {
+    highlights: [],
+    references: [],
+    assessments: [],
+    comments: [],
+    tags: [],
+  };
   for (const ann of annotations) {
     if (isHighlight(ann)) groups.highlights.push(ann);
     else if (isComment(ann)) groups.comments.push(ann);

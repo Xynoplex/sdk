@@ -3,7 +3,10 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AttributedEvent } from '@xynolog/core';
-import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../contexts/RoutingContext';
 import { AnnotationHistory } from '../AnnotationHistory';
 import type { HistoryEvent } from '../HistoryEvent';
 import { renderWithProviders } from '../../../test-utils';
@@ -28,27 +31,35 @@ vi.mock('../../../contexts/TranslationContext', () => ({
     };
     return translations[key] || key;
   }),
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Mock HistoryEvent to avoid deep rendering and mocking all its dependencies
-const MockHistoryEvent = vi.fn(({ event }: React.ComponentProps<typeof HistoryEvent>) => (
-  <div data-testid={`history-event-${event.id}`}>
-    {event.type}
-  </div>
-));
+const MockHistoryEvent = vi.fn(
+  ({ event }: React.ComponentProps<typeof HistoryEvent>) => (
+    <div data-testid={`history-event-${event.id}`}>{event.type}</div>
+  ),
+);
 
 vi.mock('../HistoryEvent', () => ({
-  HistoryEvent: (props: React.ComponentProps<typeof HistoryEvent>) => MockHistoryEvent(props),
+  HistoryEvent: (props: React.ComponentProps<typeof HistoryEvent>) =>
+    MockHistoryEvent(props),
 }));
 
 import { getAnnotationIdFromEvent, resourceId, userId } from '@xynolog/core';
-const mockGetAnnotationId = getAnnotationIdFromEvent as ReturnType<typeof vi.fn>;
+const mockGetAnnotationId = getAnnotationIdFromEvent as ReturnType<
+  typeof vi.fn
+>;
 
 const USER = 'did:web:example.org:users:user-1';
 
 /** An event as a history reply carries it: the stored event and its actor's agent. */
-function makeStoredEvent(id: string, type: string, seq: number): AttributedEvent {
+function makeStoredEvent(
+  id: string,
+  type: string,
+  seq: number,
+): AttributedEvent {
   return {
     id,
     type,
@@ -64,7 +75,11 @@ function makeStoredEvent(id: string, type: string, seq: number): AttributedEvent
   };
 }
 
-const MockLink = ({ href, children, ...props }: LinkComponentProps) => <a href={href} {...props}>{children}</a>;
+const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
+  <a href={href} {...props}>
+    {children}
+  </a>
+);
 const mockRoutes: RouteBuilder = {
   resourceDetail: (id: string) => `/resources/${id}`,
 };
@@ -82,7 +97,7 @@ describe('AnnotationHistory', () => {
         eventsLoading
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     expect(screen.getByText('History')).toBeInTheDocument();
@@ -101,7 +116,7 @@ describe('AnnotationHistory', () => {
           eventsError={new Error('Resource not found')}
           Link={MockLink}
           routes={mockRoutes}
-        />
+        />,
       );
 
       expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -110,7 +125,8 @@ describe('AnnotationHistory', () => {
 
     it('offers a retry that calls back', async () => {
       const onRetryEvents = vi.fn();
-      const { default: userEvent } = await import('@testing-library/user-event');
+      const { default: userEvent } =
+        await import('@testing-library/user-event');
 
       renderWithProviders(
         <AnnotationHistory
@@ -119,7 +135,7 @@ describe('AnnotationHistory', () => {
           onRetryEvents={onRetryEvents}
           Link={MockLink}
           routes={mockRoutes}
-        />
+        />,
       );
 
       await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
@@ -134,7 +150,7 @@ describe('AnnotationHistory', () => {
           eventsError={new Error('boom')}
           Link={MockLink}
           routes={mockRoutes}
-        />
+        />,
       );
 
       expect(screen.getByText('Could not load history.')).toBeInTheDocument();
@@ -143,11 +159,7 @@ describe('AnnotationHistory', () => {
 
   it('renders null when no events', () => {
     const { container } = renderWithProviders(
-      <AnnotationHistory
-        events={[]}
-        Link={MockLink}
-        routes={mockRoutes}
-      />
+      <AnnotationHistory events={[]} Link={MockLink} routes={mockRoutes} />,
     );
 
     expect(container.innerHTML).toBe('');
@@ -161,18 +173,23 @@ describe('AnnotationHistory', () => {
     ];
 
     renderWithProviders(
-      <AnnotationHistory
-        events={events}
-        Link={MockLink}
-        routes={mockRoutes}
-      />
+      <AnnotationHistory events={events} Link={MockLink} routes={mockRoutes} />,
     );
 
     const renderedEvents = screen.getAllByTestId(/^history-event-/);
     expect(renderedEvents).toHaveLength(3);
-    expect(renderedEvents[0]).toHaveAttribute('data-testid', 'history-event-e1');
-    expect(renderedEvents[1]).toHaveAttribute('data-testid', 'history-event-e2');
-    expect(renderedEvents[2]).toHaveAttribute('data-testid', 'history-event-e3');
+    expect(renderedEvents[0]).toHaveAttribute(
+      'data-testid',
+      'history-event-e1',
+    );
+    expect(renderedEvents[1]).toHaveAttribute(
+      'data-testid',
+      'history-event-e2',
+    );
+    expect(renderedEvents[2]).toHaveAttribute(
+      'data-testid',
+      'history-event-e3',
+    );
   });
 
   it('filters out job events', () => {
@@ -187,17 +204,19 @@ describe('AnnotationHistory', () => {
     ];
 
     renderWithProviders(
-      <AnnotationHistory
-        events={events}
-        Link={MockLink}
-        routes={mockRoutes}
-      />
+      <AnnotationHistory events={events} Link={MockLink} routes={mockRoutes} />,
     );
 
     const renderedEvents = screen.getAllByTestId(/^history-event-/);
     expect(renderedEvents).toHaveLength(2);
-    expect(renderedEvents[0]).toHaveAttribute('data-testid', 'history-event-e1');
-    expect(renderedEvents[1]).toHaveAttribute('data-testid', 'history-event-e5');
+    expect(renderedEvents[0]).toHaveAttribute(
+      'data-testid',
+      'history-event-e1',
+    );
+    expect(renderedEvents[1]).toHaveAttribute(
+      'data-testid',
+      'history-event-e5',
+    );
   });
 
   it('passes isRelated when hovered annotation matches event', () => {
@@ -210,11 +229,11 @@ describe('AnnotationHistory', () => {
         hoveredAnnotationId="ann-1"
         Link={MockLink}
         routes={mockRoutes}
-      />
+      />,
     );
 
     expect(MockHistoryEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ isRelated: true })
+      expect.objectContaining({ isRelated: true }),
     );
   });
 
@@ -222,15 +241,17 @@ describe('AnnotationHistory', () => {
     const events = [makeStoredEvent('e1', 'mark:added', 1)];
 
     const { container } = renderWithProviders(
-      <AnnotationHistory
-        events={events}
-        Link={MockLink}
-        routes={mockRoutes}
-      />
+      <AnnotationHistory events={events} Link={MockLink} routes={mockRoutes} />,
     );
 
-    expect(container.querySelector('.xynolog-history-panel')).toBeInTheDocument();
-    expect(container.querySelector('.xynolog-history-panel__title')).toBeInTheDocument();
-    expect(container.querySelector('.xynolog-history-panel__list')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-history-panel'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-history-panel__title'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-history-panel__list'),
+    ).toBeInTheDocument();
   });
 });

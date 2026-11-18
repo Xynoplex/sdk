@@ -13,7 +13,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { screen, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { createTestXynologWrapper, renderInEnglish } from '../../../../test-utils';
+import {
+  createTestXynologWrapper,
+  renderInEnglish,
+} from '../../../../test-utils';
 import { ResourceInfoPanel } from '../ResourceInfoPanel';
 import type { XynologSession } from '@xynolog/sdk';
 
@@ -23,12 +26,23 @@ const props = {
   session: null as XynologSession | null,
 };
 
-const EXTRACTED: AnchoredTextAnswer = { kind: 'extracted', method: 'pdf-text-layer', text: '', items: [] };
+const EXTRACTED: AnchoredTextAnswer = {
+  kind: 'extracted',
+  method: 'pdf-text-layer',
+  text: '',
+  items: [],
+};
 
 function mountWithAnswer(answer: AnchoredTextAnswer) {
-  const { XynologWrapper, eventBus, client, session } = createTestXynologWrapper();
-  const ask = vi.spyOn(client.browse, 'resourceAnchoredText').mockResolvedValue(answer);
-  renderInEnglish(React.cloneElement(<ResourceInfoPanel {...props} />, { session }), { wrapper: XynologWrapper });
+  const { XynologWrapper, eventBus, client, session } =
+    createTestXynologWrapper();
+  const ask = vi
+    .spyOn(client.browse, 'resourceAnchoredText')
+    .mockResolvedValue(answer);
+  renderInEnglish(
+    React.cloneElement(<ResourceInfoPanel {...props} />, { session }),
+    { wrapper: XynologWrapper },
+  );
   return { eventBus, ask };
 }
 
@@ -63,7 +77,11 @@ describe('ResourceInfoPanel — text layer status', () => {
     ask.mockResolvedValue(EXTRACTED);
 
     act(() => {
-      eventBus.emit('smelt:settled', { resourceId: 'res-tl', contentChecksum: 'c', outcome: 'indexed' } as never);
+      eventBus.emit('smelt:settled', {
+        resourceId: 'res-tl',
+        contentChecksum: 'c',
+        outcome: 'indexed',
+      } as never);
     });
 
     expect(await screen.findByText('Ready')).toBeInTheDocument();
@@ -76,7 +94,11 @@ describe('ResourceInfoPanel — text layer status', () => {
     const calls = ask.mock.calls.length;
 
     act(() => {
-      eventBus.emit('smelt:settled', { resourceId: 'OTHER', contentChecksum: 'c', outcome: 'indexed' } as never);
+      eventBus.emit('smelt:settled', {
+        resourceId: 'OTHER',
+        contentChecksum: 'c',
+        outcome: 'indexed',
+      } as never);
     });
 
     await waitFor(() => expect(ask.mock.calls.length).toBe(calls));

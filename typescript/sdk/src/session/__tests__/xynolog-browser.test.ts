@@ -4,7 +4,15 @@
  * needed.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type Mock,
+} from 'vitest';
 import { firstValueFrom, filter, skip, take, type Subject } from 'rxjs';
 
 const mockDispose = vi.fn();
@@ -21,7 +29,8 @@ function newestTransportErrors(): Subject<XynologError> {
 }
 
 vi.mock('../../client', async () => {
-  const actual = await vi.importActual<typeof import('../../client')>('../../client');
+  const actual =
+    await vi.importActual<typeof import('../../client')>('../../client');
   const { Subject } = await import('rxjs');
   class MockXynologApiClient {
     dispose = mockDispose;
@@ -57,14 +66,33 @@ import { XynologBrowser } from '../xynolog-browser';
 import { createHttpSessionFactory } from '../http-session-factory';
 import { getBrowser } from '../registry';
 import { __resetForTests } from '../testing';
-import { freshJwt, storageKey, seedStoredSession, testSession, RefusingStorage, SharedStorage, TestStorage, TEST_TOKEN_ENDPOINT, TEST_REVOCATION_ENDPOINT } from './test-storage-helpers';
-import { STORAGE_KEY, ACTIVE_KEY, OPEN_RESOURCES_BY_KB_KEY, LAST_VIEWED_RESOURCE_BY_KB_KEY } from '../storage';
+import {
+  freshJwt,
+  storageKey,
+  seedStoredSession,
+  testSession,
+  RefusingStorage,
+  SharedStorage,
+  TestStorage,
+  TEST_TOKEN_ENDPOINT,
+  TEST_REVOCATION_ENDPOINT,
+} from './test-storage-helpers';
+import {
+  STORAGE_KEY,
+  ACTIVE_KEY,
+  OPEN_RESOURCES_BY_KB_KEY,
+  LAST_VIEWED_RESOURCE_BY_KB_KEY,
+} from '../storage';
 import { PENDING_AUTHORIZATION_KEY } from '../oauth';
 import { IdentityUnverifiableError } from '../connect';
 import { mockResource } from '../../__tests__/fixtures/resource';
 import { sayOn, type XynologSession } from '../xynolog-session';
 import { XynologSessionError } from '../errors';
-import { BusRequestError, ERRORS_KEPT_FOR_FIRST_READER_COUNT, resourceId } from '@xynolog/core';
+import {
+  BusRequestError,
+  ERRORS_KEPT_FOR_FIRST_READER_COUNT,
+  resourceId,
+} from '@xynolog/core';
 import type { XynologError } from '@xynolog/core';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -81,13 +109,25 @@ interface OpenResourceCase {
 
 const openResourceCases = (
   JSON.parse(
-    readFileSync(fileURLToPath(new URL('../../../../../protocol/specs/src/session/open-resource-cases.json', import.meta.url)), 'utf8'),
+    readFileSync(
+      fileURLToPath(
+        new URL(
+          '../../../../../protocol/specs/src/session/open-resource-cases.json',
+          import.meta.url,
+        ),
+      ),
+      'utf8',
+    ),
   ) as { cases: OpenResourceCase[] }
 ).cases;
 
 /** An issuer's JSON answer, as `fetch` would hand it back. */
 function issuerReply(json: unknown, status = 200): Response {
-  return { ok: status < 300, status, json: async () => json } as unknown as Response;
+  return {
+    ok: status < 300,
+    status,
+    json: async () => json,
+  } as unknown as Response;
 }
 
 /**
@@ -102,13 +142,22 @@ function issuerReply(json: unknown, status = 200): Response {
 let fetchMock: Mock<(url: string, init?: RequestInit) => Promise<Response>>;
 const whoIs = vi.fn<(request: Request) => Promise<Response>>();
 const user = (name: string, email: string) =>
-  Response.json({ did: `did:web:example.org:users:${name.toLowerCase()}`, email, name, image: null, domain: 'example.org' });
+  Response.json({
+    did: `did:web:example.org:users:${name.toLowerCase()}`,
+    email,
+    name,
+    image: null,
+    domain: 'example.org',
+  });
 const callsTo = (endpoint: string) =>
-  fetchMock.mock.calls.filter(([url]) => url === endpoint) as unknown as Array<[string, { body: URLSearchParams }]>;
+  fetchMock.mock.calls.filter(([url]) => url === endpoint) as unknown as Array<
+    [string, { body: URLSearchParams }]
+  >;
 /** Script the issuer's token endpoint; everything else keeps refusing. */
 const tokenEndpointAnswers = (answer: Response | Error) =>
   fetchMock.mockImplementation(async (url: string) => {
-    if (url !== TEST_TOKEN_ENDPOINT) return issuerReply({ error: 'invalid_grant' }, 400);
+    if (url !== TEST_TOKEN_ENDPOINT)
+      return issuerReply({ error: 'invalid_grant' }, 400);
     if (answer instanceof Error) throw answer;
     return answer;
   });
@@ -117,13 +166,23 @@ const KB_A = {
   id: 'kb-a',
   label: 'KB A',
   did: 'did:web:example.github.io:kb-a',
-  endpoint: { kind: 'http' as const, host: 'localhost', port: 4000, protocol: 'http' as const },
+  endpoint: {
+    kind: 'http' as const,
+    host: 'localhost',
+    port: 4000,
+    protocol: 'http' as const,
+  },
 };
 const KB_B = {
   id: 'kb-b',
   label: 'KB B',
   did: 'did:web:example.github.io:kb-b',
-  endpoint: { kind: 'http' as const, host: 'example.com', port: 443, protocol: 'https' as const },
+  endpoint: {
+    kind: 'http' as const,
+    host: 'example.com',
+    port: 443,
+    protocol: 'https' as const,
+  },
 };
 
 let storage: TestStorage;
@@ -131,7 +190,10 @@ let storage: TestStorage;
 // Test-local helper: every test in this file exercises HTTP-backed sessions,
 // so we wire the HTTP `SessionFactory` once and let test bodies stay terse.
 const makeBrowser = (s: TestStorage = storage) =>
-  new XynologBrowser({ storage: s, sessionFactory: createHttpSessionFactory() });
+  new XynologBrowser({
+    storage: s,
+    sessionFactory: createHttpSessionFactory(),
+  });
 
 beforeEach(() => {
   storage = new TestStorage();
@@ -142,14 +204,19 @@ beforeEach(() => {
   vi.stubGlobal('fetch', (input: string | Request, init?: RequestInit) =>
     input instanceof Request && new URL(input.url).pathname === '/api/users/me'
       ? whoIs(input)
-      : fetchMock(input instanceof Request ? input.url : input, init));
+      : fetchMock(input instanceof Request ? input.url : input, init),
+  );
   // Default: a read that gets no answer — "no verdict", which leaves
   // state alone and hands off to the per-resource pass. Deliberately not a
   // matching answer: that would be per-KB, and a fixed one silently trips the
   // identity check the moment a test activates a different KB.
-  mockKb = async () => { throw new BusRequestError('no answer in this test', 'bus.timeout'); };
+  mockKb = async () => {
+    throw new BusRequestError('no answer in this test', 'bus.timeout');
+  };
   // Default: every tab validates, so tests that do not care are unaffected.
-  mockResourceFresh.mockImplementation(async (id: string) => mockResource(id, { name: `name-${id}` }));
+  mockResourceFresh.mockImplementation(async (id: string) =>
+    mockResource(id, { name: `name-${id}` }),
+  );
   whoIs.mockImplementation(async () => user('X', 'x@y.z'));
 });
 
@@ -161,15 +228,27 @@ afterEach(async () => {
 
 describe('XynologBrowser — registry singleton', () => {
   it('getBrowser() returns the same instance across calls', () => {
-    const a = getBrowser({ storage, sessionFactory: createHttpSessionFactory() });
-    const b = getBrowser({ storage, sessionFactory: createHttpSessionFactory() });
+    const a = getBrowser({
+      storage,
+      sessionFactory: createHttpSessionFactory(),
+    });
+    const b = getBrowser({
+      storage,
+      sessionFactory: createHttpSessionFactory(),
+    });
     expect(a).toBe(b);
   });
 
   it('__resetForTests clears the singleton so a subsequent getBrowser() returns a new instance', async () => {
-    const a = getBrowser({ storage, sessionFactory: createHttpSessionFactory() });
+    const a = getBrowser({
+      storage,
+      sessionFactory: createHttpSessionFactory(),
+    });
     await __resetForTests();
-    const b = getBrowser({ storage: new TestStorage(), sessionFactory: createHttpSessionFactory() });
+    const b = getBrowser({
+      storage: new TestStorage(),
+      sessionFactory: createHttpSessionFactory(),
+    });
     expect(a).not.toBe(b);
   });
 });
@@ -222,7 +301,10 @@ describe('XynologBrowser — KB list', () => {
     expect(browser.kbs$.getValue().find((k) => k.id === kb.id)?.did).toBe(DID);
 
     // …and survives the persist/rehydrate cycle a page reload performs.
-    const persisted = JSON.parse(storage.get(STORAGE_KEY) ?? '[]') as Array<{ id: string; did?: string }>;
+    const persisted = JSON.parse(storage.get(STORAGE_KEY) ?? '[]') as Array<{
+      id: string;
+      did?: string;
+    }>;
     expect(persisted.find((k) => k.id === kb.id)?.did).toBe(DID);
 
     await browser.dispose();
@@ -239,10 +321,24 @@ describe('XynologBrowser — KB list', () => {
     // back-compat layer, so such entries drop and the user re-adds: a
     // one-time list clear, in exchange for every loaded KB actually having
     // the identity its type promises.
-    storage.set(STORAGE_KEY, JSON.stringify([
-      { id: 'legacy', label: 'Pre-did KB', email: 'a@example.com', endpoint: KB_A.endpoint },
-      { id: 'current', label: 'KB A', email: 'a@example.com', endpoint: KB_A.endpoint, did: 'did:web:example.github.io:kb-a' },
-    ]));
+    storage.set(
+      STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'legacy',
+          label: 'Pre-did KB',
+          email: 'a@example.com',
+          endpoint: KB_A.endpoint,
+        },
+        {
+          id: 'current',
+          label: 'KB A',
+          email: 'a@example.com',
+          endpoint: KB_A.endpoint,
+          did: 'did:web:example.github.io:kb-a',
+        },
+      ]),
+    );
 
     const browser = makeBrowser();
     const ids = browser.kbs$.getValue().map((k) => k.id);
@@ -252,9 +348,18 @@ describe('XynologBrowser — KB list', () => {
   });
 
   it('drops a branch an older release stored on a KB entry', async () => {
-    storage.set(STORAGE_KEY, JSON.stringify([
-      { id: 'kb', label: 'KB A', endpoint: KB_A.endpoint, did: KB_A.did, gitBranch: 'main' },
-    ]));
+    storage.set(
+      STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'kb',
+          label: 'KB A',
+          endpoint: KB_A.endpoint,
+          did: KB_A.did,
+          gitBranch: 'main',
+        },
+      ]),
+    );
 
     const browser = makeBrowser();
 
@@ -344,7 +449,9 @@ describe('XynologBrowser — setActiveKb (disposal contract)', () => {
     storage.set(ACTIVE_KEY, KB_A.id);
 
     const browser = makeBrowser();
-    const first = await firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null)));
+    const first = await firstValueFrom(
+      browser.activeSession$.pipe(filter((s) => s !== null)),
+    );
     const firstSignals = browser.activeSignals$.getValue()!;
     const disposed = vi.spyOn(first!, 'dispose');
     const signalsDisposed = vi.spyOn(firstSignals, 'dispose');
@@ -363,10 +470,16 @@ describe('XynologBrowser — setActiveKb (disposal contract)', () => {
     storage.set(ACTIVE_KEY, KB_A.id);
 
     const browser = makeBrowser();
-    const first = await firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null)));
+    const first = await firstValueFrom(
+      browser.activeSession$.pipe(filter((s) => s !== null)),
+    );
     const disposed = vi.spyOn(first!, 'dispose');
 
-    await Promise.all([browser.setActiveKb(KB_B.id), browser.setActiveKb(null), browser.setActiveKb(KB_B.id)]);
+    await Promise.all([
+      browser.setActiveKb(KB_B.id),
+      browser.setActiveKb(null),
+      browser.setActiveKb(KB_B.id),
+    ]);
 
     expect(disposed).toHaveBeenCalledTimes(1);
     await browser.dispose();
@@ -400,19 +513,37 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     storage.set(STORAGE_KEY, JSON.stringify([KB_A, KB_B]));
     storage.set(ACTIVE_KEY, KB_A.id);
     const browser = makeBrowser();
-    await firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null), take(1)));
+    await firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((s) => s !== null),
+        take(1),
+      ),
+    );
     return browser;
   }
 
   const liveSession = (browser: XynologBrowser) =>
-    firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null), take(1)));
+    firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((s) => s !== null),
+        take(1),
+      ),
+    );
 
   it('addOpenResource, removeOpenResource, updateName, reorder — on the active KB', async () => {
     const browser = await makeConnectedBrowser();
 
     browser.addOpenResource(resourceId('r1'), 'One');
-    browser.addOpenResource(resourceId('r2'), 'Two', 'text/markdown', 'file://two.md');
-    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['r1', 'r2']);
+    browser.addOpenResource(
+      resourceId('r2'),
+      'Two',
+      'text/markdown',
+      'file://two.md',
+    );
+    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual([
+      'r1',
+      'r2',
+    ]);
 
     browser.addOpenResource(resourceId('r1'), 'One v2', 'text/plain');
     const r1 = browser.openResources$.getValue().find((r) => r.id === 'r1');
@@ -420,10 +551,15 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     expect(r1?.mediaType).toBe('text/plain');
 
     browser.updateOpenResourceName(resourceId('r2'), 'Two v2');
-    expect(browser.openResources$.getValue().find((r) => r.id === 'r2')?.name).toBe('Two v2');
+    expect(
+      browser.openResources$.getValue().find((r) => r.id === 'r2')?.name,
+    ).toBe('Two v2');
 
     browser.reorderOpenResources(0, 1);
-    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['r2', 'r1']);
+    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual([
+      'r2',
+      'r1',
+    ]);
 
     browser.removeOpenResource(resourceId('r1'));
     expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['r2']);
@@ -464,9 +600,17 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
   /** Seed a persisted tab list for KB_A, as a restore would leave it. */
   function seedTabs(...ids: string[]) {
-    storage.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify({
-      [KB_A.id]: ids.map((id, i) => ({ id, name: `stale-${id}`, openedAt: i, order: i })),
-    }));
+    storage.set(
+      OPEN_RESOURCES_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: ids.map((id, i) => ({
+          id,
+          name: `stale-${id}`,
+          openedAt: i,
+          order: i,
+        })),
+      }),
+    );
   }
 
   /** The validation pass is fire-and-forget; let its microtasks drain. */
@@ -485,8 +629,12 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     const browser = await makeConnectedBrowser();
     await settled();
 
-    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['kept']);
-    const persisted = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<string, { id: string }[]>;
+    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual([
+      'kept',
+    ]);
+    const persisted = JSON.parse(
+      storage.get(OPEN_RESOURCES_BY_KB_KEY)!,
+    ) as Record<string, { id: string }[]>;
     expect(persisted[KB_A.id]!.map((r) => r.id)).toEqual(['kept']);
 
     await browser.dispose();
@@ -497,16 +645,22 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     // tabs because the archivist was briefly down is worse than phantoms.
     seedTabs('peer', 'boom', 'slow');
     mockResourceFresh.mockImplementation(async (id: string) => {
-      if (id === 'peer') throw new BusRequestError('no subscriber', 'bus.peer-unavailable', {});
+      if (id === 'peer')
+        throw new BusRequestError('no subscriber', 'bus.peer-unavailable', {});
       if (id === 'boom') throw new Error('socket hang up');
-      if (id === 'slow') throw new BusRequestError('timed out', 'bus.timeout', {});
+      if (id === 'slow')
+        throw new BusRequestError('timed out', 'bus.timeout', {});
       return mockResource(id, { name: `name-${id}` });
     });
 
     const browser = await makeConnectedBrowser();
     await settled();
 
-    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['peer', 'boom', 'slow']);
+    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual([
+      'peer',
+      'boom',
+      'slow',
+    ]);
 
     await browser.dispose();
   });
@@ -516,7 +670,9 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     mockResourceFresh.mockImplementation(async () => ({
       '@id': 'r1',
       name: 'Current Title',
-      representations: [{ mediaType: 'application/pdf', storageUri: 'file://r1.pdf' }],
+      representations: [
+        { mediaType: 'application/pdf', storageUri: 'file://r1.pdf' },
+      ],
     }));
 
     const browser = await makeConnectedBrowser();
@@ -546,10 +702,13 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
   });
 
   it('a KB switch validates the newly active list', async () => {
-    storage.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify({
-      [KB_A.id]: [{ id: 'a1', name: 'A1', openedAt: 0, order: 0 }],
-      [KB_B.id]: [{ id: 'b1', name: 'B1', openedAt: 0, order: 0 }],
-    }));
+    storage.set(
+      OPEN_RESOURCES_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: [{ id: 'a1', name: 'A1', openedAt: 0, order: 0 }],
+        [KB_B.id]: [{ id: 'b1', name: 'B1', openedAt: 0, order: 0 }],
+      }),
+    );
     const browser = await makeConnectedBrowser();
     await settled();
     expect(mockResourceFresh.mock.calls.map((c) => c[0])).toEqual(['a1']);
@@ -569,57 +728,80 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
    * the same: `ready`, its description; `gone`, `bus.not-found`; `unanswered`, a timeout.
    */
   describe('the open-resource case table (session/open-resource-cases.json)', () => {
-    const unanswered = () => new BusRequestError('no answer in this test', 'bus.timeout');
+    const unanswered = () =>
+      new BusRequestError('no answer in this test', 'bus.timeout');
 
     it.each(openResourceCases)('$why', async (stated) => {
       seedTabs(...stated.open);
-      mockKb = stated.kb === 'itself'
-        ? async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a' })
-        : async () => { throw unanswered(); };
+      mockKb =
+        stated.kb === 'itself'
+          ? async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a' })
+          : async () => {
+              throw unanswered();
+            };
       mockResourceFresh.mockImplementation(async (id: string) => {
         const answer = stated.resources[id];
         if (answer === 'ready') return mockResource(id, { name: `name-${id}` });
         if (answer === 'gone') throw notFound();
         if (answer === 'unanswered') throw unanswered();
-        throw new Error(`the case says nothing of what the knowledge base answers for ${id}`);
+        throw new Error(
+          `the case says nothing of what the knowledge base answers for ${id}`,
+        );
       });
 
       const browser = await makeConnectedBrowser();
       await settled();
 
-      expect(new Set(mockResourceFresh.mock.calls.map(([id]) => id)), 'asked').toEqual(new Set(stated.asked));
-      expect(new Set(browser.openResources$.getValue().map((r) => r.id)), 'still open').toEqual(new Set(stated.stillOpen));
+      expect(
+        new Set(mockResourceFresh.mock.calls.map(([id]) => id)),
+        'asked',
+      ).toEqual(new Set(stated.asked));
+      expect(
+        new Set(browser.openResources$.getValue().map((r) => r.id)),
+        'still open',
+      ).toEqual(new Set(stated.stillOpen));
 
       await browser.dispose();
     });
   });
 
-  it('a removal survives a sibling context\'s concurrent write, and the sibling tab survives too', async () => {
+  it("a removal survives a sibling context's concurrent write, and the sibling tab survives too", async () => {
     // The cross-tab case. Another context writes the whole map while
     // validation is in flight; neither side may lose its change.
     seedTabs('gone', 'kept');
     let release: () => void = () => {};
-    const gate = new Promise<void>((r) => { release = r; });
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
     mockResourceFresh.mockImplementation(async (id: string) => {
-      if (id === 'gone') { await gate; throw notFound(); }
+      if (id === 'gone') {
+        await gate;
+        throw notFound();
+      }
       return mockResource(id, { name: `name-${id}` });
     });
 
     const browser = await makeConnectedBrowser();
 
     // Sibling adds a tab from its own (still stale) view of the list.
-    storage.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify({
-      [KB_A.id]: [
-        { id: 'gone', name: 'stale-gone', openedAt: 0, order: 0 },
-        { id: 'kept', name: 'stale-kept', openedAt: 1, order: 1 },
-        { id: 'sibling', name: 'Sibling', openedAt: 2, order: 2 },
-      ],
-    }));
+    storage.set(
+      OPEN_RESOURCES_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: [
+          { id: 'gone', name: 'stale-gone', openedAt: 0, order: 0 },
+          { id: 'kept', name: 'stale-kept', openedAt: 1, order: 1 },
+          { id: 'sibling', name: 'Sibling', openedAt: 2, order: 2 },
+        ],
+      }),
+    );
 
     release();
     await settled();
 
-    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['kept', 'sibling']);
+    expect(browser.openResources$.getValue().map((r) => r.id)).toEqual([
+      'kept',
+      'sibling',
+    ]);
 
     await browser.dispose();
   });
@@ -631,14 +813,25 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     browser.addOpenResource(resourceId('mine'), 'Mine');
 
     // A sibling context commits its own tab directly to storage.
-    const committed = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<string, unknown[]>;
-    committed[KB_A.id] = [...(committed[KB_A.id] ?? []), { id: 'theirs', name: 'Theirs', openedAt: 9, order: 9 }];
+    const committed = JSON.parse(
+      storage.get(OPEN_RESOURCES_BY_KB_KEY)!,
+    ) as Record<string, unknown[]>;
+    committed[KB_A.id] = [
+      ...(committed[KB_A.id] ?? []),
+      { id: 'theirs', name: 'Theirs', openedAt: 9, order: 9 },
+    ];
     storage.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify(committed));
 
     browser.addOpenResource(resourceId('later'), 'Later');
 
-    const persisted = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<string, { id: string }[]>;
-    expect(persisted[KB_A.id]!.map((r) => r.id).sort()).toEqual(['later', 'mine', 'theirs']);
+    const persisted = JSON.parse(
+      storage.get(OPEN_RESOURCES_BY_KB_KEY)!,
+    ) as Record<string, { id: string }[]>;
+    expect(persisted[KB_A.id]!.map((r) => r.id).sort()).toEqual([
+      'later',
+      'mine',
+      'theirs',
+    ]);
 
     await browser.dispose();
   });
@@ -649,8 +842,14 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     seedStoredSession(here, KB_A.id, freshJwt(), 'r');
     here.set(STORAGE_KEY, JSON.stringify([KB_A]));
     here.set(ACTIVE_KEY, KB_A.id);
-    const first = new XynologBrowser({ storage: here, sessionFactory: createHttpSessionFactory() });
-    const second = new XynologBrowser({ storage: there, sessionFactory: createHttpSessionFactory() });
+    const first = new XynologBrowser({
+      storage: here,
+      sessionFactory: createHttpSessionFactory(),
+    });
+    const second = new XynologBrowser({
+      storage: there,
+      sessionFactory: createHttpSessionFactory(),
+    });
     await liveSession(first);
     await liveSession(second);
     await settled();
@@ -660,7 +859,10 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     second.setLastViewedResource('from-there');
 
     const both = ['from-here', 'from-there'];
-    const stored = JSON.parse(here.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<string, { id: string }[]>;
+    const stored = JSON.parse(here.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<
+      string,
+      { id: string }[]
+    >;
     expect(stored[KB_A.id]!.map((r) => r.id)).toEqual(both);
     expect(first.openResources$.getValue().map((r) => r.id)).toEqual(both);
     expect(second.openResources$.getValue().map((r) => r.id)).toEqual(both);
@@ -676,21 +878,33 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
     // Written to the storage with nobody told: what the registry holds in
     // memory is behind, and what it writes next must not put it back.
-    storage.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify({
-      [KB_A.id]: [
-        { id: 'mine', name: 'Mine', openedAt: 1, order: 0 },
-        { id: 'theirs', name: 'Theirs', openedAt: 2, order: 1 },
-      ],
-    }));
-    storage.set(LAST_VIEWED_RESOURCE_BY_KB_KEY, JSON.stringify({ [KB_B.id]: 'in-b' }));
+    storage.set(
+      OPEN_RESOURCES_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: [
+          { id: 'mine', name: 'Mine', openedAt: 1, order: 0 },
+          { id: 'theirs', name: 'Theirs', openedAt: 2, order: 1 },
+        ],
+      }),
+    );
+    storage.set(
+      LAST_VIEWED_RESOURCE_BY_KB_KEY,
+      JSON.stringify({ [KB_B.id]: 'in-b' }),
+    );
     browser.addOpenResource(resourceId('another'), 'Another');
     browser.setLastViewedResource('mine');
 
     const want = ['mine', 'theirs', 'another'];
-    const stored = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<string, { id: string }[]>;
+    const stored = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<
+      string,
+      { id: string }[]
+    >;
     expect(stored[KB_A.id]!.map((r) => r.id)).toEqual(want);
     expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(want);
-    expect(JSON.parse(storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY)!)).toEqual({ [KB_A.id]: 'mine', [KB_B.id]: 'in-b' });
+    expect(JSON.parse(storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY)!)).toEqual({
+      [KB_A.id]: 'mine',
+      [KB_B.id]: 'in-b',
+    });
 
     await browser.dispose();
   });
@@ -701,17 +915,25 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     browser.setLastViewedResource('a1');
 
     // Another context's, written with nobody told.
-    storage.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify({
-      [KB_A.id]: [{ id: 'a1', name: 'A1', openedAt: 1, order: 0 }],
-      [KB_B.id]: [{ id: 'b1', name: 'B1', openedAt: 2, order: 0 }],
-    }));
-    storage.set(LAST_VIEWED_RESOURCE_BY_KB_KEY, JSON.stringify({ [KB_A.id]: 'a1', [KB_B.id]: 'b1' }));
+    storage.set(
+      OPEN_RESOURCES_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: [{ id: 'a1', name: 'A1', openedAt: 1, order: 0 }],
+        [KB_B.id]: [{ id: 'b1', name: 'B1', openedAt: 2, order: 0 }],
+      }),
+    );
+    storage.set(
+      LAST_VIEWED_RESOURCE_BY_KB_KEY,
+      JSON.stringify({ [KB_A.id]: 'a1', [KB_B.id]: 'b1' }),
+    );
     browser.removeKb(KB_A.id);
 
     expect(JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!)).toEqual({
       [KB_B.id]: [{ id: 'b1', name: 'B1', openedAt: 2, order: 0 }],
     });
-    expect(JSON.parse(storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY)!)).toEqual({ [KB_B.id]: 'b1' });
+    expect(JSON.parse(storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY)!)).toEqual({
+      [KB_B.id]: 'b1',
+    });
 
     await browser.dispose();
   });
@@ -724,22 +946,31 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
   /** Both per-KB maps seeded for KB_A and KB_B, as a restore would leave them. */
   function seedKbScopedState() {
-    storage.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify({
-      [KB_A.id]: [{ id: 'a1', name: 'A1', openedAt: 0, order: 0 }],
-      [KB_B.id]: [{ id: 'b1', name: 'B1', openedAt: 0, order: 0 }],
-    }));
-    storage.set(LAST_VIEWED_RESOURCE_BY_KB_KEY, JSON.stringify({
-      [KB_A.id]: 'a1',
-      [KB_B.id]: 'b1',
-    }));
+    storage.set(
+      OPEN_RESOURCES_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: [{ id: 'a1', name: 'A1', openedAt: 0, order: 0 }],
+        [KB_B.id]: [{ id: 'b1', name: 'B1', openedAt: 0, order: 0 }],
+      }),
+    );
+    storage.set(
+      LAST_VIEWED_RESOURCE_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: 'a1',
+        [KB_B.id]: 'b1',
+      }),
+    );
   }
 
   const readMap = (key: string) =>
     JSON.parse(storage.get(key) ?? '{}') as Record<string, unknown>;
 
-  it('a KB reporting a DIFFERENT did voids that KB\'s tabs and last-viewed', async () => {
+  it("a KB reporting a DIFFERENT did voids that KB's tabs and last-viewed", async () => {
     seedKbScopedState();
-    mockKb = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb' });
+    mockKb = async () => ({
+      name: 'Other KB',
+      domain: 'someone-else.github.io:other-kb',
+    });
 
     const browser = await makeConnectedBrowser();
     await settled();
@@ -758,7 +989,10 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
   it('only the active KB is voided — other KBs keep both maps', async () => {
     seedKbScopedState();
-    mockKb = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb' });
+    mockKb = async () => ({
+      name: 'Other KB',
+      domain: 'someone-else.github.io:other-kb',
+    });
 
     const browser = await makeConnectedBrowser();
     await settled();
@@ -773,7 +1007,10 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
   it('a matching did changes nothing — a match is not evidence about contents', async () => {
     seedKbScopedState();
-    mockKb = async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a' });
+    mockKb = async () => ({
+      name: KB_A.label,
+      domain: 'example.github.io:kb-a',
+    });
     const browser = await makeConnectedBrowser();
     await settled();
 
@@ -787,8 +1024,22 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     // The guard that must never be weakened. Losing a user's tabs because the
     // gateway was briefly down is strictly worse than the phantoms this fixes.
     for (const [label, arrange] of [
-      ['the read gets no answer', () => { mockKb = async () => { throw new BusRequestError('unreachable', 'bus.timeout'); }; }],
-      ['the KB refuses to describe itself', () => { mockKb = async () => { throw new BusRequestError('no site.domain', 'bus.rejected'); }; }],
+      [
+        'the read gets no answer',
+        () => {
+          mockKb = async () => {
+            throw new BusRequestError('unreachable', 'bus.timeout');
+          };
+        },
+      ],
+      [
+        'the KB refuses to describe itself',
+        () => {
+          mockKb = async () => {
+            throw new BusRequestError('no site.domain', 'bus.rejected');
+          };
+        },
+      ],
     ] as const) {
       storage = new TestStorage();
       seedKbScopedState();
@@ -797,10 +1048,18 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
       const browser = await makeConnectedBrowser();
       await settled();
 
-      expect(browser.openResources$.getValue().map((r) => r.id), label).toEqual(['a1']);
-      expect(readMap(LAST_VIEWED_RESOURCE_BY_KB_KEY)[KB_A.id], label).toBe('a1');
+      expect(
+        browser.openResources$.getValue().map((r) => r.id),
+        label,
+      ).toEqual(['a1']);
+      expect(readMap(LAST_VIEWED_RESOURCE_BY_KB_KEY)[KB_A.id], label).toBe(
+        'a1',
+      );
       // Nothing was read, so nothing is recorded as read.
-      expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id), label).not.toHaveProperty('lastRead');
+      expect(
+        browser.kbs$.getValue().find((k) => k.id === KB_A.id),
+        label,
+      ).not.toHaveProperty('lastRead');
 
       await browser.dispose();
     }
@@ -811,13 +1070,17 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     // happened, and sign the user in to a KB they never chose under the name
     // of one they did. Re-registering is a deliberate act.
     seedKbScopedState();
-    mockKb = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb' });
+    mockKb = async () => ({
+      name: 'Other KB',
+      domain: 'someone-else.github.io:other-kb',
+    });
 
     const browser = await makeConnectedBrowser();
     await settled();
 
-    const entry = (JSON.parse(storage.get(STORAGE_KEY)!) as typeof KB_A[])
-      .find((k) => k.id === KB_A.id)!;
+    const entry = (
+      JSON.parse(storage.get(STORAGE_KEY)!) as (typeof KB_A)[]
+    ).find((k) => k.id === KB_A.id)!;
     expect(entry.did).toBe(KB_A.did);
     expect(entry.label).toBe(KB_A.label);
     // Nor what the other KB said of itself: its branch is not this KB's.
@@ -828,41 +1091,72 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
   it('a matching read records the name, the branch and when it was read, and survives a reload', async () => {
     seedKbScopedState();
-    mockKb = async () => ({ name: 'KB A, renamed', domain: 'example.github.io:kb-a', gitBranch: 'main' });
+    mockKb = async () => ({
+      name: 'KB A, renamed',
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'main',
+    });
 
     const browser = await makeConnectedBrowser();
     await settled();
 
-    const expected = { label: 'KB A, renamed', lastRead: { at: expect.any(String), gitBranch: 'main' } };
-    expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id)).toMatchObject(expected);
+    const expected = {
+      label: 'KB A, renamed',
+      lastRead: { at: expect.any(String), gitBranch: 'main' },
+    };
+    expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id)).toMatchObject(
+      expected,
+    );
     await browser.dispose();
 
     const reloaded = makeBrowser();
-    expect(reloaded.kbs$.getValue().find((k) => k.id === KB_A.id)).toMatchObject(expected);
+    expect(
+      reloaded.kbs$.getValue().find((k) => k.id === KB_A.id),
+    ).toMatchObject(expected);
     await reloaded.dispose();
   });
 
   it('readActiveKb asks again, so the panel shows the branch the tree is on now', async () => {
-    mockKb = async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a', gitBranch: 'main' });
+    mockKb = async () => ({
+      name: KB_A.label,
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'main',
+    });
     const browser = await makeConnectedBrowser();
     await settled();
 
-    mockKb = async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a', gitBranch: 'second-line' });
+    mockKb = async () => ({
+      name: KB_A.label,
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'second-line',
+    });
 
     expect(await browser.readActiveKb()).toEqual({ kind: 'recorded' });
-    expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id)?.lastRead?.gitBranch).toBe('second-line');
+    expect(
+      browser.kbs$.getValue().find((k) => k.id === KB_A.id)?.lastRead
+        ?.gitBranch,
+    ).toBe('second-line');
     await browser.dispose();
   });
 
   it('readActiveKb says so when the KB did not answer, so nothing presents the last read as current', async () => {
-    mockKb = async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a', gitBranch: 'main' });
+    mockKb = async () => ({
+      name: KB_A.label,
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'main',
+    });
     const browser = await makeConnectedBrowser();
     await settled();
 
-    mockKb = async () => { throw new BusRequestError('archivist down', 'bus.peer-unavailable'); };
+    mockKb = async () => {
+      throw new BusRequestError('archivist down', 'bus.peer-unavailable');
+    };
 
     expect(await browser.readActiveKb()).toEqual({ kind: 'no-verdict' });
-    expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id)?.lastRead?.gitBranch).toBe('main');
+    expect(
+      browser.kbs$.getValue().find((k) => k.id === KB_A.id)?.lastRead
+        ?.gitBranch,
+    ).toBe('main');
     await browser.dispose();
   });
 
@@ -871,11 +1165,19 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     // activating: what a different KB's answer does to local state, and the
     // modal, belong to activation alone.
     seedKbScopedState();
-    mockKb = async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a', gitBranch: 'main' });
+    mockKb = async () => ({
+      name: KB_A.label,
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'main',
+    });
     const browser = await makeConnectedBrowser();
     await settled();
 
-    mockKb = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb', gitBranch: 'trunk' });
+    mockKb = async () => ({
+      name: 'Other KB',
+      domain: 'someone-else.github.io:other-kb',
+      gitBranch: 'trunk',
+    });
 
     expect(await browser.readActiveKb()).toEqual({
       kind: 'conflict',
@@ -884,15 +1186,22 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     });
     expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['a1']);
     expect(readMap(LAST_VIEWED_RESOURCE_BY_KB_KEY)[KB_A.id]).toBe('a1');
-    expect(browser.activeSignals$.getValue()!.kbIdentityConflict$.getValue()).toBeNull();
+    expect(
+      browser.activeSignals$.getValue()!.kbIdentityConflict$.getValue(),
+    ).toBeNull();
     // Nor is the other KB's answer recorded on this entry.
-    expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id)).toMatchObject({ label: KB_A.label, lastRead: { gitBranch: 'main' } });
+    expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id)).toMatchObject(
+      { label: KB_A.label, lastRead: { gitBranch: 'main' } },
+    );
     await browser.dispose();
   });
 
   it('readActiveKb does not raise again a conflict the user has acknowledged', async () => {
     seedKbScopedState();
-    mockKb = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb' });
+    mockKb = async () => ({
+      name: 'Other KB',
+      domain: 'someone-else.github.io:other-kb',
+    });
     const browser = await makeConnectedBrowser();
     await settled();
     const signals = browser.activeSignals$.getValue()!;
@@ -906,21 +1215,33 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
   });
 
   it('a tree with no branch records a read without one', async () => {
-    mockKb = async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a', gitBranch: 'main' });
+    mockKb = async () => ({
+      name: KB_A.label,
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'main',
+    });
     const browser = await makeConnectedBrowser();
     await settled();
 
-    mockKb = async () => ({ name: KB_A.label, domain: 'example.github.io:kb-a' });
+    mockKb = async () => ({
+      name: KB_A.label,
+      domain: 'example.github.io:kb-a',
+    });
     await browser.readActiveKb();
 
-    expect(browser.kbs$.getValue().find((k) => k.id === KB_A.id)?.lastRead).toEqual({ at: expect.any(String) });
+    expect(
+      browser.kbs$.getValue().find((k) => k.id === KB_A.id)?.lastRead,
+    ).toEqual({ at: expect.any(String) });
     await browser.dispose();
   });
 
   it('raises a conflict signal carrying both dids, and does not decide what to do', async () => {
     seedKbScopedState();
     const observed = 'did:web:someone-else.github.io:other-kb';
-    mockKb = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb' });
+    mockKb = async () => ({
+      name: 'Other KB',
+      domain: 'someone-else.github.io:other-kb',
+    });
 
     const browser = await makeConnectedBrowser();
     await settled();
@@ -936,7 +1257,10 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
   it('a mismatch stops the per-resource pass — those answers would be about the wrong KB', async () => {
     seedKbScopedState();
-    mockKb = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb' });
+    mockKb = async () => ({
+      name: 'Other KB',
+      domain: 'someone-else.github.io:other-kb',
+    });
 
     const browser = await makeConnectedBrowser();
     await settled();
@@ -977,7 +1301,10 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
     await browser.signOut(KB_A.id);
     expect(browser.openResources$.getValue()).toEqual([]);
-    const stored = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<string, Array<{ id: string }>>;
+    const stored = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY)!) as Record<
+      string,
+      Array<{ id: string }>
+    >;
     expect(stored[KB_A.id]!.map((r) => r.id)).toEqual(['r1']);
 
     await browser.signIn(KB_A.id, testSession(freshJwt(), 'r'));
@@ -991,7 +1318,9 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
     browser.addOpenResource(resourceId('r1'), 'One');
 
     browser.removeKb(KB_A.id);
-    const stored = JSON.parse(storage.get(OPEN_RESOURCES_BY_KB_KEY) ?? '{}') as Record<string, unknown>;
+    const stored = JSON.parse(
+      storage.get(OPEN_RESOURCES_BY_KB_KEY) ?? '{}',
+    ) as Record<string, unknown>;
     expect(stored[KB_A.id]).toBeUndefined();
 
     await browser.dispose();
@@ -999,7 +1328,9 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
 
   it('cross-tab writes to the per-KB key update the projection', async () => {
     const browser = await makeConnectedBrowser();
-    const payload = JSON.stringify({ [KB_A.id]: [{ id: 'rX', name: 'X', openedAt: 1, order: 0 }] });
+    const payload = JSON.stringify({
+      [KB_A.id]: [{ id: 'rX', name: 'X', openedAt: 1, order: 0 }],
+    });
     storage.set(OPEN_RESOURCES_BY_KB_KEY, payload);
     storage.dispatch(OPEN_RESOURCES_BY_KB_KEY, payload);
     expect(browser.openResources$.getValue().map((r) => r.id)).toEqual(['rX']);
@@ -1007,7 +1338,10 @@ describe('XynologBrowser — open resources (KB-scoped)', () => {
   });
 
   it('ignores a flat openDocuments key entirely', async () => {
-    storage.set('openDocuments', JSON.stringify([{ id: 'old', name: 'Old', openedAt: 1 }]));
+    storage.set(
+      'openDocuments',
+      JSON.stringify([{ id: 'old', name: 'Old', openedAt: 1 }]),
+    );
     const browser = await makeConnectedBrowser();
     expect(browser.openResources$.getValue()).toEqual([]);
     await browser.dispose();
@@ -1025,12 +1359,22 @@ describe('XynologBrowser — last viewed resource (KB-scoped)', () => {
     storage.set(STORAGE_KEY, JSON.stringify([KB_A, KB_B]));
     storage.set(ACTIVE_KEY, KB_A.id);
     const browser = makeBrowser();
-    await firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null), take(1)));
+    await firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((s) => s !== null),
+        take(1),
+      ),
+    );
     return browser;
   }
 
   const liveSession = (browser: XynologBrowser) =>
-    firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null), take(1)));
+    firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((s) => s !== null),
+        take(1),
+      ),
+    );
 
   it('records against the active KB and never leaks across a switch', async () => {
     const browser = await makeConnectedBrowser();
@@ -1057,7 +1401,9 @@ describe('XynologBrowser — last viewed resource (KB-scoped)', () => {
     const browser = await makeConnectedBrowser();
     browser.setLastViewedResource('res-in-a');
 
-    const stored = JSON.parse(storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY)!) as Record<string, string>;
+    const stored = JSON.parse(
+      storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY)!,
+    ) as Record<string, string>;
     expect(stored[KB_A.id]).toBe('res-in-a');
     expect(stored[KB_B.id]).toBeUndefined();
 
@@ -1080,7 +1426,9 @@ describe('XynologBrowser — last viewed resource (KB-scoped)', () => {
     browser.setLastViewedResource('res-in-a');
 
     browser.removeKb(KB_A.id);
-    const stored = JSON.parse(storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY) ?? '{}') as Record<string, unknown>;
+    const stored = JSON.parse(
+      storage.get(LAST_VIEWED_RESOURCE_BY_KB_KEY) ?? '{}',
+    ) as Record<string, unknown>;
     expect(stored[KB_A.id]).toBeUndefined();
 
     await browser.dispose();
@@ -1099,7 +1447,12 @@ describe('XynologBrowser — last viewed resource (KB-scoped)', () => {
 
 describe('XynologBrowser — a write the storage refuses', () => {
   const liveSession = (browser: XynologBrowser) =>
-    firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null), take(1)));
+    firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((s) => s !== null),
+        take(1),
+      ),
+    );
 
   /** The checks a session's arrival starts are fire-and-forget; let their microtasks drain. */
   const settled = () => new Promise((r) => setTimeout(r, 0));
@@ -1117,9 +1470,16 @@ describe('XynologBrowser — a write the storage refuses', () => {
     seedStoredSession(refusing, KB_A.id, freshJwt(), 'r');
     refusing.set(STORAGE_KEY, JSON.stringify([KB_A]));
     refusing.set(ACTIVE_KEY, KB_A.id);
-    refusing.set(OPEN_RESOURCES_BY_KB_KEY, JSON.stringify({ [KB_A.id]: [{ id: 'gone', name: 'Gone', openedAt: 0, order: 0 }] }));
+    refusing.set(
+      OPEN_RESOURCES_BY_KB_KEY,
+      JSON.stringify({
+        [KB_A.id]: [{ id: 'gone', name: 'Gone', openedAt: 0, order: 0 }],
+      }),
+    );
     let release: () => void = () => {};
-    const gate = new Promise<void>((r) => { release = r; });
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
     mockResourceFresh.mockImplementation(async () => {
       await gate;
       throw new BusRequestError('Resource not found', 'bus.not-found', {});
@@ -1131,7 +1491,9 @@ describe('XynologBrowser — a write the storage refuses', () => {
     release();
     await settled();
 
-    await expect(browser.dispose()).rejects.toThrow(`refused: ${OPEN_RESOURCES_BY_KB_KEY}`);
+    await expect(browser.dispose()).rejects.toThrow(
+      `refused: ${OPEN_RESOURCES_BY_KB_KEY}`,
+    );
   });
 });
 
@@ -1191,7 +1553,9 @@ describe('XynologBrowser — performRefresh (the refresh grant at the issuer)', 
     const renewals = callsTo(TEST_TOKEN_ENDPOINT);
     expect(renewals).toHaveLength(1);
     expect(Object.fromEntries(renewals[0]![1].body.entries())).toEqual({
-      grant_type: 'refresh_token', refresh_token: 'old-refresh', client_id: 'xynolog-browser',
+      grant_type: 'refresh_token',
+      refresh_token: 'old-refresh',
+      client_id: 'xynolog-browser',
     });
 
     await browser.dispose();
@@ -1224,7 +1588,9 @@ describe('XynologBrowser — performRefresh (the refresh grant at the issuer)', 
     const browser = makeBrowser();
     const said: string[] = [];
     browser.error$.subscribe((error) => said.push(error.code));
-    const session = await firstValueFrom(browser.activeSession$.pipe(skip(1), take(1)));
+    const session = await firstValueFrom(
+      browser.activeSession$.pipe(skip(1), take(1)),
+    );
 
     // A renewal that got no answer keeps the stored session, to be renewed
     // when a request is refused; the session starts with no token.
@@ -1239,7 +1605,12 @@ describe('XynologBrowser — performRefresh (the refresh grant at the issuer)', 
     seedStoredSession(storage, KB_A.id, freshJwt(-3600), 'revoked-refresh');
     storage.set(STORAGE_KEY, JSON.stringify([KB_A]));
     storage.set(ACTIVE_KEY, KB_A.id);
-    tokenEndpointAnswers(issuerReply({ error: 'invalid_grant', error_description: 'Token is not active' }, 400));
+    tokenEndpointAnswers(
+      issuerReply(
+        { error: 'invalid_grant', error_description: 'Token is not active' },
+        400,
+      ),
+    );
 
     const browser = makeBrowser();
     await firstValueFrom(browser.activeSession$.pipe(skip(1), take(1)));
@@ -1259,7 +1630,9 @@ describe('XynologBrowser — performRefresh (the refresh grant at the issuer)', 
     storage.set(ACTIVE_KEY, KB_A.id);
 
     const browser = makeBrowser();
-    const session = await firstValueFrom(browser.activeSession$.pipe(skip(1), take(1)));
+    const session = await firstValueFrom(
+      browser.activeSession$.pipe(skip(1), take(1)),
+    );
     fetchMock.mockClear();
 
     // Hold the issuer's answer open so both session.refresh(held) calls see
@@ -1267,8 +1640,11 @@ describe('XynologBrowser — performRefresh (the refresh grant at the issuer)', 
     let resolveRefresh!: (value: Response) => void;
     fetchMock.mockImplementation(async (url: string) =>
       url === TEST_TOKEN_ENDPOINT
-        ? new Promise<Response>((r) => { resolveRefresh = r; })
-        : issuerReply({ error: 'invalid_grant' }, 400));
+        ? new Promise<Response>((r) => {
+            resolveRefresh = r;
+          })
+        : issuerReply({ error: 'invalid_grant' }, 400),
+    );
 
     const r1 = session!.refresh(session!.token$.getValue());
     const r2 = session!.refresh(session!.token$.getValue());
@@ -1291,42 +1667,78 @@ describe('XynologBrowser — performRefresh (the refresh grant at the issuer)', 
 describe('XynologBrowser — sign-in through the issuer', () => {
   const ISSUER = 'https://issuer.test/realms/xynolog';
   const REDIRECT = 'http://localhost:3000/en/auth/callback';
-  const TARGET = { kind: 'http' as const, host: 'localhost', port: 4000, protocol: 'http' as const };
+  const TARGET = {
+    kind: 'http' as const,
+    host: 'localhost',
+    port: 4000,
+    protocol: 'http' as const,
+  };
 
   beforeEach(() => {
-    vi.spyOn(HttpTransport.prototype, 'getProtectedResourceMetadata').mockResolvedValue({
-      resource: 'http://localhost:4000', authorization_servers: [ISSUER], bearer_methods_supported: ['header'],
+    vi.spyOn(
+      HttpTransport.prototype,
+      'getProtectedResourceMetadata',
+    ).mockResolvedValue({
+      resource: 'http://localhost:4000',
+      authorization_servers: [ISSUER],
+      bearer_methods_supported: ['header'],
     });
     fetchMock.mockImplementation(async (url: string) => {
       if (url.endsWith('/.well-known/openid-configuration')) {
         return issuerReply({
-          issuer: ISSUER, authorization_endpoint: `${ISSUER}/auth`, token_endpoint: `${ISSUER}/token`,
+          issuer: ISSUER,
+          authorization_endpoint: `${ISSUER}/auth`,
+          token_endpoint: `${ISSUER}/token`,
           revocation_endpoint: `${ISSUER}/revoke`,
         });
       }
-      return issuerReply({ access_token: freshJwt(), refresh_token: 'issued-refresh' });
+      return issuerReply({
+        access_token: freshJwt(),
+        refresh_token: 'issued-refresh',
+      });
     });
-    mockKb = async () => ({ name: 'KB A', domain: 'example.github.io:kb-a', gitBranch: 'main' });
+    mockKb = async () => ({
+      name: 'KB A',
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'main',
+    });
     whoIs.mockImplementation(async () => user('Alice', 'alice@example.com'));
   });
 
-  async function begin(browser: XynologBrowser, extra: { kbId?: string; expectedDid?: string; expectedName?: string } = {}) {
-    const url = await browser.beginSignIn({ target: TARGET, redirectUri: REDIRECT, ...extra });
-    const { state } = JSON.parse(storage.get(PENDING_AUTHORIZATION_KEY)!) as { state: string };
+  async function begin(
+    browser: XynologBrowser,
+    extra: { kbId?: string; expectedDid?: string; expectedName?: string } = {},
+  ) {
+    const url = await browser.beginSignIn({
+      target: TARGET,
+      redirectUri: REDIRECT,
+      ...extra,
+    });
+    const { state } = JSON.parse(storage.get(PENDING_AUTHORIZATION_KEY)!) as {
+      state: string;
+    };
     return { url, callback: `${REDIRECT}?code=the-code&state=${state}` };
   }
 
-  it('asks the issuer through the fetch it was given, to begin, to complete and to sign out, and nothing through the runtime\'s', async () => {
+  it("asks the issuer through the fetch it was given, to begin, to complete and to sign out, and nothing through the runtime's", async () => {
     const given = globalThis.fetch;
-    const runtimes = vi.fn(async () => issuerReply({ error: 'not this fetch' }, 400));
+    const runtimes = vi.fn(async () =>
+      issuerReply({ error: 'not this fetch' }, 400),
+    );
     vi.stubGlobal('fetch', runtimes);
-    const browser = new XynologBrowser({ storage, sessionFactory: createHttpSessionFactory(given), fetch: given });
+    const browser = new XynologBrowser({
+      storage,
+      sessionFactory: createHttpSessionFactory(given),
+      fetch: given,
+    });
 
     const { callback } = await begin(browser);
     const outcome = await browser.completeSignIn(callback);
     await browser.signOut(outcome.kb.id);
 
-    expect(callsTo(`${ISSUER}/.well-known/openid-configuration`)).toHaveLength(1);
+    expect(callsTo(`${ISSUER}/.well-known/openid-configuration`)).toHaveLength(
+      1,
+    );
     expect(callsTo(`${ISSUER}/token`)).toHaveLength(1);
     expect(callsTo(`${ISSUER}/revoke`)).toHaveLength(1);
     expect(runtimes).not.toHaveBeenCalled();
@@ -1350,7 +1762,9 @@ describe('XynologBrowser — sign-in through the issuer', () => {
     const outcome = await browser.completeSignIn(callback);
 
     expect(outcome.kb).toMatchObject({
-      did: KB_A.did, label: 'KB A', endpoint: TARGET,
+      did: KB_A.did,
+      label: 'KB A',
+      endpoint: TARGET,
       lastRead: { at: expect.any(String), gitBranch: 'main' },
     });
     expect(outcome.kb).not.toHaveProperty('gitBranch');
@@ -1363,8 +1777,10 @@ describe('XynologBrowser — sign-in through the issuer', () => {
     expect(browser.kbs$.getValue()).toHaveLength(1);
     expect(browser.activeKbId$.getValue()).toBe(outcome.kb.id);
     expect(JSON.parse(storage.get(storageKey(outcome.kb.id))!)).toMatchObject({
-      refresh: 'issued-refresh', clientId: 'xynolog-browser',
-      tokenEndpoint: `${ISSUER}/token`, revocationEndpoint: `${ISSUER}/revoke`,
+      refresh: 'issued-refresh',
+      clientId: 'xynolog-browser',
+      tokenEndpoint: `${ISSUER}/token`,
+      revocationEndpoint: `${ISSUER}/revoke`,
     });
     expect(storage.get(PENDING_AUTHORIZATION_KEY)).toBeNull();
     await browser.dispose();
@@ -1372,24 +1788,46 @@ describe('XynologBrowser — sign-in through the issuer', () => {
 
   it('reports what the user believed they clicked, so the host can verify it against who answered', async () => {
     const browser = makeBrowser();
-    const { callback } = await begin(browser, { expectedDid: 'did:web:someone-else', expectedName: 'Other KB' });
+    const { callback } = await begin(browser, {
+      expectedDid: 'did:web:someone-else',
+      expectedName: 'Other KB',
+    });
 
     const outcome = await browser.completeSignIn(callback);
 
-    expect(outcome.expected).toEqual({ did: 'did:web:someone-else', name: 'Other KB' });
+    expect(outcome.expected).toEqual({
+      did: 'did:web:someone-else',
+      name: 'Other KB',
+    });
     // Registered anyway: verification reports, it never blocks.
     expect(outcome.kb.did).toBe(KB_A.did);
     await browser.dispose();
   });
 
   it('re-authenticates a registered KB by id, taking what the KB and the issuer now say', async () => {
-    storage.set(STORAGE_KEY, JSON.stringify([{ ...KB_A, label: 'Old name', email: 'old@example.com' }]));
+    storage.set(
+      STORAGE_KEY,
+      JSON.stringify([
+        { ...KB_A, label: 'Old name', email: 'old@example.com' },
+      ]),
+    );
     // Signed out, the KB answers nothing, so the row still carries the name
     // the user last saw — which is what they believe they are clicking.
-    mockKb = async () => { throw new BusRequestError('no credential', 'bus.timeout'); };
+    mockKb = async () => {
+      throw new BusRequestError('no credential', 'bus.timeout');
+    };
     const browser = makeBrowser();
-    await firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null), take(1)));
-    mockKb = async () => ({ name: 'KB A', domain: 'example.github.io:kb-a', gitBranch: 'main' });
+    await firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((s) => s !== null),
+        take(1),
+      ),
+    );
+    mockKb = async () => ({
+      name: 'KB A',
+      domain: 'example.github.io:kb-a',
+      gitBranch: 'main',
+    });
     const { callback } = await begin(browser, { kbId: KB_A.id });
 
     const outcome = await browser.completeSignIn(callback);
@@ -1423,15 +1861,27 @@ describe('XynologBrowser — sign-in through the issuer', () => {
   // clicked, say what they BELIEVED; the did the KB reports decides which
   // entry is signed in.
   const OTHER_DID = 'did:web:someone-else.github.io:other-kb';
-  const answersAsOther = async () => ({ name: 'Other KB', domain: 'someone-else.github.io:other-kb', gitBranch: 'trunk' });
+  const answersAsOther = async () => ({
+    name: 'Other KB',
+    domain: 'someone-else.github.io:other-kb',
+    gitBranch: 'trunk',
+  });
 
   it('a re-auth by id that a different KB answers leaves the believed entry as it was, and lands on a new entry for the KB that answered', async () => {
-    const believed = { ...KB_A, lastRead: { at: '2026-01-01T00:00:00.000Z', gitBranch: 'main' } };
+    const believed = {
+      ...KB_A,
+      lastRead: { at: '2026-01-01T00:00:00.000Z', gitBranch: 'main' },
+    };
     storage.set(STORAGE_KEY, JSON.stringify([believed]));
     seedStoredSession(storage, KB_A.id, freshJwt(), 'believed-refresh');
     mockKb = answersAsOther;
     const browser = makeBrowser();
-    await firstValueFrom(browser.activeSession$.pipe(filter((s) => s !== null), take(1)));
+    await firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((s) => s !== null),
+        take(1),
+      ),
+    );
     const storedBefore = storage.get(storageKey(KB_A.id));
     const { callback } = await begin(browser, { kbId: KB_A.id });
 
@@ -1445,19 +1895,31 @@ describe('XynologBrowser — sign-in through the issuer', () => {
     // The KB that answered: its own entry, under its own name, signed in and active.
     expect(outcome.kb.id).not.toBe(KB_A.id);
     expect(outcome.kb).toMatchObject({
-      did: OTHER_DID, label: 'Other KB', endpoint: TARGET,
+      did: OTHER_DID,
+      label: 'Other KB',
+      endpoint: TARGET,
       lastRead: { at: expect.any(String), gitBranch: 'trunk' },
     });
-    expect(kbs.find((k) => k.id === outcome.kb.id)).toMatchObject({ did: OTHER_DID, label: 'Other KB' });
+    expect(kbs.find((k) => k.id === outcome.kb.id)).toMatchObject({
+      did: OTHER_DID,
+      label: 'Other KB',
+    });
     expect(browser.activeKbId$.getValue()).toBe(outcome.kb.id);
-    expect(JSON.parse(storage.get(storageKey(outcome.kb.id))!)).toMatchObject({ refresh: 'issued-refresh' });
+    expect(JSON.parse(storage.get(storageKey(outcome.kb.id))!)).toMatchObject({
+      refresh: 'issued-refresh',
+    });
     // And the belief is reported back, so the host can say what happened.
     expect(outcome.expected).toEqual({ did: KB_A.did, name: KB_A.label });
     await browser.dispose();
   });
 
   it('with two entries at one address, a sign-in lands on the one whose did answered', async () => {
-    const other = { id: 'kb-other', label: 'Other KB', did: OTHER_DID, endpoint: KB_A.endpoint };
+    const other = {
+      id: 'kb-other',
+      label: 'Other KB',
+      did: OTHER_DID,
+      endpoint: KB_A.endpoint,
+    };
     // The other KB first: a lookup by address alone would take it.
     storage.set(STORAGE_KEY, JSON.stringify([other, KB_A]));
     const browser = makeBrowser();
@@ -1474,7 +1936,12 @@ describe('XynologBrowser — sign-in through the issuer', () => {
   });
 
   it('when the only entry at the address is another KB, a sign-in registers a new entry rather than re-labelling it', async () => {
-    const other = { id: 'kb-other', label: 'Other KB', did: OTHER_DID, endpoint: KB_A.endpoint };
+    const other = {
+      id: 'kb-other',
+      label: 'Other KB',
+      did: OTHER_DID,
+      endpoint: KB_A.endpoint,
+    };
     storage.set(STORAGE_KEY, JSON.stringify([other]));
     const browser = makeBrowser();
     const { callback } = await begin(browser);
@@ -1485,14 +1952,20 @@ describe('XynologBrowser — sign-in through the issuer', () => {
     expect(kbs).toHaveLength(2);
     expect(kbs.find((k) => k.id === other.id)).toEqual(other);
     expect(outcome.kb.id).not.toBe(other.id);
-    expect(outcome.kb).toMatchObject({ did: KB_A.did, label: 'KB A', endpoint: TARGET });
+    expect(outcome.kb).toMatchObject({
+      did: KB_A.did,
+      label: 'KB A',
+      endpoint: TARGET,
+    });
     // The one entry registered at the address is what the user believed was there.
     expect(outcome.expected).toEqual({ did: OTHER_DID, name: 'Other KB' });
     await browser.dispose();
   });
 
   it('refuses to register a KB that cannot say who it is, and stores nothing', async () => {
-    mockKb = async () => { throw new BusRequestError('no site.domain', 'bus.rejected'); };
+    mockKb = async () => {
+      throw new BusRequestError('no site.domain', 'bus.rejected');
+    };
     const browser = makeBrowser();
     const { callback } = await begin(browser);
 
@@ -1506,11 +1979,15 @@ describe('XynologBrowser — sign-in through the issuer', () => {
   });
 
   it('refuses to register a KB it cannot reach, and says it could not reach it', async () => {
-    mockKb = async () => { throw new BusRequestError('no answer', 'bus.timeout'); };
+    mockKb = async () => {
+      throw new BusRequestError('no answer', 'bus.timeout');
+    };
     const browser = makeBrowser();
     const { callback } = await begin(browser);
 
-    await expect(browser.completeSignIn(callback)).rejects.toMatchObject({ reason: 'unreachable' });
+    await expect(browser.completeSignIn(callback)).rejects.toMatchObject({
+      reason: 'unreachable',
+    });
 
     expect(browser.kbs$.getValue()).toHaveLength(0);
     await browser.dispose();
@@ -1520,7 +1997,9 @@ describe('XynologBrowser — sign-in through the issuer', () => {
     const browser = makeBrowser();
     await begin(browser);
 
-    await expect(browser.completeSignIn(`${REDIRECT}?code=c&state=forged`)).rejects.toMatchObject({ code: 'state' });
+    await expect(
+      browser.completeSignIn(`${REDIRECT}?code=c&state=forged`),
+    ).rejects.toMatchObject({ code: 'state' });
 
     expect(browser.kbs$.getValue()).toHaveLength(0);
     await browser.dispose();
@@ -1538,7 +2017,9 @@ describe('XynologBrowser — sign-in through the issuer', () => {
     const revocations = callsTo(TEST_REVOCATION_ENDPOINT);
     expect(revocations).toHaveLength(1);
     expect(Object.fromEntries(revocations[0]![1].body.entries())).toEqual({
-      token: 'r', token_type_hint: 'refresh_token', client_id: 'xynolog-browser',
+      token: 'r',
+      token_type_hint: 'refresh_token',
+      client_id: 'xynolog-browser',
     });
     await browser.dispose();
   });
@@ -1555,7 +2036,9 @@ describe('XynologBrowser — asking the gateway who a stored token is', () => {
     await firstValueFrom(browser.activeSession$.pipe(skip(1), take(1)));
 
     expect(whoIs).toHaveBeenCalledTimes(1);
-    expect(whoIs.mock.calls[0]![0].headers.get('authorization')).toBe(`Bearer ${stored}`);
+    expect(whoIs.mock.calls[0]![0].headers.get('authorization')).toBe(
+      `Bearer ${stored}`,
+    );
 
     await browser.dispose();
   });
@@ -1567,7 +2050,9 @@ describe('XynologBrowser — asking the gateway who a stored token is', () => {
     storage.set(ACTIVE_KEY, KB_A.id);
 
     const browser = makeBrowser();
-    const session = await firstValueFrom(browser.activeSession$.pipe(skip(1), take(1)));
+    const session = await firstValueFrom(
+      browser.activeSession$.pipe(skip(1), take(1)),
+    );
     expect(session?.user$.getValue()).toMatchObject({ name: 'Alice' });
 
     await browser.dispose();
@@ -1580,15 +2065,26 @@ describe('XynologBrowser — what error$ keeps for its first reader', () => {
     storage.set(STORAGE_KEY, JSON.stringify([KB_A]));
     storage.set(ACTIVE_KEY, KB_A.id);
     const browser = makeBrowser();
-    const session = await firstValueFrom(browser.activeSession$.pipe(filter((live): live is XynologSession => live !== null)));
+    const session = await firstValueFrom(
+      browser.activeSession$.pipe(
+        filter((live): live is XynologSession => live !== null),
+      ),
+    );
     return { browser, session };
   };
 
   it('gives its first reader the latest ERRORS_KEPT_FOR_FIRST_READER_COUNT said before it read, in order, the oldest dropped', async () => {
     const { browser, session } = await connected();
     const beyond = 3;
-    const messages = Array.from({ length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond }, (_, n) => `write ${n} refused`);
-    for (const message of messages) sayOn(session, new XynologSessionError('session.save-refused', message, KB_A.id));
+    const messages = Array.from(
+      { length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond },
+      (_, n) => `write ${n} refused`,
+    );
+    for (const message of messages)
+      sayOn(
+        session,
+        new XynologSessionError('session.save-refused', message, KB_A.id),
+      );
 
     const said: string[] = [];
     browser.error$.subscribe((error) => said.push(error.message));
@@ -1599,12 +2095,24 @@ describe('XynologBrowser — what error$ keeps for its first reader', () => {
 
   it('gives a reader who comes once it has ended nothing of what it kept', async () => {
     const { browser, session } = await connected();
-    sayOn(session, new XynologSessionError('session.save-refused', 'a write refused', KB_A.id));
+    sayOn(
+      session,
+      new XynologSessionError(
+        'session.save-refused',
+        'a write refused',
+        KB_A.id,
+      ),
+    );
     await browser.dispose();
 
     const said: string[] = [];
     let ended = false;
-    browser.error$.subscribe({ next: (error) => said.push(error.message), complete: () => { ended = true; } });
+    browser.error$.subscribe({
+      next: (error) => said.push(error.message),
+      complete: () => {
+        ended = true;
+      },
+    });
     expect(said).toEqual([]);
     expect(ended).toBe(true);
   });
@@ -1699,10 +2207,17 @@ describe('XynologBrowser — activeSignals$ lifecycle (SessionSignals)', () => {
     seedStoredSession(storage, KB_A.id, freshJwt(), 'bad-refresh');
     storage.set(STORAGE_KEY, JSON.stringify([KB_A]));
     storage.set(ACTIVE_KEY, KB_A.id);
-    tokenEndpointAnswers(issuerReply({ error: 'invalid_grant', error_description: 'Token is not active' }, 400));
+    tokenEndpointAnswers(
+      issuerReply(
+        { error: 'invalid_grant', error_description: 'Token is not active' },
+        400,
+      ),
+    );
 
     const browser = makeBrowser();
-    const session = await firstValueFrom(browser.activeSession$.pipe(skip(1), take(1)));
+    const session = await firstValueFrom(
+      browser.activeSession$.pipe(skip(1), take(1)),
+    );
     const signals = browser.activeSignals$.getValue()!;
     expect(signals.sessionEnded$.getValue()).toBeNull();
 
@@ -1724,8 +2239,18 @@ describe('XynologBrowser — activeSignals$ lifecycle (SessionSignals)', () => {
     const signals = browser.activeSignals$.getValue()!;
 
     const subj = newestTransportErrors();
-    subj.next(APIError.fromStatus('boom', 500, 'Internal Server Error', undefined, undefined));
-    subj.next(APIError.fromStatus('not found', 404, 'Not Found', undefined, undefined));
+    subj.next(
+      APIError.fromStatus(
+        'boom',
+        500,
+        'Internal Server Error',
+        undefined,
+        undefined,
+      ),
+    );
+    subj.next(
+      APIError.fromStatus('not found', 404, 'Not Found', undefined, undefined),
+    );
 
     expect(signals.sessionEnded$.getValue()).toBeNull();
     expect(signals.permissionDenied$.getValue()).toBeNull();
@@ -1741,7 +2266,11 @@ describe('XynologBrowser — activeSignals$ lifecycle (SessionSignals)', () => {
     await firstValueFrom(browser.activeSession$.pipe(skip(1), take(1)));
 
     let completed = false;
-    browser.activeSignals$.subscribe({ complete: () => { completed = true; } });
+    browser.activeSignals$.subscribe({
+      complete: () => {
+        completed = true;
+      },
+    });
 
     await browser.dispose();
     expect(completed).toBe(true);

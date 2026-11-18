@@ -11,17 +11,41 @@
 import { BehaviorSubject, type Observable, type Subscription } from 'rxjs';
 import type { XynologBrowser } from '@xynolog/sdk';
 import type { StateUnit } from '@xynolog/core';
-import { annotatorKeyForMotivation, type AnnotatorKey } from '../lib/annotation-registry';
+import {
+  annotatorKeyForMotivation,
+  type AnnotatorKey,
+} from '../lib/annotation-registry';
 
-export type ToolbarPanelType = 'history' | 'info' | 'annotations' | 'settings' | 'collaboration' | 'user' | 'jsonld' | 'knowledge-base';
+export type ToolbarPanelType =
+  | 'history'
+  | 'info'
+  | 'annotations'
+  | 'settings'
+  | 'collaboration'
+  | 'user'
+  | 'jsonld'
+  | 'knowledge-base';
 
-export const COMMON_PANELS: readonly ToolbarPanelType[] = ['knowledge-base', 'user', 'settings'] as const;
-export const RESOURCE_PANELS: readonly ToolbarPanelType[] = ['history', 'info', 'annotations', 'collaboration', 'jsonld'] as const;
+export const COMMON_PANELS: readonly ToolbarPanelType[] = [
+  'knowledge-base',
+  'user',
+  'settings',
+] as const;
+export const RESOURCE_PANELS: readonly ToolbarPanelType[] = [
+  'history',
+  'info',
+  'annotations',
+  'collaboration',
+  'jsonld',
+] as const;
 
 export interface ShellStateUnit extends StateUnit {
   activePanel$: Observable<ToolbarPanelType | null>;
   scrollToAnnotationId$: Observable<string | null>;
-  panelInitialTab$: Observable<{ tab: AnnotatorKey; generation: number } | null>;
+  panelInitialTab$: Observable<{
+    tab: AnnotatorKey;
+    generation: number;
+  } | null>;
   openPanel(panel: string): void;
   closePanel(): void;
   togglePanel(panel: string): void;
@@ -38,11 +62,19 @@ export interface ShellStateUnitOptions {
  * @emits panel:close - Close the open panel. Payload: undefined
  * @emits panel:toggle - Open a panel, or close it when it is the open one. Payload: { panel: string }
  */
-export function createShellStateUnit(browser: XynologBrowser, options?: ShellStateUnitOptions): ShellStateUnit {
+export function createShellStateUnit(
+  browser: XynologBrowser,
+  options?: ShellStateUnitOptions,
+): ShellStateUnit {
   const subs: Subscription[] = [];
-  const activePanel$ = new BehaviorSubject<ToolbarPanelType | null>(options?.initialPanel ?? null);
+  const activePanel$ = new BehaviorSubject<ToolbarPanelType | null>(
+    options?.initialPanel ?? null,
+  );
   const scrollToAnnotationId$ = new BehaviorSubject<string | null>(null);
-  const panelInitialTab$ = new BehaviorSubject<{ tab: AnnotatorKey; generation: number } | null>(null);
+  const panelInitialTab$ = new BehaviorSubject<{
+    tab: AnnotatorKey;
+    generation: number;
+  } | null>(null);
   // Per-instance monotonic tab-generation counter. Was module-scoped — shared across
   // every ShellStateUnit, an X3 instance-isolation leak; closure-scoped here.
   let tabGenerationCounter = 0;
@@ -52,28 +84,36 @@ export function createShellStateUnit(browser: XynologBrowser, options?: ShellSta
     subs.push(activePanel$.subscribe(cb));
   }
 
-  subs.push(browser.stream('panel:toggle').subscribe(({ panel }) => {
-    const current = activePanel$.getValue();
-    activePanel$.next(current === panel ? null : panel as ToolbarPanelType);
-  }));
+  subs.push(
+    browser.stream('panel:toggle').subscribe(({ panel }) => {
+      const current = activePanel$.getValue();
+      activePanel$.next(current === panel ? null : (panel as ToolbarPanelType));
+    }),
+  );
 
-  subs.push(browser.stream('panel:open').subscribe(({ panel, scrollToAnnotationId, motivation }) => {
-    if (scrollToAnnotationId) {
-      scrollToAnnotationId$.next(scrollToAnnotationId);
-    }
-    if (motivation) {
-      // Derived from ANNOTATORS (the single motivation↔annotator source).
-      // The payload's motivation is a loose string (BrowsePanelOpenEvent),
-      // so unknown values fall back to the highlight tab.
-      const tab = annotatorKeyForMotivation(motivation) ?? 'highlight';
-      panelInitialTab$.next({ tab, generation: ++tabGenerationCounter });
-    }
-    activePanel$.next(panel as ToolbarPanelType);
-  }));
+  subs.push(
+    browser
+      .stream('panel:open')
+      .subscribe(({ panel, scrollToAnnotationId, motivation }) => {
+        if (scrollToAnnotationId) {
+          scrollToAnnotationId$.next(scrollToAnnotationId);
+        }
+        if (motivation) {
+          // Derived from ANNOTATORS (the single motivation↔annotator source).
+          // The payload's motivation is a loose string (BrowsePanelOpenEvent),
+          // so unknown values fall back to the highlight tab.
+          const tab = annotatorKeyForMotivation(motivation) ?? 'highlight';
+          panelInitialTab$.next({ tab, generation: ++tabGenerationCounter });
+        }
+        activePanel$.next(panel as ToolbarPanelType);
+      }),
+  );
 
-  subs.push(browser.stream('panel:close').subscribe(() => {
-    activePanel$.next(null);
-  }));
+  subs.push(
+    browser.stream('panel:close').subscribe(() => {
+      activePanel$.next(null);
+    }),
+  );
 
   return {
     activePanel$: activePanel$.asObservable(),
@@ -84,7 +124,7 @@ export function createShellStateUnit(browser: XynologBrowser, options?: ShellSta
     togglePanel: (panel) => browser.emit('panel:toggle', { panel }),
     onScrollCompleted: () => scrollToAnnotationId$.next(null),
     dispose() {
-      subs.forEach(s => s.unsubscribe());
+      subs.forEach((s) => s.unsubscribe());
       activePanel$.complete();
       scrollToAnnotationId$.complete();
       panelInitialTab$.complete();

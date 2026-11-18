@@ -12,7 +12,13 @@
  */
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { BRIDGED_CHANNELS, REQUEST_RETRY_PAUSE_MS, accessToken, baseUrl, resourceId } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  REQUEST_RETRY_PAUSE_MS,
+  accessToken,
+  baseUrl,
+  resourceId,
+} from '@xynolog/core';
 import { HttpTransport, currentUserOf } from '../http-transport';
 import { APIError } from '../api-error';
 
@@ -43,7 +49,13 @@ function okJson(body: unknown): Response {
 }
 
 /** The gateway's answer to who the token is. */
-const USER = { did: 'did:web:localhost:users:a', email: 'a@b.c', name: null, image: null, domain: 'localhost' };
+const USER = {
+  did: 'did:web:localhost:users:a',
+  email: 'a@b.c',
+  name: null,
+  image: null,
+  domain: 'localhost',
+};
 
 describe('HttpTransport retry — what the caller receives', () => {
   beforeEach(() => {
@@ -85,7 +97,9 @@ describe('HttpTransport retry — what the caller receives', () => {
       tokenRefresher: async () => 'fresh-token',
     });
 
-    await expect(transport.getCurrentUser()).resolves.toMatchObject({ email: 'a@b.c' });
+    await expect(transport.getCurrentUser()).resolves.toMatchObject({
+      email: 'a@b.c',
+    });
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
     transport.dispose();
@@ -102,7 +116,9 @@ describe('HttpTransport retry — what the caller receives', () => {
     });
 
     await expect(
-      transport.getMediaToken('res-1' as Parameters<HttpTransport['getMediaToken']>[0]),
+      transport.getMediaToken(
+        'res-1' as Parameters<HttpTransport['getMediaToken']>[0],
+      ),
     ).resolves.toEqual({ token: 'media-tok' });
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
@@ -141,23 +157,36 @@ describe('HttpTransport retry — what the caller receives', () => {
 
   test('without a refresher, a POST that got a 503 is not made again — the rule repeats no POST that carries no key', async () => {
     fetchMock.mockImplementation(async () => failWith(503));
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
 
     await expect(
-      transport.getMediaToken('res-1' as Parameters<HttpTransport['getMediaToken']>[0]),
+      transport.getMediaToken(
+        'res-1' as Parameters<HttpTransport['getMediaToken']>[0],
+      ),
     ).rejects.toBeInstanceOf(APIError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     transport.dispose();
   });
 
-  test('without a refresher, a GET that got a 503 is made again once, after the table\'s pause', async () => {
+  test("without a refresher, a GET that got a 503 is made again once, after the table's pause", async () => {
     vi.useFakeTimers();
     try {
       fetchMock.mockImplementation(async () => failWith(503));
-      const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+      const transport = new HttpTransport({
+        baseUrl: testBaseUrl,
+        channels: BRIDGED_CHANNELS,
+        timeout: 10_000,
+      });
 
-      const thrown = transport.getCurrentUser().then(() => null, (e: unknown) => e);
+      const thrown = transport.getCurrentUser().then(
+        () => null,
+        (e: unknown) => e,
+      );
       await vi.advanceTimersByTimeAsync(REQUEST_RETRY_PAUSE_MS - 1);
       expect(fetchMock).toHaveBeenCalledTimes(1);
       await vi.advanceTimersByTimeAsync(1);
@@ -179,7 +208,10 @@ function refusedByLimit(code: string, retryAfterSeconds: number): Response {
   return new Response(JSON.stringify({ error: 'refused', code }), {
     status: 429,
     statusText: 'Too Many Requests',
-    headers: { 'content-type': 'application/json', 'retry-after': String(retryAfterSeconds) },
+    headers: {
+      'content-type': 'application/json',
+      'retry-after': String(retryAfterSeconds),
+    },
   });
 }
 
@@ -196,28 +228,51 @@ describe('HttpTransport — a refused credential', () => {
   test('a GET refused 429 refusal-rate is sent again at once with the renewed token, and nothing is reported', async () => {
     fetchMock.mockResolvedValueOnce(refusedByLimit('refusal-rate', 30));
     fetchMock.mockResolvedValueOnce(okJson(USER));
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000, tokenRefresher: async () => 'fresh-token' });
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+      tokenRefresher: async () => 'fresh-token',
+    });
     const reported: unknown[] = [];
     transport.errors$.subscribe((error) => reported.push(error));
 
-    await expect(transport.getCurrentUser()).resolves.toMatchObject({ email: 'a@b.c' });
+    await expect(transport.getCurrentUser()).resolves.toMatchObject({
+      email: 'a@b.c',
+    });
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect((fetchMock.mock.calls[1]![0] as Request).headers.get('Authorization')).toBe('Bearer fresh-token');
+    expect(
+      (fetchMock.mock.calls[1]![0] as Request).headers.get('Authorization'),
+    ).toBe('Bearer fresh-token');
     expect(reported).toEqual([]);
 
     transport.dispose();
   });
 
   test('refused again, it fails unauthorized with the 429 it was answered, reported once, and is not sent a third time', async () => {
-    fetchMock.mockImplementation(async () => refusedByLimit('refusal-rate', 30));
+    fetchMock.mockImplementation(async () =>
+      refusedByLimit('refusal-rate', 30),
+    );
     const refresher = vi.fn(async () => 'fresh-token');
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000, tokenRefresher: refresher });
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+      tokenRefresher: refresher,
+    });
     const reported: unknown[] = [];
     transport.errors$.subscribe((error) => reported.push(error));
 
-    const thrown = await transport.getCurrentUser().then(() => null, (e: unknown) => e);
+    const thrown = await transport.getCurrentUser().then(
+      () => null,
+      (e: unknown) => e,
+    );
 
-    expect(thrown).toMatchObject({ name: 'APIError', code: 'unauthorized', status: 429 });
+    expect(thrown).toMatchObject({
+      name: 'APIError',
+      code: 'unauthorized',
+      status: 429,
+    });
     expect(reported).toEqual([thrown]);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(refresher).toHaveBeenCalledTimes(1);
@@ -226,12 +281,25 @@ describe('HttpTransport — a refused credential', () => {
   });
 
   test('without a refresher, a GET refused 429 refusal-rate is final at once, where ky alone would wait and send it again', async () => {
-    fetchMock.mockImplementation(async () => refusedByLimit('refusal-rate', 30));
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    fetchMock.mockImplementation(async () =>
+      refusedByLimit('refusal-rate', 30),
+    );
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
 
-    const thrown = await transport.getCurrentUser().then(() => null, (e: unknown) => e);
+    const thrown = await transport.getCurrentUser().then(
+      () => null,
+      (e: unknown) => e,
+    );
 
-    expect(thrown).toMatchObject({ name: 'APIError', code: 'unauthorized', status: 429 });
+    expect(thrown).toMatchObject({
+      name: 'APIError',
+      code: 'unauthorized',
+      status: 429,
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     transport.dispose();
@@ -240,11 +308,23 @@ describe('HttpTransport — a refused credential', () => {
   test('a GET refused 429 by any other limit is still rate-limited, and not renewed', async () => {
     fetchMock.mockImplementation(async () => refusedByLimit('streams', 0));
     const refresher = vi.fn(async () => 'fresh-token');
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000, tokenRefresher: refresher });
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+      tokenRefresher: refresher,
+    });
 
-    const thrown = await transport.getCurrentUser().then(() => null, (e: unknown) => e);
+    const thrown = await transport.getCurrentUser().then(
+      () => null,
+      (e: unknown) => e,
+    );
 
-    expect(thrown).toMatchObject({ name: 'APIError', code: 'rate-limited', status: 429 });
+    expect(thrown).toMatchObject({
+      name: 'APIError',
+      code: 'rate-limited',
+      status: 429,
+    });
     expect(refresher).not.toHaveBeenCalled();
 
     transport.dispose();
@@ -252,7 +332,11 @@ describe('HttpTransport — a refused credential', () => {
 });
 
 /** A refusal as the gateway states one: `ErrorResponse`, whose `error` is its own words. */
-function refusedAs(status: number, statusText: string, error: string): Response {
+function refusedAs(
+  status: number,
+  statusText: string,
+  error: string,
+): Response {
   return new Response(JSON.stringify({ error, hint: 'a hint' }), {
     status,
     statusText,
@@ -266,12 +350,21 @@ describe('HttpTransport — what a refusal says', () => {
   });
 
   test("a refusal carries the gateway's own words and its body, on the error and on errors$", async () => {
-    fetchMock.mockImplementation(async () => refusedAs(403, 'Forbidden', 'this needs the moderator role'));
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    fetchMock.mockImplementation(async () =>
+      refusedAs(403, 'Forbidden', 'this needs the moderator role'),
+    );
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
     const reported: unknown[] = [];
     transport.errors$.subscribe((error) => reported.push(error));
 
-    const thrown = await transport.getCurrentUser().then(() => null, (e: unknown) => e);
+    const thrown = await transport.getCurrentUser().then(
+      () => null,
+      (e: unknown) => e,
+    );
 
     expect(thrown).toBeInstanceOf(APIError);
     expect((thrown as APIError).message).toBe('this needs the moderator role');
@@ -286,10 +379,23 @@ describe('HttpTransport — what a refusal says', () => {
   });
 
   test('a refusal that states nothing is named by its status', async () => {
-    fetchMock.mockImplementation(async () => new Response('<html>bad gateway</html>', { status: 403, statusText: 'Forbidden' }));
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    fetchMock.mockImplementation(
+      async () =>
+        new Response('<html>bad gateway</html>', {
+          status: 403,
+          statusText: 'Forbidden',
+        }),
+    );
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
 
-    const thrown = await transport.getCurrentUser().then(() => null, (e: unknown) => e);
+    const thrown = await transport.getCurrentUser().then(
+      () => null,
+      (e: unknown) => e,
+    );
 
     expect((thrown as APIError).message).toBe('HTTP 403: Forbidden');
     transport.dispose();
@@ -312,7 +418,9 @@ describe('currentUserOf — one request, and no transport behind it', () => {
   test('asks /api/users/me with the token, once, and opens no stream', async () => {
     fetchMock.mockImplementation(async () => okJson(USER));
 
-    await expect(currentUserOf(baseUrl('http://localhost:4000/'), accessToken('tok-1'))).resolves.toMatchObject({ email: 'a@b.c' });
+    await expect(
+      currentUserOf(baseUrl('http://localhost:4000/'), accessToken('tok-1')),
+    ).resolves.toMatchObject({ email: 'a@b.c' });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(sent().url).toBe('http://localhost:4000/api/users/me');
@@ -321,34 +429,60 @@ describe('currentUserOf — one request, and no transport behind it', () => {
   });
 
   test('a refusal is the answer: the usual APIError with its status, and nothing renews the token', async () => {
-    fetchMock.mockImplementation(async () => refusedAs(401, 'Unauthorized', 'the token is not one this gateway accepts'));
+    fetchMock.mockImplementation(async () =>
+      refusedAs(
+        401,
+        'Unauthorized',
+        'the token is not one this gateway accepts',
+      ),
+    );
 
-    const thrown = await currentUserOf(testBaseUrl, accessToken('tok-1')).then(() => null, (e: unknown) => e);
+    const thrown = await currentUserOf(testBaseUrl, accessToken('tok-1')).then(
+      () => null,
+      (e: unknown) => e,
+    );
 
     expect(thrown).toBeInstanceOf(APIError);
     expect((thrown as APIError).status).toBe(401);
-    expect((thrown as APIError).message).toBe('the token is not one this gateway accepts');
+    expect((thrown as APIError).message).toBe(
+      'the token is not one this gateway accepts',
+    );
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   test('a 429 refusal-rate is a refused credential: unauthorized at once, not waited out and sent again', async () => {
-    fetchMock.mockImplementation(async () => refusedByLimit('refusal-rate', 30));
+    fetchMock.mockImplementation(async () =>
+      refusedByLimit('refusal-rate', 30),
+    );
 
-    const thrown = await currentUserOf(testBaseUrl, accessToken('tok-1')).then(() => null, (e: unknown) => e);
+    const thrown = await currentUserOf(testBaseUrl, accessToken('tok-1')).then(
+      () => null,
+      (e: unknown) => e,
+    );
 
-    expect(thrown).toMatchObject({ name: 'APIError', code: 'unauthorized', status: 429 });
+    expect(thrown).toMatchObject({
+      name: 'APIError',
+      code: 'unauthorized',
+      status: 429,
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   test('a gateway that never answers is asked once more, then reported as unavailable, not as a refusal', async () => {
-    fetchMock.mockImplementation(async () => { throw new TypeError('fetch failed'); });
+    fetchMock.mockImplementation(async () => {
+      throw new TypeError('fetch failed');
+    });
 
-    const thrown = await currentUserOf(testBaseUrl, accessToken('tok-1')).then(() => null, (e: unknown) => e);
+    const thrown = await currentUserOf(testBaseUrl, accessToken('tok-1')).then(
+      () => null,
+      (e: unknown) => e,
+    );
 
     expect(thrown).toBeInstanceOf(APIError);
     expect((thrown as APIError).code).toBe('unavailable');
-    expect((thrown as APIError).message).toContain('GET /api/users/me got no answer');
+    expect((thrown as APIError).message).toContain(
+      'GET /api/users/me got no answer',
+    );
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
-

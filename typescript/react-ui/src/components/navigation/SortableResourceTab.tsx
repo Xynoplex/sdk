@@ -21,7 +21,7 @@ export function SortableResourceTab({
   totalCount,
   Link,
   translations,
-  isDragging = false
+  isDragging = false,
 }: SortableResourceTabProps) {
   const {
     attributes,
@@ -51,17 +51,20 @@ export function SortableResourceTab({
     : resource.name;
 
   // Handle keyboard shortcuts for reordering (Alt + Up/Down)
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (onReorderRef.current && e.altKey) {
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        onReorderRef.current(resource.id, 'up');
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        onReorderRef.current(resource.id, 'down');
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (onReorderRef.current && e.altKey) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          onReorderRef.current(resource.id, 'up');
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          onReorderRef.current(resource.id, 'down');
+        }
       }
-    }
-  }, [resource.id]);
+    },
+    [resource.id],
+  );
 
   return (
     <div
@@ -98,8 +101,19 @@ export function SortableResourceTab({
           aria-label={`Close ${resource.name}`}
           type="button"
         >
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}

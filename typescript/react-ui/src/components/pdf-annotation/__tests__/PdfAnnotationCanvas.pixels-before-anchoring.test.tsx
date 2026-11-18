@@ -24,7 +24,9 @@ vi.mock('../../../lib/browser-pdfjs', () => ({
   loadPdfDocument: vi.fn().mockResolvedValue({
     numPages: 2,
     getPage: vi.fn().mockResolvedValue({
-      getViewport: vi.fn().mockReturnValue({ width: 612, height: 792, scale: 1.0, rotation: 0 }),
+      getViewport: vi
+        .fn()
+        .mockReturnValue({ width: 612, height: 792, scale: 1.0, rotation: 0 }),
     }),
   }),
   renderPdfPageToDataUrl: vi.fn().mockResolvedValue({
@@ -39,7 +41,10 @@ import { PdfAnnotationCanvas } from '../PdfAnnotationCanvas';
 describe('PdfAnnotationCanvas — pixels before anchoring', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { cb(0); return 0; });
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -47,7 +52,12 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
 
   test('a page shows its image while the ask for the text is still unanswered', async () => {
     // The ask HANGS — the server never answers. The image must not care.
-    const resourceAnchoredText = vi.fn(() => new Promise(() => { /* never settles */ }));
+    const resourceAnchoredText = vi.fn(
+      () =>
+        new Promise(() => {
+          /* never settles */
+        }),
+    );
     const session = {
       client: { browse: { resourceAnchoredText } },
     } as unknown as XynologSession;
@@ -62,7 +72,9 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
     );
 
     await waitFor(() => {
-      expect(document.querySelector('img[src^="data:image/png"]')).toBeInTheDocument();
+      expect(
+        document.querySelector('img[src^="data:image/png"]'),
+      ).toBeInTheDocument();
     });
     // The text really was asked for — it just could not hold the pixels.
     expect(resourceAnchoredText).toHaveBeenCalled();
@@ -71,11 +83,18 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
   test('the text that lands after the image is the one a rectangle is quoted from', async () => {
     let resolveMap: (answer: AnchoredTextAnswer) => void = () => {};
     const resourceAnchoredText = vi.fn(
-      () => new Promise<AnchoredTextAnswer>((resolve) => { resolveMap = resolve; }),
+      () =>
+        new Promise<AnchoredTextAnswer>((resolve) => {
+          resolveMap = resolve;
+        }),
     );
     const request = vi.fn();
     const session = {
-      client: { browse: { resourceAnchoredText }, mark: { request }, beckon: { hover: vi.fn() } },
+      client: {
+        browse: { resourceAnchoredText },
+        mark: { request },
+        beckon: { hover: vi.fn() },
+      },
     } as unknown as XynologSession;
 
     renderInEnglish(
@@ -89,7 +108,9 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
     );
 
     await waitFor(() => {
-      expect(document.querySelector('img[src^="data:image/png"]')).toBeInTheDocument();
+      expect(
+        document.querySelector('img[src^="data:image/png"]'),
+      ).toBeInTheDocument();
     });
 
     // The page is drawn and the text is not held yet: annotating is off.
@@ -115,13 +136,23 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
     // The image is still there, annotating is on, and a rectangle drawn now
     // is quoted from the text that arrived after the image.
     expect(canvas).toHaveAttribute('data-annotate-deferred', 'false');
-    const img = document.querySelector('img[src^="data:image/png"]') as HTMLImageElement;
+    const img = document.querySelector(
+      'img[src^="data:image/png"]',
+    ) as HTMLImageElement;
     expect(img).toBeInTheDocument();
-    Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
-    Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
+    Object.defineProperty(img, 'clientWidth', {
+      value: 612,
+      configurable: true,
+    });
+    Object.defineProperty(img, 'clientHeight', {
+      value: 792,
+      configurable: true,
+    });
     fireEvent.load(img);
 
-    const container = document.querySelector('.xynolog-pdf-annotation-canvas__container')!;
+    const container = document.querySelector(
+      '.xynolog-pdf-annotation-canvas__container',
+    )!;
     fireEvent.mouseDown(container, { clientX: 70, clientY: 78 });
     fireEvent.mouseMove(container, { clientX: 146, clientY: 96 });
     fireEvent.mouseUp(container, { clientX: 146, clientY: 96 });

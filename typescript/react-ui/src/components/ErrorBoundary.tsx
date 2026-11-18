@@ -64,7 +64,12 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       // Default fallback UI
-      return <DefaultErrorFallback error={this.state.error} reset={this.handleReset} />;
+      return (
+        <DefaultErrorFallback
+          error={this.state.error}
+          reset={this.handleReset}
+        />
+      );
     }
 
     return this.props.children;
@@ -74,7 +79,13 @@ export class ErrorBoundary extends Component<Props, State> {
 /**
  * Default error fallback component
  */
-function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+function DefaultErrorFallback({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
   return (
     <div className="xynolog-error-boundary-container">
       <div className="xynolog-error-boundary-content">
@@ -96,9 +107,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
               {error.message}
             </p>
             {error.stack && (
-              <pre className="xynolog-error-boundary-stack">
-                {error.stack}
-              </pre>
+              <pre className="xynolog-error-boundary-stack">{error.stack}</pre>
             )}
           </div>
         )}
@@ -112,7 +121,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
             Try Again
           </button>
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = '/')}
             className="xynolog-button"
             data-variant="secondary"
           >
@@ -134,21 +143,24 @@ export function AsyncErrorBoundary({ children }: { children: ReactNode }) {
         <div className="xynolog-async-error-boundary">
           <div className="xynolog-async-error-content">
             <div className="xynolog-async-error-icon">
-              <svg className="xynolog-icon-warning" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg
+                className="xynolog-icon-warning"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <div className="xynolog-async-error-details">
               <h3 className="xynolog-async-error-title">
                 Failed to load this section
               </h3>
-              <p className="xynolog-async-error-message">
-                {error.message}
-              </p>
-              <button
-                onClick={reset}
-                className="xynolog-async-error-retry"
-              >
+              <p className="xynolog-async-error-message">{error.message}</p>
+              <button onClick={reset} className="xynolog-async-error-retry">
                 Retry
               </button>
             </div>

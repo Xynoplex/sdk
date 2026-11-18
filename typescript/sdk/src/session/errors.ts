@@ -17,7 +17,11 @@ export class XynologSessionError extends XynologError {
   declare code: XynologSessionErrorCode;
   readonly kbId: string | null;
 
-  constructor(code: XynologSessionErrorCode, message: string, kbId: string | null = null) {
+  constructor(
+    code: XynologSessionErrorCode,
+    message: string,
+    kbId: string | null = null,
+  ) {
     super(message, code, { kbId });
     this.name = 'XynologSessionError';
     this.kbId = kbId;

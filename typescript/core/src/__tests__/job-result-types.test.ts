@@ -33,7 +33,11 @@ type YieldJobDone = components['schemas']['YieldJobDone'];
 
 describe('YieldJobDone — the id is always there (A1)', () => {
   it('a result with every field is the wire shape', () => {
-    const full: YieldJobDone = { resourceId: resourceId('res-1'), resourceName: 'Ouranos', truncated: false };
+    const full: YieldJobDone = {
+      resourceId: resourceId('res-1'),
+      resourceName: 'Ouranos',
+      truncated: false,
+    };
     expect(full.resourceId).toBe('res-1');
   });
 
@@ -54,15 +58,29 @@ function describeResult(r: JobResult): string {
 
 describe('JobResult — told apart by its own members, with no `kind` (A2, A3)', () => {
   it('narrows every member, castless', () => {
-    expect(describeResult({ resourceId: resourceId('res-1'), resourceName: 'Ouranos', truncated: false })).toBe('Ouranos → res-1');
+    expect(
+      describeResult({
+        resourceId: resourceId('res-1'),
+        resourceName: 'Ouranos',
+        truncated: false,
+      }),
+    ).toBe('Ouranos → res-1');
     expect(describeResult({ found: 4, persisted: 3, errors: 1 })).toBe('3/4');
-    expect(describeResult({ found: 3, persisted: 3, byCategory: { Issue: 3 } })).toBe('3/3');
-    expect(describeResult({ declined: true, reason: 'encrypted' })).toBe('encrypted');
+    expect(
+      describeResult({ found: 3, persisted: 3, byCategory: { Issue: 3 } }),
+    ).toBe('3/3');
+    expect(describeResult({ declined: true, reason: 'encrypted' })).toBe(
+      'encrypted',
+    );
   });
 
   it('a result that states a `kind` does not typecheck', () => {
     // @ts-expect-error — the job description beside a result says which job it answers
-    const tagged: JobResult = { kind: 'highlight-annotation', found: 2, persisted: 2 };
+    const tagged: JobResult = {
+      kind: 'highlight-annotation',
+      found: 2,
+      persisted: 2,
+    };
     expect(tagged).toBeDefined();
   });
 
@@ -82,7 +100,15 @@ const generation: GenerationJobParams = {
   title: 'Ouranos',
   storageUri: 'file://generated/ouranos.md',
   context: {
-    focus: { kind: 'resource', resource: { '@context': 'https://xynolog.dev/context/v1', '@id': R, name: 'Source', representations: [] } },
+    focus: {
+      kind: 'resource',
+      resource: {
+        '@context': 'https://xynolog.dev/context/v1',
+        '@id': R,
+        name: 'Source',
+        representations: [],
+      },
+    },
     graph: { nodes: [], edges: [] },
     metadata: {},
   },
@@ -98,24 +124,59 @@ describe('a job description is its jobType and enough parameters (A4)', () => {
   });
 
   it('a mark job names its resource and its motivation', () => {
-    const highlight: JobCreateCommand = { jobType: 'mark', resourceId: R, params: { motivation: 'highlighting', density: 3 } };
-    const tag: JobCreateCommand = { jobType: 'mark', resourceId: R, params: { motivation: 'tagging', schemaId: 'irac', categories: ['Issue'] } };
+    const highlight: JobCreateCommand = {
+      jobType: 'mark',
+      resourceId: R,
+      params: { motivation: 'highlighting', density: 3 },
+    };
+    const tag: JobCreateCommand = {
+      jobType: 'mark',
+      resourceId: R,
+      params: {
+        motivation: 'tagging',
+        schemaId: 'irac',
+        categories: ['Issue'],
+      },
+    };
     expect([highlight.jobType, tag.jobType]).toEqual(['mark', 'mark']);
 
     // @ts-expect-error — a mark job is about a resource
-    const nowhere: JobCreateCommand = { jobType: 'mark', params: { motivation: 'highlighting' } };
+    const nowhere: JobCreateCommand = {
+      jobType: 'mark',
+      params: { motivation: 'highlighting' },
+    };
     // @ts-expect-error — a mark job has a motivation
-    const aimless: JobCreateCommand = { jobType: 'mark', resourceId: R, params: {} };
+    const aimless: JobCreateCommand = {
+      jobType: 'mark',
+      resourceId: R,
+      params: {},
+    };
     expect([nowhere, aimless]).toHaveLength(2);
   });
 
   it('a job takes only what its motivation takes', () => {
     // @ts-expect-error — a highlight has no tone
-    const toned: JobCreateCommand = { jobType: 'mark', resourceId: R, params: { motivation: 'highlighting', tone: 'scholarly' } };
+    const toned: JobCreateCommand = {
+      jobType: 'mark',
+      resourceId: R,
+      params: { motivation: 'highlighting', tone: 'scholarly' },
+    };
     // @ts-expect-error — a link job takes no instructions
-    const instructed: JobCreateCommand = { jobType: 'mark', resourceId: R, params: { motivation: 'linking', entityTypes: ['Person'], instructions: 'find relationships' } };
+    const instructed: JobCreateCommand = {
+      jobType: 'mark',
+      resourceId: R,
+      params: {
+        motivation: 'linking',
+        entityTypes: ['Person'],
+        instructions: 'find relationships',
+      },
+    };
     // @ts-expect-error — a tag job names its schema and its categories
-    const schemaless: JobCreateCommand = { jobType: 'mark', resourceId: R, params: { motivation: 'tagging' } };
+    const schemaless: JobCreateCommand = {
+      jobType: 'mark',
+      resourceId: R,
+      params: { motivation: 'tagging' },
+    };
     expect([toned, instructed, schemaless]).toHaveLength(3);
   });
 
@@ -123,7 +184,11 @@ describe('a job description is its jobType and enough parameters (A4)', () => {
     const made: JobCreateCommand = { jobType: 'yield', params: generation };
     expect(made.jobType).toBe('yield');
     // @ts-expect-error — the context's focus is the resource
-    const twice: JobCreateCommand = { jobType: 'yield', resourceId: R, params: generation };
+    const twice: JobCreateCommand = {
+      jobType: 'yield',
+      resourceId: R,
+      params: generation,
+    };
     expect(twice).toBeDefined();
   });
 });
@@ -132,7 +197,12 @@ type JobClaimCommand = components['schemas']['JobClaimCommand'];
 
 describe('a claim names fields of the job description (A5)', () => {
   it('each entry is a partial description', () => {
-    const claim: JobClaimCommand = { accepts: [{ jobType: 'mark', params: { motivation: 'tagging' } }, { jobType: 'yield' }] };
+    const claim: JobClaimCommand = {
+      accepts: [
+        { jobType: 'mark', params: { motivation: 'tagging' } },
+        { jobType: 'yield' },
+      ],
+    };
     expect(claim.accepts).toHaveLength(2);
   });
 

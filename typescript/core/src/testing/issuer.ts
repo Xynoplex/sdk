@@ -57,7 +57,12 @@ export interface FixtureIssuer {
 
 async function rsaKey(kid: string): Promise<IssuerKey> {
   const { privateKey, publicKey } = await generateKeyPair('RS256');
-  const jwk = { ...(await exportJWK(publicKey)), kid, alg: 'RS256', use: 'sig' };
+  const jwk = {
+    ...(await exportJWK(publicKey)),
+    kid,
+    alg: 'RS256',
+    use: 'sig',
+  };
   return { kid, privateKey, jwk };
 }
 
@@ -97,7 +102,10 @@ export async function fixtureIssuer(
       const kid = tokenOptions.kid ?? newest.kid;
       const published = keys.find((k) => k.kid === kid);
       const privateKey = tokenOptions.privateKey ?? published?.privateKey;
-      if (!privateKey) throw new Error(`fixture issuer publishes no key '${kid}' and none was supplied`);
+      if (!privateKey)
+        throw new Error(
+          `fixture issuer publishes no key '${kid}' and none was supplied`,
+        );
       return new SignJWT({ sub: 'user-1', ...tokenOptions.claims })
         .setProtectedHeader({ alg: 'RS256', kid })
         .setIssuer(tokenOptions.issuer ?? origin)

@@ -37,7 +37,9 @@ function makeAnnotation(overrides?: Partial<Annotation>): Annotation {
 
 describe('getBodySource', () => {
   test('returns source from SpecificResource in array', () => {
-    const body = [{ type: 'SpecificResource' as const, source: resourceId('res-2') }];
+    const body = [
+      { type: 'SpecificResource' as const, source: resourceId('res-2') },
+    ];
     expect(getBodySource(body)).toBe('res-2');
   });
 
@@ -51,14 +53,21 @@ describe('getBodySource', () => {
   });
 
   test('returns source from single SpecificResource object', () => {
-    const body = { type: 'SpecificResource' as const, source: resourceId('res-3') };
+    const body = {
+      type: 'SpecificResource' as const,
+      source: resourceId('res-3'),
+    };
     expect(getBodySource(body)).toBe('res-3');
   });
 });
 
 describe('isBodyResolved', () => {
   test('returns true when SpecificResource in body', () => {
-    expect(isBodyResolved([{ type: 'SpecificResource' as const, source: resourceId('res-1') }])).toBe(true);
+    expect(
+      isBodyResolved([
+        { type: 'SpecificResource' as const, source: resourceId('res-1') },
+      ]),
+    ).toBe(true);
   });
 
   test('returns false for stub', () => {
@@ -82,15 +91,25 @@ describe('getTargetSelector', () => {
   });
 
   test('returns selector from object target', () => {
-    const selector = { type: 'TextPositionSelector' as const, start: 0, end: 10 };
-    expect(getTargetSelector({ source: resourceId('res-1'), selector })).toEqual(selector);
+    const selector = {
+      type: 'TextPositionSelector' as const,
+      start: 0,
+      end: 10,
+    };
+    expect(
+      getTargetSelector({ source: resourceId('res-1'), selector }),
+    ).toEqual(selector);
   });
 });
 
 describe('motivation type guards', () => {
   test('isHighlight', () => {
-    expect(isHighlight(makeAnnotation({ motivation: 'highlighting' }))).toBe(true);
-    expect(isHighlight(makeAnnotation({ motivation: 'commenting' }))).toBe(false);
+    expect(isHighlight(makeAnnotation({ motivation: 'highlighting' }))).toBe(
+      true,
+    );
+    expect(isHighlight(makeAnnotation({ motivation: 'commenting' }))).toBe(
+      false,
+    );
   });
 
   test('isReference', () => {
@@ -98,7 +117,9 @@ describe('motivation type guards', () => {
   });
 
   test('isAssessment', () => {
-    expect(isAssessment(makeAnnotation({ motivation: 'assessing' }))).toBe(true);
+    expect(isAssessment(makeAnnotation({ motivation: 'assessing' }))).toBe(
+      true,
+    );
   });
 
   test('isComment', () => {
@@ -120,13 +141,17 @@ describe('getCommentText', () => {
   });
 
   test('returns undefined for non-comment', () => {
-    expect(getCommentText(makeAnnotation({ motivation: 'highlighting' }))).toBeUndefined();
+    expect(
+      getCommentText(makeAnnotation({ motivation: 'highlighting' })),
+    ).toBeUndefined();
   });
 
   test('returns undefined when body has no value', () => {
     const ann = makeAnnotation({
       motivation: 'commenting',
-      body: [{ type: 'SpecificResource' as const, source: resourceId('res-1') }],
+      body: [
+        { type: 'SpecificResource' as const, source: resourceId('res-1') },
+      ],
     });
     expect(getCommentText(ann)).toBeUndefined();
   });
@@ -142,7 +167,9 @@ describe('isStubReference / isResolvedReference', () => {
   test('resolved reference has SpecificResource', () => {
     const ann = makeAnnotation({
       motivation: 'linking',
-      body: [{ type: 'SpecificResource' as const, source: resourceId('res-2') }],
+      body: [
+        { type: 'SpecificResource' as const, source: resourceId('res-2') },
+      ],
     });
     expect(isStubReference(ann)).toBe(false);
     expect(isResolvedReference(ann)).toBe(true);
@@ -151,7 +178,10 @@ describe('isStubReference / isResolvedReference', () => {
 
 describe('getExactText', () => {
   test('returns exact from TextQuoteSelector', () => {
-    const selector = { type: 'TextQuoteSelector' as const, exact: 'hello world' };
+    const selector = {
+      type: 'TextQuoteSelector' as const,
+      exact: 'hello world',
+    };
     expect(getExactText(selector)).toBe('hello world');
   });
 
@@ -164,7 +194,9 @@ describe('getExactText', () => {
   });
 
   test('returns empty string for TextPositionSelector only', () => {
-    expect(getExactText({ type: 'TextPositionSelector' as const, start: 0, end: 5 })).toBe('');
+    expect(
+      getExactText({ type: 'TextPositionSelector' as const, start: 0, end: 5 }),
+    ).toBe('');
   });
 
   test('returns empty string for undefined selector', () => {
@@ -177,7 +209,10 @@ describe('getAnnotationExactText', () => {
     const ann = makeAnnotation({
       target: {
         source: resourceId('res-1'),
-        selector: { type: 'TextQuoteSelector' as const, exact: 'selected text' },
+        selector: {
+          type: 'TextQuoteSelector' as const,
+          exact: 'selected text',
+        },
       },
     });
     expect(getAnnotationExactText(ann)).toBe('selected text');
@@ -191,7 +226,12 @@ describe('getTextPositionSelector', () => {
   });
 
   test('returns null when not found', () => {
-    expect(getTextPositionSelector({ type: 'TextQuoteSelector' as const, exact: 'x' })).toBeNull();
+    expect(
+      getTextPositionSelector({
+        type: 'TextQuoteSelector' as const,
+        exact: 'x',
+      }),
+    ).toBeNull();
   });
 
   test('returns null for undefined', () => {
@@ -206,7 +246,13 @@ describe('getTextQuoteSelector', () => {
   });
 
   test('returns null when not found', () => {
-    expect(getTextQuoteSelector({ type: 'TextPositionSelector' as const, start: 0, end: 5 })).toBeNull();
+    expect(
+      getTextQuoteSelector({
+        type: 'TextPositionSelector' as const,
+        start: 0,
+        end: 5,
+      }),
+    ).toBeNull();
   });
 });
 
@@ -223,7 +269,11 @@ describe('getSvgSelector', () => {
 
 describe('getFragmentSelector', () => {
   test('finds FragmentSelector', () => {
-    const fs = { type: 'FragmentSelector' as const, value: 'xywh=0,0,100,100', conformsTo: 'http://www.w3.org/TR/media-frags/' };
+    const fs = {
+      type: 'FragmentSelector' as const,
+      value: 'xywh=0,0,100,100',
+      conformsTo: 'http://www.w3.org/TR/media-frags/',
+    };
     expect(getFragmentSelector(fs)).toEqual(fs);
   });
 

@@ -44,14 +44,19 @@ const grant = vi.fn<() => Response | Promise<Response>>();
 const gateway = vi.fn<typeof fetch>();
 const routed: typeof fetch = async (input, init) => {
   const url = String(input instanceof Request ? input.url : input);
-  if (url.includes('/.well-known/openid-configuration')) return Response.json({ token_endpoint: `${new URL(url).origin}/token` });
+  if (url.includes('/.well-known/openid-configuration'))
+    return Response.json({ token_endpoint: `${new URL(url).origin}/token` });
   if (url.endsWith('/token')) return grant();
   return gateway(input, init);
 };
 
 const NOW = new Date('2026-09-21T12:00:00Z');
 const DID = 'did:web:kb.test:agents:service-account-xynolog-dispatcher';
-const credential: ServiceAccountCredential = { issuer: 'https://issuer.test/realms/kb', clientId: 'xynolog-dispatcher', clientSecret: 'shh' };
+const credential: ServiceAccountCredential = {
+  issuer: 'https://issuer.test/realms/kb',
+  clientId: 'xynolog-dispatcher',
+  clientSecret: 'shh',
+};
 
 /** A structurally valid JWT whose payload is the only thing `parseJwtExpiry` reads. */
 function jwt(payload: Record<string, unknown>): string {
@@ -68,7 +73,13 @@ function granted(token: string, lifetimeMs: number): Response {
 }
 
 function named(): Response {
-  return Response.json({ did: DID, email: null, name: null, image: null, domain: 'kb.test' });
+  return Response.json({
+    did: DID,
+    email: null,
+    name: null,
+    image: null,
+    domain: 'kb.test',
+  });
 }
 
 function makeLogger() {
@@ -76,7 +87,11 @@ function makeLogger() {
 }
 
 function start(logger = makeLogger()) {
-  return startAgentSession({ baseUrl: 'http://gateway.test', credential, logger });
+  return startAgentSession({
+    baseUrl: 'http://gateway.test',
+    credential,
+    logger,
+  });
 }
 
 describe('startAgentSession', () => {
@@ -98,7 +113,7 @@ describe('startAgentSession', () => {
     vi.useRealTimers();
   });
 
-  it('signs in as its account: the issuer\'s token is its bearer, and the gateway names it', async () => {
+  it("signs in as its account: the issuer's token is its bearer, and the gateway names it", async () => {
     const token = tokenExpiringIn(5 * 60 * 1000, 'first');
     grant.mockReturnValueOnce(granted(token, 5 * 60 * 1000));
     const logger = makeLogger();
@@ -110,7 +125,9 @@ describe('startAgentSession', () => {
     const [url, init] = gateway.mock.calls[0]!;
     expect(url).toBe('http://gateway.test/api/users/me');
     expect(init?.method ?? 'GET').toBe('GET');
-    expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${token}`);
+    expect(new Headers(init?.headers).get('authorization')).toBe(
+      `Bearer ${token}`,
+    );
     expect(session.token$.getValue()).toBe(token);
     // The DID is the gateway's, verbatim, and never re-derived from the URL dialled.
     expect(session.did).toBe(DID);
@@ -121,17 +138,25 @@ describe('startAgentSession', () => {
   });
 
   it('a token the gateway refuses fails the first attempt loudly and is NOT retried', async () => {
-    grant.mockReturnValueOnce(granted(tokenExpiringIn(5 * 60 * 1000, 'first'), 5 * 60 * 1000));
-    gateway.mockResolvedValueOnce(new Response('', { status: 401, statusText: 'Unauthorized' }));
+    grant.mockReturnValueOnce(
+      granted(tokenExpiringIn(5 * 60 * 1000, 'first'), 5 * 60 * 1000),
+    );
+    gateway.mockResolvedValueOnce(
+      new Response('', { status: 401, statusText: 'Unauthorized' }),
+    );
 
-    await expect(start()).rejects.toThrow('The gateway did not name the agent: HTTP 401 Unauthorized');
+    await expect(start()).rejects.toThrow(
+      'The gateway did not name the agent: HTTP 401 Unauthorized',
+    );
     expect(gateway).toHaveBeenCalledTimes(1);
   });
 
   it('an account the issuer refuses fails the first attempt loudly, and the gateway is never asked', async () => {
     grant.mockReturnValueOnce(new Response('{}', { status: 401 }));
 
-    await expect(start()).rejects.toThrow(`Client-credentials grant for xynolog-dispatcher at ${credential.issuer} failed (HTTP 401)`);
+    await expect(start()).rejects.toThrow(
+      `Client-credentials grant for xynolog-dispatcher at ${credential.issuer} failed (HTTP 401)`,
+    );
     expect(grant).toHaveBeenCalledTimes(1);
     expect(gateway).not.toHaveBeenCalled();
   });
@@ -140,7 +165,11 @@ describe('startAgentSession', () => {
     const token = tokenExpiringIn(5 * 60 * 1000, 'after-retry');
     grant.mockImplementation(() => granted(token, 5 * 60 * 1000));
     gateway
-      .mockRejectedValueOnce(Object.assign(new TypeError('fetch failed'), { cause: { code: 'ECONNREFUSED' } }))
+      .mockRejectedValueOnce(
+        Object.assign(new TypeError('fetch failed'), {
+          cause: { code: 'ECONNREFUSED' },
+        }),
+      )
       .mockImplementationOnce(async () => named());
     const logger = makeLogger();
 
@@ -154,7 +183,10 @@ describe('startAgentSession', () => {
     expect(logger.warn).toHaveBeenCalledWith(
       'Gateway unreachable, retrying authentication',
       // Which request got no answer, and the code the runtime gave the failed connection.
-      expect.objectContaining({ attempt: 1, error: 'http://gateway.test/api/users/me got no answer: ECONNREFUSED' }),
+      expect.objectContaining({
+        attempt: 1,
+        error: 'http://gateway.test/api/users/me got no answer: ECONNREFUSED',
+      }),
     );
   });
 
@@ -163,28 +195,39 @@ describe('startAgentSession', () => {
     // asked because the gateway refused the one held, so it is a new grant.
     const first = tokenExpiringIn(60 * 60 * 1000, 'first');
     const second = tokenExpiringIn(2 * 60 * 60 * 1000, 'second');
-    grant.mockReturnValueOnce(granted(first, 60 * 60 * 1000)).mockReturnValueOnce(granted(second, 2 * 60 * 60 * 1000));
+    grant
+      .mockReturnValueOnce(granted(first, 60 * 60 * 1000))
+      .mockReturnValueOnce(granted(second, 2 * 60 * 60 * 1000));
     session = await start();
 
     const seen: Array<string | null> = [];
     session.token$.subscribe((t) => seen.push(t));
 
-    await expect(session.refresh(session.token$.getValue())).resolves.toBe(second);
+    await expect(session.refresh(session.token$.getValue())).resolves.toBe(
+      second,
+    );
     expect(seen).toEqual([first, second]);
     expect(grant).toHaveBeenCalledTimes(2);
-    expect(gateway, 'the account is who it was: its DID is not asked again').toHaveBeenCalledTimes(1);
+    expect(
+      gateway,
+      'the account is who it was: its DID is not asked again',
+    ).toHaveBeenCalledTimes(1);
   });
 
   it('a refusal of a token it has already replaced is given the token it holds, and the issuer is not asked', async () => {
     const first = tokenExpiringIn(60 * 60 * 1000, 'first');
     const second = tokenExpiringIn(2 * 60 * 60 * 1000, 'second');
-    grant.mockReturnValueOnce(granted(first, 60 * 60 * 1000)).mockReturnValueOnce(granted(second, 2 * 60 * 60 * 1000));
+    grant
+      .mockReturnValueOnce(granted(first, 60 * 60 * 1000))
+      .mockReturnValueOnce(granted(second, 2 * 60 * 60 * 1000));
     session = await start();
     await session.refresh(first);
     expect(grant).toHaveBeenCalledTimes(2);
 
     // A request sent with the first token is refused after the renewal.
-    await expect(session.refresh(first)).resolves.toBe(session.token$.getValue());
+    await expect(session.refresh(first)).resolves.toBe(
+      session.token$.getValue(),
+    );
     expect(grant).toHaveBeenCalledTimes(2);
   });
 
@@ -203,7 +246,10 @@ describe('startAgentSession', () => {
     const stream = session.refresh(first);
     const request = session.refresh(first);
 
-    await expect(Promise.all([stream, request])).resolves.toEqual([second, second]);
+    await expect(Promise.all([stream, request])).resolves.toEqual([
+      second,
+      second,
+    ]);
     expect(grant, 'one grant answers both').toHaveBeenCalledTimes(2);
     expect(session.token$.getValue()).toBe(second);
   });
@@ -225,7 +271,10 @@ describe('startAgentSession', () => {
     session = await start();
 
     await vi.advanceTimersByTimeAsync(200_000);
-    expect(grant, 'the scheduled renewal waits on the issuer').toHaveBeenCalledTimes(2);
+    expect(
+      grant,
+      'the scheduled renewal waits on the issuer',
+    ).toHaveBeenCalledTimes(2);
 
     // A request sent with the first token is refused while the issuer is still answering the schedule.
     const refusal = session.refresh(first);
@@ -236,19 +285,34 @@ describe('startAgentSession', () => {
     expect(session.token$.getValue()).toBe(second);
   });
 
-  it('signs in and renews through the fetch it is given, and nothing through the runtime\'s', async () => {
+  it("signs in and renews through the fetch it is given, and nothing through the runtime's", async () => {
     // The runtime's fetch is refused as an issuer would refuse a request it cannot read: not retried.
     const runtimes = vi.fn(async () => new Response(null, { status: 400 }));
     vi.stubGlobal('fetch', runtimes);
     const given = vi.fn(routed);
     const first = tokenExpiringIn(60 * 60 * 1000, 'first');
     const second = tokenExpiringIn(2 * 60 * 60 * 1000, 'second');
-    grant.mockReturnValueOnce(granted(first, 60 * 60 * 1000)).mockReturnValueOnce(granted(second, 2 * 60 * 60 * 1000));
+    grant
+      .mockReturnValueOnce(granted(first, 60 * 60 * 1000))
+      .mockReturnValueOnce(granted(second, 2 * 60 * 60 * 1000));
 
-    session = await startAgentSession({ baseUrl: 'http://gateway.test', credential, logger: makeLogger(), fetch: given });
-    await expect(session.refresh(session.token$.getValue())).resolves.toBe(second);
+    session = await startAgentSession({
+      baseUrl: 'http://gateway.test',
+      credential,
+      logger: makeLogger(),
+      fetch: given,
+    });
+    await expect(session.refresh(session.token$.getValue())).resolves.toBe(
+      second,
+    );
 
-    expect(given.mock.calls.map(([input]) => new URL(String(input instanceof Request ? input.url : input)).pathname)).toEqual([
+    expect(
+      given.mock.calls.map(
+        ([input]) =>
+          new URL(String(input instanceof Request ? input.url : input))
+            .pathname,
+      ),
+    ).toEqual([
       '/realms/kb/.well-known/openid-configuration',
       '/token',
       '/api/users/me',
@@ -263,7 +327,7 @@ describe('startAgentSession', () => {
   // for these short-lived fixtures the half-life governs. The arithmetic
   // asserted is the derivation's; the behaviour this is really about is
   // re-arming from the token just received.
-  it('renews proactively before the token\'s own exp, then re-arms from the new one', async () => {
+  it("renews proactively before the token's own exp, then re-arms from the new one", async () => {
     // These fixtures carry `exp` but no `iat`, so the lifetime the schedule
     // sees is the life REMAINING when it schedules — which is the honest
     // reading when an issuer does not say when it minted.
@@ -314,10 +378,15 @@ describe('startAgentSession', () => {
     expect(grant).toHaveBeenCalledTimes(2);
 
     await vi.advanceTimersByTimeAsync(499_000);
-    expect(grant, 'the first token\'s wait went with it').toHaveBeenCalledTimes(2);
+    expect(grant, "the first token's wait went with it").toHaveBeenCalledTimes(
+      2,
+    );
 
     await vi.advanceTimersByTimeAsync(1_000);
-    expect(grant, 'the second token\'s wait is the only one').toHaveBeenCalledTimes(3);
+    expect(
+      grant,
+      "the second token's wait is the only one",
+    ).toHaveBeenCalledTimes(3);
     expect(session.token$.getValue()).toBe(third);
   });
 
@@ -328,17 +397,25 @@ describe('startAgentSession', () => {
       .mockReturnValueOnce(granted(first, 400_000))
       // The renewal is one grant: an issuer that says "not now" is waited
       // out by the schedule, and not by a retry inside the renewal.
-      .mockReturnValueOnce(new Response('', { status: 503, statusText: 'Service Unavailable' }))
+      .mockReturnValueOnce(
+        new Response('', { status: 503, statusText: 'Service Unavailable' }),
+      )
       .mockReturnValueOnce(granted(second, 800_000));
     const logger = makeLogger();
     session = await start(logger);
 
     await vi.advanceTimersByTimeAsync(200_000);
     expect(grant).toHaveBeenCalledTimes(2);
-    expect(logger.error).toHaveBeenCalledWith('Proactive re-authentication failed', {
-      error: `Client-credentials grant for xynolog-dispatcher at ${credential.issuer} failed (HTTP 503)`,
-    });
-    expect(session.token$.getValue(), 'a still-valid token is not thrown away over one bad round trip').toBe(first);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Proactive re-authentication failed',
+      {
+        error: `Client-credentials grant for xynolog-dispatcher at ${credential.issuer} failed (HTTP 503)`,
+      },
+    );
+    expect(
+      session.token$.getValue(),
+      'a still-valid token is not thrown away over one bad round trip',
+    ).toBe(first);
 
     // Re-armed from the token still in hand. It has 200 s left, so the retry
     // is 100 s out — not the floor. Each failure re-derives from what remains,
@@ -360,7 +437,9 @@ describe('startAgentSession', () => {
     const first = tokenExpiringIn(400_000, 'first');
     grant
       .mockReturnValueOnce(granted(first, 400_000))
-      .mockReturnValueOnce(new Response('', { status: 401, statusText: 'Unauthorized' }));
+      .mockReturnValueOnce(
+        new Response('', { status: 401, statusText: 'Unauthorized' }),
+      );
     const logger = makeLogger();
     session = await start(logger);
 
@@ -383,7 +462,12 @@ describe('startAgentSession', () => {
     const first = tokenExpiringIn(400_000, 'first');
     grant
       .mockReturnValueOnce(granted(first, 400_000))
-      .mockReturnValueOnce(Response.json({ error: 'unauthorized_client' }, { status: 400, statusText: 'Bad Request' }));
+      .mockReturnValueOnce(
+        Response.json(
+          { error: 'unauthorized_client' },
+          { status: 400, statusText: 'Bad Request' },
+        ),
+      );
     const logger = makeLogger();
     session = await start(logger);
 
@@ -399,7 +483,9 @@ describe('startAgentSession', () => {
   });
 
   it('a token with no readable exp schedules nothing', async () => {
-    grant.mockReturnValueOnce(Response.json({ access_token: jwt({ sub: 'no-exp' }) }));
+    grant.mockReturnValueOnce(
+      Response.json({ access_token: jwt({ sub: 'no-exp' }) }),
+    );
     session = await start();
 
     await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000);
@@ -407,7 +493,9 @@ describe('startAgentSession', () => {
   });
 
   it('stop() disarms the proactive refresh', async () => {
-    grant.mockReturnValueOnce(granted(tokenExpiringIn(400_000, 'first'), 400_000));
+    grant.mockReturnValueOnce(
+      granted(tokenExpiringIn(400_000, 'first'), 400_000),
+    );
     session = await start();
 
     session.stop();
@@ -443,7 +531,10 @@ describe('startAgentSession', () => {
 
     session.stop();
     await vi.advanceTimersByTimeAsync(0);
-    expect(given, 'the stop ended the renewal: the refusal is given no token, and does not wait on the issuer').toEqual([null]);
+    expect(
+      given,
+      'the stop ended the renewal: the refusal is given no token, and does not wait on the issuer',
+    ).toEqual([null]);
 
     // The issuer's answer comes later, and is read, and is not taken.
     const late = granted(third, 3 * 60 * 60 * 1000);

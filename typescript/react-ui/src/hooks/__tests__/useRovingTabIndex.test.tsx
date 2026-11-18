@@ -29,7 +29,7 @@ describe('useRovingTabIndex', () => {
   describe('Horizontal Orientation', () => {
     it('should navigate right with ArrowRight', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'horizontal' })
+        useRovingTabIndex(3, { orientation: 'horizontal' }),
       );
 
       // Create container with buttons
@@ -70,7 +70,7 @@ describe('useRovingTabIndex', () => {
 
     it('should navigate left with ArrowLeft', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'horizontal' })
+        useRovingTabIndex(3, { orientation: 'horizontal' }),
       );
 
       const container = document.createElement('div');
@@ -108,7 +108,7 @@ describe('useRovingTabIndex', () => {
 
     it('should not navigate with ArrowDown in horizontal mode', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'horizontal' })
+        useRovingTabIndex(3, { orientation: 'horizontal' }),
       );
 
       const container = document.createElement('div');
@@ -141,7 +141,7 @@ describe('useRovingTabIndex', () => {
   describe('Vertical Orientation', () => {
     it('should navigate down with ArrowDown', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'vertical' })
+        useRovingTabIndex(3, { orientation: 'vertical' }),
       );
 
       const container = document.createElement('div');
@@ -175,7 +175,7 @@ describe('useRovingTabIndex', () => {
 
     it('should navigate up with ArrowUp', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'vertical' })
+        useRovingTabIndex(3, { orientation: 'vertical' }),
       );
 
       const container = document.createElement('div');
@@ -213,7 +213,7 @@ describe('useRovingTabIndex', () => {
 
     it('should not navigate with ArrowRight in vertical mode', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'vertical' })
+        useRovingTabIndex(3, { orientation: 'vertical' }),
       );
 
       const container = document.createElement('div');
@@ -246,11 +246,13 @@ describe('useRovingTabIndex', () => {
   describe('Grid Orientation', () => {
     it('should navigate right with ArrowRight in grid', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(6, { orientation: 'grid', cols: 3 })
+        useRovingTabIndex(6, { orientation: 'grid', cols: 3 }),
       );
 
       const container = document.createElement('div');
-      const buttons = Array.from({ length: 6 }, () => document.createElement('button'));
+      const buttons = Array.from({ length: 6 }, () =>
+        document.createElement('button'),
+      );
       buttons.forEach((btn) => {
         btn.setAttribute('role', 'button');
         container.appendChild(btn);
@@ -276,11 +278,13 @@ describe('useRovingTabIndex', () => {
 
     it('should navigate down with ArrowDown in grid', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(6, { orientation: 'grid', cols: 3 })
+        useRovingTabIndex(6, { orientation: 'grid', cols: 3 }),
       );
 
       const container = document.createElement('div');
-      const buttons = Array.from({ length: 6 }, () => document.createElement('button'));
+      const buttons = Array.from({ length: 6 }, () =>
+        document.createElement('button'),
+      );
       buttons.forEach((btn) => {
         btn.setAttribute('role', 'button');
         container.appendChild(btn);
@@ -306,11 +310,13 @@ describe('useRovingTabIndex', () => {
 
     it('should navigate up by cols in grid', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(6, { orientation: 'grid', cols: 3 })
+        useRovingTabIndex(6, { orientation: 'grid', cols: 3 }),
       );
 
       const container = document.createElement('div');
-      const buttons = Array.from({ length: 6 }, () => document.createElement('button'));
+      const buttons = Array.from({ length: 6 }, () =>
+        document.createElement('button'),
+      );
       buttons.forEach((btn) => {
         btn.setAttribute('role', 'button');
         container.appendChild(btn);
@@ -342,7 +348,7 @@ describe('useRovingTabIndex', () => {
   describe('Looping Behavior', () => {
     it('should loop to beginning when at end with loop=true', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'horizontal', loop: true })
+        useRovingTabIndex(3, { orientation: 'horizontal', loop: true }),
       );
 
       const container = document.createElement('div');
@@ -375,7 +381,7 @@ describe('useRovingTabIndex', () => {
 
     it('should loop to end when at beginning with loop=true', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'horizontal', loop: true })
+        useRovingTabIndex(3, { orientation: 'horizontal', loop: true }),
       );
 
       const container = document.createElement('div');
@@ -408,7 +414,7 @@ describe('useRovingTabIndex', () => {
 
     it('should not loop when loop=false', () => {
       const { result } = renderHook(() =>
-        useRovingTabIndex(3, { orientation: 'horizontal', loop: false })
+        useRovingTabIndex(3, { orientation: 'horizontal', loop: false }),
       );
 
       const container = document.createElement('div');
@@ -533,7 +539,9 @@ describe('useRovingTabIndex', () => {
     });
 
     it('should clamp index to bounds when loop=false', () => {
-      const { result } = renderHook(() => useRovingTabIndex(3, { loop: false }));
+      const { result } = renderHook(() =>
+        useRovingTabIndex(3, { loop: false }),
+      );
 
       const container = document.createElement('div');
       const buttons = [
@@ -657,7 +665,7 @@ describe('useRovingTabIndex', () => {
     it('should update when itemCount changes', () => {
       const { result, rerender } = renderHook(
         ({ count }) => useRovingTabIndex(count),
-        { initialProps: { count: 2 } }
+        { initialProps: { count: 2 } },
       );
 
       const container = document.createElement('div');

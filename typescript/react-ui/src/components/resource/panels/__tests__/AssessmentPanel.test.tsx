@@ -8,7 +8,11 @@ import { AssessmentPanel } from '../AssessmentPanel';
 import { FrameRefusal, type EventBus, type EventMap } from '@xynolog/core';
 import type { AssessmentEntry } from '../AssessmentEntry';
 import type { DelegateSection } from '../DelegateSection';
-import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import {
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type XynologSession,
+} from '@xynolog/sdk';
 import { createTestXynologWrapper } from '../../../../test-utils';
 
 import type { Annotation, AnnotationId } from '@xynolog/core';
@@ -23,13 +27,18 @@ function createEventTracker() {
   const events: TrackedEvent[] = [];
   return {
     events,
-    clear: () => { events.length = 0; },
+    clear: () => {
+      events.length = 0;
+    },
     _attach(eventBus: EventBus) {
       const panelEvents = ['mark:submit'] as const;
       panelEvents.forEach((eventName) => {
         eventBus.on(eventName).subscribe((payload) => {
           // Nothing bridges into this test's bus: a refusal on it is the test's own fault.
-          if (payload instanceof FrameRefusal) throw new Error(`refused: ${payload.channel} ${payload.reason} ${payload.member}`);
+          if (payload instanceof FrameRefusal)
+            throw new Error(
+              `refused: ${payload.channel} ${payload.reason} ${payload.member}`,
+            );
           events.push({ event: eventName, payload });
         });
       });
@@ -46,7 +55,10 @@ let mark: MarkStateUnit;
 let eventBus: EventBus;
 let XynologWrapper: React.ComponentType<{ children: React.ReactNode }>;
 
-const renderWithEventBus = (component: React.ReactElement, tracker?: ReturnType<typeof createEventTracker>) => {
+const renderWithEventBus = (
+  component: React.ReactElement,
+  tracker?: ReturnType<typeof createEventTracker>,
+) => {
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <XynologWrapper>{children}</XynologWrapper>
@@ -67,7 +79,8 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
     };
     return translations[key] || key;
   }),
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Mock @xynolog/http-transport utilities
@@ -82,7 +95,9 @@ vi.mock('@xynolog/core', async () => {
 
 // Mock AssessmentEntry component to simplify testing
 vi.mock('../AssessmentEntry', () => ({
-  AssessmentEntry: ({ assessment }: React.ComponentProps<typeof AssessmentEntry>) => (
+  AssessmentEntry: ({
+    assessment,
+  }: React.ComponentProps<typeof AssessmentEntry>) => (
     <div data-testid={`assessment-${assessment.id}`}>
       <div>{assessment.id}</div>
     </div>
@@ -91,7 +106,9 @@ vi.mock('../AssessmentEntry', () => ({
 
 // Mock DelegateSection component — just render a simplified version.
 vi.mock('../DelegateSection', () => ({
-  DelegateSection: ({ isDelegating }: React.ComponentProps<typeof DelegateSection>) => (
+  DelegateSection: ({
+    isDelegating,
+  }: React.ComponentProps<typeof DelegateSection>) => (
     <div data-testid="detect-section">
       <button>Start Detection</button>
       {isDelegating && <div>Detecting...</div>}
@@ -99,12 +116,24 @@ vi.mock('../DelegateSection', () => ({
   ),
 }));
 
-import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynolog/core';
-const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<typeof getTextPositionSelector>;
-const mockGetTargetSelector = getTargetSelector as MockedFunction<typeof getTargetSelector>;
+import {
+  getTextPositionSelector,
+  getTargetSelector,
+  resourceId,
+} from '@xynolog/core';
+const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<
+  typeof getTextPositionSelector
+>;
+const mockGetTargetSelector = getTargetSelector as MockedFunction<
+  typeof getTargetSelector
+>;
 
 // Test data fixtures
-const createMockAssessment = (id: string, start: number, end: number): Annotation => ({
+const createMockAssessment = (
+  id: string,
+  start: number,
+  end: number,
+): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
   id: id as AnnotationId,
   type: 'Annotation',
@@ -136,8 +165,8 @@ const mockAssessments = {
   empty: [],
   single: [createMockAssessment('1', 0, 10)],
   multiple: [
-    createMockAssessment('1', 50, 60),  // Middle position
-    createMockAssessment('2', 0, 10),   // First position
+    createMockAssessment('1', 50, 60), // Middle position
+    createMockAssessment('2', 0, 10), // First position
     createMockAssessment('3', 100, 110), // Last position
   ],
 };
@@ -170,9 +199,15 @@ describe('AssessmentPanel Component', () => {
     Element.prototype.scrollIntoView = vi.fn();
 
     // Mock selector functions to return proper position data
-    mockGetTargetSelector.mockImplementation((target) => (typeof target === 'string' ? undefined : target.selector));
+    mockGetTargetSelector.mockImplementation((target) =>
+      typeof target === 'string' ? undefined : target.selector,
+    );
     mockGetTextPositionSelector.mockImplementation((selector) => {
-      if (selector !== undefined && !Array.isArray(selector) && selector.type === 'TextPositionSelector') {
+      if (
+        selector !== undefined &&
+        !Array.isArray(selector) &&
+        selector.type === 'TextPositionSelector'
+      ) {
         return selector;
       }
       return null;
@@ -186,20 +221,36 @@ describe('AssessmentPanel Component', () => {
 
   describe('Rendering', () => {
     it('should render panel header with title and count', () => {
-      renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} annotations={mockAssessments.multiple} />);
+      renderWithEventBus(
+        <AssessmentPanel
+          {...defaultProps}
+          session={session}
+          mark={mark}
+          annotations={mockAssessments.multiple}
+        />,
+      );
 
       expect(screen.getByText(/Assessments/)).toBeInTheDocument();
       expect(screen.getByText(/\(3\)/)).toBeInTheDocument();
     });
 
     it('should show empty state when no assessments', () => {
-      renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} />);
+      renderWithEventBus(
+        <AssessmentPanel {...defaultProps} session={session} mark={mark} />,
+      );
 
       expect(screen.getByText(/No assessments yet/)).toBeInTheDocument();
     });
 
     it('should render all assessments', () => {
-      renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} annotations={mockAssessments.multiple} />);
+      renderWithEventBus(
+        <AssessmentPanel
+          {...defaultProps}
+          session={session}
+          mark={mark}
+          annotations={mockAssessments.multiple}
+        />,
+      );
 
       expect(screen.getByTestId('assessment-1')).toBeInTheDocument();
       expect(screen.getByTestId('assessment-2')).toBeInTheDocument();
@@ -207,7 +258,9 @@ describe('AssessmentPanel Component', () => {
     });
 
     it('should have proper panel structure', () => {
-      const { container } = renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} />);
+      const { container } = renderWithEventBus(
+        <AssessmentPanel {...defaultProps} session={session} mark={mark} />,
+      );
 
       const panel = container.firstChild as HTMLElement;
       expect(panel).toHaveClass('xynolog-panel');
@@ -216,7 +269,14 @@ describe('AssessmentPanel Component', () => {
 
   describe('Assessment Sorting', () => {
     it('should sort assessments by position in resource', () => {
-      renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} annotations={mockAssessments.multiple} />);
+      renderWithEventBus(
+        <AssessmentPanel
+          {...defaultProps}
+          session={session}
+          mark={mark}
+          annotations={mockAssessments.multiple}
+        />,
+      );
 
       const assessments = screen.getAllByTestId(/assessment-/);
 
@@ -230,16 +290,27 @@ describe('AssessmentPanel Component', () => {
       mockGetTextPositionSelector.mockReturnValue(null);
 
       expect(() => {
-        renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} annotations={mockAssessments.multiple} />);
+        renderWithEventBus(
+          <AssessmentPanel
+            {...defaultProps}
+            session={session}
+            mark={mark}
+            annotations={mockAssessments.multiple}
+          />,
+        );
       }).not.toThrow();
     });
   });
 
   describe('New Assessment Creation', () => {
     it('should not show new assessment input by default', () => {
-      renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} />);
+      renderWithEventBus(
+        <AssessmentPanel {...defaultProps} session={session} mark={mark} />,
+      );
 
-      expect(screen.queryByPlaceholderText(/Type your assessment here/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText(/Type your assessment here/),
+      ).not.toBeInTheDocument();
     });
 
     it('should show new assessment input when pendingAnnotation exists', () => {
@@ -247,25 +318,35 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByPlaceholderText(/Type your assessment here/)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/Type your assessment here/),
+      ).toBeInTheDocument();
     });
 
     it('should display quoted selected text in new assessment area', () => {
-      const pendingAnnotation = createPendingAnnotation('Selected text for assessment');
+      const pendingAnnotation = createPendingAnnotation(
+        'Selected text for assessment',
+      );
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByText(/"Selected text for assessment"/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/"Selected text for assessment"/),
+      ).toBeInTheDocument();
     });
 
     it('should truncate long selected text at 100 characters', () => {
@@ -274,12 +355,16 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByText(new RegExp(`"${'A'.repeat(100)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'A'.repeat(100)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
@@ -288,9 +373,11 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Type your assessment here/);
@@ -304,9 +391,11 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       expect(screen.getByText('0/2000')).toBeInTheDocument();
@@ -322,12 +411,16 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      const textarea = screen.getByPlaceholderText(/Type your assessment here/) as HTMLTextAreaElement;
+      const textarea = screen.getByPlaceholderText(
+        /Type your assessment here/,
+      ) as HTMLTextAreaElement;
       expect(textarea).toHaveAttribute('maxLength', '2000');
     });
 
@@ -336,9 +429,11 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Type your assessment here/);
@@ -351,10 +446,12 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
         />,
-        tracker
+        tracker,
       );
 
       const textarea = screen.getByPlaceholderText(/Type your assessment here/);
@@ -364,14 +461,17 @@ describe('AssessmentPanel Component', () => {
       await userEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'mark:submit' &&
-          e.payload.motivation === 'assessing' &&
-          e.payload.body !== undefined &&
-          !Array.isArray(e.payload.body) &&
-          e.payload.body.type === 'TextualBody' &&
-          e.payload.body.value === 'My assessment'
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'mark:submit' &&
+              e.payload.motivation === 'assessing' &&
+              e.payload.body !== undefined &&
+              !Array.isArray(e.payload.body) &&
+              e.payload.body.type === 'TextualBody' &&
+              e.payload.body.value === 'My assessment',
+          ),
+        ).toBe(true);
       });
     });
 
@@ -380,9 +480,11 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Type your assessment here/);
@@ -398,21 +500,26 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
         />,
-        tracker
+        tracker,
       );
 
       const saveButton = screen.getByText('Save');
       await userEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'mark:submit' &&
-          e.payload?.motivation === 'assessing' &&
-          e.payload?.body === undefined
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'mark:submit' &&
+              e.payload?.motivation === 'assessing' &&
+              e.payload?.body === undefined,
+          ),
+        ).toBe(true);
       });
     });
 
@@ -421,12 +528,16 @@ describe('AssessmentPanel Component', () => {
 
       const { container } = renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      const newAssessmentArea = container.querySelector('.xynolog-annotation-prompt');
+      const newAssessmentArea = container.querySelector(
+        '.xynolog-annotation-prompt',
+      );
       expect(newAssessmentArea).toBeInTheDocument();
       expect(newAssessmentArea).toHaveAttribute('data-type', 'assessment');
     });
@@ -436,9 +547,11 @@ describe('AssessmentPanel Component', () => {
     it('should render assessment entries', () => {
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           annotations={mockAssessments.single}
-        />
+        />,
       );
 
       const assessment = screen.getByTestId('assessment-1');
@@ -451,9 +564,11 @@ describe('AssessmentPanel Component', () => {
       expect(() => {
         renderWithEventBus(
           <AssessmentPanel
-            {...defaultProps} session={session} mark={mark}
+            {...defaultProps}
+            session={session}
+            mark={mark}
             annotations={mockAssessments.single}
-          />
+          />,
         );
       }).not.toThrow();
     });
@@ -463,9 +578,11 @@ describe('AssessmentPanel Component', () => {
     it('should render DelegateSection when annotateMode is true', () => {
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           annotateMode={true}
-        />
+        />,
       );
 
       expect(screen.getByTestId('detect-section')).toBeInTheDocument();
@@ -474,9 +591,11 @@ describe('AssessmentPanel Component', () => {
     it('should not render DelegateSection when annotateMode is false', () => {
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           annotateMode={false}
-        />
+        />,
       );
 
       expect(screen.queryByTestId('detect-section')).not.toBeInTheDocument();
@@ -485,9 +604,11 @@ describe('AssessmentPanel Component', () => {
     it('should render DelegateSection with correct annotationType', () => {
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           annotateMode={true}
-        />
+        />,
       );
 
       // DelegateSection is rendered (mocked component renders the button)
@@ -501,9 +622,11 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       expect(screen.getByText('Cancel')).toBeInTheDocument();
@@ -515,9 +638,11 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Type your assessment here/);
@@ -533,7 +658,9 @@ describe('AssessmentPanel Component', () => {
 
   describe('Accessibility', () => {
     it('should have proper heading structure', () => {
-      renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} />);
+      renderWithEventBus(
+        <AssessmentPanel {...defaultProps} session={session} mark={mark} />,
+      );
 
       const heading = screen.getByText(/Assessments/);
       expect(heading).toHaveClass('xynolog-panel-header__text');
@@ -544,9 +671,11 @@ describe('AssessmentPanel Component', () => {
 
       renderWithEventBus(
         <AssessmentPanel
-          {...defaultProps} session={session} mark={mark}
+          {...defaultProps}
+          session={session}
+          mark={mark}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Type your assessment here/);

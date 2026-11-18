@@ -16,9 +16,7 @@ import { LiveRegionProvider } from '../../components/LiveRegion';
 import { useDragAnnouncements } from '../useDragAnnouncements';
 
 describe('useDragAnnouncements', () => {
-
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   function renderWithProvider() {
     return renderHook(() => useDragAnnouncements(), {

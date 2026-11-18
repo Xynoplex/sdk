@@ -15,7 +15,13 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions, RenderResult } from '@testing-library/react';
 import { vi, afterEach } from 'vitest';
-import { XynologBrowser, createSessionSignals, type XynologClient, type XynologSession, type SessionEndReason } from '@xynolog/sdk';
+import {
+  XynologBrowser,
+  createSessionSignals,
+  type XynologClient,
+  type XynologSession,
+  type SessionEndReason,
+} from '@xynolog/sdk';
 import { createTestSession, stubGateway } from '@xynolog/sdk/testing';
 import { EventBus } from '@xynolog/core';
 import { TranslationProvider } from './contexts/TranslationContext';
@@ -27,14 +33,14 @@ import { XynologProvider } from './session/XynologProvider';
 import en from '../translations/en.json';
 
 /**
-  * Every browser below is a REAL `XynologBrowser` over the SDK's own
-  * in-memory doubles — no HTTP, no localhost, no network. Clients are
-  * disposed at test end all the same: a chain straddling teardown dies in the
-  * cache's B16 disposed-guard rather than logging while the vitest worker's RPC
-  * closes (an `EnvironmentTeardownError`). Registered at module scope:
-  * every file that imports test-utils — exactly the files that create
-  * clients — gets the hook.
-  */
+ * Every browser below is a REAL `XynologBrowser` over the SDK's own
+ * in-memory doubles — no HTTP, no localhost, no network. Clients are
+ * disposed at test end all the same: a chain straddling teardown dies in the
+ * cache's B16 disposed-guard rather than logging while the vitest worker's RPC
+ * closes (an `EnvironmentTeardownError`). Registered at module scope:
+ * every file that imports test-utils — exactly the files that create
+ * clients — gets the hook.
+ */
 const liveTestClients: XynologClient[] = [];
 const liveTestBrowsers: XynologBrowser[] = [];
 afterEach(async () => {
@@ -63,9 +69,14 @@ function createTestBrowser(): XynologBrowser {
   // name, and `FaultyTransport` refuses unscripted bus operations by
   // default — so a unit that reaches something the test never scripted fails
   // saying which one.
-  const { session, client, storage } = createTestSession({ gateway: stubGateway() });
+  const { session, client, storage } = createTestSession({
+    gateway: stubGateway(),
+  });
   liveTestClients.push(client);
-  const browser = new XynologBrowser({ storage, sessionFactory: () => session });
+  const browser = new XynologBrowser({
+    storage,
+    sessionFactory: () => session,
+  });
   liveTestBrowsers.push(browser);
   // The browser populates these only by driving a real sign-in; tests want a
   // connected shape from the first render. Both values are real objects, so
@@ -102,7 +113,10 @@ export const englishTranslationManager = createTranslationManager('en', en);
  * Render under react-ui's English translations. A `wrapper` in the options is
  * mounted inside them; no other provider is added.
  */
-export function renderInEnglish(ui: ReactElement, options?: RenderOptions): RenderResult {
+export function renderInEnglish(
+  ui: ReactElement,
+  options?: RenderOptions,
+): RenderResult {
   const Wrapper = options?.wrapper;
   return render(ui, {
     ...options,
@@ -134,7 +148,8 @@ function busOf(client: XynologClient): EventBus {
   return client.bus;
 }
 
-export interface RenderWithProvidersOptions extends TestProvidersOptions, Omit<RenderOptions, 'wrapper'> {
+export interface RenderWithProvidersOptions
+  extends TestProvidersOptions, Omit<RenderOptions, 'wrapper'> {
   /**
    * If true, returns the session (client) EventBus — session-scoped
    * channels (mark:*, beckon:*, gather:*, match:*, bind:*, yield:*,
@@ -160,7 +175,7 @@ export interface RenderWithProvidersResult extends RenderResult {
 
 export function renderWithProviders(
   ui: ReactElement,
-  options?: RenderWithProvidersOptions
+  options?: RenderWithProvidersOptions,
 ): RenderWithProvidersResult {
   const {
     translationManager = defaultMocks.translationManager,
@@ -179,9 +194,7 @@ export function renderWithProviders(
       <TranslationProvider translationManager={translationManager}>
         <XynologProvider browser={testBrowser}>
           <ToastProvider>
-            <LineNumbersProvider>
-              {children}
-            </LineNumbersProvider>
+            <LineNumbersProvider>{children}</LineNumbersProvider>
           </ToastProvider>
         </XynologProvider>
       </TranslationProvider>
@@ -232,7 +245,7 @@ export function createTestXynologWrapper(): {
  * Create a mock translation manager with custom translations
  */
 export function createMockTranslationManager(
-  translations: Record<string, Record<string, string>>
+  translations: Record<string, Record<string, string>>,
 ): TranslationManager {
   return {
     t: (namespace: string, key: string) => {
@@ -246,14 +259,16 @@ export function createMockTranslationManager(
  * PermissionDeniedModal tests that need to control the modal flags
  * without driving a real session through its state machine.
  */
-export function createTestBrowserWithSignals(overrides: {
-  /** Raise permission-denied with this detail: the gateway's own words, or null when it gave none. */
-  permissionDenied?: { detail: string | null };
-  /** Raise session-ended with this reason. */
-  sessionEnded?: { reason: SessionEndReason };
-  acknowledgePermissionDenied?: () => void;
-  acknowledgeSessionEnded?: () => void;
-} = {}): XynologBrowser {
+export function createTestBrowserWithSignals(
+  overrides: {
+    /** Raise permission-denied with this detail: the gateway's own words, or null when it gave none. */
+    permissionDenied?: { detail: string | null };
+    /** Raise session-ended with this reason. */
+    sessionEnded?: { reason: SessionEndReason };
+    acknowledgePermissionDenied?: () => void;
+    acknowledgeSessionEnded?: () => void;
+  } = {},
+): XynologBrowser {
   const browser = createTestBrowser();
   const signals = browser.activeSignals$.getValue()!;
 

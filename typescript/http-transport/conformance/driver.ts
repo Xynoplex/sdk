@@ -26,7 +26,10 @@ import {
   type RetryPolicy,
 } from '@xynolog/core';
 import { HttpContentTransport, HttpTransport } from '@xynolog/http-transport';
-import { initObservabilityNode, shutdownObservabilityNode } from '@xynolog/observability/node';
+import {
+  initObservabilityNode,
+  shutdownObservabilityNode,
+} from '@xynolog/observability/node';
 import manifest from '../package.json' with { type: 'json' };
 
 type Arguments = Record<string, unknown>;
@@ -59,22 +62,36 @@ function count(args: Arguments, name: string): number {
 
 function object(args: Arguments, name: string): Arguments {
   const value = args[name];
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Misuse(`${name} must be an object`);
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    throw new Misuse(`${name} must be an object`);
   return value as Arguments;
 }
 
 function texts(args: Arguments, name: string): string[] {
   const value = args[name];
-  if (!Array.isArray(value) || !value.every((v): v is string => typeof v === 'string')) throw new Misuse(`${name} must be a list of strings`);
+  if (
+    !Array.isArray(value) ||
+    !value.every((v): v is string => typeof v === 'string')
+  )
+    throw new Misuse(`${name} must be a list of strings`);
   return value;
 }
 
 /** A failure as the protocol carries it: the SDK's code, and the status when a server stated one. */
-function failure(error: unknown): { code?: string; status?: number; detail: string } {
-  const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+function failure(error: unknown): {
+  code?: string;
+  status?: number;
+  detail: string;
+} {
+  const detail =
+    error instanceof Error ? `${error.name}: ${error.message}` : String(error);
   if (!(error instanceof XynologError)) return { detail };
   const status = (error as { status?: unknown }).status;
-  return { code: error.code, ...(typeof status === 'number' && status > 0 ? { status } : {}), detail };
+  return {
+    code: error.code,
+    ...(typeof status === 'number' && status > 0 ? { status } : {}),
+    detail,
+  };
 }
 
 let token$: BehaviorSubject<AccessToken | null> | undefined;
@@ -102,52 +119,94 @@ function uploadOf(args: Arguments): PutBinaryRequest {
     format: text(args, 'format') as ContentFormat,
     storageUri: text(args, 'storageUri'),
     file: Buffer.from(text(args, 'bytes'), 'base64'),
-    ...(args['entityTypes'] === undefined ? {} : { entityTypes: texts(args, 'entityTypes') }),
-    ...(args['language'] === undefined ? {} : { language: text(args, 'language') }),
-    ...(args['sourceResourceId'] === undefined ? {} : { sourceResourceId: text(args, 'sourceResourceId') }),
-    ...(args['sourceAnnotationId'] === undefined ? {} : { sourceAnnotationId: text(args, 'sourceAnnotationId') }),
-    ...(args['generationPrompt'] === undefined ? {} : { generationPrompt: text(args, 'generationPrompt') }),
+    ...(args['entityTypes'] === undefined
+      ? {}
+      : { entityTypes: texts(args, 'entityTypes') }),
+    ...(args['language'] === undefined
+      ? {}
+      : { language: text(args, 'language') }),
+    ...(args['sourceResourceId'] === undefined
+      ? {}
+      : { sourceResourceId: text(args, 'sourceResourceId') }),
+    ...(args['sourceAnnotationId'] === undefined
+      ? {}
+      : { sourceAnnotationId: text(args, 'sourceAnnotationId') }),
+    ...(args['generationPrompt'] === undefined
+      ? {}
+      : { generationPrompt: text(args, 'generationPrompt') }),
     ...(args['jobId'] === undefined ? {} : { jobId: text(args, 'jobId') }),
-    ...(args['isDraft'] === undefined ? {} : { isDraft: args['isDraft'] === true }),
+    ...(args['isDraft'] === undefined
+      ? {}
+      : { isDraft: args['isDraft'] === true }),
   };
 }
 
 function budget(timing: Arguments): RetryPolicy {
   const stated = object(timing, 'emitRetry');
-  return { attempts: count(stated, 'attempts'), initialDelayMs: count(stated, 'initialDelayMs'), maxDelayMs: count(stated, 'maxDelayMs') };
+  return {
+    attempts: count(stated, 'attempts'),
+    initialDelayMs: count(stated, 'initialDelayMs'),
+    maxDelayMs: count(stated, 'maxDelayMs'),
+  };
 }
 
-const operations: Record<string, (args: Arguments, id: number) => Promise<unknown> | unknown> = {
+const operations: Record<
+  string,
+  (args: Arguments, id: number) => Promise<unknown> | unknown
+> = {
   open(args) {
     if (transport) throw new Misuse('a transport is already open');
     const timing = args['timing'] === undefined ? {} : object(args, 'timing');
     for (const name of Object.keys(timing)) {
-      if (!['reconnectMs', 'lazyRemoveMs', 'lingerMs', 'emitRetry', 'seenEventIdsCount'].includes(name)) throw new Misuse(`this driver cannot override ${name}`);
+      if (
+        ![
+          'reconnectMs',
+          'lazyRemoveMs',
+          'lingerMs',
+          'emitRetry',
+          'seenEventIdsCount',
+        ].includes(name)
+      )
+        throw new Misuse(`this driver cannot override ${name}`);
     }
-    const source = new BehaviorSubject<AccessToken | null>(accessToken(text(args, 'token')));
+    const source = new BehaviorSubject<AccessToken | null>(
+      accessToken(text(args, 'token')),
+    );
     token$ = source;
     // The tokens the client's refresher gives, one each time it is asked, and
     // none once they run out. The token it gives becomes the client's, as a
     // session pushes a renewed token into its source.
-    const renewals = args['renewals'] === undefined ? undefined : [...texts(args, 'renewals')];
-    const tokenRefresher = renewals === undefined
-      ? undefined
-      : async (): Promise<string | null> => {
-          const renewed = renewals.shift();
-          if (renewed === undefined) return null;
-          source.next(accessToken(renewed));
-          return renewed;
-        };
+    const renewals =
+      args['renewals'] === undefined ? undefined : [...texts(args, 'renewals')];
+    const tokenRefresher =
+      renewals === undefined
+        ? undefined
+        : async (): Promise<string | null> => {
+            const renewed = renewals.shift();
+            if (renewed === undefined) return null;
+            source.next(accessToken(renewed));
+            return renewed;
+          };
     transport = new HttpTransport({
       baseUrl: baseUrl(text(args, 'baseUrl')),
       token$: source,
       channels: texts(args, 'channels') as (keyof EventMap)[],
       ...(tokenRefresher === undefined ? {} : { tokenRefresher }),
-      ...(timing['reconnectMs'] === undefined ? {} : { reconnectMs: count(timing, 'reconnectMs') }),
-      ...(timing['lazyRemoveMs'] === undefined ? {} : { lazyRemoveMs: count(timing, 'lazyRemoveMs') }),
-      ...(timing['lingerMs'] === undefined ? {} : { lingerMs: count(timing, 'lingerMs') }),
-      ...(timing['emitRetry'] === undefined ? {} : { emitRetry: budget(timing) }),
-      ...(timing['seenEventIdsCount'] === undefined ? {} : { seenEventIdsCount: count(timing, 'seenEventIdsCount') }),
+      ...(timing['reconnectMs'] === undefined
+        ? {}
+        : { reconnectMs: count(timing, 'reconnectMs') }),
+      ...(timing['lazyRemoveMs'] === undefined
+        ? {}
+        : { lazyRemoveMs: count(timing, 'lazyRemoveMs') }),
+      ...(timing['lingerMs'] === undefined
+        ? {}
+        : { lingerMs: count(timing, 'lingerMs') }),
+      ...(timing['emitRetry'] === undefined
+        ? {}
+        : { emitRetry: budget(timing) }),
+      ...(timing['seenEventIdsCount'] === undefined
+        ? {}
+        : { seenEventIdsCount: count(timing, 'seenEventIdsCount') }),
     });
     transport.state$.subscribe((state) => say({ state }));
     transport.errors$.subscribe((error) => say({ error: failure(error) }));
@@ -171,13 +230,17 @@ const operations: Record<string, (args: Arguments, id: number) => Promise<unknow
         // refusal: a frame the transport refused is its bug, which ends the driver, uncaught.
         if (frame.payload instanceof FrameRefusal) {
           const { reason, member } = frame.payload;
-          throw new Error(`the transport refused a frame on ${channel}: ${reason}, at its \`${member}\``);
+          throw new Error(
+            `the transport refused a frame on ${channel}: ${reason}, at its \`${member}\``,
+          );
         }
         say({
           frame: {
             channel,
             payload: frame.payload,
-            ...(frame.correlationId === undefined ? {} : { correlationId: frame.correlationId }),
+            ...(frame.correlationId === undefined
+              ? {}
+              : { correlationId: frame.correlationId }),
             ...(frame.scope === undefined ? {} : { scope: frame.scope }),
           },
         });
@@ -203,7 +266,10 @@ const operations: Record<string, (args: Arguments, id: number) => Promise<unknow
     const subscribers = await opened().emit(
       text(args, 'channel') as keyof EventMap,
       object(args, 'payload') as EventMap[keyof EventMap],
-      { ...(correlationId === undefined ? {} : { correlationId }), ...(scope === undefined ? {} : { scope: resourceId(scope) }) },
+      {
+        ...(correlationId === undefined ? {} : { correlationId }),
+        ...(scope === undefined ? {} : { scope: resourceId(scope) }),
+      },
     );
     return subscribers === undefined ? {} : { subscribers };
   },
@@ -212,10 +278,16 @@ const operations: Record<string, (args: Arguments, id: number) => Promise<unknow
     const caller = new AbortController();
     callers.set(id, caller);
     try {
-      const response: unknown = await new Bus(opened()).request(text(args, 'operation') as BusOperationKey, object(args, 'payload'), count(args, 'timeoutMs'), caller.signal);
+      const response: unknown = await new Bus(opened()).request(
+        text(args, 'operation') as BusOperationKey,
+        object(args, 'payload'),
+        count(args, 'timeoutMs'),
+        caller.signal,
+      );
       return response === undefined ? {} : { response };
     } catch (error) {
-      if (caller.signal.aborted && error === caller.signal.reason) throw new Abandoned();
+      if (caller.signal.aborted && error === caller.signal.reason)
+        throw new Abandoned();
       throw error;
     } finally {
       callers.delete(id);
@@ -238,10 +310,12 @@ const operations: Record<string, (args: Arguments, id: number) => Promise<unknow
     try {
       return await contentTransport().putBinary(uploadOf(args), {
         signal: caller.signal,
-        onProgress: ({ bytesUploaded, totalBytes }) => say({ progress: { upload: id, bytesUploaded, totalBytes } }),
+        onProgress: ({ bytesUploaded, totalBytes }) =>
+          say({ progress: { upload: id, bytesUploaded, totalBytes } }),
       });
     } catch (error) {
-      if (caller.signal.aborted && error === caller.signal.reason) throw new Abandoned();
+      if (caller.signal.aborted && error === caller.signal.reason)
+        throw new Abandoned();
       throw error;
     } finally {
       callers.delete(id);
@@ -249,12 +323,16 @@ const operations: Record<string, (args: Arguments, id: number) => Promise<unknow
   },
 
   async get(args) {
-    const { data, contentType } = await contentTransport().getBinary(resourceId(text(args, 'resource')));
+    const { data, contentType } = await contentTransport().getBinary(
+      resourceId(text(args, 'resource')),
+    );
     return { contentType, bytes: Buffer.from(data).toString('base64') };
   },
 
   async 'get-stream'(args) {
-    const { stream, contentType } = await contentTransport().getBinaryStream(resourceId(text(args, 'resource')));
+    const { stream, contentType } = await contentTransport().getBinaryStream(
+      resourceId(text(args, 'resource')),
+    );
     const chunks: Uint8Array[] = [];
     const reader = stream.getReader();
     for (;;) {
@@ -266,15 +344,21 @@ const operations: Record<string, (args: Arguments, id: number) => Promise<unknow
   },
 
   graph(args) {
-    return contentTransport().getResourceGraph(resourceId(text(args, 'resource')));
+    return contentTransport().getResourceGraph(
+      resourceId(text(args, 'resource')),
+    );
   },
 
   annotations(args) {
-    return contentTransport().getAnnotations(resourceId(text(args, 'resource')));
+    return contentTransport().getAnnotations(
+      resourceId(text(args, 'resource')),
+    );
   },
 
   'anchored-text'(args) {
-    return contentTransport().getAnchoredText(resourceId(text(args, 'resource')));
+    return contentTransport().getAnchoredText(
+      resourceId(text(args, 'resource')),
+    );
   },
 
   health() {
@@ -303,7 +387,10 @@ const operations: Record<string, (args: Arguments, id: number) => Promise<unknow
 };
 
 async function run(line: string): Promise<void> {
-  const { id, op, ...args } = JSON.parse(line) as { id: number; op: string } & Arguments;
+  const { id, op, ...args } = JSON.parse(line) as {
+    id: number;
+    op: string;
+  } & Arguments;
   const operation = operations[op];
   if (!operation) {
     say({ id, unsupported: true });
@@ -321,7 +408,10 @@ async function run(line: string): Promise<void> {
 
 // Exports only when the suite names an OTLP endpoint in the environment. The
 // driver is the transport's, so it reports the transport's version.
-initObservabilityNode({ serviceName: 'xynolog-conformance-driver', serviceVersion: manifest.version });
+initObservabilityNode({
+  serviceName: 'xynolog-conformance-driver',
+  serviceVersion: manifest.version,
+});
 
 const lines = createInterface({ input: process.stdin });
 lines.on('line', (line) => void run(line));

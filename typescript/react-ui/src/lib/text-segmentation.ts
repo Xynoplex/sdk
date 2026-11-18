@@ -14,8 +14,17 @@
  * No React dependencies — safe to use in any JavaScript environment.
  */
 
-import { getTextPositionSelector, getTextQuoteSelector, getTargetSelector } from '@xynolog/core';
-import { anchorAnnotation, type AnchorStrategy, type AnchorConfidence, type TextOffsets } from '@xynolog/core';
+import {
+  getTextPositionSelector,
+  getTextQuoteSelector,
+  getTargetSelector,
+} from '@xynolog/core';
+import {
+  anchorAnnotation,
+  type AnchorStrategy,
+  type AnchorConfidence,
+  type TextOffsets,
+} from '@xynolog/core';
 import type { TextSegment } from './codemirror-logic';
 
 import type { Annotation } from '@xynolog/core';
@@ -58,27 +67,31 @@ export function segmentTextWithAnnotations(
   }
 
   const normalizedAnnotations = annotations
-    .flatMap(ann => {
+    .flatMap((ann) => {
       const targetSelector = getTargetSelector(ann.target);
       const posSelector = getTextPositionSelector(targetSelector);
-      const quoteSelector = targetSelector ? getTextQuoteSelector(targetSelector) : null;
+      const quoteSelector = targetSelector
+        ? getTextQuoteSelector(targetSelector)
+        : null;
 
-      const anchor = anchorAnnotation(
-        content,
-        offsets,
-        {
-          ...(posSelector ? { position: { start: posSelector.start, end: posSelector.end } } : {}),
-          ...(quoteSelector
-            ? {
-                quote: {
-                  exact: quoteSelector.exact,
-                  ...(quoteSelector.prefix !== undefined ? { prefix: quoteSelector.prefix } : {}),
-                  ...(quoteSelector.suffix !== undefined ? { suffix: quoteSelector.suffix } : {}),
-                },
-              }
-            : {}),
-        },
-      );
+      const anchor = anchorAnnotation(content, offsets, {
+        ...(posSelector
+          ? { position: { start: posSelector.start, end: posSelector.end } }
+          : {}),
+        ...(quoteSelector
+          ? {
+              quote: {
+                exact: quoteSelector.exact,
+                ...(quoteSelector.prefix !== undefined
+                  ? { prefix: quoteSelector.prefix }
+                  : {}),
+                ...(quoteSelector.suffix !== undefined
+                  ? { suffix: quoteSelector.suffix }
+                  : {}),
+              },
+            }
+          : {}),
+      });
 
       if (anchor && anchor.confidence !== 'high') {
         logDegradedAnchorOnce(ann.id, anchor.strategy, anchor.confidence);
@@ -89,11 +102,24 @@ export function segmentTextWithAnnotations(
       // stored position that is not whole numbers is answered as it is
       // stored, and is between no two characters. Every anchor is within
       // the content.
-      if (!anchor || !Number.isInteger(anchor.start) || !Number.isInteger(anchor.end) || anchor.start >= anchor.end) {
+      if (
+        !anchor ||
+        !Number.isInteger(anchor.start) ||
+        !Number.isInteger(anchor.end) ||
+        anchor.start >= anchor.end
+      ) {
         return [];
       }
 
-      return [{ annotation: ann, start: anchor.start, end: anchor.end, strategy: anchor.strategy, confidence: anchor.confidence }];
+      return [
+        {
+          annotation: ann,
+          start: anchor.start,
+          end: anchor.end,
+          strategy: anchor.strategy,
+          confidence: anchor.confidence,
+        },
+      ];
     })
     .sort((a, b) => a.start - b.start);
 
@@ -104,7 +130,13 @@ export function segmentTextWithAnnotations(
   const segments: TextSegment[] = [];
   let position = 0;
 
-  for (const { annotation, start, end, strategy, confidence } of normalizedAnnotations) {
+  for (const {
+    annotation,
+    start,
+    end,
+    strategy,
+    confidence,
+  } of normalizedAnnotations) {
     if (start < position) continue; // Skip overlapping annotations
 
     // Add text before annotation
@@ -112,7 +144,7 @@ export function segmentTextWithAnnotations(
       segments.push({
         exact: content.slice(offsets.indexAt(position), offsets.indexAt(start)),
         start: position,
-        end: start
+        end: start,
       });
     }
 
@@ -136,7 +168,7 @@ export function segmentTextWithAnnotations(
     segments.push({
       exact: content.slice(offsets.indexAt(position)),
       start: position,
-      end: offsets.length
+      end: offsets.length,
     });
   }
 
@@ -158,9 +190,12 @@ function logDegradedAnchorOnce(
 ): void {
   if (warnedAnnotationIds.has(annotationId)) return;
   warnedAnnotationIds.add(annotationId);
-  console.warn('[segmentTextWithAnnotations] annotation anchored via degraded strategy', {
-    annotationId,
-    strategy,
-    confidence,
-  });
+  console.warn(
+    '[segmentTextWithAnnotations] annotation anchored via degraded strategy',
+    {
+      annotationId,
+      strategy,
+      confidence,
+    },
+  );
 }

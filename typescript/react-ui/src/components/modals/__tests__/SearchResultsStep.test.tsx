@@ -19,26 +19,48 @@ import { SearchResultsStep } from '../SearchResultsStep';
 const T = { noResults: 'None', score: 'Score', link: 'Link', back: 'Back' };
 
 const RESULTS = [
-  { '@id': 'r1', name: 'Martin Pauls', score: 57.46, matchReason: 'connected; semantic match' },
-  { '@id': 'r2', name: 'Arthur Fisher', score: 25.46, description: 'a citing resource' },
+  {
+    '@id': 'r1',
+    name: 'Martin Pauls',
+    score: 57.46,
+    matchReason: 'connected; semantic match',
+  },
+  {
+    '@id': 'r2',
+    name: 'Arthur Fisher',
+    score: 25.46,
+    description: 'a citing resource',
+  },
 ] as never[];
 
 describe('SearchResultsStep — pure results', () => {
   it('renders ranked rows: name, score, reason, and a Link button each', () => {
     render(
-      <SearchResultsStep results={RESULTS} onBack={vi.fn()} onLink={vi.fn()} translations={T} />,
+      <SearchResultsStep
+        results={RESULTS}
+        onBack={vi.fn()}
+        onLink={vi.fn()}
+        translations={T}
+      />,
     );
     expect(screen.getByText('Martin Pauls')).toBeInTheDocument();
     expect(screen.getByText(`${T.score}: 57.46`)).toBeInTheDocument();
     expect(screen.getByText('connected; semantic match')).toBeInTheDocument();
     expect(screen.getByText('a citing resource')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: `🔗 ${T.link}` })).toHaveLength(2);
+    expect(
+      screen.getAllByRole('button', { name: `🔗 ${T.link}` }),
+    ).toHaveLength(2);
   });
 
   it('links the row that was clicked, by @id', () => {
     const onLink = vi.fn();
     render(
-      <SearchResultsStep results={RESULTS} onBack={vi.fn()} onLink={onLink} translations={T} />,
+      <SearchResultsStep
+        results={RESULTS}
+        onBack={vi.fn()}
+        onLink={onLink}
+        translations={T}
+      />,
     );
     screen.getAllByRole('button', { name: `🔗 ${T.link}` })[1]!.click();
     expect(onLink).toHaveBeenCalledWith('r2');
@@ -46,16 +68,28 @@ describe('SearchResultsStep — pure results', () => {
 
   it('shows the empty state when nothing matched', () => {
     render(
-      <SearchResultsStep results={[]} onBack={vi.fn()} onLink={vi.fn()} translations={T} />,
+      <SearchResultsStep
+        results={[]}
+        onBack={vi.fn()}
+        onLink={vi.fn()}
+        translations={T}
+      />,
     );
     expect(screen.getByText(T.noResults)).toBeInTheDocument();
   });
 
   it('renders no context of its own — the host owns the evidence', () => {
     const { container } = render(
-      <SearchResultsStep results={RESULTS} onBack={vi.fn()} onLink={vi.fn()} translations={T} />,
+      <SearchResultsStep
+        results={RESULTS}
+        onBack={vi.fn()}
+        onLink={vi.fn()}
+        translations={T}
+      />,
     );
     expect(container.querySelector('.xynolog-gather-pane')).toBeNull();
-    expect(container.querySelector('.xynolog-search-results__two-pane')).toBeNull();
+    expect(
+      container.querySelector('.xynolog-search-results__two-pane'),
+    ).toBeNull();
   });
 });

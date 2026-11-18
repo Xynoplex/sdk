@@ -16,7 +16,10 @@ import { useResourceLoader } from '../useResourceLoader';
 
 const RES = { '@id': 'res-1', name: 'Doc' };
 
-function makeClient(resource$: BehaviorSubject<unknown>, annotations$: BehaviorSubject<unknown>): XynologClient {
+function makeClient(
+  resource$: BehaviorSubject<unknown>,
+  annotations$: BehaviorSubject<unknown>,
+): XynologClient {
   // Hooks consume CacheState — the value-typed fixtures adapt at the seam.
   return {
     browse: {
@@ -41,7 +44,11 @@ describe('useResourceLoader', () => {
 
     act(() => {
       resource$.next(RES);
-      annotations$.next([{ motivation: 'highlighting' }, { motivation: 'linking' }, { motivation: 'linking' }]);
+      annotations$.next([
+        { motivation: 'highlighting' },
+        { motivation: 'linking' },
+        { motivation: 'linking' },
+      ]);
     });
 
     expect(result.current.loading).toBe(false);
@@ -53,7 +60,9 @@ describe('useResourceLoader', () => {
   });
 
   it('stays loading (no subscription) without a client', () => {
-    const { result } = renderHook(() => useResourceLoader(null, resourceId('res-1')));
+    const { result } = renderHook(() =>
+      useResourceLoader(null, resourceId('res-1')),
+    );
     expect(result.current.loading).toBe(true);
     expect(result.current.resource).toBeUndefined();
   });

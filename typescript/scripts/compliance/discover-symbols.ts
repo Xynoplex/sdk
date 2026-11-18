@@ -39,9 +39,9 @@ class SymbolDiscoverer {
         '**/*.spec.{ts,tsx}',
         '**/node_modules/**',
         '**/dist/**',
-        '**/build/**'
+        '**/build/**',
       ],
-      absolute: false
+      absolute: false,
     });
 
     console.error(`Found ${files.length} source files to analyze`);
@@ -60,7 +60,7 @@ class SymbolDiscoverer {
       fullPath,
       content,
       ts.ScriptTarget.Latest,
-      true
+      true,
     );
 
     // Find named exports: export { foo, bar }
@@ -69,7 +69,8 @@ class SymbolDiscoverer {
     const visit = (node: ts.Node) => {
       // Function declarations: export function foo() {}
       if (ts.isFunctionDeclaration(node) && node.name) {
-        const isExported = this.hasExportModifier(node) || namedExports.has(node.name.text);
+        const isExported =
+          this.hasExportModifier(node) || namedExports.has(node.name.text);
         if (isExported) {
           this.addSymbol(relativePath, node.name.text, node, 'function');
         }
@@ -79,17 +80,17 @@ class SymbolDiscoverer {
       if (ts.isVariableStatement(node)) {
         const isExported = this.hasExportModifier(node);
 
-        node.declarationList.declarations.forEach(decl => {
+        node.declarationList.declarations.forEach((decl) => {
           if (ts.isIdentifier(decl.name)) {
             const name = decl.name.text;
             const isNamedExport = namedExports.has(name);
 
             if (isExported || isNamedExport) {
               // Determine if it's a function (arrow function or function expression)
-              const isFunction = decl.initializer && (
-                ts.isArrowFunction(decl.initializer) ||
-                ts.isFunctionExpression(decl.initializer)
-              );
+              const isFunction =
+                decl.initializer &&
+                (ts.isArrowFunction(decl.initializer) ||
+                  ts.isFunctionExpression(decl.initializer));
 
               if (isFunction) {
                 this.addSymbol(relativePath, name, decl, 'function');
@@ -101,7 +102,8 @@ class SymbolDiscoverer {
 
       // Class declarations: export class Foo {}
       if (ts.isClassDeclaration(node) && node.name) {
-        const isExported = this.hasExportModifier(node) || namedExports.has(node.name.text);
+        const isExported =
+          this.hasExportModifier(node) || namedExports.has(node.name.text);
         if (isExported) {
           this.addSymbol(relativePath, node.name.text, node, 'component');
         }
@@ -109,7 +111,8 @@ class SymbolDiscoverer {
 
       // Type aliases: export type Foo = ...
       if (ts.isTypeAliasDeclaration(node)) {
-        const isExported = this.hasExportModifier(node) || namedExports.has(node.name.text);
+        const isExported =
+          this.hasExportModifier(node) || namedExports.has(node.name.text);
         if (isExported) {
           this.addSymbol(relativePath, node.name.text, node, 'type');
         }
@@ -117,7 +120,8 @@ class SymbolDiscoverer {
 
       // Interfaces: export interface Foo {}
       if (ts.isInterfaceDeclaration(node)) {
-        const isExported = this.hasExportModifier(node) || namedExports.has(node.name.text);
+        const isExported =
+          this.hasExportModifier(node) || namedExports.has(node.name.text);
         if (isExported) {
           this.addSymbol(relativePath, node.name.text, node, 'interface');
         }
@@ -131,7 +135,11 @@ class SymbolDiscoverer {
 
   private hasExportModifier(node: ts.Node): boolean {
     if (!ts.canHaveModifiers(node)) return false;
-    return ts.getModifiers(node)?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) ?? false;
+    return (
+      ts
+        .getModifiers(node)
+        ?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) ?? false
+    );
   }
 
   private findNamedExports(sourceFile: ts.SourceFile): Set<string> {
@@ -141,7 +149,7 @@ class SymbolDiscoverer {
       // Named exports: export { foo, bar }
       if (ts.isExportDeclaration(node) && node.exportClause) {
         if (ts.isNamedExports(node.exportClause)) {
-          node.exportClause.elements.forEach(e => {
+          node.exportClause.elements.forEach((e) => {
             exported.add(e.name.text);
           });
         }
@@ -158,10 +166,11 @@ class SymbolDiscoverer {
     file: string,
     name: string,
     node: ts.Node,
-    declaredType: 'function' | 'component' | 'interface' | 'type'
+    declaredType: 'function' | 'component' | 'interface' | 'type',
   ): void {
     const sourceFile = node.getSourceFile();
-    const lineNumber = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+    const lineNumber =
+      sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
 
     // Categorize based on naming convention
     let type: DiscoveredSymbol['type'];
@@ -186,7 +195,7 @@ class SymbolDiscoverer {
       type,
       file,
       lineNumber,
-      exported: true
+      exported: true,
     });
   }
 }
@@ -213,10 +222,13 @@ async function main() {
   const symbols = await discoverer.discoverInDirectory(srcDir);
 
   // Group by type for summary
-  const byType = symbols.reduce((acc, s) => {
-    acc[s.type] = (acc[s.type] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const byType = symbols.reduce(
+    (acc, s) => {
+      acc[s.type] = (acc[s.type] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   console.error(`\nDiscovered ${symbols.length} symbols:`);
   Object.entries(byType).forEach(([type, count]) => {
@@ -228,7 +240,7 @@ async function main() {
   console.error(`\nWrote symbols to: ${outputPath}`);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Error:', err);
   process.exit(1);
 });

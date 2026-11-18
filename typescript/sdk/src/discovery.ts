@@ -21,17 +21,26 @@
  */
 
 import { Observable } from 'rxjs';
-import { DISCOVERY_INTERVAL_MS, DISCOVERY_URL_PATH, HTTP_REQUEST_TIMEOUT_MS, isArray, isNumber, isObject, isString, withinDeadline } from '@xynolog/core';
+import {
+  DISCOVERY_INTERVAL_MS,
+  DISCOVERY_URL_PATH,
+  HTTP_REQUEST_TIMEOUT_MS,
+  isArray,
+  isNumber,
+  isObject,
+  isString,
+  withinDeadline,
+} from '@xynolog/core';
 import type { DiscoveredKB } from '@xynolog/core';
 import { fetchOf } from './fetch-of';
 
 /** Why discovery reads as "no launcher detected". */
 export type DiscoveryAbsentReason =
-  | 'not-found'            // 404, SPA-fallback HTML, or the thunk returned null
-  | 'not-json'             // body exists but is not JSON
-  | 'invalid'              // JSON, but not a structurally valid DiscoveryDocument
-  | 'unsupported-version'  // a version this sdk does not speak — never partially parsed
-  | 'unreadable';          // the read itself failed (network, permissions)
+  | 'not-found' // 404, SPA-fallback HTML, or the thunk returned null
+  | 'not-json' // body exists but is not JSON
+  | 'invalid' // JSON, but not a structurally valid DiscoveryDocument
+  | 'unsupported-version' // a version this sdk does not speak — never partially parsed
+  | 'unreadable'; // the read itself failed (network, permissions)
 
 /**
  * The typed absent-vs-managed distinction: `absent` is
@@ -59,10 +68,16 @@ export interface DiscoveryDiff {
   removed: DiscoveredKB[];
 }
 
-const absent = (reason: DiscoveryAbsentReason, diagnostic?: string): DiscoveryState =>
-  diagnostic !== undefined ? { kind: 'absent', reason, diagnostic } : { kind: 'absent', reason };
+const absent = (
+  reason: DiscoveryAbsentReason,
+  diagnostic?: string,
+): DiscoveryState =>
+  diagnostic !== undefined
+    ? { kind: 'absent', reason, diagnostic }
+    : { kind: 'absent', reason };
 
-const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
+const message = (e: unknown): string =>
+  e instanceof Error ? e.message : String(e);
 
 /**
  * The one validator: text → typed state. Everything flows through here —
@@ -78,7 +93,8 @@ export function parseDiscoveryDocument(text: string): DiscoveryState {
 
   if (!isObject(parsed)) return absent('invalid', 'document is not an object');
 
-  if (!isNumber(parsed.version)) return absent('invalid', 'missing numeric "version"');
+  if (!isNumber(parsed.version))
+    return absent('invalid', 'missing numeric "version"');
   if (parsed.version !== 1) {
     return absent(
       'unsupported-version',
@@ -92,14 +108,29 @@ export function parseDiscoveryDocument(text: string): DiscoveryState {
   for (const entry of parsed.kbs) {
     if (!isObject(entry)) return absent('invalid', 'kb entry is not an object');
     const { host, port, placement, managedBy, repo, did, siteName } = entry;
-    if (!isString(host) || !isString(managedBy) || !isNumber(port) || !Number.isInteger(port) || port <= 0 || port > 65535) {
-      return absent('invalid', 'kb entry missing required host/port/managedBy (port must be an integer 1-65535)');
+    if (
+      !isString(host) ||
+      !isString(managedBy) ||
+      !isNumber(port) ||
+      !Number.isInteger(port) ||
+      port <= 0 ||
+      port > 65535
+    ) {
+      return absent(
+        'invalid',
+        'kb entry missing required host/port/managedBy (port must be an integer 1-65535)',
+      );
     }
     if (placement !== 'local' && placement !== 'codespace') {
-      return absent('invalid', `kb entry has unknown placement ${JSON.stringify(placement)}`);
+      return absent(
+        'invalid',
+        `kb entry has unknown placement ${JSON.stringify(placement)}`,
+      );
     }
-    if (repo !== undefined && !isString(repo)) return absent('invalid', 'kb "repo" must be a string');
-    if (siteName !== undefined && !isString(siteName)) return absent('invalid', 'kb "siteName" must be a string');
+    if (repo !== undefined && !isString(repo))
+      return absent('invalid', 'kb "repo" must be a string');
+    if (siteName !== undefined && !isString(siteName))
+      return absent('invalid', 'kb "siteName" must be a string');
     // `did` is REQUIRED: a knowledge base declares its identity or does not
     // run. Rejecting the whole document rather than skipping the entry is
     // deliberate and matches this validator's other required fields and the
@@ -135,7 +166,9 @@ export function parseDiscoveryDocument(text: string): DiscoveryState {
  * consumer's whole integration is wrapping `fs.readFile` — the sdk itself
  * never imports fs (main entry stays browser-clean).
  */
-export function textDiscovery(read: () => Promise<string | null>): DiscoveryTransport {
+export function textDiscovery(
+  read: () => Promise<string | null>,
+): DiscoveryTransport {
   return {
     async read(): Promise<DiscoveryReadResult> {
       let text: string | null;
@@ -158,33 +191,44 @@ export function textDiscovery(read: () => Promise<string | null>): DiscoveryTran
  * frontend image without the discovery mount serves — reads as absent, not
  * as junk. Each read is sent with `fetch`, or the runtime's own.
  */
-export function httpDiscovery(url: string = DISCOVERY_URL_PATH, fetch?: typeof globalThis.fetch): DiscoveryTransport {
+export function httpDiscovery(
+  url: string = DISCOVERY_URL_PATH,
+  fetch?: typeof globalThis.fetch,
+): DiscoveryTransport {
   let etag: string | null = null;
   return {
     // With a deadline: a read that is never answered would hold the poll
     // that awaits it, and every poll after it, for good.
-    read: () => withinDeadline(HTTP_REQUEST_TIMEOUT_MS, async (signal): Promise<DiscoveryReadResult> => {
-      let response: Response;
-      try {
-        response = await fetchOf(fetch)(url, {
-          ...(etag !== null ? { headers: { 'If-None-Match': etag } } : {}),
-          signal,
-        });
-      } catch (e) {
-        return absent('unreadable', message(e));
-      }
-      if (response.status === 304) return { kind: 'unchanged' };
-      if (!response.ok) return absent('not-found', `HTTP ${response.status}`);
-      const contentType = response.headers.get('Content-Type') ?? '';
-      if (!contentType.toLowerCase().includes('json')) {
-        return absent('not-found', `non-JSON content-type "${contentType}" — SPA fallback (frontend image without the discovery mount?)`);
-      }
-      const state = parseDiscoveryDocument(await response.text());
-      // Remember the validator's ETag only for a GOOD document — remembering
-      // one for an invalid body would 304 us into believing it forever.
-      if (state.kind === 'managed') etag = response.headers.get('ETag');
-      return state;
-    }),
+    read: () =>
+      withinDeadline(
+        HTTP_REQUEST_TIMEOUT_MS,
+        async (signal): Promise<DiscoveryReadResult> => {
+          let response: Response;
+          try {
+            response = await fetchOf(fetch)(url, {
+              ...(etag !== null ? { headers: { 'If-None-Match': etag } } : {}),
+              signal,
+            });
+          } catch (e) {
+            return absent('unreadable', message(e));
+          }
+          if (response.status === 304) return { kind: 'unchanged' };
+          if (!response.ok)
+            return absent('not-found', `HTTP ${response.status}`);
+          const contentType = response.headers.get('Content-Type') ?? '';
+          if (!contentType.toLowerCase().includes('json')) {
+            return absent(
+              'not-found',
+              `non-JSON content-type "${contentType}" — SPA fallback (frontend image without the discovery mount?)`,
+            );
+          }
+          const state = parseDiscoveryDocument(await response.text());
+          // Remember the validator's ETag only for a GOOD document — remembering
+          // one for an invalid body would 304 us into believing it forever.
+          if (state.kind === 'managed') etag = response.headers.get('ETag');
+          return state;
+        },
+      ),
   };
 }
 
@@ -204,8 +248,12 @@ export function httpDiscovery(url: string = DISCOVERY_URL_PATH, fetch?: typeof g
 const keyOf = (kb: DiscoveredKB): string => `${kb.host}:${kb.port}`;
 
 const sameKb = (a: DiscoveredKB, b: DiscoveredKB): boolean =>
-  a.host === b.host && a.port === b.port && a.placement === b.placement &&
-  a.managedBy === b.managedBy && a.repo === b.repo && a.did === b.did &&
+  a.host === b.host &&
+  a.port === b.port &&
+  a.placement === b.placement &&
+  a.managedBy === b.managedBy &&
+  a.repo === b.repo &&
+  a.did === b.did &&
   a.siteName === b.siteName;
 
 /**
@@ -235,7 +283,8 @@ export function subscribeDiscovery(
         const result = await transport.read();
         if (closed || result.kind === 'unchanged') return;
 
-        const prevKbs = last !== null && last.kind === 'managed' ? last.kbs : [];
+        const prevKbs =
+          last !== null && last.kind === 'managed' ? last.kbs : [];
         const nextKbs = result.kind === 'managed' ? result.kbs : [];
         const prev = new Map(prevKbs.map((kb) => [keyOf(kb), kb]));
         const next = new Map(nextKbs.map((kb) => [keyOf(kb), kb]));
@@ -252,7 +301,11 @@ export function subscribeDiscovery(
         // say so.
         if (next.size !== nextKbs.length) {
           const seen = new Set<string>();
-          const duplicated = [...new Set(nextKbs.map(keyOf).filter((k) => seen.size === seen.add(k).size))];
+          const duplicated = [
+            ...new Set(
+              nextKbs.map(keyOf).filter((k) => seen.size === seen.add(k).size),
+            ),
+          ];
           // eslint-disable-next-line no-console
           console.warn(
             `[discovery DUPLICATE] ${nextKbs.length - next.size} entr${nextKbs.length - next.size === 1 ? 'y' : 'ies'} share a merge key ` +
@@ -271,9 +324,16 @@ export function subscribeDiscovery(
         const stateChanged =
           last === null ||
           last.kind !== result.kind ||
-          (last.kind === 'absent' && result.kind === 'absent' && last.reason !== result.reason);
+          (last.kind === 'absent' &&
+            result.kind === 'absent' &&
+            last.reason !== result.reason);
 
-        if (stateChanged || added.length > 0 || updated.length > 0 || removed.length > 0) {
+        if (
+          stateChanged ||
+          added.length > 0 ||
+          updated.length > 0 ||
+          removed.length > 0
+        ) {
           last = result;
           subscriber.next({ state: result, added, updated, removed });
         }
@@ -283,7 +343,9 @@ export function subscribeDiscovery(
     };
 
     void poll();
-    const timer = setInterval(() => { void poll(); }, intervalMs);
+    const timer = setInterval(() => {
+      void poll();
+    }, intervalMs);
     return () => {
       closed = true;
       clearInterval(timer);

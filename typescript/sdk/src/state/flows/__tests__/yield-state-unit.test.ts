@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Observable } from 'rxjs';
 import { createYieldStateUnit, type YieldStateUnit } from '../yield-state-unit';
-import { makeTestClient, type TestClient } from '../../../__tests__/test-client';
-import { resourceContextFor, annotationContextFor } from '../../../__tests__/fixtures/gathered-context';
+import {
+  makeTestClient,
+  type TestClient,
+} from '../../../__tests__/test-client';
+import {
+  resourceContextFor,
+  annotationContextFor,
+} from '../../../__tests__/fixtures/gathered-context';
 import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 // The job's resource is derived FROM the focus — the state unit passes the
@@ -21,7 +27,9 @@ function withYield(delegateFn: ReturnType<typeof vi.fn>): TestClient {
 describe('createYieldStateUnit', () => {
   let tc: TestClient;
 
-  afterEach(() => { tc?.bus.destroy(); });
+  afterEach(() => {
+    tc?.bus.destroy();
+  });
 
   // The unit's arguments ARE `yield.delegate`'s, so every parameter the job
   // takes, and the stall deadline, reach it untouched — no per-field
@@ -32,14 +40,17 @@ describe('createYieldStateUnit', () => {
     tc = withYield(delegateFn);
     const stateUnit = createYieldStateUnit(tc.client, 'en');
 
-    stateUnit.generate({
-      title: 'Test',
-      storageUri: 'store://t',
-      outputMediaType: 'application/pdf',
-      entityTypes: ['Concept'],
-      task: 'summary',
-      context: CTX_RES,
-    }, 90_000);
+    stateUnit.generate(
+      {
+        title: 'Test',
+        storageUri: 'store://t',
+        outputMediaType: 'application/pdf',
+        entityTypes: ['Concept'],
+        task: 'summary',
+        context: CTX_RES,
+      },
+      90_000,
+    );
 
     expect(delegateFn).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -58,7 +69,11 @@ describe('createYieldStateUnit', () => {
     tc = withYield(delegateFn);
     const stateUnit = createYieldStateUnit(tc.client, 'en');
 
-    stateUnit.generate({ title: 'Test', storageUri: 'store://t', context: CTX_RES });
+    stateUnit.generate({
+      title: 'Test',
+      storageUri: 'store://t',
+      context: CTX_RES,
+    });
 
     const params = delegateFn.mock.calls[0]![0];
     expect(params).toHaveProperty('title', 'Test'); // we grabbed the right argument
@@ -76,10 +91,22 @@ describe('YieldStateUnit — StateUnit axioms', () => {
     assertStateUnitAxioms<YieldStateUnit>({
       setup: () => {
         const tc = makeTestClient({ yield: { delegate: vi.fn(stub) } });
-        return { unit: createYieldStateUnit(tc.client, 'en'), teardown: () => tc.bus.destroy() };
+        return {
+          unit: createYieldStateUnit(tc.client, 'en'),
+          teardown: () => tc.bus.destroy(),
+        };
       },
-      surfaces: (u) => [u.isGenerating$, u.progress$, u.outcome$, u.failure$, u.jobId$],
-      invocations: (u) => [() => u.generate({ ...opts, context: CTX_ANN }), () => u.generate({ ...opts, context: CTX_RES })],
+      surfaces: (u) => [
+        u.isGenerating$,
+        u.progress$,
+        u.outcome$,
+        u.failure$,
+        u.jobId$,
+      ],
+      invocations: (u) => [
+        () => u.generate({ ...opts, context: CTX_ANN }),
+        () => u.generate({ ...opts, context: CTX_RES }),
+      ],
       numRuns: 15,
     });
   });

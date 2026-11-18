@@ -2,8 +2,15 @@
 
 import type { AnnotationId } from '@xynolog/core';
 import React, { useRef, useCallback, useEffect } from 'react';
-import type { RouteBuilder, LinkComponentProps } from '../../contexts/RoutingContext';
-import type { Annotation, AttributedEvent, StoredEventLike } from '@xynolog/core';
+import type {
+  RouteBuilder,
+  LinkComponentProps,
+} from '../../contexts/RoutingContext';
+import type {
+  Annotation,
+  AttributedEvent,
+  StoredEventLike,
+} from '@xynolog/core';
 import { getAnnotationIdFromEvent } from '@xynolog/core';
 import {
   formatEventType,
@@ -15,7 +22,10 @@ import {
 } from './event-formatting';
 import { renderAgentLabel } from './panels/agent-label';
 
-type TranslateFn = (key: string, params?: Record<string, string | number>) => string;
+type TranslateFn = (
+  key: string,
+  params?: Record<string, string | number>,
+) => string;
 
 interface Props {
   event: AttributedEvent;
@@ -25,7 +35,10 @@ interface Props {
   t: TranslateFn;
   Link: React.ComponentType<LinkComponentProps>;
   routes: RouteBuilder;
-  onEventRef?: (annotationId: AnnotationId | null, element: HTMLElement | null) => void;
+  onEventRef?: (
+    annotationId: AnnotationId | null,
+    element: HTMLElement | null,
+  ) => void;
   onEventClick?: (annotationId: AnnotationId | null) => void;
   onEventHover?: (annotationId: AnnotationId | null) => void;
 }
@@ -40,7 +53,7 @@ export function HistoryEvent({
   routes,
   onEventRef,
   onEventClick,
-  onEventHover
+  onEventHover,
 }: Props) {
   const displayContent = getEventDisplayContent(event, annotations, allEvents);
   const annotationId = getAnnotationIdFromEvent(event);
@@ -85,17 +98,21 @@ export function HistoryEvent({
 
   // Interactive events should be buttons for keyboard accessibility
   const EventWrapper = annotationId ? 'button' : 'div';
-  const eventWrapperProps = annotationId ? {
-    type: 'button' as const,
-    onClick: () => onEventClick?.(annotationId),
-    'aria-label': t('viewAnnotation', { content: displayContent?.exact || formatEventType(event.type, t) }),
-    className: 'xynolog-history-event',
-    'data-related': isRelated ? 'true' : 'false',
-    'data-interactive': 'true'
-  } : {
-    className: 'xynolog-history-event',
-    'data-related': isRelated ? 'true' : 'false'
-  };
+  const eventWrapperProps = annotationId
+    ? {
+        type: 'button' as const,
+        onClick: () => onEventClick?.(annotationId),
+        'aria-label': t('viewAnnotation', {
+          content: displayContent?.exact || formatEventType(event.type, t),
+        }),
+        className: 'xynolog-history-event',
+        'data-related': isRelated ? 'true' : 'false',
+        'data-interactive': 'true',
+      }
+    : {
+        className: 'xynolog-history-event',
+        'data-related': isRelated ? 'true' : 'false',
+      };
 
   return (
     <EventWrapper
@@ -133,11 +150,7 @@ export function HistoryEvent({
             {formatEventType(event.type, t, event.payload)}
           </span>
         )}
-        {actor && (
-          <span className="xynolog-history-event__user">
-            {actor}
-          </span>
-        )}
+        {actor && <span className="xynolog-history-event__user">{actor}</span>}
         <span className="xynolog-history-event__timestamp">
           {formatRelativeTime(event.timestamp, t)}
         </span>
@@ -158,7 +171,8 @@ export function HistoryEvent({
       {creationDetails && (
         <div className="xynolog-history-event__details">
           <span className="xynolog-history-event__detail">
-            {t('user')}: <span className="xynolog-history-event__detail-value">{actor}</span>
+            {t('user')}:{' '}
+            <span className="xynolog-history-event__detail-value">{actor}</span>
           </span>
           {creationDetails.type === 'cloned' && creationDetails.sourceDocId && (
             <Link

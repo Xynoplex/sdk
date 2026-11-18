@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useKeyboardShortcuts, useDoubleKeyPress, getShortcutDisplay, useIsTyping, KeyboardShortcut } from '../useKeyboardShortcuts';
+import {
+  useKeyboardShortcuts,
+  useDoubleKeyPress,
+  getShortcutDisplay,
+  useIsTyping,
+  KeyboardShortcut,
+} from '../useKeyboardShortcuts';
 
 describe('useKeyboardShortcuts', () => {
   beforeEach(() => {
@@ -21,7 +27,10 @@ describe('useKeyboardShortcuts', () => {
 
       renderHook(() => useKeyboardShortcuts(shortcuts));
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function),
+      );
     });
 
     it('should remove keydown listener on unmount', () => {
@@ -33,7 +42,10 @@ describe('useKeyboardShortcuts', () => {
       const { unmount } = renderHook(() => useKeyboardShortcuts(shortcuts));
       unmount();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function),
+      );
     });
 
     it('should execute handler when matching key is pressed', () => {
@@ -77,7 +89,9 @@ describe('useKeyboardShortcuts', () => {
   describe('Modifier Keys - Ctrl/Cmd', () => {
     it('should execute handler with Ctrl on Windows/Linux', () => {
       const handler = vi.fn();
-      const shortcuts: KeyboardShortcut[] = [{ key: 's', ctrlOrCmd: true, handler }];
+      const shortcuts: KeyboardShortcut[] = [
+        { key: 's', ctrlOrCmd: true, handler },
+      ];
 
       // Mock non-Mac platform
       Object.defineProperty(navigator, 'platform', {
@@ -95,7 +109,9 @@ describe('useKeyboardShortcuts', () => {
 
     it('should not execute without Ctrl when ctrlOrCmd required', () => {
       const handler = vi.fn();
-      const shortcuts: KeyboardShortcut[] = [{ key: 's', ctrlOrCmd: true, handler }];
+      const shortcuts: KeyboardShortcut[] = [
+        { key: 's', ctrlOrCmd: true, handler },
+      ];
 
       renderHook(() => useKeyboardShortcuts(shortcuts));
 
@@ -121,7 +137,9 @@ describe('useKeyboardShortcuts', () => {
   describe('Modifier Keys - Shift', () => {
     it('should execute handler with Shift', () => {
       const handler = vi.fn();
-      const shortcuts: KeyboardShortcut[] = [{ key: 's', shift: true, handler }];
+      const shortcuts: KeyboardShortcut[] = [
+        { key: 's', shift: true, handler },
+      ];
 
       renderHook(() => useKeyboardShortcuts(shortcuts));
 
@@ -133,7 +151,9 @@ describe('useKeyboardShortcuts', () => {
 
     it('should not execute without Shift when required', () => {
       const handler = vi.fn();
-      const shortcuts: KeyboardShortcut[] = [{ key: 's', shift: true, handler }];
+      const shortcuts: KeyboardShortcut[] = [
+        { key: 's', shift: true, handler },
+      ];
 
       renderHook(() => useKeyboardShortcuts(shortcuts));
 
@@ -367,7 +387,9 @@ describe('useKeyboardShortcuts', () => {
       expect(handler1).toHaveBeenCalledTimes(1);
       expect(handler2).not.toHaveBeenCalled();
 
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true }));
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 's', ctrlKey: true }),
+      );
       expect(handler1).toHaveBeenCalledTimes(1);
       expect(handler2).toHaveBeenCalledTimes(1);
     });
@@ -376,7 +398,9 @@ describe('useKeyboardShortcuts', () => {
   describe('Enabled/Disabled State', () => {
     it('should execute when enabled is true', () => {
       const handler = vi.fn();
-      const shortcuts: KeyboardShortcut[] = [{ key: 's', enabled: true, handler }];
+      const shortcuts: KeyboardShortcut[] = [
+        { key: 's', enabled: true, handler },
+      ];
 
       renderHook(() => useKeyboardShortcuts(shortcuts));
 
@@ -398,7 +422,9 @@ describe('useKeyboardShortcuts', () => {
 
     it('should not execute when enabled is false', () => {
       const handler = vi.fn();
-      const shortcuts: KeyboardShortcut[] = [{ key: 's', enabled: false, handler }];
+      const shortcuts: KeyboardShortcut[] = [
+        { key: 's', enabled: false, handler },
+      ];
 
       renderHook(() => useKeyboardShortcuts(shortcuts));
 
@@ -486,7 +512,9 @@ describe('useKeyboardShortcuts', () => {
     it('should handle empty shortcuts array', () => {
       const shortcuts: KeyboardShortcut[] = [];
 
-      expect(() => renderHook(() => useKeyboardShortcuts(shortcuts))).not.toThrow();
+      expect(() =>
+        renderHook(() => useKeyboardShortcuts(shortcuts)),
+      ).not.toThrow();
 
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 's' }));
     });
@@ -497,7 +525,7 @@ describe('useKeyboardShortcuts', () => {
 
       const { rerender } = renderHook(
         ({ shortcuts }) => useKeyboardShortcuts(shortcuts),
-        { initialProps: { shortcuts: [{ key: 's', handler: handler1 }] } }
+        { initialProps: { shortcuts: [{ key: 's', handler: handler1 }] } },
       );
 
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 's' }));
@@ -751,7 +779,11 @@ describe('getShortcutDisplay', () => {
         configurable: true,
       });
 
-      const shortcut: KeyboardShortcut = { key: 's', ctrlOrCmd: true, handler: vi.fn() };
+      const shortcut: KeyboardShortcut = {
+        key: 's',
+        ctrlOrCmd: true,
+        handler: vi.fn(),
+      };
       const display = getShortcutDisplay(shortcut);
 
       expect(display).toContain('Ctrl');
@@ -759,7 +791,11 @@ describe('getShortcutDisplay', () => {
     });
 
     it('should show Shift+Key', () => {
-      const shortcut: KeyboardShortcut = { key: 's', shift: true, handler: vi.fn() };
+      const shortcut: KeyboardShortcut = {
+        key: 's',
+        shift: true,
+        handler: vi.fn(),
+      };
       const display = getShortcutDisplay(shortcut);
 
       expect(display).toContain('Shift');
@@ -772,7 +808,11 @@ describe('getShortcutDisplay', () => {
         configurable: true,
       });
 
-      const shortcut: KeyboardShortcut = { key: 's', alt: true, handler: vi.fn() };
+      const shortcut: KeyboardShortcut = {
+        key: 's',
+        alt: true,
+        handler: vi.fn(),
+      };
       const display = getShortcutDisplay(shortcut);
 
       expect(display).toContain('Alt');

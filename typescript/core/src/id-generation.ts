@@ -11,7 +11,9 @@
  */
 
 // Declared here because the core package tsconfig uses lib:ES2022 (no dom types).
-declare const crypto: { getRandomValues<T extends ArrayBufferView>(array: T): T };
+declare const crypto: {
+  getRandomValues<T extends ArrayBufferView>(array: T): T;
+};
 
 function v4Bytes(): Uint8Array {
   const bytes = crypto.getRandomValues(new Uint8Array(16));

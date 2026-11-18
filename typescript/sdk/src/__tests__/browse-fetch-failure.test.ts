@@ -29,7 +29,10 @@ import { EventBus, resourceId as makeResourceId } from '@xynolog/core';
 import type { EventMap } from '@xynolog/core';
 import type { ResourceId } from '@xynolog/core';
 import { BrowseNamespace } from '../namespaces/browse';
-import { inMemoryTransport, contentTransportSpies } from './helpers/in-memory-transport';
+import {
+  inMemoryTransport,
+  contentTransportSpies,
+} from './helpers/in-memory-transport';
 
 const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -44,7 +47,8 @@ function makeFakeTransport() {
   // it, so a reply fixture is checked against the channel's declared payload.
   const bus = new EventBus();
 
-  let onEmit: ((channel: string, correlationId: string | undefined) => void) | undefined;
+  let onEmit:
+    ((channel: string, correlationId: string | undefined) => void) | undefined;
 
   const transport = inMemoryTransport({
     bus,
@@ -55,14 +59,19 @@ function makeFakeTransport() {
 
   return {
     transport,
-    setOnEmit: (f: (channel: string, correlationId: string | undefined) => void) => {
+    setOnEmit: (
+      f: (channel: string, correlationId: string | undefined) => void,
+    ) => {
       onEmit = f;
     },
     // Pushes ride the SAME typed bus the transport streams from, so an
     // under-shaped fixture is a compile error rather than something the
     // transport's cast hid.
-    push: <K extends keyof EventMap>(channel: K, payload: EventMap[K], correlationId?: string) =>
-      bus.emit(channel, payload, { correlationId }),
+    push: <K extends keyof EventMap>(
+      channel: K,
+      payload: EventMap[K],
+      correlationId?: string,
+    ) => bus.emit(channel, payload, { correlationId }),
   };
 }
 
@@ -98,7 +107,13 @@ describe('browse read — await semantics on fetch failure', () => {
     // A read that waited on the swallowed rejection would hang → 'hung'.
     // `.fresh()` rejects → 'rejected'.
     const outcome = await Promise.race([
-      browse.events(rId).fresh().then(() => 'resolved', () => 'rejected'),
+      browse
+        .events(rId)
+        .fresh()
+        .then(
+          () => 'resolved',
+          () => 'rejected',
+        ),
       delay(250).then(() => 'hung'),
     ]);
 

@@ -30,7 +30,11 @@ export interface ConfigureGatherStepProps {
  * multi-select. Dismissal is the modal's corner ✕/Esc/backdrop, so the footer
  * carries the Gather action alone.
  */
-export function ConfigureGatherStep({ onGather, translations: t, children }: ConfigureGatherStepProps) {
+export function ConfigureGatherStep({
+  onGather,
+  translations: t,
+  children,
+}: ConfigureGatherStepProps) {
   const [includeContent, setIncludeContent] = useState(true);
   const [includeSummary, setIncludeSummary] = useState(true);
   const [depth, setDepth] = useState(2);
@@ -47,20 +51,30 @@ export function ConfigureGatherStep({ onGather, translations: t, children }: Con
 
       <div className="xynolog-form__checkbox-field">
         <label className="xynolog-form__checkbox-label">
-          <input type="checkbox" checked={includeContent} onChange={(e) => setIncludeContent(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={includeContent}
+            onChange={(e) => setIncludeContent(e.target.checked)}
+          />
           {t.includeContent}
         </label>
       </div>
       <div className="xynolog-form__checkbox-field">
         <label className="xynolog-form__checkbox-label">
-          <input type="checkbox" checked={includeSummary} onChange={(e) => setIncludeSummary(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={includeSummary}
+            onChange={(e) => setIncludeSummary(e.target.checked)}
+          />
           {t.includeSummary}
         </label>
       </div>
 
       <div className="xynolog-form__inline-row">
         <div className="xynolog-form__field xynolog-form__field--inline xynolog-form__field--narrow">
-          <label htmlFor="gather-depth" className="xynolog-form__label">{t.depth}</label>
+          <label htmlFor="gather-depth" className="xynolog-form__label">
+            {t.depth}
+          </label>
           <input
             id="gather-depth"
             type="number"
@@ -72,7 +86,9 @@ export function ConfigureGatherStep({ onGather, translations: t, children }: Con
           />
         </div>
         <div className="xynolog-form__field xynolog-form__field--inline xynolog-form__field--narrow">
-          <label htmlFor="gather-max" className="xynolog-form__label">{t.maxResources}</label>
+          <label htmlFor="gather-max" className="xynolog-form__label">
+            {t.maxResources}
+          </label>
           <input
             id="gather-max"
             type="number"

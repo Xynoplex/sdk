@@ -22,15 +22,23 @@ type SvgSelector = components['schemas']['SvgSelector'];
 type FragmentSelector = components['schemas']['FragmentSelector'];
 
 // Re-export selector types for convenience
-export type { TextPositionSelector, TextQuoteSelector, SvgSelector, FragmentSelector, Selector };
+export type {
+  TextPositionSelector,
+  TextQuoteSelector,
+  SvgSelector,
+  FragmentSelector,
+  Selector,
+};
 
 /**
  * Get TextPositionSelector from a selector (single or array)
  */
-export function getTextPositionSelector(selector: Selector | Selector[] | undefined): TextPositionSelector | null {
+export function getTextPositionSelector(
+  selector: Selector | Selector[] | undefined,
+): TextPositionSelector | null {
   if (!selector) return null;
   const selectors = Array.isArray(selector) ? selector : [selector];
-  const found = selectors.find(s => s.type === 'TextPositionSelector');
+  const found = selectors.find((s) => s.type === 'TextPositionSelector');
   if (!found) return null;
   return found.type === 'TextPositionSelector' ? found : null;
 }
@@ -38,10 +46,12 @@ export function getTextPositionSelector(selector: Selector | Selector[] | undefi
 /**
  * Get SvgSelector from a selector (single or array)
  */
-export function getSvgSelector(selector: Selector | Selector[] | undefined): SvgSelector | null {
+export function getSvgSelector(
+  selector: Selector | Selector[] | undefined,
+): SvgSelector | null {
   if (!selector) return null;
   const selectors = Array.isArray(selector) ? selector : [selector];
-  const found = selectors.find(s => s.type === 'SvgSelector');
+  const found = selectors.find((s) => s.type === 'SvgSelector');
   if (!found) return null;
   return found.type === 'SvgSelector' ? found : null;
 }
@@ -49,10 +59,12 @@ export function getSvgSelector(selector: Selector | Selector[] | undefined): Svg
 /**
  * Get FragmentSelector from a selector (single or array)
  */
-export function getFragmentSelector(selector: Selector | Selector[] | undefined): FragmentSelector | null {
+export function getFragmentSelector(
+  selector: Selector | Selector[] | undefined,
+): FragmentSelector | null {
   if (!selector) return null;
   const selectors = Array.isArray(selector) ? selector : [selector];
-  const found = selectors.find(s => s.type === 'FragmentSelector');
+  const found = selectors.find((s) => s.type === 'FragmentSelector');
   if (!found) return null;
   return found.type === 'FragmentSelector' ? found : null;
 }
@@ -104,14 +116,18 @@ export function getTargetSelector(target: Annotation['target']) {
 /**
  * Type guard to check if an annotation is a highlight
  */
-export function isHighlight(annotation: Annotation): annotation is HighlightAnnotation {
+export function isHighlight(
+  annotation: Annotation,
+): annotation is HighlightAnnotation {
   return annotation.motivation === 'highlighting';
 }
 
 /**
  * Type guard to check if an annotation is a reference (linking)
  */
-export function isReference(annotation: Annotation): annotation is ReferenceAnnotation {
+export function isReference(
+  annotation: Annotation,
+): annotation is ReferenceAnnotation {
   return annotation.motivation === 'linking';
 }
 
@@ -143,7 +159,9 @@ export function isTag(annotation: Annotation): annotation is Annotation {
  */
 export function getCommentText(annotation: Annotation): string | undefined {
   if (!isComment(annotation)) return undefined;
-  const body = Array.isArray(annotation.body) ? annotation.body[0] : annotation.body;
+  const body = Array.isArray(annotation.body)
+    ? annotation.body[0]
+    : annotation.body;
   if (body && 'value' in body) {
     return body.value;
   }
@@ -162,7 +180,9 @@ export function isStubReference(annotation: Annotation): boolean {
  * Type guard to check if a reference annotation is resolved
  * Resolved if SpecificResource exists in body array
  */
-export function isResolvedReference(annotation: Annotation): annotation is ReferenceAnnotation {
+export function isResolvedReference(
+  annotation: Annotation,
+): annotation is ReferenceAnnotation {
   return isReference(annotation) && isBodyResolved(annotation.body);
 }
 
@@ -173,10 +193,16 @@ export function isResolvedReference(annotation: Annotation): annotation is Refer
  * Takes anything with an annotation's `body`: one item, a list, or none
  * (a highlight has none).
  */
-export function getEntityTypes(annotation: { body?: Annotation['body'] }): string[] {
+export function getEntityTypes(annotation: {
+  body?: Annotation['body'];
+}): string[] {
   const types: string[] = [];
   for (const item of bodyItems(annotation.body)) {
-    if (item.type === 'TextualBody' && item.purpose === 'tagging' && item.value.length > 0) {
+    if (
+      item.type === 'TextualBody' &&
+      item.purpose === 'tagging' &&
+      item.value.length > 0
+    ) {
       types.push(item.value);
     }
   }
@@ -184,9 +210,13 @@ export function getEntityTypes(annotation: { body?: Annotation['body'] }): strin
 }
 
 /** The text of the first body that states it for `purpose`. */
-function textFor(body: Annotation['body'], purpose: 'tagging' | 'classifying'): string | undefined {
+function textFor(
+  body: Annotation['body'],
+  purpose: 'tagging' | 'classifying',
+): string | undefined {
   for (const item of bodyItems(body)) {
-    if (item.type === 'TextualBody' && item.purpose === purpose) return item.value;
+    if (item.type === 'TextualBody' && item.purpose === purpose)
+      return item.value;
   }
   return undefined;
 }
@@ -204,7 +234,9 @@ export function getTagCategory(annotation: Annotation): string | undefined {
  * of its body that classifies. Nothing for an annotation that is not a tag.
  */
 export function getTagSchemaId(annotation: Annotation): string | undefined {
-  return isTag(annotation) ? textFor(annotation.body, 'classifying') : undefined;
+  return isTag(annotation)
+    ? textFor(annotation.body, 'classifying')
+    : undefined;
 }
 
 // =============================================================================
@@ -218,14 +250,18 @@ export function getTagSchemaId(annotation: Annotation): string | undefined {
  * TextPositionSelector does not have exact text, only offsets, in code points.
  * Handles undefined selector (when target is a string IRI with no selector)
  */
-export function getExactText(selector: Selector | Selector[] | undefined): string {
+export function getExactText(
+  selector: Selector | Selector[] | undefined,
+): string {
   if (!selector) {
     return ''; // No selector means entire resource
   }
   const selectors = Array.isArray(selector) ? selector : [selector];
 
   // Try to find TextQuoteSelector (has exact text)
-  const quoteSelector = selectors.find(s => s.type === 'TextQuoteSelector') as TextQuoteSelector | undefined;
+  const quoteSelector = selectors.find(
+    (s) => s.type === 'TextQuoteSelector',
+  ) as TextQuoteSelector | undefined;
   if (quoteSelector) {
     return quoteSelector.exact;
   }
@@ -248,9 +284,11 @@ export function getAnnotationExactText(annotation: Annotation): string {
  *
  * Returns the first TextQuoteSelector found, or null if none exists.
  */
-export function getTextQuoteSelector(selector: Selector | Selector[]): TextQuoteSelector | null {
+export function getTextQuoteSelector(
+  selector: Selector | Selector[],
+): TextQuoteSelector | null {
   const selectors = Array.isArray(selector) ? selector : [selector];
-  const found = selectors.find(s => s.type === 'TextQuoteSelector');
+  const found = selectors.find((s) => s.type === 'TextQuoteSelector');
   if (!found) return null;
   return found.type === 'TextQuoteSelector' ? found : null;
 }

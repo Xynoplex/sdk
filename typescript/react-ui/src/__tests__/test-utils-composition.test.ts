@@ -19,9 +19,10 @@ describe('test-utils composition', () => {
     const { client } = createTestXynologWrapper();
 
     let settled = 'pending';
-    const querySub = client.browse
-      .tagSchemas()
-      .subscribe({ next: () => (settled = 'next'), error: (e) => (settled = `error: ${e?.message}`) });
+    const querySub = client.browse.tagSchemas().subscribe({
+      next: () => (settled = 'next'),
+      error: (e) => (settled = `error: ${e?.message}`),
+    });
     const busSub = client.bus.on('yield:created').subscribe(() => {});
 
     await firstValueFrom(timer(10));

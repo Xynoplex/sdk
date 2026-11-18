@@ -41,7 +41,7 @@ export function SimpleNavigation({
   isCollapsed,
   icons,
   collapseSidebarLabel,
-  expandSidebarLabel
+  expandSidebarLabel,
 }: SimpleNavigationProps) {
   const ChevronLeftIcon = icons.chevronLeft;
   const BarsIcon = icons.bars;
@@ -56,14 +56,18 @@ export function SimpleNavigation({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         closeDropdown();
       }
     };
 
     if (isDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
     return undefined;
   }, [isDropdownOpen]);
@@ -71,7 +75,10 @@ export function SimpleNavigation({
   return (
     <div className="xynolog-simple-nav">
       {/* Section header with collapse/expand button and optional dropdown */}
-      <div style={{ position: 'relative' }} ref={dropdownContent ? dropdownRef : undefined}>
+      <div
+        style={{ position: 'relative' }}
+        ref={dropdownContent ? dropdownRef : undefined}
+      >
         <div className="xynolog-nav-section__header">
           {dropdownContent ? (
             <button
@@ -81,10 +88,16 @@ export function SimpleNavigation({
               aria-haspopup="true"
               type="button"
             >
-              {!isCollapsed && <span className="xynolog-nav-section__header-text">{title}</span>}
+              {!isCollapsed && (
+                <span className="xynolog-nav-section__header-text">
+                  {title}
+                </span>
+              )}
             </button>
           ) : (
-            !isCollapsed && <span className="xynolog-nav-section__header-text">{title}</span>
+            !isCollapsed && (
+              <span className="xynolog-nav-section__header-text">{title}</span>
+            )
           )}
           <button
             onClick={() => xynolog.emit('shell:sidebar-toggle', undefined)}
@@ -117,7 +130,10 @@ export function SimpleNavigation({
                 title={item.description || item.name}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <item.icon className="xynolog-nav-tab__icon" aria-hidden="true" />
+                <item.icon
+                  className="xynolog-nav-tab__icon"
+                  aria-hidden="true"
+                />
                 <span className="xynolog-nav-tab__text">{item.name}</span>
               </Link>
             );
@@ -139,7 +155,10 @@ export function SimpleNavigation({
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={item.name}
               >
-                <item.icon className="xynolog-nav-tab__icon" aria-hidden="true" />
+                <item.icon
+                  className="xynolog-nav-tab__icon"
+                  aria-hidden="true"
+                />
               </Link>
             );
           })}

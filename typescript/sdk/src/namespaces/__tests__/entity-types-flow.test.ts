@@ -17,7 +17,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { filter, firstValueFrom, map } from 'rxjs';
-import { EventBus, annotationId, resourceId as makeResourceId } from '@xynolog/core';
+import {
+  EventBus,
+  annotationId,
+  resourceId as makeResourceId,
+} from '@xynolog/core';
 import type {
   EventMap,
   EventMetadata,
@@ -36,8 +40,15 @@ const TEST_USER = 'did:web:test:users:test' as UserId;
 const TEST_META = { sequenceNumber: 1 } as EventMetadata;
 
 const NINE_TYPES = [
-  'Author', 'Concept', 'Date', 'Event', 'Location',
-  'Organization', 'Person', 'Product', 'Technology',
+  'Author',
+  'Concept',
+  'Date',
+  'Event',
+  'Location',
+  'Organization',
+  'Person',
+  'Product',
+  'Technology',
 ];
 
 function mockAnnotation(id: string, source = 'res-1'): Annotation {
@@ -48,11 +59,16 @@ function mockAnnotation(id: string, source = 'res-1'): Annotation {
     motivation: 'commenting',
     created: '2026-01-01T00:00:00Z',
     target: { source: makeResourceId(source) },
-    body: [{ type: 'TextualBody', value: 'test comment', purpose: 'commenting' }],
+    body: [
+      { type: 'TextualBody', value: 'test comment', purpose: 'commenting' },
+    ],
   };
 }
 
-function fakeMarkAdded(rId: ResourceId, annId: string): StoredEvent<EventOfType<'mark:added'>> {
+function fakeMarkAdded(
+  rId: ResourceId,
+  annId: string,
+): StoredEvent<EventOfType<'mark:added'>> {
   return {
     id: `evt-${annId}`,
     type: 'mark:added',
@@ -65,7 +81,10 @@ function fakeMarkAdded(rId: ResourceId, annId: string): StoredEvent<EventOfType<
   };
 }
 
-function fakeMarkRemoved(rId: ResourceId, annId: string): StoredEvent<EventOfType<'mark:removed'>> {
+function fakeMarkRemoved(
+  rId: ResourceId,
+  annId: string,
+): StoredEvent<EventOfType<'mark:removed'>> {
   return {
     id: `evt-${annId}-removed`,
     type: 'mark:removed',
@@ -82,7 +101,9 @@ function fakeYieldCreated(rId: string): EventMap['yield:create-ok'] {
   return { response: { resourceId: makeResourceId(rId) } };
 }
 
-function fakeMarkArchived(rId: ResourceId): StoredEvent<EventOfType<'mark:archived'>> {
+function fakeMarkArchived(
+  rId: ResourceId,
+): StoredEvent<EventOfType<'mark:archived'>> {
   return {
     id: `evt-archive`,
     type: 'mark:archived',
@@ -95,7 +116,9 @@ function fakeMarkArchived(rId: ResourceId): StoredEvent<EventOfType<'mark:archiv
   };
 }
 
-function fakeMarkUnarchived(rId: ResourceId): StoredEvent<EventOfType<'mark:unarchived'>> {
+function fakeMarkUnarchived(
+  rId: ResourceId,
+): StoredEvent<EventOfType<'mark:unarchived'>> {
   return {
     id: `evt-unarchive`,
     type: 'mark:unarchived',
@@ -137,8 +160,15 @@ function flush(): Promise<void> {
   return new Promise((r) => setTimeout(r, 0));
 }
 
-function firstDefined<T>(obs: import('rxjs').Observable<import('../../cache').CacheState<T>>): Promise<T> {
-  return firstValueFrom(obs.pipe(filter(isReady), map((s) => s.value)));
+function firstDefined<T>(
+  obs: import('rxjs').Observable<import('../../cache').CacheState<T>>,
+): Promise<T> {
+  return firstValueFrom(
+    obs.pipe(
+      filter(isReady),
+      map((s) => s.value),
+    ),
+  );
 }
 
 describe('entity types — Layer 2 (BrowseNamespace + Cache)', () => {
@@ -172,7 +202,9 @@ describe('entity types — Layer 2 (BrowseNamespace + Cache)', () => {
     eventBus.emit('mark:added', fakeMarkAdded(RID, 'ann-1'));
     eventBus.emit('mark:removed', fakeMarkRemoved(RID, 'ann-1'));
     eventBus.emit('yield:create-ok', fakeYieldCreated('res-1'));
-    eventBus.emit('yield:update-ok', { response: { resourceId: makeResourceId('res-1') } });
+    eventBus.emit('yield:update-ok', {
+      response: { resourceId: makeResourceId('res-1') },
+    });
     eventBus.emit('mark:archived', fakeMarkArchived(RID));
     eventBus.emit('mark:unarchived', fakeMarkUnarchived(RID));
 
@@ -209,7 +241,9 @@ describe('entity types — Layer 2 (BrowseNamespace + Cache)', () => {
     await firstDefined(browse.entityTypes());
 
     const emissions: Array<string[] | undefined> = [];
-    const sub = browse.entityTypes().subscribe((s) => emissions.push(readyValue(s)));
+    const sub = browse
+      .entityTypes()
+      .subscribe((s) => emissions.push(readyValue(s)));
     try {
       browse.invalidateEntityTypes();
       await flush();
@@ -240,9 +274,13 @@ describe('entity types — Layer 3 (state-unit pipe over real cache)', () => {
     const { browse } = createHarness();
 
     // Mimic the state unit's transform: `client.browse.entityTypes().pipe(map(e => e ?? []))`
-    const vmEntityTypes$ = browse.entityTypes().pipe(map((s) => readyValue(s) ?? []));
+    const vmEntityTypes$ = browse
+      .entityTypes()
+      .pipe(map((s) => readyValue(s) ?? []));
 
-    const val = await firstValueFrom(vmEntityTypes$.pipe(filter((v) => v.length > 0)));
+    const val = await firstValueFrom(
+      vmEntityTypes$.pipe(filter((v) => v.length > 0)),
+    );
     expect(val).toEqual(NINE_TYPES);
   });
 
@@ -267,27 +305,28 @@ describe('entity types — Layer 3 (state-unit pipe over real cache)', () => {
     await firstDefined(browse.entityTypes());
 
     // Now compose a new state-unit pipe — simulates a later ResourceViewerPage mount.
-    const lateVmPipe$ = browse.entityTypes().pipe(map((st) => readyValue(st) ?? []));
+    const lateVmPipe$ = browse
+      .entityTypes()
+      .pipe(map((st) => readyValue(st) ?? []));
     const val = await firstValueFrom(lateVmPipe$);
     expect(val).toEqual(NINE_TYPES);
   });
 
-  it(
-    'state-unit pipe subscribing AFTER cache is populated AND after a bus-event burst still emits [9 strings]',
-    async () => {
-      // This is the most production-like scenario: cache warmed, bus
-      // churn, THEN a new component mounts and reads entityTypes.
-      const { browse, eventBus } = createHarness();
+  it('state-unit pipe subscribing AFTER cache is populated AND after a bus-event burst still emits [9 strings]', async () => {
+    // This is the most production-like scenario: cache warmed, bus
+    // churn, THEN a new component mounts and reads entityTypes.
+    const { browse, eventBus } = createHarness();
 
-      await firstDefined(browse.entityTypes());
-      eventBus.emit('mark:added', fakeMarkAdded(RID, 'ann-1'));
-      eventBus.emit('yield:create-ok', fakeYieldCreated('res-1'));
-      eventBus.emit('mark:archived', fakeMarkArchived(RID));
-      await flush();
+    await firstDefined(browse.entityTypes());
+    eventBus.emit('mark:added', fakeMarkAdded(RID, 'ann-1'));
+    eventBus.emit('yield:create-ok', fakeYieldCreated('res-1'));
+    eventBus.emit('mark:archived', fakeMarkArchived(RID));
+    await flush();
 
-      const lateVmPipe$ = browse.entityTypes().pipe(map((st) => readyValue(st) ?? []));
-      const val = await firstValueFrom(lateVmPipe$);
-      expect(val).toEqual(NINE_TYPES);
-    },
-  );
+    const lateVmPipe$ = browse
+      .entityTypes()
+      .pipe(map((st) => readyValue(st) ?? []));
+    const val = await firstValueFrom(lateVmPipe$);
+    expect(val).toEqual(NINE_TYPES);
+  });
 });

@@ -12,7 +12,10 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { WizardFooter } from '../WizardFooter';
 import { ConfigureSearchStep } from '../ConfigureSearchStep';
-import { ConfigureGenerationStep, freshGenerationDraft } from '../ConfigureGenerationStep';
+import {
+  ConfigureGenerationStep,
+  freshGenerationDraft,
+} from '../ConfigureGenerationStep';
 import { SearchResultsStep } from '../SearchResultsStep';
 import { ConfigureGatherStep } from '../ConfigureGatherStep';
 import { GatherContextStep } from '../GatherContextStep';
@@ -24,7 +27,8 @@ const DISMISSAL = /cancel|close|dismiss|✕|✖|×/i;
 const footerOf = (container: HTMLElement) =>
   container.querySelector('.xynolog-modal__actions') as HTMLElement | null;
 
-const buttonsIn = (footer: HTMLElement) => Array.from(footer.querySelectorAll('button'));
+const buttonsIn = (footer: HTMLElement) =>
+  Array.from(footer.querySelectorAll('button'));
 
 describe('WizardFooter', () => {
   it('renders retreat and advance, and nothing that dismisses', () => {
@@ -50,7 +54,9 @@ describe('WizardFooter', () => {
 
   it('renders Back alone when the step has no footer-level action', () => {
     // Search results: the action is per row, so the footer carries retreat only.
-    const { container } = render(<WizardFooter backLabel="Back" onBack={vi.fn()} />);
+    const { container } = render(
+      <WizardFooter backLabel="Back" onBack={vi.fn()} />,
+    );
     const labels = buttonsIn(footerOf(container)!).map((b) => b.textContent);
     expect(labels).toEqual(['◀ Back']);
   });
@@ -58,7 +64,11 @@ describe('WizardFooter', () => {
   it('does not stretch its buttons to equal width', () => {
     // `--flex` makes retreat and advance read as peers. Retreat is chrome.
     const { container } = render(
-      <WizardFooter backLabel="Back" onBack={vi.fn()} primary={{ label: 'Go', type: 'button', onClick: vi.fn() }} />,
+      <WizardFooter
+        backLabel="Back"
+        onBack={vi.fn()}
+        primary={{ label: 'Go', type: 'button', onClick: vi.fn() }}
+      />,
     );
     for (const button of buttonsIn(footerOf(container)!)) {
       expect(button.className).not.toContain('xynolog-button--flex');
@@ -71,7 +81,12 @@ describe('WizardFooter', () => {
       <WizardFooter
         backLabel="Back"
         onBack={onBack}
-        primary={{ label: 'Search', pendingLabel: 'Searching…', pending: true, type: 'submit' }}
+        primary={{
+          label: 'Search',
+          pendingLabel: 'Searching…',
+          pending: true,
+          type: 'submit',
+        }}
       />,
     );
     expect(screen.getByText(/Searching…/)).toBeInTheDocument();
@@ -89,7 +104,12 @@ describe('WizardFooter', () => {
       <WizardFooter
         backLabel="Back"
         onBack={onBack}
-        primary={{ label: 'Next', type: 'button', onClick: onAdvance, disabled: true }}
+        primary={{
+          label: 'Next',
+          type: 'button',
+          onClick: onAdvance,
+          disabled: true,
+        }}
       />,
     );
     await userEvent.click(screen.getByText(/Next/));
@@ -104,34 +124,67 @@ describe('WizardFooter', () => {
 // only worth having if every step actually uses it.
 // ─────────────────────────────────────────────────────────────────────
 const SEARCH_T = {
-  maxResults: 'Max Results', semanticScoring: 'Semantic Scoring',
-  semanticScoringHelp: 'help', back: 'Back', search: 'Search', searching: 'Searching…',
+  maxResults: 'Max Results',
+  semanticScoring: 'Semantic Scoring',
+  semanticScoringHelp: 'help',
+  back: 'Back',
+  search: 'Search',
+  searching: 'Searching…',
   searchFailed: 'Search failed',
 };
 
 const GEN_T = {
-  resourceTitle: 'Title', resourceTitlePlaceholder: '', saveLocation: 'Save location', additionalInstructions: 'Instructions',
-  additionalInstructionsPlaceholder: '', language: 'Language', languageHelp: '',
-  creativity: 'Creativity', creativityFocused: 'Focused', creativityCreative: 'Creative',
-  maxLength: 'Max Length', maxLengthHelp: '', maxLengthCeiling: 'Limited to {{max}} by {{model}}.',
-  outputFormat: 'Format', formatExtensionMismatch: 'Must end in {{extension}}.',
-  back: 'Back', generate: 'Generate',
+  resourceTitle: 'Title',
+  resourceTitlePlaceholder: '',
+  saveLocation: 'Save location',
+  additionalInstructions: 'Instructions',
+  additionalInstructionsPlaceholder: '',
+  language: 'Language',
+  languageHelp: '',
+  creativity: 'Creativity',
+  creativityFocused: 'Focused',
+  creativityCreative: 'Creative',
+  maxLength: 'Max Length',
+  maxLengthHelp: '',
+  maxLengthCeiling: 'Limited to {{max}} by {{model}}.',
+  outputFormat: 'Format',
+  formatExtensionMismatch: 'Must end in {{extension}}.',
+  back: 'Back',
+  generate: 'Generate',
 };
 
 const CONTEXT_T = {
-  sourceContextLabel: 'Source', connectionsLabel: 'Connections', citedByLabel: 'Cited by',
-  graphPaneTitle: 'In the graph', graphEmpty: 'No links yet.', resourceLinkLabel: 'Resource link',
+  sourceContextLabel: 'Source',
+  connectionsLabel: 'Connections',
+  citedByLabel: 'Cited by',
+  graphPaneTitle: 'In the graph',
+  graphEmpty: 'No links yet.',
+  resourceLinkLabel: 'Resource link',
 };
 
 const GATHER_T = {
-  intro: 'Choose what to include.', includeContent: 'Content', includeSummary: 'Summary',
-  depth: 'Depth', maxResources: 'Max', gather: 'Gather',
+  intro: 'Choose what to include.',
+  includeContent: 'Content',
+  includeSummary: 'Summary',
+  depth: 'Depth',
+  maxResources: 'Max',
+  gather: 'Gather',
 };
 
-const RESULTS_T = { noResults: 'None', score: 'Score', link: 'Link', back: 'Back', ...CONTEXT_T };
+const RESULTS_T = {
+  noResults: 'None',
+  score: 'Score',
+  link: 'Link',
+  back: 'Back',
+  ...CONTEXT_T,
+};
 
 const CONTEXT = {
-  focus: { kind: 'annotation', annotation: { id: 'a1' }, sourceResource: { '@id': 'r1', name: 'Src' } },
+  focus: {
+    kind: 'annotation',
+    annotation: { id: 'a1' },
+    sourceResource: { '@id': 'r1', name: 'Src' },
+  },
   // `graph` is not optional in practice: ContextSummary hands it straight to
   // `deriveViews`, which dereferences `.nodes`.
   graph: { nodes: [], edges: [] },
@@ -150,7 +203,9 @@ describe('every step footer follows the grammar', () => {
         translations={SEARCH_T}
       />,
     );
-    const labels = buttonsIn(footerOf(container)!).map((b) => b.textContent ?? '');
+    const labels = buttonsIn(footerOf(container)!).map(
+      (b) => b.textContent ?? '',
+    );
     expect(labels).toHaveLength(2);
     expect(labels.filter((l) => DISMISSAL.test(l))).toEqual([]);
   });
@@ -164,7 +219,9 @@ describe('every step footer follows the grammar', () => {
         translations={RESULTS_T}
       />,
     );
-    const labels = buttonsIn(footerOf(container)!).map((b) => b.textContent ?? '');
+    const labels = buttonsIn(footerOf(container)!).map(
+      (b) => b.textContent ?? '',
+    );
     expect(labels).toHaveLength(1);
     expect(labels.filter((l) => DISMISSAL.test(l))).toEqual([]);
     expect(screen.getByText(/Link/)).toBeInTheDocument();
@@ -181,7 +238,9 @@ describe('every step footer follows the grammar', () => {
         translations={GEN_T}
       />,
     );
-    const labels = buttonsIn(footerOf(container)!).map((b) => b.textContent ?? '');
+    const labels = buttonsIn(footerOf(container)!).map(
+      (b) => b.textContent ?? '',
+    );
     expect(labels).toHaveLength(2);
     expect(labels.filter((l) => DISMISSAL.test(l))).toEqual([]);
   });
@@ -190,7 +249,9 @@ describe('every step footer follows the grammar', () => {
     const { container } = render(
       <ConfigureGatherStep onGather={vi.fn()} translations={GATHER_T} />,
     );
-    const labels = buttonsIn(footerOf(container)!).map((b) => b.textContent ?? '');
+    const labels = buttonsIn(footerOf(container)!).map(
+      (b) => b.textContent ?? '',
+    );
     expect(labels).toHaveLength(1); // nowhere to go back to, and dismissal is the corner's job
     expect(labels.filter((l) => DISMISSAL.test(l))).toEqual([]);
   });
@@ -210,15 +271,24 @@ describe('the resolution chooser (GatherContextStep) — the named exception', (
     onGenerate: vi.fn(),
     onCompose: vi.fn(),
     translations: {
-      search: 'Search', generate: 'Generate', compose: 'Compose',
-      resolutionStrategyLabel: 'Strategy', userHintLabel: 'Hint',
-      userHintEffect: 'steers Search and Generate', userHintPlaceholder: '',
+      search: 'Search',
+      generate: 'Generate',
+      compose: 'Compose',
+      resolutionStrategyLabel: 'Strategy',
+      userHintLabel: 'Hint',
+      userHintEffect: 'steers Search and Generate',
+      userHintPlaceholder: '',
     },
   };
   const DISPLAY_T = {
-    loadingContext: 'Loading…', failedContext: 'Failed', ...CONTEXT_T,
-    corpusPaneTitle: 'In the corpus', corpusEmpty: 'Nothing similar.',
-    excludedReceipt: '{{types}} excluded', machineRead: 'OCR', score: 'Score',
+    loadingContext: 'Loading…',
+    failedContext: 'Failed',
+    ...CONTEXT_T,
+    corpusPaneTitle: 'In the corpus',
+    corpusEmpty: 'Nothing similar.',
+    excludedReceipt: '{{types}} excluded',
+    machineRead: 'OCR',
+    score: 'Score',
   };
 
   const chooserButtons = (container: HTMLElement) =>
@@ -227,22 +297,30 @@ describe('the resolution chooser (GatherContextStep) — the named exception', (
   it('three equal-width peers, one of them quiet, none of them dismissal', () => {
     const { container } = render(
       <GatherContextStep
-        context={CONTEXT} contextLoading={false} contextError={null}
-        annotate={ANNOTATE} translations={DISPLAY_T}
+        context={CONTEXT}
+        contextLoading={false}
+        contextError={null}
+        annotate={ANNOTATE}
+        translations={DISPLAY_T}
       />,
     );
     const buttons = chooserButtons(container);
     expect(buttons).toHaveLength(3);
     // Equal width is HONEST here — these are actual peers. This is the same
     // `--flex` the shared footer bans for making retreat read as advance's peer.
-    for (const b of buttons) expect(b.className).toContain('xynolog-button--flex');
+    for (const b of buttons)
+      expect(b.className).toContain('xynolog-button--flex');
     // The AI paths are primary; the manual path's demotion to secondary is the
     // recorded convention, not drift.
-    const secondary = buttons.filter((b) => b.className.includes('xynolog-button--secondary'));
+    const secondary = buttons.filter((b) =>
+      b.className.includes('xynolog-button--secondary'),
+    );
     expect(secondary).toHaveLength(1);
     expect(secondary[0]!.textContent).toContain('Compose');
     // Dismissal stays in the corner, as on every footer.
-    expect(buttons.map((b) => b.textContent ?? '').filter((l) => DISMISSAL.test(l))).toEqual([]);
+    expect(
+      buttons.map((b) => b.textContent ?? '').filter((l) => DISMISSAL.test(l)),
+    ).toEqual([]);
   });
 
   it('ellipses are component-owned: Search and Generate carry one, Compose does not', () => {
@@ -250,20 +328,30 @@ describe('the resolution chooser (GatherContextStep) — the named exception', (
     // `ReferenceWizardModal` all three choices lead to another step.
     const { container } = render(
       <GatherContextStep
-        context={CONTEXT} contextLoading={false} contextError={null}
-        annotate={ANNOTATE} translations={DISPLAY_T}
+        context={CONTEXT}
+        contextLoading={false}
+        contextError={null}
+        annotate={ANNOTATE}
+        translations={DISPLAY_T}
       />,
     );
-    const labels = chooserButtons(container).map((b) => (b.textContent ?? '').trim());
+    const labels = chooserButtons(container).map((b) =>
+      (b.textContent ?? '').trim(),
+    );
     expect(labels.filter((l) => l.endsWith('…'))).toHaveLength(2);
-    expect(labels.find((l) => l.includes('Compose'))!.endsWith('…')).toBe(false);
+    expect(labels.find((l) => l.includes('Compose'))!.endsWith('…')).toBe(
+      false,
+    );
   });
 
   it('every choice waits for context', () => {
     const { container } = render(
       <GatherContextStep
-        context={CONTEXT} contextLoading contextError={null}
-        annotate={ANNOTATE} translations={DISPLAY_T}
+        context={CONTEXT}
+        contextLoading
+        contextError={null}
+        annotate={ANNOTATE}
+        translations={DISPLAY_T}
       />,
     );
     for (const b of chooserButtons(container)) expect(b).toBeDisabled();
@@ -295,7 +383,11 @@ describe('the way out', () => {
     const footer = footerOf(container)!;
     for (const button of buttonsIn(footer)) expect(button).toBeDisabled();
     // …and the step renders no dismissal of its own to be disabled with them.
-    expect(buttonsIn(footer).map((b) => b.textContent ?? '').filter((l) => DISMISSAL.test(l))).toEqual([]);
+    expect(
+      buttonsIn(footer)
+        .map((b) => b.textContent ?? '')
+        .filter((l) => DISMISSAL.test(l)),
+    ).toEqual([]);
   });
 
   it('Back does not fire while the step is pending', async () => {
@@ -322,21 +414,33 @@ describe('Back is lossless', () => {
     const config = { limit: 20, useSemanticScoring: false };
     const { unmount } = render(
       <ConfigureSearchStep
-        config={config} onConfigChange={vi.fn()} onBack={vi.fn()} onSearch={vi.fn()}
+        config={config}
+        onConfigChange={vi.fn()}
+        onBack={vi.fn()}
+        onSearch={vi.fn()}
         translations={SEARCH_T}
       />,
     );
-    expect((screen.getByLabelText('Max Results') as HTMLSelectElement).value).toBe('20');
+    expect(
+      (screen.getByLabelText('Max Results') as HTMLSelectElement).value,
+    ).toBe('20');
     unmount();
 
     // Same draft, fresh mount — what "Back then forward" does.
     render(
       <ConfigureSearchStep
-        config={config} onConfigChange={vi.fn()} onBack={vi.fn()} onSearch={vi.fn()}
+        config={config}
+        onConfigChange={vi.fn()}
+        onBack={vi.fn()}
+        onSearch={vi.fn()}
         translations={SEARCH_T}
       />,
     );
-    expect((screen.getByLabelText('Max Results') as HTMLSelectElement).value).toBe('20');
-    expect((screen.getByLabelText(/Semantic Scoring/) as HTMLInputElement).checked).toBe(false);
+    expect(
+      (screen.getByLabelText('Max Results') as HTMLSelectElement).value,
+    ).toBe('20');
+    expect(
+      (screen.getByLabelText(/Semantic Scoring/) as HTMLInputElement).checked,
+    ).toBe(false);
   });
 });

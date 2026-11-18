@@ -21,7 +21,12 @@ function contextFor(rid: ResourceId): GatheredContext {
   return {
     focus: {
       kind: 'resource',
-      resource: { '@context': 'https://schema.org/', '@id': rid, name: 'A resource', representations: [] },
+      resource: {
+        '@context': 'https://schema.org/',
+        '@id': rid,
+        name: 'A resource',
+        representations: [],
+      },
     },
     graph: { nodes: [], edges: [] },
     metadata: {},
@@ -29,24 +34,34 @@ function contextFor(rid: ResourceId): GatheredContext {
 }
 
 /** A responder that echoes the envelope, as a real handler must. */
-function respondingBus(): { bus: BusPrimitive; seen: Array<{ correlationId?: string; payload: unknown }> } {
+function respondingBus(): {
+  bus: BusPrimitive;
+  seen: Array<{ correlationId?: string; payload: unknown }>;
+} {
   const eventBus = new EventBus();
   const seen: Array<{ correlationId?: string; payload: unknown }> = [];
 
   eventBus.frames(OP).subscribe(({ payload, correlationId }) => {
     // Nothing bridges into this bus: what it carries is what was emitted on it.
-    if (payload instanceof FrameRefusal) throw new Error(`the responder was handed a refusal on ${payload.channel}`);
+    if (payload instanceof FrameRefusal)
+      throw new Error(
+        `the responder was handed a refusal on ${payload.channel}`,
+      );
     seen.push({ correlationId, payload });
     // The echo: the key comes off the envelope and goes back on one.
     eventBus.emit(
       RESULT,
-      { resourceId: payload.resourceId, response: contextFor(payload.resourceId) },
+      {
+        resourceId: payload.resourceId,
+        response: contextFor(payload.resourceId),
+      },
       { correlationId },
     );
   });
 
   const bus: BusPrimitive = {
-    emit: async (channel, payload, envelope) => eventBus.emit(channel, payload, envelope),
+    emit: async (channel, payload, envelope) =>
+      eventBus.emit(channel, payload, envelope),
     frames: (channel) => eventBus.frames(channel),
     stream: (channel) => eventBus.on(channel),
     state$: new BehaviorSubject<'open'>('open').asObservable(),
@@ -64,7 +79,9 @@ describe('correlation rides the envelope', () => {
     await new Bus(bus).request(OP, { resourceId: 'res-1' });
 
     expect(seen).toHaveLength(1);
-    expect(seen[0]!.correlationId, 'the envelope carries it').toEqual(expect.any(String));
+    expect(seen[0]!.correlationId, 'the envelope carries it').toEqual(
+      expect.any(String),
+    );
     expect(
       Object.keys(seen[0]!.payload as object),
       'the domain payload is untouched by routing metadata',
@@ -92,7 +109,9 @@ describe('correlation rides the envelope', () => {
       emit: async (channel, payload, envelope) => {
         const observers = eventBus.emit(channel, payload, envelope);
         // Answer with a key nobody is waiting on.
-        eventBus.emit(RESULT, { response: { answered: 'wrong' } } as never, { correlationId: 'not-yours' });
+        eventBus.emit(RESULT, { response: { answered: 'wrong' } } as never, {
+          correlationId: 'not-yours',
+        });
         return observers;
       },
       frames: (channel) => eventBus.frames(channel),
@@ -103,7 +122,9 @@ describe('correlation rides the envelope', () => {
       subscribeToResource: () => () => {},
     } as BusPrimitive;
 
-    await expect(new Bus(bus).request(OP, { resourceId: 'res-1' }, 120)).rejects.toMatchObject({
+    await expect(
+      new Bus(bus).request(OP, { resourceId: 'res-1' }, 120),
+    ).rejects.toMatchObject({
       code: 'bus.timeout',
     });
   });

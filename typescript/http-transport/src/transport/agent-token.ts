@@ -60,7 +60,9 @@ export interface AgentSignIn {
  * up and said no. The gateway's is thrown as an `APIError` carrying its
  * status, the issuer's as a `SignInError`.
  */
-export async function agentToken(opts: AgentSignIn): Promise<{ token: string; did: UserId }> {
+export async function agentToken(
+  opts: AgentSignIn,
+): Promise<{ token: string; did: UserId }> {
   const { baseUrl, service, onRetry, fetch } = opts;
 
   return retryWithBackoff(
@@ -81,21 +83,31 @@ export async function agentToken(opts: AgentSignIn): Promise<{ token: string; di
 }
 
 /** The DID the gateway names the bearer of `token` by: `GET /api/users/me`. */
-async function named(baseUrl: string, token: string, fetch: typeof globalThis.fetch | undefined): Promise<UserId> {
+async function named(
+  baseUrl: string,
+  token: string,
+  fetch: typeof globalThis.fetch | undefined,
+): Promise<UserId> {
   const url = `${baseUrl.replace(/\/$/, '')}/api/users/me`;
   const unanswered = (error: unknown) => new UnansweredError(url, error);
-  const { response, answer } = await withinDeadline(HTTP_REQUEST_TIMEOUT_MS, async (signal) => {
-    const response = await fetchOf(fetch)(url, {
-      headers: { authorization: `Bearer ${token}` },
-      signal,
-    }).catch((error: unknown) => {
-      throw unanswered(error);
-    });
-    return { response, answer: await jsonOf(response, unanswered) };
-  });
+  const { response, answer } = await withinDeadline(
+    HTTP_REQUEST_TIMEOUT_MS,
+    async (signal) => {
+      const response = await fetchOf(fetch)(url, {
+        headers: { authorization: `Bearer ${token}` },
+        signal,
+      }).catch((error: unknown) => {
+        throw unanswered(error);
+      });
+      return { response, answer: await jsonOf(response, unanswered) };
+    },
+  );
 
   if (!response.ok) {
-    const said = isObject(answer) && isString(answer['error']) ? answer['error'] : `HTTP ${response.status} ${response.statusText}`;
+    const said =
+      isObject(answer) && isString(answer['error'])
+        ? answer['error']
+        : `HTTP ${response.status} ${response.statusText}`;
     throw APIError.fromStatus(
       `The gateway did not name the agent: ${said}`,
       response.status,

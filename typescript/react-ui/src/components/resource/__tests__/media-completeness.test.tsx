@@ -10,34 +10,58 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import { EventBus } from '@xynolog/core';
-import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 import { ResourceViewer } from '../ResourceViewer';
 
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div data-testid="md">{children}</div> }));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => (
+    <div data-testid="md">{children}</div>
+  ),
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 // pdfjs can't load in jsdom — the sweep pins ROUTING to the pdf renderer, not pdf.js itself.
 vi.mock('../../pdf-annotation/PdfAnnotationCanvas.client', () => ({
-  PdfAnnotationCanvas: ({ pdfUrl }: { pdfUrl: string }) => <div data-testid="pdf-canvas">{pdfUrl}</div>,
+  PdfAnnotationCanvas: ({ pdfUrl }: { pdfUrl: string }) => (
+    <div data-testid="pdf-canvas">{pdfUrl}</div>
+  ),
 }));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession(): XynologSession {
   return {
     client: {
       bus: new EventBus(),
       // The image canvas asks for the resource's text, in browse mode too.
-      browse: { click: vi.fn(), resourceAnchoredText: vi.fn().mockResolvedValue({ kind: 'no-map' }) },
+      browse: {
+        click: vi.fn(),
+        resourceAnchoredText: vi.fn().mockResolvedValue({ kind: 'no-map' }),
+      },
       beckon: { hover: vi.fn() },
     },
   } as unknown as XynologSession;
 }
 
-function makeResource(mediaType: string, content: string): XynologResource & { content: string } {
+function makeResource(
+  mediaType: string,
+  content: string,
+): XynologResource & { content: string } {
   return {
     '@context': 'https://www.w3.org/ns/activitystreams',
     '@id': 'res-1' as ResourceId,
@@ -66,30 +90,55 @@ describe('media-completeness sweep — one component, all types, inline, default
   it.each([
     ['text/plain', 'plain body'],
     ['text/markdown', '# md body'],
-  ])('%s renders via the text default with the overlay container', (mt, content) => {
-    const { container } = mount(mt, content);
-    expect(container.querySelector('.xynolog-browse-view[data-mime-type="text"]')).toBeInTheDocument();
-    expect(screen.getByTestId('md')).toHaveTextContent(content);
-    expect(container.querySelector('.xynolog-browse-view__content')).toBeInTheDocument(); // overlay anchor
-    expect(container.querySelector('.xynolog-browse-view')).toHaveClass('xynolog-browse-view--inline');
-  });
+  ])(
+    '%s renders via the text default with the overlay container',
+    (mt, content) => {
+      const { container } = mount(mt, content);
+      expect(
+        container.querySelector('.xynolog-browse-view[data-mime-type="text"]'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('md')).toHaveTextContent(content);
+      expect(
+        container.querySelector('.xynolog-browse-view__content'),
+      ).toBeInTheDocument(); // overlay anchor
+      expect(container.querySelector('.xynolog-browse-view')).toHaveClass(
+        'xynolog-browse-view--inline',
+      );
+    },
+  );
 
   it('image/png renders via the image default', () => {
-    const { container } = mount('image/png', 'https://media.test/img.png?token=t');
-    expect(container.querySelector('.xynolog-browse-view[data-mime-type="image"]')).toBeInTheDocument();
+    const { container } = mount(
+      'image/png',
+      'https://media.test/img.png?token=t',
+    );
+    expect(
+      container.querySelector('.xynolog-browse-view[data-mime-type="image"]'),
+    ).toBeInTheDocument();
     expect(container.querySelector('img')).toBeInTheDocument();
-    expect(container.querySelector('.xynolog-browse-view__content')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-browse-view__content'),
+    ).toBeInTheDocument();
   });
 
   it('application/pdf routes to the pdf default', async () => {
-    const { container } = mount('application/pdf', 'https://media.test/doc.pdf?token=t');
-    expect(container.querySelector('.xynolog-browse-view[data-mime-type="pdf"]')).toBeInTheDocument();
-    expect(await screen.findByTestId('pdf-canvas')).toHaveTextContent('https://media.test/doc.pdf?token=t');
+    const { container } = mount(
+      'application/pdf',
+      'https://media.test/doc.pdf?token=t',
+    );
+    expect(
+      container.querySelector('.xynolog-browse-view[data-mime-type="pdf"]'),
+    ).toBeInTheDocument();
+    expect(await screen.findByTestId('pdf-canvas')).toHaveTextContent(
+      'https://media.test/doc.pdf?token=t',
+    );
   });
 
   it('an unknown type degrades to metadata + download (no crash, no per-type wiring)', () => {
     const { container } = mount('application/octet-stream', '');
-    expect(container.querySelector('[data-mime-type="unsupported"]')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-mime-type="unsupported"]'),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Preview not available/)).toBeInTheDocument();
   });
 });

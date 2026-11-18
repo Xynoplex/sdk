@@ -13,7 +13,12 @@
 import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import type { FrameRefusal } from './bus';
-import { busLog, busLogEnabled, warnIfUnobservedReply, warnUnobservedRepliesEnabled } from './bus-log';
+import {
+  busLog,
+  busLogEnabled,
+  warnIfUnobservedReply,
+  warnUnobservedRepliesEnabled,
+} from './bus-log';
 import type { EventMap } from './bus-protocol';
 import type { ResourceId } from './identifiers';
 
@@ -119,12 +124,23 @@ export class EventBus {
    * before delivery: a subscriber that unsubscribes in its own handler was
    * still reached.
    */
-  emit<K extends keyof EventMap>(channel: K, payload: EventMap[K] | FrameRefusal, envelope: BusEnvelope = {}): number {
+  emit<K extends keyof EventMap>(
+    channel: K,
+    payload: EventMap[K] | FrameRefusal,
+    envelope: BusEnvelope = {},
+  ): number {
     const stream = this.channel(channel);
     const observers = this.observersOf(channel, envelope.scope);
     // Observability rides the ONE write path, so it is installed once rather
     // than wrapped around `next` per channel and per holder.
-    if (busLogEnabled()) busLog('EMIT', String(channel), payload as object, envelope.scope, envelope.correlationId);
+    if (busLogEnabled())
+      busLog(
+        'EMIT',
+        String(channel),
+        payload as object,
+        envelope.scope,
+        envelope.correlationId,
+      );
     if (warnUnobservedRepliesEnabled()) {
       warnIfUnobservedReply(String(channel), envelope.correlationId, observers);
     }
@@ -133,7 +149,9 @@ export class EventBus {
   }
 
   /** The payload view, DERIVED from `frames` so the two cannot disagree. */
-  on<K extends keyof EventMap>(channel: K): Observable<EventMap[K] | FrameRefusal> {
+  on<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<EventMap[K] | FrameRefusal> {
     return this.frames(channel).pipe(map((frame) => frame.payload));
   }
 
@@ -145,12 +163,17 @@ export class EventBus {
    * here. A subject per scope would give that isolation for free; one stream
    * and a filter has to state it.
    */
-  frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
+  frames<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
     return this.viewOf(channel, undefined);
   }
 
   /** @internal — one filtered, observer-counted view per (channel, scope). */
-  viewOf<K extends keyof EventMap>(channel: K, scope: ResourceId | undefined): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
+  viewOf<K extends keyof EventMap>(
+    channel: K,
+    scope: ResourceId | undefined,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
     const key = `${scope ?? ''}\u0000${String(channel)}`;
     // `asObservable()` before piping, deliberately: `Subject.pipe()` returns
     // an AnonymousSubject, which still carries `next`, so piping alone would
@@ -158,28 +181,43 @@ export class EventBus {
     const view = this.channel(channel)
       .asObservable()
       .pipe(filter((frame) => frame.scope === scope));
-    return new Observable<BusFrame<EventMap[K] | FrameRefusal>>((subscriber) => {
-      this.observerCounts.set(key, (this.observerCounts.get(key) ?? 0) + 1);
-      const inner = view.subscribe(subscriber);
-      return () => {
-        this.observerCounts.set(key, (this.observerCounts.get(key) ?? 1) - 1);
-        inner.unsubscribe();
-      };
-    });
+    return new Observable<BusFrame<EventMap[K] | FrameRefusal>>(
+      (subscriber) => {
+        this.observerCounts.set(key, (this.observerCounts.get(key) ?? 0) + 1);
+        const inner = view.subscribe(subscriber);
+        return () => {
+          this.observerCounts.set(key, (this.observerCounts.get(key) ?? 1) - 1);
+          inner.unsubscribe();
+        };
+      },
+    );
   }
 
   /** Observers that receive a frame of `scope` on `channel`: that scope's view, and every reader of all scopes. */
-  private observersOf(channel: keyof EventMap, scope: ResourceId | undefined): number {
-    return (this.observerCounts.get(`${scope ?? ''}\u0000${String(channel)}`) ?? 0) + (this.everyScopeCounts.get(channel) ?? 0);
+  private observersOf(
+    channel: keyof EventMap,
+    scope: ResourceId | undefined,
+  ): number {
+    return (
+      (this.observerCounts.get(`${scope ?? ''}\u0000${String(channel)}`) ?? 0) +
+      (this.everyScopeCounts.get(channel) ?? 0)
+    );
   }
 
   /** Every frame on a channel, scoped or not. Internal to the scoped view. */
-  private channel<K extends keyof EventMap>(channel: K): Subject<BusFrame<EventMap[K] | FrameRefusal>> {
+  private channel<K extends keyof EventMap>(
+    channel: K,
+  ): Subject<BusFrame<EventMap[K] | FrameRefusal>> {
     if (this.isDestroyed) {
-      throw new Error(`Cannot access event '${String(channel)}' on destroyed bus`);
+      throw new Error(
+        `Cannot access event '${String(channel)}' on destroyed bus`,
+      );
     }
     if (!this.subjects.has(channel)) {
-      this.subjects.set(channel, new Subject<BusFrame<EventMap[K] | FrameRefusal>>());
+      this.subjects.set(
+        channel,
+        new Subject<BusFrame<EventMap[K] | FrameRefusal>>(),
+      );
     }
     return this.subjects.get(channel)!;
   }
@@ -189,16 +227,26 @@ export class EventBus {
    * that decides itself which scopes it delivers (`FaultyTransport`).
    * Counted as an observer of every scope.
    */
-  channelStream<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
+  channelStream<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
     const stream = this.channel(channel).asObservable();
-    return new Observable<BusFrame<EventMap[K] | FrameRefusal>>((subscriber) => {
-      this.everyScopeCounts.set(channel, (this.everyScopeCounts.get(channel) ?? 0) + 1);
-      const inner = stream.subscribe(subscriber);
-      return () => {
-        this.everyScopeCounts.set(channel, (this.everyScopeCounts.get(channel) ?? 1) - 1);
-        inner.unsubscribe();
-      };
-    });
+    return new Observable<BusFrame<EventMap[K] | FrameRefusal>>(
+      (subscriber) => {
+        this.everyScopeCounts.set(
+          channel,
+          (this.everyScopeCounts.get(channel) ?? 0) + 1,
+        );
+        const inner = stream.subscribe(subscriber);
+        return () => {
+          this.everyScopeCounts.set(
+            channel,
+            (this.everyScopeCounts.get(channel) ?? 1) - 1,
+          );
+          inner.unsubscribe();
+        };
+      },
+    );
   }
 
   /**
@@ -261,24 +309,35 @@ export class EventBus {
 export class ScopedEventBus {
   constructor(
     private parent: EventBus,
-    private resourceId: ResourceId
+    private resourceId: ResourceId,
   ) {}
 
   /** Emit into this scope, through the parent's one write path. The scope is
    *  a FIELD on the frame, not a prefix on the channel name — one channel,
    *  one stream, and a reader can see the scope rather than having to parse
    *  it out of a key. */
-  emit<K extends keyof EventMap>(channel: K, payload: EventMap[K], envelope: BusEnvelope = {}): number {
-    return this.parent.emit(channel, payload, { ...envelope, scope: this.resourceId });
+  emit<K extends keyof EventMap>(
+    channel: K,
+    payload: EventMap[K],
+    envelope: BusEnvelope = {},
+  ): number {
+    return this.parent.emit(channel, payload, {
+      ...envelope,
+      scope: this.resourceId,
+    });
   }
 
   /** The payload view for this scope, derived from `frames` as it is globally. */
-  on<K extends keyof EventMap>(channel: K): Observable<EventMap[K] | FrameRefusal> {
+  on<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<EventMap[K] | FrameRefusal> {
     return this.frames(channel).pipe(map((frame) => frame.payload));
   }
 
   /** Frames emitted into THIS scope only. */
-  frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
+  frames<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
     return this.parent.viewOf(channel, this.resourceId);
   }
 }

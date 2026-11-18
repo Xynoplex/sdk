@@ -15,7 +15,10 @@ const BASE = baseUrl('http://localhost:4000');
 
 describe('HttpTransport channels config', () => {
   it('subscribes the full bridged set when given it', () => {
-    const transport = new HttpTransport({ baseUrl: BASE, channels: BRIDGED_CHANNELS });
+    const transport = new HttpTransport({
+      baseUrl: BASE,
+      channels: BRIDGED_CHANNELS,
+    });
     for (const channel of BRIDGED_CHANNELS) {
       expect(transport.isSubscribed(channel)).toBe(true);
     }

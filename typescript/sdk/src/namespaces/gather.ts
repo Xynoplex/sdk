@@ -1,21 +1,38 @@
-import type { AnnotationId, CacheQuery, CacheValues, components, ResourceId, EventBus, GatheredContext } from '@xynolog/core';
+import type {
+  AnnotationId,
+  CacheQuery,
+  CacheValues,
+  components,
+  ResourceId,
+  EventBus,
+  GatheredContext,
+} from '@xynolog/core';
 import type { ITransport } from '@xynolog/core';
 import { CacheObservable, StreamObservable } from '../awaitable';
 import { Bus } from '@xynolog/core';
 import { createCache, type Cache } from '../cache';
 import { CacheRefresher, ScopedSources } from '../cache-refresh';
-import type { GatherNamespace as IGatherNamespace, GatherAnnotationComplete, ReferencedByEntry } from './types';
+import type {
+  GatherNamespace as IGatherNamespace,
+  GatherAnnotationComplete,
+  ReferencedByEntry,
+} from './types';
 
 /**
  * The live queries of protocol/specs/src/client/refresh.json this namespace answers.
  * `client.ts` holds the namespaces to answering every one between them.
  */
-export const GATHER_QUERIES = ['referencedBy'] as const satisfies readonly CacheQuery[];
+export const GATHER_QUERIES = [
+  'referencedBy',
+] as const satisfies readonly CacheQuery[];
 type GatherQuery = (typeof GATHER_QUERIES)[number];
 
 export class GatherNamespace implements IGatherNamespace {
   /** In memory only: an answer of the graph, asked again on each session. */
-  private readonly referencedByCache: Cache<ResourceId, CacheValues['referencedBy']>;
+  private readonly referencedByCache: Cache<
+    ResourceId,
+    CacheValues['referencedBy']
+  >;
   private readonly scoped: ScopedSources;
   private readonly refresher: CacheRefresher<GatherQuery>;
 
@@ -34,7 +51,10 @@ export class GatherNamespace implements IGatherNamespace {
     this.wire = new Bus(transport);
     this.scoped = new ScopedSources(this.transport);
 
-    this.referencedByCache = createCache<ResourceId, CacheValues['referencedBy']>(async (resourceId) => {
+    this.referencedByCache = createCache<
+      ResourceId,
+      CacheValues['referencedBy']
+    >(async (resourceId) => {
       const result = await this.wire.request(
         'gather:referenced-by-requested',
         { resourceId },
@@ -43,16 +63,31 @@ export class GatherNamespace implements IGatherNamespace {
       return result.referencedBy;
     });
 
-    this.refresher = new CacheRefresher<GatherQuery>(this.transport, this.bus, {
-      referencedBy: {
-        refetch: (subject, reach) => {
-          const resources = reach === 'held' ? this.referencedByCache.keys() : subject.resource ? [subject.resource] : [];
-          for (const rId of resources) {
-            this.refresher.held(this.referencedByCache, rId, `referenced-by/${rId}`, () => this.invalidateReferencedBy(rId));
-          }
+    this.refresher = new CacheRefresher<GatherQuery>(
+      this.transport,
+      this.bus,
+      {
+        referencedBy: {
+          refetch: (subject, reach) => {
+            const resources =
+              reach === 'held'
+                ? this.referencedByCache.keys()
+                : subject.resource
+                  ? [subject.resource]
+                  : [];
+            for (const rId of resources) {
+              this.refresher.held(
+                this.referencedByCache,
+                rId,
+                `referenced-by/${rId}`,
+                () => this.invalidateReferencedBy(rId),
+              );
+            }
+          },
         },
       },
-    }, options?.invalidationWindowMs);
+      options?.invalidationWindowMs,
+    );
   }
 
   /**
@@ -87,7 +122,14 @@ export class GatherNamespace implements IGatherNamespace {
       this.wire
         .request(
           'gather:requested',
-          { annotationId, resourceId, options: { ...options, contextWindow: options?.contextWindow ?? 2000 } },
+          {
+            annotationId,
+            resourceId,
+            options: {
+              ...options,
+              contextWindow: options?.contextWindow ?? 2000,
+            },
+          },
           // The request's own deadline: the option above is the live query's.
           undefined,
           abandoned.signal,
@@ -129,18 +171,17 @@ export class GatherNamespace implements IGatherNamespace {
       excludeEntityTypes?: string[];
     },
   ): Promise<GatheredContext> {
-    return this.wire.request(
-      'gather:resource-requested',
-      {
-        resourceId,
-        options: {
-          depth: options?.depth ?? 2,
-          maxResources: options?.maxResources ?? 10,
-          includeContent: options?.includeContent ?? true,
-          includeSummary: options?.includeSummary ?? false,
-          ...(options?.excludeEntityTypes?.length ? { excludeEntityTypes: options.excludeEntityTypes } : {}),
-        },
+    return this.wire.request('gather:resource-requested', {
+      resourceId,
+      options: {
+        depth: options?.depth ?? 2,
+        maxResources: options?.maxResources ?? 10,
+        includeContent: options?.includeContent ?? true,
+        includeSummary: options?.includeSummary ?? false,
+        ...(options?.excludeEntityTypes?.length
+          ? { excludeEntityTypes: options.excludeEntityTypes }
+          : {}),
       },
-    );
+    });
   }
 }

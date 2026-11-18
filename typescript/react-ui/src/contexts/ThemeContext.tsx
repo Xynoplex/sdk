@@ -26,7 +26,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Track system preference changes
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => {
     if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
     }
     return 'light';
   });
@@ -58,7 +60,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, systemTheme }}>
+    <ThemeContext.Provider
+      value={{ theme, setTheme, resolvedTheme, systemTheme }}
+    >
       {children}
     </ThemeContext.Provider>
   );

@@ -26,7 +26,10 @@ import { MEDIA_TYPES, type SupportedMediaType } from './media-types';
  * @example
  * storageFileName("My Document", "text/markdown") // => "my-document.md"
  */
-export function storageFileName(name: string, format: SupportedMediaType): string {
+export function storageFileName(
+  name: string,
+  format: SupportedMediaType,
+): string {
   const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -40,7 +43,10 @@ export function storageFileName(name: string, format: SupportedMediaType): strin
  * @example
  * deriveStorageUri("My Document", "text/markdown") // => "file://my-document.md"
  */
-export function deriveStorageUri(name: string, format: SupportedMediaType): string {
+export function deriveStorageUri(
+  name: string,
+  format: SupportedMediaType,
+): string {
   return `file://${storageFileName(name, format)}`;
 }
 

@@ -1,6 +1,19 @@
-import { BehaviorSubject, Subject, combineLatest, of, type Observable } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject,
+  combineLatest,
+  of,
+  type Observable,
+} from 'rxjs';
 import { readyValue, type CacheState } from '@xynolog/sdk';
-import { debounceTime, distinctUntilChanged, map, startWith, switchMap, shareReplay } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  startWith,
+  switchMap,
+  shareReplay,
+} from 'rxjs/operators';
 import type { ResourceDescriptor } from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import { SEARCH_DEBOUNCE_MS, type StateUnit } from '@xynolog/core';
@@ -64,24 +77,34 @@ export function createDiscoverStateUnit(
   // reach `browse.resources()` again for B15 to clear the marker.
   // The thunk therefore rebuilds the whole chain per attempt.
   const recent = trackList<ResourceDescriptor[]>(
-    () => selectedEntityType$.pipe(
-      switchMap((et) =>
-        client.browse.resources({
-          limit: RECENT_LIMIT,
-          archived: false,
-          ...(et ? { entityType: et } : {}),
-        }).pipe(
-          // This list renders only the page; project it out of the list
-          // envelope.
-          map((st): CacheState<ResourceDescriptor[]> => (st.status === 'ready' ? { status: 'ready', value: st.value.resources } : st)),
+    () =>
+      selectedEntityType$.pipe(
+        switchMap((et) =>
+          client.browse
+            .resources({
+              limit: RECENT_LIMIT,
+              archived: false,
+              ...(et ? { entityType: et } : {}),
+            })
+            .pipe(
+              // This list renders only the page; project it out of the list
+              // envelope.
+              map((st): CacheState<ResourceDescriptor[]> =>
+                st.status === 'ready'
+                  ? { status: 'ready', value: st.value.resources }
+                  : st,
+              ),
+            ),
         ),
       ),
-    ),
     [],
   );
   disposer.add(recent.dispose);
 
-  const entityTypes = trackList<string[]>(() => client.browse.entityTypes(), []);
+  const entityTypes = trackList<string[]>(
+    () => client.browse.entityTypes(),
+    [],
+  );
   disposer.add(entityTypes.dispose);
 
   const debouncedQuery$ = queryInput$.pipe(
@@ -90,34 +113,36 @@ export function createDiscoverStateUnit(
     distinctUntilChanged(),
   );
 
-  const state$: DiscoverSearchPipeline['state$'] =
-    combineLatest([debouncedQuery$, selectedEntityType$]).pipe(
-      switchMap(([q, et]) => {
-        const trimmed = q.trim();
-        if (!trimmed) {
-          // No query, no answer to label: `recent` is what renders, and no
-          // matchKind describes it.
-          return of({ results: [] as ResourceDescriptor[], isSearching: false });
-        }
-        return client.match
-          .resources(trimmed, {
-            limit: SEARCH_LIMIT,
-            ...(et ? { entityType: et } : {}),
-          })
-          .pipe(
-            map((st) => {
-              const ready = readyValue(st);
-              return {
-                results: ready?.resources ?? [],
-                isSearching: st.status === 'pending',
-                ...(ready ? { matchKind: ready.matchKind } : {}),
-              };
-            }),
-            startWith({ results: [] as ResourceDescriptor[], isSearching: true }),
-          );
-      }),
-      shareReplay({ bufferSize: 1, refCount: true }),
-    );
+  const state$: DiscoverSearchPipeline['state$'] = combineLatest([
+    debouncedQuery$,
+    selectedEntityType$,
+  ]).pipe(
+    switchMap(([q, et]) => {
+      const trimmed = q.trim();
+      if (!trimmed) {
+        // No query, no answer to label: `recent` is what renders, and no
+        // matchKind describes it.
+        return of({ results: [] as ResourceDescriptor[], isSearching: false });
+      }
+      return client.match
+        .resources(trimmed, {
+          limit: SEARCH_LIMIT,
+          ...(et ? { entityType: et } : {}),
+        })
+        .pipe(
+          map((st) => {
+            const ready = readyValue(st);
+            return {
+              results: ready?.resources ?? [],
+              isSearching: st.status === 'pending',
+              ...(ready ? { matchKind: ready.matchKind } : {}),
+            };
+          }),
+          startWith({ results: [] as ResourceDescriptor[], isSearching: true }),
+        );
+    }),
+    shareReplay({ bufferSize: 1, refCount: true }),
+  );
 
   const search: DiscoverSearchPipeline = {
     query$: queryInput$.pipe(startWith('')),

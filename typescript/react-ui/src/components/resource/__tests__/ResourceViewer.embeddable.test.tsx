@@ -17,9 +17,16 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
-import type { Annotation, ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  Annotation,
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 import { annotationId, resourceId, EventBus } from '@xynolog/core';
-import { createTestXynologWrapper, englishTranslationManager } from '../../../test-utils';
+import {
+  createTestXynologWrapper,
+  englishTranslationManager,
+} from '../../../test-utils';
 import { ResourceViewer } from '../ResourceViewer';
 
 // Minimal bring-your-own-session double: just the surface ResourceViewer + its
@@ -47,7 +54,13 @@ const resource: XynologResource & { content: string } = {
   content: 'Embeddable content.',
 };
 
-const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const annotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 /**
  * A highlight the viewer has actually loaded. Required because a click carries
@@ -61,10 +74,16 @@ const loadedHighlight: Annotation = {
   id: annotationId('ann-1'),
   motivation: 'highlighting',
   created: '2026-01-01T00:00:00.000Z',
-  target: { source: resourceId('res-1'), selector: { type: 'TextPositionSelector', start: 0, end: 10 } },
+  target: {
+    source: resourceId('res-1'),
+    selector: { type: 'TextPositionSelector', start: 0, end: 10 },
+  },
 };
 
-const annotationsWithHighlight = { ...annotations, highlights: [loadedHighlight] };
+const annotationsWithHighlight = {
+  ...annotations,
+  highlights: [loadedHighlight],
+};
 
 describe('ResourceViewer — embeddable (bring-your-own-session, no session provider)', () => {
   // The whole browse-mode subtree (ResourceViewer → BrowseView →
@@ -100,9 +119,19 @@ describe('ResourceViewer — embeddable (bring-your-own-session, no session prov
   it('does not compile without a language, or with two', () => {
     const elements = [
       // @ts-expect-error no language: react-ui assumes none
-      <ResourceViewer session={fakeSession()} resource={resource} annotations={annotations} />,
+      <ResourceViewer
+        session={fakeSession()}
+        resource={resource}
+        annotations={annotations}
+      />,
       // @ts-expect-error a locale and a manager both: the language is one or the other
-      <ResourceViewer locale="en" translationManager={englishTranslationManager} session={fakeSession()} resource={resource} annotations={annotations} />,
+      <ResourceViewer
+        locale="en"
+        translationManager={englishTranslationManager}
+        session={fakeSession()}
+        resource={resource}
+        annotations={annotations}
+      />,
     ];
     expect(elements).toHaveLength(2);
   });
@@ -126,8 +155,14 @@ describe('ResourceViewer — embeddable (bring-your-own-session, no session prov
     );
 
     const anchorRect = {
-      x: 5, y: 6, width: 7, height: 8,
-      top: 6, right: 12, bottom: 14, left: 5,
+      x: 5,
+      y: 6,
+      width: 7,
+      height: 8,
+      top: 6,
+      right: 12,
+      bottom: 14,
+      left: 5,
     };
     act(() => {
       eventBus.emit('browse:click', {
@@ -137,13 +172,15 @@ describe('ResourceViewer — embeddable (bring-your-own-session, no session prov
     });
 
     await waitFor(() => {
-      expect(onOpenPanel).toHaveBeenCalledWith(expect.objectContaining({
-        panel: 'annotations',
-        scrollToAnnotationId: 'ann-1',
-        // Derived from the annotation the id names, never carried on the wire.
-        motivation: 'highlighting',
-        anchorRect: expect.objectContaining({ left: 5, width: 7 }),
-      }));
+      expect(onOpenPanel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          panel: 'annotations',
+          scrollToAnnotationId: 'ann-1',
+          // Derived from the annotation the id names, never carried on the wire.
+          motivation: 'highlighting',
+          anchorRect: expect.objectContaining({ left: 5, width: 7 }),
+        }),
+      );
     });
   });
 
@@ -202,7 +239,9 @@ describe('ResourceViewer — embeddable (bring-your-own-session, no session prov
     );
 
     act(() => {
-      eventBus.emit('browse:click', { annotationId: annotationId('ann-not-here') });
+      eventBus.emit('browse:click', {
+        annotationId: annotationId('ann-not-here'),
+      });
     });
 
     await new Promise((r) => setTimeout(r, 20));

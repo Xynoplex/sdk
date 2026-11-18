@@ -15,7 +15,9 @@ import {
 import type { ResourceDescriptor } from '../graph';
 type Representation = components['schemas']['Representation'];
 
-function makeResource(overrides?: Partial<ResourceDescriptor>): ResourceDescriptor {
+function makeResource(
+  overrides?: Partial<ResourceDescriptor>,
+): ResourceDescriptor {
   return {
     '@context': 'http://schema.org',
     '@id': resourceId('abc-123'),
@@ -38,7 +40,9 @@ describe('getResourceId', () => {
   });
 
   test('returns @id as-is', () => {
-    expect(getResourceId(makeResource({ '@id': resourceId('xyz-456') }))).toBe('xyz-456');
+    expect(getResourceId(makeResource({ '@id': resourceId('xyz-456') }))).toBe(
+      'xyz-456',
+    );
   });
 
   test('returns undefined for undefined resource', () => {
@@ -66,12 +70,16 @@ describe('getPrimaryRepresentation', () => {
 
 describe('getPrimaryMediaType', () => {
   test('returns media type from primary representation', () => {
-    const r = makeResource({ representations: makeRep({ mediaType: 'text/markdown' }) });
+    const r = makeResource({
+      representations: makeRep({ mediaType: 'text/markdown' }),
+    });
     expect(getPrimaryMediaType(r)).toBe('text/markdown');
   });
 
   test('returns undefined for empty representations', () => {
-    expect(getPrimaryMediaType(makeResource({ representations: [] }))).toBeUndefined();
+    expect(
+      getPrimaryMediaType(makeResource({ representations: [] })),
+    ).toBeUndefined();
   });
 });
 
@@ -84,7 +92,9 @@ describe('getLanguage', () => {
 
 describe('getStorageUri', () => {
   test('returns storageUri from primary representation', () => {
-    const r = makeResource({ representations: makeRep({ storageUri: 'file:///data/abc.txt' }) });
+    const r = makeResource({
+      representations: makeRep({ storageUri: 'file:///data/abc.txt' }),
+    });
     expect(getStorageUri(r)).toBe('file:///data/abc.txt');
   });
 });
@@ -105,7 +115,9 @@ describe('isArchived', () => {
 
 describe('getResourceEntityTypes', () => {
   test('returns entity types', () => {
-    expect(getResourceEntityTypes(makeResource({ entityTypes: ['Person', 'Org'] }))).toEqual(['Person', 'Org']);
+    expect(
+      getResourceEntityTypes(makeResource({ entityTypes: ['Person', 'Org'] })),
+    ).toEqual(['Person', 'Org']);
   });
 
   test('returns empty array when not set', () => {

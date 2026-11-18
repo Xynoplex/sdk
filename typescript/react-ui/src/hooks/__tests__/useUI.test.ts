@@ -1,9 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
 import {
-  useDropdown,
-  useLoadingState,
-} from '../useUI';
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type MockInstance,
+} from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useDropdown, useLoadingState } from '../useUI';
 
 describe('useUI Hooks', () => {
   describe('useDropdown', () => {
@@ -79,8 +84,14 @@ describe('useUI Hooks', () => {
           result.current.open();
         });
 
-        expect(addEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function));
-        expect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+        expect(addEventListenerSpy).toHaveBeenCalledWith(
+          'mousedown',
+          expect.any(Function),
+        );
+        expect(addEventListenerSpy).toHaveBeenCalledWith(
+          'keydown',
+          expect.any(Function),
+        );
       });
 
       it('should remove event listeners when closed', () => {
@@ -94,8 +105,14 @@ describe('useUI Hooks', () => {
           result.current.close();
         });
 
-        expect(removeEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function));
-        expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+        expect(removeEventListenerSpy).toHaveBeenCalledWith(
+          'mousedown',
+          expect.any(Function),
+        );
+        expect(removeEventListenerSpy).toHaveBeenCalledWith(
+          'keydown',
+          expect.any(Function),
+        );
       });
 
       it('should close on Escape key press', () => {
@@ -107,7 +124,9 @@ describe('useUI Hooks', () => {
         expect(result.current.isOpen).toBe(true);
 
         act(() => {
-          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+          document.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Escape' }),
+          );
         });
         expect(result.current.isOpen).toBe(false);
       });
@@ -120,7 +139,9 @@ describe('useUI Hooks', () => {
         });
 
         act(() => {
-          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+          document.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter' }),
+          );
         });
         expect(result.current.isOpen).toBe(true);
       });

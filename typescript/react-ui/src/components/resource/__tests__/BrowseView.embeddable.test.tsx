@@ -17,11 +17,21 @@ import { resourceId, EventBus } from '@xynolog/core';
 
 // AnnotateToolbar is stubbed out so this spec exercises only BrowseView's own
 // provider-freedom.
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession(): XynologSession {
   return {
@@ -40,7 +50,7 @@ describe('BrowseView — embeddable (session prop, no providers)', () => {
         translationManager={englishTranslationManager}
         content="Embeddable browse content."
         mimeType="text/plain"
-        resourceUri={resourceId("res-1")}
+        resourceUri={resourceId('res-1')}
         annotations={emptyAnnotations}
         annotateMode={false}
         session={fakeSession()}
@@ -52,7 +62,14 @@ describe('BrowseView — embeddable (session prop, no providers)', () => {
   it('does not compile without a language: react-ui assumes none', () => {
     const elements = [
       // @ts-expect-error no language
-      <BrowseView content="x" mimeType="text/plain" resourceUri={resourceId('res-1')} annotations={emptyAnnotations} annotateMode={false} session={fakeSession()} />,
+      <BrowseView
+        content="x"
+        mimeType="text/plain"
+        resourceUri={resourceId('res-1')}
+        annotations={emptyAnnotations}
+        annotateMode={false}
+        session={fakeSession()}
+      />,
     ];
     expect(elements).toHaveLength(1);
   });

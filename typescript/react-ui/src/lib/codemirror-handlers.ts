@@ -6,7 +6,10 @@
  * elements and a XynologSession — no CodeMirror API dependency.
  */
 
-import { annotationId as toAnnotationId, resourceId as toResourceId } from '@xynolog/core';
+import {
+  annotationId as toAnnotationId,
+  resourceId as toResourceId,
+} from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import type { TextSegment } from './codemirror-logic';
 
@@ -21,7 +24,7 @@ import type { TextSegment } from './codemirror-logic';
 export function handleAnnotationClick(
   target: HTMLElement,
   segmentsById: Map<string, TextSegment>,
-  session: XynologSession
+  session: XynologSession,
 ): boolean {
   const annotationElement = target.closest('[data-annotation-id]');
   const annotationId = annotationElement?.getAttribute('data-annotation-id');
@@ -50,7 +53,9 @@ export interface WidgetClickResult {
  * Determines whether to navigate (resolved) or browse-click (unresolved).
  */
 export function handleWidgetClick(target: HTMLElement): WidgetClickResult {
-  const widget = target.closest('.reference-preview-widget') as HTMLElement | null;
+  const widget = target.closest(
+    '.reference-preview-widget',
+  ) as HTMLElement | null;
   if (!widget || widget.dataset.widgetGenerating === 'true') {
     return { handled: false };
   }
@@ -83,7 +88,10 @@ export function handleWidgetClick(target: HTMLElement): WidgetClickResult {
  * @emits browse:resource-open - Open the resource a resolved reference's widget names. Payload: { resourceId: string }
  * @emits browse:click - The annotation whose widget was clicked. Payload: { annotationId: string }
  */
-export function dispatchWidgetClick(result: WidgetClickResult, session: XynologSession): void {
+export function dispatchWidgetClick(
+  result: WidgetClickResult,
+  session: XynologSession,
+): void {
   if (!result.handled) return;
 
   if (result.action === 'navigate' && result.resourceId) {
@@ -101,16 +109,23 @@ export function handleWidgetMouseEnter(target: HTMLElement): {
   targetName?: string;
   widget: HTMLElement | null;
 } {
-  const widget = target.closest('.reference-preview-widget') as HTMLElement | null;
+  const widget = target.closest(
+    '.reference-preview-widget',
+  ) as HTMLElement | null;
   if (!widget || widget.dataset.widgetGenerating === 'true') {
     return { showPreview: false, widget: null };
   }
 
   // Raise indicator opacity
-  const indicator = widget.querySelector('.reference-indicator') as HTMLElement | null;
+  const indicator = widget.querySelector(
+    '.reference-indicator',
+  ) as HTMLElement | null;
   if (indicator) indicator.style.opacity = '1';
 
-  if (widget.dataset.widgetResolved === 'true' && widget.dataset.widgetTargetName) {
+  if (
+    widget.dataset.widgetResolved === 'true' &&
+    widget.dataset.widgetTargetName
+  ) {
     return {
       showPreview: true,
       targetName: widget.dataset.widgetTargetName,
@@ -128,12 +143,16 @@ export function handleWidgetMouseLeave(target: HTMLElement): {
   hidePreview: boolean;
   widget: HTMLElement | null;
 } {
-  const widget = target.closest('.reference-preview-widget') as HTMLElement | null;
+  const widget = target.closest(
+    '.reference-preview-widget',
+  ) as HTMLElement | null;
   if (!widget) {
     return { hidePreview: false, widget: null };
   }
 
-  const indicator = widget.querySelector('.reference-indicator') as HTMLElement | null;
+  const indicator = widget.querySelector(
+    '.reference-indicator',
+  ) as HTMLElement | null;
   if (indicator) indicator.style.opacity = '0.6';
 
   if (widget.dataset.widgetResolved === 'true') {

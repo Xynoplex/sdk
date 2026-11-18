@@ -41,7 +41,11 @@ export interface DelegateProgressTranslations {
    * Takes the wire's `{ kind, value }` — the localized name for `kind` is the
    * translation layer's business, not this component's.
    */
-  subject: (current: NonNullable<JobProgress['current']>, done?: number, total?: number) => string;
+  subject: (
+    current: NonNullable<JobProgress['current']>,
+    done?: number,
+    total?: number,
+  ) => string;
   /**
    * Localized NAME for an echoed request parameter. The wire sends a code
    * (`instructions`, `tone`, …); the VALUE beside it is the user's own words
@@ -154,13 +158,17 @@ export function DelegateProgress({
   // display follows one job: `DelegateShell` keys it by the job's id, so the
   // next job's display starts with its control live.
   const [cancelling, setCancelling] = useState(false);
-  const cancel = onCancel && (() => {
-    setCancelling(true);
-    onCancel().then(
-      (acted) => { if (!acted) setCancelling(false); },
-      () => setCancelling(false),
-    );
-  });
+  const cancel =
+    onCancel &&
+    (() => {
+      setCancelling(true);
+      onCancel().then(
+        (acted) => {
+          if (!acted) setCancelling(false);
+        },
+        () => setCancelling(false),
+      );
+    });
   const pressed = cancelling && !ended;
 
   // The params line earns its space only when it says something the status
@@ -185,9 +193,16 @@ export function DelegateProgress({
   // exists.
 
   return (
-    <div className="xynolog-delegate-progress" data-type={dataType} data-ended={ended}>
+    <div
+      className="xynolog-delegate-progress"
+      data-type={dataType}
+      data-ended={ended}
+    >
       {params && params.length > 0 && (
-        <div className="xynolog-delegate-progress__params" data-testid="xynolog-delegate-params">
+        <div
+          className="xynolog-delegate-progress__params"
+          data-testid="xynolog-delegate-params"
+        >
           {/* No block heading, but every parameter keeps its label: a bare
               "5" for Density says nothing. */}
           {params.map((param, idx) => (
@@ -203,7 +218,10 @@ export function DelegateProgress({
 
       {/* Kept uncapped — per-item counts are small in practice. */}
       {tr.found && progress.completedItems && (
-        <ItemFoundLog entries={progress.completedItems} formatFound={tr.found} />
+        <ItemFoundLog
+          entries={progress.completedItems}
+          formatFound={tr.found}
+        />
       )}
 
       <div className="xynolog-delegate-progress__status">
@@ -215,21 +233,31 @@ export function DelegateProgress({
             ? tr.cancelled
             : ended && endedMessage
               ? endedMessage
-              : progress.message ? tr.message(progress.message) : tr.inProgress}
+              : progress.message
+                ? tr.message(progress.message)
+                : tr.inProgress}
         </span>
       </div>
 
       {/* The honest denominator. Present only when the count-verifier
           priced one — both counts from the wire, zero manufactured. */}
-      {tr.tally && progress.entitiesFound !== undefined && progress.entitiesExpected !== undefined && (
-        <div className="xynolog-delegate-progress__tally" data-testid="xynolog-delegate-tally">
-          {tr.tally(progress.entitiesFound, progress.entitiesExpected)}
-        </div>
-      )}
+      {tr.tally &&
+        progress.entitiesFound !== undefined &&
+        progress.entitiesExpected !== undefined && (
+          <div
+            className="xynolog-delegate-progress__tally"
+            data-testid="xynolog-delegate-tally"
+          >
+            {tr.tally(progress.entitiesFound, progress.entitiesExpected)}
+          </div>
+        )}
 
       {/* Stage above, subject beneath. */}
       {current && (
-        <div className="xynolog-delegate-progress__subject" data-testid="xynolog-delegate-subject">
+        <div
+          className="xynolog-delegate-progress__subject"
+          data-testid="xynolog-delegate-subject"
+        >
           {tr.subject(current, done, total)}
         </div>
       )}
@@ -253,7 +281,9 @@ export function DelegateProgress({
         <div
           className="xynolog-progress-bar__fill"
           data-type={dataType}
-          style={{ width: `${ended === 'completed' ? 100 : progress.percentage}%` }}
+          style={{
+            width: `${ended === 'completed' ? 100 : progress.percentage}%`,
+          }}
         />
       </div>
 

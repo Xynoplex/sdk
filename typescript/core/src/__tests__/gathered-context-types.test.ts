@@ -67,16 +67,28 @@ describe('GatheredContext — unified shape', () => {
       nodes: [
         { id: resourceId('r-1'), type: 'resource', label: 'R' },
         {
-          id: annotationId('a-1'), type: 'annotation', label: 'A', entityTypes: ['Person'],
+          id: annotationId('a-1'),
+          type: 'annotation',
+          label: 'A',
+          entityTypes: ['Person'],
           annotation: {
             '@context': 'http://www.w3.org/ns/anno.jsonld',
-            type: 'Annotation', id: annotationId('a-1'), motivation: 'commenting',
+            type: 'Annotation',
+            id: annotationId('a-1'),
+            motivation: 'commenting',
             target: { source: resourceId('r-1') },
             created: '2020-01-01T00:00:00.000Z',
           },
         },
       ],
-      edges: [{ source: 'a-1', target: 'r-1', type: 'annotation-of', bidirectional: false }],
+      edges: [
+        {
+          source: 'a-1',
+          target: 'r-1',
+          type: 'annotation-of',
+          bidirectional: false,
+        },
+      ],
     };
     expect(g.nodes[0]!.type).toBe('resource');
     expect(g.edges[0]!.bidirectional).toBe(false);
@@ -87,7 +99,8 @@ describe('GatheredContext — unified shape', () => {
 // The annotation focus carries the (dormant) target* capability; the
 // gather:annotation channels carry a bare GatheredContext, symmetric with the
 // resource path.
-type GatherAnnotationComplete = components['schemas']['GatherAnnotationComplete'];
+type GatherAnnotationComplete =
+  components['schemas']['GatherAnnotationComplete'];
 
 describe('GatheredContext — annotation focus, carried bare', () => {
   it('annotation focus accepts targetResource? / targetContext?', () => {
@@ -109,13 +122,20 @@ describe('GatheredContext — annotation focus, carried bare', () => {
 
   it('gather:annotation channel responses are a bare GatheredContext', () => {
     const ctx: GatheredContext = {
-      focus: { kind: 'annotation', annotation: anAnnotation, sourceResource: aResource },
+      focus: {
+        kind: 'annotation',
+        annotation: anAnnotation,
+        sourceResource: aResource,
+      },
       graph: aGraph,
       metadata: {},
     };
     // No `correlationId`: the key rides the envelope, so a reply's
     // domain type does not declare it.
-    const complete: GatherAnnotationComplete = { annotationId: annotationId('a-1'), response: ctx };
+    const complete: GatherAnnotationComplete = {
+      annotationId: annotationId('a-1'),
+      response: ctx,
+    };
     expect(complete.response.focus.kind).toBe('annotation');
   });
 });

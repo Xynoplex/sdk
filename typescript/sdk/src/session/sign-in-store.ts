@@ -50,7 +50,11 @@ export type System = 'macos' | 'windows' | 'other';
  */
 export function stateDir(
   system: System,
-  environment: { home: string | null; xdgStateHome: string | null; localAppData: string | null },
+  environment: {
+    home: string | null;
+    xdgStateHome: string | null;
+    localAppData: string | null;
+  },
 ): string | null {
   const { home, xdgStateHome, localAppData } = environment;
   if (!isSet(home)) return null;
@@ -58,9 +62,13 @@ export function stateDir(
     case 'macos':
       return under('/', home, 'Library', 'Application Support', 'xynolog');
     case 'windows':
-      return isSet(localAppData) ? under('\\', localAppData, 'xynolog') : under('\\', home, 'AppData', 'Local', 'xynolog');
+      return isSet(localAppData)
+        ? under('\\', localAppData, 'xynolog')
+        : under('\\', home, 'AppData', 'Local', 'xynolog');
     case 'other':
-      return isSet(xdgStateHome) ? under('/', xdgStateHome, 'xynolog') : under('/', home, '.local', 'state', 'xynolog');
+      return isSet(xdgStateHome)
+        ? under('/', xdgStateHome, 'xynolog')
+        : under('/', home, '.local', 'state', 'xynolog');
   }
 }
 
@@ -125,13 +133,20 @@ export interface SignInFiles {
 
 /** A member of the document as a sign-in that can be renewed, as the sign-in a client holds; null when it is none. */
 function heldOf(member: unknown): StoredSession | null {
-  if (!isSignIn(member) || member.refreshToken === undefined || member.refreshToken === '') return null;
+  if (
+    !isSignIn(member) ||
+    member.refreshToken === undefined ||
+    member.refreshToken === ''
+  )
+    return null;
   return {
     access: member.token,
     refresh: member.refreshToken,
     clientId: SCRIPT_CLIENT_ID,
     tokenEndpoint: member.tokenEndpoint,
-    ...(member.revocationEndpoint === undefined ? {} : { revocationEndpoint: member.revocationEndpoint }),
+    ...(member.revocationEndpoint === undefined
+      ? {}
+      : { revocationEndpoint: member.revocationEndpoint }),
   };
 }
 
@@ -141,7 +156,10 @@ function toTheSecond(at: Date): string {
 }
 
 /** Who signed in, at which issuer, and where it is renewed, as a sign-in states them. */
-type Learned = Pick<SignIn, 'email' | 'issuer' | 'tokenEndpoint' | 'revocationEndpoint'>;
+type Learned = Pick<
+  SignIn,
+  'email' | 'issuer' | 'tokenEndpoint' | 'revocationEndpoint'
+>;
 
 /** The tokens `access` and `refresh` as the sign-in the file keeps of what `learned` states, obtained now. */
 function entryOf(learned: Learned, access: string, refresh: string): SignIn {
@@ -154,7 +172,9 @@ function entryOf(learned: Learned, access: string, refresh: string): SignIn {
     ...(expiry === null ? {} : { expiresAt: toTheSecond(expiry) }),
     issuer: learned.issuer,
     tokenEndpoint: learned.tokenEndpoint,
-    ...(learned.revocationEndpoint === undefined ? {} : { revocationEndpoint: learned.revocationEndpoint }),
+    ...(learned.revocationEndpoint === undefined
+      ? {}
+      : { revocationEndpoint: learned.revocationEndpoint }),
   };
 }
 
@@ -172,18 +192,26 @@ export class SignInStore {
       held: () => heldOf(this.read().get(key)),
       keep: (signIn) => {
         if (signIn.clientId !== SCRIPT_CLIENT_ID) {
-          throw new Error(`The sign-in store keeps what the client ${SCRIPT_CLIENT_ID} was issued, and this was issued to ${signIn.clientId}`);
+          throw new Error(
+            `The sign-in store keeps what the client ${SCRIPT_CLIENT_ID} was issued, and this was issued to ${signIn.clientId}`,
+          );
         }
         // A gateway admits no token from an issuer it does not trust: a token
         // that names no issuer is no sign-in.
         const issuer = textClaim(signIn.access, 'iss');
-        if (issuer === null) throw new SignInError('exchange', `The sign-in to ${key} was not kept: its access token names no issuer`);
+        if (issuer === null)
+          throw new SignInError(
+            'exchange',
+            `The sign-in to ${key} was not kept: its access token names no issuer`,
+          );
         const email = textClaim(signIn.access, 'email');
         const learned: Learned = {
           ...(email === null ? {} : { email }),
           issuer,
           tokenEndpoint: signIn.tokenEndpoint,
-          ...(signIn.revocationEndpoint === undefined ? {} : { revocationEndpoint: signIn.revocationEndpoint }),
+          ...(signIn.revocationEndpoint === undefined
+            ? {}
+            : { revocationEndpoint: signIn.revocationEndpoint }),
         };
         this.change((document) => {
           document.set(key, entryOf(learned, signIn.access, signIn.refresh));
@@ -198,7 +226,10 @@ export class SignInStore {
           // Another program renewed, or signed in again, while this renewal's
           // grant was in flight: its tokens stand. The refresh token alone does
           // not tell, since an issuer that rotates none leaves it as it was.
-          if (before.token !== read.access || before.refreshToken !== read.refresh) {
+          if (
+            before.token !== read.access ||
+            before.refreshToken !== read.refresh
+          ) {
             given = before.token;
             return false;
           }
@@ -219,7 +250,8 @@ export class SignInStore {
     const text = this.files.read(SIGN_IN_STORE_FILE);
     if (text === null) return new Map();
     const document: unknown = JSON.parse(text);
-    if (!isObject(document)) throw new Error(`${SIGN_IN_STORE_FILE} holds no JSON object`);
+    if (!isObject(document))
+      throw new Error(`${SIGN_IN_STORE_FILE} holds no JSON object`);
     return new Map(Object.entries(document));
   }
 
@@ -229,16 +261,27 @@ export class SignInStore {
    * kept to its owner before the read.
    */
   private change(change: (document: Map<string, unknown>) => boolean): void {
-    if (this.changing) throw new Error('A change to the sign-in store was begun inside another: its lock is held, and is not taken twice');
+    if (this.changing)
+      throw new Error(
+        'A change to the sign-in store was begun inside another: its lock is held, and is not taken twice',
+      );
     this.changing = true;
     try {
       this.files.makeDirectory();
-      const release = this.files.lock(SIGN_IN_STORE_LOCK, OWNER_ONLY_FILE_MODE, SIGN_IN_STORE_WINDOWS_OFFSET_HIGH);
+      const release = this.files.lock(
+        SIGN_IN_STORE_LOCK,
+        OWNER_ONLY_FILE_MODE,
+        SIGN_IN_STORE_WINDOWS_OFFSET_HIGH,
+      );
       try {
         this.files.keepToOwner(OWNER_ONLY_DIRECTORY_MODE, ownerOnlyAccessList);
         const document = this.read();
         if (change(document)) {
-          this.files.replace(SIGN_IN_STORE_FILE, `${JSON.stringify(Object.fromEntries(document), null, 2)}\n`, OWNER_ONLY_FILE_MODE);
+          this.files.replace(
+            SIGN_IN_STORE_FILE,
+            `${JSON.stringify(Object.fromEntries(document), null, 2)}\n`,
+            OWNER_ONLY_FILE_MODE,
+          );
         }
       } finally {
         release();

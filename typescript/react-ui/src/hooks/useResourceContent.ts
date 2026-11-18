@@ -33,27 +33,47 @@ export function useResourceContent(
   client: XynologClient | null,
   rUri: ResourceId,
   resource: ResourceDescriptor,
-  enabled = true
+  enabled = true,
 ): UseResourceContentResult {
-  const mediaType = enabled ? (getPrimaryMediaType(resource) || 'text/plain') : '';
+  const mediaType = enabled
+    ? getPrimaryMediaType(resource) || 'text/plain'
+    : '';
 
   const [outcome, setOutcome] = useState<Outcome | null>(null);
 
   useEffect(() => {
     if (!client || !enabled) return;
     let cancelled = false;
-    client.browse.resourceRepresentation(rUri).then(({ data, contentType }) => {
-      if (cancelled) return;
-      setOutcome({ client, rUri, mediaType, result: { content: decodeWithCharset(data, contentType) } });
-    }).catch((err) => {
-      if (cancelled) return;
-      setOutcome({ client, rUri, mediaType, result: { error: err instanceof Error ? err : new Error(String(err)) } });
-    });
+    client.browse
+      .resourceRepresentation(rUri)
+      .then(({ data, contentType }) => {
+        if (cancelled) return;
+        setOutcome({
+          client,
+          rUri,
+          mediaType,
+          result: { content: decodeWithCharset(data, contentType) },
+        });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setOutcome({
+          client,
+          rUri,
+          mediaType,
+          result: {
+            error: err instanceof Error ? err : new Error(String(err)),
+          },
+        });
+      });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [client, rUri, mediaType, enabled]);
 
-  if (!client || !enabled) return { content: undefined, loading: false, error: null };
+  if (!client || !enabled)
+    return { content: undefined, loading: false, error: null };
 
   // An outcome answers only for the inputs it was fetched for, and that is
   // checked HERE, during render. State cleared in the effect arrives one render

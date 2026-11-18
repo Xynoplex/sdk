@@ -20,7 +20,10 @@ import { SessionEndedModal } from '../SessionEndedModal';
 import en from '../../../../translations/en.json';
 import ja from '../../../../translations/ja.json';
 
-vi.mock('@headlessui/react', () => import('../../../__tests__/plain-headlessui'));
+vi.mock(
+  '@headlessui/react',
+  () => import('../../../__tests__/plain-headlessui'),
+);
 
 const english = createMockTranslationManager(en);
 const japanese = createMockTranslationManager(ja);
@@ -59,41 +62,69 @@ describe('SessionEndedModal', () => {
   describe('when the session ended', () => {
     it('an expired session is told so, under the one title', () => {
       renderWithProviders(<SessionEndedModal />, {
-        browser: createTestBrowserWithSignals({ sessionEnded: { reason: 'expired' } }),
+        browser: createTestBrowserWithSignals({
+          sessionEnded: { reason: 'expired' },
+        }),
         translationManager: english,
       });
 
       expect(screen.getByText(en.SessionEndedModal.title)).toBeInTheDocument();
-      expect(screen.getByText(en.SessionEndedModal.expired)).toBeInTheDocument();
-      expect(screen.queryByText(en.SessionEndedModal.refused)).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: en.SessionEndedModal.signInAgain })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: en.SessionEndedModal.goHome })).toBeInTheDocument();
+      expect(
+        screen.getByText(en.SessionEndedModal.expired),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(en.SessionEndedModal.refused),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: en.SessionEndedModal.signInAgain }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: en.SessionEndedModal.goHome }),
+      ).toBeInTheDocument();
     });
 
     it('a refused credential is told so, under the same title', () => {
       renderWithProviders(<SessionEndedModal />, {
-        browser: createTestBrowserWithSignals({ sessionEnded: { reason: 'refused' } }),
+        browser: createTestBrowserWithSignals({
+          sessionEnded: { reason: 'refused' },
+        }),
         translationManager: english,
       });
 
       expect(screen.getByText(en.SessionEndedModal.title)).toBeInTheDocument();
-      expect(screen.getByText(en.SessionEndedModal.refused)).toBeInTheDocument();
-      expect(screen.queryByText(en.SessionEndedModal.expired)).not.toBeInTheDocument();
+      expect(
+        screen.getByText(en.SessionEndedModal.refused),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(en.SessionEndedModal.expired),
+      ).not.toBeInTheDocument();
     });
 
     it('a person using the application in Japanese is told in Japanese: title, reason and buttons', () => {
       renderWithProviders(<SessionEndedModal />, {
-        browser: createTestBrowserWithSignals({ sessionEnded: { reason: 'refused' } }),
+        browser: createTestBrowserWithSignals({
+          sessionEnded: { reason: 'refused' },
+        }),
         translationManager: japanese,
       });
 
       expect(ja.SessionEndedModal.title).not.toBe(en.SessionEndedModal.title);
       expect(screen.getByText(ja.SessionEndedModal.title)).toBeInTheDocument();
-      expect(screen.getByText(ja.SessionEndedModal.refused)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: ja.SessionEndedModal.signInAgain })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: ja.SessionEndedModal.goHome })).toBeInTheDocument();
-      expect(screen.queryByText(en.SessionEndedModal.title)).not.toBeInTheDocument();
-      expect(screen.queryByText(en.SessionEndedModal.refused)).not.toBeInTheDocument();
+      expect(
+        screen.getByText(ja.SessionEndedModal.refused),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: ja.SessionEndedModal.signInAgain }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: ja.SessionEndedModal.goHome }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(en.SessionEndedModal.title),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(en.SessionEndedModal.refused),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -109,10 +140,14 @@ describe('SessionEndedModal', () => {
         translationManager: english,
       });
 
-      fireEvent.click(screen.getByRole('button', { name: en.SessionEndedModal.signInAgain }));
+      fireEvent.click(
+        screen.getByRole('button', { name: en.SessionEndedModal.signInAgain }),
+      );
 
       expect(ack).toHaveBeenCalled();
-      expect(mockLocation.href).toBe('/auth/connect?callbackUrl=%2Fknow%2Fdiscover');
+      expect(mockLocation.href).toBe(
+        '/auth/connect?callbackUrl=%2Fknow%2Fdiscover',
+      );
     });
 
     it('calls acknowledgeSessionEnded and navigates to / on Go to Home', () => {
@@ -125,7 +160,9 @@ describe('SessionEndedModal', () => {
         translationManager: english,
       });
 
-      fireEvent.click(screen.getByRole('button', { name: en.SessionEndedModal.goHome }));
+      fireEvent.click(
+        screen.getByRole('button', { name: en.SessionEndedModal.goHome }),
+      );
 
       expect(ack).toHaveBeenCalled();
       expect(mockLocation.href).toBe('/');

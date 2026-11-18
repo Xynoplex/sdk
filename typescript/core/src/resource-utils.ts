@@ -17,14 +17,22 @@ type Representation = components['schemas']['Representation'];
  *
  * @id is always a bare ID (UUID), never a full URI.
  */
-export function getResourceId(resource: ResourceDescriptor | undefined): ResourceId | undefined {
+export function getResourceId(
+  resource: ResourceDescriptor | undefined,
+): ResourceId | undefined {
   if (!resource) return undefined;
   return resource['@id'] || undefined;
 }
 
 /** Whether `value` is a representation as its schema has one: an object that states its media type as text. */
 function isRepresentation(value: unknown): value is Representation {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) && 'mediaType' in value && typeof value.mediaType === 'string';
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    'mediaType' in value &&
+    typeof value.mediaType === 'string'
+  );
 }
 
 /**
@@ -34,7 +42,9 @@ function isRepresentation(value: unknown): value is Representation {
  * them, is no ResourceDescriptor and is refused, as the Rust and Python SDKs
  * refuse it when they decode it (protocol/specs/src/resources/reader-cases.json).
  */
-export function getPrimaryRepresentation(resource: ResourceDescriptor | undefined): Representation | undefined {
+export function getPrimaryRepresentation(
+  resource: ResourceDescriptor | undefined,
+): Representation | undefined {
   if (resource === undefined) return undefined;
   const stated: unknown = resource.representations;
   if (isRepresentation(stated)) return stated;
@@ -49,14 +59,18 @@ export function getPrimaryRepresentation(resource: ResourceDescriptor | undefine
  * Get the media type from the primary representation. A resource that is no
  * ResourceDescriptor is refused, as getPrimaryRepresentation refuses it.
  */
-export function getPrimaryMediaType(resource: ResourceDescriptor | undefined): string | undefined {
+export function getPrimaryMediaType(
+  resource: ResourceDescriptor | undefined,
+): string | undefined {
   return getPrimaryRepresentation(resource)?.mediaType;
 }
 
 /**
  * Get the language from the primary representation
  */
-export function getLanguage(resource: ResourceDescriptor | undefined): string | undefined {
+export function getLanguage(
+  resource: ResourceDescriptor | undefined,
+): string | undefined {
   return getPrimaryRepresentation(resource)?.language;
 }
 
@@ -70,7 +84,9 @@ export function getLanguage(resource: ResourceDescriptor | undefined): string | 
  * @param resource - ResourceDescriptor
  * @returns Storage URI or undefined
  */
-export function getStorageUri(resource: ResourceDescriptor | undefined): string | undefined {
+export function getStorageUri(
+  resource: ResourceDescriptor | undefined,
+): string | undefined {
   return getPrimaryRepresentation(resource)?.storageUri;
 }
 
@@ -90,7 +106,9 @@ export function isArchived(resource: ResourceDescriptor | undefined): boolean {
  * @param resource - ResourceDescriptor
  * @returns Array of entity types, empty if not set
  */
-export function getResourceEntityTypes(resource: ResourceDescriptor | undefined): string[] {
+export function getResourceEntityTypes(
+  resource: ResourceDescriptor | undefined,
+): string[] {
   return resource?.entityTypes || [];
 }
 
@@ -125,7 +143,10 @@ export function isDraft(resource: ResourceDescriptor | undefined): boolean {
  * const legacy = decodeRepresentation(buffer, "text/plain; charset=windows-1252");
  * ```
  */
-export function decodeRepresentation(buffer: ArrayBuffer | Uint8Array, mediaType: string): string {
+export function decodeRepresentation(
+  buffer: ArrayBuffer | Uint8Array,
+  mediaType: string,
+): string {
   // The chokepoint gate: decoding is only legitimate for media whose bytes
   // ARE its text — not for derived-text media (the anchored-text read answers
   // those) and not for media with no text at all. A PDF decoded here would
@@ -138,7 +159,7 @@ export function decodeRepresentation(buffer: ArrayBuffer | Uint8Array, mediaType
   if (derivesTextOf(mediaType) || source === 'none') {
     throw new XynologError(
       `decodeRepresentation refused ${mediaType}: its text source is '${source}' — ` +
-      `derived text comes from the anchored-text read, never from decoding bytes`,
+        `derived text comes from the anchored-text read, never from decoding bytes`,
       'error' satisfies TransportErrorCode,
     );
   }

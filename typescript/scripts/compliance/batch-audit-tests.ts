@@ -43,11 +43,17 @@ function loadBypassConfig(): BypassConfig {
   return { bypassed: [] };
 }
 
-function isFileBypassed(filePath: string, bypassConfig: BypassConfig): BypassEntry | null {
+function isFileBypassed(
+  filePath: string,
+  bypassConfig: BypassConfig,
+): BypassEntry | null {
   const normalizedPath = filePath.replace(/\\/g, '/');
   for (const entry of bypassConfig.bypassed) {
     const normalizedBypassPath = entry.file.replace(/\\/g, '/');
-    if (normalizedPath.endsWith(normalizedBypassPath) || normalizedPath.includes(normalizedBypassPath)) {
+    if (
+      normalizedPath.endsWith(normalizedBypassPath) ||
+      normalizedPath.includes(normalizedBypassPath)
+    ) {
       return entry;
     }
   }
@@ -63,7 +69,7 @@ function findTestFiles(rootDir: string): string[] {
 function analyzeAndFormat(
   testFile: string,
   analysis: TestFileAnalysis,
-  bypassConfig: BypassConfig
+  bypassConfig: BypassConfig,
 ): TestComplianceRow {
   const bypassEntry = isFileBypassed(testFile, bypassConfig);
 
@@ -74,51 +80,70 @@ function analyzeAndFormat(
     status = '🔄';
   } else if (analysis.mocksComponents || analysis.spiesOnEventBus) {
     status = '❌';
-  } else if (analysis.mockedTypes.hooks.length > 0 || analysis.mockedTypes.apis.length > 0) {
+  } else if (
+    analysis.mockedTypes.hooks.length > 0 ||
+    analysis.mockedTypes.apis.length > 0
+  ) {
     // Has mocks but they are appropriate (hooks/APIs)
     status = '✅';
   }
 
   return {
     testFile: path.relative(process.cwd(), testFile),
-    mocksComponents: analysis.mocksComponents ? `❌ Yes (${analysis.componentMocks.length})` : '✅ No',
+    mocksComponents: analysis.mocksComponents
+      ? `❌ Yes (${analysis.componentMocks.length})`
+      : '✅ No',
     componentMocks: analysis.componentMocks.join(', ') || 'None',
     spiesOnEventBus: analysis.spiesOnEventBus ? '❌ Yes' : '✅ No',
     eventBusSpies: analysis.eventBusSpies.join(', ') || 'None',
     usesEventTracker: analysis.usesEventTracker ? '✅ Yes' : 'No',
     hookMocks: analysis.mockedTypes.hooks.join(', ') || 'None',
     apiMocks: analysis.mockedTypes.apis.join(', ') || 'None',
-    status
+    status,
   };
 }
 
 function formatAsMarkdownTable(rows: TestComplianceRow[]): string {
-  const header = '| Test File | Mocks components? | Component mocks | Spies on EventBus? | EventBus spies | Uses EventTracker? | Hook mocks | API mocks | Status |';
-  const separator = '|-----------|-------------------|-----------------|-------------------|----------------|-------------------|-----------|-----------|--------|';
+  const header =
+    '| Test File | Mocks components? | Component mocks | Spies on EventBus? | EventBus spies | Uses EventTracker? | Hook mocks | API mocks | Status |';
+  const separator =
+    '|-----------|-------------------|-----------------|-------------------|----------------|-------------------|-----------|-----------|--------|';
 
-  const dataRows = rows.map(row => {
+  const dataRows = rows.map((row) => {
     return `| ${row.testFile} | ${row.mocksComponents} | ${row.componentMocks} | ${row.spiesOnEventBus} | ${row.eventBusSpies} | ${row.usesEventTracker} | ${row.hookMocks} | ${row.apiMocks} | ${row.status} |`;
   });
 
   return [header, separator, ...dataRows].join('\n');
 }
 
-function generateSummary(rows: TestComplianceRow[], bypassConfig: BypassConfig): string {
+function generateSummary(
+  rows: TestComplianceRow[],
+  bypassConfig: BypassConfig,
+): string {
   const total = rows.length;
-  const passing = rows.filter(r => r.status === '✅').length;
-  const failing = rows.filter(r => r.status === '❌').length;
-  const bypassed = rows.filter(r => r.status === '🔄').length;
+  const passing = rows.filter((r) => r.status === '✅').length;
+  const failing = rows.filter((r) => r.status === '❌').length;
+  const bypassed = rows.filter((r) => r.status === '🔄').length;
 
-  const componentMockViolations = rows.filter(r => r.mocksComponents.includes('❌')).length;
-  const eventBusSpyViolations = rows.filter(r => r.spiesOnEventBus.includes('❌')).length;
-  const usesEventTracker = rows.filter(r => r.usesEventTracker.includes('✅')).length;
+  const componentMockViolations = rows.filter((r) =>
+    r.mocksComponents.includes('❌'),
+  ).length;
+  const eventBusSpyViolations = rows.filter((r) =>
+    r.spiesOnEventBus.includes('❌'),
+  ).length;
+  const usesEventTracker = rows.filter((r) =>
+    r.usesEventTracker.includes('✅'),
+  ).length;
 
   let bypassedSection = '';
   if (bypassConfig.bypassed.length > 0) {
     bypassedSection = `\n## Bypassed Items (🔄 Legacy/In Progress)\n\nThese items are temporarily bypassed but should be addressed:\n\n| File | Reason | Issue | Added |\n|------|--------|-------|-------|\n`;
-    bypassedSection += bypassConfig.bypassed.map(entry =>
-      `| ${entry.file} | ${entry.reason} | ${entry.issue} | ${entry.addedDate} |`
-    ).join('\n');
+    bypassedSection += bypassConfig.bypassed
+      .map(
+        (entry) =>
+          `| ${entry.file} | ${entry.reason} | ${entry.issue} | ${entry.addedDate} |`,
+      )
+      .join('\n');
     bypassedSection += '\n';
   }
 
@@ -184,7 +209,7 @@ function main() {
 
   // As in batch-audit.ts: a failing test file is a non-zero exit, named on
   // stderr, so nothing has to parse the report to know.
-  const failing = results.filter(r => r.status === '❌');
+  const failing = results.filter((r) => r.status === '❌');
   if (failing.length > 0) {
     console.error(`❌ ${failing.length} failing test file(s):`);
     for (const row of failing) console.error(`   ${row.testFile}`);
