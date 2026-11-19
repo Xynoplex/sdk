@@ -102,9 +102,14 @@ case "${1:-}" in
     ;;
   test-kotlin)
     bash "$ROOT/scripts/bundle-protocol.sh"
+    # Gradle's home (the wrapper's distribution, and the plugins and
+    # dependencies it fetches) outlives the container. CI's tests job caches
+    # this directory.
+    gradle_home="$HOME/.cache/xynolog/kotlin-gradle"
+    mkdir -p "$gradle_home"
     in_container "eclipse-temurin:$(sh "$ROOT/kotlin/scripts/jdk-version.sh")-jdk" '
       cd /tmp/sdk/kotlin/sdk
-      ./gradlew --no-daemon --console=plain check' --memory 4g
+      ./gradlew --no-daemon --console=plain check' --memory 4g --volume "$gradle_home:/gradle" --env GRADLE_USER_HOME=/gradle
     ;;
   test-swift)
     in_container "swift:$(sh "$ROOT/swift/scripts/swift-version.sh")" '
