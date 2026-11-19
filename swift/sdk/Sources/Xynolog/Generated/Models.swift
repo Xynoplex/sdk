@@ -9871,11 +9871,11 @@ public struct SpecMediaTypesItem: Codable, Sendable {
   public var label: String
   public var mediaType: String
   public var render: String
-  public var textSource: String
+  public var textSource: TextSource
   public var uploadable: Bool
   public init(
     anchoring: String, authorable: Bool, `extension`: String, generatable: Bool, label: String,
-    mediaType: String, render: String, textSource: String, uploadable: Bool
+    mediaType: String, render: String, textSource: TextSource, uploadable: Bool
   ) {
     self.anchoring = anchoring
     self.authorable = authorable
@@ -10647,6 +10647,12 @@ public struct TextQuoteSelector: Codable, Sendable {
 
 public enum TextQuoteSelectorType: String, Codable, Sendable, CaseIterable {
   case textQuoteSelector = "TextQuoteSelector"
+}
+
+public enum TextSource: String, Codable, Sendable, CaseIterable {
+  case decode = "decode"
+  case pdfTextLayer = "pdf-text-layer"
+  case none = "none"
 }
 
 public struct TextualBody: Codable, Sendable {
@@ -11984,230 +11990,229 @@ internal let ownerOnlyFile: SpecOwnerOnlyFile = SpecOwnerOnlyFile(
 internal let mediaTypes: [SpecMediaTypesItem] = [
   SpecMediaTypesItem(
     anchoring: "text-selector", authorable: true, extension: ".md", generatable: true,
-    label: "Markdown", mediaType: "text/markdown", render: "text", textSource: "decode",
+    label: "Markdown", mediaType: "text/markdown", render: "text", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "text-selector", authorable: true, extension: ".txt", generatable: true,
-    label: "Plain Text", mediaType: "text/plain", render: "text", textSource: "decode",
+    label: "Plain Text", mediaType: "text/plain", render: "text", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "text-selector", authorable: true, extension: ".html", generatable: false,
-    label: "HTML", mediaType: "text/html", render: "text", textSource: "decode", uploadable: true),
+    label: "HTML", mediaType: "text/html", render: "text", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "text-selector", authorable: false, extension: ".json", generatable: false,
-    label: "JSON", mediaType: "application/json", render: "text", textSource: "decode",
+    label: "JSON", mediaType: "application/json", render: "text", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "spatial", authorable: false, extension: ".png", generatable: false,
-    label: "PNG image", mediaType: "image/png", render: "image", textSource: "none",
-    uploadable: true),
+    label: "PNG image", mediaType: "image/png", render: "image", textSource: .none, uploadable: true
+  ),
   SpecMediaTypesItem(
     anchoring: "spatial", authorable: false, extension: ".jpg", generatable: false,
-    label: "JPEG image", mediaType: "image/jpeg", render: "image", textSource: "none",
+    label: "JPEG image", mediaType: "image/jpeg", render: "image", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "spatial", authorable: false, extension: ".pdf", generatable: true, label: "PDF",
-    mediaType: "application/pdf", render: "pdf", textSource: "pdf-text-layer", uploadable: true),
+    mediaType: "application/pdf", render: "pdf", textSource: .pdfTextLayer, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".css", generatable: false, label: "CSS",
-    mediaType: "text/css", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/css", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".csv", generatable: false, label: "CSV",
-    mediaType: "text/csv", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/csv", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".xml", generatable: false, label: "XML",
-    mediaType: "text/xml", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/xml", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".xml", generatable: false, label: "XML",
-    mediaType: "application/xml", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "application/xml", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".yaml", generatable: false, label: "YAML",
-    mediaType: "application/yaml", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "application/yaml", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".yaml", generatable: false, label: "YAML",
-    mediaType: "application/x-yaml", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "application/x-yaml", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".js", generatable: false, label: "JavaScript",
-    mediaType: "text/javascript", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/javascript", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".js", generatable: false, label: "JavaScript",
-    mediaType: "application/javascript", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "application/javascript", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".ts", generatable: false, label: "TypeScript",
-    mediaType: "text/x-typescript", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/x-typescript", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".ts", generatable: false, label: "TypeScript",
-    mediaType: "application/typescript", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "application/typescript", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".py", generatable: false,
-    label: "Python source", mediaType: "text/x-python", render: "none", textSource: "decode",
+    label: "Python source", mediaType: "text/x-python", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".java", generatable: false,
-    label: "Java source", mediaType: "text/x-java", render: "none", textSource: "decode",
+    label: "Java source", mediaType: "text/x-java", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".c", generatable: false, label: "C source",
-    mediaType: "text/x-c", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/x-c", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".cpp", generatable: false,
-    label: "C++ source", mediaType: "text/x-c++", render: "none", textSource: "decode",
+    label: "C++ source", mediaType: "text/x-c++", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".cs", generatable: false, label: "C# source",
-    mediaType: "text/x-csharp", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/x-csharp", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".go", generatable: false, label: "Go source",
-    mediaType: "text/x-go", render: "none", textSource: "decode", uploadable: true),
+    mediaType: "text/x-go", render: "none", textSource: .decode, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".rs", generatable: false,
-    label: "Rust source", mediaType: "text/x-rust", render: "none", textSource: "decode",
+    label: "Rust source", mediaType: "text/x-rust", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".rb", generatable: false,
-    label: "Ruby source", mediaType: "text/x-ruby", render: "none", textSource: "decode",
+    label: "Ruby source", mediaType: "text/x-ruby", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".php", generatable: false,
-    label: "PHP source", mediaType: "text/x-php", render: "none", textSource: "decode",
+    label: "PHP source", mediaType: "text/x-php", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".swift", generatable: false,
-    label: "Swift source", mediaType: "text/x-swift", render: "none", textSource: "decode",
+    label: "Swift source", mediaType: "text/x-swift", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".kt", generatable: false,
-    label: "Kotlin source", mediaType: "text/x-kotlin", render: "none", textSource: "decode",
+    label: "Kotlin source", mediaType: "text/x-kotlin", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".sh", generatable: false,
-    label: "Shell script", mediaType: "text/x-shell", render: "none", textSource: "decode",
+    label: "Shell script", mediaType: "text/x-shell", render: "none", textSource: .decode,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".doc", generatable: false,
     label: "Word document (legacy)", mediaType: "application/msword", render: "none",
-    textSource: "none", uploadable: true),
+    textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".docx", generatable: false,
     label: "Word document",
     mediaType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    render: "none", textSource: "none", uploadable: true),
+    render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".xls", generatable: false,
     label: "Excel spreadsheet (legacy)", mediaType: "application/vnd.ms-excel", render: "none",
-    textSource: "none", uploadable: true),
+    textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".xlsx", generatable: false,
     label: "Excel spreadsheet",
     mediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", render: "none",
-    textSource: "none", uploadable: true),
+    textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".ppt", generatable: false,
     label: "PowerPoint presentation (legacy)", mediaType: "application/vnd.ms-powerpoint",
-    render: "none", textSource: "none", uploadable: true),
+    render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".pptx", generatable: false,
     label: "PowerPoint presentation",
     mediaType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    render: "none", textSource: "none", uploadable: true),
+    render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".zip", generatable: false,
-    label: "ZIP archive", mediaType: "application/zip", render: "none", textSource: "none",
+    label: "ZIP archive", mediaType: "application/zip", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".gz", generatable: false,
-    label: "Gzip archive", mediaType: "application/gzip", render: "none", textSource: "none",
+    label: "Gzip archive", mediaType: "application/gzip", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".tar", generatable: false,
-    label: "TAR archive", mediaType: "application/x-tar", render: "none", textSource: "none",
+    label: "TAR archive", mediaType: "application/x-tar", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".7z", generatable: false, label: "7z archive",
-    mediaType: "application/x-7z-compressed", render: "none", textSource: "none", uploadable: true),
+    mediaType: "application/x-7z-compressed", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".bin", generatable: false, label: "Binary",
-    mediaType: "application/octet-stream", render: "none", textSource: "none", uploadable: true),
+    mediaType: "application/octet-stream", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".wasm", generatable: false,
-    label: "WebAssembly module", mediaType: "application/wasm", render: "none", textSource: "none",
+    label: "WebAssembly module", mediaType: "application/wasm", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".gif", generatable: false, label: "GIF image",
-    mediaType: "image/gif", render: "none", textSource: "none", uploadable: true),
+    mediaType: "image/gif", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".webp", generatable: false,
-    label: "WebP image", mediaType: "image/webp", render: "none", textSource: "none",
+    label: "WebP image", mediaType: "image/webp", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".svg", generatable: false, label: "SVG image",
-    mediaType: "image/svg+xml", render: "none", textSource: "none", uploadable: true),
+    mediaType: "image/svg+xml", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".bmp", generatable: false, label: "BMP image",
-    mediaType: "image/bmp", render: "none", textSource: "none", uploadable: true),
+    mediaType: "image/bmp", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".tiff", generatable: false,
-    label: "TIFF image", mediaType: "image/tiff", render: "none", textSource: "none",
+    label: "TIFF image", mediaType: "image/tiff", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".ico", generatable: false, label: "Icon",
-    mediaType: "image/x-icon", render: "none", textSource: "none", uploadable: true),
+    mediaType: "image/x-icon", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".mp4", generatable: false, label: "MP4 video",
-    mediaType: "video/mp4", render: "none", textSource: "none", uploadable: true),
+    mediaType: "video/mp4", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".mpeg", generatable: false,
-    label: "MPEG video", mediaType: "video/mpeg", render: "none", textSource: "none",
+    label: "MPEG video", mediaType: "video/mpeg", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".webm", generatable: false,
-    label: "WebM video", mediaType: "video/webm", render: "none", textSource: "none",
+    label: "WebM video", mediaType: "video/webm", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".ogv", generatable: false, label: "Ogg video",
-    mediaType: "video/ogg", render: "none", textSource: "none", uploadable: true),
+    mediaType: "video/ogg", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".mov", generatable: false,
-    label: "QuickTime video", mediaType: "video/quicktime", render: "none", textSource: "none",
+    label: "QuickTime video", mediaType: "video/quicktime", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".avi", generatable: false, label: "AVI video",
-    mediaType: "video/x-msvideo", render: "none", textSource: "none", uploadable: true),
+    mediaType: "video/x-msvideo", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".mp3", generatable: false, label: "MP3 audio",
-    mediaType: "audio/mpeg", render: "none", textSource: "none", uploadable: true),
+    mediaType: "audio/mpeg", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".wav", generatable: false, label: "WAV audio",
-    mediaType: "audio/wav", render: "none", textSource: "none", uploadable: true),
+    mediaType: "audio/wav", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".ogg", generatable: false, label: "Ogg audio",
-    mediaType: "audio/ogg", render: "none", textSource: "none", uploadable: true),
+    mediaType: "audio/ogg", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".webm", generatable: false,
-    label: "WebM audio", mediaType: "audio/webm", render: "none", textSource: "none",
+    label: "WebM audio", mediaType: "audio/webm", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".aac", generatable: false, label: "AAC audio",
-    mediaType: "audio/aac", render: "none", textSource: "none", uploadable: true),
+    mediaType: "audio/aac", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".flac", generatable: false,
-    label: "FLAC audio", mediaType: "audio/flac", render: "none", textSource: "none",
+    label: "FLAC audio", mediaType: "audio/flac", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".woff", generatable: false,
-    label: "WOFF font", mediaType: "font/woff", render: "none", textSource: "none", uploadable: true
-  ),
+    label: "WOFF font", mediaType: "font/woff", render: "none", textSource: .none, uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".woff2", generatable: false,
-    label: "WOFF2 font", mediaType: "font/woff2", render: "none", textSource: "none",
+    label: "WOFF2 font", mediaType: "font/woff2", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".ttf", generatable: false,
-    label: "TrueType font", mediaType: "font/ttf", render: "none", textSource: "none",
+    label: "TrueType font", mediaType: "font/ttf", render: "none", textSource: .none,
     uploadable: true),
   SpecMediaTypesItem(
     anchoring: "none", authorable: false, extension: ".otf", generatable: false,
-    label: "OpenType font", mediaType: "font/otf", render: "none", textSource: "none",
+    label: "OpenType font", mediaType: "font/otf", render: "none", textSource: .none,
     uploadable: true),
 ]
 internal let encodings: [SpecEncodingsItem] = [

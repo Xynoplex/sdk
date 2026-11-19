@@ -9,7 +9,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { MemorySignIn, signOut } from '../sign-in-kept';
-import type { StoredSession } from '../storage';
+import type { StoredSession } from '@xynolog/core';
 
 const JO = 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I';
 const ANN = 'oJXMBS_YgRdGkRGgoRP3a1gD4T1VeD9aCS3GlygJEOM';

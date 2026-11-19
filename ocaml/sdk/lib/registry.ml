@@ -254,19 +254,19 @@ let describe_connection client =
   | Error _ -> Error Error_codes.Transport.bad_request
   | Ok payload -> (
       match Client.Browse.kb client payload with
-      | Error _ -> Error "kb.identity-unreachable"
+      | Error _ -> Error Error_codes.Kb_identity.unreachable
       | Ok reply -> (
           let response =
             Bus_registry.encode reply |> Yojson.Safe.from_string
             |> member "response"
           in
           match Models.decode Models.kb_description (json response) with
-          | Error _ -> Error "kb.identity-not-reported"
+          | Error _ -> Error Error_codes.Kb_identity.not_reported
           | Ok description ->
               let domain =
                 (Records.Kb_description.of_model description).domain
               in
-              if domain = "" then Error "kb.identity-not-reported"
+              if domain = "" then Error Error_codes.Kb_identity.not_reported
               else
                 Ok
                   {
@@ -290,7 +290,7 @@ let with_identity ~id ~endpoint (identity : Records.Connection_identity.t) =
 
 let record_sign_in browser (signed : Records.Signed_in.t) =
   let info = Records.Kb_description.of_model signed.description in
-  if info.domain = "" then Error "kb.identity-not-reported"
+  if info.domain = "" then Error Error_codes.Kb_identity.not_reported
   else
     let identity =
       {
@@ -632,25 +632,25 @@ let complete_sign_in browser ~http ~callback ~describe =
   let ( let* ) = Result.bind in
   let required = function
     | Some value -> Ok value
-    | None -> Error "oauth.invalid-redirect"
+    | None -> Error Error_codes.Sign_in.no_pending
   in
   let* body = required pending in
   let* issuer, redirect = required (Oauth.take_redirect body) in
   let* endpoint =
     Models.decode Models.kb_endpoint (json (member "target" body))
-    |> Result.map_error (fun _ -> "oauth.invalid-redirect")
+    |> Result.map_error (fun _ -> Error_codes.Sign_in.no_pending)
   in
   let* tokens =
     Oauth.finish_redirect http issuer redirect ~callback
     |> Result.map_error (function
       | Oauth.Rejected code -> code
-      | Invalid_response -> "oauth.invalid-response"
+      | Invalid_response -> Error_codes.Sign_in.exchange
       | Invalid_redirect -> "oauth.invalid-redirect")
   in
   let* refresh =
     match tokens.refresh_token with
     | Some value -> Ok value
-    | None -> Error "oauth.refresh-token-missing"
+    | None -> Error Error_codes.Sign_in.exchange
   in
   let* description = describe endpoint ~access:tokens.access_token in
   let fields = object_ body in

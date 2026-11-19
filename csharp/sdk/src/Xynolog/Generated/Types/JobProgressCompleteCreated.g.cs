@@ -7,7 +7,8 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressCompleteCreated
 {
-    [global::Xynolog.Serialization.Wire("code")] public string Code => "complete-created";
+    public const string CodeValue = "complete-created";
+    [global::Xynolog.Serialization.Wire("code")] public string Code => CodeValue;
     [global::Xynolog.Serialization.Wire("count")] public required long Count { get; init; }
     [global::Xynolog.Serialization.Wire("motivation")] public required global::Xynolog.Types.Motivation Motivation { get; init; }
 }

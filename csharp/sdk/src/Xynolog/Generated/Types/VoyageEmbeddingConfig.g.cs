@@ -10,5 +10,6 @@ public sealed record VoyageEmbeddingConfig
     [global::Xynolog.Serialization.Wire("apiKeyEnv")] public required string ApiKeyEnv { get; init; }
     [global::Xynolog.Serialization.Wire("endpoint")] public required string Endpoint { get; init; }
     [global::Xynolog.Serialization.Wire("model")] public required string Model { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "voyage";
+    public const string TypeValue = "voyage";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

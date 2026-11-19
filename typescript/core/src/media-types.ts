@@ -38,28 +38,13 @@ import {
   EXTENSION_ALIASES,
   MEDIA_TYPE_ROWS,
   type AnchoringModel,
+  type MediaTypeCapabilities,
   type RenderMode,
   type TextSource,
 } from './media-type-registry';
 
 export type SupportedMediaType = components['schemas']['SupportedMediaType'];
-export type { AnchoringModel, RenderMode, TextSource };
-
-export interface MediaTypeCapabilities {
-  /** Canonical file extension, with leading dot. */
-  extension: `.${string}`;
-  /** UI display name. */
-  label: string;
-  render: RenderMode;
-  anchoring: AnchoringModel;
-  textSource: TextSource;
-  authorable: boolean;
-  uploadable: boolean;
-  /** Whether the generation worker can produce this type as a yield artifact.
-   *  Gate for `outputMediaType` — unsupported requests fail loudly, never
-   *  fall back to markdown under a mislabeled format. */
-  generatable: boolean;
-}
+export type { AnchoringModel, MediaTypeCapabilities, RenderMode, TextSource };
 
 /**
  * The registry: protocol/specs/src/media-types/registry.json, which every SDK

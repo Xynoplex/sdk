@@ -113,7 +113,19 @@ describe('event-formatting', () => {
     it('returns jobEvent for job types', () => {
       expect(formatEventType('job:completed', t)).toBe('jobEvent');
       expect(formatEventType('job:started', t)).toBe('jobEvent');
+      expect(formatEventType('job:assigned', t)).toBe('jobEvent');
       expect(formatEventType('job:failed', t)).toBe('jobEvent');
+    });
+
+    it('returns the type of a persisted event it has no copy for', () => {
+      for (const type of [
+        'yield:updated',
+        'yield:moved',
+        'frame:entity-type-added',
+        'frame:tag-schema-added',
+        'principal:profiled',
+      ])
+        expect(formatEventType(type, t)).toBe(type);
     });
 
     it('returns representationEvent for yield:representation types', () => {
@@ -134,6 +146,8 @@ describe('event-formatting', () => {
     it('returns document emoji for resource events', () => {
       expect(getEventEmoji('yield:created')).toBe('📄');
       expect(getEventEmoji('yield:cloned')).toBe('📄');
+      expect(getEventEmoji('yield:updated')).toBe('📄');
+      expect(getEventEmoji('yield:moved')).toBe('📄');
     });
 
     it('returns motivation-specific emoji for mark:added', () => {
@@ -168,6 +182,7 @@ describe('event-formatting', () => {
     it('returns appropriate emoji for job events', () => {
       expect(getEventEmoji('job:completed')).toBe('🔗');
       expect(getEventEmoji('job:started')).toBe('⚙️');
+      expect(getEventEmoji('job:assigned')).toBe('⚙️');
       expect(getEventEmoji('job:failed')).toBe('❌');
     });
 

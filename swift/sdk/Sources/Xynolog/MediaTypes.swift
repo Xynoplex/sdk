@@ -38,24 +38,20 @@ public func storageFileName(_ name: String, format: String) -> String {
 public func storageURI(_ name: String, format: String) -> String {
   "file://" + storageFileName(name, format: format)
 }
-public func textSourceOf(_ format: String) -> String {
+public func textSourceOf(_ format: String) -> TextSource {
   let base = baseMediaType(format)
-  return mediaTypes.first { $0.mediaType == base }?.textSource
-    ?? (base.hasPrefix("text/") ? "decode" : "none")
+  if let row = mediaTypes.first(where: { $0.mediaType == base }) { return row.textSource }
+  return base.hasPrefix("text/") ? .decode : TextSource.none
 }
 public func yieldsGeometryOf(_ format: String) -> Bool {
-  let source = textSourceOf(format)
-  switch source {
-  case "decode", "none": return false
-  case "pdf-text-layer": return true
-  default: preconditionFailure("Unanswered media text source: \(source)")
+  switch textSourceOf(format) {
+  case .decode, TextSource.none: false
+  case .pdfTextLayer: true
   }
 }
 public func derivesTextOf(_ format: String) -> Bool {
-  let source = textSourceOf(format)
-  switch source {
-  case "decode", "none": return false
-  case "pdf-text-layer": return true
-  default: preconditionFailure("Unanswered media text source: \(source)")
+  switch textSourceOf(format) {
+  case .decode, TextSource.none: false
+  case .pdfTextLayer: true
   }
 }

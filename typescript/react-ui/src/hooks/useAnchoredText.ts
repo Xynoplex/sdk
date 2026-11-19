@@ -85,6 +85,10 @@ export function useAnchoredText(
             case 'not-yet':
               reask = setTimeout(ask, ANCHORED_TEXT_REASK_MS);
               return;
+            default: {
+              const unreachable: never = answer;
+              return unreachable;
+            }
           }
         },
         () => {

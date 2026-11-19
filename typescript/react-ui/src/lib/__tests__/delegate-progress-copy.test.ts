@@ -8,7 +8,7 @@
  *    neither existing guard can see. `delegateProgressCopy`'s switch is
  *    exhaustive with a `never` default, so a code with no `case` fails to
  *    compile — but nothing checks that the string inside the case is a real
- *    key. And `lint:translations` compares locales against `en`, so a key
+ *    key. And `translations-census.test.ts` compares locales against `en`, so a key
  *    missing from `en` *too* is missing everywhere and the gate stays green.
  *    A typo'd key ships the key name to the user, in every language.
  */
@@ -220,6 +220,10 @@ describe('delegateParamLabel', () => {
 
   it('falls back to the code for an unknown label rather than rendering nothing', () => {
     const { t } = spy();
-    expect(delegateParamLabel(t)('future-param')).toBe('future-param');
+    // The wire is not validated against the spec, so it can deliver a code
+    // the label's type does not name.
+    expect(
+      Reflect.apply(delegateParamLabel(t), undefined, ['future-param']),
+    ).toBe('future-param');
   });
 });

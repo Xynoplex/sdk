@@ -45,6 +45,7 @@ import xynolog.transport.Place
 import xynolog.transport.ReplyRouter
 import xynolog.transport.TraceContext
 import xynolog.transport.scope
+import xynolog.types.BusEventMessageEvent
 import xynolog.types.BusFrame
 import xynolog.types.BusSubscribeRequest
 import xynolog.types.BusSubscribeRequestScopedItem
@@ -564,7 +565,7 @@ internal class Stream(
                     val bytes = ByteArray(buffer.remaining())
                     buffer.get(bytes)
                     for (event in parser.feed(bytes)) {
-                        if (event.event == "bus-event" && event.data.isNotEmpty()) reports.send(Framed(conn, event.id, event.data))
+                        if (event.event == BusEventMessageEvent.BusEvent.value && event.data.isNotEmpty()) reports.send(Framed(conn, event.id, event.data))
                     }
                 }
             }

@@ -7,6 +7,7 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressDetectingEntities
 {
-    [global::Xynolog.Serialization.Wire("code")] public string Code => "detecting-entities";
+    public const string CodeValue = "detecting-entities";
+    [global::Xynolog.Serialization.Wire("code")] public string Code => CodeValue;
     [global::Xynolog.Serialization.Wire("entityType")] public required string EntityType { get; init; }
 }

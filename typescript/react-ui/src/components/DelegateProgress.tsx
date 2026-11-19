@@ -51,7 +51,9 @@ export interface DelegateProgressTranslations {
    * (`instructions`, `tone`, …); the VALUE beside it is the user's own words
    * and is never translated.
    */
-  paramLabel: (code: string) => string;
+  paramLabel: (
+    code: NonNullable<JobProgress['requestParams']>[number]['label'],
+  ) => string;
   /** Completed entity-type log line (reference flow only). */
   found?: (count: number) => string;
   /**

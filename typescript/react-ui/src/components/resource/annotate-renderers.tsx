@@ -1,16 +1,14 @@
 'use client';
 
-import type { ResourceId } from '@xynolog/core';
+import type { RenderMode, ResourceId } from '@xynolog/core';
 import { lazy, Suspense, useMemo, type ComponentType } from 'react';
 import { textOffsets, type Annotation } from '@xynolog/core';
 import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
 import { SvgDrawingCanvas } from '../image-annotation/SvgDrawingCanvas';
 import { CodeMirrorRenderer } from '../CodeMirrorRenderer';
 import { segmentTextWithAnnotations } from '../../lib/text-segmentation';
-import type {
-  SelectionMotivation,
-  ShapeType,
-} from '../annotation/AnnotateToolbar';
+import type { ShapeType } from '../annotation/AnnotateToolbar';
+import type { Motivation } from '@xynolog/core';
 import { useTranslations } from '../../contexts/TranslationContext';
 
 // Lazy-load the PDF component to avoid SSR issues with browser PDF.js loading.
@@ -51,7 +49,7 @@ export interface AnnotateMediaRendererProps {
 
   /** Active drawing tool, or null when nothing is selected (read-only paint). */
   drawingMode: ShapeType | null;
-  selectedMotivation: SelectionMotivation | null;
+  selectedMotivation: Motivation | null;
   hoveredAnnotationId?: string | null;
   hoverDelayMs?: number;
 
@@ -179,7 +177,7 @@ export function PdfAnnotateRenderer({
  * `defaultBrowseRenderers` gives the read-only path.
  */
 export const defaultAnnotateRenderers: Record<
-  'text' | 'image' | 'pdf',
+  Exclude<RenderMode, 'none'>,
   ComponentType<AnnotateMediaRendererProps>
 > = {
   text: TextAnnotateRenderer,

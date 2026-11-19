@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type {
-  SelectionMotivation,
   ClickAction,
   ShapeType,
 } from '../components/annotation/AnnotateToolbar';
+import { faultOf, type Motivation } from '@xynolog/core';
 import {
   getSelectedShapeForSelectorType,
   saveSelectedShapeForSelectorType,
@@ -16,13 +16,17 @@ const MODE_KEY = 'annotateMode';
 const CLICK_KEY = 'xynolog-toolbar-click';
 const SELECTION_KEY = 'xynolog-toolbar-selection';
 
+/** Whether a stored selection names a motivation, as the spec's `Motivation` schema states them. */
+const isMotivation = (stored: string): stored is Motivation =>
+  faultOf('Motivation', stored) === undefined;
+
 export interface ToolbarPrefs {
   annotateMode: boolean;
   setAnnotateMode: (mode: boolean) => void;
   clickAction: ClickAction;
   setClickAction: (action: ClickAction) => void;
-  selectionMotivation: SelectionMotivation | null;
-  setSelectionMotivation: (motivation: SelectionMotivation | null) => void;
+  selectionMotivation: Motivation | null;
+  setSelectionMotivation: (motivation: Motivation | null) => void;
   shape: ShapeType;
   setShape: (shape: ShapeType) => void;
 }
@@ -72,27 +76,16 @@ export function useToolbarPrefs(
   }, []);
 
   const [selectionMotivation, setSelectionMotivationState] =
-    useState<SelectionMotivation | null>(() => {
+    useState<Motivation | null>(() => {
       if (typeof window !== 'undefined') {
         const stored = localStorage.getItem(SELECTION_KEY);
         if (stored === 'null') return null;
-        if (
-          stored &&
-          [
-            'linking',
-            'highlighting',
-            'assessing',
-            'commenting',
-            'tagging',
-          ].includes(stored)
-        ) {
-          return stored as SelectionMotivation;
-        }
+        if (stored && isMotivation(stored)) return stored;
       }
       return 'linking';
     });
   const setSelectionMotivation = useCallback(
-    (motivation: SelectionMotivation | null) => {
+    (motivation: Motivation | null) => {
       setSelectionMotivationState(motivation);
       if (typeof window !== 'undefined')
         localStorage.setItem(

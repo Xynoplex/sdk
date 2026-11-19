@@ -67,7 +67,7 @@ import uuid
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
 from types import TracebackType
-from typing import Final, Literal, Protocol, Self, final, override
+from typing import Final, Protocol, Self, final, override
 
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
@@ -80,14 +80,13 @@ from xynolog.retry import REFRESH, RetryFacts, equal_jitter
 from xynolog.state_unit import StateUnit
 from xynolog.timing import MAX_RECONNECT_MS, MIN_REFRESH_DELAY_MS, RECONNECT_MS, REFRESH_BEFORE_EXP_MS
 from xynolog.transport import ConnectionState, Transport
-from xynolog.types import KbTarget, UserResponse
+from xynolog.types import KbTarget, SessionEndReason, UserResponse
 from xynolog.watched import Variable, Watched
 
 __all__ = [
     "HeldSignIn",
     "MemorySignIn",
     "Refresh",
-    "SessionEndReason",
     "SignInKept",
     "Validate",
     "XynologSession",
@@ -98,10 +97,6 @@ __all__ = [
     "text_claim",
     "token_expiry",
 ]
-
-type SessionEndReason = Literal["expired", "refused"]
-"""Why a session ended: its issuer refused to renew its token (`expired`), or
-the gateway refused a token its issuer had just issued (`refused`)."""
 
 type Refresh = Callable[[str | None], Awaitable[str | None]]
 """Renew the token handed, the one the renewal is for: the new one, or nothing when there is nothing to renew with.

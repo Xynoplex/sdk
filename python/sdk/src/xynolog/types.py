@@ -1,8 +1,8 @@
-# Generated from the component schemas of protocol/specs/src/openapi.json; do not edit.
+# Generated from the component schemas of protocol/specs/src/openapi.json and the records of its tables; do not edit.
 # Regenerate: make generate (codegen/lib/python_types/python_types.ml)
 # ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
-"""The protocol's shapes: a model for every component schema that is an object, and a type for every other."""
+"""The protocol's shapes: a model for every component schema and table record that is an object, and a type for every other."""
 
 from __future__ import annotations
 
@@ -115,6 +115,7 @@ __all__ = [
     "CommandErrorCode",
     "CommentingJobParams",
     "CommentingJobParamsTone",
+    "ConnectionIdentity",
     "ContentFormat",
     "ContextualSummaryResponse",
     "ContextualSummaryResponseContext",
@@ -144,6 +145,7 @@ __all__ = [
     "EphemeralEventId",
     "ErrorResponse",
     "EventMetadata",
+    "Expected",
     "ExtractedText",
     "ExtractionDeclined",
     "ExtractionDeclinedReason",
@@ -266,7 +268,14 @@ __all__ = [
     "KbDescription",
     "KbEndpoint",
     "KbIdentity",
+    "KbIdentityConflict",
     "KbRead",
+    "KbReadKind",
+    "KbReadVerdict",
+    "KbReadVerdictConflict",
+    "KbReadVerdictNoVerdict",
+    "KbReadVerdictRecorded",
+    "KbSessionStatus",
     "KbTarget",
     "KnowledgeBase",
     "KnowledgeGraph",
@@ -329,6 +338,7 @@ __all__ = [
     "OneOrMoreUris",
     "PdfClass",
     "PdfTextItem",
+    "PermissionDenied",
     "PersistedEventId",
     "PrincipalProfileCommand",
     "PrincipalProfiledPayload",
@@ -362,12 +372,16 @@ __all__ = [
     "SemanticMatch",
     "ServiceAddress",
     "ServiceIdentity",
+    "SessionEndReason",
+    "SessionEnded",
     "SessionJoinedEvent",
     "SessionLeftEvent",
     "SettingsHoverDelayChangedEvent",
     "SettingsLocaleChangedEvent",
     "SettingsThemeChangedEvent",
     "SettingsThemeChangedEventTheme",
+    "SignInOutcome",
+    "SignedIn",
     "SmeltRebuildAnchorsCommand",
     "SmeltSettled",
     "SmeltSettledOutcome",
@@ -379,8 +393,14 @@ __all__ = [
     "StatusResponseFeatures",
     "StorageUriEntry",
     "StoredEventResponse",
+    "StoredSession",
     "SupportedMediaType",
     "SvgSelector",
+    "TabCheck",
+    "TabCheckGone",
+    "TabCheckReady",
+    "TabCheckUnknown",
+    "TabVerdict",
     "TagCategory",
     "TagSchema",
     "TagSchemaAddedPayload",
@@ -2092,6 +2112,15 @@ class CommentingJobParams(WireModel, frozen=True, extra="forbid"):
     ] = None
 
 
+class ConnectionIdentity(WireModel, frozen=True, extra="forbid"):
+    """
+    Who the knowledge base at an address says it is, asked with a token just issued, before any entry is made for it.
+    """
+
+    did: Annotated[UserId, Field(description="The did it reports for itself.")]
+    description: Annotated[KbDescription, Field(description="What it says of itself.")]
+
+
 type ContentFormat = Annotated[
     str,
     Field(
@@ -2433,6 +2462,15 @@ class ErrorResponse(WireModel, frozen=True):
     code: Annotated[str | None, Field(description="A machine-readable class, when the route defines one.")] = None
     hint: Annotated[str | None, Field(description="What the caller can do about it, when there is something to say.")] = None
     details: JsonValue | None = None
+
+
+class Expected(WireModel, frozen=True, extra="forbid"):
+    """
+    What a person believed they were signing in to: the did and the name of the row they clicked, or of the entry they signed in to again.
+    """
+
+    did: Annotated[str, Field(description="The did they believed it has.")]
+    name: Annotated[str | None, Field(description="The name they believed it has. Absent when they had none.")] = None
 
 
 type ExtractionOutcome = Annotated[
@@ -4308,6 +4346,15 @@ type KbEndpoint = Annotated[
 ]
 
 
+class KbIdentityConflict(WireModel, frozen=True, extra="forbid"):
+    """
+    A different knowledge base answers at a registered address. Both dids, because neither alone says what to do: a person has to recognise which knowledge base they registered and which one answers.
+    """
+
+    expected_did: Annotated[str, Field(alias="expectedDid", description="The did the entry records.")]
+    observed_did: Annotated[str, Field(alias="observedDid", description="The did the knowledge base that answered reported.")]
+
+
 class KbRead(WireModel, frozen=True):
     """
     When a knowledge base last described itself, and what it said beyond its name. A client shows it as current only while a session to the knowledge base is live, and as of `at` otherwise.
@@ -4321,6 +4368,53 @@ class KbRead(WireModel, frozen=True):
             description="The branch of the knowledge base's working tree then. Absent when the working tree was not a git checkout.",
         ),
     ] = None
+
+
+type KbReadKind = Annotated[
+    Literal["recorded", "conflict", "no-verdict"], Field(description="What reading the active knowledge base against its entry concluded.")
+]
+
+
+class KbReadVerdictRecorded(WireModel, frozen=True, extra="forbid"):
+    """
+    It answered as that entry, and its name and branch are on the entry now.
+    """
+
+    kind: Literal["recorded"]
+
+
+class KbReadVerdictConflict(WireModel, frozen=True, extra="forbid"):
+    """
+    A different knowledge base answered. Its did and the name it gave itself are here and nowhere else: the entry is as it was.
+    """
+
+    kind: Literal["conflict"]
+    observed_did: Annotated[str, Field(alias="observedDid", description="The did the knowledge base that answered reported.")]
+    observed_name: Annotated[str, Field(alias="observedName", description="The name the knowledge base that answered gave itself.")]
+
+
+class KbReadVerdictNoVerdict(WireModel, frozen=True, extra="forbid"):
+    """
+    It did not answer, or could not say who it is. Evidence of nothing.
+    """
+
+    kind: Literal["no-verdict"]
+
+
+type KbReadVerdict = Annotated[
+    KbReadVerdictRecorded | KbReadVerdictConflict | KbReadVerdictNoVerdict,
+    Field(
+        description="What a knowledge base said when it was asked to describe itself, read against the entry it was asked as.",
+        discriminator="kind",
+    ),
+]
+
+type KbSessionStatus = Annotated[
+    Literal["authenticated", "expired", "signed-out"],
+    Field(
+        description="What the credential stored for a knowledge base says, read without asking anyone: `authenticated`, a token is stored and has not expired; `expired`, a token is stored and has expired; `signed-out`, nothing is stored."
+    ),
+]
 
 
 class KbTarget(WireModel, frozen=True):
@@ -4806,6 +4900,14 @@ class MediaTokenResponse(WireModel, frozen=True):
     token: Annotated[str, Field(description="Short-lived media token for use as ?token= query parameter on resource URLs")]
 
 
+class PermissionDenied(WireModel, frozen=True, extra="forbid"):
+    """
+    A request was refused for lack of permission.
+    """
+
+    detail: Annotated[str | None, Field(description="The refusal's own message, untranslated; null when it gave none.")]
+
+
 class PrincipalProfileCommand(WireModel, frozen=True):
     """
     Bus command saying what a principal is called. The gateway emits it when a principal ACTS, carrying the display name it just verified on its token; a principal may also emit it itself, for itself, which is how an agent, whose token carries no name, says what it is called. Either way the gateway stamps `_userId` with the sender's verified DID, so a principal names only itself. The Stower persists it as principal:profiled, and only when the name differs from the latest one recorded for that DID — so the log holds one line per name a principal has had, not one per act. A name is a fact ABOUT an identity, never part of the record of an act: no artifact carries it, and readers resolve it from the profiles projection. Emitted for a person and for an agent alike; never for a request that merely reads.
@@ -5121,6 +5223,22 @@ class ResourceView(WireModel, frozen=True, extra="forbid"):
     ]
 
 
+type SessionEndReason = Annotated[
+    Literal["expired", "refused"],
+    Field(
+        description="Why a session ended: `expired`, the issuer refused to renew its token; `refused`, the gateway refused a token its issuer had just issued."
+    ),
+]
+
+
+class SessionEnded(WireModel, frozen=True, extra="forbid"):
+    """
+    A session ended, and why.
+    """
+
+    reason: Annotated[SessionEndReason, Field(description="Why it ended.")]
+
+
 class SessionJoinedEvent(WireModel, frozen=True):
     """
     A participant opened a live connection to this KB — an SSE stream on /bus/subscribe. Presence is CONNECTION lifecycle, not login: a token can be minted and sit unused, so what this reports is that someone is WATCHING. One person with two tabs produces two of these, which is why connectionId is required — the DID alone cannot tell two connections apart, and a consumer that counts DIDs will undercount viewers.
@@ -5175,6 +5293,67 @@ class SettingsThemeChangedEvent(WireModel, frozen=True):
     """
 
     theme: SettingsThemeChangedEventTheme
+
+
+class SignInOutcome(WireModel, frozen=True, extra="forbid"):
+    """
+    The entry a sign-in landed on, and what the person believed, so a host can set the two against each other and say when they differ. The sign-in stands either way: the knowledge base that answered is the one reached.
+    """
+
+    kb: Annotated[KnowledgeBase, Field(description="The entry the sign-in made or signed in to again.")]
+    expected: Annotated[
+        Expected | None, Field(description="What the person believed they were signing in to. Absent when they named nothing.")
+    ] = None
+
+
+class StoredSession(WireModel, frozen=True):
+    """
+    What is kept of a sign-in: the tokens an issuer issued, the client they were issued to, and the issuer's endpoints a renewal and a sign-out need, learned once at sign-in so no session asks again. TOKENS, never a password. A stored value that lacks a member it requires is no session.
+    """
+
+    access: Annotated[str, Field(description="The access token: short-lived, sent as a Bearer token.")]
+    refresh: Annotated[str, Field(description="The refresh token: what renews the access token at the issuer without another sign-in.")]
+    client_id: Annotated[
+        str, Field(alias="clientId", description="The client the tokens were issued to, which a renewal and a revocation name.")
+    ]
+    token_endpoint: Annotated[
+        str, Field(alias="tokenEndpoint", description="The issuer's token endpoint, where the refresh grant is made.")
+    ]
+    revocation_endpoint: Annotated[
+        str | None,
+        Field(
+            alias="revocationEndpoint",
+            description="The issuer's revocation endpoint (RFC 7009), where a sign-out tells it to forget the refresh token. Absent when the issuer has none.",
+        ),
+    ] = None
+    person_key: Annotated[
+        str | None,
+        Field(
+            alias="personKey",
+            description="Who the gateway said the sign-in's person is, as the key their caches and stream position are kept under (`lastEventIdKeyPrefix`), never the did itself. Written once the gateway names the person, on the sign-in whose token it was asked about; a renewal keeps it, a new sign-in starts without it, and forgetting the sign-in, however it is forgotten, reads it first to delete what is kept under it. Absent for a sign-in whose gateway has not yet named its person.",
+        ),
+    ] = None
+
+
+class SignedIn(WireModel, frozen=True, extra="forbid"):
+    """
+    What a completed sign-in learned, as a registry is handed it to record: where it was, who the knowledge base there says it is, the tokens, and what the person believed they were signing in to.
+    """
+
+    endpoint: Annotated[KbEndpoint, Field(description="Where the sign-in was.")]
+    description: Annotated[KbDescription, Field(description="What the knowledge base said of itself, asked with the new token.")]
+    session: Annotated[StoredSession, Field(description="The tokens, as a registry keeps them.")]
+    kb_id: Annotated[
+        str | None, Field(alias="kbId", description="The registered knowledge base the person signed in to again. Absent when it is none.")
+    ] = None
+    expected_did: Annotated[
+        str | None,
+        Field(alias="expectedDid", description="The did of what the person believed they clicked. Absent when they named nothing."),
+    ] = None
+    expected_name: Annotated[
+        str | None,
+        Field(alias="expectedName", description="The name of what the person believed they clicked. Absent when they named nothing."),
+    ] = None
 
 
 class SmeltRebuildAnchorsCommand(WireModel, frozen=True):
@@ -5273,6 +5452,47 @@ class StorageUriEntry(WireModel, frozen=True, extra="forbid"):
 
     uri: Annotated[str, Field(description="The `file://` URI of a place in the working tree, relative to the knowledge base's root.")]
     resource_id: Annotated[ResourceId, Field(alias="resourceId")]
+
+
+class TabCheckGone(WireModel, frozen=True, extra="forbid"):
+    """
+    The knowledge base said the resource does not exist.
+    """
+
+    verdict: Literal["gone"]
+
+
+class TabCheckReady(WireModel, frozen=True, extra="forbid"):
+    """
+    The knowledge base has the resource, and said what it is called now.
+    """
+
+    verdict: Literal["ready"]
+    name: Annotated[str, Field(description="The name the knowledge base gave the resource.")]
+    media_type: Annotated[
+        str | None, Field(alias="mediaType", description="The media type of its primary representation. Absent when it said none.")
+    ] = None
+
+
+class TabCheckUnknown(WireModel, frozen=True, extra="forbid"):
+    """
+    The check found out nothing.
+    """
+
+    verdict: Literal["unknown"]
+
+
+type TabCheck = Annotated[
+    TabCheckGone | TabCheckReady | TabCheckUnknown,
+    Field(
+        description="What checking one open resource against its knowledge base concluded. `gone` is the only verdict that closes it, and it means the knowledge base said the resource does not exist, not that the check failed: a failed transport, a timeout and a peer that is down are each `unknown`, and an unknown resource stays open.",
+        discriminator="verdict",
+    ),
+]
+
+type TabVerdict = Annotated[
+    Literal["gone", "ready", "unknown"], Field(description="What checking an open resource against its knowledge base concluded.")
+]
 
 
 class TagSchemaAddedPayload(WireModel, frozen=True):

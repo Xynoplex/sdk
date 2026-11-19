@@ -1,4 +1,4 @@
-import type { components } from '@xynolog/core';
+import type { Motivation, components } from '@xynolog/core';
 import type { DelegateProgressTranslations } from '../components/DelegateProgress';
 import type en from '../../translations/en.json';
 
@@ -71,8 +71,6 @@ export function delegateProgressCopy(
   };
 }
 
-type Motivation = components['schemas']['Motivation'];
-
 /** `word` with its first letter in upper case, typed as TypeScript's `Capitalize` types it. */
 const capitalize = <S extends string>(word: S) =>
   `${word.charAt(0).toUpperCase()}${word.slice(1)}` as Capitalize<S>;
@@ -83,7 +81,7 @@ const capitalize = <S extends string>(word: S) =>
  *
  * The key is derived from the motivation, and its type is held to the keys
  * `en.json` has: a motivation with no noun there does not compile.
- * `lint:translations` holds every other locale to `en.json`.
+ * `translations-census.test.ts` holds every other locale to `en.json`.
  */
 const nounKey = (
   motivation: Motivation,
@@ -145,10 +143,13 @@ function delegateSubjectKind(
  * user's own input and stays verbatim — translating someone's instructions
  * back at them would be absurd.
  *
- * Unknown codes fall back to the code itself: a future parameter shows an ugly
- * name rather than an empty label, and the locale gate will flag the gap.
+ * Exhaustive with a `never` default: a parameter the spec adds is a compile
+ * error here. A code the wire sends outside the spec shows as itself, an ugly
+ * name rather than an empty label.
  */
-export function delegateParamLabel(t: Translate): (code: string) => string {
+export function delegateParamLabel(
+  t: Translate,
+): DelegateProgressTranslations['paramLabel'] {
   return (code) => {
     switch (code) {
       case 'entity-types':
@@ -159,8 +160,10 @@ export function delegateParamLabel(t: Translate): (code: string) => string {
         return t('paramTone');
       case 'density':
         return t('paramDensity');
-      default:
-        return code;
+      default: {
+        const unreachable: never = code;
+        return unreachable;
+      }
     }
   };
 }

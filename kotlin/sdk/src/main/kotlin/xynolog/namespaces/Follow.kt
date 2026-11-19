@@ -12,9 +12,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.supervisorScope
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 import xynolog.Delegation
 import xynolog.JobAttemptFailed
 import xynolog.JobCompleted
@@ -55,6 +54,7 @@ import xynolog.types.JobStatusRequest
 import xynolog.types.JobStatusResponse
 import xynolog.types.JobStatusResponseStatus
 import xynolog.types.JobStoredResult
+import xynolog.types.JobType
 import xynolog.types.MarkJobCompleteCommand
 import xynolog.types.MarkJobCreateCommand
 import xynolog.types.YieldJobCompleteCommand
@@ -281,16 +281,16 @@ private class Follower<C : JobCompleteCommand>(
      * which verb's.
      */
     private fun learned(status: JobStatusResponse): C {
-        val stated = mutableMapOf<String, JsonElement>(
-            "resourceId" to JsonPrimitive(resourceId.value),
-            "jobId" to JsonPrimitive(status.jobId.value),
-            "jobType" to JsonPrimitive(status.type.value),
-        )
-        // A job completed without a result is stored with an empty one: an object that holds nothing.
-        status.result?.takeUnless { it == JobStoredResult.Empty }?.let { stated["result"] = wireJson.encodeToJsonElement(JobStoredResult.serializer(), it) }
+        val stated = when (status.type) {
+            JobType.Mark -> wireJson.encodeToJsonElement(MarkJobCompleteCommand.serializer(), MarkJobCompleteCommand(resourceId = resourceId, jobId = status.jobId))
+            JobType.Yield -> wireJson.encodeToJsonElement(YieldJobCompleteCommand.serializer(), YieldJobCompleteCommand(resourceId = resourceId, jobId = status.jobId))
+        }.jsonObject
         fun notCompleted(fault: Fault) =
             TransportError(TransportErrorCode.Error, "The status of job ${status.jobId.value} is not a completed ${create.delegated} job's: $fault")
-        val payload = JsonObject(stated)
+        // A job completed without a result is stored with an empty one: an object that holds nothing.
+        val payload = status.result?.takeUnless { it == JobStoredResult.Empty }
+            ?.let { JsonObject(stated + ("result" to wireJson.encodeToJsonElement(JobStoredResult.serializer(), it))) }
+            ?: stated
         val fault = faultOf(JobCompleteCommand.serializer().descriptor, payload)
         if (fault != null) throw notCompleted(fault)
         val read = try {

@@ -125,11 +125,11 @@ writes:
   vocabulary; an alias is another spelling of a row's extension; and the rows
   are the `SupportedMediaType` enum's members, no more and no fewer.
 - `stored`: what a client keeps for its person, from `session/stored.json`,
-  for the Python and Haskell SDKs: the store's keys and prefixes, the stored
-  session (a flat schema, as `sign-in`'s entry is), an open resource, the
-  last event ids, the cache document, and the queries a client keeps, which
-  are the refresh table's persisted queries, by the identifier each is keyed
-  by. A key is a camel-case `…Key` stated once, and no key begins with a
+  for the Python and Haskell SDKs: the store's keys and prefixes, an open
+  resource, the last event ids, the cache document, and the queries a client
+  keeps, which are the refresh table's persisted queries, by the identifier
+  each is keyed by. The stored session is a table record (`Table_records`),
+  which each SDK's types write. A key is a camel-case `…Key` stated once, and no key begins with a
   prefix; a cache document is a version and its entries, each a key, a value
   and a whole-number stamp.
 - `locales`: every language an SDK's interface speaks, from
@@ -221,8 +221,10 @@ writes:
   as the schema states it, and each kind of id branded. `Typescript_syntax`
   is the TypeScript it is built of, and Prettier lays it out.
 - `python-types`: the Python SDK's `xynolog/types.py`, a frozen `WireModel`
-  for every component schema that is an object and a type alias for every
-  other, but the kinds of id, which it imports from `xynolog.identifiers`. A
+  for every component schema and every record Protocol states in its tables
+  (`Table_records`), with every schema they reach, that is an object, and a
+  type alias for every other, but the kinds of id, which it imports from
+  `xynolog.identifiers`. A
   model states types and no rules: what a value must be beyond its type is
   the `required` table's. What a schema writes in place is named by
   `Naming`, and each declaration follows every one it names, so pydantic

@@ -2,9 +2,12 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import type { components } from '@xynolog/core';
 
-export type Theme = 'light' | 'dark' | 'system';
-export type ResolvedTheme = 'light' | 'dark';
+/** The theme a person chooses: what `settings:theme-changed` carries. */
+export type Theme = components['schemas']['SettingsThemeChangedEvent']['theme'];
+/** The theme a page is drawn in: the chosen one, or the system's when the choice is `system`. */
+export type ResolvedTheme = Exclude<Theme, 'system'>;
 
 interface ThemeContextValue {
   theme: Theme;

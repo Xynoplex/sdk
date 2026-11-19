@@ -57,7 +57,7 @@ from contextlib import AbstractAsyncContextManager, AsyncExitStack, contextmanag
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from types import TracebackType
-from typing import Final, Literal, Protocol, Self, final, override
+from typing import Final, Protocol, Self, final, override
 
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
@@ -72,7 +72,7 @@ from xynolog.identity import kb_did
 from xynolog.model import written
 from xynolog.resources import primary_media_type
 from xynolog.session import HeldSignIn, SignInKept, XynologSession, is_token_expired
-from xynolog.session_signals import KbIdentityConflict, SessionSignals
+from xynolog.session_signals import SessionSignals
 from xynolog.storage import SessionStorage
 from xynolog.storage_keys import cache_key, last_event_id_key, session_key
 from xynolog.stored import (
@@ -82,24 +82,34 @@ from xynolog.stored import (
     LAST_VIEWED_RESOURCE_BY_KB_KEY,
     OPEN_RESOURCES_BY_KB_KEY,
     OpenResource,
-    StoredSession,
 )
 from xynolog.timing import CHECKS_AT_ONCE_COUNT
 from xynolog.transport import Transport
-from xynolog.types import KbDescription, KbEndpoint, KbRead, KnowledgeBase, NewKnowledgeBase
+from xynolog.types import (
+    Expected,
+    KbDescription,
+    KbIdentityConflict,
+    KbRead,
+    KbReadVerdict,
+    KbReadVerdictConflict,
+    KbReadVerdictNoVerdict,
+    KbReadVerdictRecorded,
+    KbSessionStatus,
+    KnowledgeBase,
+    NewKnowledgeBase,
+    SignedIn,
+    SignInOutcome,
+    StoredSession,
+    TabCheck,
+    TabCheckGone,
+    TabCheckReady,
+    TabCheckUnknown,
+)
 from xynolog.watched import Variable, Watched
 
 __all__ = [
-    "Expected",
-    "KbReadKind",
-    "KbReadVerdict",
-    "KbSessionStatus",
     "SessionFactory",
     "SessionFactoryOptions",
-    "SignInOutcome",
-    "SignedIn",
-    "TabCheck",
-    "TabVerdict",
     "XynologBrowser",
     "XynologBrowserConfig",
     "apply_tab_checks",
@@ -303,38 +313,7 @@ def kept_in(storage: SessionStorage, kb_id: str) -> SignInKept:
     return _KeptIn(storage, kb_id)
 
 
-type KbSessionStatus = Literal["authenticated", "expired", "signed-out"]
-"""What the credential stored for a knowledge base says, read without asking
-anyone: a token is stored and has not expired (`authenticated`), a token is
-stored and has expired (`expired`), nothing is stored (`signed-out`)."""
-
-
 # ── What is open ────────────────────────────────────────────────────────
-
-
-type TabVerdict = Literal["gone", "ready", "unknown"]
-"""What checking one open resource against its knowledge base concluded: the
-knowledge base said it does not exist (`gone`), it has it and said what it is
-(`ready`), or the check failed some other way (`unknown`)."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class TabCheck:
-    """One open resource's verdict.
-
-    `gone` is the only verdict that removes, and it means the knowledge base
-    said the resource does not exist, not that the check failed. A transport
-    failure, a timeout and a peer that is down are all `unknown`, and an
-    unknown resource stays open: closing everything because a service was
-    briefly down would be worse than the stale entries this removes.
-    """
-
-    verdict: TabVerdict
-    name: str | None = None
-    """What the knowledge base named a resource it has: a `ready`'s alone."""
-    media_type: str | None = None
-    """The media type it said of a resource it has; none when it said none."""
 
 
 def apply_tab_checks(opened: Iterable[OpenResource], checks: Mapping[ResourceId, TabCheck]) -> list[OpenResource]:
@@ -348,11 +327,11 @@ def apply_tab_checks(opened: Iterable[OpenResource], checks: Mapping[ResourceId,
     for tab in opened:
         check = checks.get(tab.id)
         match check:
-            case TabCheck(verdict="gone"):
+            case TabCheckGone():
                 continue
-            case TabCheck(verdict="ready", name=str(name), media_type=media_type):
+            case TabCheckReady(name=name, media_type=media_type):
                 kept.append(tab.model_copy(update={"name": name, "media_type": tab.media_type if media_type is None else media_type}))
-            case _:
+            case TabCheckUnknown() | None:
                 kept.append(tab)
     return kept
 
@@ -441,76 +420,10 @@ class XynologBrowserConfig:
     """What builds a knowledge base's session."""
 
 
-# ── What a sign-in lands ────────────────────────────────────────────────
+# ── What a knowledge base says of itself ────────────────────────────────
 
 
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class SignedIn:
-    """What a completed sign-in learned.
-
-    Where it was, who the knowledge base there says it is, the tokens, and what
-    the person believed they were signing in to.
-    """
-
-    endpoint: KbEndpoint
-    description: KbDescription
-    """What the knowledge base said of itself, asked with the new token."""
-    session: StoredSession
-    kb_id: str | None = None
-    """The registered entry the person re-authenticated; none when it was none."""
-    expected_did: str | None = None
-    """The did of a row the person clicked; none when it was none."""
-    expected_name: str | None = None
-    """The name of a row the person clicked; none when it was none."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class Expected:
-    """What a person believed they were signing in to."""
-
-    did: str
-    name: str | None
-    """None when nothing was named."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class SignInOutcome:
-    """The entry a sign-in landed on, and what the person believed.
-
-    A host sets the two against each other and says when they differ. The
-    sign-in stands either way: the knowledge base that answered is the one
-    reached.
-    """
-
-    kb: KnowledgeBase
-    expected: Expected | None
-    """None when the person named nothing."""
-
-
-type KbReadKind = Literal["recorded", "conflict", "no-verdict"]
-"""What a knowledge base said when it was asked to describe itself, read against
-the entry it was asked as: it answered as that entry, and its name and branch
-are on it now (`recorded`); a different knowledge base answered, whose did and
-name are on the verdict and nowhere else (`conflict`); it did not answer, or
-could not say who it is, which is evidence of nothing (`no-verdict`)."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class KbReadVerdict:
-    """One reading of a knowledge base against its entry."""
-
-    kind: KbReadKind
-    observed_did: str | None = None
-    """The did of the knowledge base that answered: a `conflict`'s alone."""
-    observed_name: str | None = None
-    """The name it gave itself: a `conflict`'s alone."""
-
-
-_NO_VERDICT: Final = KbReadVerdict(kind="no-verdict")
+_NO_VERDICT: Final = KbReadVerdictNoVerdict(kind="no-verdict")
 
 
 def _read_now(description: KbDescription) -> KbRead:
@@ -1162,10 +1075,10 @@ class XynologBrowser:
         # answer about a resource would be an answer to a question asked of
         # the wrong one.
         verdict = await self._read_kb(session, kb_id)
-        if verdict.kind == "conflict":
+        if isinstance(verdict, KbReadVerdictConflict):
             # The read was of this session's knowledge base: what it voids is
             # the active one's, so only while this is still the active one.
-            if self._is_live(session) and verdict.observed_did is not None:
+            if self._is_live(session):
                 self._void_for_conflict(kb_id, verdict.observed_did)
             return
         # What the storage holds, not what is in memory: another context may
@@ -1202,11 +1115,11 @@ class XynologBrowser:
             # Not answered, or a domain no did can hold: a knowledge base that could not say who it is.
             return _NO_VERDICT
         if observed != entry.did:
-            return KbReadVerdict(kind="conflict", observed_did=observed, observed_name=description.name)
+            return KbReadVerdictConflict(kind="conflict", observed_did=observed, observed_name=description.name)
         if self._closing.is_set():
             return _NO_VERDICT
         self.update_kb(kb_id, label=description.name, last_read=_read_now(description))
-        return KbReadVerdict(kind="recorded")
+        return KbReadVerdictRecorded(kind="recorded")
 
     def _void_for_conflict(self, kb_id: str, observed_did: str) -> None:
         """A different knowledge base answered for the active entry.
@@ -1242,8 +1155,8 @@ async def _check_open_resource(session: XynologSession[Transport], resource_id: 
     try:
         descriptor = await session.client.browse.resource(resource_id).fresh()
     except BusRequestError as refusal:
-        return TabCheck(verdict="gone" if refusal.code == "bus.not-found" else "unknown")
+        return TabCheckGone(verdict="gone") if refusal.code == "bus.not-found" else TabCheckUnknown(verdict="unknown")
     except XynologError:
         # Anything else is a symptom, not a verdict.
-        return TabCheck(verdict="unknown")
-    return TabCheck(verdict="ready", name=descriptor.name, media_type=primary_media_type(descriptor))
+        return TabCheckUnknown(verdict="unknown")
+    return TabCheckReady(verdict="ready", name=descriptor.name, media_type=primary_media_type(descriptor))

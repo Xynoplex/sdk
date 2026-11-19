@@ -13,7 +13,7 @@
  * held by __tests__/stored-table.test.ts.
  */
 
-import type { ResourceId } from '@xynolog/core';
+import type { ResourceId, TabCheck } from '@xynolog/core';
 
 export interface OpenResource {
   /** The resource. */
@@ -38,20 +38,6 @@ export interface OpenResource {
   /** Where it is in the knowledge base's working tree, as a URI (e.g. "file://docs/overview.md"). Absent when it is not known. */
   storageUri?: string;
 }
-
-/**
- * What checking one tab against its KB concluded.
- *
- * `gone` is the only verdict that removes, and it means the KB affirmed the
- * resource does not exist — not that the check failed. A transport
- * error, a timeout, an unreachable peer: all `unknown`, and an unknown tab
- * stays. Wiping tabs because a service was briefly down would be strictly
- * worse than the phantoms this exists to remove.
- */
-export type TabCheck =
-  | { verdict: 'gone' }
-  | { verdict: 'ready'; name: string; mediaType?: string }
-  | { verdict: 'unknown' };
 
 /**
  * Apply per-tab verdicts to a list: drop the affirmed-absent, refresh what

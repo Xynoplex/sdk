@@ -113,13 +113,13 @@
     "lib/agent.ml": "ea862f715d110e68aaacfdc01efb1cc2a198cfc71d5606565c06a36a4308bfc5",
     "lib/agent.mli": "194b536a8f4dee477d1c4ec06dfe091ea256c417fa8a979e11dee640393895ee",
     "lib/annotation_id.ml": "5b737d261c35db2e649bc00f2ece7cda103e8c08d677be4483171ac9f8453951",
-    "lib/annotations.ml": "2050f1e9724d70ba4ebd0954b2c84eb44e539a5026b92562de4222e4cf1064ab",
+    "lib/annotations.ml": "74528be68ec91bdd855b20af51ae25771b113b5583b95d21753b35d4428a7a8c",
     "lib/annotations.mli": "e88dfe166745d06335cf7418a69984e190f399120a9c820c9846ff8a7dc9ebbc",
     "lib/assertion_facts.ml": "6046b9175feb660a38619fe2b11f862e2ccad9e4beacb29a79fe479e94ddf0a5",
     "lib/auth.ml": "95cbd3eef3820adfbff02c0ace52d195c7fd35022c2a2a7c6a49d7402880e4f2",
     "lib/beckon_state.ml": "3b37bcacd3c2fc058e2040672ffa1e5e5a456d2bb7e061559df3107cfe180b2b",
     "lib/beckon_state.mli": "fa367fbd741509c89d05c49b9a8c45eb507ae5e4aaef46ba295e5045014b1820",
-    "lib/browse.ml": "c42d6ed23168838c63dea27797ca5ec655040198d162d26c0cf54ac35d54e063",
+    "lib/browse.ml": "736758be0fd662c59235815d636df0878dfa407c5e8aec6a9956f7f48cf9cfc0",
     "lib/browse.mli": "c57e5ff1c98e598cb6c438e781d135c0ff0c76498e1b93455f2c5e870f3b2858",
     "lib/bus.ml": "6515e162ee1e96208327aed95690c73fbf6b50626c39dfb6aa930e2b308f69ab",
     "lib/bus_log.ml": "c15d97946b9c39af6502fad1c14d0dbdd6397d5e73b3ca1796eda1aa53f9aaad",
@@ -133,29 +133,29 @@
     "lib/client.mli": "6e08b6b7851820acced98ca320e6ec093455f2d0340828149b2f43e255d30e39",
     "lib/client_core.ml": "a8aa069b3f8b2920e43b0b2b02fe59bb551020b8e98599121bdf56f029cdbba9",
     "lib/client_core.mli": "332f7bb6fde85b3730a125d768d85be422629c6364f34cfc75c11433a086ee74",
-    "lib/client_query.ml": "00e39b4ccb288c9520ba5325d91d857eee33a8d87e74288fc165f92c8c33ed79",
+    "lib/client_query.ml": "eb6fc5678015e8e48f296efe403e21795b46005ddec65d042ef9a4d2eb5011e2",
     "lib/client_record.ml": "4426f9cc4ab4e5d96403cb5c1e780d8f5cbcc593905964062219847f202bcead",
     "lib/client_timing.ml": "6a7215850e59f60a4c5d92477c73b4ac04a47510acff3a39d931a38789fb4de0",
     "lib/client_timing.mli": "39d78d21f3de0f064ce6fd62d9f5a68d8b90ce21d85c3cc10a7177af3428c533",
     "lib/clock.ml": "71063b036aa3069ad2ed649ba8a73505b4eb4a00631c48af43a01f732c6623ab",
     "lib/clock.mli": "5333b1d2447f81415c54bfc99d87ae98362a4ce249695d7783c35df41cdab364",
-    "lib/delegation.ml": "9a6b1489cd1b15429d964747265ec0ca008c188d69b72eb4f706f4bd412c1641",
-    "lib/delegation.mli": "577b0158488a8f1dd3cd5aaef32b816c4c5324a38af03289b762e63d33ae5afe",
+    "lib/delegation.ml": "75fe29648750fcc9466308dec0adffc8f4809e86d0f00dc5c834ba109334a1f0",
+    "lib/delegation.mli": "36f45f6d1caa39e7eda0024d666bb32e2cd21346343e1dc9946bf5789ec67e23",
     "lib/discovery.ml": "3fbd431f7ed53eccc27c2c343e6a6556fab618976c42cab23a9b1288b903954d",
     "lib/discovery.mli": "c9924f5e42d374573dc62eb9aa405126a28769a0ce72b65a2187aae704c33747",
     "lib/dune": "24d5479fcb9187d59547c0cf81851fbcd0ba31d1742c33bc2348b74fd3edb7da",
     "lib/encoding_facts.ml": "dc9602d08894d9a3bd5334cb3254218f7a74dad0528d552acb00cec4061bb9bb",
     "lib/enums.ml": "6c448b6389865cc8987c536d47f483221fb8d2eff0b8aad696da5d4857809f5c",
-    "lib/error_codes.ml": "8b3cdc0715ef66280788464e79517d7a00147913e88e9c065ed13c396c84bb93",
+    "lib/error_codes.ml": "041a91c845d81e0186ab20c62e078491f9616340c38a235411b7e51d0aa64c8f",
     "lib/frame.ml": "6e0ba59a959758ccdc672cec1d8d802be2f882a5d1354ded4e5ab21398716d54",
-    "lib/gather.ml": "c1b78c87f2e5c35a9636e61aa0ca9b1477a41341f38acda6ff396cb380b3d3b7",
+    "lib/gather.ml": "79ce316d7cb74f60d07da80acbf3570d57ba949e4a3fbec81e4da34a6ca9ce6f",
     "lib/gather_state.ml": "a05e57b36c0b128cb30f94f70432582326b186f8cebb3e52de37de585f0f3954",
     "lib/gather_state.mli": "f5da939b80588f462f13befe2c6974e46448be17e64bb43bfaabfaf848cfe6ae",
     "lib/host_name.ml": "5f793a4dace4a309161cce83e5d3f23df9b63bbd5f27f89dc1e4bd6f42e98345",
     "lib/host_name.mli": "ae48395a873d6cb0d60dc1fce328a283adb07c6e0bb9d7107260a1ae8d57bc69",
     "lib/hover_dwell.ml": "2a8e9fef90c75ce18569793c04f553523e3dc523d53d869ceef4dab6a7702122",
     "lib/hover_dwell.mli": "3bf63911f6482ad960a6e4d3881e4a637caa0d9929dc8d62dbf7b69421fa19af",
-    "lib/http_facts.ml": "ee9e0a44520f4cc2d2ad693c9e41c3187d22458d2fdeca2f537ed9bd3687e8ec",
+    "lib/http_facts.ml": "1be4bde8948044b0eab3a95e3e2cd251208ccb471f9e4ab05fe9f207e6a495c1",
     "lib/http_wire.ml": "8734d744086790e7896014a65dbd60df1e24d2cc441cd803481505fe1357e65d",
     "lib/http_wire.mli": "dea21fe6dacbbb4f02f7b64fa87527890bd6219c8cae8fa32aab45544beb7bdc",
     "lib/identifiers.ml": "bb2e5891eb6174b1655728c2aee5832b0bb959afc6776ad5d6623f193ba0ef02",
@@ -166,15 +166,15 @@
     "lib/job_filter.mli": "b6990830290c4a2b5d24abce0d0da6f5138eb7abd7799cd8674b97e2918d9b42",
     "lib/kept_for_first_reader.ml": "6f853f2a44415317489ea3e910cbab9aaf6df0ba1960bed261f3503332f341ae",
     "lib/kept_renewal.ml": "3c69043d8304fa35dcbe80e5322ea71bb0f39d7ee57e4d772cc789b1de36ddee",
-    "lib/live_facts.ml": "683f7f83d1f40bb7619cd1b22315d350acc3eb3fc3a361f64c8fb78ab38bc9d0",
-    "lib/live_query.ml": "a7e7b275b7ae7f4c9fb22b2195efbd7ec2a519fdd048ffefae8d89688e2cab6f",
+    "lib/live_facts.ml": "9f647efbe44a37bc76eb655ce6cbd34bd7f1ce8ea14e1fbf197bd5fc23e0411c",
+    "lib/live_query.ml": "d18d1511566a0e208ee14fb1fdfe0c737c8edee66dc1137636d3f54c8cf78418",
     "lib/live_query.mli": "f18de5f9c81f1c3a92b247ef50fd8df03bc558c1fea3878fbeba4e01d01f6c18",
     "lib/log_facts.ml": "1bf6dc1bb379d78ebf88e28eaad640364552b8f2f469926f7f62333313d04d97",
-    "lib/mark.ml": "d539b4cea644c035198f7b22d9384e1e19c7815e806e240a2309e9e1e17a7072",
+    "lib/mark.ml": "7bb5dc6de229d81c29c5349f719a2902263b1026d02a10e274facc4781d82b82",
     "lib/mark.mli": "daa70a35284997cf8b5796bda5f3262c19e8690a40090dc415729c4e3dddbbb3",
     "lib/mark_state.ml": "b85e4cedb400d15ed8e4d4b31c18401ad5a416bc3fdb41b27b3b1f0b00d8304f",
     "lib/mark_state.mli": "016f04747b303cd634184d4e4d656fa014b46aab99cf890b56c5adcf67d16d8b",
-    "lib/match.ml": "254bb2bc11199a5aef049c209368d41f6655735168e6f5e7cfe8d6160ae59f51",
+    "lib/match.ml": "688566865cf768c0b4bfb6cddeda957366e7dedce57ddd19d8a2588927f821e6",
     "lib/match.mli": "54ac094a6a9f8e8a09b7bc5f175ae198788c3d82b9b80a1f7efc9014fd135179",
     "lib/match_state.ml": "6667b713046ac9f3c41da077bdf1d6502b72aa51b188f6c86294fcdfa0eaf678",
     "lib/match_state.mli": "8d03f88a685f32af82e994b883611746f9775689e61a7a455009be21e03d6f54",
@@ -184,7 +184,7 @@
     "lib/models.ml": "9a6a7823329398ef10995f8758f95e42d0ce2bac3eff7cbc62fc597d4b3ddb8f",
     "lib/models.mli": "b37e8935a0265559bee835a8d2fdee2aaecfbcfdb9a97b4f65a323aa3fe5e65e",
     "lib/namespace_methods.ml": "37178853cd16d5975132820d07bf0ee703039b946557167dd39560f0b5025147",
-    "lib/oauth.ml": "3e1c7f5ea7465ff24379a2ae1c3b548834657a1643e146f77c18731054ff9bb2",
+    "lib/oauth.ml": "8fd49d18dda428a219f7f28570e1d16e4757f55cf2613081ab33e743a407fce4",
     "lib/oauth.mli": "74dce2642014e9de8ed38f09367c76c97e83362763305eed04c0faddb951ba07",
     "lib/oauth_facts.ml": "8d318f922bc93b766445f8e0f3f0fc2deb2e9a78244e7553f717d620d69127b2",
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
@@ -193,7 +193,7 @@
     "lib/records.ml": "4c3280cc6da43dda56f6450297e62947eca691e62acc8aae0e052244ece739a8",
     "lib/redirect_sign_in.ml": "c0f36739c64b48556f18b04b1849e5033a500e681fc6ea0aa7bc357b4e8fb935",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
-    "lib/registry.ml": "9436c228637460c8845759b1e4ac309088ec54ab805fbdc16331481ed8b5f97c",
+    "lib/registry.ml": "e4995622ab11b54eb2978c5a02efeb650a9db77b41c0bebaaf7da138cb5f9fab",
     "lib/registry.mli": "007fe6fa9bb2ef09341bd496474b7ed14a9d19ead3576cde56650ccd3f457184",
     "lib/registry_facts.ml": "ad2d706c130785002585a0797b2ec8a070790257bd364a85b34f51f839dfcd63",
     "lib/resources.ml": "99f49caf9937bf6754e62b0011196873fdfbc1488ed90817a49fcd292d6a9fd4",
@@ -240,7 +240,7 @@
     "lib/telemetry.ml": "d3e6ba70a0b5a00eb4733a8fc973c1c3b98ea5d07661da3297f2d71ee77da306",
     "lib/telemetry.mli": "6968385e5ecbd2db1b9003eb403766c066975b0ff116e9d81da367ec87b4137f",
     "lib/telemetry_facts.ml": "abd1ec8dd54a246db71223dcf1cb7b4085df79c48de53dca7a36f5a747ee0f83",
-    "lib/testing.ml": "96bba4c454a6523f3601fc41de84b71567ab2b1f87401256b2a2f9ab8b081945",
+    "lib/testing.ml": "2baedf9209704c3dc8426719623448ee739c7fe687ce797724c5879ef04f1b7b",
     "lib/testing.mli": "237bd3501f8d626c1048c23e024e513f87203449d6e9ad3a98e9300aa7b3c73a",
     "lib/testing_facts.ml": "55a4542fe69fbc0db4ad4e06618d64e4b0c426739d52cbe5c1d33a79462dbe28",
     "lib/text_encoding.ml": "905bc2c16c4fc1416236a3e2751e5d61627d6dddf431941e36e8f233f5589dad",
@@ -253,11 +253,11 @@
     "lib/upload.mli": "904e332f05d2fd57caa955aa4119d702c29420d0711e2be826585594f42e4592",
     "lib/wire_stream.ml": "247fed187f15e0c30724e0000391252b954fd48d819835e8f93a536d30ac6673",
     "lib/wire_stream.mli": "d145d5064298080786a7d80eb55a4936a8dbe89cd0e0ccf4fa81b6e82fc799a5",
-    "lib/worker.ml": "0f0bd14f76c4bcb2d43811165429a0fb7cc9992bb52a8a8591071fdad9f77af4",
+    "lib/worker.ml": "4da58d8cca59bf6bfbdd92cf732a0c990c4ef65b083a44161ae1a70d51aae5e2",
     "lib/worker.mli": "d5c6c60e407f915b03a1a65f578a2663b8e6d26aaae77f9db5455656e20db49e",
     "lib/xynolog.ml": "5905c4650d1fd442f290b0364072740595dcdc781c75b114f9ad0f9f92110bf6",
     "lib/xynolog.mli": "02e4d8b6ce04271eefd8c710eab15a7388cd4582f65623d16f0ea4bb29c1461c",
-    "lib/yield.ml": "7966506e35563a3285eeea9d75c172d432467fc106ebad33affa0b24eafedb46",
+    "lib/yield.ml": "eb895203554d9af88f6aa464d397757aba04eab611d69a2429c3ddd83b5b0ca1",
     "lib/yield.mli": "ebe751eaa065d7816cfff15194d77d5d7364dbfc80ded3043396fa1e44b56210",
     "lib/yield_state.ml": "964626f32956299da2c452708bd8be0e9c69017c7c98b8cef2a96cbfae777cf0",
     "lib/yield_state.mli": "fe746d0f5b1657d53c8a2856e1ee7b0626dd570e0c855ba57fe502958686b978",
@@ -14636,6 +14636,66 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Error_codes.Sign_in",
+      "declaration": "module Sign_in :\n  sig\n    val no_issuer : string\n    val discovery : string\n    val no_pending : string\n    val state : string\n    val denied : string\n    val expired : string\n    val aborted : string\n    val exchange : string\n  end"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.no_issuer",
+      "declaration": "val no_issuer : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.discovery",
+      "declaration": "val discovery : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.no_pending",
+      "declaration": "val no_pending : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.state",
+      "declaration": "val state : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.denied",
+      "declaration": "val denied : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.expired",
+      "declaration": "val expired : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.aborted",
+      "declaration": "val aborted : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Sign_in.exchange",
+      "declaration": "val exchange : string"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Error_codes.Kb_identity",
+      "declaration": "module Kb_identity :\n  sig val unreachable : string val not_reported : string end"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Kb_identity.unreachable",
+      "declaration": "val unreachable : string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Error_codes.Kb_identity.not_reported",
+      "declaration": "val not_reported : string"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Telemetry",
       "declaration": "module Telemetry = Xynolog__.Telemetry",
       "alias": "Xynolog__.Telemetry"
@@ -15164,7 +15224,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Delegation.start",
-      "declaration": "val start :\n  t ->\n  verb:string ->\n  ?resource:string ->\n  ?stall_ms:int ->\n  params:Yojson.Safe.t ->\n  on_report:(report_kind -> Yojson.Safe.t -> unit) ->\n  on_failure:(failure -> unit) ->\n  on_close:(unit -> unit) -> unit -> unit -> unit"
+      "declaration": "val start :\n  t ->\n  verb:Xynolog__.Enums.Job_type.t ->\n  ?resource:string ->\n  ?stall_ms:int ->\n  params:Yojson.Safe.t ->\n  on_report:(report_kind -> Yojson.Safe.t -> unit) ->\n  on_failure:(failure -> unit) ->\n  on_close:(unit -> unit) -> unit -> unit -> unit"
     },
     {
       "kind": "value",

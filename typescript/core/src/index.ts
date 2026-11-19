@@ -67,8 +67,6 @@ export type {
   StoredEvent,
   EnrichedEvent,
   AttributedEvent,
-  BodyOperation,
-  BodyItem,
 } from './event-base';
 
 // Persisted events (the event types written to the log)
@@ -120,6 +118,19 @@ export type {
   KbEndpoint,
   HttpEndpoint,
   LocalEndpoint,
+  AnnotationBody,
+  BodyOperation,
+  ConnectionIdentity,
+  Expected,
+  SignInOutcome,
+  KbReadVerdict,
+  TabCheck,
+  KbSessionStatus,
+  SessionEnded,
+  PermissionDenied,
+  KbIdentityConflict,
+  SessionEndReason,
+  StoredSession,
 } from './payload-types';
 
 // Event utilities

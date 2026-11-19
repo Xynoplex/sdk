@@ -15,7 +15,7 @@ import { APIError } from '../../client';
 import { createTestClient } from '../../testing';
 import { httpKb } from '../knowledge-base';
 import { XynologSession, type UserInfo } from '../xynolog-session';
-import type { SessionEndReason } from '../session-signals';
+import type { SessionEndReason } from '@xynolog/core';
 import { InMemorySessionStorage } from '../session-storage';
 import {
   getStoredSession,

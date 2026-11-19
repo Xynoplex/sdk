@@ -14,7 +14,7 @@
 
 import { SignInError } from '@xynolog/core';
 import { revokeAtIssuer } from './oauth';
-import type { StoredSession } from './storage';
+import type { StoredSession } from '@xynolog/core';
 
 export interface SignInKept {
   /** The sign-in as it is kept now; null when there is none. */

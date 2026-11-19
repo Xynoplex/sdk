@@ -341,7 +341,17 @@ and object_ state name ~attribute ~original d =
         { wire; name = field; type_; required; nullable; constant })
       (List.sort (fun (a, _) (b, _) -> String.compare a b) properties)
   in
-  let names = List.map (fun f -> f.name) fields in
+  (* A constant member's value is also the model's own, so code that reads
+     the wire before it is a model names it. *)
+  let constant_name f = f.name ^ "Value" in
+  let names =
+    List.concat_map
+      (fun f ->
+        match f.constant with
+        | Some _ -> [ f.name; constant_name f ]
+        | None -> [ f.name ])
+      fields
+  in
   if
     List.length (List.sort_uniq String.compare names) <> List.length names
     || (open_ && List.mem "AdditionalProperties" names)
@@ -352,32 +362,44 @@ and object_ state name ~attribute ~original d =
     { name = "global::Xynolog.Serialization.Wire"; args = [ Str f.wire ] }
   in
   let members =
-    List.map
+    List.concat_map
       (fun f ->
         match f.constant with
         | Some c ->
-            C.Expression_property
-              {
-                attributes = [ wire_name f ];
-                modifiers = [ Public ];
-                type_ = T "string";
-                name = f.name;
-                value = Str c;
-              }
+            [
+              C.Field
+                {
+                  modifiers = [ Public; Const ];
+                  type_ = T "string";
+                  name = constant_name f;
+                  value = Some (Str c);
+                };
+              C.Expression_property
+                {
+                  attributes = [ wire_name f ];
+                  modifiers = [ Public ];
+                  type_ = T "string";
+                  name = f.name;
+                  value = Name (constant_name f);
+                };
+            ]
         | None ->
-            C.Property
-              {
-                attributes = [ wire_name f ];
-                modifiers =
-                  (if f.required then [ Public; Required ] else [ Public ]);
-                type_ =
-                  (if (not f.required) && f.nullable then stated f.type_
-                   else if (not f.required) || f.nullable then Nullable f.type_
-                   else f.type_);
-                name = f.name;
-                accessors = [ Get; Init ];
-                value = None;
-              })
+            [
+              C.Property
+                {
+                  attributes = [ wire_name f ];
+                  modifiers =
+                    (if f.required then [ Public; Required ] else [ Public ]);
+                  type_ =
+                    (if (not f.required) && f.nullable then stated f.type_
+                     else if (not f.required) || f.nullable then
+                       Nullable f.type_
+                     else f.type_);
+                  name = f.name;
+                  accessors = [ Get; Init ];
+                  value = None;
+                };
+            ])
       fields
     @
     if open_ then

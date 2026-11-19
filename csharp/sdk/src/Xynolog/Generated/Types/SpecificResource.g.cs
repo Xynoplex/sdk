@@ -9,5 +9,6 @@ public sealed record SpecificResource
 {
     [global::Xynolog.Serialization.Wire("purpose")] public global::Xynolog.Types.BodyPurpose? Purpose { get; init; }
     [global::Xynolog.Serialization.Wire("source")] public required global::Xynolog.Identifiers.ResourceId Source { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "SpecificResource";
+    public const string TypeValue = "SpecificResource";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

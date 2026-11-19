@@ -1,4 +1,4 @@
-(* Generated from OpenAPI paths, error codes and retry cases. Do not edit.
+(* Generated from OpenAPI paths and schemas, and error codes. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/http_facts.ml) *)
 
 let subscribe = ("POST", "/bus/subscribe")
@@ -48,8 +48,6 @@ let bus_failure = function
   | Some Failure_code.Peer_unavailable -> "bus.peer-unavailable"
   | Some Failure_code.Unauthorized -> "bus.unauthorized"
   | Some Failure_code.None_pending -> "bus.none-pending"
-
-let retry_statuses = [ 408; 413; 429; 500; 502; 503; 504 ]
 
 let upload_fields =
   [

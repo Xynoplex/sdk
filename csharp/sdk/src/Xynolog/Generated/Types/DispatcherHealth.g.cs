@@ -7,6 +7,8 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record DispatcherHealth
 {
-    [global::Xynolog.Serialization.Wire("queue")] public string Queue => "jetstream";
-    [global::Xynolog.Serialization.Wire("status")] public string Status => "ok";
+    public const string QueueValue = "jetstream";
+    [global::Xynolog.Serialization.Wire("queue")] public string Queue => QueueValue;
+    public const string StatusValue = "ok";
+    [global::Xynolog.Serialization.Wire("status")] public string Status => StatusValue;
 }

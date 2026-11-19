@@ -101,14 +101,3 @@ type EnrichmentFields = Omit<
  * and is in no log.
  */
 export type AttributedEvent = components['schemas']['AttributedEvent'];
-
-// ── Body operation types (OpenAPI-derived) ───────────────────────────────────
-
-export type BodyItem =
-  | components['schemas']['TextualBody']
-  | components['schemas']['SpecificResource'];
-
-export type BodyOperation =
-  | components['schemas']['BodyOperationAdd']
-  | components['schemas']['BodyOperationRemove']
-  | components['schemas']['BodyOperationReplace'];

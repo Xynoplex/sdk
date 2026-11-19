@@ -48,10 +48,18 @@ from xynolog.registry import save_knowledge_bases, store_session
 from xynolog.sign_in_store import FILE_NAME, SignInStore, state_dir, this_system
 from xynolog.state import BeckonStateUnit
 from xynolog.storage import MemoryStorage
-from xynolog.stored import StoredSession
 from xynolog.testing import InMemoryContent, PutBinary, ScriptedSessions, create_test_client
 from xynolog.transport import Content, Frame
-from xynolog.types import AgentSoftware, AnchoredText, FragmentSelector, HttpEndpoint, KnowledgeBase, PdfTextItem, UserResponse
+from xynolog.types import (
+    AgentSoftware,
+    AnchoredText,
+    FragmentSelector,
+    HttpEndpoint,
+    KnowledgeBase,
+    PdfTextItem,
+    StoredSession,
+    UserResponse,
+)
 from xynolog.watched import Variable
 
 README = (PACKAGE / "README.md").read_text(encoding="utf-8")

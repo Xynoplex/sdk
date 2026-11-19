@@ -404,7 +404,17 @@ class ClaimsTest {
             "job-1",
             "yield",
             metadata = obj("maxRetries" to 0),
-            params = obj("context" to obj("focus" to obj("kind" to "annotation", "annotation" to obj("id" to "ann-7")))),
+            params = obj(
+                "context" to obj(
+                    "focus" to obj(
+                        "kind" to "annotation",
+                        "annotation" to annotation("ann-7"),
+                        "sourceResource" to obj("@context" to "https://schema.org", "@id" to "res-1", "name" to "A resource", "representations" to JsonArray(emptyList())),
+                    ),
+                    "graph" to obj("nodes" to JsonArray(emptyList()), "edges" to JsonArray(emptyList())),
+                    "metadata" to obj(),
+                ),
+            ),
         )
         val claims = w.client.job.claim(EVERYTHING)
         val job = assertInstanceOf(HeldYieldJob::class.java, held(claims))

@@ -110,6 +110,20 @@ let cases =
         in
         has code {|type U = Annotated[A | B, Field(discriminator="kind")]|};
         has code {|    kind: Literal["a"]|});
+    case "a member of an enum it names, narrowed beside it, is the narrowed one"
+      (fun () ->
+        let code =
+          written
+            [
+              ( "U",
+                {|{"oneOf": [{"type": "object", "required": ["kind"], "properties": {"kind": {"allOf": [{"$ref": "K2.json"}], "enum": ["a"]}}}, {"type": "object", "required": ["kind"], "properties": {"kind": {"allOf": [{"$ref": "K2.json"}], "enum": ["b"]}}}], "discriminator": {"propertyName": "kind"}}|}
+              );
+              ("K2", {|{"type": "string", "enum": ["a", "b"]}|});
+            ]
+        in
+        has code {|    kind: Literal["a"]|};
+        has code {|    kind: Literal["b"]|};
+        lacks code "    kind: K2");
     case "an allOf of a model and members of its own extends the model"
       (fun () ->
         let code =

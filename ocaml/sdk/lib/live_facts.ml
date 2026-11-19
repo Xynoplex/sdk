@@ -1,6 +1,19 @@
 (* Generated from client/refresh.json. Do not edit.
    Regenerate: make generate (codegen/lib/cache_refresh/ocaml.ml) *)
 
+module Query = struct
+  let resource = "resource"
+  let annotations = "annotations"
+  let annotation = "annotation"
+  let events = "events"
+  let referenced_by = "referencedBy"
+  let resources = "resources"
+  let matched_resources = "matchedResources"
+  let entity_types = "entityTypes"
+  let tag_schemas = "tagSchemas"
+  let engines = "engines"
+end
+
 let queries =
   [
     ("resource", "browse:resource-requested");

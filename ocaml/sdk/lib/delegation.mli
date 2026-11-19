@@ -27,7 +27,7 @@ val on_frame : t -> (Wire_stream.frame, Wire_stream.refusal) result -> unit
 
 val start :
   t ->
-  verb:string ->
+  verb:Enums.Job_type.t ->
   ?resource:string ->
   ?stall_ms:int ->
   params:Yojson.Safe.t ->

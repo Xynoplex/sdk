@@ -14,7 +14,7 @@ import {
   switchMap,
   shareReplay,
 } from 'rxjs/operators';
-import type { ResourceDescriptor } from '@xynolog/core';
+import type { ResourceDescriptor, components } from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import { SEARCH_DEBOUNCE_MS, type StateUnit } from '@xynolog/core';
 import { createDisposer } from '@xynolog/sdk';
@@ -38,7 +38,7 @@ export interface DiscoverSearchPipeline {
   state$: Observable<{
     results: ResourceDescriptor[];
     isSearching: boolean;
-    matchKind?: 'lexical' | 'semantic';
+    matchKind?: components['schemas']['MatchResourcesResponse']['matchKind'];
   }>;
   setQuery(value: string): void;
 }

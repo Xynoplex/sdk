@@ -47,10 +47,13 @@ let join_limits engines limits =
          | _ -> engine)
        (list engines))
 
+let listing name =
+  name = Live_facts.Query.resources || name = Live_facts.Query.matched_resources
+
 let make ?window_ms ?restore ?save ~sw ~clock ~bus ~http ~client_id ~key () =
   let load (name, resource, argument) =
     match List.assoc_opt name Live_query.operations with
-    | None when name = "annotations" -> (
+    | None when name = Live_facts.Query.annotations -> (
         match
           Option.bind resource (fun id ->
               Result.to_option (Identifiers.Resource_id.of_string id))
@@ -66,9 +69,8 @@ let make ?window_ms ?restore ?save ~sw ~clock ~bus ~http ~client_id ~key () =
     | Some (B.Operation operation) ->
         let field name = Option.map (fun value -> (name, `String value)) in
         let payload =
-          match (name, argument) with
-          | ("resources" | "matchedResources"), Some encoded ->
-              Yojson.Safe.from_string encoded
+          match argument with
+          | Some encoded when listing name -> Yojson.Safe.from_string encoded
           | _ ->
               `Assoc
                 (List.filter_map Fun.id
@@ -79,7 +81,7 @@ let make ?window_ms ?restore ?save ~sw ~clock ~bus ~http ~client_id ~key () =
         let read ?on_sent () =
           request ?on_sent bus http ~client_id ~key operation payload
         in
-        if name = "engines" then (
+        if name = Live_facts.Query.engines then (
           let answer = ref (Error Error_codes.Bus_request.closed) in
           let limits = ref [] in
           let sent, mark_sent = Promise.create () in
@@ -107,10 +109,7 @@ let make ?window_ms ?restore ?save ~sw ~clock ~bus ~http ~client_id ~key () =
             !answer)
         else
           Result.map
-            (fun json ->
-              match name with
-              | "resources" | "matchedResources" -> json
-              | name -> J.member name json)
+            (fun json -> if listing name then json else J.member name json)
             (read ())
   in
   let hold (_, id, _) =

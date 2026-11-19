@@ -15,11 +15,8 @@ import {
 } from '@testing-library/react';
 import { vi, beforeEach, describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
-import {
-  AnnotateToolbar,
-  type SelectionMotivation,
-  type ClickAction,
-} from '../AnnotateToolbar';
+import { AnnotateToolbar, type ClickAction } from '../AnnotateToolbar';
+import type { Motivation } from '@xynolog/core';
 import { ANNOTATORS } from '../../../lib/annotation-registry';
 import { TranslationProvider } from '../../../contexts/TranslationContext';
 import type { TranslationManager } from '../../../types/TranslationManager';
@@ -71,7 +68,7 @@ async function pick(group: string, option: string) {
 
 describe('AnnotateToolbar', () => {
   const defaultProps = {
-    selectedMotivation: null as SelectionMotivation | null,
+    selectedMotivation: null as Motivation | null,
     selectedClick: 'detail' as ClickAction,
     annotateMode: false,
     annotators: ANNOTATORS,

@@ -233,7 +233,7 @@ export interface BrowseNamespace {
   ): Promise<AnnotationHistoryResponse>;
   files(
     dirPath?: string,
-    sort?: 'name' | 'mtime' | 'annotationCount',
+    sort?: components['schemas']['BrowseDirectoryRequest']['sort'],
   ): Promise<components['schemas']['BrowseFilesResponse']>;
   /**
    * What the KB says of itself — its committed name and domain, and the

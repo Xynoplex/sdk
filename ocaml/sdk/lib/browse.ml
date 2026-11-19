@@ -25,20 +25,25 @@ let with_resource client name resource =
   Client_core.query client
     (name, Some (Identifiers.Resource_id.to_string resource), None)
 
-let resource client id = with_resource client "resource" id
-let annotations client id = with_resource client "annotations" id
-let events client id = with_resource client "events" id
+let resource client id = with_resource client Live_facts.Query.resource id
+let annotations client id = with_resource client Live_facts.Query.annotations id
+let events client id = with_resource client Live_facts.Query.events id
 
 let annotation client resource annotation =
   Client_core.query client
-    ( "annotation",
+    ( Live_facts.Query.annotation,
       Some (Identifiers.Resource_id.to_string resource),
       Some (Identifiers.Annotation_id.to_string annotation) )
 
 let resources client payload =
   Client_core.query client
-    ("resources", None, Some (Bus_registry.encode payload))
+    (Live_facts.Query.resources, None, Some (Bus_registry.encode payload))
 
-let entity_types client = Client_core.query client ("entityTypes", None, None)
-let tag_schemas client = Client_core.query client ("tagSchemas", None, None)
-let engines client = Client_core.query client ("engines", None, None)
+let entity_types client =
+  Client_core.query client (Live_facts.Query.entity_types, None, None)
+
+let tag_schemas client =
+  Client_core.query client (Live_facts.Query.tag_schemas, None, None)
+
+let engines client =
+  Client_core.query client (Live_facts.Query.engines, None, None)

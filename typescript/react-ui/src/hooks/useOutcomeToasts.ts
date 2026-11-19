@@ -1,6 +1,6 @@
 import { useToast } from '../components/Toast';
 import { useEventSubscriptions } from '../contexts/useEventSubscription';
-import { declineReason } from '../lib/job-outcome';
+import { declineCopyKey, declineReason } from '../lib/job-outcome';
 import { useTranslations } from '../contexts/TranslationContext';
 
 /**
@@ -91,9 +91,7 @@ export function useOutcomeToasts(resourceId: string): void {
       }
       const reason = declineReason(event.result);
       if (reason) {
-        // `decline_no-text-layer` etc. — the code IS the key suffix, so a new
-        // reason on the wire needs copy and the translations gate says so.
-        showInfo(t(`decline_${reason}`));
+        showInfo(t(declineCopyKey(reason)));
       } else if (
         event.result &&
         'found' in event.result &&

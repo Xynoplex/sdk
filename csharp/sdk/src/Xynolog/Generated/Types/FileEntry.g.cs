@@ -16,5 +16,6 @@ public sealed record FileEntry
     [global::Xynolog.Serialization.Wire("resourceId")] public global::Xynolog.Identifiers.ResourceId? ResourceId { get; init; }
     [global::Xynolog.Serialization.Wire("size")] public required long Size { get; init; }
     [global::Xynolog.Serialization.Wire("tracked")] public required bool Tracked { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "file";
+    public const string TypeValue = "file";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

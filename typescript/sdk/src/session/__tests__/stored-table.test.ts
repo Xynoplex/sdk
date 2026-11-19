@@ -51,8 +51,8 @@ import {
   personKey,
   sessionKey,
   setStoredSession,
-  type StoredSession,
 } from '../storage';
+import type { StoredSession } from '@xynolog/core';
 
 /** One key worked out: from a knowledge base's id, a person's did and, for a query, its name. */
 interface Example {

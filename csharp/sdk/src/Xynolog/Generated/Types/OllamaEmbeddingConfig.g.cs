@@ -9,5 +9,6 @@ public sealed record OllamaEmbeddingConfig
 {
     [global::Xynolog.Serialization.Wire("baseUrl")] public required string BaseUrl { get; init; }
     [global::Xynolog.Serialization.Wire("model")] public required string Model { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "ollama";
+    public const string TypeValue = "ollama";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

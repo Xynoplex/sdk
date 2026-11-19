@@ -2,15 +2,16 @@
    SessionStorage (protocol/specs/src/session/stored.json), for the Python
    SDK. A registry in one SDK finds what one in another wrote, over one
    storage, only if both say these alike: the key each thing is kept under,
-   the prefixes of the keys made per knowledge base, the stored session's
-   shape, an open resource's, the stream's places, and the queries a client
-   keeps (those client/refresh.json marks persisted), with the key of one per
-   nothing and the version of what keeps them.
+   the prefixes of the keys made per knowledge base, an open resource's
+   shape, the stream's places, and the queries a client keeps (those
+   client/refresh.json marks persisted), with the key of one per nothing and
+   the version of what keeps them. The stored session's shape is a table
+   record, xynolog.types' ([Table_records]).
 
    A fixed key is a constant's name ending in Key, stated once, and begins
-   with no prefix. The stored session is a flat schema with no date-time. An
-   open resource's members are kinds of id, text and whole numbers. The
-   stream's places are named by a kind of id, each a component. *)
+   with no prefix. An open resource's members are kinds of id, text and
+   whole numbers. The stream's places are named by a kind of id, each a
+   component. *)
 
 module T = Tables.Session_stored
 
@@ -34,7 +35,6 @@ type named = { title : string; description : string }
 
 type t = {
   table : T.t;
-  session : Sign_in.Flat.t;
   open_resource_type : named;
   open_resource : field list;
   places : named;  (** lastEventIds' type. *)
@@ -98,22 +98,6 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
         table.cache_key_prefix.prefix,
         table.cache_key_prefix.docs );
     ];
-  let session =
-    match Sign_in.Flat.read ~file table.stored_session with
-    | Error errors ->
-        List.iter
-          (fun (e : Decode.error) ->
-            refuse ("/storedSession" ^ e.pointer) e.message)
-          errors;
-        None
-    | Ok session ->
-        if
-          List.exists (fun (f : Sign_in.Flat.field) -> f.is_time) session.fields
-        then
-          refuse "/storedSession"
-            "has a date-time, which a stored session does not";
-        Some session
-  in
   (* The component a reference to one names. *)
   let component at reference =
     let name =
@@ -327,12 +311,11 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
     | Some (`String text) -> text
     | _ -> ""
   in
-  match (List.rev !refusals, session) with
-  | [], Some session ->
+  match List.rev !refusals with
+  | [] ->
       Ok
         {
           table;
-          session;
           open_resource_type = named o;
           open_resource;
           places = named l;
@@ -343,7 +326,7 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
           kinds;
           kept;
         }
-  | errors, _ -> Error errors
+  | errors -> Error errors
 
 let python t =
   let module P = Python_syntax in
@@ -365,17 +348,6 @@ let python t =
         | said ->
             P.sub "Annotated" [ P.item plain; P.item (P.call "Field" said) ])
       ?value:(if f.required then None else Some (P.Name "None"))
-  in
-  let session_field (f : Sign_in.Flat.field) =
-    field
-      {
-        name = f.name;
-        description = f.description;
-        required = f.required;
-        type_ = "str";
-        kind = None;
-        least = None;
-      }
   in
   let model name doc fields =
     P.Class
@@ -419,13 +391,7 @@ let python t =
           "WHOLE_KEY";
         ])
     @ List.sort compare
-        [
-          t.session.title;
-          t.open_resource_type.title;
-          t.places.title;
-          "KeptQuery";
-          "WholeKey";
-        ]
+        [ t.open_resource_type.title; t.places.title; "KeptQuery"; "WholeKey" ]
   in
   let kept_as k =
     "Keyed by "
@@ -448,13 +414,12 @@ let python t =
             As_is
               "What a registry of knowledge bases keeps in a `SessionStorage` \
                (`protocol/specs/src/session/stored.json`):\n\
-               the key each thing it keeps is kept under, the shape of a \
-               knowledge base's\n\
-               stored session, and the shape of a resource open in one. And \
-               what the\n\
-               sessions it makes keep there: which queries, and the stream's \
-               places. The\n\
-               keys made of these prefixes are `xynolog.storage_keys`'s.\n";
+               the key each thing it keeps is kept under, and the shape of a \
+               resource open in one.\n\
+               And what the sessions it makes keep there: which queries, and \
+               the stream's\n\
+               places. The keys made of these prefixes are \
+               `xynolog.storage_keys`'s.\n";
           imports =
             [
               [
@@ -525,8 +490,6 @@ let python t =
                   ];
                 constant ~about:t.version_description "CACHE_DOCUMENT_VERSION"
                   (P.Int t.version);
-                model t.session.title t.session.description
-                  (List.map session_field t.session.fields);
                 model t.open_resource_type.title
                   t.open_resource_type.description
                   (List.map field t.open_resource);

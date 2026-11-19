@@ -8,7 +8,7 @@ import {
   type SessionStorage,
 } from '../session-storage';
 import { MemorySignIn } from '../sign-in-kept';
-import type { StoredSession } from '../storage';
+import type { StoredSession } from '@xynolog/core';
 
 const PREFIX = 'xynolog.session.';
 

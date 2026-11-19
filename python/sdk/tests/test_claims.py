@@ -587,7 +587,23 @@ def test_a_yield_job_focused_on_an_annotation_is_anchored_to_it_and_says_so() ->
                 "job-1",
                 "yield",
                 metadata={"maxRetries": 0},
-                params={"context": {"focus": {"kind": "annotation", "annotation": {"id": "ann-7"}}}},
+                params={
+                    "context": {
+                        "focus": {
+                            "kind": "annotation",
+                            "annotation": annotation("ann-7"),
+                            "sourceResource": {
+                                "@context": "https://schema.org",
+                                "@id": "res-1",
+                                "name": "A resource",
+                                "description": None,
+                                "representations": [],
+                            },
+                        },
+                        "graph": {"nodes": [], "edges": []},
+                        "metadata": {},
+                    }
+                },
             )
         )
         async with w.client.job.claim(EVERYTHING) as claims:

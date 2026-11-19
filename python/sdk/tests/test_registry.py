@@ -12,7 +12,6 @@ a `SharedStorage`, so a second context can write it as another window would.
 """
 
 import asyncio
-import dataclasses
 import json
 from collections.abc import AsyncGenerator, Mapping
 from contextlib import asynccontextmanager
@@ -27,12 +26,8 @@ from tokens import expired, token
 from xynolog.errors import TransportError
 from xynolog.identifiers import ResourceId
 from xynolog.registry import (
-    Expected,
-    KbReadVerdict,
     SessionFactory,
     SessionFactoryOptions,
-    SignedIn,
-    TabCheck,
     XynologBrowser,
     XynologBrowserConfig,
     apply_tab_checks,
@@ -44,7 +39,7 @@ from xynolog.registry import (
     stored_session,
 )
 from xynolog.session import HeldSignIn, MemorySignIn, SignInKept, XynologSession
-from xynolog.session_signals import KbIdentityConflict, PermissionDenied, SessionEnded, SessionSignals
+from xynolog.session_signals import SessionSignals
 from xynolog.storage import MemoryStorage, SessionStorage
 from xynolog.storage_keys import cache_key, kb_of_session_key, last_event_id_key, person_key, session_key
 from xynolog.stored import (
@@ -54,11 +49,30 @@ from xynolog.stored import (
     LAST_VIEWED_RESOURCE_BY_KB_KEY,
     OPEN_RESOURCES_BY_KB_KEY,
     OpenResource,
-    StoredSession,
 )
 from xynolog.testing import FaultyTransport, ScriptedSessions, SharedStorage
 from xynolog.transport import Transport
-from xynolog.types import HttpEndpoint, KbDescription, KbRead, KnowledgeBase, NewKnowledgeBase, UserResponse
+from xynolog.types import (
+    Expected,
+    HttpEndpoint,
+    KbDescription,
+    KbIdentityConflict,
+    KbRead,
+    KbReadVerdictConflict,
+    KbReadVerdictNoVerdict,
+    KbReadVerdictRecorded,
+    KnowledgeBase,
+    NewKnowledgeBase,
+    PermissionDenied,
+    SessionEnded,
+    SignedIn,
+    StoredSession,
+    TabCheck,
+    TabCheckGone,
+    TabCheckReady,
+    TabCheckUnknown,
+    UserResponse,
+)
 from xynolog.watched import Watched, reached
 
 KB_A: Final = "kb-a"
@@ -513,10 +527,10 @@ def test_they_are_ordered_by_place_and_then_by_when_they_were_opened() -> None:
 
 
 def test_only_a_resource_the_knowledge_base_says_is_gone_is_dropped() -> None:
-    checks = {
-        ResourceId("gone"): TabCheck(verdict="gone"),
-        ResourceId("found"): TabCheck(verdict="ready", name="Its name now"),
-        ResourceId("unknown"): TabCheck(verdict="unknown"),
+    checks: dict[ResourceId, TabCheck] = {
+        ResourceId("gone"): TabCheckGone(verdict="gone"),
+        ResourceId("found"): TabCheckReady(verdict="ready", name="Its name now"),
+        ResourceId("unknown"): TabCheckUnknown(verdict="unknown"),
     }
     kept = apply_tab_checks([tab("gone", 1, 0), tab("found", 2, 1), tab("unknown", 3, 2), tab("opened-meanwhile", 4, 3)], checks)
     assert [str(each.id) for each in kept] == ["found", "unknown", "opened-meanwhile"]
@@ -929,7 +943,7 @@ def test_a_sign_in_reports_what_the_person_believed_they_clicked() -> None:
     async def scenario() -> None:
         async with World().browser() as browser:
             believed = signed_in(endpoint("localhost", 4000), description("KB A", "example.org:kb-a"), "r")
-            outcome = await browser.signed_in(dataclasses.replace(believed, expected_did=DID_B, expected_name="KB B"))
+            outcome = await browser.signed_in(believed.model_copy(update={"expected_did": DID_B, "expected_name": "KB B"}))
 
             # The knowledge base that answered is the one registered. What was believed is said back, for a host to set against it.
             assert outcome.kb.did == DID_A
@@ -946,7 +960,7 @@ def test_a_sign_in_to_a_registered_knowledge_base_takes_what_it_and_the_issuer_n
             first = await live(browser)
             again = signed_in(endpoint("localhost", 4000), description("KB A, renamed", "example.org:kb-a", "feature"), "r2")
             if by_id:
-                again = dataclasses.replace(again, kb_id=KB_A)
+                again = again.model_copy(update={"kb_id": KB_A})
 
             outcome = await browser.signed_in(again)
 
@@ -971,7 +985,7 @@ def test_a_sign_in_a_different_knowledge_base_answers_leaves_the_entry_and_lands
             await live(browser)
             landing = signed_in(endpoint("localhost", 4000), description("KB B", "example.org:kb-b", "other"), "for-b")
 
-            outcome = await browser.signed_in(dataclasses.replace(landing, kb_id=KB_A))
+            outcome = await browser.signed_in(landing.model_copy(update={"kb_id": KB_A}))
 
             # The entry the person believed they were signing in to is as it
             # was: its did, its name, what it last said, and its credentials.
@@ -1354,7 +1368,7 @@ def test_no_answer_and_a_refusal_to_say_are_no_verdict_and_void_nothing(refusing
             assert kbs_of(browser)[0] == kb_of_a()
             # The resources were checked all the same.
             assert world.factory.asked_about(KB_A) == ["a1"]
-            assert await browser.read_active_kb() == KbReadVerdict(kind="no-verdict")
+            assert await browser.read_active_kb() == KbReadVerdictNoVerdict(kind="no-verdict")
 
     run(scenario())
 
@@ -1368,7 +1382,7 @@ def test_asking_the_active_knowledge_base_again_records_what_it_says_now() -> No
             asked = world.factory.asked_who(KB_A)
 
             world.factory.says(KB_A, description("KB A", "example.org:kb-a"))
-            assert await browser.read_active_kb() == KbReadVerdict(kind="recorded")
+            assert await browser.read_active_kb() == KbReadVerdictRecorded(kind="recorded")
 
             assert world.factory.asked_who(KB_A) == asked + 1
             # A tree that is on no branch is recorded as on none.
@@ -1391,7 +1405,7 @@ def test_asking_again_reports_a_different_knowledge_base_and_acts_on_nothing() -
             world.factory.says(KB_A, description("KB B", "example.org:kb-b"))
             verdict = await browser.read_active_kb()
 
-            assert verdict == KbReadVerdict(kind="conflict", observed_did=DID_B, observed_name="KB B")
+            assert verdict == KbReadVerdictConflict(kind="conflict", observed_did=DID_B, observed_name="KB B")
             # Asking is not activating: nothing is voided, and nothing is raised.
             assert shown(browser) == ["a1"]
             assert viewed(browser) == "a1"
@@ -1421,7 +1435,7 @@ def test_asking_again_does_not_raise_a_conflict_that_was_acknowledged() -> None:
 def test_with_no_session_there_is_nothing_to_ask() -> None:
     async def scenario() -> None:
         async with World().browser() as browser:
-            assert await browser.read_active_kb() == KbReadVerdict(kind="no-verdict")
+            assert await browser.read_active_kb() == KbReadVerdictNoVerdict(kind="no-verdict")
 
     run(scenario())
 

@@ -55,6 +55,12 @@ import Testing
     #expect(actual == (try required(row, "ms")), "\(row["why"] ?? .null)")
   }
 }
+// retry/cases.json states the job rows from 500 to 504; these are the edges past them.
+@Test func jobRetriesEveryServerFault() {
+  #expect(RetryContext.job.retryable(status: 599, method: nil, keyed: false))
+  #expect(!RetryContext.job.retryable(status: 499, method: nil, keyed: false))
+  #expect(!RetryContext.job.retryable(status: nil, method: nil, keyed: false))
+}
 @Test func uploadMembersFollowTheMultipartSchema() throws {
   let request = PutBinaryRequest(
     name: "name", file: Data(), format: "text/plain", storageUri: "file:///text")

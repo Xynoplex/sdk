@@ -8,5 +8,6 @@ namespace Xynolog.Types;
 public sealed record BodyOperationRemove
 {
     [global::Xynolog.Serialization.Wire("item")] public required global::Xynolog.Types.AnnotationBody Item { get; init; }
-    [global::Xynolog.Serialization.Wire("op")] public string Op => "remove";
+    public const string OpValue = "remove";
+    [global::Xynolog.Serialization.Wire("op")] public string Op => OpValue;
 }

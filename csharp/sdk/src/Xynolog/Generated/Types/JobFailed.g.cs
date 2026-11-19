@@ -13,5 +13,6 @@ public sealed record JobFailed
     [global::Xynolog.Serialization.Wire("metadata")] public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
     [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.JobParams Params { get; init; }
     [global::Xynolog.Serialization.Wire("startedAt")] public string? StartedAt { get; init; }
-    [global::Xynolog.Serialization.Wire("status")] public string Status => "failed";
+    public const string StatusValue = "failed";
+    [global::Xynolog.Serialization.Wire("status")] public string Status => StatusValue;
 }

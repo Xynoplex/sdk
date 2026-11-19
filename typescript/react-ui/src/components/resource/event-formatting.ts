@@ -7,11 +7,14 @@
 
 import type {
   Annotation,
+  PersistedEventType,
   StoredEventLike,
   TextQuoteSelector,
   components,
 } from '@xynolog/core';
 import {
+  PERSISTED_EVENT_TYPES,
+  faultOf,
   getAnnotationIdFromEvent,
   getEntityTypes,
   getExactText,
@@ -40,6 +43,13 @@ type TaggingBody = components['schemas']['TextualBody'] & {
 // moved then shows nothing, where a cast would read the wrong field and say
 // so silently.
 
+const PERSISTED: ReadonlySet<string> = new Set(PERSISTED_EVENT_TYPES);
+
+/** Whether a stored event's type is one the log persists: the wire states it as any string. */
+function isPersistedEventType(type: string): type is PersistedEventType {
+  return PERSISTED.has(type);
+}
+
 /** One item, a list, or none: what a payload's body and a target's selector each hold. */
 function itemsOf(value: unknown): unknown[] {
   if (isArray(value)) return value;
@@ -48,24 +58,15 @@ function itemsOf(value: unknown): unknown[] {
 
 /** A selector that quotes: the one kind that carries an annotation's text. */
 function isTextQuoteSelector(value: unknown): value is TextQuoteSelector {
-  return (
-    isObject(value) &&
-    value.type === 'TextQuoteSelector' &&
-    isString(value.exact) &&
-    (value.prefix === undefined || isString(value.prefix)) &&
-    (value.suffix === undefined || isString(value.suffix))
-  );
+  return faultOf('TextQuoteSelector', value) === undefined;
 }
 
 /** A body that tags: the kind that states an entity type. */
 function isTaggingBody(value: unknown): value is TaggingBody {
   return (
+    faultOf('TextualBody', value) === undefined &&
     isObject(value) &&
-    value.type === 'TextualBody' &&
-    isString(value.value) &&
-    value.purpose === 'tagging' &&
-    (value.format === undefined || isString(value.format)) &&
-    (value.language === undefined || isString(value.language))
+    value.purpose === 'tagging'
   );
 }
 
@@ -113,6 +114,7 @@ export function formatEventType(
   t: TranslateFn,
   payload?: unknown,
 ): string {
+  if (!isPersistedEventType(type)) return type;
   switch (type) {
     case 'yield:created':
       return t('resourceCreated');
@@ -142,8 +144,9 @@ export function formatEventType(
     case 'mark:entity-tag-removed':
       return t('entitytagRemoved');
 
-    case 'job:completed':
     case 'job:started':
+    case 'job:assigned':
+    case 'job:completed':
     case 'job:failed':
       return t('jobEvent');
 
@@ -151,8 +154,19 @@ export function formatEventType(
     case 'yield:representation-removed':
       return t('representationEvent');
 
-    default:
+    // No copy: these show their type. The system events carry no resource,
+    // so a resource's history never holds one.
+    case 'yield:updated':
+    case 'yield:moved':
+    case 'frame:entity-type-added':
+    case 'frame:tag-schema-added':
+    case 'principal:profiled':
       return type;
+
+    default: {
+      const unreachable: never = type;
+      return unreachable;
+    }
   }
 }
 
@@ -161,9 +175,12 @@ export function formatEventType(
  * For unified annotation events, pass the payload to determine motivation
  */
 export function getEventEmoji(type: string, payload?: unknown): string {
+  if (!isPersistedEventType(type)) return '📝';
   switch (type) {
     case 'yield:created':
     case 'yield:cloned':
+    case 'yield:updated':
+    case 'yield:moved':
     case 'mark:archived':
     case 'mark:unarchived':
       return '📄';
@@ -193,6 +210,7 @@ export function getEventEmoji(type: string, payload?: unknown): string {
     case 'job:completed':
       return '🔗'; // Link emoji for linked document creation
     case 'job:started':
+    case 'job:assigned':
       return '⚙️'; // Gear for job processing
     case 'job:failed':
       return '❌'; // X mark for failed jobs
@@ -201,8 +219,15 @@ export function getEventEmoji(type: string, payload?: unknown): string {
     case 'yield:representation-removed':
       return '📄';
 
-    default:
+    case 'frame:entity-type-added':
+    case 'frame:tag-schema-added':
+    case 'principal:profiled':
       return '📝';
+
+    default: {
+      const unreachable: never = type;
+      return unreachable;
+    }
   }
 }
 
@@ -257,7 +282,9 @@ export function getEventDisplayContent(
   annotations: Annotation[],
   allEvents: StoredEventLike[],
 ): { exact: string; isQuoted: boolean; isTag: boolean } | null {
-  switch (event.type) {
+  const type = event.type;
+  if (!isPersistedEventType(type)) return null;
+  switch (type) {
     case 'yield:created':
     case 'yield:cloned': {
       const name = stringField(event.payload, 'name');
@@ -293,8 +320,25 @@ export function getEventDisplayContent(
         : { exact: entityType, isQuoted: false, isTag: true };
     }
 
-    default:
+    case 'yield:updated':
+    case 'yield:moved':
+    case 'yield:representation-added':
+    case 'yield:representation-removed':
+    case 'mark:archived':
+    case 'mark:unarchived':
+    case 'frame:entity-type-added':
+    case 'frame:tag-schema-added':
+    case 'principal:profiled':
+    case 'job:started':
+    case 'job:assigned':
+    case 'job:completed':
+    case 'job:failed':
       return null;
+
+    default: {
+      const unreachable: never = type;
+      return unreachable;
+    }
   }
 }
 

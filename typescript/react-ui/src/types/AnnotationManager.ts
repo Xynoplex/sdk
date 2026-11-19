@@ -1,12 +1,16 @@
-import type { Annotation, ResourceId, Selector } from '@xynolog/core';
+import type {
+  Annotation,
+  Motivation,
+  ResourceId,
+  Selector,
+} from '@xynolog/core';
 
 /**
  * Parameters for creating an annotation
  */
 export interface CreateAnnotationParams {
   rUri: ResourceId;
-  motivation:
-    'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging';
+  motivation: Motivation;
   selector: Selector | Selector[];
   body?: Annotation['body'];
 }

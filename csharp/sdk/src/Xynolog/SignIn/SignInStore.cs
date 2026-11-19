@@ -105,12 +105,8 @@ public sealed partial class SignInStore
                 var found = ReadSignIn(document[key]);
                 if (found is null) return false;
                 if (found.Token != read.Access || found.RefreshToken != read.Refresh) { given = found.Token; return false; }
-                var changed = document[key]?.AsObject() ?? throw new JsonException("The sign-in is not an object");
-                changed["token"] = access;
-                changed["refreshToken"] = refresh;
-                changed["obtainedAt"] = store.Now();
-                if (Expires(access) is string expires) changed["expiresAt"] = expires;
-                else changed.Remove("expiresAt");
+                var renewed = found with { Token = access, RefreshToken = refresh, ObtainedAt = store.Now(), ExpiresAt = Expires(access) };
+                document[key] = JsonSerializer.SerializeToNode(renewed);
                 given = access;
                 return true;
             }, cancellation).ConfigureAwait(Spawning.Captures);

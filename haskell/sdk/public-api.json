@@ -531,7 +531,7 @@
     "src/Xynolog/Transport/Facts.hs": "b861a07eb1fc5319a56fec2889c08f9fe7d59c43682d5b488d14520377ff08ba",
     "src/Xynolog/Types.hs": "e6a73bfee5b1f3a6c93db114430a136e9d50415a81baee3d44fc12c6df0cf055",
     "src/Xynolog/Types/Presence.hs": "0c700ed04e5fe1fe43786d384622dbf716ea8703a1af8b8d8b894876dbe13a8f",
-    "src/Xynolog/Worker.hs": "20a3949c4ab963d4f4da7ab0b3810bb9d42d0883a078c54c1b2013547430004f",
+    "src/Xynolog/Worker.hs": "b3059ffc5f52c53c19d967ae9551f753a142ef3827730ed3b5e10722d3445706",
     "src/Xynolog/Yield.hs": "591b83ed53bf6af381c539738b2d4993d196912f4131bd26d4d7b0624354a562",
     "xynolog.cabal.in": "8b6a3a997a3b541875add22b661f42ea97763e712e9d3cfd4c43f20f7b67e1df"
   },
