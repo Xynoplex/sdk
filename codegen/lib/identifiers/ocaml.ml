@@ -17,7 +17,7 @@ let files (spec : Spec.t) (shapes : (string * Required.Shape.shape) list) =
   let refusals = ref [] in
   let modules =
     List.mapi
-      (fun i (k : Tables.Identifiers_kinds.kind) ->
+      (fun i (k : Tables.Identifiers_kinds.kinds_item) ->
         let steps =
           match List.assoc_opt k.schema shapes with
           | Some
@@ -70,7 +70,7 @@ let files (spec : Spec.t) (shapes : (string * Required.Shape.shape) list) =
   in
   let value = O.ident "value" in
   let t = O.type_ "t" and string = O.type_ "string" in
-  let implementation ((k : Tables.Identifiers_kinds.kind), name, steps) =
+  let implementation ((k : Tables.Identifiers_kinds.kinds_item), name, steps) =
     O.module_ name
       [
         O.type_item (O.type_declaration "t" Abstract ~manifest:string);
@@ -99,7 +99,7 @@ let files (spec : Spec.t) (shapes : (string * Required.Shape.shape) list) =
         O.val_ "equal" (O.arrow t (O.arrow t (O.type_ "bool")));
       ]
   in
-  let tests ((k : Tables.Identifiers_kinds.kind), name, _) =
+  let tests ((k : Tables.Identifiers_kinds.kinds_item), name, _) =
     let case accepted (id, why) =
       O.apply (O.ident "Alcotest.check")
         [
@@ -116,11 +116,11 @@ let files (spec : Spec.t) (shapes : (string * Required.Shape.shape) list) =
     in
     List.map (case true)
       (List.map
-         (fun (a : Tables.Identifiers_kinds.accept) -> (a.id, a.why))
+         (fun (a : Tables.Identifiers_kinds.accepts_item) -> (a.id, a.why))
          k.accepts)
     @ List.map (case false)
         (List.map
-           (fun (r : Tables.Identifiers_kinds.refuse) -> (r.id, r.why))
+           (fun (r : Tables.Identifiers_kinds.accepts_item) -> (r.id, r.why))
            k.refuses)
   in
   match !refusals with

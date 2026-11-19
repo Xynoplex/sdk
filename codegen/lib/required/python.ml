@@ -1,5 +1,5 @@
 (* The table as the Python SDK's reading of a reply reads it
-   (python/sdk/src/xynolog/_required.py): JSON text, one schema to a line, which
+   (python/sdk/src/xynolog/required.py): JSON text, one schema to a line, which
    the SDK parses as it imports the module. *)
 
 module P = Python_syntax

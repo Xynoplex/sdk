@@ -1,0 +1,2 @@
+; protocol is the pinned Protocol, whose reader this generator reads it through.
+(vendored_dirs protocol)

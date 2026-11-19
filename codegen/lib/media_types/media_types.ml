@@ -62,7 +62,7 @@ let derive (table : T.t) admitted =
     vocabularies;
   if table.media_types = [] then refuse "/mediaTypes" "lists no media types";
   List.iteri
-    (fun i (row : T.media_type) ->
+    (fun i (row : T.media_types_item) ->
       let at = Printf.sprintf "/mediaTypes/%d" i in
       let m = row.media_type in
       if m = "" || m <> String.lowercase_ascii m || String.contains m ';' then
@@ -73,7 +73,7 @@ let derive (table : T.t) admitted =
              m);
       (match
          List.find_index
-           (fun (r : T.media_type) -> r.media_type = m)
+           (fun (r : T.media_types_item) -> r.media_type = m)
            table.media_types
        with
       | Some j when j < i ->
@@ -100,7 +100,7 @@ let derive (table : T.t) admitted =
         ])
     table.media_types;
   let extensions =
-    List.map (fun (r : T.media_type) -> r.extension) table.media_types
+    List.map (fun (r : T.media_types_item) -> r.extension) table.media_types
   in
   List.iter
     (fun (alias, extension) ->
@@ -116,7 +116,7 @@ let derive (table : T.t) admitted =
           (Printf.sprintf "is read as %s, which no row states" extension))
     table.extension_aliases;
   let stated =
-    List.map (fun (r : T.media_type) -> r.media_type) table.media_types
+    List.map (fun (r : T.media_types_item) -> r.media_type) table.media_types
   in
   List.iter
     (fun m ->
@@ -184,7 +184,7 @@ let go (t : T.t) =
                    "Rows"
                    (G.lines ~of_:(G.Slice (G.Named "Row"))
                       (List.map
-                         (fun (r : T.media_type) ->
+                         (fun (r : T.media_types_item) ->
                            G.item
                              (G.inline
                                 [
@@ -218,7 +218,7 @@ let go (t : T.t) =
 let python (t : T.t) =
   let module P = Python_syntax in
   let bool b = P.Name (if b then "True" else "False") in
-  let row (r : T.media_type) =
+  let row (r : T.media_types_item) =
     P.item
       (P.call "MediaType"
          [
@@ -310,7 +310,7 @@ let typescript (t : T.t) =
       ( "extension",
         S.T_name "string",
         [ "A file extension, with its dot." ],
-        fun (r : T.media_type) -> text r.extension );
+        fun (r : T.media_types_item) -> text r.extension );
       ( "label",
         S.T_name "string",
         [ "The name a person reads." ],
@@ -401,7 +401,7 @@ let typescript (t : T.t) =
                   ]
                 (S.rows
                    (List.map
-                      (fun (r : T.media_type) ->
+                      (fun (r : T.media_types_item) ->
                         S.entry (Quoted r.media_type) (attrs r))
                       t.media_types));
               S.const "EXTENSION_ALIASES"
@@ -534,7 +534,7 @@ let haskell (t : T.t) (encodings : Encodings.Table.t) =
                    (T_tuple [ text; T_name "TextSource"; T_name "Bool" ]))
                 (from_list
                    (List.map
-                      (fun (r : T.media_type) ->
+                      (fun (r : T.media_types_item) ->
                         H.Tuple
                           [
                             Str r.media_type;
@@ -550,7 +550,8 @@ let haskell (t : T.t) (encodings : Encodings.Table.t) =
                 (T_list (T_tuple [ text; text ]))
                 (List
                    (List.map
-                      (fun (r : T.media_type) -> pair r.extension r.media_type)
+                      (fun (r : T.media_types_item) ->
+                        pair r.extension r.media_type)
                       t.media_types));
               H.value "aliases" (map text text)
                 (from_list
@@ -569,7 +570,7 @@ let ocaml (t : T.t) =
       O.let_ "types"
         (O.list
            (List.map
-              (fun (m : T.media_type) ->
+              (fun (m : T.media_types_item) ->
                 O.tuple
                   [
                     O.string m.media_type;
@@ -645,7 +646,7 @@ let rust (t : T.t) =
       R.Blank;
     ]
   in
-  let row (m : T.media_type) =
+  let row (m : T.media_types_item) =
     R.Struct
       ( [ "MediaTypeCapabilities" ],
         [
@@ -670,7 +671,7 @@ let rust (t : T.t) =
   in
   match
     List.find_opt
-      (fun (m : T.media_type) -> m.media_type = "text/plain")
+      (fun (m : T.media_types_item) -> m.media_type = "text/plain")
       t.media_types
   with
   | None -> refuse "has no text/plain, which a clone falls back to"

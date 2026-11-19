@@ -212,23 +212,6 @@ let axes =
             (strings [ "  // a comment" ])
             base)
          "/operations/0/docs/lead/0: expected \"\", found \"  // a comment\"");
-    case "a block of two kinds"
-      (refuses
-         (set
-            [ "operations"; "0"; "docs"; "lead" ]
-            (`List [ `Assoc [ ("section", `String "Part"); ("doc", prose) ] ])
-            base)
-         "/operations/0/docs/lead/0: has more than one of section, doc");
-    case "prose of no paragraph"
-      (refuses
-         (set [ "effect"; "doc" ] (`List []) base)
-         "/effect/doc: expected a non-empty array");
-    case "a list of no items"
-      (refuses
-         (set [ "docs"; "eventName" ]
-            (`List [ `Assoc [ ("items", `List []) ] ])
-            base)
-         "/docs/eventName/0/items: expected a non-empty array");
     case "a crossing channel with no audience"
       (refuses
          (set [ "audience"; "everyone" ] (`List []) base)
@@ -370,44 +353,6 @@ let payloads =
               ("enriched", `Bool true);
             ];
           ]);
-    case "a shape no language can type"
-      (refuses
-         (with_channel [ ("shape", `String "custom"); ("validate", `Null) ])
-         "/channels/5/shape: \"custom\" is none of schema, envelope, \
-          storedEvent, void, empty");
-    case "a TypeScript type stated as a string"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "schema");
-              ("schema", `String "DemoExtra");
-              ("validate", `Null);
-              ("ts", `String "components['schemas']['DemoExtra']");
-            ])
-         "/channels/5/ts: an unknown member");
-    case "a schema shape that names no schema"
-      (refuses
-         (with_channel [ ("shape", `String "envelope"); ("validate", `Null) ])
-         "/channels/5: lacks the member \"schema\"");
-    case "a schema on a shape that carries none"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "void");
-              ("schema", `String "DemoExtra");
-              ("validate", `Null);
-            ])
-         "/channels/5/schema: an unknown member");
-    case "a refinement is the SDK's, not the registry's"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "schema");
-              ("schema", `String "DemoExtra");
-              ("validate", `Null);
-              ("tsRefinement", `String "DemoExtraRefined");
-            ])
-         "/channels/5/tsRefinement: an unknown member");
     case "a channel that carries one schema and validates against another"
       (refuses
          (with_channel
@@ -422,7 +367,8 @@ let payloads =
       (refuses
          (with_channel
             [ ("shape", `String "empty"); ("validate", `String "DemoExtra") ])
-         "/channels/5/validate: expected null, found a string");
+         "/channels/5: \"demo:extra\" validates against DemoExtra and carries \
+          no schema: only a channel that carries one is validated against it");
     case "a stored event on a channel not its own type"
       (refuses
          (with_channel
@@ -434,65 +380,6 @@ let payloads =
             ])
          "/channels/5: \"demo:extra\" is a stored event named \"demo:other\": \
           a persisted event is published on the channel of its own type");
-    case "a stored event that names no payload"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "storedEvent");
-              ("event", `String "demo:extra");
-              ("validate", `Null);
-            ])
-         "/channels/5: lacks the member \"payload\"");
-    case "a payload on a channel that is no stored event"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "schema");
-              ("schema", `String "DemoExtra");
-              ("payload", `String "DemoExtra");
-              ("validate", `Null);
-            ])
-         "/channels/5/payload: an unknown member");
-    case "the system flag on a channel that is no stored event"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "empty");
-              ("system", `Bool true);
-              ("validate", `Null);
-            ])
-         "/channels/5/system: an unknown member");
-    case "the system flag false"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "storedEvent");
-              ("event", `String "demo:extra");
-              ("payload", `String "DemoPayload");
-              ("system", `Bool false);
-              ("validate", `Null);
-            ])
-         "/channels/5/system: a flag is true, or absent");
-    case "the enriched flag on a channel that is no stored event"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "empty");
-              ("enriched", `Bool true);
-              ("validate", `Null);
-            ])
-         "/channels/5/enriched: an unknown member");
-    case "the enriched flag false"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "storedEvent");
-              ("event", `String "demo:extra");
-              ("payload", `String "DemoPayload");
-              ("enriched", `Bool false);
-              ("validate", `Null);
-            ])
-         "/channels/5/enriched: a flag is true, or absent");
     case "a scoped channel that is no stored event"
       (let scoped members =
          base
@@ -524,19 +411,11 @@ let payloads =
 
 let trace =
   [
-    case "a trace with no field"
-      (refuses
-         (set [ "trace" ] (`Assoc [ ("meaning", `String "m") ]) base)
-         "/trace: lacks the member \"field\"");
     case "a field whose name does not begin with _"
       (refuses
          (set [ "trace"; "field" ] (`String "carried") base)
          "/trace/field: is \"carried\": it is a payload field the bus writes, \
           so a name that begins with \"_\" and a letter");
-    case "a trace with no meaning"
-      (refuses
-         (set [ "trace"; "meaning" ] (`String "") base)
-         "/trace/meaning: expected a non-empty string");
   ]
 
 let with_schemas changes =

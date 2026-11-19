@@ -209,125 +209,6 @@ let refuses text expected () =
         (List.map (fun e -> file ^ ": " ^ e) expected)
         (List.map Decode.error_to_string errors)
 
-let model_refuses text expected () =
-  match decode text with
-  | Ok _ -> Alcotest.failf "expected the refusal\n  %s\nand none came" expected
-  | Error error ->
-      Alcotest.(check string)
-        "refusal"
-        (file ^ ": " ^ expected)
-        (Decode.error_to_string error)
-
-let the_model =
-  [
-    case "no queries are refused"
-      (model_refuses (table ~queries:[] rows)
-         "/queries: expected a non-empty array");
-    case "no rows are refused"
-      (model_refuses (table []) "/refresh: expected a non-empty array");
-    case "a query with empty docs is refused"
-      (model_refuses
-         (table
-            ~queries:
-              [ query "thing" ~asks:"demo:get-requested" ~value:thing ~docs:"" ]
-            rows)
-         "/queries/0/docs: expected a non-empty string");
-    case "a query that asks and reads is refused"
-      (model_refuses
-         (table
-            ~queries:
-              [
-                query "thing" ~asks:"demo:get-requested" ~reads:"GET /things"
-                  ~value:thing;
-              ]
-            rows)
-         "/queries/0: asks an operation and reads a GET: a query does one");
-    case "a query that neither asks nor reads is refused"
-      (model_refuses
-         (table ~queries:[ query "thing" ~value:thing ] rows)
-         "/queries/0: neither asks an operation nor reads a GET: a query does \
-          one");
-    case "a query kept per what is not a key is refused"
-      (model_refuses
-         (table
-            ~queries:
-              [
-                query "thing" ~per:"session" ~asks:"demo:get-requested"
-                  ~value:thing;
-              ]
-            rows)
-         "/queries/0/per: \"session\" is none of resource, annotation, filters");
-    case "a query persisted false is refused"
-      (model_refuses
-         (table
-            ~queries:
-              [
-                {|{"name":"thing","asks":"demo:get-requested","persisted":false,"value":{"$ref":"../components/schemas/Thing.json"},"docs":"D."}|};
-              ]
-            rows)
-         "/queries/0/persisted: is false: a query not persisted states no \
-          persisted");
-    case "a query with no value is refused"
-      (model_refuses
-         (table
-            ~queries:
-              [ {|{"name":"thing","asks":"demo:get-requested","docs":"D."}|} ]
-            rows)
-         "/queries/0: lacks the member \"value\"");
-    case "a value beside its $ref is refused"
-      (model_refuses
-         (table
-            ~queries:
-              [
-                {|{"name":"thing","asks":"demo:get-requested","value":{"$ref":"../components/schemas/Thing.json","type":"object"},"docs":"D."}|};
-              ]
-            rows)
-         "/queries/0/value/type: an unknown member");
-    case "a query that states what a query does not have is refused"
-      (model_refuses
-         (table
-            ~queries:
-              [
-                {|{"name":"thing","asks":"demo:get-requested","value":{"$ref":"../components/schemas/Thing.json"},"docs":"D.","kept":true}|};
-              ]
-            rows)
-         "/queries/0/kept: an unknown member");
-    case "a row that states what a row does not have is refused"
-      (model_refuses
-         (table
-            [
-              {|{"stream":"reopened","reach":"held","refetches":["thing"],"docs":"D.","invalidates":["thing"]}|};
-            ])
-         "/refresh/0/invalidates: an unknown member");
-    case "a row with empty docs is refused"
-      (model_refuses
-         (table
-            [ stream "reopened" ~reach:"held" ~refetches:[ "thing" ] ~docs:"" ])
-         "/refresh/0/docs: expected a non-empty string");
-    case "a reach that is neither is refused"
-      (model_refuses
-         (table [ stream "reopened" ~reach:"all" ~refetches:[ "thing" ] ])
-         "/refresh/0/reach: \"all\" is none of subject, held");
-    case "a split that is neither is refused"
-      (model_refuses
-         (table
-            [ row "demo:changed" ~when_:"sometimes" ~refetches:[ "thing" ] ])
-         "/refresh/0/when: \"sometimes\" is none of enriched, unenriched");
-    case "an empty act is refused"
-      (model_refuses
-         (table [ stream "reopened" ~reach:"held" ~refetches:[] ])
-         "/refresh/0/refetches: expected a non-empty array");
-    case "a name of no slot is refused"
-      (model_refuses
-         (table
-            [
-              row "demo:changed"
-                ~names:(names [ ("carries", "annotation") ])
-                ~refetches:[ "thing" ];
-            ])
-         "/refresh/0/names/carries: an unknown member");
-  ]
-
 (* ── What the table derives ────────────────────────────────────────────── *)
 
 let rec value_type : Table.value_type -> string = function
@@ -626,25 +507,6 @@ let the_rows =
          [
            "/refresh/5/on: is \"reopened\", which is no channel of the registry";
          ]);
-    case
-      "a row of what befalls the stream that is neither reopened nor \
-       unreadable is refused"
-      (model_refuses
-         (table
-            (rows @ [ stream "closed" ~reach:"held" ~refetches:[ "thing" ] ]))
-         "/refresh/5/stream: \"closed\" is none of reopened, unreadable");
-    case "a row both on a channel and of the stream is refused"
-      (model_refuses
-         (table
-            [
-              {|{"on":"demo:said","stream":"reopened","reach":"held","refetches":["thing"],"docs":"D."}|};
-            ])
-         "/refresh/0: is on a channel and of the stream: a row has one trigger");
-    case "a row neither on a channel nor of the stream is refused"
-      (model_refuses
-         (table [ {|{"reach":"held","refetches":["thing"],"docs":"D."}|} ])
-         "/refresh/0: is neither on a channel nor of the stream: a row has one \
-          trigger");
     case "a trigger that is no event, reaching its subject, is refused"
       (refuses
          (table
@@ -656,32 +518,6 @@ let the_rows =
          [
            "/refresh/0: is of the stream reopened, which is no event: it names \
             no subject and reaches what is held";
-         ]);
-    case "a trigger that is no event, naming a subject, is refused"
-      (refuses
-         (table
-            [
-              stream "reopened" ~reach:"held"
-                ~names:(names [ ("resource", "resourceId") ])
-                ~refetches:[ "thing"; "names" ];
-              unreadable;
-              said;
-            ])
-         [
-           "/refresh/0/names: is of the stream reopened, which is no event, so \
-            it names no subject";
-         ]);
-    case "a trigger that is no event, carrying a value, is refused"
-      (refuses
-         (table
-            [
-              stream "unreadable" ~reach:"held" ~carries:"annotation"
-                ~writes:[ "items" ];
-              reopened;
-            ])
-         [
-           "/refresh/0/carries: is of the stream unreadable, which is no \
-            event, so it carries no value";
          ]);
     case "a row that names a subject and reaches what is held is refused"
       (refuses
@@ -1063,7 +899,6 @@ let writers =
 let () =
   Alcotest.run "cache_refresh"
     [
-      ("model", the_model);
       ("values", values);
       ("queries", the_queries);
       ("rows", the_rows);

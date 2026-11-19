@@ -15,24 +15,26 @@ let file (table : T.t) =
       O.let_ "labels"
         (O.list
            (List.concat_map
-              (fun (c : T.case) ->
-                List.map (fun label -> pair (label, c.encoding)) c.labels)
+              (fun (c : T.cases_item) ->
+                List.map
+                  (fun label -> pair (label, Table.encoding c))
+                  (Table.labels c))
               table.cases));
       O.let_ "single_byte"
         (O.list
            (List.filter_map
-              (fun (c : T.case) ->
-                match c.kind with
-                | Single_byte { every_byte } ->
-                    Some (pair (c.encoding, every_byte))
+              (fun (c : T.cases_item) ->
+                match c with
+                | Every_byte { every_byte; _ } ->
+                    Some (pair (Table.encoding c, every_byte))
                 | _ -> None)
               table.cases));
       O.let_ "refused"
         (O.list
            (List.filter_map
-              (fun (c : T.case) ->
-                match c.kind with
-                | Refused -> Some (O.string c.encoding)
+              (fun (c : T.cases_item) ->
+                match c with
+                | Refused _ -> Some (O.string (Table.encoding c))
                 | _ -> None)
               table.cases));
     ]

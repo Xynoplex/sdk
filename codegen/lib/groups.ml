@@ -48,7 +48,14 @@ let cli =
     { name = "mcp-tools"; files = Cli.Mcp_tools.files };
   ]
 
-type target = Sdk | Cli
+let images =
+  [
+    { name = "bundles"; files = Images.Bundles.files };
+    { name = "archivist-waits"; files = Images.Archivist_waits.files };
+    { name = "service-types"; files = Images.Service_types.files };
+  ]
 
-let targets = [ ("sdk", Sdk); ("cli", Cli) ]
-let of_target = function Sdk -> sdk | Cli -> cli
+type target = Sdk | Cli | Images
+
+let targets = [ ("sdk", Sdk); ("cli", Cli); ("images", Images) ]
+let of_target = function Sdk -> sdk | Cli -> cli | Images -> images

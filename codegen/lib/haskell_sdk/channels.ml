@@ -75,22 +75,24 @@ let derive (registry : R.t) =
   let scoped = registry.audience.scoped in
   let typed =
     List.map
-      (fun (c : R.channel) ->
+      (fun (c : R.channels_item) ->
         let payload, extra =
-          match c.payload with
+          match c with
           | Schema { schema; _ } -> (schema, [])
           | Stored_event { enriched; _ } ->
-              (Bus.Registry.stored_event_component ~enriched, [])
-          | Envelope { schema } ->
+              ( Bus.Registry.stored_event_component
+                  ~enriched:(enriched = Some true),
+                [] )
+          | Envelope { schema; _ } ->
               let name = schema ^ "BusEnvelope" in
               (name, [ (name, envelope schema) ])
-          | Empty | Void -> ("EmptyBusPayload", [])
+          | Empty _ | Void _ -> ("EmptyBusPayload", [])
         in
         ( {
-            name = c.channel;
-            constructor = member c.channel;
+            name = Bus.Registry.name c;
+            constructor = member (Bus.Registry.name c);
             payload;
-            scoped = List.mem c.channel scoped;
+            scoped = List.mem (Bus.Registry.name c) scoped;
           },
           extra ))
       registry.channels
@@ -113,7 +115,7 @@ let derive (registry : R.t) =
   in
   let* operations =
     each
-      (fun (o : R.operation) ->
+      (fun (o : R.operations_item) ->
         let* request = find o.request in
         let* result = find o.result in
         let* failure = find o.failure in
@@ -193,15 +195,13 @@ let channels_file ~banner t ~limits =
       []
       (registry.audience.everyone
       @ List.concat_map
-          (fun (o : R.operation) -> [ o.result; o.failure ])
+          (fun (o : R.operations_item) -> [ o.result; o.failure ])
           registry.operations)
   in
   let events =
     List.filter_map
-      (fun (c : R.channel) ->
-        match c.payload with
-        | Stored_event { event; _ } -> Some event
-        | _ -> None)
+      (fun (c : R.channels_item) ->
+        match c with Stored_event { event; _ } -> Some event | _ -> None)
       registry.channels
   in
   let body =
@@ -462,10 +462,11 @@ type reader = {
 let readers t ~normalize ~definition (codes : Tables.Errors_codes.t) =
   let wires =
     List.filter_map
-      (fun (c : Tables.Errors_codes.bus_code) ->
+      (fun (c : Tables.Errors_codes.codes_item) ->
         Option.map
           (fun w ->
-            (w, Error_codes.Haskell.code_constructor "busRequest" c.code))
+            ( Tables.Errors_codes.command_error_code_value w,
+              Error_codes.Haskell.code_constructor "busRequest" c.code ))
           c.wire)
       codes.bus_request.codes
   in

@@ -13,7 +13,7 @@ let derive (t : T.t) =
   let refusals =
     List.concat
       (List.mapi
-         (fun i (c : T.client) ->
+         (fun i (c : T.clients_item) ->
            let refuse message =
              [
                {
@@ -33,7 +33,9 @@ let derive (t : T.t) =
                (Printf.sprintf "is %S, which is not lowercase letters" c.name)
            else
              match
-               List.find_index (fun (d : T.client) -> d.name = c.name) t.clients
+               List.find_index
+                 (fun (d : T.clients_item) -> d.name = c.name)
+                 t.clients
              with
              | Some j when j < i ->
                  refuse
@@ -49,7 +51,7 @@ let go (t : T.t) =
   let constant name docs value =
     G.Const (G.spec ~doc:(G.prose (name ^ ": " ^ docs)) name (G.Quoted value))
   in
-  let name (c : T.client) = String.capitalize_ascii c.name ^ "ClientID" in
+  let name (c : T.clients_item) = String.capitalize_ascii c.name ^ "ClientID" in
   {
     Output.path = "go/oauthclients_gen.go";
     text =
@@ -69,7 +71,7 @@ let go (t : T.t) =
           imports = [];
           decls =
             List.map
-              (fun (c : T.client) -> constant (name c) c.docs c.id)
+              (fun (c : T.clients_item) -> constant (name c) c.docs c.id)
               t.clients
             @ [ constant "SignInScope" t.scopes.docs t.scopes.value ];
         };
@@ -81,7 +83,9 @@ let python (t : T.t) =
     P.assign ~about:[ Prose docs ] ~annotation:(P.Name "Final")
       ~value:(P.Str value) name
   in
-  let name (c : T.client) = String.uppercase_ascii c.name ^ "_CLIENT_ID" in
+  let name (c : T.clients_item) =
+    String.uppercase_ascii c.name ^ "_CLIENT_ID"
+  in
   {
     Output.path = "python/sdk/src/xynolog/oauth_clients.py";
     text =
@@ -107,7 +111,7 @@ let python (t : T.t) =
                          (List.sort compare
                             ("SIGN_IN_SCOPE" :: List.map name t.clients)))))
             :: List.map
-                 (fun (c : T.client) -> constant (name c) c.docs c.id)
+                 (fun (c : T.clients_item) -> constant (name c) c.docs c.id)
                  t.clients
             @ [ constant "SIGN_IN_SCOPE" t.scopes.docs t.scopes.value ];
         };
@@ -127,7 +131,7 @@ let typescript (t : T.t) =
               __FILE__;
           body =
             List.map
-              (fun (c : T.client) ->
+              (fun (c : T.clients_item) ->
                 constant
                   (String.uppercase_ascii c.name ^ "_CLIENT_ID")
                   c.docs c.id)
@@ -142,7 +146,9 @@ let ocaml (t : T.t) =
   let module O = Ocaml_syntax in
   O.implementation ~path:"ocaml/sdk/lib/oauth_facts.ml"
     ~banner:(Banner.ocaml ~from_:file __FILE__)
-    (List.map (fun (c : T.client) -> O.let_ c.name (O.string c.id)) t.clients
+    (List.map
+       (fun (c : T.clients_item) -> O.let_ c.name (O.string c.id))
+       t.clients
     @ [ O.let_ "scope" (O.string t.scopes.value) ])
 
 let rust (t : T.t) =
@@ -165,7 +171,7 @@ let rust (t : T.t) =
         ~header:
           (Banner.lines ~from_:"protocol/specs/src/session/oauth.json" __FILE__)
         (List.map
-           (fun (c : T.client) ->
+           (fun (c : T.clients_item) ->
              constant (String.uppercase_ascii c.name ^ "_CLIENT_ID") c.docs c.id)
            t.clients
         @ [ constant "SIGN_IN_SCOPE" t.scopes.docs t.scopes.value ]);
@@ -187,7 +193,7 @@ let haskell (t : T.t) =
           imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
           body =
             List.map
-              (fun (c : T.client) ->
+              (fun (c : T.clients_item) ->
                 H.value (c.name ^ "ClientId") (T_name "Text") (Str c.id))
               t.clients
             @ [ H.value "signInScope" (T_name "Text") (Str t.scopes.value) ];

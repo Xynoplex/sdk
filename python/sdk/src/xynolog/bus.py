@@ -41,12 +41,12 @@ from typing import Final, Literal, Self, final, overload
 
 from pydantic import JsonValue, ValidationError
 
-from xynolog._required import UNDECODED, Fault, as_read
 from xynolog.channel import AnyChannel, AnyOperation, Channel, Operation, ScopedChannel
 from xynolog.errors import BusRequestError, TransportError
 from xynolog.events import Events
 from xynolog.identifiers import ResourceId, UserId
 from xynolog.model import WireModel
+from xynolog.required import UNDECODED, Fault, as_read
 from xynolog.timing import BUS_REQUEST_TIMEOUT_MS
 from xynolog.transport import ConnectionState, Frame, FrameRefusal, ResourceHold, TraceContext, Transport
 from xynolog.types import CommandError

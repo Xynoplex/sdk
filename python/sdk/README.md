@@ -1095,6 +1095,7 @@ resource is cloned by, `password`, `apiKey` and the rest of the
 | `xynolog.discovery` | The knowledge bases a launcher manages, as it publishes them, and what changed since they were last read |
 | `xynolog.sign_in_store` | The sign-ins `xynolog login` keeps, and where each system keeps them |
 | `xynolog.identifiers`, `xynolog.types` | The kinds of id, and every request, response and event |
+| `xynolog.required` | What each schema requires of a value, read as every SDK reads it: a value's first fault (`fault_of`), the value as read and decoded (`as_read`, `read_as`), and the sizes and bounds a member's schema states (`bounds_of`) |
 | `xynolog.channels`, `xynolog.operations` | The bus's channels and its operations, each a constant that carries its payload's type |
 | `xynolog.bus`, `xynolog.event_bus` | The typed client of the bus over a transport, and a client's own in-process bus |
 | `xynolog.transport` | The contract a transport implements: `Transport`, `ContentTransport`, `GatewayOperations` |

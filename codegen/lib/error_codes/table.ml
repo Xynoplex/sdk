@@ -6,7 +6,13 @@
 open Tables.Errors_codes
 
 let file = "errors/codes.json"
-let command_error = "components/schemas/CommandError.json"
+
+(* What every transport code states alike, whatever status it is read from. *)
+let transport_code_and_docs : transport_codes_item -> string * string = function
+  | Status { code; docs; _ }
+  | Status_from { code; docs; _ }
+  | No_status { code; docs } ->
+      (code, docs)
 
 type code = {
   code : string;
@@ -60,33 +66,11 @@ let pascal segment =
   String.concat ""
     (List.map String.capitalize_ascii (String.split_on_char '-' segment))
 
-let refusal pointer message =
-  Error [ { Decode.file = command_error; pointer; message } ]
+(* The wire's own codes, CommandError.code's, in the order it names them:
+   the table's [wire] members are its enumeration. *)
+let wire_codes = List.map command_error_code_value command_error_code_all
 
-(* The wire's own codes: CommandError's [code], a string enumeration. *)
-let wire_codes_of : Schema.t -> _ = function
-  | Schema { properties = Some properties; _ } -> (
-      match List.assoc_opt "code" properties with
-      | Some (Schema { enum = Some members; _ }) ->
-          List.fold_right
-            (fun member codes ->
-              match (member, codes) with
-              | Schema.String_literal code, Ok codes -> Ok (code :: codes)
-              | Schema.String_literal _, Error _ -> codes
-              | (Int_literal _ | Bool_literal _), _ ->
-                  refusal "/properties/code/enum"
-                    "holds a member that is no string")
-            members (Ok [])
-      | Some _ -> refusal "/properties/code" "enumerates no codes"
-      | None -> refusal "/properties" "has no code")
-  | Schema _ | Boolean_schema _ -> refusal "" "states no properties"
-
-let wire_codes (spec : Spec.t) =
-  match List.assoc_opt command_error spec.schemas with
-  | Some schema -> wire_codes_of schema
-  | None -> refusal "" "is not among the spec's schemas"
-
-let derive ~wire_codes (table : Tables.Errors_codes.t) =
+let derive (table : Tables.Errors_codes.t) =
   let refusals = ref [] in
   let refuse pointer message =
     refusals := { Decode.file; pointer; message } :: !refusals
@@ -130,24 +114,22 @@ let derive ~wire_codes (table : Tables.Errors_codes.t) =
     vocabulary ~member:"busRequest" ~name:"BusRequestErrorCode"
       ~go_name:"BusRequestErrorCode" ~docs:table.bus_request.docs
       (List.map
-         (fun (c : bus_code) -> (c.code, c.docs))
+         (fun (c : codes_item) -> (c.code, c.docs))
          table.bus_request.codes)
   in
   let restated =
     List.concat
       (List.mapi
-         (fun i (stated : bus_code) ->
+         (fun i (stated : codes_item) ->
            match stated.wire with
            | None -> []
-           | Some wire -> [ (i, wire, List.nth bus.codes i) ])
+           | Some wire ->
+               [ (i, command_error_code_value wire, List.nth bus.codes i) ])
          table.bus_request.codes)
   in
   List.iteri
     (fun n (i, wire, _) ->
       let at = Printf.sprintf "/busRequest/codes/%d/wire" i in
-      if not (List.mem wire wire_codes) then
-        refuse at
-          (Printf.sprintf "is %s, which CommandError.code does not declare" wire);
       List.iteri
         (fun m (_, earlier, (first : code)) ->
           if m < n && earlier = wire then
@@ -174,7 +156,7 @@ let derive ~wire_codes (table : Tables.Errors_codes.t) =
   in
   (match
      List.find_opt
-       (fun (c : bus_code) -> c.code = table.bus_request.unrecognized_failure)
+       (fun (c : codes_item) -> c.code = table.bus_request.unrecognized_failure)
        table.bus_request.codes
    with
   | Some { wire = Some wire; _ } ->
@@ -182,34 +164,33 @@ let derive ~wire_codes (table : Tables.Errors_codes.t) =
         (Printf.sprintf
            "is %s, which restates the wire's %s: an unrecognized failure is no \
             recognized one"
-           table.bus_request.unrecognized_failure wire)
+           table.bus_request.unrecognized_failure
+           (command_error_code_value wire))
   | Some { wire = None; _ } | None -> ());
   let transport =
     vocabulary ~member:"transport" ~name:"TransportErrorCode"
       ~go_name:"TransportErrorCode" ~docs:table.transport.docs
-      (List.map
-         (fun (c : transport_code) -> (c.code, c.docs))
-         table.transport.codes)
+      (List.map transport_code_and_docs table.transport.codes)
   in
   let mapped =
     List.mapi
-      (fun i (stated : transport_code) ->
-        (i, stated.statuses, List.nth transport.codes i))
+      (fun i (stated : transport_codes_item) ->
+        (i, stated, List.nth transport.codes i))
       table.transport.codes
   in
   let exact =
     List.filter_map
       (fun (i, statuses, code) ->
         match statuses with
-        | Status status -> Some (i, status, code)
-        | Status_from _ | No_status -> None)
+        | Status { status; _ } -> Some (i, status, code)
+        | Status_from _ | No_status _ -> None)
       mapped
   and ranges =
     List.filter_map
       (fun (i, statuses, code) ->
         match statuses with
-        | Status_from status -> Some (i, status, code)
-        | Status _ | No_status -> None)
+        | Status_from { status_from; _ } -> Some (i, status_from, code)
+        | Status _ | No_status _ -> None)
       mapped
   in
   List.iteri
@@ -250,7 +231,7 @@ let derive ~wire_codes (table : Tables.Errors_codes.t) =
   List.iter
     (fun (i, statuses, (code : code)) ->
       match statuses with
-      | No_status when code.code <> table.transport.unclassified ->
+      | No_status _ when code.code <> table.transport.unclassified ->
           refuse
             (Printf.sprintf "/transport/codes/%d" i)
             (Printf.sprintf
@@ -264,12 +245,12 @@ let derive ~wire_codes (table : Tables.Errors_codes.t) =
             (Printf.sprintf
                "is %s, the unclassified code, which a status is read as already"
                code.code)
-      | Status _ | Status_from _ | No_status -> ())
+      | Status _ | Status_from _ | No_status _ -> ())
     mapped;
-  let plain ~member ~name ~go_name (v : Tables.Errors_codes.vocabulary) =
+  let plain ~member ~name ~go_name (v : Tables.Errors_codes.job) =
     vocabulary ~member ~name ~go_name ~docs:v.docs
       (List.map
-         (fun (c : Tables.Errors_codes.code) -> (c.code, c.docs))
+         (fun (c : Tables.Errors_codes.job_codes_item) -> (c.code, c.docs))
          v.codes)
   in
   let others =

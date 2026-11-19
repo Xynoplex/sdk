@@ -30,24 +30,25 @@ let channels ~known (registry : Tables.Bus_registry.t) =
   let delivery = Bus.Registry.delivery_classes registry in
   Required.collect
     (List.map
-       (fun (c : Tables.Bus_registry.channel) ->
+       (fun (c : Tables.Bus_registry.channels_item) ->
          Result.map
            (fun event ->
              let payload, enriched, system =
-               match c.payload with
+               match c with
                | Stored_event { payload; enriched; system; _ } ->
-                   (Some payload, enriched, system)
-               | Schema _ | Envelope _ | Void | Empty -> (None, false, false)
+                   (Some payload, enriched = Some true, system = Some true)
+               | Schema _ | Envelope _ | Void _ | Empty _ -> (None, false, false)
              in
-             ( c.channel,
+             ( Bus.Registry.name c,
                {
                  Table.event;
                  payload;
                  enriched;
                  system;
-                 scoped = List.mem c.channel registry.audience.scoped;
+                 scoped =
+                   List.mem (Bus.Registry.name c) registry.audience.scoped;
                  passing =
-                   Hashtbl.find_opt delivery c.channel
+                   Hashtbl.find_opt delivery (Bus.Registry.name c)
                    = Some Bus.Registry.Passing;
                } ))
            (Required.Event.channel ~known c))
@@ -69,7 +70,7 @@ let context (spec : Spec.t) =
     {
       Table.requests =
         List.map
-          (fun (o : Tables.Bus_registry.operation) -> o.request)
+          (fun (o : Tables.Bus_registry.operations_item) -> o.request)
           registry.operations;
       reads = reads spec;
       channels;

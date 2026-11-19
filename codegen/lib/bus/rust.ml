@@ -29,7 +29,7 @@ let operations (bus : Registry.t) =
             (R.Ref_of
                (R.Array
                   (List.map
-                     (fun (o : Reg.operation) ->
+                     (fun (o : Reg.operations_item) ->
                        R.Struct
                          ( [ "Operation" ],
                            [
@@ -66,7 +66,7 @@ let operations (bus : Registry.t) =
             "LIMITS_OPERATIONS" str_slice
             (strings
                (List.map
-                  (fun (o : Reg.operation) -> o.request)
+                  (fun (o : Reg.operations_item) -> o.request)
                   (fst bus.limits :: snd bus.limits)));
         ];
   }
@@ -81,11 +81,11 @@ let reference name =
 
 let object_kind = R.call "Some" [ R.Ref_of (R.Array [ R.p "Kind::Object" ]) ]
 
-let carried (c : Reg.channel) =
+let carried (c : Reg.channels_item) =
   let component name = R.Named ([ "crate"; "types"; name ], []) in
-  match c.payload with
+  match c with
   | Schema { schema; _ } -> (component schema, reference schema)
-  | Envelope { schema } ->
+  | Envelope { schema; _ } ->
       ( R.Named ([ "Response" ], [ component schema ]),
         R.Struct
           ( [ "Shape" ],
@@ -99,17 +99,19 @@ let carried (c : Reg.channel) =
             ],
             Some (R.p "NONE") ) )
   | Stored_event { enriched; _ } ->
-      let name = Registry.stored_event_component ~enriched in
+      let name =
+        Registry.stored_event_component ~enriched:(enriched = Some true)
+      in
       (component name, reference name)
-  | Void | Empty ->
+  | Void _ | Empty _ ->
       ( R.named "Empty",
         R.Struct ([ "Shape" ], [ ("kinds", object_kind) ], Some (R.p "NONE")) )
 
-let channel_items (bus : Registry.t) component (c : Reg.channel) =
-  let marker = Text.pascal c.channel in
+let channel_items (bus : Registry.t) component (c : Reg.channels_item) =
+  let marker = Text.pascal (Registry.name c) in
   let payload, _ = carried c in
   let stamps =
-    match c.payload with
+    match c with
     | Schema { schema; _ } ->
         List.sort_uniq String.compare
           (Registry.stamps component ~of_:schema
@@ -117,11 +119,12 @@ let channel_items (bus : Registry.t) component (c : Reg.channel) =
     | _ -> []
   in
   let delivered =
-    if List.mem c.channel bus.registry.audience.scoped then "Scoped"
+    if List.mem (Registry.name c) bus.registry.audience.scoped then "Scoped"
     else "Unscoped"
   in
   [
-    R.Unit_struct { doc = [ "`" ^ c.channel ^ "`" ]; vis = Pub; name = marker };
+    R.Unit_struct
+      { doc = [ "`" ^ Registry.name c ^ "`" ]; vis = Pub; name = marker };
     R.Impl
       {
         generics = [];
@@ -135,7 +138,7 @@ let channel_items (bus : Registry.t) component (c : Reg.channel) =
                 vis = Private;
                 name = "NAME";
                 ty = R.static_str;
-                value = Some (R.Str c.channel);
+                value = Some (R.Str (Registry.name c));
               };
             R.I_const
               {
@@ -157,7 +160,7 @@ let channel_items (bus : Registry.t) component (c : Reg.channel) =
       };
   ]
   @
-  match c.payload with
+  match c with
   | Stored_event { payload; _ } ->
       [
         R.Impl
@@ -201,17 +204,133 @@ let channel_items (bus : Registry.t) component (c : Reg.channel) =
 let no_channel =
   R.Macro ("panic", [ R.Str "{other} is no channel of the registry" ])
 
+(* Each channel's attributes, as Registry derives them: where it sits
+   relative to the hub, whether the record keeps it, whether emitting it
+   changes the knowledge base, and how it is delivered. *)
+let attributes (bus : Registry.t) =
+  let copy =
+    R.List
+      ( [ "derive" ],
+        List.map
+          (fun d -> R.Word [ d ])
+          [ "Debug"; "Clone"; "Copy"; "PartialEq"; "Eq" ] )
+  in
+  let enum name doc variants =
+    R.Enum
+      {
+        doc = [ doc ];
+        attrs = [ copy ];
+        vis = Pub;
+        name;
+        variants = List.map (fun (v, d) -> R.variant ~doc:[ d ] v) variants;
+      }
+  in
+  let direction : Registry.direction -> string = function
+    | Outbound -> "Outbound"
+    | Inbound -> "Inbound"
+    | In_process -> "InProcess"
+  in
+  let delivery : Registry.delivery -> string = function
+    | Positioned -> "Positioned"
+    | Correlated -> "Correlated"
+    | Passing -> "Passing"
+  in
+  let option f = function
+    | Some v -> R.Call (R.p "Some", [ f v ])
+    | None -> R.p "None"
+  in
+  [
+    enum "ChannelDirection" "Where a channel sits relative to the hub."
+      [
+        ("Outbound", "Emitted toward it: an operation's request, or a command.");
+        ("Inbound", "Delivered from it: a reply, or an event of an audience.");
+        ("InProcess", "Never on the wire.");
+      ];
+    R.Blank;
+    enum "ChannelDelivery"
+      "What a subscriber is promised about a frame on a channel when its \
+       stream drops (protocol/contract/TRANSPORT-CONTRACT.md § Delivery)."
+      [
+        ( "Positioned",
+          "A recorded event on its resource's scope: what a subscriber missed \
+           is sent again." );
+        ( "Correlated",
+          "The reply to a request, routed to the client that asked, and sent \
+           again while it is retained." );
+        ("Passing", "Every other frame. Nothing replays it.");
+      ];
+    R.Blank;
+    R.Struct_def
+      {
+        doc = [ "A channel's attributes." ];
+        attrs = [ copy ];
+        vis = Pub;
+        name = "ChannelAttributes";
+        body =
+          R.Fields
+            [
+              R.field
+                ~doc:[ "The event log keeps it: it is an event of the record." ]
+                "recorded" (R.named "bool");
+              R.field "direction" (R.named "ChannelDirection");
+              R.field
+                ~doc:
+                  [
+                    "Whether emitting it changes the knowledge base, or only \
+                     asks it something; absent on a channel nobody emits.";
+                  ]
+                "writes"
+                (R.named ~args:[ R.named "bool" ] "Option");
+              R.field
+                ~doc:
+                  [ "Absent exactly when the channel never crosses the wire." ]
+                "delivery"
+                (R.named ~args:[ R.named "ChannelDelivery" ] "Option");
+            ];
+      };
+    R.Blank;
+    constant
+      ~doc:[ "Each channel's attributes, by its name." ]
+      "CHANNEL_ATTRIBUTES"
+      (R.Ref
+         (None, R.Slice (R.Tuple_of [ R.str_ty; R.named "ChannelAttributes" ])))
+      (R.Ref_of
+         (R.Array
+            (List.map
+               (fun (a : Registry.attrs) ->
+                 R.Tuple
+                   [
+                     R.Str a.channel;
+                     R.Struct
+                       ( [ "ChannelAttributes" ],
+                         [
+                           ("recorded", R.Bool a.recorded);
+                           ( "direction",
+                             R.p ("ChannelDirection::" ^ direction a.direction)
+                           );
+                           ("writes", option (fun w -> R.Bool w) a.writes);
+                           ( "delivery",
+                             option
+                               (fun d -> R.p ("ChannelDelivery::" ^ delivery d))
+                               a.delivery );
+                         ],
+                         None );
+                   ])
+               bus.attrs)));
+  ]
+
 let channels (bus : Registry.t) component =
   let reg = bus.registry in
   let bridged =
     List.concat_map
-      (fun (o : Reg.operation) -> [ o.result; o.failure ])
+      (fun (o : Reg.operations_item) -> [ o.result; o.failure ])
       reg.operations
     @ reg.audience.everyone
   in
   let markers =
     List.map
-      (fun (c : Reg.channel) -> (Text.pascal c.channel, c.channel))
+      (fun (c : Reg.channels_item) ->
+        (Text.pascal (Registry.name c), Registry.name c))
       reg.channels
   in
   let refusals =
@@ -249,7 +368,9 @@ let channels (bus : Registry.t) component =
   if refusals <> [] then Error refusals
   else
     let by_name f =
-      List.map (fun (c : Reg.channel) -> (R.Str c.channel, f c)) reg.channels
+      List.map
+        (fun (c : Reg.channels_item) -> (R.Str (Registry.name c), f c))
+        reg.channels
       @ [ (R.p "other", no_channel) ]
     in
     Ok
@@ -277,9 +398,10 @@ let channels (bus : Registry.t) component =
                constant ~doc:[ reg.trace.meaning ] "TRACE_FIELD" R.str_ty
                  (R.Str reg.trace.field);
              ]
+            @ attributes bus
             @ List.concat_map (channel_items bus component) reg.channels
             @ List.map
-                (fun (o : Reg.operation) ->
+                (fun (o : Reg.operations_item) ->
                   R.Impl
                     {
                       generics = [];
@@ -331,7 +453,7 @@ let channels (bus : Registry.t) component =
                             ( R.p "channel",
                               by_name (fun c ->
                                   R.Qualified
-                                    ( R.named (Text.pascal c.channel),
+                                    ( R.named (Text.pascal (Registry.name c)),
                                       R.named "Channel",
                                       [ "STAMPS" ] )) ));
                      ]);

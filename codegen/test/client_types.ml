@@ -43,7 +43,8 @@ let contains needle haystack =
   in
   at 0
 
-let fault name kind holds : T.fault_action = { name; kind; docs = "d"; holds }
+let fault name kind holds : T.fault_actions_item =
+  { name; kind; docs = "d"; holds }
 
 let table ~records =
   {
@@ -174,7 +175,7 @@ let cases =
              (table
                 ~records:
                   (List.map
-                     (fun (r : T.record) ->
+                     (fun (r : T.records_item) ->
                        if r.name = "LivenessScenario" then
                          { r with members = r.members @ [ "deadline" ] }
                        else r)
@@ -186,7 +187,7 @@ let cases =
              (table
                 ~records:
                   (List.map
-                     (fun (r : T.record) ->
+                     (fun (r : T.records_item) ->
                        if r.name = "RequestLogEntry" then
                          {
                            r with
@@ -201,6 +202,11 @@ let cases =
                (table ~records:kit_records) with
                fault_actions = [ fault "Burst" "burst" [ "count" ] ];
              }));
+    case "a delay whose maximum is below its minimum is refused" (fun () ->
+        let t = table ~records:kit_records in
+        refused
+          (Testing.derive
+             { t with delay_ms = { t.delay_ms with minimum = 5; maximum = 4 } }));
   ]
 
 let () = Alcotest.run "client_types" [ ("the writers", cases) ]

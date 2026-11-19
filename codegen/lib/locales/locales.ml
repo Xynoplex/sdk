@@ -16,7 +16,7 @@ let derive (t : T.t) =
   in
   if t.locales = [] then refuse "/locales" "states no languages";
   List.iteri
-    (fun i (l : T.locale) ->
+    (fun i (l : T.locales_item) ->
       let at = Printf.sprintf "/locales/%d" i in
       let n = String.length l.code in
       if
@@ -27,7 +27,7 @@ let derive (t : T.t) =
         refuse (at ^ "/code")
           (Printf.sprintf "is %S, not a lower-case language code" l.code);
       (match
-         List.find_index (fun (o : T.locale) -> o.code = l.code) t.locales
+         List.find_index (fun (o : T.locales_item) -> o.code = l.code) t.locales
        with
       | Some j when j < i ->
           refuse (at ^ "/code")
@@ -59,7 +59,8 @@ let typescript (t : T.t) =
                       "The code of every supported language, in the registry's \
                        order.";
                   ]
-                (S.strings (List.map (fun (l : T.locale) -> l.code) t.locales));
+                (S.strings
+                   (List.map (fun (l : T.locales_item) -> l.code) t.locales));
               S.type_alias "LocaleCode"
                 ~about:[ Doc "The code of a supported language." ]
                 (T_index (T_paren (T_typeof "LOCALE_CODES"), T_name "number"));
@@ -88,7 +89,7 @@ let typescript (t : T.t) =
                 ~annotation:(T_readonly (T_array (T_name "LocaleInfo")))
                 (S.array
                    (List.map
-                      (fun (l : T.locale) ->
+                      (fun (l : T.locales_item) ->
                         S.Object
                           {
                             layout = Inline;

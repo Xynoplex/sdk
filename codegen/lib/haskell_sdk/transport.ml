@@ -94,7 +94,7 @@ let derive ~root (spec : Spec.t) =
   let* user_field =
     match
       List.concat_map
-        (fun (k : Tables.Identifiers_kinds.kind) ->
+        (fun (k : Tables.Identifiers_kinds.kinds_item) ->
           if k.schema = "UserId" then
             List.filter (String.starts_with ~prefix:"_") k.properties
           else [])

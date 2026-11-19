@@ -12,7 +12,8 @@
 //! admits (`media_types`); the readers of a resource's description, and of
 //! its bytes as text (`resources`); the knowledge bases a launcher
 //! manages (`discovery`); when a failure is worth another attempt; whether a
-//! job is one a claim takes (`job_filter`); a worker's side of the job queue:
+//! job is one a claim takes (`job_filter`); where the job queue keeps its
+//! jobs (`job_storage`); a worker's side of the job queue:
 //! its claims, the jobs it holds and whether a failed one is retried
 //! (`claims`); the readers of an annotation, and the builders of the ones a
 //! worker commits (`annotations`);
@@ -42,6 +43,7 @@ pub mod errors;
 pub mod event_bus;
 pub mod identity;
 pub mod job_filter;
+pub mod job_storage;
 mod kept_for_first_reader;
 pub mod media_types;
 pub mod namespaces;

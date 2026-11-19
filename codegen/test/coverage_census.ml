@@ -127,7 +127,7 @@ let coverage_refusals table sdk =
 
 module Surface = Tables.Client_surface
 
-let module_member_name : Surface.module__member -> string = function
+let module_member_name : Surface.modules_item_members_item -> string = function
   | Reader m -> m.member
   | Function m -> m.member
   | Type m -> m.member
@@ -137,7 +137,7 @@ let module_member_name : Surface.module__member -> string = function
 let surface_items =
   let surface = spec.tables.client_surface in
   List.concat_map
-    (fun (m : Surface.module_) ->
+    (fun (m : Surface.modules_item) ->
       Surface_coverage.Module m.module_
       :: List.map
            (fun member ->
@@ -148,19 +148,19 @@ let surface_items =
   @ List.concat_map
       (fun (w : Surface.worker_item) ->
         List.map
-          (fun (member : Surface.member) ->
+          (fun (member : Surface.members_item) ->
             Surface_coverage.Worker_member (w.handed, member.member))
           w.members)
       surface.worker
   @ List.concat_map
-      (fun (u : Surface.state_unit) ->
+      (fun (u : Surface.state_units_item) ->
         List.map
-          (fun (member : Surface.state_unit_member) ->
+          (fun (member : Surface.item_members_item) ->
             Surface_coverage.State_unit_member (u.unit, member.member))
           u.members)
       surface.state_units
   @ List.map
-      (fun (member : Surface.wire_member) ->
+      (fun (member : Surface.wire_members_item) ->
         Surface_coverage.Wire_member member.member)
       surface.wire.members
 
@@ -209,11 +209,11 @@ let surface_refusals =
 let reader_refusals =
   let every_sdk =
     List.find
-      (fun (m : Surface.module_) -> m.module_ = "annotations")
+      (fun (m : Surface.modules_item) -> m.module_ = "annotations")
       spec.tables.client_surface.modules
     |> fun m ->
     List.filter_map
-      (fun (member : Surface.module__member) ->
+      (fun (member : Surface.modules_item_members_item) ->
         let name = module_member_name member in
         let reads =
           match member with

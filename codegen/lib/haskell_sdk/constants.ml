@@ -31,7 +31,7 @@ let factory_types =
 let factory_fields (surface : Tables.Client_surface.t) =
   let listed =
     List.concat_map
-      (fun (m : Tables.Client_surface.module_) ->
+      (fun (m : Tables.Client_surface.modules_item) ->
         if m.module_ <> "registry" then []
         else
           List.filter_map

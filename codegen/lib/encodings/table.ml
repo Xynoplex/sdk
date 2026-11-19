@@ -5,6 +5,18 @@
 
 let file = "text/encoding-cases.json"
 
+module T = Tables.Text_encoding_cases
+
+(* What every case states alike: the encoding and its labels. *)
+let encoding : T.cases_item -> string = function
+  | Every_byte { encoding; _ } | Bytes { encoding; _ } | Refused { encoding; _ }
+    ->
+      encoding
+
+let labels : T.cases_item -> string list = function
+  | Every_byte { labels; _ } | Bytes { labels; _ } | Refused { labels; _ } ->
+      labels
+
 type t = {
   labels : (string * string) list;
       (** Each label and the encoding it names, by label. *)
@@ -39,10 +51,10 @@ let derive (table : Tables.Text_encoding_cases.t) =
   in
   let named = Hashtbl.create 256 in
   List.iteri
-    (fun i (c : Tables.Text_encoding_cases.case) ->
+    (fun i (c : Tables.Text_encoding_cases.cases_item) ->
       let at = Printf.sprintf "/cases/%d" i in
-      if not (List.mem c.encoding c.labels) then
-        refuse (at ^ "/labels") ("lacks the case's own encoding, " ^ c.encoding);
+      if not (List.mem (encoding c) (labels c)) then
+        refuse (at ^ "/labels") ("lacks the case's own encoding, " ^ encoding c);
       List.iteri
         (fun j label ->
           let at = Printf.sprintf "%s/labels/%d" at j in
@@ -55,15 +67,15 @@ let derive (table : Tables.Text_encoding_cases.t) =
               refuse at
                 (Printf.sprintf "is a label of %s (/cases/%d) already" encoding
                    case)
-          | None -> Hashtbl.replace named label (c.encoding, i))
-        c.labels;
-      match c.kind with
-      | Single_byte { every_byte } ->
+          | None -> Hashtbl.replace named label (encoding c, i))
+        (labels c);
+      match c with
+      | Every_byte { every_byte; _ } ->
           let n = Text.length every_byte in
           if n <> 256 then
             refuse (at ^ "/everyByte")
               (Printf.sprintf "states %d characters, not 256" n)
-      | Decoded _ | Refused -> ())
+      | Bytes _ | Refused _ -> ())
     table.cases;
   match List.rev !refusals with
   | [] ->
@@ -76,25 +88,25 @@ let derive (table : Tables.Text_encoding_cases.t) =
                  named []);
           single_byte =
             List.filter_map
-              (fun (c : Tables.Text_encoding_cases.case) ->
-                match c.kind with
-                | Single_byte { every_byte } -> Some (c.encoding, every_byte)
-                | Decoded _ | Refused -> None)
+              (fun (c : Tables.Text_encoding_cases.cases_item) ->
+                match c with
+                | Every_byte { every_byte; _ } -> Some (encoding c, every_byte)
+                | Bytes _ | Refused _ -> None)
               table.cases;
           refused =
             List.sort compare
               (List.filter_map
-                 (fun (c : Tables.Text_encoding_cases.case) ->
-                   match c.kind with
-                   | Refused -> Some c.encoding
-                   | Decoded _ | Single_byte _ -> None)
+                 (fun (c : Tables.Text_encoding_cases.cases_item) ->
+                   match c with
+                   | Refused _ -> Some (encoding c)
+                   | Bytes _ | Every_byte _ -> None)
                  table.cases);
           decoded =
             List.filter_map
-              (fun (c : Tables.Text_encoding_cases.case) ->
-                match c.kind with
-                | Decoded _ -> Some c.encoding
-                | Single_byte _ | Refused -> None)
+              (fun (c : Tables.Text_encoding_cases.cases_item) ->
+                match c with
+                | Bytes _ -> Some (encoding c)
+                | Every_byte _ | Refused _ -> None)
               table.cases;
         }
   | refusals -> Error refusals

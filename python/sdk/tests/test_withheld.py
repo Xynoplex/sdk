@@ -30,7 +30,6 @@ from pydantic import JsonValue
 from shown import CARRIED, parts_of, printed
 from tokens import token
 
-from xynolog._required import Fault, fault_of
 from xynolog._required_table import SCHEMAS
 from xynolog.bus import Bus
 from xynolog.channel import Channel
@@ -52,6 +51,7 @@ from xynolog.http.oauth import discover_issuer, issuer_client, refresh_at_issuer
 from xynolog.identifiers import ResourceId
 from xynolog.model import WireModel
 from xynolog.operations import YIELD_CLONE_TOKEN_REQUESTED
+from xynolog.required import Fault, fault_of
 from xynolog.retry import RetryPolicy
 from xynolog.testing import FaultyTransport
 from xynolog.transport import Frame, FrameRefusal

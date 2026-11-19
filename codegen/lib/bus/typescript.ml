@@ -49,11 +49,12 @@ let section heading title : T.comment list =
 (* What the registry writes before an entry, as comments. *)
 let lead heading (docs : R.docs) =
   List.concat_map
-    (function
-      | R.Break -> [ T.Gap ]
-      | Section title -> section heading title
-      | Comment prose -> [ Line_prose prose ]
-      | Doc prose -> [ Doc_prose prose ])
+    (fun (block : R.lead_item) ->
+      match block with
+      | String -> [ T.Gap ]
+      | Section { section = title } -> section heading title
+      | Comment { comment } -> [ Line_prose (Registry.prose comment) ]
+      | Doc { doc } -> [ Doc_prose (Registry.prose doc) ])
     docs.lead
 
 (* Each item with its lead and trailing note. *)
@@ -75,29 +76,30 @@ let channel_list ?(about = []) name channels ~of_ =
     ~satisfies:(T_readonly (T_array (T_name of_)))
     (T.array (List.map word channels))
 
-let payload_type (c : R.channel) : T.type_ =
-  match c.payload with
+let payload_type (c : R.channels_item) : T.type_ =
+  match c with
   | Schema { schema; _ } -> T.schema schema
-  | Envelope { schema } ->
+  | Envelope { schema; _ } ->
       T_object (Inline, [ T.member (Ident "response") (T.schema schema) ])
   | Stored_event { event; enriched; _ } ->
       T_generic
-        ( (if enriched then "EnrichedEvent" else "StoredEvent"),
+        ( (if enriched = Some true then "EnrichedEvent" else "StoredEvent"),
           [ T_generic ("EventOfType", [ str event ]) ] )
-  | Void -> T_name "void"
-  | Empty -> T_generic ("Record", [ T_name "string"; T_name "never" ])
+  | Void _ -> T_name "void"
+  | Empty _ -> T_generic ("Record", [ T_name "string"; T_name "never" ])
 
-let payload_schema (c : R.channel) =
+let payload_schema (c : R.channels_item) =
   let one name schema =
     T.Object
       { layout = Inline; entries = [ T.entry (Ident name) (word schema) ] }
   in
-  match c.payload with
+  match c with
   | Schema { schema; _ } -> one "payload" schema
-  | Envelope { schema } -> one "response" schema
+  | Envelope { schema; _ } -> one "response" schema
   | Stored_event { enriched; _ } ->
-      one "payload" (Registry.stored_event_component ~enriched)
-  | Void | Empty -> T.Object { layout = Inline; entries = [] }
+      one "payload"
+        (Registry.stored_event_component ~enriched:(enriched = Some true))
+  | Void _ | Empty _ -> T.Object { layout = Inline; entries = [] }
 
 let protocol (bus : Registry.t) =
   let reg = bus.registry in
@@ -143,10 +145,10 @@ let protocol (bus : Registry.t) =
             ~about:[ Doc "Each channel's payload as the registry states it." ]
             (T_object
                ( Rows,
-                 with_docs Banner
-                   (fun (c : R.channel) -> c.docs)
-                   (fun ~about ~trailing (c : R.channel) ->
-                     T.member ~about ~trailing (channel_key c.channel)
+                 with_docs Banner Registry.docs
+                   (fun ~about ~trailing (c : R.channels_item) ->
+                     T.member ~about ~trailing
+                       (channel_key (Registry.name c))
                        (payload_type c))
                    (channels reg.channel_order.event_map) ));
           T.type_alias "EventMap"
@@ -187,34 +189,35 @@ let protocol (bus : Registry.t) =
               from = "./bus-ui-types";
             };
           T.type_alias "EventName"
-            ~about:[ Doc_prose reg.docs.event_name ]
+            ~about:[ Doc_prose (Registry.prose reg.docs.event_name) ]
             (T_keyof (T_name "EventMap"));
           channel_list "ENRICHED_EVENT_TYPES"
-            ~about:[ Doc_prose reg.docs.enriched_events ]
+            ~about:[ Doc_prose (Registry.prose reg.docs.enriched_events) ]
             ~of_:"PersistedEventType"
             (List.filter_map
-               (fun (c : R.channel) ->
-                 match c.payload with
-                 | Stored_event { enriched = true; _ } -> Some c.channel
+               (fun (c : R.channels_item) ->
+                 match c with
+                 | Stored_event { enriched = Some true; _ } ->
+                     Some (Registry.name c)
                  | _ -> None)
                reg.channels);
           T.type_alias "EnrichedEventType"
             (T_index (T_typeof "ENRICHED_EVENT_TYPES", T_name "number"));
           T.const "CHANNEL_SCHEMAS" ~as_const:true
-            ~about:[ Doc_prose reg.docs.channel_schemas ]
+            ~about:[ Doc_prose (Registry.prose reg.docs.channel_schemas) ]
             ~satisfies:
               (satisfies_channels (T_union [ component_name; T_name "null" ]))
             (T.rows
-               (with_docs Rule
-                  (fun (c : R.channel) -> c.schema_docs)
-                  (fun ~about ~trailing (c : R.channel) ->
-                    T.entry ~about ~trailing (channel_key c.channel)
+               (with_docs Rule Registry.schema_docs
+                  (fun ~about ~trailing (c : R.channels_item) ->
+                    T.entry ~about ~trailing
+                      (channel_key (Registry.name c))
                       (match Registry.validate_of c with
                       | None -> Null
                       | Some validate -> word validate))
                   (channels reg.channel_order.schemas)));
           T.type_alias "EmittableChannel"
-            ~about:[ Doc_prose reg.docs.emittable_channel ]
+            ~about:[ Doc_prose (Registry.prose reg.docs.emittable_channel) ]
             (T_index
                ( mapped "K" (T_name "EventName")
                    (T_conditional
@@ -285,8 +288,8 @@ let protocol (bus : Registry.t) =
                     ]))
             (T.rows
                (List.map
-                  (fun (c : R.channel) ->
-                    T.entry (channel_key c.channel) (payload_schema c))
+                  (fun (c : R.channels_item) ->
+                    T.entry (channel_key (Registry.name c)) (payload_schema c))
                   (channels reg.channel_order.event_map)));
         ];
     }
@@ -298,10 +301,10 @@ type stored = { event : string; payload : string; system : bool }
 
 let stored (reg : R.t) =
   List.filter_map
-    (fun (c : R.channel) ->
-      match c.payload with
+    (fun (c : R.channels_item) ->
+      match c with
       | Stored_event { event; payload; system; _ } ->
-          Some { event; payload; system }
+          Some { event; payload; system = system = Some true }
       | _ -> None)
     reg.channels
 
@@ -538,8 +541,8 @@ let operations (bus : Registry.t) =
                    ] ))
             (T.rows
                (with_docs Rule
-                  (fun (o : R.operation) -> o.docs)
-                  (fun ~about ~trailing (o : R.operation) ->
+                  (fun (o : R.operations_item) -> o.docs)
+                  (fun ~about ~trailing (o : R.operations_item) ->
                     T.entry ~about ~trailing (channel_key o.request)
                       (Object
                          {
@@ -630,7 +633,7 @@ let bridged (bus : Registry.t) =
         [
           T.import ~type_only:true [ "EventName" ] "./bus-protocol";
           channel_list "BRIDGED_BROADCASTS"
-            ~about:[ Doc_prose reg.audience.doc ]
+            ~about:[ Doc_prose (Registry.prose reg.audience.doc) ]
             ~of_:"EventName" reg.audience.everyone;
           channel_list "RESOURCE_SCOPED_CHANNELS"
             ~about:
@@ -765,7 +768,7 @@ let classification (bus : Registry.t) =
                   T.member ~readonly:true (Ident "direction")
                     (T_name "ChannelDirection");
                   T.member ~readonly:true ~optional:true (Ident "writes")
-                    ~about:[ Doc_prose reg.effect_.doc ]
+                    ~about:[ Doc_prose (Registry.prose reg.effect_.doc) ]
                     (T_name "boolean");
                   T.member ~readonly:true ~optional:true (Ident "delivery")
                     ~about:

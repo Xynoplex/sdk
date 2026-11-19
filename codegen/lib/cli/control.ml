@@ -184,14 +184,14 @@ let header =
 let derive ~root (spec : Spec.t) =
   let t : T.t = spec.tables.control_methods in
   List.iter
-    (fun (m : T.method_) ->
+    (fun (m : T.methods_item) ->
       List.iter
         (fun sent ->
           if
             not
               (List.exists
-                 (fun (n : T.notification) ->
-                   n.name = sent && n.from = "launcher")
+                 (fun (n : T.notifications_item) ->
+                   n.name = sent && n.from = T.Launcher)
                  t.notifications)
           then
             refuse table
@@ -222,12 +222,13 @@ let derive ~root (spec : Spec.t) =
   in
   let methods =
     List.map
-      (fun (m : T.method_) -> (m, named_file m.params, named_file m.result))
+      (fun (m : T.methods_item) ->
+        (m, named_file m.params, named_file m.result))
       t.methods
   in
   let notifications =
     List.map
-      (fun (n : T.notification) -> (n, named_file n.params))
+      (fun (n : T.notifications_item) -> (n, named_file n.params))
       t.notifications
   in
   List.iter
@@ -251,14 +252,10 @@ let derive ~root (spec : Spec.t) =
       @ List.map snd notifications)
   in
   let codes =
-    match Error_codes.Table.wire_codes spec with
+    match Error_codes.Table.derive spec.tables.errors_codes with
+    | Ok table -> table.control.codes
     | Error (e :: _) -> raise (Refused e)
     | Error [] -> refuse Error_codes.Table.file "refused"
-    | Ok wire_codes -> (
-        match Error_codes.Table.derive ~wire_codes spec.tables.errors_codes with
-        | Ok table -> table.control.codes
-        | Error (e :: _) -> raise (Refused e)
-        | Error [] -> refuse Error_codes.Table.file "refused")
   in
   if codes = [] then
     refuse Error_codes.Table.file "its control group lists no codes";
@@ -349,7 +346,7 @@ let derive ~root (spec : Spec.t) =
                      "controlMethods"
                      (G.lines ~of_:(G.Slice (G.Named "controlMethod"))
                         (List.map
-                           (fun ((m : T.method_), params, result) ->
+                           (fun ((m : T.methods_item), params, result) ->
                              G.item
                                (G.inline
                                   [
@@ -370,12 +367,12 @@ let derive ~root (spec : Spec.t) =
                      "controlNotifications"
                      (G.lines ~of_:(G.Slice (G.Named "controlNotification"))
                         (List.map
-                           (fun ((n : T.notification), params) ->
+                           (fun ((n : T.notifications_item), params) ->
                              G.item
                                (G.inline
                                   [
                                     G.keyed "name" (q n.name);
-                                    G.keyed "from" (q n.from);
+                                    G.keyed "from" (q (T.from_value n.from));
                                     G.keyed "params" (q (repository params));
                                   ]))
                            notifications)));

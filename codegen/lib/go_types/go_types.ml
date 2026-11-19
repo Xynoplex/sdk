@@ -11,7 +11,7 @@ let generated (spec : Spec.t) =
   let bundle = Definitions.bundle spec in
   let identifiers =
     List.map
-      (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+      (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
       spec.tables.identifiers_kinds.kinds
   in
   let roots =

@@ -3,5 +3,11 @@
 (executable
  (name main)
  (public_name xynolog-codegen)
- (libraries xynolog_codegen)
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema)
  (link_flags (-ccopt -static)))
+
+; The reader's libraries, opened as the generator opens them.
+(env
+ (_
+  (flags
+   (:standard -open Xynolog_protocol_schema -open Xynolog_protocol))))

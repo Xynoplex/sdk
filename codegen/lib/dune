@@ -2,4 +2,11 @@
 
 (library
  (name xynolog_codegen)
- (libraries yojson compiler-libs.common ocamlformat-lib))
+ (flags
+  (:standard -open Xynolog_protocol_schema -open Xynolog_protocol))
+ (libraries
+  xynolog-protocol
+  xynolog-protocol.schema
+  yojson
+  compiler-libs.common
+  ocamlformat-lib))

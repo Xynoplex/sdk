@@ -530,7 +530,7 @@ let text (spec : Spec.t) =
     ~kinds:
       (List.sort compare
          (List.map
-            (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+            (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
             spec.tables.identifiers_kinds.kinds))
     {
       definitions with

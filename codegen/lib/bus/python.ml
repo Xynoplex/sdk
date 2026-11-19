@@ -39,8 +39,8 @@ let type_of (carried : Registry.carried) =
 
 (* The schemas a channel's type names: for a stored event, the event's own
    payload's too. *)
-let names (c : R.channel) =
-  match (c.payload, Registry.carried c) with
+let names (c : R.channels_item) =
+  match (c, Registry.carried c) with
   | Stored_event { payload; _ }, Component event -> [ event; payload ]
   | _, (Component schema | Response schema) -> [ schema ]
   | _, Nothing -> []
@@ -78,15 +78,15 @@ let by_name ~about ~value_type names =
 let channels (bus : Registry.t) =
   let reg = bus.registry in
   let scoped = reg.audience.scoped in
-  let declaration (c : R.channel) =
+  let declaration (c : R.channels_item) =
     let type_ = type_of (Registry.carried c) in
-    let name = P.item (P.Str c.channel) in
+    let name = P.item (P.Str (Registry.name c)) in
     let call =
-      match c.payload with
+      match c with
       | Stored_event { payload; _ } ->
           P.Call
             ( P.sub
-                (if List.mem c.channel scoped then "ScopedChannel"
+                (if List.mem (Registry.name c) scoped then "ScopedChannel"
                  else "RecordedChannel")
                 [ P.item type_; P.item (P.Name payload) ],
               P.items [ name; P.item type_; P.item (P.Name payload) ] )
@@ -94,12 +94,16 @@ let channels (bus : Registry.t) =
           P.Call
             (P.sub "Channel" [ P.item type_ ], P.items [ name; P.item type_ ])
     in
-    P.assign (constant c.channel) ~annotation:(P.Name "Final") ~value:call
+    P.assign
+      (constant (Registry.name c))
+      ~annotation:(P.Name "Final") ~value:call
   in
-  let all_names = List.map (fun (c : R.channel) -> c.channel) reg.channels in
+  let all_names =
+    List.map (fun (c : R.channels_item) -> Registry.name c) reg.channels
+  in
   let bridged =
     List.concat_map
-      (fun (o : R.operation) -> [ o.result; o.failure ])
+      (fun (o : R.operations_item) -> [ o.result; o.failure ])
       reg.operations
     @ reg.audience.everyone
   in
@@ -217,8 +221,8 @@ let channels (bus : Registry.t) =
                   a passing frame).")
             "PERSISTED_EVENT_TYPES"
             (List.filter_map
-               (fun (c : R.channel) ->
-                 if Registry.is_recorded c then Some c.channel else None)
+               (fun (c : R.channels_item) ->
+                 if Registry.is_recorded c then Some (Registry.name c) else None)
                reg.channels);
           P.assign
             ~about:[ Prose reg.trace.meaning ]
@@ -230,7 +234,7 @@ let channels (bus : Registry.t) =
 let operations (bus : Registry.t) =
   let reg = bus.registry in
   let first, rest = bus.limits in
-  let operation (o : R.operation) =
+  let operation (o : R.operations_item) =
     let channel name = P.Name ("channels." ^ constant name) in
     P.assign (constant o.request) ~annotation:(P.Name "Final")
       ~value:
@@ -241,7 +245,9 @@ let operations (bus : Registry.t) =
              P.keyword "failure" (channel o.failure);
            ])
   in
-  let requests = List.map (fun (o : R.operation) -> o.request) reg.operations in
+  let requests =
+    List.map (fun (o : R.operations_item) -> o.request) reg.operations
+  in
   P.text
     {
       header;
@@ -290,7 +296,7 @@ let operations (bus : Registry.t) =
             ~value:
               (P.tuple ~magic:true
                  (List.map
-                    (fun (o : R.operation) ->
+                    (fun (o : R.operations_item) ->
                       P.item (P.Name (constant o.request)))
                     (first :: rest)));
         ];
@@ -300,8 +306,8 @@ let operations (bus : Registry.t) =
 let collisions (bus : Registry.t) =
   let seen = Hashtbl.create 256 in
   List.filter_map
-    (fun (c : R.channel) ->
-      let python = constant c.channel in
+    (fun (c : R.channels_item) ->
+      let python = constant (Registry.name c) in
       match Hashtbl.find_opt seen python with
       | Some other ->
           Some
@@ -310,10 +316,10 @@ let collisions (bus : Registry.t) =
               pointer = "/channels";
               message =
                 Printf.sprintf "%S and %S would both be the Python constant %s"
-                  other c.channel python;
+                  other (Registry.name c) python;
             }
       | None ->
-          Hashtbl.replace seen python c.channel;
+          Hashtbl.replace seen python (Registry.name c);
           None)
     bus.registry.channels
 

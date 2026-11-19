@@ -24,9 +24,10 @@ let file (table : T.t) =
   in
   let queries =
     List.filter_map
-      (fun (q : T.query) ->
-        match q.source with
-        | Asks request -> Some (O.tuple [ O.string q.name; O.string request ])
+      (fun (q : T.queries_item) ->
+        match q with
+        | Asks { name; asks; _ } ->
+            Some (O.tuple [ O.string name; O.string asks ])
         | Reads _ -> None)
       table.queries
   in
@@ -34,7 +35,9 @@ let file (table : T.t) =
     List.map
       (fun (r : T.refresh_item) ->
         let names =
-          Option.value ~default:{ T.resource = None; annotation = None } r.names
+          Option.value
+            ~default:{ T.resource = None; annotation = None }
+            (Table.names_of r)
         in
         let list = function
           | None -> O.list []
@@ -42,18 +45,18 @@ let file (table : T.t) =
         in
         O.tuple
           [
-            O.string (T.trigger_name r.trigger);
-            (match r.when_ with
+            O.string (Table.trigger_name r);
+            (match Table.when_of r with
             | None -> O.none
             | Some Enriched -> O.some (O.string "enriched")
             | Some Unenriched -> O.some (O.string "unenriched"));
-            O.bool (r.reach = Some Held);
+            O.bool (Table.reach_of r = Some Held);
             way names.resource;
             way names.annotation;
-            way r.carries;
-            list r.refetches;
-            list r.writes;
-            list r.removes;
+            way (Table.carries_of r);
+            list (Table.refetches_of r);
+            list (Table.writes_of r);
+            list (Table.removes_of r);
           ])
       table.refresh
   in

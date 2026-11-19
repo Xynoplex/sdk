@@ -14,13 +14,13 @@ from pydantic import JsonValue
 from shown import CARRIED, parts_of, printed
 from spec import JsonObject
 
-from xynolog._required import fault_of
 from xynolog.channels import BRIDGED_CHANNELS
 from xynolog.client import ClientTiming, XynologClient
 from xynolog.errors import BusRequestError, JobError, TransportError, XynologError
 from xynolog.identifiers import ResourceId
 from xynolog.namespaces.follow import Delegation, JobAttemptFailed, JobCompleted, JobCreated, JobEvent, JobProgressed, JobRefused
 from xynolog.namespaces.yield_ import generation_stall_deadline_ms
+from xynolog.required import fault_of
 from xynolog.running import Running
 from xynolog.testing import FaultyTransport, InMemoryContent, StubGateway
 from xynolog.timing import GENERATION_STALL_FLOOR_MS, JOB_SILENCE_MS, JOB_STATUS_POLL_MS

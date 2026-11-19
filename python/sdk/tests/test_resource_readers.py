@@ -6,8 +6,8 @@ import pytest
 from pydantic import BaseModel, Field
 from spec import SPEC, JsonObject
 
-from xynolog._required import Fault, fault_of
 from xynolog.model import written
+from xynolog.required import Fault, fault_of
 from xynolog.resources import primary_media_type, primary_representation, resource_entity_types
 from xynolog.types import Representation, ResourceDescriptor
 

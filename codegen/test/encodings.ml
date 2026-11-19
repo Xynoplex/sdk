@@ -61,12 +61,6 @@ let refuses text expected () =
         "refusals" expected
         (List.map Decode.error_to_string errors)
 
-let model_refuses text expected () =
-  match decode text with
-  | Ok _ -> Alcotest.failf "expected the refusal\n  %s\nand none came" expected
-  | Error error ->
-      Alcotest.(check string) "refusal" expected (Decode.error_to_string error)
-
 let the_model =
   [
     case "a case of each kind" (fun () ->
@@ -83,33 +77,12 @@ let the_model =
           "kinds"
           [ "decoded"; "single byte"; "refused" ]
           (List.map
-             (fun (c : Tables.Text_encoding_cases.case) ->
-               match c.kind with
-               | Decoded _ -> "decoded"
-               | Single_byte _ -> "single byte"
-               | Refused -> "refused")
+             (fun (c : Tables.Text_encoding_cases.cases_item) ->
+               match c with
+               | Bytes _ -> "decoded"
+               | Every_byte _ -> "single byte"
+               | Refused _ -> "refused")
              t.cases));
-    case "a refusal that is false is refused"
-      (model_refuses
-         (table [ {|{"encoding":"big5","labels":["big5"],"refused":false}|} ])
-         (file ^ ": /cases/0/refused: a flag is true, or absent"));
-    case "a case of two kinds is refused"
-      (model_refuses
-         (table
-            [
-              {|{"encoding":"big5","labels":["big5"],"refused":true,"bytes":"","text":""}|};
-            ])
-         (file ^ ": /cases/0/bytes: an unknown member"));
-    case "a case of no kind is refused"
-      (model_refuses
-         (table [ {|{"encoding":"utf-8","labels":["utf-8"]}|} ])
-         (file
-        ^ ": /cases/0: is a case of no kind: it states bytes and their text, \
-           everyByte, or refused"));
-    case "a decoded case without its text is refused"
-      (model_refuses
-         (table [ {|{"encoding":"utf-8","labels":["utf-8"],"bytes":""}|} ])
-         (file ^ ": /cases/0: lacks the member \"text\""));
   ]
 
 let rules =

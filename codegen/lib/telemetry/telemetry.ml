@@ -3,8 +3,7 @@
    what it means, and its attributes, for the Go, Python, OCaml and Kotlin
    SDKs.
 
-   A span's kind is one of OTLP's, a metric's instrument a counter, and a
-   span's name holds no placeholder but {channel}. A row says what it means
+   A metric's instrument is a counter, and a span's name holds no placeholder but {channel}. A row says what it means
    and lists each attribute once; those not marked `only` are the ones every
    one carries. No two rows, nor two attribute keys, are the same Go or Python
    name. *)
@@ -24,8 +23,6 @@ type row = {
 
 type t = { spans : row list; metrics : row list }
 
-let span_kinds = [ "internal"; "server"; "client"; "producer"; "consumer" ]
-let instruments = [ "counter" ]
 let without_channel = Text.replace_all ~sub:(":" ^ channel) ~by:""
 
 (* A dotted, underscored name as a Go identifier behind [prefix]:
@@ -61,14 +58,9 @@ let derive (table : T.t) =
   let refuse pointer message =
     refusals := { Decode.file; pointer; message } :: !refusals
   in
-  let row at ~name ~kind_member ~kind ~kinds ~meaning keys =
+  let row at ~name ~kind ~meaning keys =
     if name = "" then refuse (at ^ "/name") "is empty";
     if meaning = "" then refuse (at ^ "/meaning") "is empty";
-    if not (List.mem kind kinds) then
-      refuse
-        (at ^ "/" ^ kind_member)
-        (Printf.sprintf "is %S, which is none of %s" kind
-           (String.concat ", " kinds));
     List.iteri
       (fun i (key, _) ->
         if key = "" then
@@ -93,28 +85,37 @@ let derive (table : T.t) =
   in
   let spans =
     List.mapi
-      (fun i (s : T.span) ->
+      (fun i (s : T.spans_item) ->
         let at = Printf.sprintf "/spans/%d" i in
         if String.contains (without_channel s.name) '{' then
           refuse (at ^ "/name")
             (Printf.sprintf "is %s, which has a placeholder but %s" s.name
                channel);
-        row at ~name:s.name ~kind_member:"kind" ~kind:s.kind ~kinds:span_kinds
+        row at ~name:s.name
+          ~kind:(T.service_telemetry_telemetry_kind_value s.kind)
           ~meaning:s.meaning
           (List.map
-             (fun (a : T.attribute) -> (a.key, Option.is_some a.only))
+             (fun (a : T.service_telemetry_telemetry_attributes_item) ->
+               (a.key, Option.is_some a.only))
              s.attributes))
       table.spans
   in
   let metrics =
     List.mapi
-      (fun i (m : T.metric) ->
-        row
-          (Printf.sprintf "/metrics/%d" i)
-          ~name:m.name ~kind_member:"instrument" ~kind:m.instrument
-          ~kinds:instruments ~meaning:m.meaning
+      (fun i (m : T.metrics_item) ->
+        let at = Printf.sprintf "/metrics/%d" i in
+        let instrument =
+          T.service_telemetry_telemetry_instrument_value m.instrument
+        in
+        (match m.instrument with
+        | Counter -> ()
+        | Up_down_counter | Gauge | Histogram ->
+            refuse (at ^ "/instrument")
+              (Printf.sprintf "is %S, which is none of counter" instrument));
+        row at ~name:m.name ~kind:instrument ~meaning:m.meaning
           (List.map
-             (fun (a : T.metric_attribute) -> (a.key, Option.is_some a.only))
+             (fun (a : T.service_telemetry_telemetry_attributes_item) ->
+               (a.key, Option.is_some a.only))
              m.attributes))
       table.metrics
   in

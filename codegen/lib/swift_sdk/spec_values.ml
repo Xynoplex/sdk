@@ -12,18 +12,24 @@ let telemetry_spans (t : Tables.Sdk_telemetry_telemetry.t) =
   `List
     (List.map
        (fun ({ name; transport; kind; meaning; attributes } :
-              Tables.Sdk_telemetry_telemetry.span) ->
+              Tables.Sdk_telemetry_telemetry.spans_item) ->
          `Assoc
            [
              ("name", string name);
-             ("transport", string transport);
-             ("kind", string kind);
+             ( "transport",
+               string (Tables.Sdk_telemetry_telemetry.transport_value transport)
+             );
+             ( "kind",
+               string
+                 (Tables.Sdk_telemetry_telemetry
+                  .service_telemetry_telemetry_kind_value kind) );
              ("meaning", string meaning);
              ( "attributes",
                `List
                  (List.map
                     (fun ({ key; only; values } :
-                           Tables.Sdk_telemetry_telemetry.attribute) ->
+                           Tables.Sdk_telemetry_telemetry
+                           .service_telemetry_telemetry_attributes_item) ->
                       `Assoc
                         ([ ("key", string key) ]
                         @ optional "only" string only
@@ -36,18 +42,24 @@ let telemetry_metrics (t : Tables.Sdk_telemetry_telemetry.t) =
   `List
     (List.map
        (fun ({ name; transport; instrument; meaning; attributes } :
-              Tables.Sdk_telemetry_telemetry.metric) ->
+              Tables.Sdk_telemetry_telemetry.metrics_item) ->
          `Assoc
            [
              ("name", string name);
-             ("transport", string transport);
-             ("instrument", string instrument);
+             ( "transport",
+               string (Tables.Sdk_telemetry_telemetry.transport_value transport)
+             );
+             ( "instrument",
+               string
+                 (Tables.Sdk_telemetry_telemetry
+                  .service_telemetry_telemetry_instrument_value instrument) );
              ("meaning", string meaning);
              ( "attributes",
                `List
                  (List.map
                     (fun ({ key; only } :
-                           Tables.Sdk_telemetry_telemetry.metric_attribute) ->
+                           Tables.Sdk_telemetry_telemetry
+                           .service_telemetry_telemetry_attributes_item) ->
                       `Assoc
                         ([ ("key", string key) ] @ optional "only" string only))
                     attributes) );
@@ -57,7 +69,7 @@ let telemetry_metrics (t : Tables.Sdk_telemetry_telemetry.t) =
 let oauth_clients (t : Tables.Session_oauth.t) =
   `List
     (List.map
-       (fun ({ name; id; docs } : Tables.Session_oauth.client) ->
+       (fun ({ name; id; docs } : Tables.Session_oauth.clients_item) ->
          `Assoc
            [ ("name", string name); ("id", string id); ("docs", string docs) ])
        t.clients)
@@ -73,7 +85,7 @@ let directory_mode (t : Tables.Sign_in_store_owner_only.t) =
   `Assoc [ ("value", string value); ("docs", string docs) ]
 
 let file_mode (t : Tables.Sign_in_store_owner_only.t) =
-  let ({ value; docs } : Tables.Sign_in_store_owner_only.file_mode) =
+  let ({ value; docs } : Tables.Sign_in_store_owner_only.directory_mode) =
     t.file_mode
   in
   `Assoc [ ("value", string value); ("docs", string docs) ]
@@ -92,7 +104,7 @@ let media_types (t : Tables.Media_types_registry.t) =
                uploadable;
                generatable;
              } :
-              Tables.Media_types_registry.media_type) ->
+              Tables.Media_types_registry.media_types_item) ->
          `Assoc
            [
              ("mediaType", string media_type);
@@ -110,33 +122,48 @@ let media_types (t : Tables.Media_types_registry.t) =
 let encodings (t : Tables.Text_encoding_cases.t) =
   `List
     (List.map
-       (fun ({ encoding; labels; kind } : Tables.Text_encoding_cases.case) ->
+       (fun (c : Tables.Text_encoding_cases.cases_item) ->
          `Assoc
-           ([ ("encoding", string encoding); ("labels", strings labels) ]
-           @
-           match kind with
-           | Decoded { bytes; text } ->
-               [ ("bytes", string bytes); ("text", string text) ]
-           | Single_byte { every_byte } -> [ ("everyByte", string every_byte) ]
-           | Refused -> [ ("refused", `Bool true) ]))
+           (match c with
+           | Bytes { encoding; labels; bytes; text } ->
+               [
+                 ("encoding", string encoding);
+                 ("labels", strings labels);
+                 ("bytes", string bytes);
+                 ("text", string text);
+               ]
+           | Every_byte { encoding; labels; every_byte } ->
+               [
+                 ("encoding", string encoding);
+                 ("labels", strings labels);
+                 ("everyByte", string every_byte);
+               ]
+           | Refused { encoding; labels; refused } ->
+               [
+                 ("encoding", string encoding);
+                 ("labels", strings labels);
+                 ("refused", `Bool refused);
+               ]))
        t.cases)
 
 let cache_queries (t : Tables.Client_refresh.t) =
   `List
     (List.map
-       (fun ({ name; per; source; persisted; value; docs } :
-              Tables.Client_refresh.query) ->
+       (fun (q : Tables.Client_refresh.queries_item) ->
+         let name, per, persisted, value, docs =
+           Cache_refresh.Table.query_fields q
+         in
+         let source =
+           match q with
+           | Asks { asks; _ } -> ("asks", asks)
+           | Reads { reads; _ } -> ("reads", reads)
+         in
          `Assoc
            ([ ("name", string name) ]
            @ optional "per"
-               (function
-                 | Tables.Client_refresh.Resource -> string "resource"
-                 | Annotation -> string "annotation"
-                 | Filters -> string "filters")
+               (fun per -> string (Tables.Client_refresh.per_value per))
                per
-           @ (match source with
-             | Asks operation -> [ ("asks", string operation) ]
-             | Reads get -> [ ("reads", string get) ])
+           @ [ (fst source, string (snd source)) ]
            @ (if persisted then [ ("persisted", `Bool true) ] else [])
            @ [
                ("value", `Assoc [ ("$ref", string value.target) ]);
@@ -147,7 +174,7 @@ let cache_queries (t : Tables.Client_refresh.t) =
 let credential_names (t : Tables.Bus_log_cases.t) = strings t.names
 
 (* Each value: its file, its member there, and its name in the SDK. *)
-let all (tables : Spec.tables) =
+let all (tables : Tables.t) =
   [
     ( "sdk-telemetry/telemetry.json",
       "spans",
