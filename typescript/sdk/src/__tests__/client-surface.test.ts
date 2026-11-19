@@ -256,13 +256,13 @@ const CALLS: Calls = {
     resource: (c, a) => {
       const data = a['data'] as {
         name: string;
-        content: string;
+        file: string;
         format: string;
         storageUri: string;
       };
       return c.yield.resource({
         name: data.name,
-        file: Buffer.from(data.content),
+        file: Buffer.from(data.file),
         format: data.format,
         storageUri: data.storageUri,
       });

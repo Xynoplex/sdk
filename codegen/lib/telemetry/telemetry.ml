@@ -95,8 +95,7 @@ let derive (table : T.t) =
           ~kind:(T.service_telemetry_telemetry_kind_value s.kind)
           ~meaning:s.meaning
           (List.map
-             (fun (a : T.service_telemetry_telemetry_attributes_item) ->
-               (a.key, Option.is_some a.only))
+             (fun (a : T.attributes_item) -> (a.key, Option.is_some a.only))
              s.attributes))
       table.spans
   in
@@ -114,8 +113,7 @@ let derive (table : T.t) =
               (Printf.sprintf "is %S, which is none of counter" instrument));
         row at ~name:m.name ~kind:instrument ~meaning:m.meaning
           (List.map
-             (fun (a : T.service_telemetry_telemetry_attributes_item) ->
-               (a.key, Option.is_some a.only))
+             (fun (a : T.attributes_item) -> (a.key, Option.is_some a.only))
              m.attributes))
       table.metrics
   in

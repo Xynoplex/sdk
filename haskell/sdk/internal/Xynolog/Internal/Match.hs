@@ -38,11 +38,11 @@ search (MatchNamespace wire _ timing _) identity reference context options =
           reference
           identity
           (Just (fromMaybe True (matchSearchOptionsUseSemanticScoring chosen)))
-          (matchSearchOptionsAdditionalProperties chosen)
+          mempty
       )
       (Timing.busRequestTimeoutMs timing)
   where
-    chosen = fromMaybe (MatchSearchOptions Nothing Nothing mempty) options
+    chosen = fromMaybe (MatchSearchOptions Nothing Nothing) options
 
 requestSearch :: MatchNamespace -> MatchSearchRequest -> Text -> STM ()
 requestSearch (MatchNamespace _ local _ _) input correlation = Local.signalWithCorrelation local MatchSearchRequested input NoScope (Just correlation)

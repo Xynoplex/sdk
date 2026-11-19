@@ -29,10 +29,11 @@ let beside =
     "NewKnowledgeBase";
   ]
 
-(* The client types (protocol/specs/src/client/types) the SDK generates. The
-   rest wait on Protocol: an object among them states no additionalProperties,
-   which the types read as open, and AnchorMethod is held with
-   ReconciledSpan's shape. *)
+(* The client types (protocol/specs/src/client/types) the SDK generates. Of
+   the rest, the objects that state no additionalProperties wait on Protocol,
+   since the types read them as open, AnchorMethod is held with
+   ReconciledSpan's shape, and the closed parameter types (ClaimOptions and
+   the six beside it) wait on the namespace types that take them. *)
 let client_types = [ "FrameRefusalReason"; "MatchQuality" ]
 
 (* A body that is not JSON: an upload is a multipart form, whose fields

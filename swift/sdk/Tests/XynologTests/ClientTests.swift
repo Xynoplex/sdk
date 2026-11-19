@@ -284,7 +284,7 @@ private let callsByName:
       let data = try required(args, "data").object
       let upload = try client.yield.resource(
         PutBinaryRequest(
-          name: required(data, "name").text, file: Data(required(data, "content").text.utf8),
+          name: required(data, "name").text, file: Data(required(data, "file").text.utf8),
           format: required(data, "format").text, storageUri: required(data, "storageUri").text))
       return try await encoded(upload.completed())
     },

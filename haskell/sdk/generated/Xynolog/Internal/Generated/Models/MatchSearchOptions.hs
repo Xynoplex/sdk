@@ -10,11 +10,10 @@ import Xynolog.Internal.Codec
 
 data MatchSearchOptions = MatchSearchOptions
   { matchSearchOptionsLimit :: Maybe Integer,
-    matchSearchOptionsUseSemanticScoring :: Maybe Bool,
-    matchSearchOptionsAdditionalProperties :: KM.KeyMap Value
+    matchSearchOptionsUseSemanticScoring :: Maybe Bool
   }
   deriving (Eq, Show)
 
-instance FromJSON MatchSearchOptions where parseJSON = checked "MatchSearchOptions" $ withObject "MatchSearchOptions" (\fields -> MatchSearchOptions <$> optional fields "limit" <*> optional fields "useSemanticScoring" <*> traverse parseJSON (withoutFields ["limit", "useSemanticScoring"] fields))
+instance FromJSON MatchSearchOptions where parseJSON = checked "MatchSearchOptions" $ withObject "MatchSearchOptions" (\fields -> MatchSearchOptions <$> optional fields "limit" <*> optional fields "useSemanticScoring")
 
-instance ToJSON MatchSearchOptions where toJSON value = Object (KM.fromList (concat [optionalPair "limit" (matchSearchOptionsLimit value), optionalPair "useSemanticScoring" (matchSearchOptionsUseSemanticScoring value)]) <> fmap toJSON (withoutFields ["limit", "useSemanticScoring"] (matchSearchOptionsAdditionalProperties value)))
+instance ToJSON MatchSearchOptions where toJSON value = Object (KM.fromList (concat [optionalPair "limit" (matchSearchOptionsLimit value), optionalPair "useSemanticScoring" (matchSearchOptionsUseSemanticScoring value)]))
