@@ -54,8 +54,8 @@ public abstract class HeldJob : IHeldJob
         Cancelled = cancelled.Token;
         Trace = trace;
         if (JobType == JobType.Yield && Params.AdditionalProperties.TryGetValue("context", out var context) &&
-            context.ValueKind == JsonValueKind.Object && context.TryGetProperty("focus", out var focus) &&
-            focus.Deserialize<GatheredContextFocus>() is GatheredContextFocus.AnnotationCase(var anchored))
+            context.ValueKind == JsonValueKind.Object &&
+            context.Deserialize<GatheredContext>() is { Focus: GatheredContextFocus.AnnotationCase(var anchored) })
             AnnotationId = anchored.Annotation.Id;
     }
 
