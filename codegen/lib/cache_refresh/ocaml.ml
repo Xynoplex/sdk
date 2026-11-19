@@ -19,7 +19,9 @@ let file (table : T.t) =
   let names =
     O.module_ "Query"
       (List.map
-         (fun (q : T.query) -> O.let_ (Text.snake q.name) (O.string q.name))
+         (fun q ->
+           let name, _, _, _, _ = Table.query_fields q in
+           O.let_ (Text.snake name) (O.string name))
          table.queries)
   in
   let queries =
