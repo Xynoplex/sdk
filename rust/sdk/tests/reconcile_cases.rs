@@ -3,8 +3,9 @@
 //! crate's `xynolog::annotations::reconcile` answers, for each case's text
 //! and quote, what TypeScript's and Python's answer.
 
-use serde_json::{Value, json};
-use xynolog::annotations::{AnchorMethod, QuotedText, ReconciledSpan, reconcile};
+use serde_json::Value;
+use xynolog::annotations::reconcile;
+use xynolog::types::{QuotedText, ReconciledSpan};
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/annotations/reconcile-cases.json"))
@@ -21,30 +22,11 @@ fn quoted(case: &Value) -> QuotedText {
     }
 }
 
-/// An answer as the table writes one: nothing found is `null`, a prefix or a
-/// suffix the text does not have is left out, and which looser search found
-/// the span is said only where one did.
+/// An answer as the table writes one, which is the wire's: nothing found is
+/// `null`, a prefix or a suffix the text does not have is left out, and
+/// which looser search found the span is said only where one did.
 fn written(found: Option<&ReconciledSpan>) -> Value {
-    let Some(found) = found else {
-        return Value::Null;
-    };
-    let mut answer = json!({
-        "start": found.span.start,
-        "end": found.span.end,
-        "exact": found.span.exact,
-        "anchorMethod": found.anchor_method.as_str(),
-    });
-    let members = answer.as_object_mut().expect("an object");
-    if let Some(prefix) = &found.span.prefix {
-        members.insert("prefix".to_owned(), json!(prefix));
-    }
-    if let Some(suffix) = &found.span.suffix {
-        members.insert("suffix".to_owned(), json!(suffix));
-    }
-    if let AnchorMethod::FuzzyMatch(quality) = found.anchor_method {
-        members.insert("matchQuality".to_owned(), json!(quality.as_str()));
-    }
-    answer
+    serde_json::to_value(found).expect("a reconciled span serializes")
 }
 
 #[test]

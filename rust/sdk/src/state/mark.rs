@@ -39,23 +39,13 @@ use crate::state_unit::StateUnit;
 use crate::timing::DELEGATE_SILENCE;
 use crate::transport::Envelope;
 use crate::types::{
-    AnnotationSelector, AnnotationTarget, CreateAnnotationRequest, JobProgress,
-    MarkDelegateTimeoutEvent, MarkJobParams, MarkSubmitEvent, Motivation, ResourceErrorEvent,
+    AnnotationTarget, CreateAnnotationRequest, JobProgress, MarkDelegateTimeoutEvent,
+    MarkJobParams, MarkSubmitEvent, Motivation, PendingAnnotation, ResourceErrorEvent,
 };
 use crate::types::{JobId, ResourceId};
-use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::watch;
 use tokio::time::Instant;
-
-/// An annotation being composed: where it is, and why it is made. Its
-/// selector is what `client.mark.submit` takes.
-#[derive(Debug, Clone, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PendingAnnotation {
-    pub selector: AnnotationSelector,
-    pub motivation: Motivation,
-}
 
 struct Shared {
     client: Arc<XynologClient>,
@@ -108,7 +98,8 @@ impl MarkStateUnit {
         MarkStateUnit { shared }
     }
 
-    /// The annotation being composed, or none.
+    /// The annotation being composed, or none. Its selector is what
+    /// `client.mark.submit` takes.
     pub fn pending_annotation(&self) -> watch::Receiver<Option<PendingAnnotation>> {
         self.shared.pending.read()
     }

@@ -403,7 +403,7 @@ while let Some(handed) = claims.next().await {
                 };
                 let built = annotation_of_span(
                     &text,
-                    &found.span,
+                    &TextSpan::from(found),
                     &resource_id,
                     Motivation::Highlighting,
                     &generator,

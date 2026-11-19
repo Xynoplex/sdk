@@ -22,8 +22,7 @@ fn table(text: &str) -> Value {
 /// states that `$id`.
 fn referred<'a>(stored: &Value, member: &str, schema: &'a Value) -> &'a Value {
     assert_eq!(
-        stored[member]["$ref"],
-        schema["$id"],
+        stored[member]["$ref"], schema["$id"],
         "the table's {member} names the schema of its file"
     );
     schema

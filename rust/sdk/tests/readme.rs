@@ -7,7 +7,7 @@ use serde_json::{Map, Value, json};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::mpsc;
-use xynolog::annotations::{QuotedText, annotation_of_span, reconcile};
+use xynolog::annotations::{annotation_of_span, reconcile};
 use xynolog::bus::{operation, reply_names};
 use xynolog::channels::BRIDGED_CHANNELS;
 use xynolog::claims::{ClaimOptions, Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, Mark};
@@ -17,7 +17,7 @@ use xynolog::session::{
     SessionFactory, SessionFactoryOptions, XynologBrowser, XynologBrowserConfig, XynologSession,
     save_knowledge_bases,
 };
-use xynolog::state::{MarkStateUnit, PendingAnnotation};
+use xynolog::state::MarkStateUnit;
 use xynolog::storage::SessionStorage;
 use xynolog::testing::as_id;
 use xynolog::testing::examples::assert_readme_shows;
@@ -30,7 +30,8 @@ use xynolog::types::StoredSession;
 use xynolog::types::{
     Agent, GatherResourceRequestOptions, GenerationJobParams, HighlightingJobParams, HttpEndpoint,
     HttpEndpointProtocol, InvalidIdentifier, JobCompleteCommand, KbEndpoint, KnowledgeBase,
-    LinkingJobParams, MarkJobCompleteCommand, MarkJobDone, Motivation, ResourceId, YieldJobResult,
+    LinkingJobParams, MarkJobCompleteCommand, MarkJobDone, Motivation, PendingAnnotation,
+    QuotedText, ResourceId, TextSpan, YieldJobResult,
 };
 
 // ── The examples ────────────────────────────────────────────────────────
@@ -158,7 +159,7 @@ async fn a_held_jobs_work(
         };
         highlights.push(annotation_of_span(
             text,
-            &found.span,
+            &TextSpan::from(found),
             &resource_id,
             Motivation::Highlighting,
             generator,

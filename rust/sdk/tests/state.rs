@@ -15,8 +15,8 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use xynolog::channels::BRIDGED_CHANNELS;
 use xynolog::client::XynologClient;
 use xynolog::state::{
-    BeckonStateUnit, GatherStateUnit, HoverDwell, MarkStateUnit, MatchStateUnit, PendingAnnotation,
-    SearchPipeline, SearchPipelineOptions, YieldStateUnit,
+    BeckonStateUnit, GatherStateUnit, HoverDwell, MarkStateUnit, MatchStateUnit, SearchPipeline,
+    SearchPipelineOptions, YieldStateUnit,
 };
 use xynolog::testing::as_id;
 use xynolog::testing::axioms::{AxiomSubject, Fresh, Surface, assert_state_unit_axioms};
@@ -24,7 +24,7 @@ use xynolog::testing::{FaultyTransport, TestClientOptions, create_test_client};
 use xynolog::timing::HOVER_DELAY;
 use xynolog::types::{
     AnnotationSelector, GatherAnnotationOptions, GatherResourceRequestOptions, GenerationJobParams,
-    MarkJobParams, Motivation,
+    MarkJobParams, Motivation, PendingAnnotation,
 };
 
 const RES: &str = "res-1";

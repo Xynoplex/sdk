@@ -8,36 +8,23 @@
 //! `start` and `end`, is two offsets, which count Unicode code points:
 //! nothing here reads the text, so nothing is converted.
 
-use crate::types::{AnchoredText, PdfTextItem};
+use crate::types::{AnchoredText, PdfCoordinate, PdfTextItem};
 use std::cmp::Ordering;
 
-/// A rectangle on a page: `x`, `y`, `width` and `height` in PDF points,
-/// measured from the bottom-left corner of the page, `y` growing upward.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct Rect {
-    pub(crate) page: i64,
-    pub(crate) x: f64,
-    pub(crate) y: f64,
-    pub(crate) width: f64,
-    pub(crate) height: f64,
-}
-
-impl Rect {
-    /// The rectangle as an RFC 3778 fragment, each number written as the
-    /// shortest decimal that reads back as that number.
-    pub(crate) fn fragment(&self) -> String {
-        format!(
-            "page={}&viewrect={},{},{},{}",
-            self.page, self.x, self.y, self.width, self.height
-        )
-    }
+/// A rectangle as an RFC 3778 fragment, each number written as the shortest
+/// decimal that reads back as that number.
+pub(crate) fn fragment(rect: &PdfCoordinate) -> String {
+    format!(
+        "page={}&viewrect={},{},{},{}",
+        rect.page, rect.x, rect.y, rect.width, rect.height
+    )
 }
 
 /// Where a span is: the items it overlaps, in the order the anchored text
 /// has them, and one rectangle for each line of each page it touches.
 pub(crate) struct Located<'a> {
     pub(crate) overlapping: Vec<&'a PdfTextItem>,
-    pub(crate) rects: Vec<Rect>,
+    pub(crate) rects: Vec<PdfCoordinate>,
 }
 
 /// Items whose `y` is within this many points of the `y` of the first item
@@ -53,7 +40,7 @@ fn ascending(a: f64, b: f64) -> Ordering {
 /// edge to their greatest right edge, and from their least `y` to their
 /// greatest top. An item the span cuts has its edge where the span does, by
 /// the fraction of its code points the span leaves out.
-fn spanning(page: i64, line: &[&PdfTextItem], start: u64, end: u64) -> Rect {
+fn spanning(page: i64, line: &[&PdfTextItem], start: u64, end: u64) -> PdfCoordinate {
     let (mut left, mut right) = (f64::INFINITY, f64::NEG_INFINITY);
     let (mut bottom, mut top) = (f64::INFINITY, f64::NEG_INFINITY);
     for item in line {
@@ -71,7 +58,7 @@ fn spanning(page: i64, line: &[&PdfTextItem], start: u64, end: u64) -> Rect {
         bottom = bottom.min(item.y);
         top = top.max(item.y + item.height);
     }
-    Rect {
+    PdfCoordinate {
         page,
         x: left,
         y: bottom,
@@ -154,13 +141,13 @@ mod tests {
 
             // The table's page is a whole number and its coordinates the
             // doubles they are, and a rectangle is compared for equality.
-            let rects: Vec<Rect> = case["rects"]
+            let rects: Vec<PdfCoordinate> = case["rects"]
                 .as_array()
                 .expect("rects")
                 .iter()
                 .map(|rect| {
                     let number = |member: &str| rect[member].as_f64().expect("a number");
-                    Rect {
+                    PdfCoordinate {
                         page: rect["page"].as_i64().expect("a whole page"),
                         x: number("x"),
                         y: number("y"),
@@ -171,7 +158,7 @@ mod tests {
                 .collect();
             assert_eq!(located.rects, rects, "{why}");
 
-            let fragments: Vec<String> = located.rects.iter().map(Rect::fragment).collect();
+            let fragments: Vec<String> = located.rects.iter().map(fragment).collect();
             assert_eq!(serde_json::json!(fragments), case["fragments"], "{why}");
         }
     }

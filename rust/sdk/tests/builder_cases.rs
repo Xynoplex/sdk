@@ -7,9 +7,9 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::ops::RangeInclusive;
 use std::time::{SystemTime, UNIX_EPOCH};
-use xynolog::annotations::{Spanned, TextSpan, annotation_of_resource, annotation_of_span};
+use xynolog::annotations::{Spanned, annotation_of_resource, annotation_of_span};
 use xynolog::errors::SpanRefusal;
-use xynolog::types::{Agent, AnchoredText, Annotation, ResourceId};
+use xynolog::types::{Agent, AnchoredText, Annotation, ResourceId, TextSpan};
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/annotations/builder-cases.json"))

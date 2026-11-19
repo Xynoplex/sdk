@@ -16,8 +16,8 @@
 //! a text is given as the `&str` it is: no caller converts one.
 //!
 //! ```
-//! use xynolog::annotations::{QuotedText, annotation_of_span, reconcile};
-//! use xynolog::types::{Agent, AgentSoftware, Motivation, ResourceId};
+//! use xynolog::annotations::{annotation_of_span, reconcile};
+//! use xynolog::types::{Agent, AgentSoftware, Motivation, QuotedText, ResourceId, TextSpan};
 //!
 //! let text = "Ada Lovelace wrote the first algorithm.";
 //! let resource_id: ResourceId = "res-1".parse()?;
@@ -29,8 +29,9 @@
 //!
 //! // The model wrote the name without its capitals. The span is the text's.
 //! let found = reconcile(text, &QuotedText::new("ada lovelace")).ok_or("not in the text")?;
-//! assert_eq!((found.span.start, found.span.end), (0, 12));
-//! assert_eq!(found.span.exact, "Ada Lovelace");
+//! let span = TextSpan::from(found);
+//! assert_eq!((span.start, span.end), (0, 12));
+//! assert_eq!(span.exact, "Ada Lovelace");
 //!
 //! let highlight = |span| {
 //!     annotation_of_span(
@@ -43,7 +44,7 @@
 //!     )
 //! };
 //! // Built again, it has the same id: committing it twice changes nothing.
-//! assert_eq!(highlight(&found.span)?.id, highlight(&found.span)?.id);
+//! assert_eq!(highlight(&span)?.id, highlight(&span)?.id);
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 //!
@@ -62,8 +63,10 @@ use crate::text_offsets::Offsets;
 use crate::types::{
     Agent, AnchoredText, Annotation, AnnotationBodies, AnnotationBody, AnnotationSelector,
     AnnotationTarget, AnnotationTargetType, AnnotationTargetValue, BodyPurpose, FragmentSelector,
-    MatchQuality, Motivation, OneOrMoreAgents, PdfTextItem, ResourceId, Selector,
-    TextPositionSelector, TextQuoteSelector,
+    Motivation, OneOrMoreAgents, PdfTextItem, QuotedText, ReconciledSpan,
+    ReconciledSpanContextRecovered, ReconciledSpanFirstOfMany, ReconciledSpanFuzzyMatch,
+    ReconciledSpanUniqueMatch, ResourceId, Selector, TextPositionSelector, TextQuoteSelector,
+    TextSpan,
 };
 use quote::Place;
 use std::time::SystemTime;
@@ -228,91 +231,33 @@ pub fn tag_schema_id(annotation: &Annotation) -> Option<&str> {
     }
 }
 
-/// What a model quoted of a text: the words, and maybe what it says stands
-/// just before and just after them. None of it is trusted. [`reconcile`]
-/// finds the words in the text, and the prefix and the suffix only help it
-/// choose among several places.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QuotedText {
-    pub exact: String,
-    pub prefix: Option<String>,
-    pub suffix: Option<String>,
-}
-
-impl QuotedText {
-    /// The words, with nothing said of what stands around them.
-    pub fn new(exact: impl Into<String>) -> Self {
-        Self {
-            exact: exact.into(),
-            prefix: None,
-            suffix: None,
+/// The span a reconciled span is, without how it was found: what
+/// [`annotation_of_span`] builds the annotation of.
+impl From<ReconciledSpan> for TextSpan {
+    fn from(found: ReconciledSpan) -> Self {
+        match found {
+            ReconciledSpan::UniqueMatch(found) => TextSpan {
+                prefix: found.prefix,
+                suffix: found.suffix,
+                ..TextSpan::new(found.start, found.end, found.exact)
+            },
+            ReconciledSpan::ContextRecovered(found) => TextSpan {
+                prefix: found.prefix,
+                suffix: found.suffix,
+                ..TextSpan::new(found.start, found.end, found.exact)
+            },
+            ReconciledSpan::FirstOfMany(found) => TextSpan {
+                prefix: found.prefix,
+                suffix: found.suffix,
+                ..TextSpan::new(found.start, found.end, found.exact)
+            },
+            ReconciledSpan::FuzzyMatch(found) => TextSpan {
+                prefix: found.prefix,
+                suffix: found.suffix,
+                ..TextSpan::new(found.start, found.end, found.exact)
+            },
         }
     }
-}
-
-/// A span of a text: the code points from the offset `start` up to but not
-/// including `end`, the words there, and what the text has just before and
-/// just after them. An offset counts Unicode code points from the start of
-/// the text.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TextSpan {
-    pub start: u64,
-    pub end: u64,
-    pub exact: String,
-    pub prefix: Option<String>,
-    pub suffix: Option<String>,
-}
-
-impl TextSpan {
-    /// The span of these words, with nothing said of what stands around
-    /// them.
-    pub fn new(start: u64, end: u64, exact: impl Into<String>) -> Self {
-        Self {
-            start,
-            end,
-            exact: exact.into(),
-            prefix: None,
-            suffix: None,
-        }
-    }
-}
-
-/// How a quoted span was found in a text.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum AnchorMethod {
-    /// The text has the words in exactly one place.
-    UniqueMatch,
-    /// The text has them in several, and what the model said stands around
-    /// them chose this one.
-    ContextRecovered,
-    /// The text has them in several and nothing chose among them: this is
-    /// the first, and may not be the one the model meant.
-    FirstOfMany,
-    /// The text does not have them character for character, and a looser
-    /// search found them.
-    FuzzyMatch(MatchQuality),
-}
-
-impl AnchorMethod {
-    /// The value as the tables spell it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            AnchorMethod::UniqueMatch => "unique-match",
-            AnchorMethod::ContextRecovered => "context-recovered",
-            AnchorMethod::FirstOfMany => "first-of-many",
-            AnchorMethod::FuzzyMatch(_) => "fuzzy-match",
-        }
-    }
-}
-
-/// Where the words a model quoted are in a text, and how they were found.
-/// The span is the text's own: its `exact` is what the text has there, never
-/// the model's spelling of it, and its `prefix` and `suffix` are what the
-/// text has on either side.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ReconciledSpan {
-    pub span: TextSpan,
-    pub anchor_method: AnchorMethod,
 }
 
 /// What a prefix or a suffix a model gave says of where its words are: a
@@ -337,8 +282,13 @@ fn window(hint: &str) -> usize {
 /// or has the prefix, trimmed, among the code points before it, and the same
 /// of the suffix after it. With no hint, or no place that fits, it is the
 /// first place. In no place at all, three looser searches are tried in turn
-/// ([`MatchQuality`]), and the hints choose among what the first to find
-/// anything finds.
+/// ([`MatchQuality`](crate::types::MatchQuality)), and the hints choose
+/// among what the first to find anything finds.
+///
+/// Nothing the model quoted is trusted: its prefix and suffix only choose
+/// among places. The span is the text's own: its `exact` is what the text
+/// has there, never the model's spelling of it, and its `prefix` and
+/// `suffix` are what the text has on either side.
 pub fn reconcile(text: &str, quoted: &QuotedText) -> Option<ReconciledSpan> {
     // Nothing, or only white space, is no words to find.
     if quoted.exact.trim().is_empty() {
@@ -373,30 +323,58 @@ pub fn reconcile(text: &str, quoted: &QuotedText) -> Option<ReconciledSpan> {
             .copied()
     };
 
+    // A place as the span it is.
+    let own = |place: Place| {
+        let (prefix, suffix) = quote::context_of(&offsets, place);
+        Some(TextSpan {
+            prefix: prefix.map(str::to_owned),
+            suffix: suffix.map(str::to_owned),
+            ..TextSpan::new(
+                place.start as u64,
+                place.end as u64,
+                offsets.between(place.start, place.end)?,
+            )
+        })
+    };
+
     let places = quote::places_of(&offsets, &quoted.exact);
-    let (place, anchor_method) = match places.as_slice() {
-        [only] => (*only, AnchorMethod::UniqueMatch),
+    Some(match places.as_slice() {
+        [only] => {
+            let span = own(*only)?;
+            ReconciledSpan::UniqueMatch(ReconciledSpanUniqueMatch {
+                prefix: span.prefix,
+                suffix: span.suffix,
+                ..ReconciledSpanUniqueMatch::new(span.start, span.end, span.exact)
+            })
+        }
         [first, ..] => match hinted(&places) {
-            Some(chosen) => (chosen, AnchorMethod::ContextRecovered),
-            None => (*first, AnchorMethod::FirstOfMany),
+            Some(chosen) => {
+                let span = own(chosen)?;
+                ReconciledSpan::ContextRecovered(ReconciledSpanContextRecovered {
+                    prefix: span.prefix,
+                    suffix: span.suffix,
+                    ..ReconciledSpanContextRecovered::new(span.start, span.end, span.exact)
+                })
+            }
+            None => {
+                let span = own(*first)?;
+                ReconciledSpan::FirstOfMany(ReconciledSpanFirstOfMany {
+                    prefix: span.prefix,
+                    suffix: span.suffix,
+                    ..ReconciledSpanFirstOfMany::new(span.start, span.end, span.exact)
+                })
+            }
         },
         [] => {
             let (places, quality) = quote::places_like(text, &quoted.exact)?;
             let place = hinted(&places).or_else(|| places.first().copied())?;
-            (place, AnchorMethod::FuzzyMatch(quality))
+            let span = own(place)?;
+            ReconciledSpan::FuzzyMatch(ReconciledSpanFuzzyMatch {
+                prefix: span.prefix,
+                suffix: span.suffix,
+                ..ReconciledSpanFuzzyMatch::new(span.start, span.end, span.exact, quality)
+            })
         }
-    };
-
-    let (prefix, suffix) = quote::context_of(&offsets, place);
-    Some(ReconciledSpan {
-        span: TextSpan {
-            start: place.start as u64,
-            end: place.end as u64,
-            exact: offsets.between(place.start, place.end)?.to_owned(),
-            prefix: prefix.map(str::to_owned),
-            suffix: suffix.map(str::to_owned),
-        },
-        anchor_method,
     })
 }
 
@@ -468,7 +446,7 @@ fn fragments(
         .map(|rect| {
             Selector::from(FragmentSelector {
                 conforms_to: Some(RFC_3778.to_owned()),
-                ..FragmentSelector::new(rect.fragment())
+                ..FragmentSelector::new(locate::fragment(rect))
             })
         })
         .collect())
