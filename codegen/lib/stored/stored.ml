@@ -391,12 +391,7 @@ let python t =
           "WHOLE_KEY";
         ])
     @ List.sort compare
-        [
-          t.open_resource_type.title;
-          t.places.title;
-          "KeptQuery";
-          "WholeKey";
-        ]
+        [ t.open_resource_type.title; t.places.title; "KeptQuery"; "WholeKey" ]
   in
   let kept_as k =
     "Keyed by "
