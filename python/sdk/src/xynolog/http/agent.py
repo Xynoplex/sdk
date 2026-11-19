@@ -38,6 +38,7 @@ from xynolog._reading import Reading
 from xynolog._shared_task import answer, heard
 from xynolog.errors import SignInError, TransportError, XynologError
 from xynolog.http._client_assertion import JWT_BEARER, client_assertion
+from xynolog.http._gateway_http import GET_CURRENT_USER, RETRY_AFTER, client_secret_form
 from xynolog.http._withheld import why_unanswered
 from xynolog.http.exchange import refusal
 from xynolog.http.oauth import issuer_client, object_in, post_form, seconds_in, text_in
@@ -126,11 +127,7 @@ def _proof(credential: Credential, token_endpoint: str) -> list[tuple[str, str]]
     """The client-credentials grant's form: the secret itself, or an assertion signed for this grant alone."""
     match credential:
         case SecretCredential():
-            return [
-                ("grant_type", "client_credentials"),
-                ("client_id", credential.client_id),
-                ("client_secret", credential.client_secret),
-            ]
+            return client_secret_form(credential.client_id, credential.client_secret)
         case KeyCredential():
             assertion = client_assertion(
                 credential.private_key,
@@ -372,11 +369,11 @@ class AgentToken:
             return
 
     async def _named(self, token: str) -> UserId:
-        """The DID the gateway names the bearer of `token` by: `GET /api/users/me`."""
-        url = f"{self._gateway}/api/users/me"
+        """The DID the gateway names the bearer of `token` by: `GET_CURRENT_USER`."""
+        url = f"{self._gateway}{GET_CURRENT_USER.path}"
         try:
             async with issuer_client(http=self._http) as http, _within():
-                response = await http.get(url, headers={"Authorization": f"Bearer {token}"})
+                response = await http.request(GET_CURRENT_USER.method, url, headers={"Authorization": f"Bearer {token}"})
         except (TimeoutError, httpx.HTTPError) as error:
             raise TransportError.without_response(f"{url} got no answer: {why_unanswered(error)}") from None
         status = response.status_code
@@ -385,7 +382,7 @@ class AgentToken:
                 f"the gateway did not name the agent (HTTP {status})",
                 status,
                 response.content,
-                retry_after_ms(response.headers.get("retry-after")),
+                retry_after_ms(response.headers.get(RETRY_AFTER)),
             )
         principal = read_as(UserResponse, response.content, UserResponse.model_validate)
         if isinstance(principal, Fault):

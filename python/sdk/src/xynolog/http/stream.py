@@ -39,6 +39,16 @@ from xynolog._kept_for_first_reader import KeptForFirstReader
 from xynolog._reading import Reading
 from xynolog.channels import RESOURCE_SCOPED_CHANNELS, TRACE_FIELD
 from xynolog.errors import TransportError, XynologError
+from xynolog.http._gateway_http import (
+    BUS_FRAME_CHANNEL,
+    BUS_FRAME_CORRELATION_ID,
+    BUS_FRAME_PAYLOAD,
+    BUS_FRAME_SCOPE,
+    RETRY_AFTER,
+    SUBSCRIBE_TO_BUS,
+    SUBSCRIBE_TO_BUS_ANSWERS,
+    SUBSCRIBE_TO_BUS_SENDS,
+)
 from xynolog.http.exchange import TokenRefresher, refusal
 from xynolog.http.sse import SseParser
 from xynolog.identifiers import ResourceId
@@ -129,20 +139,30 @@ def carried(data: str) -> BusFrame | FrameRefusal | Unaddressed:
         return Unaddressed(read)
     if not isinstance(value, dict):
         return Unaddressed(read)
-    channel, scope, correlation_id = value.get("channel"), value.get("scope"), value.get("correlationId")
+    channel, scope, correlation_id = value.get(BUS_FRAME_CHANNEL), value.get(BUS_FRAME_SCOPE), value.get(BUS_FRAME_CORRELATION_ID)
     if not isinstance(channel, str) or channel == "":
         return Unaddressed(read)
     # Carried whenever it can be read: when it is what BusFrame allows, a text of at least one character.
     carries = correlation_id if isinstance(correlation_id, str) and correlation_id != "" else None
     if scope is None:
         return FrameRefusal(
-            channel=channel, member=read.member, reason=read.reason, payload=value.get("payload"), scope=None, correlation_id=carries
+            channel=channel,
+            member=read.member,
+            reason=read.reason,
+            payload=value.get(BUS_FRAME_PAYLOAD),
+            scope=None,
+            correlation_id=carries,
         )
     held = ResourceId.parse(scope) if isinstance(scope, str) else None
     if held is None:
         return Unaddressed(read)
     return FrameRefusal(
-        channel=channel, member=read.member, reason=read.reason, payload=value.get("payload"), scope=held, correlation_id=carries
+        channel=channel,
+        member=read.member,
+        reason=read.reason,
+        payload=value.get(BUS_FRAME_PAYLOAD),
+        scope=held,
+        correlation_id=carries,
     )
 
 
@@ -714,10 +734,10 @@ class Stream:
     async def _connection(self, conn: int, token: str, body: BusSubscribeRequest) -> None:
         """One connection: the subscribe request, and every event its stream carries, reported in order."""
         request = self._http.build_request(
-            "POST",
-            f"{self._base_url}/bus/subscribe",
+            SUBSCRIBE_TO_BUS.method,
+            f"{self._base_url}{SUBSCRIBE_TO_BUS.path}",
             content=body.model_dump_json(exclude_none=True),
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "text/event-stream"},
+            headers={"Authorization": f"Bearer {token}", "Content-Type": SUBSCRIBE_TO_BUS_SENDS, "Accept": SUBSCRIBE_TO_BUS_ANSWERS},
         )
         try:
             # Only the answer has a deadline: an open stream says nothing for as long as nothing happens.
@@ -754,4 +774,4 @@ async def _refusal(response: httpx.Response, deadline_ms: int) -> TransportError
         said = f": {ErrorResponse.model_validate_json(body).error}"
     except (ValidationError, httpx.HTTPError, TimeoutError):
         said = ""
-    return refusal(f"SSE connect failed: {status}{said}", status, body, retry_after_ms(response.headers.get("retry-after")))
+    return refusal(f"SSE connect failed: {status}{said}", status, body, retry_after_ms(response.headers.get(RETRY_AFTER)))

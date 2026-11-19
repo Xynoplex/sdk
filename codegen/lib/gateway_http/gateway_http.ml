@@ -7,8 +7,9 @@ module Model = Model
 module Typescript = Typescript
 module Rust = Rust
 module Go = Go
+module Python = Python
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
-    (fun m -> [ Typescript.file m; Rust.file m; Go.file m ])
+    (fun m -> [ Typescript.file m; Rust.file m; Go.file m; Python.file m ])
     (Model.derive spec)
