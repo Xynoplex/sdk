@@ -76,8 +76,7 @@ let derive (spec : Spec.t) =
                 Some (Named { name = name_of target; union })
             | target, at -> (
                 match
-                  Option.bind (schema target) (fun s ->
-                      Definitions.at_pointer s at)
+                  Option.bind (schema target) (fun s -> Pointer.schema s at)
                 with
                 | Some member -> held member target at
                 | None ->

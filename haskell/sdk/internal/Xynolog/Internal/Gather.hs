@@ -37,7 +37,7 @@ resource (GatherNamespace wire timing _) identity options =
   gatherResourceCompleteResponse
     <$> Bus.request wire GatherResourceRequestedOperation (GatherResourceRequest selected identity mempty) (Timing.busRequestTimeoutMs timing)
   where
-    chosen = fromMaybe (GatherResourceOptions Nothing Nothing Nothing Nothing Nothing mempty) options
+    chosen = fromMaybe (GatherResourceOptions Nothing Nothing Nothing Nothing Nothing) options
     selected =
       GatherResourceRequestOptions
         (fromMaybe 2 (gatherResourceOptionsDepth chosen))
@@ -45,7 +45,7 @@ resource (GatherNamespace wire timing _) identity options =
         (fromMaybe True (gatherResourceOptionsIncludeContent chosen))
         (fromMaybe False (gatherResourceOptionsIncludeSummary chosen))
         (fromMaybe 10 (gatherResourceOptionsMaxResources chosen))
-        (gatherResourceOptionsAdditionalProperties chosen)
+        mempty
 
 referencedBy :: GatherNamespace -> ResourceId -> Cache.Query [GetReferencedByResponseReferencedByItem]
 referencedBy (GatherNamespace _ _ cache) = Cache.query cache

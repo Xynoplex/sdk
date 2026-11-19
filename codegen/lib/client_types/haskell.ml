@@ -1,4 +1,4 @@
-(* The Haskell SDK's client types. The schemas of eleven, which the haskell-sdk
+(* The Haskell SDK's client types. The schemas of nine, which the haskell-sdk
    group writes models of into Xynolog.Types; and four modules: the
    records of a pending annotation and of a search's state, the events a
    delegation and an upload report, and the form a client secret proves an
@@ -52,18 +52,6 @@ let adapter name =
                    Ok
                      ( m.name,
                        Schema.Schema { Schema.empty with type_ = Some [ t ] } )
-               | List (Scalar t) ->
-                   Ok
-                     ( m.name,
-                       Schema.Schema
-                         {
-                           Schema.empty with
-                           type_ = Some [ Array ];
-                           items =
-                             Some
-                               (Schema.Schema
-                                  { Schema.empty with type_ = Some [ t ] });
-                         } )
                | Named { name = n; union = false } ->
                    Ok
                      ( m.name,
@@ -78,12 +66,7 @@ let adapter name =
                                  pointer = "";
                                };
                          } )
-               | _ ->
-                   Error
-                     [
-                       refusal name
-                         (m.name ^ " is no scalar, list of scalars or type");
-                     ])
+               | _ -> Error [ refusal name (m.name ^ " is no scalar or type") ])
              members)
       in
       Ok
@@ -117,8 +100,6 @@ let adapters ~shape =
          "IssuedTokens";
          "DeviceCode";
          "BeginAuthorizationOptions";
-         "GatherResourceOptions";
-         "MatchSearchOptions";
        ])
 
 let scalar name : Schema.type_name -> (H.type_, Decode.error list) result =
