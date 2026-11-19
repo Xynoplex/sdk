@@ -314,9 +314,6 @@ let service_secret http issuer ~client_id ~client_secret =
 
 type rsa_key = X509.Private_key.t
 
-let sign key message =
-  X509.Private_key.sign `SHA256 ~scheme:`RSA_PKCS1 key (`Message message)
-
 let rsa_key_of_pem pem =
   let trimmed = String.trim pem in
   if
@@ -326,7 +323,7 @@ let rsa_key_of_pem pem =
   then None
   else
     match X509.Private_key.decode_pem trimmed with
-    | Ok (`RSA _ as key) when Result.is_ok (sign key "") -> Some key
+    | Ok (`RSA _ as key) -> Some key
     | _ -> None
 
 let unsigned z =
@@ -365,8 +362,10 @@ let service_key http issuer ~clock ~jti ~client_id ~key =
       in
       let jwt_segment json = encoded (Yojson.Safe.to_string json) in
       let message = jwt_segment header ^ "." ^ jwt_segment claims in
-      match sign key message with
-      | Error (`Msg why) -> invalid_arg ("An RSA key read cannot sign: " ^ why)
+      match
+        X509.Private_key.sign `SHA256 ~scheme:`RSA_PKCS1 key (`Message message)
+      with
+      | Error (`Msg why) -> invalid_arg ("The RSA key cannot sign: " ^ why)
       | Ok signature ->
           grant http ~token_endpoint:issuer.token
             [

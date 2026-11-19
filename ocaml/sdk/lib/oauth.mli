@@ -95,7 +95,7 @@ val service_secret :
 type rsa_key
 
 val rsa_key_of_pem : string -> rsa_key option
-(** Reads an unencrypted RSA PKCS#8 PEM key that can sign an RS256 assertion. *)
+(** Reads an unencrypted RSA PKCS#8 PEM key. *)
 
 val rsa_thumbprint : e:string -> n:string -> string
 
@@ -108,7 +108,9 @@ val service_key :
   key:rsa_key ->
   (service tokens, error) result
 (** [jti] must supply a fresh unique identifier on every invocation. The host
-    initializes Mirage's secure random generator for RSA blinding. *)
+    initializes Mirage's secure random generator for RSA blinding. Raises
+    [Invalid_argument] when [key] cannot sign an RS256 assertion, which is no
+    failure of the issuer's. *)
 
 val revoke_script :
   http ->
