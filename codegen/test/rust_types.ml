@@ -111,7 +111,7 @@ let cases =
                 {|{"type": "object", "required": ["thing"], "properties": {
                     "thing": {"$ref": "ThingId.json"},
                     "others": {"type": "array", "items": {"$ref": "ThingId.json"}},
-                    "maybe": {"allOf": [{"$ref": "ThingId.json"}], "nullable": true}}}|}
+                    "maybe": {"anyOf": [{"$ref": "ThingId.json"}, {"type": "null"}]}}}|}
               );
             ]
             "Holder"
@@ -207,7 +207,7 @@ let cases =
           generated
             [
               ( "Page",
-                {|{"type": "object", "properties": {"cursor": {"type": "string", "nullable": true}}}|}
+                {|{"type": "object", "properties": {"cursor": {"type": ["string", "null"]}}}|}
               );
             ]
             "Page"
@@ -224,7 +224,7 @@ let cases =
               );
               ( "Answer",
                 {|{"type": "object", "required": ["resource"], "properties": {"resource":
-                    {"allOf": [{"$ref": "Resource.json"}], "description": "The resource, if any.", "nullable": true}}}|}
+                    {"anyOf": [{"$ref": "Resource.json"}, {"type": "null"}], "description": "The resource, if any."}}}|}
               );
             ]
             "Answer"
@@ -260,7 +260,7 @@ let cases =
                ( "Ask",
                  {|{"type": "object", "required": ["title", "cursor"], "additionalProperties": true, "properties": {
                      "title": {"type": "string"}, "note": {"type": "string"},
-                     "cursor": {"type": "string", "nullable": true}, "page": {"type": "string", "nullable": true}}}|}
+                     "cursor": {"type": ["string", "null"]}, "page": {"type": ["string", "null"]}}}|}
                );
              ]
              "Ask")

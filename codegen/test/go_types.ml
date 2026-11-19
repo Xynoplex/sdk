@@ -32,7 +32,7 @@ let shapes members =
 let holder =
   [
     ( "Holder",
-      {|{"type": "object", "required": ["name", "tags", "id", "when"], "properties": {"name": {"type": "string"}, "note": {"type": "string"}, "tags": {"type": "array", "items": {"type": "string"}}, "id": {"$ref": "ThingId.json"}, "when": {"type": "string", "nullable": true}}}|}
+      {|{"type": "object", "required": ["name", "tags", "id", "when"], "properties": {"name": {"type": "string"}, "note": {"type": "string"}, "tags": {"type": "array", "items": {"type": "string"}}, "id": {"$ref": "ThingId.json"}, "when": {"type": ["string", "null"]}}}|}
     );
     ("ThingId", {|{"type": "string", "pattern": "^t-[0-9]+$"}|});
   ]

@@ -90,6 +90,12 @@ array _ = []
 at :: Key.Key -> Value -> Value
 at key value = maybe Null id (KM.lookup key (object value))
 
+-- Whether a property's schema admits null: null its second type, or a member of its union.
+admitsNull :: Value -> Bool
+admitsNull field = case at "type" field of
+  Array names -> String "null" `V.elem` names
+  _ -> any (elem (Object (KM.fromList [("type", String "null")])) . array . flip at field) ["anyOf", "oneOf"]
+
 sample :: Int -> Value -> Either String Value
 sample depth schema
   | depth > 40 = Left "required schema recursion exceeds sample budget"
@@ -114,6 +120,8 @@ sample depth schema
               Just (String "integer") -> choose [Number (case KM.lookup "minimum" fields of Just (Number n) -> fromInteger (ceiling n); _ -> 0)]
               Just (String "number") -> choose [Number (case KM.lookup "minimum" fields of Just (Number n) -> n; _ -> 0)]
               Just (String "boolean") -> Right (Bool False)
+              Just (String "null") -> Right Null
+              Just (Array names) | [declared, String "null"] <- toList names -> nested (Object (KM.insert "type" declared fields))
               Just (String "array") -> do
                 let size = case KM.lookup "minItems" fields of Just (Number n) -> ceiling n; _ -> 0
                 items <- mapM (const (nested (at "items" schema))) [1 :: Int .. size]
@@ -151,7 +159,7 @@ schemaCases root = do
     let properties = object (at "properties" definition)
         required = array (at "required" definition)
     forM_ (KM.toList properties) $ \(key, field) -> do
-      if at "nullable" field /= Bool True
+      if not (admitsNull field)
         then pure ()
         else do
           expectRoundTrip name (Object (KM.insert key Null (object value)))

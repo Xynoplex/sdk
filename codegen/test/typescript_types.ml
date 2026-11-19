@@ -29,7 +29,7 @@ let cases =
           (one {|{"allOf": [{"$ref": "A.json"}], "enum": ["x"]}|}));
     case "a nullable reference admits null after it" (fun () ->
         equal "components['schemas']['A'] | null"
-          (one {|{"allOf": [{"$ref": "A.json"}], "nullable": true}|}));
+          (one {|{"anyOf": [{"$ref": "A.json"}, {"type": "null"}]}|}));
     case "an object of no properties that is not open holds no member"
       (fun () -> equal "Record<string, never>" (one {|{"type": "object"}|}));
     case "an open object holds any member beside its properties" (fun () ->
@@ -59,7 +59,7 @@ let cases =
           written
             [
               ( "S",
-                {|{"type": "object", "properties": {"a": {"allOf": [{"$ref": "A.json"}], "nullable": true}, "b": {"type": "string", "description": "What a b is."}}}|}
+                {|{"type": "object", "properties": {"a": {"anyOf": [{"$ref": "A.json"}, {"type": "null"}]}, "b": {"type": "string", "description": "What a b is."}}}|}
               );
               ("A", {|{"type": "string", "description": "What an A is."}|});
             ]
@@ -67,6 +67,20 @@ let cases =
         in
         lacks text "What an A is.";
         has text "What a b is.");
+    case "what is said beside a reference that may be null describes the member"
+      (fun () ->
+        let text =
+          written
+            [
+              ( "S",
+                {|{"type": "object", "properties": {"a": {"anyOf": [{"$ref": "A.json"}, {"type": "null"}], "description": "What an a is."}}}|}
+              );
+              ("A", {|{"type": "string", "description": "What an A is."}|});
+            ]
+            "S"
+        in
+        lacks text "What an A is.";
+        has text "What an a is.");
     case "a schema that states nothing is unknown" (fun () ->
         equal "unknown" (one "{}"));
     case "a kind of id is text of a type of its own" (fun () ->

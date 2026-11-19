@@ -109,6 +109,7 @@ let scalar name : Schema.type_name -> (H.type_, Decode.error list) result =
   | Number -> Ok (T_name "Scientific")
   | Boolean -> Ok (T_name "Bool")
   | Object | Array -> Error [ refusal name "holds an open object or list" ]
+  | Null -> Error [ refusal name "is null alone" ]
 
 let lower name = String.uncapitalize_ascii name
 let accessor type_name member = lower type_name ^ String.capitalize_ascii member

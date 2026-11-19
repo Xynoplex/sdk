@@ -60,14 +60,14 @@ let discriminant (s : D.t) =
 (* What [s] says of itself, or, when it only admits null beside another
    schema, what that schema says: never what a schema its [allOf] names says,
    which the view gives a schema that states one. *)
-let description (s : D.t) =
+let rec description (s : D.t) =
   let own (n : D.node) =
     if List.mem "description" n.keys then n.description else None
   in
   match s with
   | D.Ref { description; _ } -> description
   | D.Node n when own n <> None -> own n
-  | D.Node { any_of = Some [ D.Null; D.Node inner ]; _ } -> own inner
+  | D.Node { any_of = Some [ D.Null; inner ]; _ } -> description inner
   | _ -> None
 
 (* [s], or the component schema it names. *)

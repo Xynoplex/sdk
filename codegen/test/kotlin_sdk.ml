@@ -59,7 +59,7 @@ let cases =
                );
              ]));
     case "a const is refused" (fun () ->
-        says ~what:"refusal" "`const` is not OpenAPI 3.0"
+        says ~what:"refusal" "`const`, which no SDK reads"
           (refused
              [
                ( "Thing",
@@ -110,11 +110,11 @@ let cases =
         says ~what:"code" "public val b: B? = null" code;
         says ~what:"code" "Said beside." code);
     case "a constraint beside a $ref is refused: it is an allOf" (fun () ->
-        says ~what:"refusal" "has nullable beside it"
+        says ~what:"refusal" "has minLength beside it"
           (refused
              [
                ( "A",
-                 {|{"type":"object","properties":{"b":{"$ref":"./B.json","nullable":true}}}|}
+                 {|{"type":"object","properties":{"b":{"$ref":"./B.json","minLength":1}}}|}
                );
                ("B", {|{"type":"string"}|});
              ]));

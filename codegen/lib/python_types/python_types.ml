@@ -164,8 +164,6 @@ let rec placed st owner held_as (s : D.t) : P.expr =
       | D.Node n -> (
           View.refuse_const (owner ^ "." ^ held_as) s;
           match (n.all_of, View.union s, n.enum) with
-          | Some [ (D.Ref _ as only) ], _, None when properties n = [] ->
-              placed st owner held_as only
           | Some _, _, _ -> (
               match D.meant s with
               | D.Node m when is_class m ->
@@ -198,6 +196,7 @@ and scalar st owner held_as (n : D.node) (t : Schema.type_name) : P.expr =
   | Integer -> name "int"
   | Number -> name "float"
   | Boolean -> name "bool"
+  | Null -> none
   | Array -> sub "list" [ item st owner (held_as ^ "Item") n.items ]
   | Object -> (
       match n.additional_properties with

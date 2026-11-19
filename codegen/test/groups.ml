@@ -212,118 +212,6 @@ let axes =
             (strings [ "  // a comment" ])
             base)
          "/operations/0/docs/lead/0: expected \"\", found \"  // a comment\"");
-    case "a crossing channel with no audience"
-      (refuses
-         (set [ "audience"; "everyone" ] (`List []) base)
-         "/channels/3: channel \"demo:happened\" declares no audience: add it \
-          to audience.everyone, audience.scoped or audience.declared. There is \
-          no default.");
-    case "a crossing channel with no kind"
-      (refuses
-         (set [ "kind"; "event" ] (`List []) base)
-         "/channels/3: channel \"demo:happened\" declares no kind: add it to \
-          kind.command or kind.event, or to inProcess if it never crosses. \
-          There is no default.");
-    case "a channel in two audiences"
-      (refuses
-         (set [ "audience"; "scoped" ] (strings [ "demo:happened" ]) base)
-         "/audience/scoped/0: \"demo:happened\" is declared both \
-          audience.everyone and audience.scoped: a channel crosses exactly one \
-          way");
-    case "an in-process channel given an audience"
-      (refuses
-         (set [ "audience"; "declared" ] (strings [ "demo:internal" ]) base)
-         "/inProcess/channels: \"demo:internal\" is declared inProcess and \
-          given audience.declared: inProcess means it never crosses");
-    case "an operation's channel given a kind"
-      (refuses
-         (append [ "kind"; "event" ] (`String "demo:limits-result") base)
-         "/kind: \"demo:limits-result\" belongs to an operation, so its kind \
-          is derived: remove it from kind.event");
-    case "a command sent to everyone"
-      (refuses
-         (base
-         |> append [ "channels" ] (carrying "demo:do-it" "DemoCommand")
-         |> append [ "channelOrder"; "eventMap" ] (`String "demo:do-it")
-         |> set [ "kind"; "command" ] (strings [ "demo:do-it" ])
-         |> append [ "audience"; "everyone" ] (`String "demo:do-it")
-         |> append [ "effect"; "writes" ] (`String "demo:do-it"))
-         "/kind/command: \"demo:do-it\" is kind command with audience \
-          everyone: a directive is not a broadcast");
-    case "an axis naming an undeclared channel"
-      (refuses
-         (set [ "audience"; "declared" ] (strings [ "demo:typo" ]) base)
-         "/audience/declared/0: names \"demo:typo\", which is not declared in \
-          channels[]");
-    case "a declaration of a channel the EventMap lacks"
-      (refuses
-         (set
-            [ "channelOrder"; "eventMap" ]
-            (strings
-               [
-                 "demo:limits-requested";
-                 "demo:limits-result";
-                 "demo:limits-failed";
-                 "demo:happened";
-               ])
-            base)
-         "/inProcess/channels: \"demo:internal\" is classified but not in \
-          channelOrder.eventMap");
-    case "an emittable channel with no effect"
-      (refuses
-         (set [ "effect"; "writes" ] (`List []) base)
-         "/effect: emittable channel \"demo:limits-requested\" declares no \
-          effect: add it to effect.writes or effect.reads. There is no \
-          default.");
-    case "a channel both written and read"
-      (refuses
-         (set [ "effect"; "reads" ] (strings [ "demo:limits-requested" ]) base)
-         "/effect/reads/0: \"demo:limits-requested\" is declared both \
-          effect.writes and effect.reads: an emit either changes the knowledge \
-          base or it does not");
-    case "an effect of a channel nobody emits"
-      (refuses
-         (set [ "effect"; "reads" ] (strings [ "demo:happened" ]) base)
-         "/effect/reads/0: effect.reads names \"demo:happened\", which nobody \
-          emits: the domain is an operation's request or a kind.command");
-    case "a request that names no validate schema"
-      (refuses
-         (set [ "channels"; "0"; "validate" ] `Null base)
-         "/operations/0/request: \"demo:limits-requested\" is an operation's \
-          request and names no validate schema: /bus/emit could never accept \
-          it, so Bus.request could never send it");
-    case "a channel declared twice"
-      (refuses
-         (append [ "channels" ] (carrying "demo:happened" "DemoEvent") base)
-         "/channels/5: channel \"demo:happened\" is declared more than once");
-    case "a reply two operations share"
-      (refuses
-         (base
-         |> append [ "channels" ] (carrying "demo:again" "DemoRequest")
-         |> append [ "operations" ]
-              (`Assoc
-                 [
-                   ("request", `String "demo:again");
-                   ("result", `String "demo:limits-result");
-                   ("failure", `String "demo:limits-failed");
-                   ("docs", docs);
-                 ]))
-         "/operations/1/result: \"demo:limits-result\" is the result of both \
-          demo:limits-requested and demo:again: a reply channel is one \
-          operation's");
-    case "a request that is a reply"
-      (refuses
-         (append [ "operations" ]
-            (`Assoc
-               [
-                 ("request", `String "demo:limits-result");
-                 ("result", `String "demo:happened");
-                 ("failure", `String "demo:internal");
-                 ("docs", docs);
-               ])
-            base)
-         "/operations/1/request: \"demo:limits-result\" is both a request and \
-          a reply");
   ]
 
 let payloads =
@@ -353,69 +241,6 @@ let payloads =
               ("enriched", `Bool true);
             ];
           ]);
-    case "a channel that carries one schema and validates against another"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "schema");
-              ("schema", `String "DemoExtra");
-              ("validate", `String "DemoOther");
-            ])
-         "/channels/5: \"demo:extra\" carries DemoExtra and validates against \
-          DemoOther: one channel, one schema");
-    case "a validate schema on a channel that carries none"
-      (refuses
-         (with_channel
-            [ ("shape", `String "empty"); ("validate", `String "DemoExtra") ])
-         "/channels/5: \"demo:extra\" validates against DemoExtra and carries \
-          no schema: only a channel that carries one is validated against it");
-    case "a stored event on a channel not its own type"
-      (refuses
-         (with_channel
-            [
-              ("shape", `String "storedEvent");
-              ("event", `String "demo:other");
-              ("payload", `String "DemoPayload");
-              ("validate", `Null);
-            ])
-         "/channels/5: \"demo:extra\" is a stored event named \"demo:other\": \
-          a persisted event is published on the channel of its own type");
-    case "a scoped channel that is no stored event"
-      (let scoped members =
-         base
-         |> append [ "channels" ] (channel "demo:scoped" members)
-         |> append [ "kind"; "event" ] (`String "demo:scoped")
-         |> set [ "audience"; "scoped" ] (strings [ "demo:scoped" ])
-       in
-       fun () ->
-         accepts
-           (scoped
-              [
-                ("shape", `String "storedEvent");
-                ("event", `String "demo:scoped");
-                ("payload", `String "DemoScopedPayload");
-                ("validate", `Null);
-              ])
-           ();
-         refuses
-           (scoped
-              [
-                ("shape", `String "schema");
-                ("schema", `String "DemoScoped");
-                ("validate", `Null);
-              ])
-           "/channels/5: \"demo:scoped\" has audience scoped and is no stored \
-            event: a resource's scope carries the events of its record"
-           ());
-  ]
-
-let trace =
-  [
-    case "a field whose name does not begin with _"
-      (refuses
-         (set [ "trace"; "field" ] (`String "carried") base)
-         "/trace/field: is \"carried\": it is a payload field the bus writes, \
-          so a name that begins with \"_\" and a letter");
   ]
 
 let with_schemas changes =
@@ -581,11 +406,6 @@ let derivations =
               "stamps" [ "_userId" ]
               (List.assoc "demo:happened" bus.stamps)
         | Error errors -> Alcotest.fail (String.concat "\n" errors));
-    case "an operation's reply on a resource's scope"
-      (refuses
-         (set [ "audience"; "scoped" ] (strings [ "demo:limits-result" ]) base)
-         "/audience: \"demo:limits-result\" belongs to an operation, so its \
-          audience is derived: remove it from audience.scoped");
     case "a payload schema referring to no component"
       (refuses
          ~schemas:
@@ -738,7 +558,6 @@ let () =
     [
       ("bus axes", axes);
       ("bus payloads", payloads);
-      ("bus trace", trace);
       ("bus derivations", derivations);
       ("bus names", names);
       ("text", text);

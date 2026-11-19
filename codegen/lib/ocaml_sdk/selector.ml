@@ -91,7 +91,7 @@ let derive (spec : Spec.t) =
                   (fun k ->
                     not
                       (List.mem k
-                         [ "type"; "minimum"; "description"; "example" ]))
+                         [ "type"; "minimum"; "description"; "examples" ]))
                   (Schema.keywords s)
               in
               let label = if name = "end" then "end_" else Text.snake name in

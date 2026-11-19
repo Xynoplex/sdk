@@ -268,9 +268,10 @@ images' services (`xynolog/images`) embed and serve Protocol's documents
 whole, and read the schemas only they read through Rust types. `lib/images/`
 writes them, into an images checkout, from the Protocol that checkout pins:
 
-- `bundles`: the gateway's and the archivist's OpenAPI documents, and the
-  gateway's component schemas as JSON Schema draft 7, each bundled from
-  its files by `Documents` (`packages/rust/core/src/generated/`).
+- `bundles`: the gateway's and the archivist's OpenAPI documents, as the
+  reader bundles them (`Bundle`), and the gateway's component schemas and
+  the services' as JSON Schema draft 7 (`Documents.definitions`)
+  (`packages/rust/core/src/generated/`).
 - `archivist-waits`: how long a service waits on the archivist to connect
   and to answer, from `archivist/openapi.json`
   (`shared/python/service/src/xynolog_service/_archivist_waits.py`).
@@ -278,7 +279,7 @@ writes them, into an images checkout, from the Protocol that checkout pins:
   `packages/rust/core/service-schemas.json` names, with every schema they
   reach (`packages/rust/core/src/generated/service_types.rs`).
 
-`Documents` reads the files as JSON, not through the model, so a document
+The reader bundles the files as JSON, not through the model, so a document
 keeps every member Protocol writes; a service serves it as it is. A schema
 the Rust SDK declares is not written again: `rust-types`' `elsewhere`
 names it `xynolog::types::X`, and a table that names one is refused. What

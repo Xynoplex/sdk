@@ -174,13 +174,13 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
     }
   in
   let id =
-    let at = at_open ^ "/properties/id/allOf" in
+    let at = at_open ^ "/properties/id" in
     let schema = p "id" in
-    match schema.all_of with
-    | Some [ Schema { ref_ = Some only; _ } ] ->
-        let kind = component (at ^ "/0/$ref") only.target in
+    match schema.ref_ with
+    | Some only ->
+        let kind = component (at ^ "/$ref") only.target in
         if kind <> "" && not (List.mem kind kinds) then
-          refuse (at ^ "/0/$ref")
+          refuse (at ^ "/$ref")
             (Printf.sprintf "names %s, which is no kind of id" kind);
         field "id" ~schema ~type_:kind ~kind ()
     | _ ->

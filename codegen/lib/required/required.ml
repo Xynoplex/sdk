@@ -1,4 +1,5 @@
-(* The required group: what each component schema requires of a value, the
+(* The required group: what each root schema ([Roots])
+   requires of a value, the
    table every SDK holds a reply to before it reads it. Shape derives it, and
    Event what an event on each bus channel is; Table, Typescript, Python,
    Haskell, Ocaml and Kotlin write it; Go holds it to what package api
@@ -18,8 +19,7 @@ module Rust = Rust
 
 let refusal file pointer message = { Decode.file; pointer; message }
 
-(* Each component the gateway's document names: its name, its file and its
-   schema. *)
+(* Each root ([Roots]): its name, its file and its schema. *)
 let components (spec : Spec.t) =
   List.map
     (fun (name, (reference : Decode.reference)) ->
@@ -37,7 +37,7 @@ let components (spec : Spec.t) =
             (refusal reference.file reference.pointer
                (Printf.sprintf "names %s, a place within a file"
                   reference.target)))
-    spec.gateway.components.schemas
+    (Roots.all spec)
 
 (* Each gateway operation's reply: the schema of its one successful
    response's one content, by its operationId, capitalized. *)

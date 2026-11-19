@@ -51,12 +51,17 @@ type frameCase struct {
 	Request string `json:"request"`
 }
 
-// line is the data line the case's stream carries.
-func (c frameCase) line() string {
+// line is the data line the case's stream carries: its frame on one line, as
+// BusFrame says a frame is serialised, or its data as the table spells it.
+func (c frameCase) line(t *testing.T) string {
 	if c.Frame == nil {
 		return c.Data
 	}
-	return string(c.Frame)
+	var one bytes.Buffer
+	if err := json.Compact(&one, c.Frame); err != nil {
+		t.Fatal(err)
+	}
+	return one.String()
 }
 
 func readFrameCases(t *testing.T) []frameCase {
@@ -215,7 +220,7 @@ func TestEachFrameOfTheTableIsDeliveredAsItStatesOrRefusedAndToldToWhomItStates(
 		if c.Request != "" {
 			pending = transport.TrackReply(awaitedID, bus.BrowseResourceRequested.Result().Channel(), bus.BrowseResourceRequested.Failure().Channel())
 		}
-		gateway.sendData(fmt.Sprintf("line-%d", at), c.line())
+		gateway.sendData(fmt.Sprintf("line-%d", at), c.line(t))
 		for channel, failure := range afterFailures {
 			gateway.sendData(fmt.Sprintf("after-%s-%d", channel, at), failure)
 		}

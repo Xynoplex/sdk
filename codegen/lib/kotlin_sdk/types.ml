@@ -5,10 +5,9 @@
    the shapes the spec's schemas use and refuses any other, so a schema that
    grows a new shape stops the run rather than generating something wrong.
 
-   It reads a schema as JSON Schema draft 7 has it: [nullable] beside one
-   [type] adds [null] to it, and beside anything else makes the schema
-   [anyOf: [{type: null}, the rest]], which states nothing else of its own,
-   not even a description.
+   It reads a schema that may be null ([Null_form]) as JSON Schema has it:
+   beside one [type], [null] is a second; anything else is
+   [anyOf: [{type: null}, what it is beside null]].
 
    A property that is required and may be null is stated, as null or a
    value; one that is optional is absent or a value; one that is optional
@@ -78,7 +77,7 @@ let after_last_dot name =
   | None -> name
   | Some i -> String.sub name (i + 1) (String.length name - i - 1)
 
-(* A schema as draft 7 has it. [Wrapped] is [anyOf: [{type: null}, s]];
+(* A schema as it says null. [Wrapped] is [anyOf: [{type: null}, s]];
    [Typed_null] is [s] with [null] beside its one type. A [$ref] is the
    schema it names, and nothing said beside it is read: the bundle the SDKs
    read writes a component's reference alone. *)
@@ -96,12 +95,14 @@ let node : Schema.t -> node = function
       match Definitions.said_of_reference s reference with
       | Ok description -> Ref { reference; description }
       | Error message -> Names.refuse "%s" message)
-  | Schema s when s.nullable = Some true -> (
-      let s = { s with nullable = None } in
-      match s.type_ with
-      | Some [ _ ] -> Node { s; null_form = Typed_null }
-      | _ -> Node { s; null_form = Wrapped })
-  | Schema s -> Node { s; null_form = Not_null }
+  | Schema s -> (
+      match Null_form.without_null Fun.id s with
+      | Error message -> Names.refuse "%s" message
+      | Ok None -> Node { s; null_form = Not_null }
+      | Ok (Some beside) -> (
+          match beside.type_ with
+          | Some [ _ ] -> Node { s = beside; null_form = Typed_null }
+          | _ -> Node { s = beside; null_form = Wrapped }))
 
 (* The keywords a node states beside its [type] and its [anyOf]. *)
 let keywords = function
@@ -136,7 +137,7 @@ let is_closed n = additional n = Some (Boolean_schema false)
 let union n =
   match n with
   | Node { s; null_form = Wrapped } ->
-      Some [ Null_type; Node { s; null_form = Not_null } ]
+      Some [ Null_type; node (Schema.Schema s) ]
   | _ ->
       field
         (fun (s : Schema.schema) ->
@@ -178,12 +179,12 @@ let without_null what n =
       Some (Node { s; null_form = Not_null })
   | None, _ -> None
 
-(* [const] is JSON Schema's and not OpenAPI 3.0's, the dialect the spec is
-   written in: a schema that admits one value states it as an [enum] of one. *)
+(* [const] is a keyword no SDK reads ([Schema.unread]): a schema that admits
+   one value states it as an [enum] of one. *)
 let refuse_const what n =
   if field (fun (s : Schema.schema) -> s.const) n <> None then
     refuse
-      "%s: `const` is not OpenAPI 3.0: state the one value as an `enum` of one"
+      "%s: `const`, which no SDK reads: state the one value as an `enum` of one"
       what
 
 (* What a generation reads: the schemas it writes, by name, the kinds of id
@@ -367,20 +368,7 @@ and type_of st owner property n =
       match without_null what n with
       | Some n -> type_of st owner property n
       | None -> (
-          let says_only_all_of =
-            match keywords n with
-            | Some s ->
-                List.for_all
-                  (fun k -> k = "allOf" || k = "description")
-                  (Schema.keywords s)
-            | None -> false
-          in
           match all_of n with
-          (* An [allOf] of one schema is that schema: the form a [$ref] takes
-             when something is said beside it. *)
-          | Some [ one ]
-            when reference st.spec (node one) <> None && says_only_all_of ->
-              type_of st owner property (node one)
           | Some _ -> inline st (inline_name st owner property) n
           | None -> (
               match union n with
@@ -416,7 +404,7 @@ and type_of st owner property n =
                                 type_of st owner (property ^ "Value")
                                   (node beside);
                               ] ))
-                  | None ->
+                  | Some Null | None ->
                       refuse "%s: a schema shape the generator does not know"
                         what))))
 

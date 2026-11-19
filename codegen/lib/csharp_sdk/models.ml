@@ -76,9 +76,8 @@ let nth i = function
 let rec readable path ((schema : Schema.t), json) =
   let s = layer path schema in
   (match s.type_ with
-  | Some _ when match child "type" json with `String _ -> false | _ -> true ->
-      refuse "%s has an unsupported type." path
-  | _ -> ());
+  | Some ([ _ ] | [ _; Null ]) | None -> ()
+  | Some _ -> refuse "%s has an unsupported type." path);
   Option.iter
     (fun own ->
       let members = child "properties" json in
@@ -149,7 +148,13 @@ let rec plain_text state (s : Schema.schema) =
 let constant (s : Schema.schema) =
   match s.enum with Some [ String_literal c ] -> Some c | _ -> None
 
-let nullable (s : Schema.schema) = s.nullable = Some true
+(* What [s] is beside null, when it may be null ([Null_form]). *)
+let beside_null (s : Schema.schema) =
+  match Null_form.without_null Fun.id s with
+  | Ok beside -> beside
+  | Error message -> refuse "%s" message
+
+let nullable s = Option.is_some (beside_null s)
 
 type field = {
   wire : string;
@@ -193,11 +198,14 @@ and inline state owner property (schema, json) =
 (* The type of a value of [owner]'s [property], whose schema is [schema]. *)
 and type_of state owner property ((schema, json) as node) =
   let s = layer (owner ^ "." ^ property) schema in
+  match beside_null s with
+  | Some beside -> type_of state owner property (Schema.Schema beside, json)
+  | None -> type_of_beside_null state owner property node s
+
+and type_of_beside_null state owner property ((_, json) as node) s =
   let inline () = inline state owner property node in
   match s with
   | { ref_ = Some r; _ } -> named state (referenced state r)
-  | { all_of = Some [ part ]; _ } ->
-      type_of state owner property (part, nth 0 (child "allOf" json))
   | { all_of = Some _; _ } | { one_of = Some _; _ } | { any_of = Some _; _ } ->
       inline ()
   | { type_ = Some [ String ]; format = Some Binary; _ } -> C.Array (T "byte")

@@ -91,8 +91,6 @@ let derive (spec : Spec.t) =
                  (fun k -> List.mem k [ "type"; "items"; "minItems" ])
                  (described l) ->
             Option.map (fun item -> List item) (items file (pointer ^ "/items"))
-        | { all_of = Some [ (_, one) ]; _ } when described l = [ "allOf" ] ->
-            one file (pointer ^ "/allOf/0")
         | { type_ = Some [ String ]; format = Some Binary; _ }
           when described l = [ "type"; "format" ] ->
             Some Binary

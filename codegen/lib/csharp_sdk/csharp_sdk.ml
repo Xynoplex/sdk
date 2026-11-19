@@ -84,10 +84,10 @@ let schema_of (spec : Spec.t) path =
           };
         ]
 
-(* The schemas the models are made from: every component schema, the
-   sign-in store's entry, the discovery document and what it names, and the
-   records Protocol states in its tables ([Table_records]); each with the
-   file, or the place in a file, it is read from. *)
+(* The schemas the models are made from: every root ([Roots]), the gateway's
+   components and the discovery document's among them, the sign-in store's
+   entry, and the records Protocol states in its tables ([Table_records]);
+   each with the file, or the place in a file, it is read from. *)
 let roots ~root (spec : Spec.t) =
   let* records =
     Result.map_error
@@ -117,20 +117,13 @@ let roots ~root (spec : Spec.t) =
         Error [ { Decode.file; pointer; message = "states no record there" } ]
   in
   let components =
-    List.filter_map
-      (fun (path, _) ->
-        if String.starts_with ~prefix:"components/schemas/" path then
-          Some (whole (Filename.remove_extension (Filename.basename path)) path)
-        else None)
-      spec.schemas
+    List.map
+      (fun (name, reference) -> whole name (fst (Decode.resolve reference)))
+      (Roots.all spec)
   in
   Spec.all
     (components
-    @ [
-        whole "SignIn" Sign_in.schema_file;
-        whole "DiscoveryDocument" "discovery/DiscoveryDocument.json";
-        whole "DiscoveredKB" "discovery/DiscoveredKB.json";
-      ]
+    @ [ whole "SignIn" Sign_in.schema_file ]
     @ List.map record records)
 
 let refused message =

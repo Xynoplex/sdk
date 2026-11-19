@@ -29,7 +29,7 @@ schemaCases = do
   malformed "unknown keyword accepted" (object ["not" .= text])
   malformed "unknown type accepted" (object ["type" .= String "unknown"])
   malformed "non-string type accepted" (object ["type" .= True])
-  forM_ ["string", "integer", "number", "boolean", "object", "array"] $ \kind ->
+  forM_ ["string", "integer", "number", "boolean", "object", "array", "null"] $ \kind ->
     accepted "known type refused" (object ["type" .= String kind])
   forM_ ["uri", "date-time", "binary"] $ \format -> accepted "known format refused" (object ["format" .= String format])
   malformed "unknown format accepted" (object ["format" .= String "unknown"])
@@ -44,7 +44,7 @@ schemaCases = do
   forM_ ["minLength", "maxLength", "minItems", "maxItems", "maxProperties"] $ \key -> do
     accepted "whole non-negative bound refused" (object [key .= (1 :: Int)])
     forM_ [Number (-1), Number 0.5, Bool True] $ \value -> malformed "invalid length bound accepted" (object [key .= value])
-  forM_ ["nullable", "uniqueItems", "deprecated", "readOnly", "writeOnly"] $ \key -> do
+  forM_ ["uniqueItems", "deprecated", "readOnly", "writeOnly"] $ \key -> do
     accepted "boolean annotation refused" (object [key .= True])
     malformed "non-boolean annotation accepted" (object [key .= Null])
   accepted "required list refused" (object ["required" .= [String "value"]])
@@ -67,7 +67,16 @@ schemaCases = do
   refuses (ref "Text") (Bool True)
   refuses (ref "Missing") (String "a")
   holds (object []) Null
-  holds (object ["type" .= String "string", "nullable" .= True]) Null
+  let nullableText = object ["type" .= [String "string", String "null"]]
+  holds nullableText Null
+  holds nullableText (String "a")
+  refuses nullableText (Bool True)
+  holds (object ["type" .= String "null"]) Null
+  refuses (object ["type" .= String "null"]) (String "a")
+  holds (object ["anyOf" .= [ref "Text", object ["type" .= String "null"]]]) Null
+  accepted "a type and null refused" nullableText
+  malformed "two types neither null accepted" (object ["type" .= [String "string", String "integer"]])
+  malformed "nullable accepted, which is OpenAPI 3.0's" (object ["type" .= String "string", "nullable" .= True])
   refuses text Null
   forM_ [Bool True, Number 1, object [], Array mempty] (refuses text)
   let boundedText = object ["type" .= String "string", "minLength" .= (1 :: Int), "maxLength" .= (2 :: Int)]

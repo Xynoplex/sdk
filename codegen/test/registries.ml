@@ -146,7 +146,8 @@ let media_types =
 
 module Tm = Tables.Sdk_telemetry_telemetry
 
-let attribute ?only key : Tm.attributes_item = { key; only; values = None }
+let attribute ?only key : Tm.service_telemetry_telemetry_attributes_item =
+  { key; only; values = None }
 
 let span ?(name = "bus.emit:{channel}") ?(kind = Tm.Producer)
     ?(attributes =

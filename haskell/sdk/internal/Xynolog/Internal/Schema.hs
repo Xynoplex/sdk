@@ -88,11 +88,10 @@ checkSchema schemas schema = do
     Just _ -> Left "$ref is not a string"
   case KM.lookup "type" fields of
     Nothing -> pure ()
-    Just (String name) ->
-      ensure
-        (name `elem` ["string", "integer", "number", "boolean", "object", "array"])
-        ("unsupported schema type: " ++ T.unpack name)
-    Just _ -> Left "schema type is not a string"
+    Just (String name) -> knownType name
+    Just (Array names)
+      | [String name, String "null"] <- toList names, name /= "null" -> knownType name
+    Just _ -> Left "schema type is a name, or a name and null"
   case KM.lookup "format" fields of
     Nothing -> pure ()
     Just (String name) -> ensure (name `elem` ["uri", "date-time", "binary"]) ("unsupported format: " ++ T.unpack name)
@@ -111,7 +110,7 @@ checkSchema schemas schema = do
       Right count -> ensure (count >= 0) (show key ++ " must be non-negative")
       Left _ -> Left (show key ++ " must be a whole number")
     Just _ -> Left (show key ++ " must be a whole number")
-  forM_ ["nullable", "uniqueItems", "deprecated", "readOnly", "writeOnly"] $ \key -> case KM.lookup key fields of
+  forM_ ["uniqueItems", "deprecated", "readOnly", "writeOnly"] $ \key -> case KM.lookup key fields of
     Nothing -> pure ()
     Just (Bool _) -> pure ()
     Just _ -> Left (show key ++ " must be a boolean")
@@ -136,6 +135,10 @@ checkSchema schemas schema = do
     Just (Array values) -> ensure (not (V.null values)) "empty union" >> mapM_ (checkSchema schemas) values
     Just _ -> Left "union is not an array"
   where
+    knownType name =
+      ensure
+        (name `elem` ["string", "integer", "number", "boolean", "object", "array", "null"])
+        ("unsupported schema type: " ++ T.unpack name)
     keywords =
       [ "$ref",
         "$comment",
@@ -150,7 +153,6 @@ checkSchema schemas schema = do
         "oneOf",
         "anyOf",
         "format",
-        "nullable",
         "pattern",
         "minimum",
         "maximum",
@@ -161,7 +163,6 @@ checkSchema schemas schema = do
         "uniqueItems",
         "maxProperties",
         "default",
-        "example",
         "examples",
         "discriminator",
         "deprecated",
@@ -185,9 +186,11 @@ validateProperty schemas named key value = do
 validate :: Schemas -> Value -> Value -> Either String ()
 validate schemas original value = do
   schema <- objectFields original
-  if value == Null && KM.lookup "nullable" schema == Just (Bool True)
-    then pure ()
-    else do
+  case KM.lookup "type" schema of
+    Just (Array names)
+      | [declared, String "null"] <- toList names ->
+          if value == Null then pure () else validate schemas (Object (KM.insert "type" declared schema)) value
+    _ -> do
       case KM.lookup "$ref" schema of
         Just (String name) -> reference schemas name >>= \target -> validate schemas target value
         _ -> pure ()
@@ -220,6 +223,7 @@ validate schemas original value = do
           Number number -> numberBounds schema number
           _ -> Left "expected number"
         Just (String "boolean") -> case value of Bool _ -> pure (); _ -> Left "expected boolean"
+        Just (String "null") -> case value of Null -> pure (); _ -> Left "expected null"
         Just (String "array") -> case value of
           Array items -> do
             lengthBounds schema "minItems" "maxItems" (V.length items)

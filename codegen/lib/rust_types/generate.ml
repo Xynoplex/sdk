@@ -332,12 +332,6 @@ and type_of st owner property (s : D.t) =
       | Some inner -> type_of st owner property inner
       | None -> (
           match s with
-          | D.Node ({ all_of = Some [ (D.Ref _ as only) ]; _ } as n)
-            when List.for_all (fun k -> k = "allOf" || k = "description") n.keys
-            ->
-              (* An [allOf] of one schema is that schema: the form a [$ref]
-                 takes when something is said beside it. *)
-              type_of st owner property only
           | D.Node { all_of = Some _; _ } ->
               inline st (inline_name st owner property) s
           | _ -> (
@@ -356,6 +350,7 @@ and type_of st owner property (s : D.t) =
                       | String -> string_ty
                       | Boolean -> ty "bool"
                       | Number -> ty "f64"
+                      | Null -> refuse "%s: null alone" what
                       | Integer ->
                           let int = function
                             | Some f when Float.is_integer f ->
