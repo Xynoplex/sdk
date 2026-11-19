@@ -1,12 +1,5 @@
 open Eio.Std
 
-type discovery_absent_reason =
-  | Not_found
-  | Unreadable
-  | Not_json
-  | Invalid
-  | Unsupported_version
-
 type kb = {
   host : string;
   port : int;
@@ -17,7 +10,10 @@ type kb = {
   site_name : string option;
 }
 
-type discovery_state = Absent of discovery_absent_reason | Managed of kb list
+type discovery_state =
+  | Absent of Enums.Discovery_absent_reason.t
+  | Managed of kb list
+
 type discovery_read = Read of discovery_state | Unchanged
 type discovery_transport = unit -> discovery_read
 

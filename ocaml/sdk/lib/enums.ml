@@ -1,4 +1,4 @@
-(* Generated from string enums in protocol/specs/src/components/schemas and in Protocol's tables. Do not edit.
+(* Generated from string enums in protocol/specs/src/components/schemas and protocol/specs/src/client, and in Protocol's tables. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/enums.ml) *)
 
 module Body_purpose = struct
@@ -406,6 +406,57 @@ module Supported_media_type = struct
     | "font/woff2" -> Some Font_woff2
     | "font/ttf" -> Some Font_ttf
     | "font/otf" -> Some Font_otf
+    | _ -> None
+end
+
+module Anchor_method = struct
+  type t = Unique_match | Context_recovered | First_of_many | Fuzzy_match
+
+  let to_string = function
+    | Unique_match -> "unique-match"
+    | Context_recovered -> "context-recovered"
+    | First_of_many -> "first-of-many"
+    | Fuzzy_match -> "fuzzy-match"
+
+  let of_string = function
+    | "unique-match" -> Some Unique_match
+    | "context-recovered" -> Some Context_recovered
+    | "first-of-many" -> Some First_of_many
+    | "fuzzy-match" -> Some Fuzzy_match
+    | _ -> None
+end
+
+module Match_quality = struct
+  type t = Normalized | Case_insensitive | Fuzzy
+
+  let to_string = function
+    | Normalized -> "normalized"
+    | Case_insensitive -> "case-insensitive"
+    | Fuzzy -> "fuzzy"
+
+  let of_string = function
+    | "normalized" -> Some Normalized
+    | "case-insensitive" -> Some Case_insensitive
+    | "fuzzy" -> Some Fuzzy
+    | _ -> None
+end
+
+module Discovery_absent_reason = struct
+  type t = Not_found | Not_json | Invalid | Unsupported_version | Unreadable
+
+  let to_string = function
+    | Not_found -> "not-found"
+    | Not_json -> "not-json"
+    | Invalid -> "invalid"
+    | Unsupported_version -> "unsupported-version"
+    | Unreadable -> "unreadable"
+
+  let of_string = function
+    | "not-found" -> Some Not_found
+    | "not-json" -> Some Not_json
+    | "invalid" -> Some Invalid
+    | "unsupported-version" -> Some Unsupported_version
+    | "unreadable" -> Some Unreadable
     | _ -> None
 end
 

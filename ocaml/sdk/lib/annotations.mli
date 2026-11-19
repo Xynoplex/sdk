@@ -64,18 +64,10 @@ val annotation_of_span :
   text_span ->
   ([ `Annotation ] Models.t, Models.decode_error) result
 
-type anchor_method =
-  | Unique_match
-  | Context_recovered
-  | First_of_many
-  | Fuzzy_match
-
-type match_quality = Normalized | Case_insensitive | Fuzzy
-
 type reconciled_span = {
   span : text_span;
-  anchor_method : anchor_method;
-  match_quality : match_quality option;
+  anchor_method : Enums.Anchor_method.t;
+  match_quality : Enums.Match_quality.t option;
 }
 
 val reconcile : string -> quoted_text -> reconciled_span option

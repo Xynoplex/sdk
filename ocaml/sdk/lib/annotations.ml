@@ -361,18 +361,10 @@ let annotation_of_span ~created ~resource ~motivation ~generator ?body content
   build ~created ~resource ~motivation ~anchor ~target
     ~generator:(Some generator) ~body
 
-type anchor_method =
-  | Unique_match
-  | Context_recovered
-  | First_of_many
-  | Fuzzy_match
-
-type match_quality = Normalized | Case_insensitive | Fuzzy
-
 type reconciled_span = {
   span : text_span;
-  anchor_method : anchor_method;
-  match_quality : match_quality option;
+  anchor_method : Enums.Anchor_method.t;
+  match_quality : Enums.Match_quality.t option;
 }
 
 let occurrences source needle =
@@ -583,23 +575,27 @@ let reconcile text (quote : quoted_text) =
   if trim_space quote.exact = "" then None
   else
     match occurrences source wanted with
-    | [ place ] -> Some (build place Unique_match None)
+    | [ place ] -> Some (build place Enums.Anchor_method.Unique_match None)
     | first :: _ as places ->
         Some
           (match hinted places with
-          | Some place -> build place Context_recovered None
-          | None -> build first First_of_many None)
+          | Some place -> build place Enums.Anchor_method.Context_recovered None
+          | None -> build first Enums.Anchor_method.First_of_many None)
     | [] ->
         let places, quality =
           match mapped source wanted normalized with
-          | _ :: _ as places -> (places, Normalized)
+          | _ :: _ as places -> (places, Enums.Match_quality.Normalized)
           | [] -> (
               match mapped source wanted lowered with
-              | _ :: _ as places -> (places, Case_insensitive)
-              | [] -> (Option.to_list (fuzzy source wanted), Fuzzy))
+              | _ :: _ as places ->
+                  (places, Enums.Match_quality.Case_insensitive)
+              | [] ->
+                  ( Option.to_list (fuzzy source wanted),
+                    Enums.Match_quality.Fuzzy ))
         in
         Option.map
-          (fun place -> build place Fuzzy_match (Some quality))
+          (fun place ->
+            build place Enums.Anchor_method.Fuzzy_match (Some quality))
           (match hinted places with
           | Some _ as found -> found
           | None -> List.nth_opt places 0)
