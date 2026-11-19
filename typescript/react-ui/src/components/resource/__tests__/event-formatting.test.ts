@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   annotationId,
   resourceId,
+  userId,
   type Annotation,
-  type StoredEventLike,
+  type components,
 } from '@xynolog/core';
 import {
   formatEventType,
@@ -18,11 +19,12 @@ import {
 const stored = (
   type: string,
   payload: Record<string, unknown>,
-): StoredEventLike => ({
+): components['schemas']['StoredEventResponse'] => ({
   id: `event-${type}`,
   type,
   timestamp: '2026-10-14T00:00:00.000Z',
-  userId: 'did:web:example.org:users:alice',
+  userId: userId('did:web:example.org:users:alice'),
+  version: 1,
   payload,
   metadata: { sequenceNumber: 1 },
 });
