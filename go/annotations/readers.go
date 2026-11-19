@@ -184,9 +184,8 @@ func IsResolvedReference(annotation api.Annotation) bool {
 // first, wherever in a list it is. False for a selector that quotes nothing.
 func TextQuoteSelector(selector api.AnnotationSelector) (api.TextQuoteSelector, bool) {
 	for _, item := range selectors(selector) {
-		if kind, err := item.Discriminator(); err == nil && kind == "TextQuoteSelector" {
-			var quote api.TextQuoteSelector
-			if item.As(&quote) == nil {
+		if value, err := item.ValueByDiscriminator(); err == nil {
+			if quote, ok := value.(api.TextQuoteSelector); ok {
 				return quote, true
 			}
 		}
