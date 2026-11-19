@@ -41,8 +41,6 @@ from xynolog.errors import BusRequestError, IdentityUnverifiableError, SessionEr
 from xynolog.events import Broadcast, Events
 from xynolog.http.endpoint import gateway_url
 from xynolog.http.oauth import (
-    BeginAuthorizationOptions,
-    DeviceCode,
     begin_authorization,
     complete_authorization,
     issuer_client,
@@ -60,7 +58,9 @@ from xynolog.session import HeldSignIn, SignInKept, Validate, XynologSession
 from xynolog.storage import SessionStorage
 from xynolog.storage_keys import last_event_id_key, person_key
 from xynolog.types import (
+    BeginAuthorizationOptions,
     ConnectionIdentity,
+    DeviceCode,
     HttpEndpoint,
     KbTarget,
     LocalEndpoint,

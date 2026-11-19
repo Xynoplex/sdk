@@ -15,8 +15,16 @@ from typing import Final, final, override
 
 from xynolog.errors import TransportError
 from xynolog.identifiers import ResourceId
-from xynolog.transport import Content, ContentStream, ContentTransport, PutBinaryRequest, Upload, UploadProgress
-from xynolog.types import AnchoredTextAnswer, CreateResourceResponse, GetAnnotationsResponse, GetResourceResponse
+from xynolog.transport import Content, ContentStream, ContentTransport, PutBinaryRequest, Upload
+from xynolog.types import (
+    AnchoredTextAnswer,
+    CreateResourceResponse,
+    GetAnnotationsResponse,
+    GetResourceResponse,
+    UploadProgress,
+    UploadProgressProgress,
+    UploadProgressStarted,
+)
 
 __all__ = [
     "ContentCall",
@@ -133,10 +141,11 @@ class InMemoryContent(ContentTransport):
         """Stored under an id of this double's making, `test-content-<n>`."""
 
         async def stored(report: Callable[[UploadProgress], None]) -> CreateResourceResponse:
+            report(UploadProgressStarted(phase="started", total_bytes=len(request.file)))
             resource_id = ResourceId(f"test-content-{len(self._stored) + 1}")
             self._stored[resource_id] = Content(data=request.file, content_type=request.format)
             self._calls.append(PutBinary(request))
-            report(UploadProgress(bytes_uploaded=len(request.file), total_bytes=len(request.file)))
+            report(UploadProgressProgress(phase="progress", bytes_uploaded=len(request.file), total_bytes=len(request.file)))
             return CreateResourceResponse(resource_id=resource_id)
 
         return Upload(lambda report: asyncio.ensure_future(stored(report)))

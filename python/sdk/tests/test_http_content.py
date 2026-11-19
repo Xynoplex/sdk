@@ -20,7 +20,7 @@ from xynolog.http import HttpTransport, Timing
 from xynolog.http.content import form_of
 from xynolog.identifiers import AnnotationId, JobId, ResourceId
 from xynolog.transport import PutBinaryRequest, UploadProgress
-from xynolog.types import AgentSoftware, ResourceUpload
+from xynolog.types import AgentSoftware, ResourceUpload, UploadProgressFinished, UploadProgressProgress, UploadProgressStarted
 from xynolog.watched import Variable
 
 EVERY_BYTE = bytes(range(256)) * 600
@@ -55,7 +55,7 @@ def test_an_upload_carries_its_bytes_unchanged_and_each_field_under_its_own_name
         archive_original=False,
     )
 
-    async def scenario() -> tuple[str, dict[str, tuple[bytes, dict[str, str]]], str, list[UploadProgress]]:
+    async def scenario() -> tuple[ResourceId, dict[str, tuple[bytes, dict[str, str]]], str, list[UploadProgress]]:
         async with GatewayServer() as gateway, transport_to(gateway) as transport:
             upload = transport.content.put_binary(request)
             reports = [progress async for progress in upload]
@@ -83,11 +83,17 @@ def test_an_upload_carries_its_bytes_unchanged_and_each_field_under_its_own_name
         "isDraft": "true",
         "archiveOriginal": "false",
     }
-    # Its progress: one total, the size of the whole request; never less than it last said; and all of it at the end.
-    assert len(reports) > 2
-    assert {progress.total_bytes for progress in reports} == {int(stated_length)}
-    assert [progress.bytes_uploaded for progress in reports] == sorted(progress.bytes_uploaded for progress in reports)
-    assert reports[-1].bytes_uploaded == reports[-1].total_bytes
+    # Its reports: its size first, the size of the whole request; then how much is sent, of that one total, never less than
+    # it last said, and all of it at the end; then the resource made.
+    started, *sending, finished = reports
+    assert started == UploadProgressStarted(phase="started", total_bytes=int(stated_length))
+    assert finished == UploadProgressFinished(phase="finished", resource_id=created)
+    progress = [report for report in sending if isinstance(report, UploadProgressProgress)]
+    assert progress == sending
+    assert len(progress) > 2
+    assert {report.total_bytes for report in progress} == {int(stated_length)}
+    assert [report.bytes_uploaded for report in progress] == sorted(report.bytes_uploaded for report in progress)
+    assert progress[-1].bytes_uploaded == progress[-1].total_bytes
 
 
 def test_a_field_with_nothing_to_say_is_left_out_of_the_form() -> None:

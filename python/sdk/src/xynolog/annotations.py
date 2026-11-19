@@ -23,7 +23,7 @@ from pydantic import JsonValue
 
 from xynolog._annotation_id import annotation_id_for
 from xynolog._pdf_locate import fragment_of, locate
-from xynolog._spans import QuotedText, ReconciledSpan, TextSpan, reconcile
+from xynolog._spans import reconcile
 from xynolog._white_space import collapsed
 from xynolog.error_codes import SpanRefusal
 from xynolog.errors import SpanRefusedError
@@ -42,10 +42,13 @@ from xynolog.types import (
     FragmentSelector,
     MatchQuality,
     Motivation,
+    QuotedText,
+    ReconciledSpan,
     Selector,
     SpecificResource,
     TextPositionSelector,
     TextQuoteSelector,
+    TextSpan,
     TextualBody,
 )
 
@@ -228,7 +231,7 @@ def _is_a_span_of(length: int, start: object, end: object) -> bool:
     return isinstance(start, int) and isinstance(end, int) and 0 <= start <= end <= length
 
 
-def _fragments(anchored: AnchoredText, span: TextSpan) -> list[Selector]:
+def _fragments(anchored: AnchoredText, span: TextSpan | ReconciledSpan) -> list[Selector]:
     """A selector for each rectangle a span of a PDF's anchored text is located at, when the items it overlaps cover its words."""
     overlapping, rectangles = locate(anchored, span.start, span.end)
     if not rectangles:
@@ -281,7 +284,7 @@ def _built(
 
 def annotation_of_span(
     text: str | AnchoredText,
-    span: TextSpan,
+    span: TextSpan | ReconciledSpan,
     *,
     resource_id: ResourceId,
     motivation: Motivation,

@@ -10,26 +10,13 @@ A span's offsets and an item's count code points. Coordinates are PDF points
 from the bottom-left corner of the page, `y` growing upward.
 """
 
-from dataclasses import dataclass
 from decimal import Decimal
-from typing import Final, final
+from typing import Final
 
-from xynolog.types import AnchoredText, PdfTextItem
+from xynolog.types import AnchoredText, PdfCoordinate, PdfTextItem
 
 _SAME_LINE: Final = 2
 """Items whose `y` is within this many points of the first item of a line are on that line."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class Rectangle:
-    """A rectangle on a page: its bottom-left corner and its size, in PDF points."""
-
-    page: int
-    x: float
-    y: float
-    width: float
-    height: float
 
 
 def _lines(items: list[PdfTextItem]) -> list[list[PdfTextItem]]:
@@ -51,17 +38,17 @@ def _edges(item: PdfTextItem, start: int, end: int) -> tuple[float, float]:
     return left, right
 
 
-def _spanning(page: int, line: list[PdfTextItem], start: int, end: int) -> Rectangle:
+def _spanning(page: int, line: list[PdfTextItem], start: int, end: int) -> PdfCoordinate:
     """The rectangle that spans a line's items, as far as the span reaches into each."""
     edges = [_edges(item, start, end) for item in line]
     x = min(left for left, _ in edges)
     right = max(right for _, right in edges)
     y = min(item.y for item in line)
     top = max(item.y + item.height for item in line)
-    return Rectangle(page=page, x=x, y=y, width=right - x, height=top - y)
+    return PdfCoordinate(page=page, x=x, y=y, width=right - x, height=top - y)
 
 
-def locate(anchored: AnchoredText, start: int, end: int) -> tuple[list[PdfTextItem], list[Rectangle]]:
+def locate(anchored: AnchoredText, start: int, end: int) -> tuple[list[PdfTextItem], list[PdfCoordinate]]:
     """The items a span of the anchored text overlaps, in the text's order, and a rectangle for each line of each page it touches.
 
     Pages come in the order their first overlapped item has in the text. A
@@ -86,7 +73,7 @@ def _decimal(number: float) -> str:
     return str(int(number)) if number.is_integer() else format(Decimal(repr(number)), "f")
 
 
-def fragment_of(rectangle: Rectangle) -> str:
+def fragment_of(rectangle: PdfCoordinate) -> str:
     """A rectangle as the value of a `FragmentSelector`: `page=P&viewrect=X,Y,W,H`."""
     return (
         f"page={rectangle.page}"

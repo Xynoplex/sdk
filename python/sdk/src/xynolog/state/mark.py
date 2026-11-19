@@ -41,7 +41,6 @@ from xynolog.client import XynologClient
 from xynolog.errors import XynologError
 from xynolog.events import Events
 from xynolog.identifiers import JobId, ResourceId
-from xynolog.model import WireModel
 from xynolog.namespaces.follow import Delegation, JobAttemptFailed, JobCompleted, JobCreated, JobProgressed, JobRefused
 from xynolog.state._jobs import cancelled
 from xynolog.state._tasks import Tasks
@@ -49,7 +48,6 @@ from xynolog.state_unit import StateUnit
 from xynolog.timing import DELEGATE_SILENCE_MS
 from xynolog.transport import Frame, FrameRefusal, Transport
 from xynolog.types import (
-    AnnotationSelector,
     AnnotationTarget,
     CreateAnnotationRequest,
     JobProgress,
@@ -58,21 +56,14 @@ from xynolog.types import (
     MarkJobParams,
     MarkSubmitEvent,
     Motivation,
+    PendingAnnotation,
     ResourceErrorEvent,
 )
 from xynolog.watched import Variable, Watched
 
-__all__ = ["MarkStateUnit", "PendingAnnotation"]
+__all__ = ["MarkStateUnit"]
 
 _HEARD: Final = (MARK_REQUESTED, MARK_SUBMIT)
-
-
-@final
-class PendingAnnotation(WireModel, frozen=True):
-    """An annotation being composed: where it is, and why it is made. Its selector is what `client.mark.submit` takes."""
-
-    selector: AnnotationSelector
-    motivation: Motivation
 
 
 @final

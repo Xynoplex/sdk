@@ -1,6 +1,7 @@
 from xynolog.http import HttpTransport
 from xynolog.identifiers import ResourceId
 from xynolog.transport import PutBinaryRequest
+from xynolog.types import UploadProgressFinished, UploadProgressProgress, UploadProgressStarted
 
 
 async def store(transport: HttpTransport, page: bytes) -> ResourceId:
@@ -8,7 +9,13 @@ async def store(transport: HttpTransport, page: bytes) -> ResourceId:
         PutBinaryRequest(name="A page", file=page, format="text/markdown", storage_uri="file://pages/a.md", entity_types=["Note"])
     )
     async for progress in upload:
-        print(progress.bytes_uploaded, "of", progress.total_bytes)
+        match progress:
+            case UploadProgressStarted(total_bytes=total):
+                print("sending", total)
+            case UploadProgressProgress(bytes_uploaded=sent, total_bytes=total):
+                print(sent, "of", total)
+            case UploadProgressFinished(resource_id=made):
+                print("made", made)
     created = await upload
 
     stored = await transport.content.get_binary(created.resource_id)

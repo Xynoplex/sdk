@@ -412,6 +412,23 @@ def test_an_issuer_that_states_no_lifetime_has_answered_without_what_was_asked_f
     run(scenario())
 
 
+def test_an_issuer_that_states_a_lifetime_that_is_no_whole_number_of_seconds_has_answered_without_what_was_asked_for() -> None:
+    async def scenario() -> None:
+        async with GatewayServer() as gateway:
+            trusting(gateway)
+            # A code's lifetime is a whole number of seconds (`DeviceCode.expiresIn`): one in fractions is none it states.
+            gateway.scripted[("POST", DEVICE)] = [minted(expires_in=599.5)]
+            shown: list[DeviceCode] = []
+
+            with pytest.raises(SignInError) as refused:
+                await soon(sign_in_with_device_grant(gateway.origin, shown.append))
+            assert (refused.value.code, refused.value.status) == ("exchange", 200)
+            assert shown == []
+            assert gateway.of("POST", TOKEN) == []
+
+    run(scenario())
+
+
 def test_an_issuer_that_states_no_link_with_the_code_shows_none() -> None:
     async def scenario() -> None:
         async with GatewayServer() as gateway:

@@ -186,10 +186,11 @@ def test_content_stores_a_page_reads_it_back_and_asks_the_gateway_who_it_is(caps
             return created
 
     assert run(scenario()) == "res-uploaded-1"
-    *progress, piece, me = capsys.readouterr().out.splitlines()
+    started, *progress, finished, piece, me = capsys.readouterr().out.splitlines()
     assert progress
     sent, _, total = progress[-1].partition(" of ")
     assert sent == total
+    assert (started, finished) == (f"sending {total}", "made res-uploaded-1")
     assert (piece, me) == (str(len(page)), "did:web:example.org:users:alice ok")
 
 

@@ -28,6 +28,7 @@ from xynolog.model import WireModel
 from xynolog.operations import OPERATIONS
 from xynolog.retry import RetryPolicy
 from xynolog.transport import ConnectionState, Frame, FrameRefusal, PutBinaryRequest, ResourceHold
+from xynolog.types import UploadProgressProgress
 from xynolog.watched import Variable
 
 
@@ -220,7 +221,9 @@ class Wire:
     async def upload(self, asked: int, args: Arguments) -> JsonValue:
         upload = self._opened().content.put_binary(_upload_of(args))
         async for progress in upload:
-            say({"progress": {"upload": asked, "bytesUploaded": progress.bytes_uploaded, "totalBytes": progress.total_bytes}})
+            # The driver protocol reports the bytes sent: the upload's start and its end are its answer's.
+            if isinstance(progress, UploadProgressProgress):
+                say({"progress": {"upload": asked, "bytesUploaded": progress.bytes_uploaded, "totalBytes": progress.total_bytes}})
         created = await upload
         return {"resourceId": created.resource_id}
 
