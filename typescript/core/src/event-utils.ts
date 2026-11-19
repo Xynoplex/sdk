@@ -7,25 +7,7 @@
 
 import { isAnnotationId, type AnnotationId } from './identifiers';
 import { isObject, isString } from './type-guards';
-
-/**
- * Minimal event shape accepted by event utility functions.
- * Compatible with the internal `StoredEvent` type and with the spec's
- * `StoredEventResponse` and `AttributedEvent`.
- *
- * Flat shape — event fields and metadata are peers (no `event` wrapper).
- */
-export interface StoredEventLike {
-  id: string;
-  type: string; // Intentionally loose — accepts OpenAPI-derived types where type is string
-  timestamp: string;
-  userId: string;
-  resourceId?: string;
-  payload?: unknown;
-  metadata: {
-    sequenceNumber: number;
-  };
-}
+import type { components } from './types';
 
 // =============================================================================
 // EVENT TYPE GUARDS AND EXTRACTION
@@ -38,11 +20,9 @@ export interface StoredEventLike {
  * `mark:body-updated` name it by id.
  */
 export function getAnnotationIdFromEvent(
-  event: StoredEventLike,
+  event: components['schemas']['StoredEventResponse'],
 ): AnnotationId | null {
   const payload = event.payload;
-  if (!isObject(payload)) return null;
-
   let id: unknown;
   if (event.type === 'mark:added') {
     id = isObject(payload.annotation) ? payload.annotation.id : undefined;

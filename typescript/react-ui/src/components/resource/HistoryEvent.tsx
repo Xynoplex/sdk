@@ -6,11 +6,7 @@ import type {
   RouteBuilder,
   LinkComponentProps,
 } from '../../contexts/RoutingContext';
-import type {
-  Annotation,
-  AttributedEvent,
-  StoredEventLike,
-} from '@xynolog/core';
+import type { Annotation, AttributedEvent, components } from '@xynolog/core';
 import { getAnnotationIdFromEvent } from '@xynolog/core';
 import {
   formatEventType,
@@ -30,7 +26,7 @@ type TranslateFn = (
 interface Props {
   event: AttributedEvent;
   annotations: Annotation[];
-  allEvents: StoredEventLike[];
+  allEvents: components['schemas']['StoredEventResponse'][];
   isRelated: boolean;
   t: TranslateFn;
   Link: React.ComponentType<LinkComponentProps>;

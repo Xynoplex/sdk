@@ -642,10 +642,7 @@ let complete_sign_in browser ~http ~callback ~describe =
   in
   let* tokens =
     Oauth.finish_redirect http issuer redirect ~callback
-    |> Result.map_error (function
-      | Oauth.Rejected code -> code
-      | Invalid_response -> Error_codes.Sign_in.exchange
-      | Invalid_redirect -> "oauth.invalid-redirect")
+    |> Result.map_error (fun (error : Oauth.error) -> error.code)
   in
   let* refresh =
     match tokens.refresh_token with

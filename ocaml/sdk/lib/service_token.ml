@@ -1,16 +1,11 @@
 type proof = Secret of string | Key of Oauth.rsa_key
-type failure = { error : Oauth.error; status : int option }
+type failure = Issuer of Oauth.error | Closed
 
-let request http run =
-  let status = ref None in
-  let call input =
-    let code, body = http input in
-    status := Some code;
-    (code, body)
-  in
-  try Result.map_error (fun error -> { error; status = !status }) (run call)
-  with Eio.Io _ | End_of_file ->
-    Error { error = Oauth.Invalid_response; status = None }
+(* [run]'s exchange with the issuer, failing as [code] when it brings no
+   answer. *)
+let request ~code http run =
+  try Result.map_error (fun error -> Issuer error) (run http)
+  with Eio.Io _ | End_of_file -> Error (Issuer { Oauth.code; status = None })
 
 type service_token = {
   clock : Clock.t;
@@ -49,8 +44,7 @@ let acquire t refused =
   Eio.Mutex.use_rw ~protect:false t.lock (fun () ->
       let now = Clock.monotonic_now t.clock in
       match t.cached with
-      | _ when t.closed ->
-          Error { error = Oauth.Rejected "session.closed"; status = None }
+      | _ when t.closed -> Error Closed
       | Some (token, due)
         when Mtime.compare now due < 0 && Some token <> refused ->
           Ok token
@@ -65,11 +59,11 @@ let acquire t refused =
                   (fun issuer ->
                     t.issuer <- Some issuer;
                     issuer)
-                  (request t.http (fun http ->
-                       Oauth.discover http ~issuer:t.authority))
+                  (request ~code:Error_codes.Sign_in.discovery t.http
+                     (fun http -> Oauth.discover http ~issuer:t.authority))
           in
           let* tokens =
-            request t.http (fun http ->
+            request ~code:Error_codes.Sign_in.exchange t.http (fun http ->
                 grant ~clock:t.clock ~http ~issuer ~client_id:t.client_id
                   ~proof:t.proof ~jti:t.jti)
           in

@@ -5,14 +5,20 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getAnnotationIdFromEvent, type StoredEventLike } from '../event-utils';
+import { getAnnotationIdFromEvent } from '../event-utils';
+import { resourceId, userId } from '../identifiers';
+import type { components } from '../types';
 
-const event = (type: string, payload: unknown): StoredEventLike => ({
+const event = (
+  type: string,
+  payload: Record<string, unknown>,
+): components['schemas']['StoredEventResponse'] => ({
   id: 'evt-1',
   type,
   timestamp: '2026-01-01T00:00:00.000Z',
-  userId: 'did:web:kb.example:users:alice',
-  resourceId: 'res-1',
+  userId: userId('did:web:kb.example:users:alice'),
+  resourceId: resourceId('res-1'),
+  version: 1,
   payload,
   metadata: { sequenceNumber: 1 },
 });
@@ -45,7 +51,7 @@ describe('the annotation a stored event is about', () => {
     ['mark:added', { annotation: { id: 'not an id' } }],
     ['mark:removed', { annotationId: 'a/b' }],
     ['mark:removed', {}],
-    ['mark:added', undefined],
+    ['mark:added', {}],
   ])('is none when a %s names no annotation id (%j)', (type, payload) => {
     expect(getAnnotationIdFromEvent(event(type, payload))).toBeNull();
   });

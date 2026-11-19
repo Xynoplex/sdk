@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   annotationId,
   resourceId,
+  userId,
   type Annotation,
-  type StoredEventLike,
+  type components,
 } from '@xynolog/core';
 import {
   formatEventType,
@@ -18,11 +19,12 @@ import {
 const stored = (
   type: string,
   payload: Record<string, unknown>,
-): StoredEventLike => ({
+): components['schemas']['StoredEventResponse'] => ({
   id: `event-${type}`,
   type,
   timestamp: '2026-10-14T00:00:00.000Z',
-  userId: 'did:web:example.org:users:alice',
+  userId: userId('did:web:example.org:users:alice'),
+  version: 1,
   payload,
   metadata: { sequenceNumber: 1 },
 });
@@ -117,15 +119,21 @@ describe('event-formatting', () => {
       expect(formatEventType('job:failed', t)).toBe('jobEvent');
     });
 
-    it('returns the type of a persisted event it has no copy for', () => {
-      for (const type of [
-        'yield:updated',
-        'yield:moved',
-        'frame:entity-type-added',
-        'frame:tag-schema-added',
-        'principal:profiled',
-      ])
-        expect(formatEventType(type, t)).toBe(type);
+    it('returns translation keys for resource content and location events', () => {
+      expect(formatEventType('yield:updated', t)).toBe('contentUpdated');
+      expect(formatEventType('yield:moved', t)).toBe('resourceMoved');
+    });
+
+    it('returns translation keys for knowledge-base and principal events', () => {
+      expect(formatEventType('frame:entity-type-added', t)).toBe(
+        'entityTypeAdded',
+      );
+      expect(formatEventType('frame:tag-schema-added', t)).toBe(
+        'tagSchemaAdded',
+      );
+      expect(formatEventType('principal:profiled', t)).toBe(
+        'displayNameUpdated',
+      );
     });
 
     it('returns representationEvent for yield:representation types', () => {

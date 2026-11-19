@@ -376,10 +376,12 @@ public sealed partial class TransportTests
     }
 
     // A failure is held to its channel's schema as a result is: one with no words, or with a code that is no text, is
-    // not its channel's, and is refused naming its first fault. One whose code the wire does not list keeps its words.
+    // not its channel's, and is refused naming its first fault. One whose code the wire does not list keeps its words,
+    // and so does one that holds null for a code or details it may lack.
     [Theory]
     [InlineData("{\"message\":\"still starting\",\"code\":\"peer-unavailable\"}", "bus.peer-unavailable", "still starting")]
     [InlineData("{\"message\":\"a code from a later peer\",\"code\":\"not-a-code-yet\"}", "bus.rejected", "a code from a later peer")]
+    [InlineData("{\"message\":\"no class\",\"code\":null,\"details\":null}", "bus.rejected", "no class")]
     [InlineData("{\"code\":\"not-found\"}", "error", "a payload on browse:resource-failed is not that channel's: it has no `message`")]
     [InlineData("{\"message\":\"refused\",\"code\":7}", "error", "a payload on browse:resource-failed is not that channel's: its `code` is malformed")]
     public async Task AFailureIsReadByItsChannelsSchema(string failure, string code, string message)
@@ -393,6 +395,14 @@ public sealed partial class TransportTests
         Assert.IsType(code == "error" ? typeof(TransportError) : typeof(BusRequestError), error);
         Assert.Equal(code, error.Code);
         Assert.Equal(message, error.Message);
+    }
+
+    // A typed reader reads a member a payload may lack and holds as null as absent, as the table's walk reads it.
+    [Fact]
+    public void AFailuresTypedReaderReadsANullItMayLackAsAbsent()
+    {
+        var payload = JsonSerializer.SerializeToElement(new Dictionary<string, string?> { ["message"] = "no class", ["code"] = null, ["details"] = null });
+        Assert.Equal(new CommandError { Message = "no class" }, Bus.Decoded<CommandError>("browse:resource-failed", payload));
     }
 
     [Fact]
@@ -967,6 +977,21 @@ public sealed partial class TransportTests
         Assert.Equal("one", (await content.GetResourceGraphAsync(ResourceId.Parse("r1"))).Resource.Name);
         Assert.Equal(0, (await content.GetAnnotationsAsync(ResourceId.Parse("r1"))).Total);
         Assert.NotNull(await content.GetAnchoredTextAsync(ResourceId.Parse("r1")));
+    }
+
+    [Fact]
+    public async Task AnAnswerIsHeldToTheTableBeforeItIsRead()
+    {
+        var status = "{\"status\":\"ready\",\"message\":\"ready\",\"version\":\"1\",\"features\":{\"semanticContent\":\"ready\",\"collaboration\":\"ready\"},\"authenticatedAs\":null}";
+        using var server = new Handler();
+        server.Other = (_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(status) });
+        using var client = new HttpClient(server);
+        using var transport = new HttpTransport("http://unit.test", "token", ["beckon:focus"], httpClient: client);
+        await OpenAsync(transport);
+        Assert.Null((await transport.GetStatusAsync()).AuthenticatedAs);
+        status = "{\"status\":\"ready\",\"message\":\"ready\",\"features\":{\"semanticContent\":\"ready\",\"collaboration\":\"ready\"}}";
+        var refused = await Assert.ThrowsAsync<TransportError>(() => transport.GetStatusAsync());
+        Assert.Contains("it has no `version`", refused.Message);
     }
 
     [Theory]
