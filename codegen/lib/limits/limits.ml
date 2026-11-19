@@ -15,7 +15,7 @@ let derive (spec : Spec.t) =
   let operations =
     List.concat_map
       (fun (template, reference) ->
-        let file, _ = Decode.resolve reference in
+        let file, _ = Decode.resolve spec.Spec.ids reference in
         match List.assoc_opt file spec.path_items with
         | None ->
             refusals :=
@@ -39,7 +39,7 @@ let derive (spec : Spec.t) =
   let items =
     List.concat_map
       (fun (name, reference) ->
-        let file, _ = Decode.resolve reference in
+        let file, _ = Decode.resolve spec.Spec.ids reference in
         match List.assoc_opt file spec.schemas with
         | Some (Schema.Schema { properties = Some properties; _ }) ->
             List.filter_map

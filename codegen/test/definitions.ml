@@ -46,10 +46,14 @@ let type_name =
         | Null -> "null"))
     ( = )
 
-let at target = type_of (Definitions.schema_at ~schemas (from_client target))
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+
+let at target =
+  type_of (Definitions.schema_at ~ids ~schemas (from_client target))
 
 let refused target =
-  match Definitions.schema_at ~schemas (from_client target) with
+  match Definitions.schema_at ~ids ~schemas (from_client target) with
   | exception Definitions.Refused _ -> ()
   | _ -> Alcotest.failf "%s names a schema" target
 
@@ -86,14 +90,14 @@ let cases =
           else None
         in
         match
-          Definitions.referent ~named ~schemas
+          Definitions.referent ~ids ~named ~schemas
             (from_client "../registry.json#/properties/types/0")
         with
         | Some (Definitions.Named "Entry") -> ()
         | _ -> Alcotest.fail "the record is not named Entry");
     case "a member no table names is written in place" (fun () ->
         match
-          Definitions.referent
+          Definitions.referent ~ids
             ~named:(fun _ -> None)
             ~schemas
             (from_client

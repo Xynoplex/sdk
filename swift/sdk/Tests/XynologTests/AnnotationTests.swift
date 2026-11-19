@@ -13,6 +13,12 @@ import Testing
     let expected = try required(row, "reconciled")
     let why = try required(row, "why").text
     #expect(answer == expected, "\(why)")
+    if let actual {
+      var span = try expected.object
+      span.removeValue(forKey: "anchorMethod")
+      span.removeValue(forKey: "matchQuality")
+      #expect(try encoded(TextSpan(actual)) == .object(span), "\(why)")
+    }
   }
 }
 @Test func annotationReadersRunEverySharedCase() throws {
@@ -70,12 +76,21 @@ import Testing
               generator: row["generator"].map { try decoded(Agent.self, $0) },
               body: row["body"].map { try decoded(AnnotationBodies.self, $0) }))
         } else {
+          let span: TextSpan
+          do {
+            span = try decoded(TextSpan.self, required(row, "span"))
+          } catch is DecodingError {
+            // An offset in fractions is no TextSpan's: the span type refuses it before any builder
+            // is called, and that is the table's refusal of a span out of range.
+            #expect(row["refused"] == .string(SpanRefusalErrorCode.spanOutOfRange.rawValue))
+            continue
+          }
           annotation = try annotationOfSpan(
             OfSpan(
               resourceId: decoded(ResourceId.self, required(row, "resourceId")),
               motivation: decoded(Motivation.self, required(row, "motivation")),
               generator: decoded(Agent.self, required(row, "generator")),
-              span: decoded(TextSpan.self, required(row, "span")),
+              span: span,
               body: row["body"].map { try decoded(AnnotationBodies.self, $0) },
               text: row["text"].map { .text(try $0.text) }
                 ?? .anchored(decoded(AnchoredText.self, required(row, "anchored")))))

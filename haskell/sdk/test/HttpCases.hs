@@ -40,6 +40,7 @@ import Xynolog.Bus qualified as Bus
 import Xynolog.Channels (Channel (FrameEntityTypeAddOk), channelName, globalChannels)
 import Xynolog.Client qualified as Client
 import Xynolog.Content qualified as Content
+import Xynolog.Delegation (UploadEvent (..))
 import Xynolog.ErrorCodes qualified as Code
 import Xynolog.Errors
 import Xynolog.Frame qualified as Frame
@@ -288,8 +289,12 @@ httpCases root fixtures = do
           readIORef opens >>= require "renewal did not reopen the complete upload" . (== 2)
           readIORef renewals >>= require "renewal did not receive the refused token exactly once" . (== ["renew-upload"])
           notices <- readIORef progress
-          require "upload progress decreased across replay" (and (zipWith (<=) (map Content.bytesUploaded notices) (drop 1 (map Content.bytesUploaded notices))))
-          require "upload progress lost its total" (last notices == Content.UploadProgress (fromIntegral (Bytes.length bytes)) (fromIntegral (Bytes.length bytes)))
+          let total = fromIntegral (Bytes.length bytes)
+              sending reports = [report | report@(UploadProgress _ _) <- reports]
+              sent reports = [done | UploadProgress done _ <- reports]
+          require "upload reports are not its size, its progress and its resource" (notices == [UploadStarted total] ++ sending notices ++ [UploadFinished uploaded])
+          require "upload progress decreased across replay" (and (zipWith (<=) (sent notices) (drop 1 (sent notices))))
+          require "upload progress lost its total" (drop (length (sending notices) - 1) (sending notices) == [UploadProgress total total])
           state <- readState peer
           let uploads = values "uploads" state
           case uploads of
@@ -313,7 +318,7 @@ httpCases root fixtures = do
               require "another upload reused an earlier upload's key" (field "key" first `notElem` map (field "key") uploads)
             _ -> ioError (userError "keyed upload did not have exactly one retry")
           retriedNotices <- readIORef retryProgress
-          require "upload progress decreased across retry" (and (zipWith (<=) (map Content.bytesUploaded retriedNotices) (drop 1 (map Content.bytesUploaded retriedNotices))))
+          require "upload progress decreased across retry" (and (zipWith (<=) (sent retriedNotices) (drop 1 (sent retriedNotices))))
           beforeExplicitUpload <- readIORef renewals
           Content.putBinary contents (Just "content-override") metadata source (const (pure ())) >>= require "explicit upload returned another resource" . (== uploaded)
           postControl peer "/test/config" (object ["uploadStatuses" .= ([401] :: [Int])])

@@ -193,11 +193,12 @@ let refuse_const what n =
 type spec = {
   definitions : (string * Schema.t) list;
   identifiers : string list;
+  ids : Decode.ids;  (** Each schema's [$id]: what a reference names. *)
   name_of_key : (string * string) list;
 }
 
 let component spec (r : Decode.reference) =
-  match List.assoc_opt (Table_records.key r) spec.name_of_key with
+  match List.assoc_opt (Table_records.key spec.ids r) spec.name_of_key with
   | Some name -> name
   | None -> refuse "$ref %s names no schema the types write" r.target
 
@@ -216,7 +217,7 @@ let schema spec name =
 let meant spec what = function
   | Node { s = { all_of = Some _; _ } as s; null_form } -> (
       match
-        Normalize.normalize
+        Normalize.normalize spec.ids
           ~find:(fun r ->
             match List.assoc_opt (component spec r) spec.definitions with
             | Some s -> Ok s

@@ -58,6 +58,9 @@ from xynolog.types import (
     KbTarget,
     MediaTokenResponse,
     StatusResponse,
+    UploadProgressFinished,
+    UploadProgressProgress,
+    UploadProgressStarted,
     UserResponse,
 )
 
@@ -513,13 +516,17 @@ def test_content_in_memory_keeps_what_it_is_given_gives_it_back_and_refuses_what
         with pytest.raises(TransportError):
             await content.get_binary(OTHER)
 
-        # An upload is kept under an id of the double's making, and reports that all of it was sent.
+        # An upload is kept under an id of the double's making, and reports its size, that all of it was sent, and the resource made.
         put = PutBinaryRequest(name="Notes", file=b"some notes", format="text/plain", storage_uri="file://notes.txt")
         upload = content.put_binary(put)
         reports = [progress async for progress in upload]
         created = await upload
         assert created.resource_id == "test-content-2"
-        assert [(progress.bytes_uploaded, progress.total_bytes) for progress in reports] == [(10, 10)]
+        assert reports == [
+            UploadProgressStarted(phase="started", total_bytes=10),
+            UploadProgressProgress(phase="progress", bytes_uploaded=10, total_bytes=10),
+            UploadProgressFinished(phase="finished", resource_id=created.resource_id),
+        ]
         assert await content.get_binary(created.resource_id) == Content(data=b"some notes", content_type="text/plain")
         assert (await content.put_binary(put)).resource_id == "test-content-3"
 

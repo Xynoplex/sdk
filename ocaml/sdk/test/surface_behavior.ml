@@ -191,7 +191,9 @@ let tests env ~name ~via ~row =
     | _ ->
         Eio.Stream.add stream (Http (meth, path, body));
         Option.iter (fun report -> report (String.length body)) progress;
-        response 200 {|{"annotations":[]}|}
+        if meth = "POST" && path = "/resources" then
+          response 202 {|{"resourceId":"uploaded"}|}
+        else response 200 {|{"annotations":[]}|}
   in
   let on_event = function
     | Ok (Wire_stream.Frame { route; payload = Ok payload; _ })

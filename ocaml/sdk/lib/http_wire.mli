@@ -73,7 +73,7 @@ val put :
   t ->
   fields:(string * string) list ->
   bytes:string ->
-  on_progress:(int -> unit) ->
+  on_progress:(Records.Upload_progress.t -> unit) ->
   string
 
 val check_user : t -> string -> (string, failure) result

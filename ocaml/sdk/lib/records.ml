@@ -7206,6 +7206,94 @@ module Stored_session = struct
   }
 end
 
+module Begin_authorization_options = struct
+  type t = {
+    target : [ `HttpEndpoint ] Models.t;
+    redirect_uri : string;
+    kb_id : string option;
+    expected_did : string option;
+    expected_name : string option;
+  }
+end
+
+module Device_code = struct
+  type t = {
+    user_code : string;
+    verification_uri : string;
+    verification_uri_complete : string option;
+    expires_in : int;
+  }
+end
+
+module Issued_tokens = struct
+  type t = { access : string; refresh : string }
+end
+
+module Pdf_coordinate = struct
+  type t = { page : int; x : float; y : float; width : float; height : float }
+end
+
+module Pending_annotation = struct
+  type t = {
+    selector : [ `AnnotationSelector ] Models.t;
+    motivation : [ `Motivation ] Models.t;
+  }
+end
+
+module Quoted_text = struct
+  type t = { exact : string; prefix : string option; suffix : string option }
+end
+
+module Reconciled_span = struct
+  type t =
+    | UniqueMatch of {
+        start : int;
+        end_ : int;
+        exact : string;
+        prefix : string option;
+        suffix : string option;
+      }
+    | ContextRecovered of {
+        start : int;
+        end_ : int;
+        exact : string;
+        prefix : string option;
+        suffix : string option;
+      }
+    | FirstOfMany of {
+        start : int;
+        end_ : int;
+        exact : string;
+        prefix : string option;
+        suffix : string option;
+      }
+    | FuzzyMatch of {
+        start : int;
+        end_ : int;
+        exact : string;
+        prefix : string option;
+        suffix : string option;
+        match_quality : Enums.Match_quality.t;
+      }
+end
+
+module Text_span = struct
+  type t = {
+    start : int;
+    end_ : int;
+    exact : string;
+    prefix : string option;
+    suffix : string option;
+  }
+end
+
+module Upload_progress = struct
+  type t =
+    | Started of { total_bytes : int }
+    | Progress of { bytes_uploaded : int; total_bytes : int }
+    | Finished of { resource_id : string }
+end
+
 module Signed_in = struct
   type t = {
     endpoint : [ `KbEndpoint ] Models.t;

@@ -135,6 +135,15 @@ export type {
   MatchQuality,
   FrameRefusalReason,
   DiscoveryAbsentReason,
+  BeginAuthorizationOptions,
+  DeviceCode,
+  IssuedTokens,
+  PdfCoordinate,
+  PendingAnnotation,
+  QuotedText,
+  TextSpan,
+  ReconciledSpan,
+  UploadProgress,
 } from './payload-types';
 
 // Event utilities
@@ -175,11 +184,6 @@ export {
   annotationOfResource,
   SpanRefusedError,
 } from './annotation-builders';
-export type {
-  QuotedText,
-  TextSpan,
-  ReconciledSpan,
-} from './annotation-builders';
 
 // W3C Web Annotation accessors (target/body/selector helpers + type guards)
 export {
@@ -217,7 +221,6 @@ export {
   createFragmentSelector,
   parseFragmentSelector,
 } from './pdf-coordinates';
-export type { PdfCoordinate } from './pdf-coordinates';
 
 // PDF text <-> geometry anchoring (locate/textUnder are inverses)
 export { locate, textUnder } from './pdf-anchoring';

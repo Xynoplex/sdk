@@ -6,8 +6,6 @@ using Xynolog.Types;
 
 namespace Xynolog.SignIn;
 
-public sealed record DeviceCode(string UserCode, string VerificationUri, string? VerificationUriComplete, double ExpiresIn);
-
 public sealed partial class Issuer
 {
     internal sealed record Endpoints(string Issuer, string Authorization, string Token, string? Device, string? Revocation);
@@ -52,10 +50,10 @@ public sealed partial class Issuer
         var answer = await AnswerAsync(issuer.Device, new Dictionary<string, string>
         { ["client_id"] = SignInPolicy.ScriptClientId, ["scope"] = SignInPolicy.Scope }, cancellation: linked.Token).ConfigureAwait(Spawning.Captures);
         if (answer.Status != 200 || answer.Text("device_code") is not string device || device.Length == 0 ||
-            answer.Text("user_code") is not string user || user.Length == 0 || answer.Text("verification_uri") is not string uri || uri.Length == 0 || answer.Seconds("expires_in") is not double expires)
+            answer.Text("user_code") is not string user || user.Length == 0 || answer.Text("verification_uri") is not string uri || uri.Length == 0 || answer.WholeSeconds("expires_in") is not long expires)
             throw Failure("The issuer refused device authorization", answer.Status);
         var started = clock.GetTimestamp();
-        onCode(new DeviceCode(user, uri, answer.Text("verification_uri_complete"), expires));
+        onCode(new DeviceCode { UserCode = user, VerificationUri = uri, VerificationUriComplete = answer.Text("verification_uri_complete"), ExpiresIn = expires });
         var interval = Math.Max(answer.Seconds("interval") ?? ProtocolFacts.Timing("devicePollMs").GetDouble() / 1000, ProtocolFacts.Timing("devicePollFloorMs").GetDouble() / 1000);
         while (true)
         {

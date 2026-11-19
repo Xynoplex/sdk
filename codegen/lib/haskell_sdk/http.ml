@@ -51,7 +51,7 @@ let routes (spec : Spec.t) =
   let* rows =
     each
       (fun (path, (reference : Decode.reference)) ->
-        let file, _ = Decode.resolve reference in
+        let file, _ = Decode.resolve spec.Spec.ids reference in
         let* item =
           match List.assoc_opt file spec.path_items with
           | Some item -> Ok item

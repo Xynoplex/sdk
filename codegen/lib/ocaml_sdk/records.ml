@@ -7,13 +7,15 @@
    Records are read through ocaml/sdk/lib/record_reader.ml, and the module
    has no interface, so each record's type is stated once.
 
-   And every record Protocol states in a table ([Table_records]) but a string
-   enum ([Enums]), as the SDK builds it and hands it its callers: an object
-   as a record of its members, and a union of inline branches as a variant, a
-   constructor per value of its tag carrying the branch's other members. A
-   member is the table record it names, a string or a boolean, a string
-   component as a string and any other as its [Models] value; one that may
-   be absent, or null, is an option. *)
+   And every record Protocol states in a table ([Table_records]) and every
+   client type the SDK generates ([Definitions.generated_client_types]), but a
+   string enum ([Enums]), as the SDK builds it and hands it its callers: an
+   object as a record of its members, and a union of inline branches as a
+   variant, a constructor per value of its tag carrying the branch's other
+   members. A member is the table record or the enum it names, a string, a
+   boolean, an integer or a number, a string component as a string and any
+   other as its [Models] value; one that may be absent, or null, is an
+   option. *)
 
 module O = Ocaml_syntax
 
@@ -48,12 +50,12 @@ exception Refused of Decode.error
    none. *)
 let object_shape (spec : Spec.t) ~file schema =
   let find (r : Decode.reference) =
-    let target, _ = Decode.resolve r in
+    let target, _ = Decode.resolve spec.Spec.ids r in
     match List.assoc_opt target spec.schemas with
     | Some s -> Ok s
     | None -> Error ("$ref " ^ r.target ^ " names no schema")
   in
-  match Normalize.normalize ~find schema with
+  match Normalize.normalize spec.Spec.ids ~find schema with
   | Error message -> raise (Refused { Decode.file; pointer = ""; message })
   | Ok { type_ = Some [ Object ]; properties; required; _ } ->
       Some
@@ -109,9 +111,21 @@ let tabled (spec : Spec.t) table =
     let file, pointer = Enums.place key in
     raise (Refused { Decode.file; pointer = pointer ^ at; message })
   in
-  let enums = Enums.tabled table in
+  let enums = Enums.tabled spec.ids table in
+  let closed_in = Definitions.closed_in spec in
+  let clients =
+    List.filter_map
+      (fun name ->
+        let key = Definitions.client_types ^ name ^ ".json" in
+        match closed_in (List.assoc key spec.schemas) with
+        | Ok schema when Enums.is_enum schema -> None
+        | Ok schema -> Some (key, name, schema)
+        | Error message -> refuse key "" message)
+      (Definitions.generated_client_types spec)
+  in
   let written =
     List.filter (fun (_, _, schema) -> not (Enums.is_enum schema)) table
+    @ clients
   in
   let module_of key =
     List.find_map
@@ -120,12 +134,22 @@ let tabled (spec : Spec.t) table =
       written
   in
   let enum_of key =
-    List.find_map (fun (k, m, _) -> if k = key then Some m else None) enums
+    match
+      List.find_map (fun (k, m, _) -> if k = key then Some m else None) enums
+    with
+    | Some m -> Some m
+    | None ->
+        List.find_map
+          (fun name ->
+            if key = Definitions.client_types ^ name ^ ".json" then
+              Some (Enums.module_name name)
+            else None)
+          (Enums.client_types spec)
   in
   let component key =
     List.find_map
       (fun (name, reference) ->
-        if fst (Decode.resolve reference) = key then
+        if fst (Decode.resolve spec.Spec.ids reference) = key then
           Some (name, List.assoc key spec.schemas)
         else None)
       (Roots.all spec)
@@ -144,7 +168,8 @@ let tabled (spec : Spec.t) table =
     in
     let referent =
       match schema with
-      | Schema.Schema { ref_ = Some r; _ } -> Some (Table_records.key r)
+      | Schema.Schema { ref_ = Some r; _ } ->
+          Some (Table_records.key spec.Spec.ids r)
       | _ -> None
     in
     let base, need =
@@ -168,6 +193,10 @@ let tabled (spec : Spec.t) table =
               (O.type_ "string", None)
           | Schema.Schema { type_ = Some [ Boolean ]; _ } ->
               (O.type_ "bool", None)
+          | Schema.Schema { type_ = Some [ Integer ]; _ } ->
+              (O.type_ "int", None)
+          | Schema.Schema { type_ = Some [ Number ]; _ } ->
+              (O.type_ "float", None)
           | _ -> refuse key at "is no member the OCaml SDK has a type for")
     in
     let type_ =
@@ -275,7 +304,7 @@ let derive (spec : Spec.t) table =
     let components =
       List.map
         (fun (name, reference) ->
-          let file, _ = Decode.resolve reference in
+          let file, _ = Decode.resolve spec.Spec.ids reference in
           (name, file, List.assoc file spec.schemas))
         (Roots.all spec)
     in
@@ -308,7 +337,8 @@ let derive (spec : Spec.t) table =
               List.iter
                 (function
                   | Schema.Schema { ref_ = Some r; _ }
-                    when Option.is_some (module_of (fst (Decode.resolve r))) ->
+                    when Option.is_some
+                           (module_of (fst (Decode.resolve spec.Spec.ids r))) ->
                       ()
                   | _ ->
                       refuse file "/oneOf"
@@ -318,7 +348,7 @@ let derive (spec : Spec.t) table =
                 List.map
                   (fun (tag, target) ->
                     let branch, _ =
-                      Decode.resolve
+                      Decode.resolve spec.Spec.ids
                         { Decode.target; file; pointer = "/discriminator" }
                     in
                     match (module_of branch, variant_name tag) with

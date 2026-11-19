@@ -63,6 +63,9 @@ let channel ?payload ?(enriched = false) ?(system = false) ?(scoped = false)
     ?(passing = false) ?(event = "Event") () =
   { Table.event = Shape.Ref event; payload; enriched; system; scoped; passing }
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+
 let context =
   {
     Table.requests = [ "demo:get-requested" ];
@@ -79,6 +82,7 @@ let context =
       ];
     shapes;
     components;
+    ids;
   }
 
 (* ── The table ─────────────────────────────────────────────────────────── *)

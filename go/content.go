@@ -88,17 +88,10 @@ type PutBinaryRequest struct {
 	ArchiveOriginal *bool
 }
 
-// UploadProgress is how much of an upload has been sent, of how much there
-// is.
-type UploadProgress struct {
-	BytesUploaded int64
-	TotalBytes    int64
-}
-
-// Upload is an upload under way: its progress as it is sent, and what the
+// Upload is an upload under way: what it reports as it goes, and what the
 // gateway answers. It is consumed once.
 type Upload struct {
-	progress *kept.Queue[UploadProgress]
+	progress *kept.Queue[api.UploadProgress]
 	done     chan struct{}
 	result   api.CreateResourceResponse
 	err      error
@@ -107,22 +100,35 @@ type Upload struct {
 	consumed bool
 }
 
-// NewUpload is the upload work carries out: work reports how much has been
-// sent through report, and returns what the gateway answered. What
-// implements ContentTransport makes each upload it starts with it.
-func NewUpload(work func(report func(UploadProgress)) (api.CreateResourceResponse, error)) *Upload {
-	upload := &Upload{progress: kept.NewQueue[UploadProgress](), done: make(chan struct{})}
+// NewUpload is the upload work carries out: work reports through report the
+// upload's size, before any bytes are sent, and then how much has been sent,
+// and returns what the gateway answered. The upload reports the resource made
+// once work has returned it. What implements ContentTransport makes each
+// upload it starts with it.
+func NewUpload(work func(report func(api.UploadProgress)) (api.CreateResourceResponse, error)) *Upload {
+	upload := &Upload{progress: kept.NewQueue[api.UploadProgress](), done: make(chan struct{})}
 	go func() {
 		defer close(upload.done)
 		defer upload.progress.Close()
-		upload.result, upload.err = work(func(progress UploadProgress) { upload.progress.Push(progress) })
+		upload.result, upload.err = work(func(progress api.UploadProgress) { upload.progress.Push(progress) })
+		if upload.err != nil {
+			return
+		}
+		var finished api.UploadProgress
+		if upload.err = finished.From(api.UploadProgressFinished{Phase: api.UploadProgressFinishedPhaseFinished, ResourceId: upload.result.ResourceId}); upload.err == nil {
+			upload.progress.Push(finished)
+		}
 	}()
 	return upload
 }
 
-// Progress is how much has been sent, each time more has, never less than it
-// last said, until the upload ends or the loop over it stops.
-func (u *Upload) Progress() iter.Seq[UploadProgress] {
+// Progress is what the upload reports, until it ends or the loop over it
+// stops: started with its size before any bytes are sent, progress each time
+// more has been sent, never less than it last said, and finished with the
+// resource made, once the gateway has answered. Its size is every byte sent
+// for it: over HTTP, the whole request. An upload that fails reports no
+// finished, and Wait gives its failure.
+func (u *Upload) Progress() iter.Seq[api.UploadProgress] {
 	return u.progress.All(nil, func() {})
 }
 
@@ -254,24 +260,28 @@ func form(request PutBinaryRequest) (body []byte, contentType string, err error)
 // connection the server closed: the one resend is exchange's.
 type progressReader struct {
 	body     []byte
-	sent     int64
-	reported *int64
+	sent     int
+	reported *int
 	mu       *sync.Mutex
-	report   func(UploadProgress)
+	report   func(api.UploadProgress)
 }
 
 func (p *progressReader) Read(buffer []byte) (int, error) {
-	if p.sent >= int64(len(p.body)) {
+	if p.sent >= len(p.body) {
 		return 0, io.EOF
 	}
 	n := copy(buffer[:min(len(buffer), uploadChunk)], p.body[p.sent:])
-	p.sent += int64(n)
+	p.sent += n
 	p.mu.Lock()
+	defer p.mu.Unlock()
 	if p.sent > *p.reported {
 		*p.reported = p.sent
-		p.report(UploadProgress{BytesUploaded: p.sent, TotalBytes: int64(len(p.body))})
+		var progress api.UploadProgress
+		if err := progress.From(api.UploadProgressProgress{Phase: api.UploadProgressProgressPhaseProgress, BytesUploaded: p.sent, TotalBytes: len(p.body)}); err != nil {
+			return n, err
+		}
+		p.report(progress)
 	}
-	p.mu.Unlock()
 	return n, nil
 }
 
@@ -282,7 +292,7 @@ func (p *progressReader) Read(buffer []byte) (int, error) {
 // that is longer. Its context abandons it: the connection is closed, nothing
 // is reported on the error stream, and it is not sent again.
 func (c *HTTPContentTransport) PutBinary(ctx context.Context, putting PutBinaryRequest) *Upload {
-	return NewUpload(func(report func(UploadProgress)) (api.CreateResourceResponse, error) {
+	return NewUpload(func(report func(api.UploadProgress)) (api.CreateResourceResponse, error) {
 		busLog(ctx, busPut, "content", map[string]any{"name": putting.Name, "format": putting.Format, "storageUri": putting.StorageURI, "sizeBytes": len(putting.Bytes)}, Envelope{})
 		ctx, span := uploading(ctx, putting.Format, len(putting.Bytes))
 		defer span.End()
@@ -290,7 +300,12 @@ func (c *HTTPContentTransport) PutBinary(ctx context.Context, putting PutBinaryR
 		if err != nil {
 			return api.CreateResourceResponse{}, c.shared.failures.Report(transportErrorWithoutResponse(fmt.Sprintf("an upload that cannot be written: %v", err), TransportErrorCodeError))
 		}
-		var reported int64
+		var started api.UploadProgress
+		if err := started.From(api.UploadProgressStarted{Phase: api.UploadProgressStartedPhaseStarted, TotalBytes: len(body)}); err != nil {
+			return api.CreateResourceResponse{}, err
+		}
+		report(started)
+		var reported int
 		var mu sync.Mutex
 		return answer[api.CreateResourceResponse](ctx, c.shared, request{
 			method: http.MethodPost, path: "/resources", authenticated: true, contentType: contentType, idempotencyKey: uuid.NewString(),

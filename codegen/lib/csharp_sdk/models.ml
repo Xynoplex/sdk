@@ -115,6 +115,7 @@ type state = {
   read_from : (string, string) Hashtbl.t;
       (** A root's name, by the file, or the place in a file, it is read from.
       *)
+  ids : Decode.ids;  (** Each schema's [$id]: what a reference names. *)
   identifiers : string list;
   written : (string, C.decl list) Hashtbl.t;
   inlined : (string, string) Hashtbl.t;  (** [owner.property] → model. *)
@@ -133,7 +134,7 @@ let definition state name =
 
 (* The schema a reference names: the root read from where it points. *)
 let referenced state (r : Decode.reference) =
-  match Hashtbl.find_opt state.read_from (Table_records.key r) with
+  match Hashtbl.find_opt state.read_from (Table_records.key state.ids r) with
   | Some name -> name
   | None -> refuse "%s names no schema the models are made from" r.target
 
@@ -268,7 +269,7 @@ and meant state name d =
 (* [name]'s [schema] with its allOf merged ([Normalize]). *)
 and merged state name schema =
   match
-    Normalize.normalize
+    Normalize.normalize state.ids
       ~find:(fun r -> Ok (definition state (referenced state r)).schema)
       schema
   with
@@ -524,12 +525,13 @@ type t = {
 (* [roots] are the schemas the models are made from, in order, each
    validated, and each what a [$ref] to where it is read from names; [made]
    are the bus's payload types beside them. *)
-let make ~identifiers ~roots ~made =
+let make ~ids ~identifiers ~roots ~made =
   let state =
     {
       definitions = Hashtbl.create 1024;
       order = [];
       read_from = Hashtbl.create 1024;
+      ids;
       identifiers;
       written = Hashtbl.create 1024;
       inlined = Hashtbl.create 256;

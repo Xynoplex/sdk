@@ -85,6 +85,21 @@ public sealed partial class TransportTests
     private static JsonDocument ReadSpec(string file) =>
         JsonDocument.Parse(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "specs", file)));
 
+    // The spec file whose $id a reference names.
+    private static JsonDocument ReadReferred(JsonElement reference)
+    {
+        var id = Text(reference, "$ref");
+        var file = Directory.EnumerateFiles(Path.Join(AppContext.BaseDirectory, "specs"), "*.json", SearchOption.AllDirectories)
+            .Single(path =>
+            {
+                using var schema = JsonDocument.Parse(File.ReadAllText(path));
+                return schema.RootElement.ValueKind == JsonValueKind.Object
+                    && schema.RootElement.TryGetProperty("$id", out var stated)
+                    && stated.GetString() == id;
+            });
+        return JsonDocument.Parse(File.ReadAllText(file));
+    }
+
     private static string Text(JsonElement row, string name) =>
         row.GetProperty(name).GetString() ?? throw new InvalidOperationException("Missing " + name);
 

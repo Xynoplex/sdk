@@ -1,14 +1,12 @@
 module B = Bus_registry
 module J = Yojson.Safe.Util
 
-type pending_annotation = { selector : Yojson.Safe.t; motivation : string }
-
 type t = {
   client : Client.t;
   resource : Identifiers.Resource_id.t;
   pending :
-    pending_annotation option State_value.t
-    * pending_annotation option State_value.writer;
+    Records.Pending_annotation.t option State_value.t
+    * Records.Pending_annotation.t option State_value.writer;
   delegating : string option State_value.t * string option State_value.writer;
   progress :
     Yojson.Safe.t option State_value.t * Yojson.Safe.t option State_value.writer;
@@ -66,9 +64,17 @@ let make ?(silence_ms = Client_timing.delegate_silence_ms) client ~resource =
   in
   let request =
     listen B.Channels.mark_requested (fun body ->
-        let selector = J.member "selector" body in
-        let motivation = J.member "motivation" body |> J.to_string in
-        set t.pending (Some { selector; motivation }))
+        let member descriptor name =
+          Models.decode descriptor (Yojson.Safe.to_string (J.member name body))
+          |> Result.get_ok
+        in
+        set t.pending
+          (Some
+             {
+               Records.Pending_annotation.selector =
+                 member Models.annotation_selector "selector";
+               motivation = member Models.motivation "motivation";
+             }))
   in
   let submit =
     listen B.Channels.mark_submit (fun body ->

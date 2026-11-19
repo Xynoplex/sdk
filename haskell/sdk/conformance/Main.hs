@@ -45,6 +45,7 @@ import Xynolog.Bus qualified as Bus
 import Xynolog.Channels
 import Xynolog.Claims (jobClaimChannels, jobCommitChannels)
 import Xynolog.Content qualified as Content
+import Xynolog.Delegation (UploadEvent (..))
 import Xynolog.ErrorCodes qualified as Code
 import Xynolog.Gateway qualified as Gateway
 import Xynolog.Http qualified as Http
@@ -186,14 +187,16 @@ upload driver identifier progress args = do
   let fields = foldr KM.delete args ["id", "op", "bytes"]
       formValue key value = if key `elem` ["entityTypes", "isDraft"] then String (decodeUtf8 (Lazy.toStrict (encode value))) else value
   metadata <- decode (Object (KM.mapWithKey formValue fields))
-  let notice value =
+  -- The driver protocol reports the bytes sent: the upload's start and its end are its answer's.
+  let notice (UploadProgress sent total) =
         when progress
           $ say driver
           $ object
             [ "progress"
                 .= object
-                  ["upload" .= identifier, "bytesUploaded" .= Content.bytesUploaded value, "totalBytes" .= Content.totalBytes value]
+                  ["upload" .= identifier, "bytesUploaded" .= sent, "totalBytes" .= total]
             ]
+      notice _ = pure ()
   created <- Content.putBinary (Http.content http) Nothing metadata (Content.bytesBody bytes) notice
   pure (object ["resourceId" .= created])
 

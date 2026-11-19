@@ -1,18 +1,11 @@
 import Foundation
 
-struct Rectangle: Codable {
-  let page: Int
-  let x: Double
-  let y: Double
-  let width: Double
-  let height: Double
-}
-func locate(_ anchored: AnchoredText, start: Int, end: Int) -> ([PdfTextItem], [Rectangle]) {
+func locate(_ anchored: AnchoredText, start: Int, end: Int) -> ([PdfTextItem], [PdfCoordinate]) {
   guard start != end else { return ([], []) }
   let overlapping = anchored.items.filter { $0.start < end && $0.end > start }
   var pages: [Int] = []
   for item in overlapping where !pages.contains(item.page) { pages.append(item.page) }
-  var rectangles: [Rectangle] = []
+  var rectangles: [PdfCoordinate] = []
   for page in pages {
     let items = overlapping.filter { $0.page == page }.sorted {
       $0.y == $1.y ? $0.x < $1.x : $0.y > $1.y
@@ -38,13 +31,13 @@ func locate(_ anchored: AnchoredText, start: Int, end: Int) -> ([PdfTextItem], [
       if let x = edges.map(\.0).min(), let right = edges.map(\.1).max(),
         let y = line.map(\.y).min(), let top = line.map({ $0.y + $0.height }).max()
       {
-        rectangles.append(Rectangle(page: page, x: x, y: y, width: right - x, height: top - y))
+        rectangles.append(PdfCoordinate(height: top - y, page: page, width: right - x, x: x, y: y))
       }
     }
   }
   return (overlapping, rectangles)
 }
-func fragmentOf(_ rectangle: Rectangle) -> String {
+func fragmentOf(_ rectangle: PdfCoordinate) -> String {
   func decimal(_ number: Double) -> String {
     let text = String(number)
     if text.hasSuffix(".0") { return String(text.dropLast(2)) }

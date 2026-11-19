@@ -30,7 +30,11 @@ let fixture_declaration () =
     | Error error -> D.refuse "%s" (Decode.error_to_string error)
   in
   let models =
-    M.create (D.alone ~name:"FidelityFixture" schema) ~identifiers:[]
+    M.create
+      (D.alone
+         ~ids:(Result.get_ok (Decode.ids []))
+         ~name:"FidelityFixture" schema)
+      ~identifiers:[]
   in
   M.generate models;
   M.declarations models

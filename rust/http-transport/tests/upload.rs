@@ -19,7 +19,8 @@ use tokio::net::TcpStream;
 use tokio::sync::{Notify, watch};
 use xynolog::channels::BRIDGED_CHANNELS;
 use xynolog::timing::REQUEST_RETRY_PAUSE;
-use xynolog::transport::{BoxFuture, ContentTransport, PutBinaryRequest, UploadProgress};
+use xynolog::transport::{BoxFuture, ContentTransport, PutBinaryRequest};
+use xynolog::types::{UploadProgress, UploadProgressFinished, UploadProgressStarted};
 use xynolog_http_transport::content::HttpContentTransport;
 use xynolog_http_transport::transport::{
     HttpTransport, HttpTransportConfig, Timing, TokenRefresher,
@@ -137,10 +138,24 @@ async fn an_upload_sent_again_with_a_renewed_token_never_reports_less_than_it_la
         "a second upload carries a key of its own"
     );
     assert_eq!(arrived[0].2.len(), arrived[1].2.len());
-    let total = reports[0].total_bytes;
-    assert_eq!(total as usize, arrived[1].2.len());
+    // Its size once, for both sendings; then what is sent, never less than
+    // it last said; then the resource made.
+    let total = arrived[1].2.len() as u64;
+    let (started, rest) = reports.split_first().expect("a report");
+    let (finished, sent) = rest.split_last().expect("a last report");
+    assert_eq!(
+        started,
+        &UploadProgress::Started(UploadProgressStarted::new(total))
+    );
+    assert_eq!(
+        finished,
+        &UploadProgress::Finished(UploadProgressFinished::new(created.resource_id.clone()))
+    );
     let mut before = 0;
-    for report in &reports {
+    for report in sent {
+        let UploadProgress::Progress(report) = report else {
+            panic!("between its start and its end, an upload reports what is sent: {report:?}");
+        };
         assert_eq!(report.total_bytes, total);
         assert!(
             report.bytes_uploaded >= before,

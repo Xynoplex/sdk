@@ -67,7 +67,7 @@ case "${1:-}" in
       uv run pyright --pythonplatform Windows
       uv run ruff check
       uv run ruff format --check
-      uv run pytest'
+      uv run pytest' --memory 4g
     ;;
   test-rust)
     bash "$ROOT/scripts/bundle-protocol.sh"

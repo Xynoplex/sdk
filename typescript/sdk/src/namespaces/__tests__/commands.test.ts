@@ -22,7 +22,8 @@ import { MatchNamespace } from '../match';
 import { YieldNamespace } from '../yield';
 import { JobNamespace } from '../job';
 import { JobFailedError } from '../job-status-poll';
-import type { JobEvent, UploadProgress } from '../../awaitable';
+import type { UploadProgress } from '@xynolog/core';
+import type { JobEvent } from '../../awaitable';
 import type {
   EventMap,
   IGatewayOperations,

@@ -30,6 +30,7 @@ import xynolog.transport.Frame
 import xynolog.transport.FrameRefusal
 import xynolog.transport.PutBinaryRequest
 import xynolog.transport.ResourceHold
+import xynolog.types.UploadProgressProgress
 import java.util.Base64
 import kotlin.system.exitProcess
 
@@ -163,7 +164,7 @@ private class WireDriver(private val abandon: (Long) -> Boolean) : Driver {
                     // The suite's backend sends only frames BusFrame allows, and its lines have none for a
                     // refusal: a frame the transport refused is its bug, which ends the driver.
                     is FrameRefusal -> {
-                        System.err.println("the transport refused a frame on $channel: ${carried.reason.wire}, at its `${carried.member}`")
+                        System.err.println("the transport refused a frame on $channel: ${carried.reason.value}, at its `${carried.member}`")
                         exitProcess(1)
                     }
                 }
@@ -213,7 +214,10 @@ private class WireDriver(private val abandon: (Long) -> Boolean) : Driver {
         try {
             if (reporting) {
                 upload.progress.collect { progress ->
-                    Say.line(Say.of("progress" to Say.of("upload" to JsonPrimitive(id), "bytesUploaded" to JsonPrimitive(progress.bytesUploaded), "totalBytes" to JsonPrimitive(progress.totalBytes))))
+                    // The driver protocol reports the bytes sent: the upload's start and its end are its answer's.
+                    if (progress is UploadProgressProgress) {
+                        Say.line(Say.of("progress" to Say.of("upload" to JsonPrimitive(id), "bytesUploaded" to JsonPrimitive(progress.bytesUploaded), "totalBytes" to JsonPrimitive(progress.totalBytes))))
+                    }
                 }
             }
             return Say.of("resourceId" to JsonPrimitive(upload.await().resourceId.value))

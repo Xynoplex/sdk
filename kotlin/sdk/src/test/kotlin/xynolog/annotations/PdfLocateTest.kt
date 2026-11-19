@@ -1,7 +1,6 @@
 package xynolog.annotations
 
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -13,17 +12,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import xynolog.Spec
 import xynolog.types.AnchoredText
+import xynolog.types.PdfCoordinate
 import xynolog.types.PdfTextItem
 import xynolog.types.wireJson
 
 /** Where a span of a PDF's text is on its pages, held to the `cases` of protocol/specs/src/annotations/pdf-locate-cases.json. */
 class PdfLocateTest {
     private val cases: List<JsonObject> = Spec.read("annotations/pdf-locate-cases.json").jsonObject.getValue("cases").jsonArray.map { it.jsonObject }
-
-    private fun rectangle(stated: JsonObject): Rectangle {
-        fun number(name: String) = stated.getValue(name).jsonPrimitive.double
-        return Rectangle(stated.getValue("page").jsonPrimitive.long, number("x"), number("y"), number("width"), number("height"))
-    }
 
     @Test
     fun theRunnerFoundTheTablesCases() {
@@ -38,7 +33,7 @@ class PdfLocateTest {
             val span = case.getValue("span").jsonObject
             val (overlapping, rectangles) = locate(anchored, span.getValue("start").jsonPrimitive.long, span.getValue("end").jsonPrimitive.long)
             assertEquals(case.getValue("overlapping").jsonArray.map { wireJson.decodeFromJsonElement(PdfTextItem.serializer(), it) }, overlapping, "the items the span overlaps")
-            assertEquals(case.getValue("rects").jsonArray.map { rectangle(it.jsonObject) }, rectangles, "a rectangle for each line")
+            assertEquals(case.getValue("rects").jsonArray.map { wireJson.decodeFromJsonElement(PdfCoordinate.serializer(), it) }, rectangles, "a rectangle for each line")
             assertEquals(case.getValue("fragments").jsonArray.map { it.jsonPrimitive.content }, rectangles.map(::fragmentOf), "each rectangle as a fragment")
         }
     }
@@ -47,6 +42,6 @@ class PdfLocateTest {
     fun aNumberTheJvmWouldWriteWithAnExponentIsWrittenAsADecimal() {
         // The JVM writes a number below a thousandth with an exponent (5.0E-5), and the rule is the shortest decimal.
         assertEquals("5.0E-5", 0.00005.toString())
-        assertEquals("page=1&viewrect=72,700.25,0.00005,12", fragmentOf(Rectangle(1, 72.0, 700.25, 0.00005, 12.0)))
+        assertEquals("page=1&viewrect=72,700.25,0.00005,12", fragmentOf(PdfCoordinate(1, 72.0, 700.25, 0.00005, 12.0)))
     }
 }

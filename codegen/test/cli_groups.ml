@@ -115,7 +115,7 @@ let () =
     | _ -> fail "usage: cli_groups.exe ROOT"
   in
   let spec =
-    match Spec.load (Filename.concat sdk "protocol/specs/src") with
+    match Spec_shapes.load (Filename.concat sdk "protocol/specs/src") with
     | Ok spec -> spec
     | Error errors ->
         fail "%s" (String.concat "\n" (List.map Decode.error_to_string errors))

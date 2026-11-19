@@ -247,7 +247,7 @@ let int key row = J.to_int (field key row)
 let parse schema value =
   Models.decode schema (Yojson.Safe.to_string value) |> Result.get_ok
 
-let quote row : Annotations.quoted_text =
+let quote row : Records.Quoted_text.t =
   {
     exact = string "exact" row;
     prefix = J.to_string_option (field "prefix" row);
@@ -284,8 +284,9 @@ let builder row =
           let value = number key span in
           if Float.is_integer value then int_of_float value else -1
         in
-        let selection : A.text_span =
-          { start = offset "start"; end_ = offset "end"; quote = quote span }
+        let { Records.Quoted_text.exact; prefix; suffix } = quote span in
+        let selection : Records.Text_span.t =
+          { start = offset "start"; end_ = offset "end"; exact; prefix; suffix }
         in
         let content =
           match optional "anchored" row with
@@ -321,25 +322,35 @@ let builder row =
 let reconcile row =
   let module A = Annotations in
   let actual = A.reconcile (string "text" row) (quote (field "quoted" row)) in
-  let to_json (result : A.reconciled_span) =
-    let span = result.span in
+  let to_json (result : Records.Reconciled_span.t) =
     let field name value =
       Option.to_list (Option.map (fun value -> (name, text value)) value)
     in
-    let method_ = Enums.Anchor_method.to_string result.anchor_method in
-    let quality =
-      Option.map Enums.Match_quality.to_string result.match_quality
+    let span ~start ~end_ ~exact ~prefix ~suffix anchor_method quality =
+      `Assoc
+        ([
+           ("start", `Int start);
+           ("end", `Int end_);
+           ("exact", text exact);
+           ("anchorMethod", text (Enums.Anchor_method.to_string anchor_method));
+         ]
+        @ field "prefix" prefix @ field "suffix" suffix
+        @ field "matchQuality"
+            (Option.map Enums.Match_quality.to_string quality))
     in
-    `Assoc
-      ([
-         ("start", `Int span.start);
-         ("end", `Int span.end_);
-         ("exact", text span.quote.exact);
-         ("anchorMethod", text method_);
-       ]
-      @ field "prefix" span.quote.prefix
-      @ field "suffix" span.quote.suffix
-      @ field "matchQuality" quality)
+    match result with
+    | UniqueMatch { start; end_; exact; prefix; suffix } ->
+        span ~start ~end_ ~exact ~prefix ~suffix
+          Enums.Anchor_method.Unique_match None
+    | ContextRecovered { start; end_; exact; prefix; suffix } ->
+        span ~start ~end_ ~exact ~prefix ~suffix
+          Enums.Anchor_method.Context_recovered None
+    | FirstOfMany { start; end_; exact; prefix; suffix } ->
+        span ~start ~end_ ~exact ~prefix ~suffix
+          Enums.Anchor_method.First_of_many None
+    | FuzzyMatch { start; end_; exact; prefix; suffix; match_quality } ->
+        span ~start ~end_ ~exact ~prefix ~suffix Enums.Anchor_method.Fuzzy_match
+          (Some match_quality)
   in
   check "reconciled span" (field "reconciled" row) (nullable to_json actual)
 
@@ -365,7 +376,17 @@ let pdf row =
   in
   check "overlaps" (field "overlapping" row)
     (`List (List.map (fun item -> List.assq item entries) overlaps));
-  check "rectangles" (field "rects" row) (`List rectangles);
+  let rectangle (place : Records.Pdf_coordinate.t) =
+    `Assoc
+      [
+        ("page", `Int place.page);
+        ("x", `Float place.x);
+        ("y", `Float place.y);
+        ("width", `Float place.width);
+        ("height", `Float place.height);
+      ]
+  in
+  check "rectangles" (field "rects" row) (`List (List.map rectangle rectangles));
   check "fragments" (field "fragments" row)
     (texts (List.map A.fragment rectangles))
 

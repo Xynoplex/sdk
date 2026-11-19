@@ -44,11 +44,11 @@ let canonical ~rewrite : Schema.t -> Schema.t =
           examples = Option.map (List.map Yojson.Safe.sort) s.examples;
         })
 
+let stem file = Filename.remove_extension (Filename.basename file)
 let unchanged (r : Decode.reference) = r.target
 
 (* A reference names the schema of its file's base name. *)
-let referenced (r : Decode.reference) =
-  Filename.remove_extension (Filename.basename r.target)
+let referenced (r : Decode.reference) = stem r.target
 
 let layer name = function
   | Schema.Schema s -> Ok s
@@ -102,13 +102,11 @@ let squeeze text =
 let components (spec : Spec.t) =
   each
     (fun (name, (r : Decode.reference)) ->
-      let file, fragment = Decode.resolve r in
-      let base = Filename.remove_extension (Filename.basename r.target) in
+      let file, fragment = Decode.resolve spec.Spec.ids r in
       if
         fragment <> ""
-        || Filename.extension r.target <> ".json"
-        || base <> name
-        || Marker.find "://" r.target <> None
+        || Filename.extension file <> ".json"
+        || stem file <> name
       then
         Error
           ("OpenAPI schema reference needs an explicit Haskell naming rule: "
@@ -121,10 +119,10 @@ let components (spec : Spec.t) =
 
 (* A table's record that a reference into the table names is named by its
    title. *)
-let titled records (r : Decode.reference) =
-  if snd (Decode.resolve r) = "" then r.target
+let titled ids records (r : Decode.reference) =
+  if snd (Decode.resolve ids r) = "" then r.target
   else
-    let key = Table_records.key r in
+    let key = Table_records.key ids r in
     match List.find_opt (fun (k, _, _) -> k = key) records with
     | Some (_, title, _) -> title ^ ".json"
     | None ->
@@ -135,7 +133,7 @@ let titled records (r : Decode.reference) =
 let client_type (spec : Spec.t) name =
   let file = "client/types/" ^ name ^ ".json" in
   let member (r : Decode.reference) =
-    let target, pointer = Decode.resolve r in
+    let target, pointer = Decode.resolve spec.Spec.ids r in
     Option.bind (List.assoc_opt target spec.schemas) (fun s ->
         Pointer.schema s pointer)
   in
@@ -146,7 +144,7 @@ let client_type (spec : Spec.t) name =
           (fun (key, p) ->
             match p with
             | Schema.Schema { ref_ = Some r; _ }
-              when snd (Decode.resolve r) <> "" -> (
+              when snd (Decode.resolve spec.Spec.ids r) <> "" -> (
                 match member r with
                 | Some m -> Ok (key, m)
                 | None -> Error (name ^ "'s " ^ key ^ " names no schema"))
@@ -164,7 +162,7 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
     | None -> Error (name ^ " schema missing")
   in
   let normalize s =
-    Normalize.normalize
+    Normalize.normalize spec.Spec.ids
       ~find:(fun r ->
         match List.assoc_opt (referenced r) components with
         | Some s -> Ok s
@@ -211,15 +209,26 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
     ]
   in
   let tables = spec.tables in
+  (* A table's record, the schema it names when it names one by its [$id]. *)
+  let held key s = Result.map snd (Table_records.stated spec (key, s)) in
+  let* told_schema =
+    held "session/cases.json#/told" tables.session_cases.told
+  in
   let* told_title =
-    match tables.session_cases.told with
+    match told_schema with
     | Schema { title = Some t; _ } -> Ok t
     | _ -> Error "session end reasons have no title"
   in
-  let pointed =
-    tables.client_registry.types @ tables.client_state_units.notices
+  let* pointed =
+    List.fold_right
+      (fun (n, s) pointed ->
+        let* pointed = pointed in
+        let* s = held n s in
+        Ok ((n, s) :: pointed))
+      (tables.client_registry.types @ tables.client_state_units.notices)
+      (Ok [])
   in
-  let told = (told_title, tables.session_cases.told) in
+  let told = (told_title, told_schema) in
   let adapter_names =
     List.map fst adapters @ List.map fst pointed @ [ fst told ]
   in
@@ -234,7 +243,8 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
   let* records =
     match
       List.map
-        (fun (n, s) -> (n, canonical ~rewrite:(titled table_records) s))
+        (fun (n, s) ->
+          (n, canonical ~rewrite:(titled spec.ids table_records) s))
         pointed
     with
     | records -> Ok (records @ [ told ])
@@ -248,12 +258,19 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
     Option.to_result ~none:"SignIn schema missing"
       (List.assoc_opt "sign-in-store/SignIn.json" spec.schemas)
   in
+  let* stored_session =
+    held "session/stored.json#/storedSession"
+      tables.session_stored.stored_session
+  in
+  let* open_resource =
+    held "session/stored.json#/openResource" tables.session_stored.open_resource
+  in
   let stored =
     List.sort (fun (a, _) (b, _) -> String.compare a b) (adapters @ records)
     @ [
         ("SignIn", sign_in);
-        ("StoredSession", tables.session_stored.stored_session);
-        ("OpenResource", tables.session_stored.open_resource);
+        ("StoredSession", stored_session);
+        ("OpenResource", open_resource);
         ("IssuerEndpoints", issuer);
         ( "PendingAuthorization",
           Schema.Schema

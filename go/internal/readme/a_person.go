@@ -12,8 +12,8 @@ import (
 	"github.com/xynolog/sdk/go/bus"
 )
 
-func show(code xynolog.DeviceCode) {
-	fmt.Printf("Open %s and enter %s\n", code.VerificationURI, code.UserCode)
+func show(code api.DeviceCode) {
+	fmt.Printf("Open %s and enter %s\n", code.VerificationUri, code.UserCode)
 }
 
 // AsMe is a session as the person signed in to kb, by `xynolog login` or by

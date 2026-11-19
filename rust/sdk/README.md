@@ -271,7 +271,7 @@ for quote in quoted {
     };
     highlights.push(annotation_of_span(
         text,
-        &found.span,
+        &TextSpan::from(found),
         &resource_id,
         Motivation::Highlighting,
         generator,
@@ -287,7 +287,7 @@ job.complete(result.into()).await?;
 
 | Function | What it does |
 |---|---|
-| `reconcile(text, &quoted)` | Finds the words a model quoted in a text. `quoted` is a `QuotedText`: the `exact` words, and maybe the `prefix` and `suffix` the model says stand around them. The answer is `Some(ReconciledSpan)`, the `span` the words are (`start`, `end`, `exact`, and the text's own `prefix` and `suffix`) and the `anchor_method` that found it, or `None`. Words the text does not have character for character are looked for without regard to white space and the forms of quotation marks and dashes, then without regard to letter case, then within a twentieth of their length in edits. |
+| `reconcile(text, &quoted)` | Finds the words a model quoted in a text. `quoted` is a `QuotedText`: the `exact` words, and maybe the `prefix` and `suffix` the model says stand around them. The answer is `Some(ReconciledSpan)`, or `None`. A `ReconciledSpan` is the span the words are (`start`, `end`, `exact`, and the text's own `prefix` and `suffix`), as the variant of how it was found: `UniqueMatch`, `ContextRecovered`, `FirstOfMany` or `FuzzyMatch`, and only a fuzzy match states the `match_quality` of the search that found it. `TextSpan::from` it is the span alone. Words the text does not have character for character are looked for without regard to white space and the forms of quotation marks and dashes, then without regard to letter case, then within a twentieth of their length in edits. |
 | `annotation_of_span(text, &span, &resource_id, motivation, &generator, body)` | Builds the annotation of a span: its selectors, its id, and the body and generator as given. `text` is the resource's text, or in its place a PDF's `&AnchoredText`, whose annotation states a rectangle for each line the span touches. A span that is not the text's is an `Err` of an `errors::SpanRefusal`, which displays as its code: `span-out-of-range`, `exact-mismatch`, `prefix-mismatch`, `suffix-mismatch`, `nothing-located`, `exact-not-covered`, `item-out-of-range`. The last is said of a PDF's anchored text and not of the span: one of its items is no stretch of its text, so no span of it is built. |
 | `annotation_of_resource(&resource_id, motivation, generator, body)` | Builds an annotation of a resource as a whole, with no selector: the link from a source to what was generated from it is one. |
 
@@ -374,7 +374,7 @@ A method's return type says how to use it.
 | `async fn … -> Result<T, XynologError>` | asked once, answered once | `.await?` |
 | `Running<T>` | a long-running operation | `.await` for its final value; `.next()` for each report and then the final value; `.run(f)` for both |
 | `Delegation<C>` | a job another party does | `.await` for its completion, a `C`: its verb's, `MarkJobCompleteCommand` or `YieldJobCompleteCommand`; `.next()` for each of the job's events: the queue's answer that names the job first (its id is what `job.cancel` takes), the completion last |
-| `Upload` | an upload in flight | `.await` for the resource created; as a stream, its progress; dropped, cancelled |
+| `Upload` | an upload in flight | `.await` for the resource created; as a stream, each `UploadProgress`: `Started`, `Progress` as the bytes are sent, and `Finished`; dropped, cancelled |
 | `Cached<T>` | a query, built without touching the wire | `.watch()` for its state now and as it changes; `.fresh().await?` for one read; `.invalidate()` to ask again |
 | nothing, from a plain `fn` | a signal to the client's own parts | called |
 | `async fn … -> Result<Option<u64>, XynologError>` | a drive at the other participants | `.await?`: how many the gateway reached, `None` when it kept no count |
@@ -568,7 +568,7 @@ and the same case tables. What differs is how each language says "later".
 | an `Observable` of events | a `Stream` | A reader that falls behind is given `Lagged(n)` in place of what it missed. Nothing is dropped silently. |
 | a `BehaviorSubject` of state | a `watch::Receiver` | The value now, and each value after it. A slow reader sees the latest value and not each one between: state is what is true now. What must be seen in sequence, such as a job's progress, is a stream. |
 | `StreamObservable<T>` | `Running<T>` | `.await` for the final value, `.next()` for each report. It is consumed by value, so one operation is never started twice. |
-| `UploadObservable` | `Upload` | `.await` for the resource created; as a stream, its progress; dropped, cancelled. |
+| `UploadObservable` | `Upload` | `.await` for the resource created; as a stream, each `UploadProgress`; dropped, cancelled. |
 | `CacheObservable<T>` | `Cached<T>` | `.watch()` for its state, `.fresh().await?` for one read. Neither is awaited itself. |
 | a method returning `void` | a plain `fn` | A signal. One that fails is said on the transport's failure stream. |
 | `client.yield`, `client.match` | `client.yield_`, `client.match_` | `yield` and `match` are Rust's own words. |

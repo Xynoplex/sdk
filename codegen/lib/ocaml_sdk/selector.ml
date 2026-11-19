@@ -57,7 +57,7 @@ let derive (spec : Spec.t) =
     let reference =
       { Decode.target; file; pointer = "/discriminator/mapping" }
     in
-    let branch, _ = Decode.resolve reference in
+    let branch, _ = Decode.resolve spec.Spec.ids reference in
     let refuse_branch pointer message = refuse ~file:branch pointer message in
     let valid_name =
       constructor <> ""

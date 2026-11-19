@@ -10,8 +10,8 @@ import * as fc from 'fast-check';
 import {
   createFragmentSelector,
   parseFragmentSelector,
-  type PdfCoordinate,
 } from '../pdf-coordinates';
+import type { PdfCoordinate } from '../payload-types';
 
 describe('PDF viewrect FragmentSelector codec', () => {
   it('createFragmentSelector and parseFragmentSelector round-trip correctly', () => {

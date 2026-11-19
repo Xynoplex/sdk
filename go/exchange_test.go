@@ -164,6 +164,72 @@ func waitFor(t *testing.T, upload *xynolog.Upload) (api.CreateResourceResponse, 
 	return upload.Wait(ctx)
 }
 
+// reported is each member an upload reports, until it ends.
+func reported(t *testing.T, upload *xynolog.Upload) []any {
+	t.Helper()
+	var reports []any
+	for progress := range upload.Progress() {
+		member, err := progress.ValueByDiscriminator()
+		if err != nil {
+			t.Fatal(err)
+		}
+		reports = append(reports, member)
+	}
+	return reports
+}
+
+// An upload reports its size first, the size of the whole request; then how
+// much is sent, of that one total, never less than it last said, and all of
+// it at the end; then the resource made.
+func TestAnUploadReportsItsSizeWhatIsSentAndTheResourceMade(t *testing.T) {
+	gateway := newUploadGateway(t, create)
+	request := anUpload()
+	request.Bytes = bytes.Repeat([]byte("every byte "), 20000)
+	upload := uploader(t, gateway).PutBinary(context.Background(), request)
+	reports := reported(t, upload)
+	created, err := waitFor(t, upload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, bodies := gateway.sent()
+	total := len(bodies[0])
+	if len(reports) < 4 {
+		t.Fatalf("the upload reported %+v, want its size, how much is sent as it goes, and the resource made", reports)
+	}
+	if started, ok := reports[0].(api.UploadProgressStarted); !ok || started.TotalBytes != total {
+		t.Errorf("the upload began by reporting %+v, want its size, %d", reports[0], total)
+	}
+	if finished, ok := reports[len(reports)-1].(api.UploadProgressFinished); !ok || finished.ResourceId != created.ResourceId {
+		t.Errorf("the upload ended by reporting %+v, want the resource made, %s", reports[len(reports)-1], created.ResourceId)
+	}
+	last := 0
+	for _, report := range reports[1 : len(reports)-1] {
+		sent, ok := report.(api.UploadProgressProgress)
+		if !ok || sent.TotalBytes != total || sent.BytesUploaded < last {
+			t.Fatalf("after %d bytes of %d sent, the upload reported %+v", last, total, report)
+		}
+		last = sent.BytesUploaded
+	}
+	if last != total {
+		t.Errorf("the upload last reported %d bytes of %d sent", last, total)
+	}
+}
+
+// An upload that fails reports no resource made.
+func TestARefusedUploadReportsNoResourceMade(t *testing.T) {
+	gateway := newUploadGateway(t, refuse(http.StatusBadRequest))
+	upload := uploader(t, gateway).PutBinary(context.Background(), anUpload())
+	reports := reported(t, upload)
+	if _, err := waitFor(t, upload); err == nil {
+		t.Fatal("a refused upload made a resource")
+	}
+	for _, report := range reports {
+		if _, finished := report.(api.UploadProgressFinished); finished {
+			t.Errorf("a refused upload reported %+v", report)
+		}
+	}
+}
+
 // sentTwiceWithOneKey fails t unless the gateway was sent the upload twice,
 // with one Idempotency-Key and one body.
 func sentTwiceWithOneKey(t *testing.T, gateway *uploadGateway) {

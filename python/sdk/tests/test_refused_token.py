@@ -23,6 +23,7 @@ from xynolog.http import HttpTransport, Timing
 from xynolog.identifiers import ResourceId
 from xynolog.retry import RetryPolicy
 from xynolog.transport import PutBinaryRequest, UploadProgress
+from xynolog.types import UploadProgressFinished, UploadProgressProgress, UploadProgressStarted
 from xynolog.watched import Variable, reached
 
 QUICK = Timing(reconnect_ms=20, lazy_remove_ms=10, linger_ms=10, emit_retry=RetryPolicy(attempts=2, initial_delay_ms=1, max_delay_ms=1))
@@ -405,11 +406,16 @@ def test_an_upload_refused_is_sent_again_whole_and_its_progress_is_reported_once
                 assert sent[0].body == sent[1].body
                 assert sent[1].form()["file"][0] == data
                 assert created.resource_id == "res-uploaded-2"
-                # Progress never goes back, and ends at the body's length.
-                uploaded = [progress.bytes_uploaded for progress in reported]
+                # Its size once, for both sendings; progress that never goes back, and ends at the body's length; then the resource made.
+                started, *sending, finished = reported
+                assert started == UploadProgressStarted(phase="started", total_bytes=len(sent[1].body))
+                assert finished == UploadProgressFinished(phase="finished", resource_id=created.resource_id)
+                progress = [report for report in sending if isinstance(report, UploadProgressProgress)]
+                assert progress == sending
+                uploaded = [report.bytes_uploaded for report in progress]
                 assert uploaded == sorted(set(uploaded)), "a piece was reported twice"
-                assert reported[-1].bytes_uploaded == reported[-1].total_bytes == len(sent[1].body)
-                assert len(reported) >= 4
+                assert progress[-1].bytes_uploaded == progress[-1].total_bytes == len(sent[1].body)
+                assert len(progress) >= 4
             finally:
                 await transport.close()
 

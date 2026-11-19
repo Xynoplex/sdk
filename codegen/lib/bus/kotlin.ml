@@ -68,11 +68,11 @@ let carried ~(types : Types.spec) (c : R.channels_item) =
 
 (* The stamps a channel's payload declares: those of the component it
    carries. *)
-let stamps ~component (c : R.channels_item) =
+let stamps ~ids ~component (c : R.channels_item) =
   match Registry.carried c with
   | Component name -> (
       match
-        Registry.stamps component ~of_:name (Registry.named component name)
+        Registry.stamps ~ids component ~of_:name (Registry.named component name)
       with
       | stamps -> List.sort_uniq String.compare stamps
       | exception Registry.Problem message ->
@@ -102,7 +102,7 @@ let channels_file ~component ~types (bus : Registry.t) =
   let member ((c : R.channels_item), carried) =
     let kind = if scoped c then "ScopedChannel" else "Channel" in
     let stamps =
-      match stamps ~component c with
+      match stamps ~ids:bus.ids ~component c with
       | [] -> K.call (K.Name "emptySet") []
       | stamps -> K.call (K.Name "setOf") (List.map (fun s -> K.Str s) stamps)
     in

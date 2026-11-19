@@ -1,15 +1,5 @@
 type identity_unverifiable_error = string
 
-type begin_authorization_options = {
-  issuer : Oauth.issuer;
-  random : int -> string;
-  redirect_uri : string;
-  target : [ `HttpEndpoint ] Models.t;
-  kb_id : string option;
-  expected_did : string option;
-  expected_name : string option;
-}
-
 type pending_authorization = {
   issuer : Oauth.issuer;
   redirect : Oauth.redirect;
@@ -22,13 +12,13 @@ type pending_authorization = {
 let code_challenge = Oauth.code_challenge
 let pending_authorization_key = Registry.pending_authorization_key
 
-let begin_authorization (options : begin_authorization_options) =
+let begin_authorization ~issuer ~random
+    (options : Records.Begin_authorization_options.t) =
   let redirect =
-    Oauth.begin_redirect options.issuer ~random:options.random
-      ~redirect_uri:options.redirect_uri
+    Oauth.begin_redirect issuer ~random ~redirect_uri:options.redirect_uri
   in
   {
-    issuer = options.issuer;
+    issuer;
     redirect;
     target = options.target;
     kb_id = options.kb_id;

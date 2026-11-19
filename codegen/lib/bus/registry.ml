@@ -27,6 +27,8 @@ type carried = Component of string | Response of string | Nothing
 
 type t = {
   registry : R.t;
+  ids : Decode.ids;
+      (** Each schema's [$id]: what a payload's reference names. *)
   channel : string -> R.channels_item;
   reply_names : (string * string list) list;
       (* Each operation's request, with what its result states beside its
@@ -93,10 +95,11 @@ let validate_of : R.channels_item -> string option = function
   | _ -> None
 
 let indexed list = List.mapi (fun i x -> (i, x)) list
+let components = "components/schemas/"
 
 (* A component schema, by the name the registry gives it. *)
 let component (spec : Spec.t) name =
-  List.assoc_opt ("components/schemas/" ^ name ^ ".json") spec.schemas
+  List.assoc_opt (components ^ name ^ ".json") spec.schemas
 
 exception Problem of string
 
@@ -107,40 +110,31 @@ let named component name =
   | Some schema -> schema
   | None -> problem "names the schema %s, which Protocol does not have" name
 
-(* The name of the component schema a payload's schema refers to by
-   "./<name>.json". *)
-let referred (reference : Decode.reference) =
-  let target = reference.target in
-  let n = String.length target in
-  let name = if n > 7 then String.sub target 2 (n - 7) else "" in
-  if
-    String.starts_with ~prefix:"./" target
-    && String.ends_with ~suffix:".json" target
-    && name <> ""
-    && String.for_all
-         (function 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' -> true | _ -> false)
-         name
-  then name
-  else
-    problem "a payload schema refers to %S, which names no component schema"
-      target
+(* The name of the component schema a payload's schema refers to. *)
+let referred ids (reference : Decode.reference) =
+  match Decode.names ids reference with
+  | Some (file, "") when Filename.dirname file ^ "/" = components ->
+      Filename.remove_extension (Filename.basename file)
+  | _ ->
+      problem "a payload schema refers to %S, which names no component schema"
+        reference.target
 
 (* The stamps [schema], the component [of_] or a schema within it, declares:
    the properties of what it merges to ([Normalize]), and a union's, on which
    its members must agree: a stamp is kept or dropped before a frame is read,
    so before it is known which member the frame is. A schema that refers to a
    component is read as that component. *)
-let stamps component ~of_ (schema : Schema.t) =
+let stamps ~ids component ~of_ (schema : Schema.t) =
   let rec stamped ~of_ (schema : Schema.t) =
     match schema with
     | Boolean_schema _ -> []
     | Schema { ref_ = Some reference; _ } ->
-        let name = referred reference in
+        let name = referred ids reference in
         stamped ~of_:name (named component name)
     | Schema _ -> (
         match
-          Normalize.normalize
-            ~find:(fun r -> Ok (named component (referred r)))
+          Normalize.normalize ids
+            ~find:(fun r -> Ok (named component (referred ids r)))
             schema
         with
         | Error message -> problem "%s: %s" of_ message
@@ -258,7 +252,7 @@ let delivery_classes (reg : R.t) =
   classes
 
 (* [component name] is the component schema the registry names [name]. *)
-let derive ~component (reg : R.t) =
+let derive ~ids ~component (reg : R.t) =
   let by_channel = Hashtbl.create 256 in
   List.iter
     (fun (c : R.channels_item) -> Hashtbl.replace by_channel (name c) c)
@@ -295,7 +289,7 @@ let derive ~component (reg : R.t) =
               match channel ch with
               | R.Schema { schema; _ } ->
                   List.sort_uniq String.compare
-                    (stamps component ~of_:schema (named component schema))
+                    (stamps ~ids component ~of_:schema (named component schema))
               | _ -> [])
             [] ))
       reg.channel_order.event_map
@@ -372,6 +366,7 @@ let derive ~component (reg : R.t) =
       Ok
         {
           registry = reg;
+          ids;
           channel;
           reply_names;
           stamps;

@@ -14,9 +14,9 @@ let bundled = function
   | Ok json -> json
   | Error error -> raise (Documents.Refused error)
 
-let derive ~root =
+let derive ~root ~ids =
   let specs = Documents.specs ~root in
-  let document file = bundled (Bundle.document ~specs file) in
+  let document file = bundled (Bundle.document ~specs ~ids file) in
   let gateway_document = document gateway in
   [
     {
@@ -34,12 +34,12 @@ let derive ~root =
           (Documents.definitions
              [
                (gateway, gateway_document);
-               ("services.json", bundled (Bundle.services ~specs));
+               ("services.json", bundled (Bundle.services ~specs ~ids));
              ]);
     };
   ]
 
-let files ~root (_ : Spec.t) =
-  match derive ~root with
+let files ~root (spec : Spec.t) =
+  match derive ~root ~ids:spec.ids with
   | files -> Ok files
   | exception Documents.Refused error -> Error [ error ]

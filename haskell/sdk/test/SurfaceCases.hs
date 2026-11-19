@@ -34,6 +34,7 @@ import Xynolog.Channels
 import Xynolog.Channels qualified as Channel
 import Xynolog.Client qualified as Client
 import Xynolog.Content qualified as Content
+import Xynolog.Delegation (UploadEvent (..))
 import Xynolog.Errors (BusRequestError (..))
 import Xynolog.EventBus qualified as Local
 import Xynolog.Frame qualified as Frame
@@ -91,8 +92,12 @@ withAnswers fixtures answerOverride action = do
               bytes <- atomically (takeTMVar captured)
               let sent = case toJSON metadata of Object fields -> Object (KM.insert "content" (String (decodeUtf8 bytes)) fields); _ -> error "upload metadata is not an object"
               atomically (writeTQueue calls (Called "content:putBinary" sent))
-              progress (Content.UploadProgress (fromIntegral (Bytes.length bytes)) (fromIntegral (Bytes.length bytes)))
-              createResourceResponseResourceId <$> fixture fixtures "CreateResourceResponse"
+              let size = fromIntegral (Bytes.length bytes)
+              progress (UploadStarted size)
+              progress (UploadProgress size size)
+              created <- createResourceResponseResourceId <$> fixture fixtures "CreateResourceResponse"
+              progress (UploadFinished created)
+              pure created
           )
           (\_ identity -> recordContent "getBinary" identity >> pure (Content.BinaryContent "text/plain" "surface"))
           (\_ identity consume -> recordContent "getBinaryStream" identity >> consume "text/plain" (Stream.yield "surface"))

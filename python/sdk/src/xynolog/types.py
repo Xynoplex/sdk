@@ -51,6 +51,7 @@ __all__ = [
     "BeckonFocusEvent",
     "BeckonHoverEvent",
     "BeckonSparkleEvent",
+    "BeginAuthorizationOptions",
     "BindBodyOperation",
     "BindBodyOperationOp",
     "BindBodyUpdated",
@@ -124,6 +125,7 @@ __all__ = [
     "CreateAnnotationRequest",
     "CreateResourceResponse",
     "CursorsPath",
+    "DeviceCode",
     "DirEntry",
     "DirectoryEntry",
     "DiscoveredKB",
@@ -208,6 +210,7 @@ __all__ = [
     "InferenceLimitsRequest",
     "InferenceLimitsResult",
     "InferenceLimitsResultResponse",
+    "IssuedTokens",
     "JanusGraphConfig",
     "Job",
     "JobAssignCommand",
@@ -341,7 +344,9 @@ __all__ = [
     "OneOrMoreStrings",
     "OneOrMoreUris",
     "PdfClass",
+    "PdfCoordinate",
     "PdfTextItem",
+    "PendingAnnotation",
     "PermissionDenied",
     "PersistedEventId",
     "PrincipalProfileCommand",
@@ -350,6 +355,12 @@ __all__ = [
     "ProfilesProjection",
     "ProtectedResourceMetadata",
     "QdrantVectorsConfig",
+    "QuotedText",
+    "ReconciledSpan",
+    "ReconciledSpanContextRecovered",
+    "ReconciledSpanFirstOfMany",
+    "ReconciledSpanFuzzyMatch",
+    "ReconciledSpanUniqueMatch",
     "ReplyEventId",
     "Representation",
     "RepresentationAddedPayload",
@@ -412,9 +423,14 @@ __all__ = [
     "TaggingJobParams",
     "TextPositionSelector",
     "TextQuoteSelector",
+    "TextSpan",
     "TextualBody",
     "UnitCursor",
     "UpdateAnnotationBodyRequest",
+    "UploadProgress",
+    "UploadProgressFinished",
+    "UploadProgressProgress",
+    "UploadProgressStarted",
     "UserResponse",
     "VectorsConfig",
     "VoyageEmbeddingConfig",
@@ -1237,6 +1253,41 @@ class BeckonSparkleEvent(WireModel, frozen=True):
     """
 
     annotation_id: Annotated[AnnotationId, Field(alias="annotationId")]
+
+
+type HttpEndpointProtocol = Annotated[Literal["http", "https"], Field(description="What the gateway is reached over.")]
+
+
+class HttpEndpoint(WireModel, frozen=True):
+    """
+    A knowledge base reached through its gateway, over HTTP. The gateway's origin is the protocol, the host in lowercase and the port; a host that is not a host's name is refused before it is put into a URL (specs/src/session/gateway-url-cases.json).
+    """
+
+    kind: Annotated[Literal["http"], Field(description="Discriminant: the endpoint is a gateway reached over HTTP.")]
+    host: Annotated[str, Field(description="The gateway's host, as a person or a discovery document gave it.")]
+    port: Annotated[int, Field(description="The gateway's port.")]
+    protocol: HttpEndpointProtocol
+
+
+class BeginAuthorizationOptions(WireModel, frozen=True, extra="forbid"):
+    """
+    What starting an authorization-code grant is told: the knowledge base to sign in to, where the issuer sends the person back, and, re-authenticating, which registered knowledge base it is and what the person believed they chose.
+    """
+
+    target: HttpEndpoint
+    redirect_uri: Annotated[str, Field(alias="redirectUri", description="Where the issuer sends the person back to.")]
+    kb_id: Annotated[
+        str | None,
+        Field(alias="kbId", description="The registered knowledge base being re-authenticated, rather than a new address connected to."),
+    ] = None
+    expected_did: Annotated[
+        str | None,
+        Field(alias="expectedDid", description="The knowledge base's DID the person believed they chose: verified after, never assumed."),
+    ] = None
+    expected_name: Annotated[
+        str | None,
+        Field(alias="expectedName", description="The knowledge base's name the person believed they chose: verified after, never assumed."),
+    ] = None
 
 
 type BindBodyOperationOp = Annotated[Literal["add", "remove", "replace"], Field(description="The type of body operation")]
@@ -2189,6 +2240,24 @@ type CursorsPath = Annotated[
         description="The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness."
     ),
 ]
+
+
+class DeviceCode(WireModel, frozen=True, extra="forbid"):
+    """
+    What a device-authorization grant (RFC 8628) shows the person signing in: the code they enter, and where.
+    """
+
+    user_code: Annotated[str, Field(alias="userCode", description="The code the person enters at the issuer.")]
+    verification_uri: Annotated[str, Field(alias="verificationUri", description="Where the person enters it.")]
+    verification_uri_complete: Annotated[
+        str | None,
+        Field(
+            alias="verificationUriComplete",
+            description="Where the person goes to sign in with the code already entered, when the issuer gives one.",
+        ),
+    ] = None
+    expires_in: Annotated[int, Field(alias="expiresIn", description="How many seconds the code stays good for.")]
+
 
 type DiscoveredKBPlacement = Annotated[
     Literal["local", "codespace"],
@@ -3228,20 +3297,6 @@ class HighlightingJobParams(WireModel, frozen=True, extra="forbid"):
     ] = None
 
 
-type HttpEndpointProtocol = Annotated[Literal["http", "https"], Field(description="What the gateway is reached over.")]
-
-
-class HttpEndpoint(WireModel, frozen=True):
-    """
-    A knowledge base reached through its gateway, over HTTP. The gateway's origin is the protocol, the host in lowercase and the port; a host that is not a host's name is refused before it is put into a URL (specs/src/session/gateway-url-cases.json).
-    """
-
-    kind: Annotated[Literal["http"], Field(description="Discriminant: the endpoint is a gateway reached over HTTP.")]
-    host: Annotated[str, Field(description="The gateway's host, as a person or a discovery document gave it.")]
-    port: Annotated[int, Field(description="The gateway's port.")]
-    protocol: HttpEndpointProtocol
-
-
 class InferenceLimitsRequest(WireModel, frozen=True):
     """
     Request for the inference limits of the engines one service holds a client for. Answered on job:limits-requested by the worker, and on gather:limits-requested and match:limits-requested by the librarian: each service that holds an inference credential reports for its own engines, so no other service needs one.
@@ -3258,6 +3313,15 @@ class InferenceLimitsResult(WireModel, frozen=True):
     """
 
     response: InferenceLimitsResultResponse
+
+
+class IssuedTokens(WireModel, frozen=True, extra="forbid"):
+    """
+    The tokens an issuer issued at the end of a sign-in.
+    """
+
+    access: Annotated[str, Field(description="The access token: short-lived, sent as a Bearer token.")]
+    refresh: Annotated[str, Field(description="The refresh token: what renews the access token without another sign-in.")]
 
 
 type JobType = Annotated[
@@ -4927,6 +4991,27 @@ class MediaTokenResponse(WireModel, frozen=True):
     token: Annotated[str, Field(description="Short-lived media token for use as ?token= query parameter on resource URLs")]
 
 
+class PdfCoordinate(WireModel, frozen=True, extra="forbid"):
+    """
+    A rectangle on a page of a PDF, in PDF points, from the page's bottom-left corner with y increasing upward: what an RFC 3778 fragment selector names.
+    """
+
+    page: Annotated[int, Field(description="The page the rectangle is on.")]
+    x: Annotated[float, Field(description="The rectangle's x.")]
+    y: Annotated[float, Field(description="The rectangle's y.")]
+    width: Annotated[float, Field(description="The rectangle's width.")]
+    height: Annotated[float, Field(description="The rectangle's height.")]
+
+
+class PendingAnnotation(WireModel, frozen=True, extra="forbid"):
+    """
+    The annotation a mark state unit is composing, from the selection a request asked for, until it is submitted or cancelled.
+    """
+
+    selector: AnnotationSelector
+    motivation: Motivation
+
+
 class PermissionDenied(WireModel, frozen=True, extra="forbid"):
     """
     A request was refused for lack of permission.
@@ -4994,6 +5079,78 @@ class ProtectedResourceMetadata(WireModel, frozen=True, extra="forbid"):
         list[Literal["header"]], Field(description="How a bearer token reaches this resource: the Authorization header only.")
     ]
     resource_name: Annotated[str | None, Field(description="The knowledge base's name, for a client's sign-in prompt.")] = None
+
+
+class QuotedText(WireModel, frozen=True, extra="forbid"):
+    """
+    Words of a text, as a selection quotes them: the words themselves, and maybe the text just before and just after them, which tell apart the places they occur.
+    """
+
+    exact: Annotated[str, Field(description="The words quoted.")]
+    prefix: Annotated[str | None, Field(description="The text just before them.")] = None
+    suffix: Annotated[str | None, Field(description="The text just after them.")] = None
+
+
+class ReconciledSpanUniqueMatch(WireModel, frozen=True, extra="forbid"):
+    """
+    The text has the words in exactly one place.
+    """
+
+    start: Annotated[int, Field(description="The offset the span starts at, in Unicode code points from the text's start.")]
+    end: Annotated[int, Field(description="The offset just past the span, in Unicode code points from the text's start.")]
+    exact: Annotated[str, Field(description="The words quoted.")]
+    prefix: Annotated[str | None, Field(description="The text just before them.")] = None
+    suffix: Annotated[str | None, Field(description="The text just after them.")] = None
+    anchor_method: Annotated[Literal["unique-match"], Field(alias="anchorMethod")]
+
+
+class ReconciledSpanContextRecovered(WireModel, frozen=True, extra="forbid"):
+    """
+    The text has the words in more than one place, and the span is the first that fits every hint the quote gave.
+    """
+
+    start: Annotated[int, Field(description="The offset the span starts at, in Unicode code points from the text's start.")]
+    end: Annotated[int, Field(description="The offset just past the span, in Unicode code points from the text's start.")]
+    exact: Annotated[str, Field(description="The words quoted.")]
+    prefix: Annotated[str | None, Field(description="The text just before them.")] = None
+    suffix: Annotated[str | None, Field(description="The text just after them.")] = None
+    anchor_method: Annotated[Literal["context-recovered"], Field(alias="anchorMethod")]
+
+
+class ReconciledSpanFirstOfMany(WireModel, frozen=True, extra="forbid"):
+    """
+    The text has the words in more than one place, and the span is the first, since the quote gave no hint or none fits.
+    """
+
+    start: Annotated[int, Field(description="The offset the span starts at, in Unicode code points from the text's start.")]
+    end: Annotated[int, Field(description="The offset just past the span, in Unicode code points from the text's start.")]
+    exact: Annotated[str, Field(description="The words quoted.")]
+    prefix: Annotated[str | None, Field(description="The text just before them.")] = None
+    suffix: Annotated[str | None, Field(description="The text just after them.")] = None
+    anchor_method: Annotated[Literal["first-of-many"], Field(alias="anchorMethod")]
+
+
+class ReconciledSpanFuzzyMatch(WireModel, frozen=True, extra="forbid"):
+    """
+    The text has the words nowhere, and a looser search found the span: `matchQuality` names which.
+    """
+
+    start: Annotated[int, Field(description="The offset the span starts at, in Unicode code points from the text's start.")]
+    end: Annotated[int, Field(description="The offset just past the span, in Unicode code points from the text's start.")]
+    exact: Annotated[str, Field(description="The words quoted.")]
+    prefix: Annotated[str | None, Field(description="The text just before them.")] = None
+    suffix: Annotated[str | None, Field(description="The text just after them.")] = None
+    anchor_method: Annotated[Literal["fuzzy-match"], Field(alias="anchorMethod")]
+    match_quality: Annotated[MatchQuality, Field(alias="matchQuality")]
+
+
+type ReconciledSpan = Annotated[
+    ReconciledSpanUniqueMatch | ReconciledSpanContextRecovered | ReconciledSpanFirstOfMany | ReconciledSpanFuzzyMatch,
+    Field(
+        description="Where a quoted selection was found in a text, and how it was found, told apart by `anchorMethod`, one of AnchorMethod's words: a fuzzy match also names its search, `matchQuality`, and no other states one.",
+        discriminator="anchor_method",
+    ),
+]
 
 
 class RepresentationAddedPayload(WireModel, frozen=True):
@@ -5544,11 +5701,60 @@ class TagSchemasProjection(WireModel, frozen=True, extra="forbid"):
     ]
 
 
+class TextSpan(WireModel, frozen=True, extra="forbid"):
+    """
+    A span of a text: the code points from `start` up to but not including `end`, the words they are, and maybe the text just before and just after them.
+    """
+
+    start: Annotated[int, Field(description="The offset the span starts at, in Unicode code points from the text's start.")]
+    end: Annotated[int, Field(description="The offset just past the span, in Unicode code points from the text's start.")]
+    exact: Annotated[str, Field(description="The words quoted.")]
+    prefix: Annotated[str | None, Field(description="The text just before them.")] = None
+    suffix: Annotated[str | None, Field(description="The text just after them.")] = None
+
+
 class UpdateAnnotationBodyRequest(WireModel, frozen=True):
     resource_id: Annotated[
         ResourceId, Field(alias="resourceId", description="Resource ID containing the annotation (required for O(1) Layer 3 lookup)")
     ]
     operations: Annotated[list[BodyOperation], Field(description="Array of body modification operations to apply")]
+
+
+class UploadProgressStarted(WireModel, frozen=True, extra="forbid"):
+    """
+    The upload began.
+    """
+
+    phase: Literal["started"]
+    total_bytes: Annotated[int, Field(alias="totalBytes", description="How many bytes the upload is.")]
+
+
+class UploadProgressProgress(WireModel, frozen=True, extra="forbid"):
+    """
+    Bytes were sent.
+    """
+
+    phase: Literal["progress"]
+    bytes_uploaded: Annotated[int, Field(alias="bytesUploaded", description="How many bytes are sent so far.")]
+    total_bytes: Annotated[int, Field(alias="totalBytes", description="How many bytes the upload is.")]
+
+
+class UploadProgressFinished(WireModel, frozen=True, extra="forbid"):
+    """
+    The upload ended, and the resource is made.
+    """
+
+    phase: Literal["finished"]
+    resource_id: Annotated[ResourceId, Field(alias="resourceId")]
+
+
+type UploadProgress = Annotated[
+    UploadProgressStarted | UploadProgressProgress | UploadProgressFinished,
+    Field(
+        description="What an upload reports as it goes, told apart by `phase`: its size first, then the bytes sent so far, then the resource made.",
+        discriminator="phase",
+    ),
+]
 
 
 class UserResponse(WireModel, frozen=True):

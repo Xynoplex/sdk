@@ -33,6 +33,7 @@ import xynolog.registry.storedSession
 import xynolog.session.XynologSession
 import xynolog.storage.MemoryStorage
 import xynolog.storage.SessionStorage
+import xynolog.types.BeginAuthorizationOptions
 import xynolog.types.HttpEndpoint
 import xynolog.types.HttpEndpointProtocol
 import xynolog.types.KnowledgeBase

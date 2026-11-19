@@ -160,7 +160,16 @@ let derived ?(schemas = base_schemas) json =
   | Error error -> Error [ Decode.error_to_string error ]
   | Ok (registry, _) -> (
       let component name = Option.map schema_of (List.assoc_opt name schemas) in
-      match Bus.Registry.derive ~component registry with
+      let ids =
+        Result.get_ok
+          (Decode.ids
+             (List.map
+                (fun (name, _) ->
+                  ( Decode.base ^ name ^ ".json",
+                    "components/schemas/" ^ name ^ ".json" ))
+                schemas))
+      in
+      match Bus.Registry.derive ~ids ~component registry with
       | Ok bus -> Ok bus
       | Error errors -> Error (List.map Decode.error_to_string errors))
 
@@ -361,7 +370,7 @@ let derivations =
               (with_schemas
                  [
                    ( "DemoEvent",
-                     {|{"properties":{"_userId":{},"name":{}},"allOf":[{"$ref":"./Stamped.json"}]}|}
+                     {|{"properties":{"_userId":{},"name":{}},"allOf":[{"$ref":"https://xynolog.org/protocol/Stamped.json"}]}|}
                    );
                    ("Stamped", {|{"properties":{"_roles":{},"_userId":{}}}|});
                  ])
@@ -378,7 +387,7 @@ let derivations =
            (with_schemas
               [
                 ( "DemoEvent",
-                  {|{"oneOf":[{"$ref":"./Signed.json"},{"$ref":"./Plain.json"}]}|}
+                  {|{"oneOf":[{"$ref":"https://xynolog.org/protocol/Signed.json"},{"$ref":"https://xynolog.org/protocol/Plain.json"}]}|}
                 );
                 ("Signed", {|{"properties":{"_userId":{},"kind":{}}}|});
                 ("Plain", {|{"properties":{"kind":{}}}|});
@@ -394,7 +403,7 @@ let derivations =
               (with_schemas
                  [
                    ( "DemoEvent",
-                     {|{"anyOf":[{"$ref":"./Signed.json"},{"$ref":"./Also.json"}]}|}
+                     {|{"anyOf":[{"$ref":"https://xynolog.org/protocol/Signed.json"},{"$ref":"https://xynolog.org/protocol/Also.json"}]}|}
                    );
                    ("Signed", {|{"properties":{"_userId":{},"kind":{}}}|});
                    ("Also", {|{"properties":{"_userId":{}}}|});

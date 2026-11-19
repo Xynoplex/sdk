@@ -486,7 +486,7 @@ func (r *refresherToCome) Refresh(ctx context.Context, refused string) (string, 
 // the sign-in in kept. The issuer the knowledge base at baseURL trusts mints a
 // code, onCode shows the person where to approve it, and the tokens come back
 // here: no password passes through this process.
-func SignInWithDevice(ctx context.Context, issuer Issuer, baseURL string, kept SignInKept, onCode func(DeviceCode)) (IssuerEndpoints, error) {
+func SignInWithDevice(ctx context.Context, issuer Issuer, baseURL string, kept SignInKept, onCode func(api.DeviceCode)) (IssuerEndpoints, error) {
 	endpoints, err := issuer.Discover(ctx, baseURL)
 	if err != nil {
 		return IssuerEndpoints{}, err

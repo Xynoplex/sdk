@@ -5482,6 +5482,32 @@ export interface records {
   AnchorMethod:
     'unique-match' | 'context-recovered' | 'first-of-many' | 'fuzzy-match';
   /**
+   * What starting an authorization-code grant is told: the knowledge base to
+   * sign in to, where the issuer sends the person back, and, re-authenticating,
+   * which registered knowledge base it is and what the person believed they
+   * chose.
+   */
+  BeginAuthorizationOptions: {
+    target: components['schemas']['HttpEndpoint'];
+    /** Where the issuer sends the person back to. */
+    redirectUri: string;
+    /**
+     * The registered knowledge base being re-authenticated, rather than a new
+     * address connected to.
+     */
+    kbId?: string;
+    /**
+     * The knowledge base's DID the person believed they chose: verified after,
+     * never assumed.
+     */
+    expectedDid?: string;
+    /**
+     * The knowledge base's name the person believed they chose: verified after,
+     * never assumed.
+     */
+    expectedName?: string;
+  };
+  /**
    * Who the knowledge base at an address says it is, asked with a token just
    * issued, before any entry is made for it.
    */
@@ -5490,6 +5516,23 @@ export interface records {
     did: components['schemas']['UserId'];
     /** What it says of itself. */
     description: components['schemas']['KbDescription'];
+  };
+  /**
+   * What a device-authorization grant (RFC 8628) shows the person signing in:
+   * the code they enter, and where.
+   */
+  DeviceCode: {
+    /** The code the person enters at the issuer. */
+    userCode: string;
+    /** Where the person enters it. */
+    verificationUri: string;
+    /**
+     * Where the person goes to sign in with the code already entered, when the
+     * issuer gives one.
+     */
+    verificationUriComplete?: string;
+    /** How many seconds the code stays good for. */
+    expiresIn: number;
   };
   /**
    * What a person believed they were signing in to: the did and the name of the
@@ -5507,6 +5550,15 @@ export interface records {
    * (specs/src/bus/frame-cases.json).
    */
   FrameRefusalReason: 'lacks' | 'malformed';
+  /** The tokens an issuer issued at the end of a sign-in. */
+  IssuedTokens: {
+    /** The access token: short-lived, sent as a Bearer token. */
+    access: string;
+    /**
+     * The refresh token: what renews the access token without another sign-in.
+     */
+    refresh: string;
+  };
   /**
    * A different knowledge base answers at a registered address. Both dids,
    * because neither alone says what to do: a person has to recognise which
@@ -5550,11 +5602,131 @@ export interface records {
    * reconcile's rule (specs/src/annotations/reconcile-cases.json).
    */
   MatchQuality: 'normalized' | 'case-insensitive' | 'fuzzy';
+  /**
+   * A rectangle on a page of a PDF, in PDF points, from the page's bottom-left
+   * corner with y increasing upward: what an RFC 3778 fragment selector names.
+   */
+  PdfCoordinate: {
+    /** The page the rectangle is on. */
+    page: number;
+    /** The rectangle's x. */
+    x: number;
+    /** The rectangle's y. */
+    y: number;
+    /** The rectangle's width. */
+    width: number;
+    /** The rectangle's height. */
+    height: number;
+  };
+  /**
+   * The annotation a mark state unit is composing, from the selection a request
+   * asked for, until it is submitted or cancelled.
+   */
+  PendingAnnotation: {
+    selector: components['schemas']['AnnotationSelector'];
+    motivation: components['schemas']['Motivation'];
+  };
   /** A request was refused for lack of permission. */
   PermissionDenied: {
     /** The refusal's own message, untranslated; null when it gave none. */
     detail: string | null;
   };
+  /**
+   * Words of a text, as a selection quotes them: the words themselves, and
+   * maybe the text just before and just after them, which tell apart the places
+   * they occur.
+   */
+  QuotedText: {
+    /** The words quoted. */
+    exact: string;
+    /** The text just before them. */
+    prefix?: string;
+    /** The text just after them. */
+    suffix?: string;
+  };
+  /**
+   * Where a quoted selection was found in a text, and how it was found, told
+   * apart by `anchorMethod`, one of AnchorMethod's words: a fuzzy match also
+   * names its search, `matchQuality`, and no other states one.
+   */
+  ReconciledSpan:
+    | {
+        /**
+         * The offset the span starts at, in Unicode code points from the text's
+         * start.
+         */
+        start: number;
+        /**
+         * The offset just past the span, in Unicode code points from the text's
+         * start.
+         */
+        end: number;
+        /** The words quoted. */
+        exact: string;
+        /** The text just before them. */
+        prefix?: string;
+        /** The text just after them. */
+        suffix?: string;
+        anchorMethod: 'unique-match';
+      }
+    | {
+        /**
+         * The offset the span starts at, in Unicode code points from the text's
+         * start.
+         */
+        start: number;
+        /**
+         * The offset just past the span, in Unicode code points from the text's
+         * start.
+         */
+        end: number;
+        /** The words quoted. */
+        exact: string;
+        /** The text just before them. */
+        prefix?: string;
+        /** The text just after them. */
+        suffix?: string;
+        anchorMethod: 'context-recovered';
+      }
+    | {
+        /**
+         * The offset the span starts at, in Unicode code points from the text's
+         * start.
+         */
+        start: number;
+        /**
+         * The offset just past the span, in Unicode code points from the text's
+         * start.
+         */
+        end: number;
+        /** The words quoted. */
+        exact: string;
+        /** The text just before them. */
+        prefix?: string;
+        /** The text just after them. */
+        suffix?: string;
+        anchorMethod: 'first-of-many';
+      }
+    | {
+        /**
+         * The offset the span starts at, in Unicode code points from the text's
+         * start.
+         */
+        start: number;
+        /**
+         * The offset just past the span, in Unicode code points from the text's
+         * start.
+         */
+        end: number;
+        /** The words quoted. */
+        exact: string;
+        /** The text just before them. */
+        prefix?: string;
+        /** The text just after them. */
+        suffix?: string;
+        anchorMethod: 'fuzzy-match';
+        matchQuality: records['MatchQuality'];
+      };
   /**
    * Why a session ended: `expired`, the issuer refused to renew its token;
    * `refused`, the gateway refused a token its issuer had just issued.
@@ -5669,6 +5841,50 @@ export interface records {
       };
   /** What checking an open resource against its knowledge base concluded. */
   TabVerdict: 'gone' | 'ready' | 'unknown';
+  /**
+   * A span of a text: the code points from `start` up to but not including
+   * `end`, the words they are, and maybe the text just before and just after
+   * them.
+   */
+  TextSpan: {
+    /**
+     * The offset the span starts at, in Unicode code points from the text's
+     * start.
+     */
+    start: number;
+    /**
+     * The offset just past the span, in Unicode code points from the text's
+     * start.
+     */
+    end: number;
+    /** The words quoted. */
+    exact: string;
+    /** The text just before them. */
+    prefix?: string;
+    /** The text just after them. */
+    suffix?: string;
+  };
+  /**
+   * What an upload reports as it goes, told apart by `phase`: its size first,
+   * then the bytes sent so far, then the resource made.
+   */
+  UploadProgress:
+    | {
+        phase: 'started';
+        /** How many bytes the upload is. */
+        totalBytes: number;
+      }
+    | {
+        phase: 'progress';
+        /** How many bytes are sent so far. */
+        bytesUploaded: number;
+        /** How many bytes the upload is. */
+        totalBytes: number;
+      }
+    | {
+        phase: 'finished';
+        resourceId: components['schemas']['ResourceId'];
+      };
   /** Why no launcher was found. */
   DiscoveryAbsentReason:
     /**

@@ -7,6 +7,9 @@ module M = Swift_sdk.Models
 
 let case name test = Alcotest.test_case name `Quick test
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+
 (* Why the schema [json], named [name], is refused: by the schema's decoder,
    or by the generator. *)
 let refusal ?(identifiers = []) ?(name = "Fixture") json =
@@ -14,7 +17,7 @@ let refusal ?(identifiers = []) ?(name = "Fixture") json =
   | Error e -> Decode.error_to_string e
   | Ok (schema, _) -> (
       match
-        let models = M.create (D.alone ~name schema) ~identifiers in
+        let models = M.create (D.alone ~ids ~name schema) ~identifiers in
         M.generate models;
         M.declarations models
       with

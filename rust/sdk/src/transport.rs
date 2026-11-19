@@ -25,7 +25,8 @@ use crate::locked;
 use crate::required::{Fault, fault_of, schema};
 use crate::types::{
     AnchoredTextAnswer, CreateResourceResponse, GetAnnotationsResponse, GetResourceResponse,
-    HealthResponse, MediaTokenResponse, ProtectedResourceMetadata, StatusResponse, UserResponse,
+    HealthResponse, MediaTokenResponse, ProtectedResourceMetadata, StatusResponse, UploadProgress,
+    UploadProgressFinished, UserResponse,
 };
 use crate::types::{AnnotationId, JobId};
 use crate::types::{BusFrame, FrameRefusalReason, ResourceId, Schema};
@@ -640,34 +641,36 @@ impl PutBinaryRequest {
     }
 }
 
-/// How much of an upload has been sent.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct UploadProgress {
-    pub bytes_uploaded: u64,
-    /// The size of the whole request body.
-    pub total_bytes: u64,
-}
-
-/// An upload in flight. As a stream it gives its progress, and ends when the
-/// upload has; awaited, it gives the id of the resource created. Dropped, it
-/// is cancelled: nothing more is sent.
+/// An upload in flight. As a stream it gives what the upload reports as it
+/// goes, and ends when the upload has; awaited, it gives the id of the
+/// resource created. Dropped, it is cancelled: nothing more is sent.
+///
+/// As a stream, it reports `started` with the upload's size before any bytes
+/// are sent, `progress` as they are sent, and `finished` with the resource
+/// made, once the knowledge base has answered. Its size is every byte sent
+/// for it: over HTTP, the whole request body. An upload that fails ends its
+/// stream without `finished`, and awaiting it gives the failure.
 pub struct Upload {
-    progress: mpsc::UnboundedReceiver<UploadProgress>,
+    reports: mpsc::UnboundedReceiver<UploadProgress>,
     sending: Option<BoxFuture<'static, Result<CreateResourceResponse, TransportError>>>,
     outcome: Option<Result<CreateResourceResponse, TransportError>>,
+    /// Whether the stream has given its last report.
+    ended: bool,
 }
 
 impl Upload {
-    /// An upload `sending` performs, reporting its progress to the sender
-    /// `progress` is the other end of.
+    /// An upload `sending` performs. Its transport sends `started` and each
+    /// `progress` to the sender `reports` is the other end of, and `finished`
+    /// is reported from what `sending` answers.
     pub fn new(
-        progress: mpsc::UnboundedReceiver<UploadProgress>,
+        reports: mpsc::UnboundedReceiver<UploadProgress>,
         sending: BoxFuture<'static, Result<CreateResourceResponse, TransportError>>,
     ) -> Upload {
         Upload {
-            progress,
+            reports,
             sending: Some(sending),
             outcome: None,
+            ended: false,
         }
     }
 
@@ -686,14 +689,21 @@ impl Stream for Upload {
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         self.drive(cx);
-        match self.progress.poll_recv(cx) {
-            Poll::Ready(Some(progress)) => Poll::Ready(Some(progress)),
-            Poll::Ready(None) => Poll::Ready(None),
-            // What `sending` reported before it finished has been given, and
-            // it will report no more.
-            Poll::Pending if self.sending.is_none() => Poll::Ready(None),
-            Poll::Pending => Poll::Pending,
+        if let Poll::Ready(Some(report)) = self.reports.poll_recv(cx) {
+            return Poll::Ready(Some(report));
         }
+        // What `sending` reported is given before what it answered.
+        if self.sending.is_some() {
+            return Poll::Pending;
+        }
+        let finished = match &self.outcome {
+            Some(Ok(created)) if !self.ended => Some(UploadProgress::Finished(
+                UploadProgressFinished::new(created.resource_id.clone()),
+            )),
+            _ => None,
+        };
+        self.ended = true;
+        Poll::Ready(finished)
     }
 }
 

@@ -39,7 +39,7 @@ internal fun generationStallDeadlineMs(maxTokens: Double?): Long {
 
 /** Creating resources: by upload, by a generation delegated as a job, by cloning. */
 public class YieldNamespace internal constructor(private val links: Links, private val content: ContentTransport) {
-    /** Upload a resource: it began when this returns, and says what it has sent as it sends it. */
+    /** Upload a resource: it began when this returns, and reports its size, what it has sent as it sends it, and the resource made. */
     public fun resource(data: PutBinaryRequest): Upload = content.putBinary(data)
 
     /**

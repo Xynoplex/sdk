@@ -6,11 +6,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import {
-  reconcile,
-  type QuotedText,
-  type ReconciledSpan,
-} from '../annotation-builders';
+import { reconcile } from '../annotation-builders';
+import type { QuotedText, ReconciledSpan } from '../payload-types';
 
 interface Case {
   why: string;

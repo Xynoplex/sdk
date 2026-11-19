@@ -4,7 +4,7 @@
 
 module Xynolog.Internal.Generated.PendingAnnotation (PendingAnnotation (..)) where
 
-import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
+import Data.Aeson (ToJSON (..), object, (.=))
 import Xynolog.Types (AnnotationSelector, Motivation)
 
 data PendingAnnotation = PendingAnnotation
@@ -12,7 +12,5 @@ data PendingAnnotation = PendingAnnotation
     pendingAnnotationMotivation :: Motivation
   }
   deriving (Eq, Show)
-
-instance FromJSON PendingAnnotation where parseJSON = withObject "PendingAnnotation" (\fields -> PendingAnnotation <$> (fields .: "selector") <*> (fields .: "motivation"))
 
 instance ToJSON PendingAnnotation where toJSON record = object ["selector" .= pendingAnnotationSelector record, "motivation" .= pendingAnnotationMotivation record]

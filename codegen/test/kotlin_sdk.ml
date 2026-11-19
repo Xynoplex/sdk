@@ -9,6 +9,9 @@ module K = Kotlin_syntax
 let case name test = Alcotest.test_case name `Quick test
 let file name = "components/schemas/" ^ name ^ ".json"
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+
 (* Component schemas, each the JSON of its file. *)
 let spec ?(identifiers = []) schemas : T.spec =
   let decoded (name, json) =
@@ -21,6 +24,7 @@ let spec ?(identifiers = []) schemas : T.spec =
   {
     definitions = List.map decoded schemas;
     identifiers;
+    ids;
     name_of_key = List.map (fun (name, _) -> (file name, name)) schemas;
   }
 

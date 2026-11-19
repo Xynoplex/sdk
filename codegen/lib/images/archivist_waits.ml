@@ -21,10 +21,10 @@ let waits =
        next part. No bound is put on a whole answer." );
   ]
 
-let derive ~root =
+let derive ~root ~ids =
   let file = Bundles.archivist in
   let limits =
-    match Bundle.document ~specs:(Documents.specs ~root) file with
+    match Bundle.document ~specs:(Documents.specs ~root) ~ids file with
     | Error error -> raise (Documents.Refused error)
     | Ok (`Assoc members) -> (
         match List.assoc_opt "x-xynolog-limits" members with
@@ -73,7 +73,7 @@ let derive ~root =
         };
   }
 
-let files ~root (_ : Spec.t) =
-  match derive ~root with
+let files ~root (spec : Spec.t) =
+  match derive ~root ~ids:spec.ids with
   | file -> Ok [ file ]
   | exception Documents.Refused error -> Error [ error ]

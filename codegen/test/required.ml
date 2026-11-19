@@ -13,8 +13,11 @@ let component (name, text) =
   | Ok (schema, _) -> (name, file, schema)
   | Error error -> failwith (Decode.error_to_string error)
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+
 let derived components =
-  Required.Shape.derive ~unrecognized:"Unrecognized"
+  Required.Shape.derive ~ids ~unrecognized:"Unrecognized"
     (List.map component (command_error :: components))
 
 let compact text = Yojson.Safe.to_string (Yojson.Safe.from_string text)
@@ -364,7 +367,7 @@ let command_errors =
          {|{"kinds":["object"],"members":{"code":{"kinds":["string"],"recognized":["a-code"]}}}|});
     case "a CommandError that requires its code is refused" (fun () ->
         match
-          Required.Shape.derive ~unrecognized:"Unrecognized"
+          Required.Shape.derive ~ids ~unrecognized:"Unrecognized"
             [
               component
                 ( "CommandError",
@@ -384,7 +387,7 @@ let command_errors =
               (List.map Decode.error_to_string errors));
     case "a CommandError whose code names no list is refused" (fun () ->
         match
-          Required.Shape.derive ~unrecognized:"Unrecognized"
+          Required.Shape.derive ~ids ~unrecognized:"Unrecognized"
             [
               component
                 ( "CommandError",

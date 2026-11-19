@@ -138,7 +138,7 @@ signInStoreCases root = do
             String "renews" -> do
               theirs <- pair (member "theirs" event)
               current <- SignIn.held backend >>= maybe (ioError (userError "another renewal found no sign-in")) pure
-              void (SignIn.renewed backend current (IssuedTokens (storedSessionAccess theirs) (storedSessionRefresh theirs) KM.empty))
+              void (SignIn.renewed backend current (IssuedTokens (storedSessionAccess theirs) (storedSessionRefresh theirs)))
             _ -> ioError (userError "unhandled competing store change")
         at phase = case member "meanwhile" row of
           Null -> pure ()
@@ -189,7 +189,7 @@ nativeFileCases root = withDirectory $ \directory -> do
       extend _ = error "generated SignIn is not an object"
   Bytes.writeFile (Store.path store) (Lazy.toStrict (encode (object ["local:main" .= extend original, "futureEntry" .= future])))
   current <- SignIn.held kept >>= maybe (ioError (userError "extended sign-in was unreadable")) pure
-  void (SignIn.renewed kept current (IssuedTokens (jwt now "rotated" False) "rotated-refresh" KM.empty))
+  void (SignIn.renewed kept current (IssuedTokens (jwt now "rotated" False) "rotated-refresh"))
   written <- readJSON (Store.path store)
   require "file renewal erased an unknown document member" (member "futureEntry" written == future)
   require "file renewal erased an unknown sign-in member" (member "futureProperty" (member "local:main" written) == future)

@@ -10,39 +10,18 @@ import (
 	"testing"
 
 	"github.com/xynolog/sdk/go/annotations"
+	"github.com/xynolog/sdk/go/api"
 )
 
-// asTheTableWritesIt is a reconciled span as the table writes one: each of
-// its context and its match quality left out where there is none.
-func asTheTableWritesIt(span annotations.ReconciledSpan) map[string]any {
-	written := map[string]any{
-		"start":        span.Start,
-		"end":          span.End,
-		"exact":        span.Exact,
-		"anchorMethod": string(span.AnchorMethod),
-	}
-	if span.Prefix != "" {
-		written["prefix"] = span.Prefix
-	}
-	if span.Suffix != "" {
-		written["suffix"] = span.Suffix
-	}
-	if span.MatchQuality != "" {
-		written["matchQuality"] = string(span.MatchQuality)
-	}
-	return written
-}
-
+// Reconcile finds what the table says, and a span it finds is the text's own:
+// its TextSpan is the table's span less how it was found, and AnnotationOfSpan
+// builds the annotation of it.
 func TestReconcileFindsWhatTheTableSaysOfEveryQuote(t *testing.T) {
 	var table struct {
 		Cases []struct {
-			Why    string `json:"why"`
-			Text   string `json:"text"`
-			Quoted struct {
-				Exact  string `json:"exact"`
-				Prefix string `json:"prefix"`
-				Suffix string `json:"suffix"`
-			} `json:"quoted"`
+			Why        string          `json:"why"`
+			Text       string          `json:"text"`
+			Quoted     api.QuotedText  `json:"quoted"`
 			Reconciled json.RawMessage `json:"reconciled"`
 		} `json:"cases"`
 	}
@@ -52,18 +31,44 @@ func TestReconcileFindsWhatTheTableSaysOfEveryQuote(t *testing.T) {
 	if len(table.Cases) == 0 {
 		t.Fatal("the table has no case")
 	}
+	resource, err := api.ParseResourceId("res-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var generator api.Agent
+	if err := generator.UnmarshalJSON([]byte(`{"@type":"Software","@id":"did:web:kb.example:agents:a","name":"a"}`)); err != nil {
+		t.Fatal(err)
+	}
 	for _, stated := range table.Cases {
 		var want any
 		if err := json.Unmarshal(stated.Reconciled, &want); err != nil {
 			t.Fatal(err)
 		}
-		span, found := annotations.Reconcile(stated.Text, annotations.QuotedText(stated.Quoted))
+		span, found := annotations.Reconcile(stated.Text, stated.Quoted)
 		var got any
 		if found {
-			got = asJSON(t, asTheTableWritesIt(span))
+			got = asJSON(t, span)
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("%s: reconciled %v, and the table says %v", stated.Why, got, want)
+		}
+		if !found {
+			continue
+		}
+		textSpan, err := span.TextSpan()
+		if err != nil {
+			t.Fatalf("%s: %v", stated.Why, err)
+		}
+		if spanned, ok := want.(map[string]any); ok {
+			delete(spanned, "anchorMethod")
+			delete(spanned, "matchQuality")
+			if written := asJSON(t, textSpan); !reflect.DeepEqual(written, any(spanned)) {
+				t.Errorf("%s: the span found is %v, and the table's is %v", stated.Why, written, spanned)
+			}
+		}
+		of := annotations.OfSpan{ResourceID: resource, Motivation: api.MotivationHighlighting, Generator: generator, Span: textSpan, Text: stated.Text}
+		if _, err := annotations.AnnotationOfSpan(of); err != nil {
+			t.Errorf("%s: the span found is refused: %v", stated.Why, err)
 		}
 	}
 }

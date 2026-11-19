@@ -26,11 +26,7 @@ newYield :: Bus.Bus -> LocalBus.EventBus -> Content.ContentTransport -> Timing.S
 newYield = YieldNamespace
 
 resource :: YieldNamespace -> ResourceUploadMetadata -> Content.ReplayableBody -> IO (Running.Running Delegation.UploadEvent ResourceId)
-resource (YieldNamespace _ _ content _ follower) metadata body = Running.newRunning $ \report -> Delegation.run follower $ do
-  report (Delegation.UploadStarted (maybe 0 toInteger (Content.bodyLength body)))
-  identity <- Content.putBinary content Nothing metadata body $ \notice -> report (Delegation.UploadProgress (Content.bytesUploaded notice) (Content.totalBytes notice))
-  report (Delegation.UploadFinished identity)
-  pure identity
+resource (YieldNamespace _ _ content _ follower) metadata body = Running.newRunning $ \report -> Delegation.run follower (Content.putBinary content Nothing metadata body report)
 
 delegate :: YieldNamespace -> GenerationJobParams -> Maybe Scientific -> IO (Running.Running (Delegation.JobEvent YieldJobCompleteCommand) YieldJobCompleteCommand)
 delegate (YieldNamespace _ _ _ timing follower) params stall =

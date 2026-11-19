@@ -26,7 +26,6 @@ import xynolog.transport.Delivered
 import xynolog.transport.FrameRefusal
 import xynolog.transport.Variable
 import xynolog.transport.Watched
-import xynolog.types.AnnotationSelector
 import xynolog.types.AnnotationTarget
 import xynolog.types.AssessingJobParams
 import xynolog.types.CommentingJobParams
@@ -39,16 +38,11 @@ import xynolog.types.MarkJobCompleteCommand
 import xynolog.types.MarkJobParams
 import xynolog.types.MarkSubmitEvent
 import xynolog.types.Motivation
+import xynolog.types.PendingAnnotation
 import xynolog.types.ResourceErrorEvent
 import xynolog.types.TaggingJobParams
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeMark
-
-/** An annotation being composed: where it is, and why it is made. Its selector is what `client.mark.submit` takes. */
-public data class PendingAnnotation(
-    public val selector: AnnotationSelector,
-    public val motivation: Motivation,
-)
 
 /** The motivation a mark job's parameters are for. */
 private fun motivationOf(params: MarkJobParams): Motivation = when (params) {
@@ -105,7 +99,7 @@ public class MarkStateUnit @JvmExposeBoxed constructor(private val client: Xynol
     @Volatile
     private var closed = false
 
-    /** The annotation being composed, or none. */
+    /** The annotation being composed, or none. Its selector is what `client.mark.submit` takes. */
     public val pendingAnnotation: Watched<PendingAnnotation?> = pending.reading()
 
     /** The motivation of the delegated job that is running, or none. */

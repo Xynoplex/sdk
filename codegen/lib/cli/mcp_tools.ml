@@ -23,19 +23,24 @@ let def_name file =
        (String.length file - String.length components))
 
 (* A component's JSON as Protocol writes it, once known to be a schema of
-   Protocol's. *)
+   Protocol's, but for the [$schema] and [$id] that identify its file: in a
+   tool's schema it is an entry of $defs, which an [$id] would make a resource
+   of its own, against which its references to $defs would resolve. *)
 let raw ~root spec file =
   ignore (schema spec file);
   match
     Decode.parse_file ~root:(Filename.concat root "protocol/specs/src") file
   with
+  | Ok (`Assoc members) ->
+      `Assoc
+        (List.filter (fun (key, _) -> key <> "$schema" && key <> "$id") members)
   | Ok json -> json
   | Error error -> raise (Refused error)
 
 (* Where a reference written in [from_] leads: a whole component, by its
    file. *)
-let component_ref ~where from_ target =
-  match Decode.resolve { Decode.target; file = from_; pointer = "" } with
+let component_ref ids ~where from_ target =
+  match Decode.resolve ids { Decode.target; file = from_; pointer = "" } with
   | file, "" when String.starts_with ~prefix:components file -> file
   | _ ->
       refuse T.file
@@ -44,9 +49,9 @@ let component_ref ~where from_ target =
 
 (* [json], written in [from_], with each reference to a component naming it
    in $defs, as the components it refers to are added to [refs]. *)
-let rec rewrite ~where from_ refs (json : Yojson.Safe.t) : Yojson.Safe.t =
+let rec rewrite ids ~where from_ refs (json : Yojson.Safe.t) : Yojson.Safe.t =
   match json with
-  | `List items -> `List (List.map (rewrite ~where from_ refs) items)
+  | `List items -> `List (List.map (rewrite ids ~where from_ refs) items)
   | `Assoc members ->
       `Assoc
         (List.map
@@ -54,7 +59,7 @@ let rec rewrite ~where from_ refs (json : Yojson.Safe.t) : Yojson.Safe.t =
              match (key, value) with
              | "$ref", `String target
                when not (String.starts_with ~prefix:"#" target) ->
-                 let file = component_ref ~where from_ target in
+                 let file = component_ref ids ~where from_ target in
                  refs := file :: !refs;
                  (key, `String ("#/$defs/" ^ def_name file))
              | "discriminator", `Assoc d when List.mem_assoc "mapping" d ->
@@ -70,7 +75,8 @@ let rec rewrite ~where from_ refs (json : Yojson.Safe.t) : Yojson.Safe.t =
                                        match target with
                                        | `String target ->
                                            let file =
-                                             component_ref ~where from_ target
+                                             component_ref ids ~where from_
+                                               target
                                            in
                                            refs := file :: !refs;
                                            ( tag,
@@ -83,7 +89,7 @@ let rec rewrite ~where from_ refs (json : Yojson.Safe.t) : Yojson.Safe.t =
                                      mapping) )
                           | other -> other)
                         d) )
-             | _ -> (key, rewrite ~where from_ refs value))
+             | _ -> (key, rewrite ids ~where from_ refs value))
            members)
   | other -> other
 
@@ -111,7 +117,8 @@ let defs_of st ~where refs =
         refuse T.file
           (Printf.sprintf "%s reaches %s, which is no component" where file);
       ( def_name file,
-        rewrite ~where file (ref []) (raw ~root:st.root st.spec file) ))
+        rewrite st.spec.ids ~where file (ref [])
+          (raw ~root:st.root st.spec file) ))
     (reach st.spec (List.sort_uniq String.compare refs))
 
 (* A member of a component: its schema, and whether the component requires
@@ -143,7 +150,8 @@ let whole name = `Assoc [ ("$ref", `String ("./" ^ name ^ ".json")) ]
 
 (* The schema of a form, with the components it reaches added to [refs]. *)
 let of_form st ~where refs : T.form -> Yojson.Safe.t = function
-  | Component name -> rewrite ~where (component name) refs (whole name)
+  | Component name ->
+      rewrite st.spec.ids ~where (component name) refs (whole name)
   | Own json ->
       own ~where json;
       json
@@ -151,12 +159,16 @@ let of_form st ~where refs : T.form -> Yojson.Safe.t = function
       `Assoc
         [
           ("type", `String "array");
-          ("items", rewrite ~where (component name) refs (whole name));
+          ( "items",
+            rewrite st.spec.ids ~where (component name) refs (whole name) );
         ]
   | List_of_member m ->
       let file, sub, _ = member st ~where m in
       `Assoc
-        [ ("type", `String "array"); ("items", rewrite ~where file refs sub) ]
+        [
+          ("type", `String "array");
+          ("items", rewrite st.spec.ids ~where file refs sub);
+        ]
 
 (* An object of [properties], [required] as listed, with the $defs they
    reach. *)
@@ -183,7 +195,7 @@ let input st (table : T.t) (tool : T.tool) =
                 (Printf.sprintf "%s: %s is optional, which %s does not require"
                    where of_.member of_.from);
             ( of_.member,
-              rewrite ~where file refs sub,
+              rewrite st.spec.ids ~where file refs sub,
               requires && optional = None )
         | Named { name; required; form } ->
             (name, of_form st ~where:(where ^ ", " ^ name) refs form, required))
@@ -212,7 +224,9 @@ let output st (tool : T.tool) = function
       let where = tool.name ^ "'s result" in
       let refs = ref [] in
       let file = component name in
-      let schema = rewrite ~where file refs (raw ~root:st.root st.spec file) in
+      let schema =
+        rewrite st.spec.ids ~where file refs (raw ~root:st.root st.spec file)
+      in
       let defs = defs_of st ~where !refs in
       if defs = [] then schema
       else
@@ -228,7 +242,7 @@ let output st (tool : T.tool) = function
             match m with
             | Result_member { of_; required } ->
                 let file, sub, _ = member st ~where:(where ^ ", " ^ name) of_ in
-                (name, rewrite ~where file refs sub, required)
+                (name, rewrite st.spec.ids ~where file refs sub, required)
             | Result_named { required; form } ->
                 ( name,
                   of_form st ~where:(where ^ ", " ^ name) refs form,

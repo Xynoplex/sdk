@@ -337,7 +337,9 @@ let mark_schemas
     mark_branch ~words:{|["tagging"]|} "TaggingJobParams";
   ]
 
-let marks = Job_storage.branch_motivations
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+let marks = Job_storage.branch_motivations ids
 
 let mark_motivations =
   [

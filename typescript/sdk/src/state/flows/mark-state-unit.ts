@@ -12,15 +12,11 @@ import {
   type StateUnit,
   type Watched,
   type components,
+  type PendingAnnotation,
 } from '@xynolog/core';
 import { JobCancelledError } from '../../namespaces/job-status-poll';
 
 type JobProgress = components['schemas']['JobProgress'];
-
-export interface PendingAnnotation {
-  selector: Selector | Selector[];
-  motivation: Motivation;
-}
 
 export interface MarkStateUnit extends StateUnit {
   pendingAnnotation$: Watched<PendingAnnotation | null>;

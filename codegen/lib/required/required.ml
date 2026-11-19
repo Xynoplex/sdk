@@ -23,7 +23,7 @@ let refusal file pointer message = { Decode.file; pointer; message }
 let components (spec : Spec.t) =
   List.map
     (fun (name, (reference : Decode.reference)) ->
-      match Decode.resolve reference with
+      match Decode.resolve spec.Spec.ids reference with
       | file, "" -> (
           match List.assoc_opt file spec.schemas with
           | Some schema -> Ok (name, file, schema)
@@ -44,7 +44,7 @@ let components (spec : Spec.t) =
 let replies (spec : Spec.t) (derivation : Shape.t) =
   List.concat_map
     (fun (_, (reference : Decode.reference)) ->
-      let file, _ = Decode.resolve reference in
+      let file, _ = Decode.resolve spec.Spec.ids reference in
       let item = List.assoc file spec.path_items in
       List.filter_map
         (fun (method_, operation) ->
@@ -101,7 +101,7 @@ let collect results =
 let derive (spec : Spec.t) =
   Result.bind
     (collect (components spec))
-    (Shape.derive
+    (Shape.derive ~ids:spec.ids
        ~unrecognized:spec.tables.errors_codes.bus_request.unrecognized_failure)
 
 let files ~root (spec : Spec.t) =

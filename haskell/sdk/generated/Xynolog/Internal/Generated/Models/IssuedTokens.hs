@@ -11,11 +11,10 @@ import Xynolog.Internal.Codec
 
 data IssuedTokens = IssuedTokens
   { issuedTokensAccess :: Text,
-    issuedTokensRefresh :: Text,
-    issuedTokensAdditionalProperties :: KM.KeyMap Value
+    issuedTokensRefresh :: Text
   }
   deriving (Eq, Show)
 
-instance FromJSON IssuedTokens where parseJSON = checked "IssuedTokens" $ withObject "IssuedTokens" (\fields -> IssuedTokens <$> (fields .: "access") <*> (fields .: "refresh") <*> traverse parseJSON (withoutFields ["access", "refresh"] fields))
+instance FromJSON IssuedTokens where parseJSON = checked "IssuedTokens" $ withObject "IssuedTokens" (\fields -> IssuedTokens <$> (fields .: "access") <*> (fields .: "refresh"))
 
-instance ToJSON IssuedTokens where toJSON value = Object (KM.fromList (concat [[("access", toJSON (issuedTokensAccess value))], [("refresh", toJSON (issuedTokensRefresh value))]]) <> fmap toJSON (withoutFields ["access", "refresh"] (issuedTokensAdditionalProperties value)))
+instance ToJSON IssuedTokens where toJSON value = Object (KM.fromList (concat [[("access", toJSON (issuedTokensAccess value))], [("refresh", toJSON (issuedTokensRefresh value))]]))

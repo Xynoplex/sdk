@@ -162,12 +162,12 @@ func TestADeviceSignInIsKeptOnceThePersonApproves(t *testing.T) {
 		}
 	})
 	store := NewSignInStore(filepath.Join(t.TempDir(), SignInFile))
-	var shown DeviceCode
-	endpoints, err := SignInWithDevice(context.Background(), issuerOf(), s.gateway.URL, store.Entry("local"), func(code DeviceCode) { shown = code })
+	var shown api.DeviceCode
+	endpoints, err := SignInWithDevice(context.Background(), issuerOf(), s.gateway.URL, store.Entry("local"), func(code api.DeviceCode) { shown = code })
 	if err != nil {
 		t.Fatal(err)
 	}
-	if shown.UserCode != "ABCD-EFGH" || shown.ExpiresIn != time.Minute {
+	if shown.UserCode != "ABCD-EFGH" || shown.ExpiresIn != 60 || shown.VerificationUriComplete != nil {
 		t.Errorf("shown %+v", shown)
 	}
 	if endpoints.Token != s.issuer.URL+"/token" {
@@ -194,7 +194,7 @@ func TestADeviceSignInTheIssuerDeniesIsDenied(t *testing.T) {
 		t.Fatal(err)
 	}
 	var failed *SignInError
-	_, err = issuerOf().SignInWithDeviceGrant(context.Background(), endpoints, func(DeviceCode) {})
+	_, err = issuerOf().SignInWithDeviceGrant(context.Background(), endpoints, func(api.DeviceCode) {})
 	if !errors.As(err, &failed) || failed.Code != SignInErrorCodeDenied {
 		t.Errorf("got %v, want denied", err)
 	}
@@ -217,12 +217,40 @@ func TestADeviceAuthorizationAnswerWithNoLifetimeIsRefused(t *testing.T) {
 	}
 	shown := 0
 	var failed *SignInError
-	_, err = issuerOf().SignInWithDeviceGrant(context.Background(), endpoints, func(DeviceCode) { shown++ })
+	_, err = issuerOf().SignInWithDeviceGrant(context.Background(), endpoints, func(api.DeviceCode) { shown++ })
 	if !errors.As(err, &failed) || failed.Code != SignInErrorCodeExchange {
 		t.Fatalf("got %v, want exchange", err)
 	}
 	if status, ok := failed.Status(); !ok || status != http.StatusOK {
 		t.Errorf("refused with status %d (%v), want the issuer's 200", status, ok)
+	}
+	s.mu.Lock()
+	grants := s.grants
+	s.mu.Unlock()
+	if shown != 0 || grants != 0 {
+		t.Errorf("showed %d codes and asked the token endpoint %d times, want neither", shown, grants)
+	}
+}
+
+// A code's lifetime is a whole number of seconds (api.DeviceCode's
+// ExpiresIn): an answer that states it in fractions states none.
+func TestADeviceAuthorizationAnswerWithALifetimeInFractionsOfASecondIsRefused(t *testing.T) {
+	s := newStack(t)
+	s.set(func() {
+		s.device = func(w http.ResponseWriter, r *http.Request) {
+			writeJSON(w, http.StatusOK, map[string]any{"device_code": "dc", "user_code": "U", "verification_uri": "https://issuer.example/device", "expires_in": 599.5, "interval": 0})
+		}
+		s.token = issuing(1)
+	})
+	endpoints, err := issuerOf().Discover(context.Background(), s.gateway.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	shown := 0
+	var failed *SignInError
+	_, err = issuerOf().SignInWithDeviceGrant(context.Background(), endpoints, func(api.DeviceCode) { shown++ })
+	if !errors.As(err, &failed) || failed.Code != SignInErrorCodeExchange {
+		t.Fatalf("got %v, want exchange", err)
 	}
 	s.mu.Lock()
 	grants := s.grants

@@ -199,8 +199,11 @@ HTTP content supports scoped binary streams, buffered binary reads, metadata,
 annotations and anchored text. Uploads take generated `ResourceUploadMetadata`
 and a `ReplayableBody`; `bytesBody` builds a byte source. A source opens again
 when a refused credential is renewed. Its idempotency key stays the same and
-progress never decreases across replay. A stream retained beyond its callback
-refuses further reads.
+progress never decreases across replay. An upload reports `UploadStarted` with
+the body's size, 0 for a body of unknown length, before any bytes are sent;
+`UploadProgress` as they are sent; and `UploadFinished` with the resource the
+gateway's answer names. One that fails reports no resource. A stream retained
+beyond its callback refuses further reads.
 
 ## Eight verbs
 
@@ -405,6 +408,11 @@ single bodies, body lists, resource targets, or selector lists. Its builders
 produce the same deterministic annotation IDs as the other SDKs. Reconciliation
 and every span offset count Unicode code points, including characters outside
 the basic multilingual plane. PDF spans use the anchored text's page rectangles.
+`reconcile` finds a quote's words and says how, as the branch of
+`ReconciledSpan` its anchor method names; only a fuzzy match carries a
+`MatchQuality`. `textSpanOf` is the span it found, as `annotationOfSpan` takes
+one. A worker that finds its spans another
+way builds the `TextSpan` itself.
 
 ```haskell
 {-# LANGUAGE OverloadedStrings #-}
@@ -416,15 +424,11 @@ import qualified Xynolog.Annotations as Annotations
 highlight :: IO UTCTime -> ResourceId -> Agent -> IO (Maybe Annotation)
 highlight wall resource generator =
   case Annotations.reconcile "Ada Lovelace wrote the first algorithm."
-    (QuotedText "Ada Lovelace" Nothing Nothing mempty) of
+    (QuotedText "Ada Lovelace" Nothing Nothing) of
     Nothing -> pure Nothing
-    Just found -> do
-      let spanValue = TextSpan (reconciledSpanEnd found) (reconciledSpanExact found)
-            (reconciledSpanPrefix found) (reconciledSpanStart found)
-            (reconciledSpanSuffix found) mempty
-      Just <$> Annotations.annotationOfSpan wall
-        (Annotations.TextContent "Ada Lovelace wrote the first algorithm.")
-        spanValue resource MotivationHighlighting generator Nothing
+    Just found -> Just <$> Annotations.annotationOfSpan wall
+      (Annotations.TextContent "Ada Lovelace wrote the first algorithm.")
+      (Annotations.textSpanOf found) resource MotivationHighlighting generator Nothing
 ```
 
 Set the existing cross-SDK `XYNOLOG_BUS_LOG` switch to a nonempty value to

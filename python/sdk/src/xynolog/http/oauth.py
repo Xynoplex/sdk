@@ -54,7 +54,7 @@ from xynolog.session import SignInKept, is_token_expired
 from xynolog.storage import SessionStorage
 from xynolog.stored import PENDING_AUTHORIZATION_KEY
 from xynolog.timing import DEVICE_POLL_FLOOR_MS, DEVICE_POLL_MS, DEVICE_SLOW_DOWN_MS, HTTP_REQUEST_TIMEOUT_MS, REFRESH_RETRY
-from xynolog.types import HttpEndpoint
+from xynolog.types import BeginAuthorizationOptions, DeviceCode, HttpEndpoint, IssuedTokens
 from xynolog.watched import Variable
 
 __all__ = [
@@ -99,27 +99,6 @@ class IssuerEndpoints:
     revocation: str | None = None
 
 
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class IssuedTokens:
-    """What a grant issued."""
-
-    access: str
-    refresh: str
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class DeviceCode:
-    """What a person is shown to approve a sign-in from wherever they have a browser."""
-
-    user_code: str
-    verification_uri: str
-    verification_uri_complete: str | None
-    expires_in: float
-    """How long the code is good for, in seconds."""
-
-
 def issuer_client(*, http: httpx.AsyncClient | None = None) -> AbstractAsyncContextManager[httpx.AsyncClient]:
     """The HTTP client requests of an issuer are made with, held with `async with`.
 
@@ -154,6 +133,12 @@ def seconds_in(answer: Answer, name: str) -> float | None:
     if isinstance(value, bool) or not isinstance(value, int | float) or value < 0 or value == float("inf"):
         return None
     return float(value)
+
+
+def _whole_seconds_in(answer: Answer, name: str) -> int | None:
+    """A span of time an answer states as a whole number of seconds, when it states one that can be waited."""
+    seconds = seconds_in(answer, name)
+    return None if seconds is None or not seconds.is_integer() else int(seconds)
 
 
 def _no_issuer() -> SignInError:
@@ -342,21 +327,6 @@ class PendingAuthorization(WireModel, frozen=True):
     expected_name: Annotated[str | None, Field(alias="expectedName")] = None
 
 
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class BeginAuthorizationOptions:
-    """What a sign-in by a page redirect begins from."""
-
-    target: HttpEndpoint
-    redirect_uri: str
-    """Where the issuer sends the person back to. The issuer accepts only an address its registration of the client lists."""
-    kb_id: str | None = None
-    """The registered knowledge base being signed in to again; none when it is none."""
-    expected_did: str | None = None
-    """What the person believed they clicked; none when they named nothing."""
-    expected_name: str | None = None
-
-
 def _random_url_safe(size: int) -> str:
     """`size` random bytes, as base64url."""
     return base64.urlsafe_b64encode(secrets.token_bytes(size)).rstrip(b"=").decode()
@@ -367,7 +337,8 @@ async def begin_authorization(options: BeginAuthorizationOptions, pending: Sessi
 
     It finds the issuer the target trusts, with `http` when one is given
     (`issuer_client`), remembers the pending sign-in in `pending`, and gives
-    the URL to send the person to.
+    the URL to send the person to. The issuer sends them back only to a
+    `redirect_uri` its registration of the client lists.
 
     Raises `SignInError` (`discovery`) for a target whose host is no host's
     name, and as `discover_issuer` does.
@@ -504,7 +475,7 @@ async def sign_in_with_device_grant(
             text_in(body, "device_code"),
             text_in(body, "user_code"),
             text_in(body, "verification_uri"),
-            seconds_in(body, "expires_in"),
+            _whole_seconds_in(body, "expires_in"),
         )
         if status != 200 or device_code is None or user_code is None or verification_uri is None or expires_in is None:
             raise SignInError("exchange", f"The issuer refused the device authorization request ({_refusal(status, body)})", status=status)

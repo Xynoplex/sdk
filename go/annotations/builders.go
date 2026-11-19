@@ -45,7 +45,7 @@ type OfSpan struct {
 	ResourceID api.ResourceId
 	Motivation api.Motivation
 	Generator  api.Agent
-	Span       TextSpan
+	Span       api.TextSpan
 	Body       *api.AnnotationBodies
 	Text       string
 	Anchored   *api.AnchoredText
@@ -67,7 +67,7 @@ func isASpanOf(length, start, end int) bool { return 0 <= start && start <= end 
 
 // fragments is a selector for each rectangle a span of a PDF's anchored text
 // is located at, when the items it overlaps cover its words.
-func fragments(anchored api.AnchoredText, text offsets, span TextSpan) ([]api.Selector, error) {
+func fragments(anchored api.AnchoredText, text offsets, span api.TextSpan) ([]api.Selector, error) {
 	overlapping, rectangles := locate(anchored, span.Start, span.End)
 	if len(rectangles) == 0 {
 		return nil, refused(xynolog.SpanRefusalNothingLocated, "no item of the anchored text overlaps offsets %d to %d", span.Start, span.End)
@@ -131,18 +131,19 @@ func selectorsOf(of OfSpan) ([]api.Selector, error) {
 		}
 		where = located
 	}
-	if !strings.HasSuffix(text.between(0, span.Start), span.Prefix) {
+	if span.Prefix != nil && !strings.HasSuffix(text.between(0, span.Start), *span.Prefix) {
 		return nil, refused(xynolog.SpanRefusalPrefixMismatch, "the span's prefix is not the text just before offset %d", span.Start)
 	}
-	if !strings.HasPrefix(text.between(span.End, text.length()), span.Suffix) {
+	if span.Suffix != nil && !strings.HasPrefix(text.between(span.End, text.length()), *span.Suffix) {
 		return nil, refused(xynolog.SpanRefusalSuffixMismatch, "the span's suffix is not the text just after offset %d", span.End)
 	}
+	// An empty prefix or suffix is the text's at an end of it, and is not written into the quote.
 	quote := api.TextQuoteSelector{Type: api.TextQuoteSelectorTypeTextQuoteSelector, Exact: span.Exact}
-	if span.Prefix != "" {
-		quote.Prefix = &span.Prefix
+	if span.Prefix != nil && *span.Prefix != "" {
+		quote.Prefix = span.Prefix
 	}
-	if span.Suffix != "" {
-		quote.Suffix = &span.Suffix
+	if span.Suffix != nil && *span.Suffix != "" {
+		quote.Suffix = span.Suffix
 	}
 	var quoted api.Selector
 	if err := quoted.From(quote); err != nil {

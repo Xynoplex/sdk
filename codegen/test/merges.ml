@@ -7,6 +7,8 @@ open Xynolog_codegen
 let reference name =
   { Decode.target = "./" ^ name ^ ".json"; file = ""; pointer = "" }
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
 let layer fields = Schema.Schema fields
 let text_layer = { Schema.empty with type_ = Some [ String ] }
 let text = layer text_layer
@@ -24,7 +26,7 @@ let find definitions name =
 let find_referenced definitions r = find definitions (named_by r)
 
 let merge ?(definitions = [ ("Text", text) ]) left right =
-  Normalize.normalize
+  Normalize.normalize ids
     ~find:(find_referenced definitions)
     (all_of [ left; right ])
 
@@ -133,13 +135,13 @@ let keywords () =
   Alcotest.(check bool)
     "a schema that is a part of itself" true
     (Result.is_error
-       (Normalize.normalize
+       (Normalize.normalize ids
           ~find:(find_referenced [ ("Cycle", all_of [ named "Cycle" ]) ])
           (all_of [ named "Cycle" ])))
 
 (* [schema], named among [definitions], as [Normalize.everywhere] writes it. *)
 let everywhere ?(definitions = [ ("Text", text) ]) schema =
-  Normalize.everywhere ~referenced:named_by
+  Normalize.everywhere ids ~referenced:named_by
     ~find:(find (("Subject", schema) :: definitions))
     "Subject"
 
@@ -197,6 +199,71 @@ let everywhere_cases () =
        (all_of
           [ named "Wrapped"; object_ [ ("a", all_of [ named "Text"; long ]) ] ]))
 
+(* A schema that closes what its [$ref] and its [allOf] compose, as
+   [Normalize.closed] reads it. *)
+let closed_cases () =
+  let members = object_ [ ("a", text) ] in
+  let closing parts =
+    {
+      Schema.empty with
+      ref_ = Some (reference "Members");
+      all_of = Some parts;
+      unevaluated_properties = Some (Schema.Boolean_schema false);
+      defs = Some [ ("Members", members) ];
+    }
+  in
+  let closed s =
+    Normalize.closed ids ~find:(find_referenced [ ("Members", members) ]) s
+  in
+  Alcotest.check outcome
+    "what it composes, closed by additionalProperties, without its $defs"
+    (Ok
+       {
+         Schema.empty with
+         type_ = Some [ Object ];
+         properties = Some [ ("a", text); ("b", text) ];
+         additional_properties = Some (Schema.Boolean_schema false);
+       })
+    (closed (closing [ object_ [ ("b", text) ] ]));
+  Alcotest.(check bool)
+    "a composition that is no one object is refused" true
+    (Result.is_error
+       (closed (closing [ layer { Schema.empty with one_of = Some [ text ] } ])));
+  Alcotest.(check bool)
+    "a schema closed twice is refused" true
+    (Result.is_error
+       (closed
+          {
+            (closing []) with
+            additional_properties = Some (Schema.Boolean_schema false);
+          }));
+  Alcotest.check written
+    "each branch of a union that closes what it composes, as its one object"
+    (Ok
+       (layer
+          {
+            Schema.empty with
+            one_of =
+              Some
+                [
+                  layer
+                    {
+                      Schema.empty with
+                      type_ = Some [ Object ];
+                      properties = Some [ ("a", text); ("b", text) ];
+                      additional_properties = Some (Schema.Boolean_schema false);
+                    };
+                  text;
+                ];
+          }))
+    (Normalize.closed_within ids
+       ~find:(find_referenced [ ("Members", members) ])
+       (layer
+          {
+            Schema.empty with
+            one_of = Some [ layer (closing [ object_ [ ("b", text) ] ]); text ];
+          }))
+
 let () =
   Alcotest.run "merges"
     [
@@ -204,4 +271,9 @@ let () =
         [ Alcotest.test_case "merged by its rule" `Quick keywords ] );
       ( "everywhere",
         [ Alcotest.test_case "no allOf is left" `Quick everywhere_cases ] );
+      ( "closed",
+        [
+          Alcotest.test_case "unevaluatedProperties closes one object" `Quick
+            closed_cases;
+        ] );
     ]

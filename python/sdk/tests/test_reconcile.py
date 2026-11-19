@@ -10,7 +10,7 @@ from spec import SPEC, JsonObject, text
 from xynolog._spans import nearest_stretch
 from xynolog.annotations import AnchorMethod, MatchQuality, QuotedText, ReconciledSpan, annotation_of_span, reconcile, text_quote_selector
 from xynolog.identifiers import ResourceId
-from xynolog.types import AgentSoftware, AnnotationTarget
+from xynolog.types import AgentSoftware, AnnotationTarget, ReconciledSpanFuzzyMatch
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):
@@ -37,7 +37,7 @@ def as_the_table_writes(span: ReconciledSpan | None) -> JsonObject | None:
         written["prefix"] = span.prefix
     if span.suffix is not None:
         written["suffix"] = span.suffix
-    if span.match_quality is not None:
+    if isinstance(span, ReconciledSpanFuzzyMatch):
         written["matchQuality"] = span.match_quality
     return written
 

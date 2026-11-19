@@ -17,10 +17,11 @@ way out, and what it had running has ended by then.
 from xynolog.state.beckon import BeckonStateUnit
 from xynolog.state.gather import GatherStateUnit
 from xynolog.state.hover import HoverDwell
-from xynolog.state.mark import MarkStateUnit, PendingAnnotation
+from xynolog.state.mark import MarkStateUnit
 from xynolog.state.match import MatchStateUnit
 from xynolog.state.search import SearchPipeline, SearchState
 from xynolog.state.yield_ import YieldStateUnit
+from xynolog.types import PendingAnnotation
 
 __all__ = [
     "BeckonStateUnit",

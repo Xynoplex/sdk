@@ -23,6 +23,7 @@ import xynolog.types.AnchoredText
 import xynolog.types.Annotation
 import xynolog.types.AnnotationBodies
 import xynolog.types.Motivation
+import xynolog.types.TextSpan
 import xynolog.types.TextualBody
 import xynolog.types.wireJson
 import java.time.Duration

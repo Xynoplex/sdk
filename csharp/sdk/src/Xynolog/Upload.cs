@@ -5,7 +5,13 @@ using Xynolog.Types;
 
 namespace Xynolog;
 
-/// <summary>An upload that starts immediately. Read its progress once and await the created resource.</summary>
+/// <summary>
+/// An upload that starts immediately. Read what it reports once and await the created resource. It reports
+/// <see cref="UploadProgress.StartedCase"/> with the file's size before any bytes are sent, a
+/// <see cref="UploadProgress.ProgressCase"/> as they are sent, and <see cref="UploadProgress.FinishedCase"/> with the
+/// resource made, once the knowledge base has answered. An upload that fails reports no resource, and its failure is
+/// thrown to its reader and its awaiter.
+/// </summary>
 public sealed class Upload : IAsyncEnumerable<UploadProgress>, IDisposable
 {
     private readonly object gate = new();
