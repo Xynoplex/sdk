@@ -405,8 +405,6 @@ class ClaimsTest {
             "yield",
             metadata = obj("maxRetries" to 0),
             params = obj(
-                "title" to "A resource made",
-                "storageUri" to "file://made.md",
                 "context" to obj(
                     "focus" to obj(
                         "kind" to "annotation",

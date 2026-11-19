@@ -24,8 +24,8 @@ import xynolog.types.Annotation
 import xynolog.types.BrowseAnnotationRequest
 import xynolog.types.DurabilityEvidence
 import xynolog.types.FailureClass
+import xynolog.types.GatheredContext
 import xynolog.types.GatheredContextFocusAnnotation
-import xynolog.types.GenerationJobParams
 import xynolog.types.JobCancelCommand
 import xynolog.types.JobCheckpointCommand
 import xynolog.types.JobFailCommand
@@ -62,17 +62,18 @@ private fun weakness(evidence: DurabilityEvidence): Int = when (evidence) {
 
 /**
  * The annotation a job is anchored to: the one a `yield` job's context is
- * focused on. A `mark` job has none, and nor has a `yield` job whose
- * parameters are not a `yield` job's.
+ * focused on. A `mark` job has none, and nor has a `yield` job whose context
+ * is no gathered context.
  */
 private fun anchorOf(jobType: JobType, params: JobParams): AnnotationId? {
     if (jobType != JobType.Yield) return null
-    val generation = try {
-        wireJson.decodeFromJsonElement(GenerationJobParams.serializer(), wireJson.encodeToJsonElement(JobParams.serializer(), params))
+    val written = params.rest["context"] ?: return null
+    val context = try {
+        wireJson.decodeFromJsonElement(GatheredContext.serializer(), written)
     } catch (_: IllegalArgumentException) {
         return null
     }
-    return (generation.context.focus as? GatheredContextFocusAnnotation)?.annotation?.id
+    return (context.focus as? GatheredContextFocusAnnotation)?.annotation?.id
 }
 
 /**
