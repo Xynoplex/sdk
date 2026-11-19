@@ -24,12 +24,13 @@ let waits =
 let derive ~root =
   let file = Bundles.archivist in
   let limits =
-    match Documents.document ~root ~beside:[] file with
-    | `Assoc members -> (
+    match Bundle.document ~specs:(Documents.specs ~root) file with
+    | Error error -> raise (Documents.Refused error)
+    | Ok (`Assoc members) -> (
         match List.assoc_opt "x-xynolog-limits" members with
         | Some (`Assoc limits) -> limits
         | _ -> Documents.refuse file "states no x-xynolog-limits")
-    | _ -> Documents.refuse file "is no object"
+    | Ok _ -> Documents.refuse file "is no object"
   in
   let seconds name =
     match List.assoc_opt name limits with
