@@ -315,6 +315,7 @@ and empty st =
               ];
             vis = Pub;
             name = empty_object;
+            generics = [];
             body = Fields [];
           };
       ];
@@ -577,6 +578,7 @@ and identifier name (n : D.node) doc =
             ];
           vis = Pub;
           name;
+          generics = [];
           body = Tuple_fields [ string_ty ];
         };
       impl self_name
@@ -819,6 +821,7 @@ and structure st name ~owner (n : D.node) doc =
            else []);
         vis = Pub;
         name;
+        generics = [];
         body = Fields (rust_fields @ rest);
       }
   in

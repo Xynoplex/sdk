@@ -23,6 +23,7 @@
 //! All of its variation comes in through the schedule, so a test that fixes
 //! the schedule fixes the run.
 
+use super::kit::{FaultAction, RequestLogEntry};
 use crate::bus::{operation, reply_names};
 use crate::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD};
 use crate::errors::{BusRequestError, BusRequestErrorCode, TransportError, TransportErrorCode};
@@ -39,35 +40,6 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::{broadcast, watch};
-
-/// What the wire does to one request.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FaultAction {
-    /// Its reply is delivered.
-    Deliver,
-    /// Its reply is lost.
-    DropReply,
-    /// Its reply is delivered after this long.
-    Delay(Duration),
-    /// Its reply is delivered twice.
-    DuplicateReply,
-    /// The emit itself is refused: the request never reaches the gateway.
-    RejectEmit,
-}
-
-/// One request the transport was sent, in the order they came.
-#[derive(Debug, Clone, PartialEq)]
-pub struct RequestLogEntry {
-    pub channel: String,
-    /// What the schedule did to it.
-    pub action: FaultAction,
-    pub correlation_id: Option<String>,
-    /// The request's identity across retries: two entries with the same key
-    /// are one logical request, sent again.
-    pub retry_key: String,
-    /// The payload as it was sent.
-    pub payload: Map<String, Value>,
-}
 
 /// A request's identity across retries: its channel and its payload, less
 /// what the gateway stamps on it.

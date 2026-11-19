@@ -18,7 +18,11 @@
 //! shaped like a connection: a model, with time paused, or a real transport
 //! over real sockets, on a runtime its caller gives.
 
-use super::faulty_transport::{FaultAction, FaultyTransport};
+use super::faulty_transport::FaultyTransport;
+use super::kit::{
+    DELAY_MS, DELIVERY_OPS, DeliveryOp, FaultAction, LivenessScenario, LivenessSpec,
+    SCHEDULE_LENGTH, SLACK,
+};
 use crate::channels::BRIDGED_CHANNELS;
 use crate::transport::{BoxFuture, Transport};
 use proptest::collection::vec;
@@ -42,62 +46,31 @@ fn runtime() -> Result<tokio::runtime::Runtime, String> {
 
 // ── L1, L2 ──────────────────────────────────────────────────────────────
 
-/// What one fresh run of a composition exposes to the axioms.
-#[derive(Default)]
-pub struct LivenessScenario {
-    /// One per output: resolves when the output has said something, a value
-    /// or a failure (L1).
-    pub outputs: Vec<BoxFuture<'static, ()>>,
-    /// One per awaited path: resolves when it has settled, either way (L2).
-    pub settlements: Vec<BoxFuture<'static, ()>>,
-}
-
 /// The gateway's answer to a request no queued response answers.
 pub type Respond = dyn Fn(&str, &Map<String, Value>) -> Result<Option<Value>, String> + Send + Sync;
 
-pub struct LivenessSpec<Setup> {
-    /// Build a fresh composition over the transport it is given, whose
-    /// stream names what a full client's does (`BRIDGED_CHANNELS`). Called
-    /// once per run, inside the run's runtime.
-    pub setup: Setup,
-    /// The time the composition gives a bus request. The bound is derived
-    /// from it: (timeout × (1 + retry budget) + the schedule's delays) × 4.
-    pub timeout: Duration,
-    /// How often a logical request may be sent again.
-    pub retry_budget: usize,
-    /// The schedules to run; `None` generates them.
-    pub schedules: Option<BoxedStrategy<Vec<FaultAction>>>,
-    /// What the gateway answers; `None` refuses whatever nothing queued an
-    /// answer for.
-    pub respond: Option<Arc<Respond>>,
-    pub cases: u32,
-}
-
-/// A wire behaviour, each as likely as the others; delays stay small.
+/// A wire behaviour, each as likely as the others; a delay is of `DELAY_MS`.
 pub fn fault_actions() -> impl Strategy<Value = FaultAction> {
     prop_oneof![
         Just(FaultAction::Deliver),
         Just(FaultAction::DropReply),
-        (0u64..=5).prop_map(|ms| FaultAction::Delay(Duration::from_millis(ms))),
+        DELAY_MS.prop_map(|ms| FaultAction::Delay(Duration::from_millis(ms))),
         Just(FaultAction::DuplicateReply),
         Just(FaultAction::RejectEmit),
     ]
 }
 
-/// A fault schedule of one to eight behaviours.
+/// A fault schedule, of a length within `SCHEDULE_LENGTH`.
 pub fn fault_schedules() -> impl Strategy<Value = Vec<FaultAction>> {
-    vec(fault_actions(), 1..=8)
+    vec(fault_actions(), SCHEDULE_LENGTH)
 }
 
 fn described(schedule: &[FaultAction]) -> String {
     schedule
         .iter()
         .map(|action| match action {
-            FaultAction::Deliver => "deliver".to_owned(),
-            FaultAction::DropReply => "drop-reply".to_owned(),
-            FaultAction::Delay(after) => format!("delay({})", after.as_millis()),
-            FaultAction::DuplicateReply => "duplicate-reply".to_owned(),
-            FaultAction::RejectEmit => "reject-emit".to_owned(),
+            FaultAction::Delay(after) => format!("{}({})", action.kind(), after.as_millis()),
+            _ => action.kind().to_owned(),
         })
         .collect::<Vec<_>>()
         .join(",")
@@ -128,10 +101,10 @@ where
                     _ => Duration::ZERO,
                 })
                 .sum();
-            let bound = (spec.timeout * (1 + spec.retry_budget as u32) + delays) * 4;
+            let bound = (spec.timeout_ms * (1 + spec.retry_budget as u32) + delays) * SLACK;
             runtime
                 .block_on(async {
-                    let transport = match &spec.respond {
+                    let transport = match &spec.make_response {
                         Some(respond) => {
                             let respond = respond.clone();
                             FaultyTransport::answering(
@@ -226,21 +199,10 @@ pub trait DeliverySubject {
     fn delivered(&self) -> BoxFuture<'_, Vec<String>>;
 }
 
-/// One step of an interleaving.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DeliveryOp {
-    Write,
-    Transition,
-}
-
 /// Interleavings of writes and transitions, each with at least one write: a
 /// sequence that writes nothing checks nothing.
 pub fn delivery_ops(longest: usize) -> impl Strategy<Value = Vec<DeliveryOp>> {
-    vec(
-        prop_oneof![Just(DeliveryOp::Write), Just(DeliveryOp::Transition)],
-        1..=longest,
-    )
-    .prop_map(|mut ops| {
+    vec(proptest::sample::select(DELIVERY_OPS.to_vec()), 1..=longest).prop_map(|mut ops| {
         if !ops.contains(&DeliveryOp::Write) {
             ops.push(DeliveryOp::Write);
         }
@@ -303,10 +265,7 @@ where
                     let under = format!(
                         "under ⟨{}⟩",
                         ops.iter()
-                            .map(|op| match op {
-                                DeliveryOp::Write => "write",
-                                DeliveryOp::Transition => "transition",
-                            })
+                            .map(DeliveryOp::name)
                             .collect::<Vec<_>>()
                             .join(",")
                     );

@@ -7,9 +7,9 @@ use serde_json::{Map, Value, json};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use xynolog::bus::{Bus, Operation, operation};
+use xynolog::testing::kit::{DeliveryOp, LivenessScenario, LivenessSpec};
 use xynolog::testing::liveness::{
-    DeliveryOp, DeliverySubject, LivenessScenario, LivenessSpec, Respond,
-    assert_exactly_once_delivery, assert_liveness_axioms,
+    DeliverySubject, Respond, assert_exactly_once_delivery, assert_liveness_axioms,
 };
 use xynolog::testing::{FaultAction, FaultyTransport};
 use xynolog::transport::{BoxFuture, Envelope, Transport};
@@ -34,10 +34,10 @@ fn answering() -> Option<Arc<Respond>> {
 fn spec<Setup>(setup: Setup, schedule: Option<Vec<FaultAction>>) -> LivenessSpec<Setup> {
     LivenessSpec {
         setup,
-        timeout: TIMEOUT,
+        timeout_ms: TIMEOUT,
         retry_budget: 1,
         schedules: schedule.map(|schedule| Just(schedule).boxed()),
-        respond: answering(),
+        make_response: answering(),
         cases: 25,
     }
 }

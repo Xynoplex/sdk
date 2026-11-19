@@ -253,6 +253,7 @@ type item =
       attrs : meta list;
       vis : vis;
       name : string;
+      generics : generic list;
       body : struct_body;
     }
   | Unit_struct of { doc : string list; vis : vis; name : string }
@@ -1346,8 +1347,10 @@ let item_text = function
         (doc_lines ~indent:0 doc
         @ attrs_lines ~indent:0 attrs
         @ [ const_text ~indent:0 ~vis ~name ~ty value ])
-  | Struct_def { doc; attrs; vis; name; body } ->
-      let head = vis_text vis ^ "struct " ^ ident name in
+  | Struct_def { doc; attrs; vis; name; generics; body } ->
+      let head =
+        vis_text vis ^ "struct " ^ ident name ^ generics_text generics
+      in
       let body =
         match body with
         | Fields [] -> [ head ^ " {}" ]
