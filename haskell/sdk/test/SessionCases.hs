@@ -428,7 +428,7 @@ externalCases target person = do
         exchange _ = do
           atomically (modifyTVar' renewing (+ 1) >> void (tryPutTMVar waiting ()))
           atomically (readTMVar granting)
-          pure (IssuedTokens (jwt 3600 1) "rotated-credential" KM.empty)
+          pure (IssuedTokens (jwt 3600 1) "rotated-credential")
         held =
           options
             { Session.sessionKept = kept,

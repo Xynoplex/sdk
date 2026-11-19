@@ -95,7 +95,10 @@ annotationCases root = do
     text <- decode (member "text" row)
     quoted <- decode (member "quoted" row)
     let result = toJSON (A.reconcile text quoted)
+        spanOnly (Object fields) = Object (foldr KM.delete fields ["anchorMethod", "matchQuality"])
+        spanOnly absent = absent
     require ("reconciled span differs: " ++ show (row, result)) (result == member "reconciled" row)
+    require ("reconciled span's TextSpan differs: " ++ show row) (toJSON (A.textSpanOf <$> A.reconcile text quoted) == spanOnly (member "reconciled" row))
   identifiers <- readTable root "annotations/id-cases.json"
   forM_ (array (member "cases" identifiers)) $ \row -> do
     resource <- decode (member "resourceId" row)

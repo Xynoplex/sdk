@@ -29,115 +29,103 @@ let found ~shape name =
   | None ->
       Error [ refusal name "is no client type, and a Haskell writer reads it" ]
 
-(* A union as one record, as the Haskell SDK holds one: every branch's
-   members but its tag, each required where every branch requires it, then
-   the tag, typed by the type of words [enum] names its branches by. A member two
-   branches hold differently is refused. *)
-let record_of_union name ~enum ~tag branches =
-  let all = List.concat_map snd branches in
-  let names =
-    List.fold_left
-      (fun names m ->
-        if List.mem m.name names then names else names @ [ m.name ])
-      [] all
+(* A client type as the haskell-sdk group models one, beside the types it
+   brings: words; an object's members, each a scalar or another type's
+   schema; or a union of its branches, each its own type named for the word
+   that tags it, an object of that word and its members. Each object states
+   no member but its own. *)
+let adapter name =
+  let object_ members =
+    let* properties =
+      Spec.all
+        (List.map
+           (fun m ->
+             match m.held with
+             | Scalar t ->
+                 Ok
+                   ( m.name,
+                     Schema.Schema { Schema.empty with type_ = Some [ t ] } )
+             | Named { name = n; union = false } ->
+                 Ok
+                   ( m.name,
+                     Schema.Schema
+                       {
+                         Schema.empty with
+                         ref_ =
+                           Some
+                             {
+                               Decode.target = n ^ ".json";
+                               file = "";
+                               pointer = "";
+                             };
+                       } )
+             | _ -> Error [ refusal name (m.name ^ " is no scalar or type") ])
+           members)
+    in
+    Ok
+      {
+        Schema.empty with
+        type_ = Some [ Object ];
+        properties = Some properties;
+        additional_properties = Some (Schema.Boolean_schema false);
+        required =
+          Some
+            (List.filter_map
+               (fun m -> if m.required then Some m.name else None)
+               members);
+      }
   in
-  Spec.all
-    (List.map
-       (fun n ->
-         match List.filter (fun m -> m.name = n) all with
-         | [] -> assert false
-         | first :: _ as stated ->
-             if List.exists (fun m -> m.held <> first.held) stated then
-               Error
-                 [ refusal name (n ^ " is held differently by two branches") ]
-             else
-               Ok
-                 {
-                   first with
-                   required =
-                     List.for_all
-                       (fun (_, members) ->
-                         List.exists (fun m -> m.name = n && m.required) members)
-                       branches;
-                 })
-       names)
-  |> Result.map (fun members ->
-      members
-      @ [
-          {
-            name = tag;
-            held = Named { name = enum; union = false };
-            required = true;
-          };
-        ])
-
-(* A client type as the haskell-sdk group models one: words, an object's
-   members, each a scalar or another type's schema, or a union, as one record
-   ([record_of_union]) whose tag is typed by the type [words_of] names those
-   words by. *)
-let rec adapter ~words_of name =
-  let schema (s : Schema.schema) = Schema.Schema { s with title = Some name } in
+  let words words =
+    {
+      Schema.empty with
+      type_ = Some [ String ];
+      enum = Some (List.map (fun w -> Schema.String_literal w) words);
+    }
+  in
+  let titled title (s : Schema.schema) =
+    Schema.Schema { s with title = Some title }
+  in
   function
-  | Words words ->
-      Ok
-        (schema
-           {
-             Schema.empty with
-             type_ = Some [ String ];
-             enum = Some (List.map (fun w -> Schema.String_literal w) words);
-           })
+  | Words w -> Ok [ (name, titled name (words w)) ]
   | Fields members ->
-      let* properties =
+      Result.map (fun o -> [ (name, titled name o) ]) (object_ members)
+  | Union { tag; branches } ->
+      let* branches =
         Spec.all
           (List.map
-             (fun m ->
-               match m.held with
-               | Scalar t ->
-                   Ok
-                     ( m.name,
-                       Schema.Schema { Schema.empty with type_ = Some [ t ] } )
-               | Named { name = n; union = false } ->
-                   Ok
-                     ( m.name,
-                       Schema.Schema
-                         {
-                           Schema.empty with
-                           ref_ =
-                             Some
-                               {
-                                 Decode.target = n ^ ".json";
-                                 file = "";
-                                 pointer = "";
-                               };
-                         } )
-               | _ -> Error [ refusal name (m.name ^ " is no scalar or type") ])
-             members)
+             (fun (word, members) ->
+               let branch = name ^ Text.pascal word in
+               let* o = object_ members in
+               Ok
+                 ( branch,
+                   titled branch
+                     {
+                       o with
+                       properties =
+                         Some
+                           ((tag, Schema.Schema (words [ word ]))
+                           :: Option.value o.properties ~default:[]);
+                       required =
+                         Some (tag :: Option.value o.required ~default:[]);
+                     } ))
+             branches)
+      in
+      let named branch =
+        Schema.Schema
+          {
+            Schema.empty with
+            ref_ =
+              Some { Decode.target = branch ^ ".json"; file = ""; pointer = "" };
+          }
       in
       Ok
-        (schema
-           {
-             Schema.empty with
-             type_ = Some [ Object ];
-             properties = Some properties;
-             additional_properties = Some (Schema.Boolean_schema false);
-             required =
-               Some
-                 (List.filter_map
-                    (fun m -> if m.required then Some m.name else None)
-                    members);
-           })
-  | Union { tag; branches } -> (
-      match words_of (List.map fst branches) with
-      | Some enum ->
-          let* members = record_of_union name ~enum ~tag branches in
-          adapter ~words_of name (Fields members)
-      | None ->
-          Error
-            [
-              refusal name
-                "is a union whose tags are the words of no type the Haskell \
-                 SDK models";
-            ])
+        (( name,
+           titled name
+             {
+               Schema.empty with
+               one_of = Some (List.map (fun (b, _) -> named b) branches);
+             } )
+        :: branches)
 
 (* The client types the Haskell SDK models as their group states them: each
    it generates but PendingAnnotation, which [pending_annotation] writes, and
@@ -150,28 +138,15 @@ let adapted spec =
            [ "PendingAnnotation"; "UploadProgress"; "FrameRefusalReason" ]))
     (Definitions.generated_client_types spec)
 
-(* The client types [names] the Haskell SDK models. A union's tag is typed by
-   the one of them whose words are its tags. *)
+(* The client types [names] the Haskell SDK models. *)
 let adapters ~names ~shape =
-  let words_of tags =
-    match
-      List.filter
-        (fun n ->
-          match shape n with
-          | Some (Words words) ->
-              List.sort compare words = List.sort compare tags
-          | _ -> false)
-        names
-    with
-    | [ enum ] -> Some enum
-    | _ -> None
-  in
   Spec.all
     (List.map
        (fun name ->
          let* s = found ~shape name in
-         Result.map (fun a -> (name, a)) (adapter ~words_of name s))
+         adapter name s)
        names)
+  |> Result.map List.concat
 
 let scalar name : Schema.type_name -> (H.type_, Decode.error list) result =
   function
@@ -186,19 +161,10 @@ let lower name = String.uncapitalize_ascii name
 let accessor type_name member = lower type_name ^ String.capitalize_ascii member
 
 let aeson_records =
-  H.import "Data.Aeson"
-    ~items:
-      [
-        All "FromJSON";
-        All "ToJSON";
-        Plain "withObject";
-        Plain "object";
-        Op ".:";
-        Op ".=";
-      ]
+  H.import "Data.Aeson" ~items:[ All "ToJSON"; Plain "object"; Op ".=" ]
 
-(* A record of a client type, read from and written to its JSON: every member
-   required, and an open list's items the record's one type variable. *)
+(* A record of a client type, written to its JSON: every member required,
+   and an open list's items the record's one type variable. *)
 let record_module ~shape name =
   let* s = found ~shape name in
   let* members =
@@ -264,26 +230,6 @@ let record_module ~shape name =
             body =
               [
                 H.record name ~params ~deriving:[ "Eq"; "Show" ] fields;
-                instance "FromJSON"
-                  [
-                    H.method_ "parseJSON"
-                      (Apply
-                         ( Name "withObject",
-                           [
-                             Str name;
-                             Lambda
-                               ( "fields",
-                                 Infix
-                                   ( Name name,
-                                     List.mapi
-                                       (fun i m ->
-                                         ( (if i = 0 then "<$>" else "<*>"),
-                                           H.Infix
-                                             ( Name "fields",
-                                               [ (".:", Str m.name) ] ) ))
-                                       members ) );
-                           ] ));
-                  ];
                 instance "ToJSON"
                   [
                     ( "toJSON",

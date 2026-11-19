@@ -29,6 +29,7 @@ import Xynolog.ErrorCodes qualified as Code
 import Xynolog.Errors
 import Xynolog.Http.Routes
 import Xynolog.Internal.BusLog qualified as BusLog
+import Xynolog.Internal.Generated.OperationReports (UploadEvent (..))
 import Xynolog.Internal.Http
 import Xynolog.Internal.Lifetime qualified as Lifetime
 import Xynolog.Internal.Telemetry qualified as Telemetry
@@ -102,7 +103,7 @@ newContent http = do
           when
             (maybe False (\size -> toInteger size + toInteger (Bytes.length prefix + Bytes.length suffix) > toInteger (maxBound :: Int64)) (Content.bodyLength source))
             (throwIO (TransportError Code.TransportBadRequest "Upload length exceeds the HTTP body's range" Nothing Nothing))
-          progress (Content.UploadProgress 0 total)
+          progress (UploadStarted total)
           let give consume = Content.openBody source $ \popper -> do
                 stage <- newIORef (0 :: Int)
                 count <- newIORef (0 :: Integer)
@@ -126,7 +127,7 @@ newContent http = do
                                 (Content.bodyLength source /= Nothing && actual > total)
                                 (throwIO (TransportError Code.TransportBadRequest "Upload length differs from its source" Nothing Nothing))
                               previous <- readIORef high
-                              when (actual > previous) (writeIORef high actual >> progress (Content.UploadProgress actual total))
+                              when (actual > previous) (writeIORef high actual >> progress (UploadProgress actual total))
                               pure chunk
                         _ -> pure Bytes.empty
                 consume next
@@ -139,7 +140,9 @@ newContent http = do
             _ -> throwIO (TransportError Code.TransportBadRequest "Upload route no longer accepts multipart" Nothing Nothing)
           exchange http uploadRoute Nothing (pure body) (Just key) override [("Content-Type", media <> "; boundary=" <> marker)] $ \response -> do
             bytes <- deadline http (Settings.httpRequestTimeoutMs (httpTiming (options http))) (Bytes.concat <$> brConsume (responseBody response))
-            createResourceResponseResourceId <$> readAnswer uploadRoute bytes
+            identity <- createResourceResponseResourceId <$> readAnswer uploadRoute bytes
+            progress (UploadFinished identity)
+            pure identity
   let readNote :: ResourceId -> IO result -> IO result
       readNote resource action = BusLog.content (logger http) "GET" (object ["resourceId" .= resource]) >> action
   pure

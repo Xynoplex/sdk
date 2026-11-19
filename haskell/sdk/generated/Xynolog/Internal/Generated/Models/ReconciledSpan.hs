@@ -4,24 +4,20 @@
 
 module Xynolog.Internal.Generated.Models.ReconciledSpan (ReconciledSpan (..)) where
 
-import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
-import Data.Aeson.KeyMap qualified as KM
-import Data.Text (Text)
+import Control.Applicative ((<|>))
+import Data.Aeson (FromJSON (..), ToJSON (..))
 import Xynolog.Internal.Codec
-import Xynolog.Internal.Generated.Models.AnchorMethod
-import Xynolog.Internal.Generated.Models.MatchQuality
+import Xynolog.Internal.Generated.Models.ReconciledSpanContextRecovered
+import Xynolog.Internal.Generated.Models.ReconciledSpanFirstOfMany
+import Xynolog.Internal.Generated.Models.ReconciledSpanFuzzyMatch
+import Xynolog.Internal.Generated.Models.ReconciledSpanUniqueMatch
 
-data ReconciledSpan = ReconciledSpan
-  { reconciledSpanAnchorMethod :: AnchorMethod,
-    reconciledSpanEnd :: Integer,
-    reconciledSpanExact :: Text,
-    reconciledSpanMatchQuality :: Maybe MatchQuality,
-    reconciledSpanPrefix :: Maybe Text,
-    reconciledSpanStart :: Integer,
-    reconciledSpanSuffix :: Maybe Text
-  }
-  deriving (Eq, Show)
+data ReconciledSpan = ReconciledSpanBranch1 ReconciledSpanUniqueMatch | ReconciledSpanBranch2 ReconciledSpanContextRecovered | ReconciledSpanBranch3 ReconciledSpanFirstOfMany | ReconciledSpanBranch4 ReconciledSpanFuzzyMatch deriving (Eq, Show)
 
-instance FromJSON ReconciledSpan where parseJSON = checked "ReconciledSpan" $ withObject "ReconciledSpan" (\fields -> ReconciledSpan <$> (fields .: "anchorMethod") <*> (fields .: "end") <*> (fields .: "exact") <*> optional fields "matchQuality" <*> optional fields "prefix" <*> (fields .: "start") <*> optional fields "suffix")
+instance FromJSON ReconciledSpan where parseJSON = checked "ReconciledSpan" $ \value -> (ReconciledSpanBranch1 <$> parseJSON value) <|> (ReconciledSpanBranch2 <$> parseJSON value) <|> (ReconciledSpanBranch3 <$> parseJSON value) <|> (ReconciledSpanBranch4 <$> parseJSON value)
 
-instance ToJSON ReconciledSpan where toJSON value = Object (KM.fromList (concat [[("anchorMethod", toJSON (reconciledSpanAnchorMethod value))], [("end", toJSON (reconciledSpanEnd value))], [("exact", toJSON (reconciledSpanExact value))], optionalPair "matchQuality" (reconciledSpanMatchQuality value), optionalPair "prefix" (reconciledSpanPrefix value), [("start", toJSON (reconciledSpanStart value))], optionalPair "suffix" (reconciledSpanSuffix value)]))
+instance ToJSON ReconciledSpan where
+  toJSON (ReconciledSpanBranch1 value) = toJSON value
+  toJSON (ReconciledSpanBranch2 value) = toJSON value
+  toJSON (ReconciledSpanBranch3 value) = toJSON value
+  toJSON (ReconciledSpanBranch4 value) = toJSON value

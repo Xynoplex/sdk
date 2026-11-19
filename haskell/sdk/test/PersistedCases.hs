@@ -551,7 +551,7 @@ crossTabPart table jo = do
         Just named | named == Just jo -> do
           let renewing = Browser.keptIn other "kb-a"
           before <- SignIn.held renewing >>= maybe (failure why "holds no sign-in to renew") pure
-          SignIn.renewed renewing before (IssuedTokens (jwt 7200 2) "r-other" KM.empty) >>= \renewal ->
+          SignIn.renewed renewing before (IssuedTokens (jwt 7200 2) "r-other") >>= \renewal ->
             unless (isJust renewal) (failure why "renewed nothing in the other context")
         Just named -> Browser.storeSession other "kb-a" (signInOf Issuer.browserClientId (jwt 7200 2) "r-other" named)
       pure value
@@ -604,7 +604,7 @@ inProcessPart table jo = do
             Nothing -> SignIn.forget memory
             Just named | named == Just jo -> do
               before <- SignIn.held memory >>= maybe (failure why "holds no sign-in to renew") pure
-              SignIn.renewed memory before (IssuedTokens (jwt 7200 2) "r-renewed" KM.empty) >>= \renewal ->
+              SignIn.renewed memory before (IssuedTokens (jwt 7200 2) "r-renewed") >>= \renewal ->
                 unless (isJust renewal) (failure why "renewed nothing through what holds the sign-in")
             Just named -> SignIn.keep memory (signInOf Issuer.scriptClientId (jwt 7200 2) "r-other" named)
           pure value

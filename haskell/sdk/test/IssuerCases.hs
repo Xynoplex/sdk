@@ -171,7 +171,7 @@ issuerCases fixtures = do
   issuer <- Issuer.discoverIssuer options endpoint
   require "issuer discovery lost an endpoint" (issuerEndpointsRevocation issuer == Just "http://issuer.test/revoke")
   storage <- Storage.newMemoryStorage
-  let begin = BeginAuthorizationOptions (Just "did:web:knowledge.test") (Just "Knowledge") (Just "kb") "app://callback" endpoint KM.empty
+  let begin = BeginAuthorizationOptions (Just "did:web:knowledge.test") (Just "Knowledge") (Just "kb") "app://callback" endpoint
   url <- Issuer.beginAuthorization options begin storage
   require "authorization URL lost the issuer's own query" ("keep=yes" `Text.isInfixOf` url)
   require "authorization URL did not request PKCE" ("code_challenge_method=S256" `Text.isInfixOf` url)

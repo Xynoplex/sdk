@@ -33,6 +33,7 @@ module Xynolog.Annotations
     tagCategory,
     tagSchemaId,
     reconcile,
+    textSpanOf,
     annotationOfSpan,
     annotationOfResource,
   )
@@ -162,6 +163,13 @@ built wall resource motivation anchor target generator body = do
 annotationOfResource :: IO UTCTime -> ResourceId -> Motivation -> Maybe Agent -> Maybe AnnotationBodies -> IO Annotation
 annotationOfResource wall resource motivation generator body =
   built wall resource motivation "" (AnnotationTarget Nothing resource Nothing mempty) generator body
+
+-- | The span a reconciliation found, as 'annotationOfSpan' takes one.
+textSpanOf :: ReconciledSpan -> TextSpan
+textSpanOf (ReconciledSpanBranch1 found) = TextSpan (reconciledSpanUniqueMatchEnd found) (reconciledSpanUniqueMatchExact found) (reconciledSpanUniqueMatchPrefix found) (reconciledSpanUniqueMatchStart found) (reconciledSpanUniqueMatchSuffix found)
+textSpanOf (ReconciledSpanBranch2 found) = TextSpan (reconciledSpanContextRecoveredEnd found) (reconciledSpanContextRecoveredExact found) (reconciledSpanContextRecoveredPrefix found) (reconciledSpanContextRecoveredStart found) (reconciledSpanContextRecoveredSuffix found)
+textSpanOf (ReconciledSpanBranch3 found) = TextSpan (reconciledSpanFirstOfManyEnd found) (reconciledSpanFirstOfManyExact found) (reconciledSpanFirstOfManyPrefix found) (reconciledSpanFirstOfManyStart found) (reconciledSpanFirstOfManySuffix found)
+textSpanOf (ReconciledSpanBranch4 found) = TextSpan (reconciledSpanFuzzyMatchEnd found) (reconciledSpanFuzzyMatchExact found) (reconciledSpanFuzzyMatchPrefix found) (reconciledSpanFuzzyMatchStart found) (reconciledSpanFuzzyMatchSuffix found)
 
 annotationOfSpan :: IO UTCTime -> Spanned -> TextSpan -> ResourceId -> Motivation -> Agent -> Maybe AnnotationBodies -> IO Annotation
 annotationOfSpan wall content spanValue resource motivation generator body = do

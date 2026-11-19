@@ -196,7 +196,8 @@ let cases =
                 | _ -> Alcotest.fail "start is not an integer")
             | _ -> Alcotest.fail "no TextSpan of properties")
         | Error _ -> Alcotest.fail "refused");
-    case "an adapter states a union as one record of every branch's members"
+    case
+      "an adapter states a union as its branches, each a type closed on its tag"
       (fun () ->
         match
           W.adapters ~names:adapted_names
@@ -206,51 +207,54 @@ let cases =
                     (Named { name = "MatchQuality"; union = false }))
                  ~methods:[ "fuzzy-match"; "unique-match" ])
         with
-        | Ok adapters -> (
-            match List.assoc_opt "ReconciledSpan" adapters with
-            | Some
-                (Schema.Schema
-                   { properties = Some properties; required = Some required; _ })
-              -> (
+        | Ok adapters ->
+            let branches =
+              [
+                ("ReconciledSpanUniqueMatch", "unique-match", [ "start" ]);
+                ( "ReconciledSpanFuzzyMatch",
+                  "fuzzy-match",
+                  [ "start"; "matchQuality" ] );
+              ]
+            in
+            (match List.assoc_opt "ReconciledSpan" adapters with
+            | Some (Schema.Schema { one_of = Some refs; _ }) ->
                 Alcotest.(check (list string))
-                  "members"
-                  [ "start"; "matchQuality"; "anchorMethod" ]
-                  (List.map fst properties);
-                Alcotest.(check (list string))
-                  "required"
-                  [ "start"; "anchorMethod" ]
-                  required;
-                match List.assoc_opt "anchorMethod" properties with
-                | Some (Schema.Schema { ref_ = Some r; _ }) ->
-                    Alcotest.(check string)
-                      "the tag's type" "AnchorMethod.json" r.target
-                | _ -> Alcotest.fail "the tag names no type")
-            | _ -> Alcotest.fail "no ReconciledSpan of properties")
+                  "its branches"
+                  (List.map (fun (b, _, _) -> b ^ ".json") branches)
+                  (List.map
+                     (function
+                       | Schema.Schema { ref_ = Some r; _ } -> r.target
+                       | _ -> "a branch names no type")
+                     refs)
+            | _ -> Alcotest.fail "no ReconciledSpan of branches");
+            List.iter
+              (fun (branch, word, members) ->
+                match List.assoc_opt branch adapters with
+                | Some
+                    (Schema.Schema
+                       {
+                         properties = Some p;
+                         required = Some r;
+                         additional_properties =
+                           Some (Schema.Boolean_schema false);
+                         _;
+                       }) -> (
+                    Alcotest.(check (list string))
+                      (branch ^ "'s members")
+                      ("anchorMethod" :: members)
+                      (List.map fst p);
+                    Alcotest.(check (list string))
+                      (branch ^ " requires them")
+                      (List.map fst p) r;
+                    match List.assoc_opt "anchorMethod" p with
+                    | Some
+                        (Schema.Schema
+                           { enum = Some [ Schema.String_literal w ]; _ }) ->
+                        Alcotest.(check string) (branch ^ "'s tag") word w
+                    | _ -> Alcotest.fail "the tag is no one word")
+                | _ -> Alcotest.fail (branch ^ " is no closed object"))
+              branches
         | Error _ -> Alcotest.fail "refused");
-    case "a union whose branches hold a member differently is refused"
-      (fun () ->
-        refused
-          (W.adapters ~names:adapted_names
-             ~shape:
-               (adapted
-                  (M.Union
-                     {
-                       tag = "anchorMethod";
-                       branches =
-                         [
-                           ("unique-match", [ member "start" (Scalar Integer) ]);
-                           ("fuzzy-match", [ member "start" (Scalar String) ]);
-                         ];
-                     })
-                  ~methods:[ "fuzzy-match"; "unique-match" ])));
-    case "a union whose tags are no type's words is refused" (fun () ->
-        refused
-          (W.adapters ~names:adapted_names
-             ~shape:
-               (adapted
-                  (reconciled_union
-                     (Named { name = "MatchQuality"; union = false }))
-                  ~methods:[ "unique-match" ])));
     case "a secret proof whose grant is not the client assertion's is refused"
       (fun () ->
         refused
