@@ -74,8 +74,31 @@ let response (spec : Spec.t) file pointer = function
       | Some r -> Ok r
       | None -> Error [ refusal file pointer ("names no response " ^ target) ])
 
+(* Each SDK fills a path's [{id}] by hand, with the resource it reads: a
+   path that names any other parameter is one no SDK fills. *)
+let filled_by_hand file path =
+  let parameters =
+    List.filter_map
+      (fun segment ->
+        let n = String.length segment in
+        if n >= 2 && segment.[0] = '{' && segment.[n - 1] = '}' then
+          Some (String.sub segment 1 (n - 2))
+        else None)
+      (String.split_on_char '/' path)
+  in
+  match List.filter (fun p -> p <> "id") parameters with
+  | [] -> Ok ()
+  | other :: _ ->
+      Error
+        [
+          refusal file "/"
+            (Printf.sprintf "names the path parameter {%s}; the SDKs fill {id}"
+               other);
+        ]
+
 let route spec file path method_ (operation : Openapi.operation) =
   let at = "/" ^ String.lowercase_ascii method_ in
+  let* () = filled_by_hand file path in
   let* sends =
     match operation.request_body with
     | None -> Ok None

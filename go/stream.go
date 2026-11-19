@@ -398,19 +398,19 @@ func carried(data string) (Frame, required.Fault, bool) {
 	if faulty {
 		return Frame{}, fault, false
 	}
-	// The payload is kept as it was written; the other members are read as
-	// BusFrame's.
-	var read api.BusFrame
+	// Each member is read once, by its name; the payload is kept as it was
+	// written.
 	var members map[string]json.RawMessage
-	if json.Unmarshal(stated, &read) != nil || json.Unmarshal(stated, &members) != nil {
+	var channel string
+	if json.Unmarshal(stated, &members) != nil || json.Unmarshal(members[busFrameChannel], &channel) != nil {
 		return Frame{}, required.Undecoded, false
 	}
-	frame := Frame{Channel: bus.Channel(read.Channel), Payload: members[busFramePayload]}
-	if read.CorrelationId != nil {
-		frame.CorrelationID = *read.CorrelationId
+	frame := Frame{Channel: bus.Channel(channel), Payload: members[busFramePayload]}
+	if correlationID, has := members[busFrameCorrelationId]; has && json.Unmarshal(correlationID, &frame.CorrelationID) != nil {
+		return Frame{}, required.Undecoded, false
 	}
-	if read.Scope != nil {
-		frame.Scope = *read.Scope
+	if scope, has := members[busFrameScope]; has && json.Unmarshal(scope, &frame.Scope) != nil {
+		return Frame{}, required.Undecoded, false
 	}
 	return frame, required.Fault{}, true
 }

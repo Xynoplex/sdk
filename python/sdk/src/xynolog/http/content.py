@@ -101,7 +101,7 @@ class _Form:
         form = form_of(request)
         before: list[str] = []
         after: list[str] = []
-        named = ""
+        named: str | None = None
         for name, field in ResourceUpload.model_fields.items():
             value: object = getattr(form, name)
             member = _quoted(field.alias or name)
@@ -114,6 +114,8 @@ class _Form:
                 raise TypeError(f"the upload form's {name} is not text")
             part = f'--{self.boundary}\r\nContent-Disposition: form-data; name="{member}"\r\n\r\n{value}\r\n'
             (before if field.is_required() else after).append(part)
+        if named is None:
+            raise TypeError("the upload form has no member that holds its bytes")
         before.append(f"--{self.boundary}\r\nContent-Disposition: form-data; {named}\r\nContent-Type: {form.format}\r\n\r\n")
         # The parts before the bytes, the bytes, and what follows them: the bytes are not copied to make the body.
         self._parts: Final = ("".join(before).encode(), form.file, ("\r\n" + "".join(after) + f"--{self.boundary}--\r\n").encode())
