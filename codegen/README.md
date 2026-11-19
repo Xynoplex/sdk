@@ -1,7 +1,8 @@
 # Codegen
 
 The generator that reads the pinned Protocol's specs and writes every SDK's
-generated code, and cli's. It is a Dune project on the OCaml toolchain that
+generated code, and cli's and images'. It is a Dune project on the OCaml
+toolchain that
 [`build-tools/ocaml/toolchain.json`](../build-tools/ocaml/toolchain.json)
 pins, and `build-tools/ocaml/check-toolchain.py` holds it to the same pins as
 the OCaml SDK.
