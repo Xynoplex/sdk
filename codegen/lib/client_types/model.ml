@@ -66,7 +66,7 @@ let derive (spec : Spec.t) =
       ~schema:(fun l file pointer ->
         match l with
         | { ref_ = Some ref_; _ } when described l = [ "$ref" ] -> (
-            match Decode.resolve ref_ with
+            match Decode.resolve spec.Spec.ids ref_ with
             | target, "" ->
                 let union =
                   match schema target with
@@ -164,11 +164,11 @@ let derive (spec : Spec.t) =
       when List.for_all (fun k -> List.mem k [ "title"; "allOf" ]) (described s)
       -> (
         let find (r : Decode.reference) =
-          match schema (fst (Decode.resolve r)) with
+          match schema (fst (Decode.resolve spec.Spec.ids r)) with
           | Some s -> Ok s
           | None -> Error ("refers to " ^ r.target ^ ", which is no schema")
         in
-        match Normalize.normalize ~find t with
+        match Normalize.normalize spec.Spec.ids ~find t with
         | Ok merged -> members file pointer merged
         | Error message ->
             refuse file pointer message;

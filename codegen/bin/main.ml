@@ -28,7 +28,9 @@ let bad_usage () =
 
 let load root =
   let specs = Filename.concat root "protocol/specs/src" in
-  match Spec.load specs with Ok spec -> spec | Error errors -> refused errors
+  match Spec_shapes.load specs with
+  | Ok spec -> spec
+  | Error errors -> refused errors
 
 let groups target names =
   let all =

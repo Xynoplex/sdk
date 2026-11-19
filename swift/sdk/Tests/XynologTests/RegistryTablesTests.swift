@@ -26,7 +26,7 @@ import XynologTesting
   #expect(kbOfSessionKey(activeKey) == nil)
 
   let storage = MemorySessionStorage()
-  let schema = try required(table, "storedSession").object
+  let schema = try referred(table, "storedSession", "session/StoredSession.json")
   let properties = try required(schema, "properties").object
   let members = try required(schema, "required").array.map { try $0.text }
   let values = properties.mapValues { _ in JSONValue.string("text") }
@@ -302,7 +302,8 @@ private func hold(_ query: CacheQuery, in live: LiveQueries) async throws {
 }
 
 @Test func anOpenResourceIsKeptAsTheStoredTableStatesIt() async throws {
-  let schema = try required(Spec.read("session/stored.json").object, "openResource").object
+  let schema = try referred(
+    Spec.read("session/stored.json").object, "openResource", "session/OpenResource.json")
   let members = Set(try required(schema, "properties").object.keys)
   let requiredMembers = try required(schema, "required").array.map { try $0.text }
   let storage = MemorySessionStorage()
@@ -532,4 +533,15 @@ private actor DiscoveryScript: DiscoveryTransport {
     }
     #expect(absent.reason == .notFound)
   }
+}
+
+/// The schema `table` names by its `$id` at `member`: `file`'s, which states that `$id`.
+private func referred(_ table: [String: JSONValue], _ member: String, _ file: String) throws
+  -> [String: JSONValue]
+{
+  let schema = try Spec.read(file).object
+  let named = try required(required(table, member).object, "$ref").text
+  let stated = try required(schema, "$id").text
+  #expect(named == stated, "the table's \(member) names \(named); \(file) states \(stated)")
+  return schema
 }

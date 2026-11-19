@@ -7,6 +7,8 @@ open Xynolog_codegen
 let reference name =
   { Decode.target = "./" ^ name ^ ".json"; file = ""; pointer = "" }
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
 let layer fields = Schema.Schema fields
 let text_layer = { Schema.empty with type_ = Some [ String ] }
 let text = layer text_layer
@@ -24,7 +26,7 @@ let find definitions name =
 let find_referenced definitions r = find definitions (named_by r)
 
 let merge ?(definitions = [ ("Text", text) ]) left right =
-  Normalize.normalize
+  Normalize.normalize ids
     ~find:(find_referenced definitions)
     (all_of [ left; right ])
 
@@ -133,13 +135,13 @@ let keywords () =
   Alcotest.(check bool)
     "a schema that is a part of itself" true
     (Result.is_error
-       (Normalize.normalize
+       (Normalize.normalize ids
           ~find:(find_referenced [ ("Cycle", all_of [ named "Cycle" ]) ])
           (all_of [ named "Cycle" ])))
 
 (* [schema], named among [definitions], as [Normalize.everywhere] writes it. *)
 let everywhere ?(definitions = [ ("Text", text) ]) schema =
-  Normalize.everywhere ~referenced:named_by
+  Normalize.everywhere ids ~referenced:named_by
     ~find:(find (("Subject", schema) :: definitions))
     "Subject"
 

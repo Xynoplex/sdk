@@ -35,10 +35,18 @@ import xynolog.types.StoredSession
 import xynolog.types.wireJson
 
 private val table = Spec.read("session/stored.json").jsonObject
-private val session = table.getValue("storedSession").jsonObject
+
+/** The schema the table names by its `$id` at [member]: [file]'s, which states that `$id`. */
+private fun referred(member: String, file: String): JsonObject {
+    val schema = Spec.read(file).jsonObject
+    check(table.getValue(member).jsonObject.getValue("\$ref") == schema.getValue("\$id")) { "the table's $member names no schema of $file" }
+    return schema
+}
+
+private val session = referred("storedSession", "session/StoredSession.json")
 private val members = session.getValue("properties").jsonObject.keys
 private val required = session.getValue("required").jsonArray.map { it.jsonPrimitive.content }.toSet()
-private val openResource = table.getValue("openResource").jsonObject
+private val openResource = referred("openResource", "session/OpenResource.json")
 private val openMembers = openResource.getValue("properties").jsonObject.keys
 private val openRequired = openResource.getValue("required").jsonArray.map { it.jsonPrimitive.content }.toSet()
 private val wholeKey = table.getValue("wholeKey").jsonObject.getValue("key").jsonPrimitive.content

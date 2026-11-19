@@ -141,7 +141,7 @@ let files ~root (spec : Spec.t) =
     within "openapi.json"
       (Models.generate
          ~banner:(banner "protocol/specs/src")
-         ~identifiers definitions)
+         ~ids:spec.ids ~identifiers definitions)
   in
   let* () =
     within "openapi.json"
@@ -157,7 +157,8 @@ let files ~root (spec : Spec.t) =
     | None -> Error ("missing schema: " ^ name)
   in
   let normalize =
-    Normalize.normalize ~find:(fun r -> definition (Definitions.referenced r))
+    Normalize.normalize spec.Spec.ids ~find:(fun r ->
+        definition (Definitions.referenced r))
   in
   let* () = within "bus/registry.json" (Channels.check bus ~models:named) in
   let* limits = within "bus/registry.json" (Channels.limits bus) in
@@ -204,7 +205,8 @@ let files ~root (spec : Spec.t) =
       | None -> Error ("unknown schema reference: " ^ name)
     in
     let merged =
-      Normalize.everywhere ~referenced:Definitions.referenced ~find
+      Normalize.everywhere spec.Spec.ids ~referenced:Definitions.referenced
+        ~find
     in
     Spec.all
       (List.map

@@ -181,8 +181,8 @@
     "lib/media_facts.ml": "462bb526a754d71c947d838d618ffdc3ad255ab8b61307ac3aa05ddc498fcf2a",
     "lib/media_types.ml": "627feecc23b4f887709476ee12e6fe99099303c19e06be88240ac8bf1905413d",
     "lib/media_types.mli": "2d65a7872184f4fedba7fb88e5ab2069b0031e9ac924fb0a093978e31ad0c7cc",
-    "lib/models.ml": "9a6a7823329398ef10995f8758f95e42d0ce2bac3eff7cbc62fc597d4b3ddb8f",
-    "lib/models.mli": "b37e8935a0265559bee835a8d2fdee2aaecfbcfdb9a97b4f65a323aa3fe5e65e",
+    "lib/models.ml": "aeab7f00b17f317729cee852c77c12dd39d7fde2119b9ded0217a445c30d3c15",
+    "lib/models.mli": "8bc1354c643f9b300cba645a631de689059ce92b18671da6180423885b5a7c4e",
     "lib/namespace_methods.ml": "37178853cd16d5975132820d07bf0ee703039b946557167dd39560f0b5025147",
     "lib/oauth.ml": "56ac6d7004a3e57aed6b84e3af978b5c4ecf804f101850e44b2ad2e0de278bdd",
     "lib/oauth.mli": "6f1104c9fa330b6f9fb7cec7f8e173d6a7f05c66cb18fd20d1895a6b3288b460",
@@ -190,7 +190,7 @@
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
     "lib/record_reader.ml": "053aa7e17c38b3cedb840b7623fd666e17717a5bbe8e1087b56aaf05d8ac3d89",
     "lib/record_reader.mli": "8f988856668a1d426cb6384fa2bf2703d6d791be33f82c8db87c2e1fd1919ce5",
-    "lib/records.ml": "af18186f533aa8624c38d17717cd39db417f503c49345be1dcaa865e30b85fb8",
+    "lib/records.ml": "7e860689d3634d2ddaa227ef4242c41bc52441c097a80c8f04bbd2798126451b",
     "lib/redirect_sign_in.ml": "c0f36739c64b48556f18b04b1849e5033a500e681fc6ea0aa7bc357b4e8fb935",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
     "lib/registry.ml": "b7d3d0a4bb36ac212add5c60d050b7e64e0047722f5a7a542bc2daea3bc83f6a",
@@ -204,7 +204,7 @@
     "lib/running.mli": "74bef29c19b9b132888e875f77ea4fec64855a7bb7c6e119e0fb8346a47176f9",
     "lib/schema_codec.ml": "636e8eb313af9998b59c8c6a3adec349297ab949c456839a491a37cb18264b1f",
     "lib/schema_shape.ml": "fe4e72c044905dad381dff38a06ee4809e2411698b6c9096926b17f077eb3cc3",
-    "lib/schema_shapes.ml": "efb4ab8ba29987e48d283baac31903d05c8a5349ad6ff1e9b2e785ebabf0bc2c",
+    "lib/schema_shapes.ml": "d2ce3ee9e5b4f0794d4de8a1006e21ab577ae67783f008c224c85de2b5923ba5",
     "lib/search_pipeline.ml": "c686787cea18854164219082e02d586aa34f7a0801c876cb011648bd72222ba0",
     "lib/search_pipeline.mli": "8569d48ac54fb0e5b0165613f479fce0d4dcd897d89dae4699c8d25f6d5db0d3",
     "lib/selector.ml": "b24657f0d60a45a7deefaa23ae4f8d6800ec007f3c13cdbb004944cfa014b432",
@@ -4260,6 +4260,11 @@
       "kind": "value",
       "path": "Xynolog.Models.librarian_engine_config",
       "declaration": "val librarian_engine_config : [ `LibrarianEngineConfig ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.librarian_prompt_score",
+      "declaration": "val librarian_prompt_score : [ `LibrarianPromptScore ] descriptor"
     },
     {
       "kind": "value",
@@ -12655,6 +12660,32 @@
       "kind": "value",
       "path": "Xynolog.Records.Librarian_engine_config.of_model",
       "declaration": "val of_model : [ `LibrarianEngineConfig ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Librarian_prompt_score",
+      "declaration": "module Librarian_prompt_score :\n  sig\n    type t = {\n      candidate : Yojson.Raw.t;\n      score : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `LibrarianPromptScore ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Librarian_prompt_score.t",
+      "declaration": "type t = {\n  candidate : Yojson.Raw.t;\n  score : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "candidate",
+        "score",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Librarian_prompt_score.project",
+      "declaration": "val project : (string * Yojson.Raw.t) list -> t"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Librarian_prompt_score.of_model",
+      "declaration": "val of_model : [ `LibrarianPromptScore ] Xynolog__.Models.t -> t"
     },
     {
       "kind": "module",

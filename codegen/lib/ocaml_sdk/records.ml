@@ -48,12 +48,12 @@ exception Refused of Decode.error
    none. *)
 let object_shape (spec : Spec.t) ~file schema =
   let find (r : Decode.reference) =
-    let target, _ = Decode.resolve r in
+    let target, _ = Decode.resolve spec.Spec.ids r in
     match List.assoc_opt target spec.schemas with
     | Some s -> Ok s
     | None -> Error ("$ref " ^ r.target ^ " names no schema")
   in
-  match Normalize.normalize ~find schema with
+  match Normalize.normalize spec.Spec.ids ~find schema with
   | Error message -> raise (Refused { Decode.file; pointer = ""; message })
   | Ok { type_ = Some [ Object ]; properties; required; _ } ->
       Some
@@ -109,7 +109,7 @@ let tabled (spec : Spec.t) table =
     let file, pointer = Enums.place key in
     raise (Refused { Decode.file; pointer = pointer ^ at; message })
   in
-  let enums = Enums.tabled table in
+  let enums = Enums.tabled spec.ids table in
   let written =
     List.filter (fun (_, _, schema) -> not (Enums.is_enum schema)) table
   in
@@ -125,7 +125,7 @@ let tabled (spec : Spec.t) table =
   let component key =
     List.find_map
       (fun (name, reference) ->
-        if fst (Decode.resolve reference) = key then
+        if fst (Decode.resolve spec.Spec.ids reference) = key then
           Some (name, List.assoc key spec.schemas)
         else None)
       (Roots.all spec)
@@ -144,7 +144,8 @@ let tabled (spec : Spec.t) table =
     in
     let referent =
       match schema with
-      | Schema.Schema { ref_ = Some r; _ } -> Some (Table_records.key r)
+      | Schema.Schema { ref_ = Some r; _ } ->
+          Some (Table_records.key spec.Spec.ids r)
       | _ -> None
     in
     let base, need =
@@ -275,7 +276,7 @@ let derive (spec : Spec.t) table =
     let components =
       List.map
         (fun (name, reference) ->
-          let file, _ = Decode.resolve reference in
+          let file, _ = Decode.resolve spec.Spec.ids reference in
           (name, file, List.assoc file spec.schemas))
         (Roots.all spec)
     in
@@ -308,7 +309,8 @@ let derive (spec : Spec.t) table =
               List.iter
                 (function
                   | Schema.Schema { ref_ = Some r; _ }
-                    when Option.is_some (module_of (fst (Decode.resolve r))) ->
+                    when Option.is_some
+                           (module_of (fst (Decode.resolve spec.Spec.ids r))) ->
                       ()
                   | _ ->
                       refuse file "/oneOf"
@@ -318,7 +320,7 @@ let derive (spec : Spec.t) table =
                 List.map
                   (fun (tag, target) ->
                     let branch, _ =
-                      Decode.resolve
+                      Decode.resolve spec.Spec.ids
                         { Decode.target; file; pointer = "/discriminator" }
                     in
                     match (module_of branch, variant_name tag) with

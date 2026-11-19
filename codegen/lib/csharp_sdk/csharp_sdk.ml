@@ -54,21 +54,21 @@ let json ~root path =
 (* [json], a schema read from [file], each [$ref] into a table naming the
    record there by its title: WireJson finds the schema a reference names by
    the name of the file it names. *)
-let rec titled ~file records = function
+let rec titled ids ~file records = function
   | `Assoc members ->
       `Assoc
         (List.map
            (function
              | ("$ref", `String target) as reference -> (
                  let key =
-                   Table_records.key { Decode.target; file; pointer = "" }
+                   Table_records.key ids { Decode.target; file; pointer = "" }
                  in
                  match List.find_opt (fun (k, _, _) -> k = key) records with
                  | Some (_, title, _) -> ("$ref", `String (title ^ ".json"))
                  | None -> reference)
-             | key, value -> (key, titled ~file records value))
+             | key, value -> (key, titled ids ~file records value))
            members)
-  | `List items -> `List (List.map (titled ~file records) items)
+  | `List items -> `List (List.map (titled ids ~file records) items)
   | json -> json
 
 let schema_of (spec : Spec.t) path =
@@ -95,7 +95,8 @@ let roots ~root (spec : Spec.t) =
       (Table_records.all spec)
   in
   let read ~file name path schema json =
-    ((name, path, { Models.schema; json = titled ~file records json }) : _)
+    ((name, path, { Models.schema; json = titled spec.ids ~file records json })
+      : _)
   in
   let whole name path =
     let* schema = schema_of spec path in
@@ -118,7 +119,8 @@ let roots ~root (spec : Spec.t) =
   in
   let components =
     List.map
-      (fun (name, reference) -> whole name (fst (Decode.resolve reference)))
+      (fun (name, reference) ->
+        whole name (fst (Decode.resolve spec.Spec.ids reference)))
       (Roots.all spec)
   in
   Spec.all
@@ -280,7 +282,7 @@ let files ~root (spec : Spec.t) =
   in
   let* models =
     Result.map_error refused
-      (Models.make
+      (Models.make ~ids:spec.ids
          ~identifiers:
            (List.map (fun (k : Identifiers.Table.kind) -> k.name) kinds)
          ~roots

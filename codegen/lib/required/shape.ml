@@ -369,7 +369,7 @@ type t = {
 
 (* [components] are each component's name, its file and its schema.
    [unrecognized] is the failure codes.json reads an unrecognized code as. *)
-let derive ~unrecognized components =
+let derive ~ids ~unrecognized components =
   try
     let command_error =
       match
@@ -434,7 +434,7 @@ let derive ~unrecognized components =
         Hashtbl.replace name_of file name)
       components;
     let referred (reference : Decode.reference) =
-      match Decode.resolve reference with
+      match Decode.resolve ids reference with
       | file, "" -> (
           match Hashtbl.find_opt name_of file with
           | Some name -> name

@@ -21,6 +21,9 @@ open Xynolog_codegen
 module Gen = QCheck2.Gen
 
 let reference target = { Decode.target; file = ""; pointer = "" }
+
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
 let text = Schema.Schema { Schema.empty with type_ = Some [ String ] }
 let long = Schema.Schema { Schema.empty with min_length = Some 2 }
 
@@ -36,6 +39,8 @@ let stated values = Gen.option ~ratio:0.3 (Gen.oneof_list values)
    alike, often otherwise, and often not at all. *)
 let part : Schema.schema Gen.t =
   let open Gen in
+  let* schema = stated [ () ] in
+  let* id = stated [ Decode.base ^ "A.json"; Decode.base ^ "B.json" ] in
   let* ref_ = stated [ reference "A.json"; reference "B.json" ] in
   let* comment = stated [ "first"; "second" ] in
   let* title = stated [ "First"; "Second" ] in
@@ -84,7 +89,9 @@ let part : Schema.schema Gen.t =
       ]
   in
   {
-    Schema.ref_;
+    Schema.schema;
+    id;
+    ref_;
     comment;
     title;
     description;
@@ -122,6 +129,8 @@ let part : Schema.schema Gen.t =
    learns must be placed here. *)
 let undisputed (earlier : Schema.schema)
     ({
+       schema;
+       id;
        ref_;
        comment;
        title;
@@ -164,6 +173,8 @@ let undisputed (earlier : Schema.schema)
     | _ -> false
   in
   {
+    schema = disputed earlier.schema schema;
+    id = disputed earlier.id id;
     ref_;
     comment = disputed earlier.comment comment;
     title = disputed earlier.title title;
@@ -242,20 +253,20 @@ let law name gen holds =
 let laws =
   [
     law "the empty part is the identity" part (fun a ->
-        Normalize.merge Schema.empty a = Ok a
-        && Normalize.merge a Schema.empty = Ok a);
+        Normalize.merge ids Schema.empty a = Ok a
+        && Normalize.merge ids a Schema.empty = Ok a);
     law "a part merged with itself is that part" part (fun a ->
-        alike ~ordered:true (Normalize.merge a a) (Ok a));
+        alike ~ordered:true (Normalize.merge ids a a) (Ok a));
     law "associative" (Gen.triple part part part) (fun (a, b, c) ->
         alike ~ordered:true
-          (let* ab = Normalize.merge a b in
-           Normalize.merge ab c)
-          (let* bc = Normalize.merge b c in
-           Normalize.merge a bc));
+          (let* ab = Normalize.merge ids a b in
+           Normalize.merge ids ab c)
+          (let* bc = Normalize.merge ids b c in
+           Normalize.merge ids a bc));
     law "commutative but for the disputed keywords" (Gen.pair part part)
       (fun (a, b) ->
         let b = undisputed a b in
-        alike ~ordered:false (Normalize.merge a b) (Normalize.merge b a));
+        alike ~ordered:false (Normalize.merge ids a b) (Normalize.merge ids b a));
   ]
 
 (* More than a third of the cases the laws are checked on merge, rather than
@@ -267,7 +278,8 @@ let merging () =
       (List.filter
          (fun (a, b, c) ->
            Result.is_ok
-             (Result.bind (Normalize.merge a b) (fun ab -> Normalize.merge ab c)))
+             (Result.bind (Normalize.merge ids a b) (fun ab ->
+                  Normalize.merge ids ab c)))
          (Gen.generate ~rand ~n:count (Gen.triple part part part)))
   in
   Alcotest.(check bool)
@@ -283,8 +295,8 @@ let disputed_decide () =
   Alcotest.(check bool)
     "format is the later part's" false
     (alike ~ordered:false
-       (Normalize.merge earlier later)
-       (Normalize.merge later earlier))
+       (Normalize.merge ids earlier later)
+       (Normalize.merge ids later earlier))
 
 let () =
   Alcotest.run "merge_laws"

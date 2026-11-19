@@ -367,6 +367,7 @@ roundTrip name value = case name of
   "LibrarianConfigGather" -> toJSON <$> (parseEither parseJSON value :: Either String LibrarianConfigGather)
   "LibrarianConfigSearch" -> toJSON <$> (parseEither parseJSON value :: Either String LibrarianConfigSearch)
   "LibrarianEngineConfig" -> toJSON <$> (parseEither parseJSON value :: Either String LibrarianEngineConfig)
+  "LibrarianPromptScore" -> toJSON <$> (parseEither parseJSON value :: Either String LibrarianPromptScore)
   "LimitRefusal" -> toJSON <$> (parseEither parseJSON value :: Either String LimitRefusal)
   "LimitRefusalCode" -> toJSON <$> (parseEither parseJSON value :: Either String LimitRefusalCode)
   "LinkingJobParams" -> toJSON <$> (parseEither parseJSON value :: Either String LinkingJobParams)

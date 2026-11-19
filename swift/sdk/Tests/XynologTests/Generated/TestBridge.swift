@@ -248,6 +248,7 @@ func roundTripModel(_ name: String, _ value: JSONValue) throws -> JSONValue {
   case "KnowledgeGraph": return try roundTrip(KnowledgeGraph.self, value)
   case "LibrarianConfig": return try roundTrip(LibrarianConfig.self, value)
   case "LibrarianEngineConfig": return try roundTrip(LibrarianEngineConfig.self, value)
+  case "LibrarianPromptScore": return try roundTrip(LibrarianPromptScore.self, value)
   case "LimitRefusal": return try roundTrip(LimitRefusal.self, value)
   case "LinkingJobParams": return try roundTrip(LinkingJobParams.self, value)
   case "ListResourcesResponse": return try roundTrip(ListResourcesResponse.self, value)

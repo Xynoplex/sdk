@@ -6,6 +6,9 @@ module D = Definitions
 
 let case name test = Alcotest.test_case name `Quick test
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+
 (* Schemas by name, each a file of a directory of schemas, a [$ref] naming
    another by its file. *)
 let definitions schemas =
@@ -29,7 +32,9 @@ let definitions schemas =
   let views =
     List.map
       (fun (name, _) ->
-        (name, D.view ~named ~schemas:decoded (Hashtbl.find decoded (file name))))
+        ( name,
+          D.view ~ids ~named ~schemas:decoded (Hashtbl.find decoded (file name))
+        ))
       schemas
   in
   { D.names = List.map fst schemas; schema = (fun n -> List.assoc n views) }

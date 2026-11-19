@@ -37,7 +37,7 @@ let place key =
   | None -> (key, "")
 
 (* The table records a union's branch states its tag by, by key. *)
-let tags table =
+let tags ids table =
   List.concat_map
     (fun (_, _, schema) ->
       match schema with
@@ -57,7 +57,7 @@ let tags table =
                            all_of = Some [ Schema.Schema { ref_ = Some r; _ } ];
                            _;
                          }) ->
-                      Some (Table_records.key r)
+                      Some (Table_records.key ids r)
                   | _ -> None)
               | _ -> None)
             branches
@@ -70,8 +70,8 @@ let is_enum = function
 
 (* Each table record that is a string enum but a union's tag: its key, its
    module and its members. *)
-let tabled table =
-  let tags = tags table in
+let tabled ids table =
+  let tags = tags ids table in
   List.filter_map
     (fun (key, title, schema) ->
       match schema with
@@ -134,7 +134,7 @@ let derive (spec : Spec.t) table =
       (fun (key, module_, members) ->
         let file, pointer = place key in
         enum ~file ~pointer module_ members)
-      (tabled table)
+      (tabled spec.ids table)
   in
   let enums = components @ tabled in
   let modules = List.map (fun e -> e.module_) enums in

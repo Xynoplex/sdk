@@ -18,6 +18,17 @@ fn table(text: &str) -> Value {
     serde_json::from_str(text).expect("the table is JSON")
 }
 
+/// The schema `stored` names by its `$id` at `member`: `schema`, the file that
+/// states that `$id`.
+fn referred<'a>(stored: &Value, member: &str, schema: &'a Value) -> &'a Value {
+    assert_eq!(
+        stored[member]["$ref"],
+        schema["$id"],
+        "the table's {member} names the schema of its file"
+    );
+    schema
+}
+
 fn text(case: &Value, key: &str) -> String {
     case[key]
         .as_str()
@@ -163,7 +174,8 @@ fn what_a_registry_keeps_is_the_tables() {
         format!("{}kb-a", text(&stored["sessionKeyPrefix"], "prefix")),
         "a knowledge base's session key"
     );
-    let schema = &stored["storedSession"];
+    let stored_session = table(include_str!("../specs/session/StoredSession.json"));
+    let schema = referred(&stored, "storedSession", &stored_session);
     let members: Vec<String> = schema["properties"]
         .as_object()
         .expect("the stored session has properties")
@@ -302,7 +314,8 @@ fn written_members(resource: &OpenResource) -> Vec<String> {
 #[test]
 fn an_open_resource_is_kept_as_the_table_states() {
     let stored = table(include_str!("../specs/session/stored.json"));
-    let schema = &stored["openResource"];
+    let open_resource = table(include_str!("../specs/session/OpenResource.json"));
+    let schema = referred(&stored, "openResource", &open_resource);
     let mut members: Vec<String> = schema["properties"]
         .as_object()
         .expect("an open resource has properties")

@@ -46,7 +46,7 @@ let languages =
       else None)
 
 let spec =
-  match Spec.load (Filename.concat root "protocol/specs/src") with
+  match Spec_shapes.load (Filename.concat root "protocol/specs/src") with
   | Error errors ->
       List.iter (fun e -> prerr_endline (Decode.error_to_string e)) errors;
       exit 1

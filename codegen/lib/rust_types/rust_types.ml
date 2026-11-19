@@ -104,7 +104,7 @@ let sign_in (spec : Spec.t) =
       Rust_syntax.text
         ~header:(regenerate ("protocol/specs/src/" ^ sign_in_file))
         (Generate.items
-           (Definitions.alone ~name:"SignIn" schema)
+           (Definitions.alone ~ids:spec.ids ~name:"SignIn" schema)
            {
              roots = [ "SignIn" ];
              identifiers = [];

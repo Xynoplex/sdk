@@ -285,6 +285,7 @@ __all__ = [
     "LibrarianConfigGather",
     "LibrarianConfigSearch",
     "LibrarianEngineConfig",
+    "LibrarianPromptScore",
     "LimitRefusal",
     "LimitRefusalCode",
     "LinkingJobParams",
@@ -4559,6 +4560,11 @@ class LibrarianConfig(WireModel, frozen=True, extra="forbid"):
     port: Annotated[int, Field(description="The port the Librarian answers `/health` on.")]
     log_level: Annotated[LogLevel, Field(alias="logLevel")]
     log_format: Annotated[LogFormat, Field(alias="logFormat")]
+
+
+class LibrarianPromptScore(WireModel, frozen=True, extra="forbid"):
+    candidate: float
+    score: float
 
 
 type LimitRefusalCode = Annotated[

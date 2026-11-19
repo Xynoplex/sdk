@@ -171,8 +171,8 @@ and object_type st ~from_ name (l : Schema.schema) =
   G.Named type_name
 
 (* A file a method or notification names, from the table's place. *)
-let named_file path =
-  fst (Decode.resolve { Decode.target = path; file = table; pointer = "" })
+let named_file ids path =
+  fst (Decode.resolve ids { Decode.target = path; file = table; pointer = "" })
 
 let header =
   G.verbatim
@@ -223,12 +223,12 @@ let derive ~root (spec : Spec.t) =
   let methods =
     List.map
       (fun (m : T.methods_item) ->
-        (m, named_file m.params, named_file m.result))
+        (m, named_file spec.ids m.params, named_file spec.ids m.result))
       t.methods
   in
   let notifications =
     List.map
-      (fun (n : T.notifications_item) -> (n, named_file n.params))
+      (fun (n : T.notifications_item) -> (n, named_file spec.ids n.params))
       t.notifications
   in
   List.iter
@@ -237,9 +237,9 @@ let derive ~root (spec : Spec.t) =
       named result)
     methods;
   List.iter (fun (_, params) -> named params) notifications;
-  let error_data = named_file t.error_data in
+  let error_data = named_file spec.ids t.error_data in
   named error_data;
-  let api_version_file = named_file t.api_version in
+  let api_version_file = named_file spec.ids t.api_version in
   let api_version =
     match layer api_version_file (schema spec api_version_file) with
     | { const = Some (String_literal v); _ } -> v

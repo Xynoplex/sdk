@@ -31,7 +31,7 @@ let swift_refused specs ~why change expected =
   copy specs copied;
   change copied;
   let found =
-    match Spec.load copied with
+    match Spec_shapes.load copied with
     | Error errors ->
         List.iter (fun e -> prerr_endline (Decode.error_to_string e)) errors;
         Printf.eprintf "A copy that %s was not read\n" why;
@@ -76,7 +76,7 @@ let () =
         prerr_endline "usage: census.exe SPECS";
         exit 2
   in
-  (match Spec.load specs with
+  (match Spec_shapes.load specs with
   | Ok spec -> swift_values_are_the_tables specs spec
   | Error errors ->
       List.iter (fun e -> prerr_endline (Decode.error_to_string e)) errors;

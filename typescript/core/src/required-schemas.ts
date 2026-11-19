@@ -2512,6 +2512,12 @@ export const REQUIRED_SCHEMAS: {
     },
     closed: ['apiKeyEnv', 'baseUrl', 'engine'],
   },
+  LibrarianPromptScore: {
+    kinds: ['object'],
+    required: ['candidate', 'score'],
+    members: { candidate: { kinds: ['number'] }, score: { kinds: ['number'] } },
+    closed: ['candidate', 'score'],
+  },
   LimitRefusal: {
     kinds: ['object'],
     allOf: [

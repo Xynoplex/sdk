@@ -68,6 +68,7 @@ type context = {
   shapes : (string * Shape.shape) list;
   components : (string * string * Schema.t) list;
       (* Each component's name, its file and its schema. *)
+  ids : Decode.ids; (* Each schema's [$id]: what a reference names. *)
 }
 
 (* What a query states, whatever it asks or reads: its name, what it is per,
@@ -180,7 +181,7 @@ let derive context (table : T.t) =
     refusals := { Decode.file; pointer; message } :: !refusals
   in
   let component_at (reference : Decode.reference) =
-    let target, fragment = Decode.resolve reference in
+    let target, fragment = Decode.resolve context.ids reference in
     if fragment <> "" then None
     else
       List.find_map
@@ -206,7 +207,7 @@ let derive context (table : T.t) =
       refuse reference.pointer
         (Printf.sprintf "names %s, %s" reference.target message)
     in
-    let file, fragment = Decode.resolve reference in
+    let file, fragment = Decode.resolve context.ids reference in
     match
       List.find_opt
         (fun (_, component, _) -> component = file)

@@ -28,12 +28,16 @@ let refuses ~sub write =
   | _ -> Alcotest.failf "expected a refusal saying %s" sub
   | exception Kotlin_sdk.Names.Refused message -> contains ~sub message
 
+(* The references here name schemas by path, so they need no index of [$id]s. *)
+let ids = Result.get_ok (Decode.ids [])
+
 (* The Kotlin types of [schemas], each a component of that name. *)
 let types schemas =
   {
     Types.definitions =
       List.map (fun (name, text) -> (name, schema_of text)) schemas;
     identifiers = [ "ResourceId"; "AnnotationId" ];
+    ids;
     name_of_key =
       List.map
         (fun (name, _) -> ("components/schemas/" ^ name ^ ".json", name))
@@ -100,7 +104,7 @@ let channels_file ?(schemas = schemas) events () =
   | Error error -> Alcotest.fail (Decode.error_to_string error)
   | Ok (reg, _) -> (
       let component name = Option.map schema_of (List.assoc_opt name schemas) in
-      match Bus.Registry.derive ~component reg with
+      match Bus.Registry.derive ~ids ~component reg with
       | Error errors ->
           Alcotest.fail
             (String.concat "\n" (List.map Decode.error_to_string errors))

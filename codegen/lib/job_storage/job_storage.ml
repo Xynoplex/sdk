@@ -38,7 +38,7 @@ let words = function
 (* The motivation of each of MarkJobParams' branches, refusing a branch that
    is no plain reference to a component whose required motivation is one word
    of Motivation, the mapping naming it for that word. *)
-let branch_motivations schemas =
+let branch_motivations ids schemas =
   let refusals = ref [] in
   let refuse file pointer message =
     refusals := { Decode.file; pointer; message } :: !refusals
@@ -70,7 +70,7 @@ let branch_motivations schemas =
                match branch with
                | Schema.Schema ({ ref_ = Some ref_; _ } as s)
                  when Schema.keywords s = [ "$ref" ] -> (
-                   let target, _ = Decode.resolve ref_ in
+                   let target, _ = Decode.resolve ids ref_ in
                    let branch_schema = List.assoc_opt target schemas in
                    let required =
                      match branch_schema with
@@ -142,7 +142,7 @@ let derive (spec : Spec.t) =
         refuse job_type "" "states no enum";
         []
   in
-  match (List.rev !refusals, branch_motivations spec.schemas) with
+  match (List.rev !refusals, branch_motivations spec.ids spec.schemas) with
   | [], Ok mark_motivations -> Ok { table; job_types; mark_motivations }
   | errors, Error branch_errors -> Error (errors @ branch_errors)
   | errors, Ok _ -> Error errors

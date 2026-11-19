@@ -21,7 +21,8 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
   let schema_of file = List.assoc_opt file spec.schemas in
   let components =
     List.map
-      (fun (name, reference) -> (name, fst (Decode.resolve reference)))
+      (fun (name, reference) ->
+        (name, fst (Decode.resolve spec.Spec.ids reference)))
       (Roots.all spec)
   in
   let* records = Table_records.all spec in
@@ -65,6 +66,7 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
             List.map
               (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
               spec.tables.identifiers_kinds.kinds;
+          ids = spec.ids;
           name_of_key =
             List.map (fun (name, file) -> (file, name)) components
             @ List.map (fun (key, name, _) -> (key, name)) records;

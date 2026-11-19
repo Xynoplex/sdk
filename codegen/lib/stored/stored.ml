@@ -17,7 +17,6 @@ module T = Tables.Session_stored
 
 let file = "session/stored.json"
 let snake name = String.lowercase_ascii (Text.upper_snake name)
-let schemas_prefix = "../components/schemas/"
 
 type field = {
   name : string;
@@ -99,27 +98,20 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
         table.cache_key_prefix.docs );
     ];
   (* The component a reference to one names. *)
-  let component at reference =
-    let name =
-      if
-        String.starts_with ~prefix:schemas_prefix reference
-        && String.ends_with ~suffix:".json" reference
-      then
-        let n = String.length schemas_prefix in
-        String.sub reference n (String.length reference - n - 5)
-      else ""
-    in
-    if
-      name = ""
-      || not
-           (List.mem_assoc
-              ("components/schemas/" ^ name ^ ".json")
-              spec.schemas)
-    then (
-      refuse at
-        (Printf.sprintf "is %S, not a reference to a component" reference);
-      "")
-    else name
+  let component at : Decode.reference option -> string = function
+    | Some r -> (
+        match Decode.names spec.ids r with
+        | Some (file, "")
+          when Filename.dirname file = "components/schemas"
+               && List.mem_assoc file spec.schemas ->
+            Filename.remove_extension (Filename.basename file)
+        | _ ->
+            refuse at
+              (Printf.sprintf "is %S, not a reference to a component" r.target);
+            "")
+    | None ->
+        refuse at "states no reference to a component";
+        ""
   in
   (* The embedded schemas, read through Schema: a property the group reads
      and the schema lacks is refused, and read on as one that states
@@ -139,12 +131,20 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
   let named_type (s : Schema.schema) =
     match s.title with Some t -> Sign_in.Flat.is_type_name t | None -> false
   in
-  let referred : Schema.t option -> string = function
-    | Some (Schema { ref_ = Some r; _ }) -> r.target
-    | _ -> ""
+  let referred : Schema.t option -> Decode.reference option = function
+    | Some (Schema { ref_ = Some r; _ }) -> Some r
+    | _ -> None
   in
-  let o = layer table.open_resource in
   let at_open = "/openResource" in
+  let o =
+    match
+      Table_records.stated spec (file ^ "#" ^ at_open, table.open_resource)
+    with
+    | Ok (_, s) -> layer s
+    | Error message ->
+        refuse at_open message;
+        Schema.empty
+  in
   if o.type_ <> Some [ Object ] then refuse (at_open ^ "/type") "is not object";
   if not (named_type o) then refuse (at_open ^ "/title") "names no type";
   if not (said o.description) then refuse (at_open ^ "/description") "is empty";
@@ -178,7 +178,7 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
     let schema = p "id" in
     match schema.ref_ with
     | Some only ->
-        let kind = component (at ^ "/$ref") only.target in
+        let kind = component (at ^ "/$ref") (Some only) in
         if kind <> "" && not (List.mem kind kinds) then
           refuse (at ^ "/$ref")
             (Printf.sprintf "names %s, which is no kind of id" kind);

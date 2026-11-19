@@ -6801,6 +6801,26 @@ public struct LibrarianEngineConfig: Codable, Sendable {
   }
 }
 
+public struct LibrarianPromptScore: Codable, Sendable {
+  public var candidate: Double
+  public var score: Double
+  public init(candidate: Double, score: Double) {
+    self.candidate = candidate
+    self.score = score
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["candidate", "score"], in: "LibrarianPromptScore")
+    self.candidate = try c.value("candidate")
+    self.score = try c.value("score")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.candidate, as: "candidate")
+    try c.encode(self.score, as: "score")
+  }
+}
+
 public struct LimitRefusal: Codable, Sendable {
   public var code: LimitRefusalCode
   public var details: JSONValue?
@@ -12436,56 +12456,60 @@ internal let cacheQueries: [SpecCacheQueriesItem] = [
   SpecCacheQueriesItem(
     asks: "browse:resource-requested", docs: "A resource's description.", name: "resource",
     per: "resource", persisted: true,
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/ResourceDescriptor.json")),
+    value: SpecCacheQueriesItemValue(ref: "https://xynolog.org/protocol/ResourceDescriptor.json")),
   SpecCacheQueriesItem(
     docs: "The annotations of a resource.", name: "annotations", per: "resource", persisted: true,
     reads: "GET /resources/{id}/annotations",
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/GetAnnotationsResponse.json")),
+    value: SpecCacheQueriesItemValue(
+      ref: "https://xynolog.org/protocol/GetAnnotationsResponse.json")),
   SpecCacheQueriesItem(
     asks: "browse:annotation-requested", docs: "One annotation.", name: "annotation",
     per: "annotation", persisted: true,
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/Annotation.json")),
+    value: SpecCacheQueriesItemValue(ref: "https://xynolog.org/protocol/Annotation.json")),
   SpecCacheQueriesItem(
     asks: "browse:events-requested", docs: "The recorded history of a resource.", name: "events",
     per: "resource",
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetEventsResponse.json#/properties/events")),
+      ref: "https://xynolog.org/protocol/GetEventsResponse.json#/properties/events")),
   SpecCacheQueriesItem(
     asks: "gather:referenced-by-requested",
     docs: "The annotations elsewhere that refer to a resource.", name: "referencedBy",
     per: "resource",
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetReferencedByResponse.json#/properties/referencedBy")),
+      ref: "https://xynolog.org/protocol/GetReferencedByResponse.json#/properties/referencedBy")),
   SpecCacheQueriesItem(
     asks: "browse:resources-requested",
     docs:
       "A list of resources, one per set of filters asked for. It is a query's answer, kept fresh by what every client hears and by the events of the resources whose scope the client holds, and by nothing else: a resource archived, unarchived or retagged elsewhere, by someone else, does not refresh it.",
     name: "resources", per: "filters",
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/ListResourcesResponse.json")),
+    value: SpecCacheQueriesItemValue(ref: "https://xynolog.org/protocol/ListResourcesResponse.json")
+  ),
   SpecCacheQueriesItem(
     asks: "match:resources-requested",
     docs:
       "The resources a text search found, one per search and set of filters asked for. A query's answer like `resources`, and kept fresh by the same events and no others.",
     name: "matchedResources", per: "filters",
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/MatchResourcesResponse.json")),
+    value: SpecCacheQueriesItemValue(
+      ref: "https://xynolog.org/protocol/MatchResourcesResponse.json")),
   SpecCacheQueriesItem(
     asks: "browse:entity-types-requested", docs: "The knowledge base's entity types.",
     name: "entityTypes", persisted: true,
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetEntityTypesResponse.json#/properties/entityTypes")),
+      ref: "https://xynolog.org/protocol/GetEntityTypesResponse.json#/properties/entityTypes")),
   SpecCacheQueriesItem(
     asks: "browse:tag-schemas-requested", docs: "The knowledge base's tag schemas.",
     name: "tagSchemas", persisted: true,
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetTagSchemasResponse.json#/properties/tagSchemas")),
+      ref: "https://xynolog.org/protocol/GetTagSchemasResponse.json#/properties/tagSchemas")),
   SpecCacheQueriesItem(
     asks: "browse:engines-requested",
     docs:
       "The knowledge base's engines, joined with the limits each inference key holder reports: asking again asks every `<flow>:limits-requested` operation of the registry again too.",
     name: "engines",
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/BrowseEnginesResult.json#/properties/response/properties/engines")
-  ),
+      ref:
+        "https://xynolog.org/protocol/BrowseEnginesResult.json#/properties/response/properties/engines"
+    )),
 ]
 internal let credentialNames: [String] = [
   "token", "cloneToken", "accessToken", "access_token", "refreshToken", "refresh_token", "apiKey",
@@ -14944,6 +14968,10 @@ internal let requiredSchemas: [String: Shape] = {
       "apiKeyEnv": Shape(kinds: [.string], minLength: 1),
       "baseUrl": Shape(kinds: [.string], minLength: 1), "engine": Shape(ref: "Engine"),
     ], closed: ["apiKeyEnv", "baseUrl", "engine"])
+  shapes["LibrarianPromptScore"] = Shape(
+    kinds: [.object], required: ["candidate", "score"],
+    members: ["candidate": Shape(kinds: [.number]), "score": Shape(kinds: [.number])],
+    closed: ["candidate", "score"])
   shapes["LimitRefusal"] = Shape(
     kinds: [.object],
     allOf: [

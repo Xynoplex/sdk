@@ -245,6 +245,7 @@
     "generated/Xynolog/Internal/Generated/Models/KnowledgeGraph.hs": "46a4cac6d7796abb591f941b86708809c602dcd0d7b53f5f9b0a4cac92060f10",
     "generated/Xynolog/Internal/Generated/Models/LibrarianConfig.hs": "7c0d2d51209dfa482880c91178dd094546c83041aeab164579d8f5262a197831",
     "generated/Xynolog/Internal/Generated/Models/LibrarianEngineConfig.hs": "757109ce754037dc58b8aaf1eb2d392abbc8fb4f061a7c2b4c2494feb22e2370",
+    "generated/Xynolog/Internal/Generated/Models/LibrarianPromptScore.hs": "794795f213c2583eb0536a1e1b5421f2339d0bdca3deddf4bb3e559c7d2b09db",
     "generated/Xynolog/Internal/Generated/Models/LimitRefusal.hs": "a539ef6d74116078f9fba963799ea5f2a156c75a56bdaa6d7df3545d42cce957",
     "generated/Xynolog/Internal/Generated/Models/LinkingJobParams.hs": "4613c86e547edcbb81c3b8cc3dd78dc48ab329fb6114785d0b696763b46ad019",
     "generated/Xynolog/Internal/Generated/Models/ListResourcesResponse.hs": "5b652cf9e381eb5c0ea8c46afb3c216eb9aabeb151cc609f47b88ee7af40277d",
@@ -401,8 +402,8 @@
     "generated/Xynolog/Internal/Generated/OperationReports.hs": "ae06fe64f5efd431f7b6a2406b8fe53f1513c80a1e5bb24894e1cf36492c3365",
     "generated/Xynolog/Internal/Generated/PendingAnnotation.hs": "0a59e659c292318dbab933713a69f61d0a451ee0c86e068063ddffc62b443836",
     "generated/Xynolog/Internal/Generated/Principals.hs": "02fd2fd7b956e96bcda03bb7685472bf1a029666bf21fe32c1ff3e0ab217ceb9",
-    "generated/Xynolog/Internal/Generated/Required.hs": "e5e609258787fb3f90036fc2da74e0ea52418f586d0aea6b0d876cc73bc0ada4",
-    "generated/Xynolog/Internal/Generated/Schemas.hs": "1ba953b634fbc764803d9ba2a65940b619a45c04663766a75ba5c3f322f3031e",
+    "generated/Xynolog/Internal/Generated/Required.hs": "474a79c1507938d608d04df82bee5ac6ddb37ab7f2d0ba875cbf77909f4f4749",
+    "generated/Xynolog/Internal/Generated/Schemas.hs": "d431df18564848fdb37795dc63c5f5bfd51221b8ffe2ab698b29f261c6c65d5e",
     "generated/Xynolog/Internal/Generated/SearchState.hs": "5e7c4daed0a722d855ef53499aa35c29fc7a62e7e943234f36576d49e6f79303",
     "generated/Xynolog/Internal/Generated/ServiceProof.hs": "86e44db90b1ac4a3713f4794f4f1f2f32bdf7eeeb7ad24e12046c050f8acadaf",
     "generated/Xynolog/Internal/Generated/SessionFactoryOptions.hs": "1378c790f4a48832e1a0a938eb64c8759870e4ebf73f2445e8ba81c354334c45",
@@ -529,7 +530,7 @@
     "src/Xynolog/Tokens.hs": "bba264adde2b8a6c123b9e64e99aeae6fd917f9a09f10194684a8daf708bceca",
     "src/Xynolog/Transport.hs": "5f0c95953108daa834e02c580f0ffb49c3d8fb30ad4cf0424ae3b19c500de034",
     "src/Xynolog/Transport/Facts.hs": "b861a07eb1fc5319a56fec2889c08f9fe7d59c43682d5b488d14520377ff08ba",
-    "src/Xynolog/Types.hs": "e6a73bfee5b1f3a6c93db114430a136e9d50415a81baee3d44fc12c6df0cf055",
+    "src/Xynolog/Types.hs": "f51b85aacd2a5797fef814aa41098d243a59ad7394f8d40425eadeb6e7cb8936",
     "src/Xynolog/Types/Presence.hs": "0c700ed04e5fe1fe43786d384622dbf716ea8703a1af8b8d8b894876dbe13a8f",
     "src/Xynolog/Worker.hs": "b3059ffc5f52c53c19d967ae9551f753a142ef3827730ed3b5e10722d3445706",
     "src/Xynolog/Yield.hs": "591b83ed53bf6af381c539738b2d4993d196912f4131bd26d4d7b0624354a562",
@@ -4324,6 +4325,10 @@
           "definition": "data Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig = ...",
           "kind": "*"
         },
+        "LibrarianPromptScore": {
+          "definition": "data Xynolog.Internal.Generated.Models.LibrarianPromptScore.LibrarianPromptScore = ...",
+          "kind": "*"
+        },
         "LimitRefusal": {
           "definition": "data Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal = ...",
           "kind": "*"
@@ -5625,6 +5630,7 @@
         "LibrarianConfigGather": "Integer -> Xynolog.Internal.Generated.Models.LibrarianConfig.LibrarianConfigGather",
         "LibrarianConfigSearch": "Data.Scientific.Scientific -> Xynolog.Internal.Generated.Models.LibrarianConfig.LibrarianConfigSearch",
         "LibrarianEngineConfig": "Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.Engine.Engine -> Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig",
+        "LibrarianPromptScore": "Data.Scientific.Scientific -> Data.Scientific.Scientific -> Xynolog.Internal.Generated.Models.LibrarianPromptScore.LibrarianPromptScore",
         "LimitRefusal": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode -> Maybe Data.Aeson.Types.Internal.Value -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal",
         "LimitRefusalCodeCapacity": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode",
         "LimitRefusalCodeEmitU2d_rate": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode",
@@ -6871,6 +6877,8 @@
         "librarianEngineConfigApiKeyEnv": "Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig -> Maybe Data.Text.Internal.Text",
         "librarianEngineConfigBaseUrl": "Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig -> Data.Text.Internal.Text",
         "librarianEngineConfigEngine": "Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig -> Xynolog.Internal.Generated.Models.Engine.Engine",
+        "librarianPromptScoreCandidate": "Xynolog.Internal.Generated.Models.LibrarianPromptScore.LibrarianPromptScore -> Data.Scientific.Scientific",
+        "librarianPromptScoreScore": "Xynolog.Internal.Generated.Models.LibrarianPromptScore.LibrarianPromptScore -> Data.Scientific.Scientific",
         "limitRefusalAdditionalProperties": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "limitRefusalCode": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal -> Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode",
         "limitRefusalDetails": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal -> Maybe Data.Aeson.Types.Internal.Value",

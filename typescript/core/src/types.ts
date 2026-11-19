@@ -3285,6 +3285,10 @@ export interface components {
        */
       apiKeyEnv?: string;
     };
+    LibrarianPromptScore: {
+      candidate: number;
+      score: number;
+    };
     /** An ErrorResponse that names, in `code`, the limit the request met. */
     LimitRefusal: components['schemas']['ErrorResponse'] & {
       /**

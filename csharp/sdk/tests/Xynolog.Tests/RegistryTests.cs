@@ -67,7 +67,8 @@ public sealed partial class TransportTests
         var session = RegistryTokens() with { RevocationEndpoint = "https://issuer.test/revoke", PersonKey = PersonKeyOf(cacheExample) };
         RegistryStorage.StoreSession(store, "kb-1", session);
         Assert.Equal(session, RegistryStorage.StoredSession(store, "kb-1"));
-        var schema = table.RootElement.GetProperty("storedSession");
+        using var referred = ReadReferred(table.RootElement.GetProperty("storedSession"));
+        var schema = referred.RootElement;
         var text = Assert.IsType<string>(store.Get(key));
         using var stored = JsonDocument.Parse(text);
         Assert.Equal(schema.GetProperty("properties").EnumerateObject().Select(member => member.Name).Order(),
@@ -278,7 +279,8 @@ public sealed partial class TransportTests
     public async Task AnOpenResourceIsKeptAsTheStoredTableStatesIt()
     {
         using var table = ReadSpec("session/stored.json");
-        var schema = table.RootElement.GetProperty("openResource");
+        using var referred = ReadReferred(table.RootElement.GetProperty("openResource"));
+        var schema = referred.RootElement;
         static string[] Members(JsonElement value) => value.EnumerateObject().Select(member => member.Name).Order().ToArray();
         var required = schema.GetProperty("required").EnumerateArray().Select(name => Assert.IsType<string>(name.GetString())).Order().ToArray();
         var store = new MemoryStorage();

@@ -111,11 +111,11 @@ type referent = Named of string | In_place of string * Schema.t
 
 (* The schema [r] names: a whole file or a table record by its key, or a
    schema inside a file by its pointer. A pointer at no schema is refused. *)
-let schema_at ~schemas (r : Decode.reference) =
-  match Hashtbl.find_opt schemas (Table_records.key r) with
+let schema_at ~ids ~schemas (r : Decode.reference) =
+  match Hashtbl.find_opt schemas (Table_records.key ids r) with
   | Some s -> Some s
   | None -> (
-      match Decode.resolve r with
+      match Decode.resolve ids r with
       | _, "" -> None
       | file, pointer -> (
           match
@@ -126,14 +126,14 @@ let schema_at ~schemas (r : Decode.reference) =
           | None -> refuse "$ref %s points into its file at no schema" r.target)
       )
 
-let referent ~named ~schemas (r : Decode.reference) =
-  let key = Table_records.key r in
+let referent ~ids ~named ~schemas (r : Decode.reference) =
+  let key = Table_records.key ids r in
   match named key with
   | Some name -> Some (Named name)
-  | None -> Option.map (fun s -> In_place (key, s)) (schema_at ~schemas r)
+  | None -> Option.map (fun s -> In_place (key, s)) (schema_at ~ids ~schemas r)
 
-let schema_of ~schemas (r : Decode.reference) =
-  match schema_at ~schemas r with
+let schema_of ~ids ~schemas (r : Decode.reference) =
+  match schema_at ~ids ~schemas r with
   | Some s -> Ok s
   | None -> Error ("$ref " ^ r.target ^ " names no schema")
 
@@ -162,7 +162,7 @@ let client_roots (spec : Spec.t) =
 
 (* The view of a schema written in [file], each [$ref] it holds resolved by
    [named] or written in place from [schemas]. *)
-let view ~named ~schemas =
+let view ~ids ~named ~schemas =
   let rec view s = Schema.para ~boolean:(fun b _ -> Bool b) ~schema:layer s
   and layer (l : (Schema.t * (string list -> t)) Schema.layer) trail =
     match Null_form.without_null fst l with
@@ -183,7 +183,7 @@ let view ~named ~schemas =
           | Ok d -> d
           | Error message -> refuse "%s" message
         in
-        match referent ~named ~schemas r with
+        match referent ~ids ~named ~schemas r with
         | Some (Named name) -> Ref { name; description }
         | Some (In_place (file, target)) ->
             if Option.is_some description then
@@ -204,7 +204,7 @@ let view ~named ~schemas =
           Option.map
             (fun _ ->
               match
-                Normalize.normalize ~find:(schema_of ~schemas)
+                Normalize.normalize ids ~find:(schema_of ~ids ~schemas)
                   (Schema.Schema (Schema.map fst l))
               with
               | Ok m -> view (Schema.Schema m) trail
@@ -253,13 +253,13 @@ let view ~named ~schemas =
   fun s -> view s []
 
 (* Every [$ref] a schema holds, through the files written in its place. *)
-let references ~named ~schemas =
+let references ~ids ~named ~schemas =
   let rec references s = Schema.cata ~boolean:(fun _ _ -> []) ~schema:layer s
   and layer (s : (string list -> string list) Schema.layer) trail =
     match s.ref_ with
     | Some r -> (
-        match referent ~named ~schemas r with
-        | Some (Named _) -> [ Table_records.key r ]
+        match referent ~ids ~named ~schemas r with
+        | Some (Named _) -> [ Table_records.key ids r ]
         | Some (In_place (file, target)) ->
             references target (in_place ~trail file)
         | None -> [])
@@ -292,12 +292,15 @@ type bundle = {
 }
 
 let bundle (spec : Spec.t) =
+  let ids = spec.ids in
   let schemas = Hashtbl.create 1024 in
   List.iter (fun (file, s) -> Hashtbl.replace schemas file s) spec.schemas;
   let records = records spec in
   List.iter (fun (key, _, s) -> Hashtbl.replace schemas key s) records;
   let declared =
-    List.map (fun (name, r) -> (fst (Decode.resolve r), name)) (Roots.all spec)
+    List.map
+      (fun (name, r) -> (fst (Decode.resolve spec.Spec.ids r), name))
+      (Roots.all spec)
   in
   let titled = List.map (fun (key, name, _) -> (key, name)) records in
   (* A schema is named by the name [Roots] gives it, a table's record by
@@ -327,7 +330,8 @@ let bundle (spec : Spec.t) =
       (fun (op : Openapi.operation) ->
         List.map
           (function
-            | _, Openapi.Ref r -> response (fst (Decode.resolve r))
+            | _, Openapi.Ref r ->
+                response (fst (Decode.resolve spec.Spec.ids r))
             | _, Openapi.Inline r -> r)
           op.responses)
       (Spec.operations item)
@@ -335,7 +339,7 @@ let bundle (spec : Spec.t) =
   let items =
     List.map
       (fun (_, r) ->
-        let file = fst (Decode.resolve r) in
+        let file = fst (Decode.resolve spec.Spec.ids r) in
         match List.assoc_opt file spec.path_items with
         | Some item -> item
         | None ->
@@ -367,9 +371,12 @@ let bundle (spec : Spec.t) =
   let component_responses =
     match spec.gateway.components.responses with
     | None -> []
-    | Some rs -> List.map (fun (_, r) -> response (fst (Decode.resolve r))) rs
+    | Some rs ->
+        List.map
+          (fun (_, r) -> response (fst (Decode.resolve spec.Spec.ids r)))
+          rs
   in
-  let refs = references ~named ~schemas in
+  let refs = references ~ids ~named ~schemas in
   let body_schemas =
     List.concat_map
       (fun item ->
@@ -417,7 +424,7 @@ let bundle (spec : Spec.t) =
         match Hashtbl.find_opt by_name name with
         | None -> refuse "the spec declares no schema %s" name
         | Some file ->
-            let v = view ~named ~schemas (Hashtbl.find schemas file) in
+            let v = view ~ids ~named ~schemas (Hashtbl.find schemas file) in
             Hashtbl.replace views name v;
             v)
   in
@@ -430,7 +437,7 @@ let bundle (spec : Spec.t) =
   let names = names_of (Hashtbl.mem gateway) in
   {
     definitions = { names; schema };
-    view = view ~named ~schemas;
+    view = view ~ids ~named ~schemas;
     bodies =
       List.filter_map named (List.concat_map refs body_schemas)
       |> List.sort_uniq String.compare;
@@ -438,9 +445,9 @@ let bundle (spec : Spec.t) =
   }
 
 (* One schema file alone, as its own definitions: its [$ref]s are refused. *)
-let alone ~name (s : Schema.t) =
+let alone ~ids ~name (s : Schema.t) =
   let v =
-    view
+    view ~ids
       ~named:(fun file ->
         refuse "%s refers to %s, and is generated alone" name file)
       ~schemas:(Hashtbl.create 0) s

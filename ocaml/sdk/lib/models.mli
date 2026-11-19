@@ -263,6 +263,7 @@ val knowledge_base : [ `KnowledgeBase ] descriptor
 val knowledge_graph : [ `KnowledgeGraph ] descriptor
 val librarian_config : [ `LibrarianConfig ] descriptor
 val librarian_engine_config : [ `LibrarianEngineConfig ] descriptor
+val librarian_prompt_score : [ `LibrarianPromptScore ] descriptor
 val limit_refusal : [ `LimitRefusal ] descriptor
 val linking_job_params : [ `LinkingJobParams ] descriptor
 val list_resources_response : [ `ListResourcesResponse ] descriptor
