@@ -17,10 +17,10 @@ run_container_quietly bash "$ROOT/build-tools/ocaml/toolchain-image.sh" "$ROOT/c
 run_container_quietly "$RUNTIME" run --rm \
   --volume "$ROOT/codegen:/source/codegen:ro" \
   --volume "$ROOT/protocol:/source/protocol" \
-  --workdir /tmp \
+  --workdir /tmp --memory 4g \
   xynolog-ocaml-toolchain bash -euc '
     mkdir /tmp/sdk
-    tar -C /source --exclude=_build -cf - codegen protocol | tar -C /tmp/sdk -xf -
+    tar -C /source --exclude=_build --exclude=.git -cf - codegen protocol | tar -C /tmp/sdk -xf -
     cd /tmp/sdk/codegen
     dune exec -- xynolog-protocol bundle ../protocol
     cp -f ../protocol/specs/*.json /source/protocol/specs/
