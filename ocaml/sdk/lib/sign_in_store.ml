@@ -210,7 +210,8 @@ let jwt_claims token =
 let save_device t ~key ~issuer tokens =
   let claims = jwt_claims tokens.Oauth.access_token in
   let issuer_url = Oauth.issuer_url issuer in
-  if field "iss" claims <> Some issuer_url then Error Oauth.Invalid_response
+  if field "iss" claims <> Some issuer_url then
+    Error { Oauth.code = Error_codes.Sign_in.exchange; status = None }
   else
     let optional key value =
       Option.to_list (Option.map (fun value -> (key, `String value)) value)

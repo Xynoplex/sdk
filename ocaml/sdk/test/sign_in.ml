@@ -45,9 +45,18 @@ let pkce () =
       = "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE");
     (200, {|{"access_token":"access"}|})
   in
+  let refused code = Error { O.code; status = None } in
+  let finish callback = O.finish_redirect http issuer redirect ~callback in
+  assert (finish (callback "wrong") = refused Error_codes.Sign_in.state);
   assert (
-    O.finish_redirect http issuer redirect ~callback:(callback "wrong")
-    = Error O.Invalid_redirect);
+    finish (redirect_uri ^ "?error=access_denied&state=" ^ param "state")
+    = refused Error_codes.Sign_in.denied);
+  assert (
+    finish (redirect_uri ^ "?error=server_error&state=" ^ param "state")
+    = refused Error_codes.Sign_in.exchange);
+  assert (
+    finish (redirect_uri ^ "?state=" ^ param "state")
+    = refused Error_codes.Sign_in.exchange);
   assert (!calls = 0);
   assert (
     (get
@@ -110,9 +119,10 @@ let store () =
         0o600 path (fun file ->
           output_string file {|{"future":{"newField":true}}|});
       let save label =
-        get
-          (Store.save_device store ~key ~issuer
-             (get (O.poll_device (fun _ -> token_response label) issuer device)))
+        match O.poll_device (fun _ -> token_response label) issuer device with
+        | Ok (O.Issued tokens) ->
+            get (Store.save_device store ~key ~issuer tokens)
+        | _ -> failwith "the poll issued no tokens"
       in
       save "first";
       assert ((Unix.stat path).st_perm = 0o600);
@@ -144,7 +154,7 @@ let store () =
             assert (Store.find store ~key = None);
             assert (List.assoc "token" request.O.form = "refresh-for-revocation");
             (500, ""))
-        = Error (O.Rejected Error_codes.Sign_in.exchange));
+        = Error { O.code = Error_codes.Sign_in.exchange; status = Some 500 });
       assert (Store.find store ~key = None);
       assert (
         Yojson.Safe.from_file path
@@ -279,7 +289,7 @@ let rsa () =
   let pem =
     In_channel.with_open_bin "../probes/peer-key.pem" In_channel.input_all
   in
-  let key = get (O.rsa_key_of_pem pem) in
+  let key = Option.get (O.rsa_key_of_pem pem) in
   let public =
     X509.Private_key.public (get (X509.Private_key.decode_pem pem))
   in
@@ -360,6 +370,33 @@ let rsa () =
           .access_token = "rsa-token"))
     (list (field "cases" vector))
 
+(* A renewal the issuer answered with a status the refresh retry rule does not
+   try again is refused, whatever its body; one it tries again, and one with
+   no answer, is not. *)
+let refusals () =
+  let renewal answer =
+    O.refresh_script
+      (fun _ -> answer)
+      ~token_endpoint:endpoint ~refresh_token:"kept"
+  in
+  let refused answer =
+    match renewal answer with
+    | Error error -> O.refresh_refused error
+    | Ok _ -> failwith "the renewal was granted"
+  in
+  assert (refused (400, {|{"error":"invalid_grant"}|}));
+  assert (refused (401, "not JSON"));
+  assert (refused (200, "{}"));
+  assert (not (refused (503, "")));
+  assert (not (refused (429, {|{"error":"slow_down"}|})));
+  assert (
+    renewal (503, "")
+    = Error { O.code = Error_codes.Sign_in.exchange; status = Some 503 });
+  assert (
+    not
+      (O.refresh_refused
+         { O.code = Error_codes.Sign_in.exchange; status = None }))
+
 let revoke () =
   let http (request : O.request) =
     assert (request.url = issuer_url ^ "/revoke");
@@ -430,6 +467,7 @@ let () =
         [
           Alcotest.test_case "redirect state and PKCE" `Quick pkce;
           Alcotest.test_case "RSA assertion and thumbprint" `Quick rsa;
+          Alcotest.test_case "renewal refused by status" `Quick refusals;
           Alcotest.test_case "issuer revocation form" `Quick revoke;
           Alcotest.test_case "agent identity and renewal" `Quick agent;
         ] );

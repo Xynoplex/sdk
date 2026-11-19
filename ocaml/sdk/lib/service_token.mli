@@ -1,5 +1,9 @@
 type proof = Secret of string | Key of Oauth.rsa_key
-type failure = { error : Oauth.error; status : int option }
+
+type failure =
+  | Issuer of Oauth.error  (** The issuer gave no token. *)
+  | Closed  (** The token was disposed of. *)
+
 type service_token
 
 val make :

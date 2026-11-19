@@ -701,7 +701,7 @@ let redirect () =
   let location = begin_ () in
   let state = Option.get (Uri.get_query_param location "state") in
   let callback = origin ^ "?code=one&state=" ^ state in
-  assert (complete (callback ^ "bad") = Error "oauth.invalid-redirect");
+  assert (complete (callback ^ "bad") = Error Error_codes.Sign_in.state);
   assert (complete callback = Error Error_codes.Sign_in.no_pending);
   assert (!exchanges = 0);
   ignore (begin_ ());

@@ -184,8 +184,8 @@
     "lib/models.ml": "9a6a7823329398ef10995f8758f95e42d0ce2bac3eff7cbc62fc597d4b3ddb8f",
     "lib/models.mli": "b37e8935a0265559bee835a8d2fdee2aaecfbcfdb9a97b4f65a323aa3fe5e65e",
     "lib/namespace_methods.ml": "37178853cd16d5975132820d07bf0ee703039b946557167dd39560f0b5025147",
-    "lib/oauth.ml": "8fd49d18dda428a219f7f28570e1d16e4757f55cf2613081ab33e743a407fce4",
-    "lib/oauth.mli": "74dce2642014e9de8ed38f09367c76c97e83362763305eed04c0faddb951ba07",
+    "lib/oauth.ml": "f5011dc6bc265c198dd54a9711110353a41d1c954d2b8c34706617e7efe60195",
+    "lib/oauth.mli": "4391ef7174cd9dea0b6cb36a4a29dac7da02a8bc3bfee21b57ef87134c10e0ba",
     "lib/oauth_facts.ml": "8d318f922bc93b766445f8e0f3f0fc2deb2e9a78244e7553f717d620d69127b2",
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
     "lib/record_reader.ml": "053aa7e17c38b3cedb840b7623fd666e17717a5bbe8e1087b56aaf05d8ac3d89",
@@ -193,7 +193,7 @@
     "lib/records.ml": "4c3280cc6da43dda56f6450297e62947eca691e62acc8aae0e052244ece739a8",
     "lib/redirect_sign_in.ml": "c0f36739c64b48556f18b04b1849e5033a500e681fc6ea0aa7bc357b4e8fb935",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
-    "lib/registry.ml": "e4995622ab11b54eb2978c5a02efeb650a9db77b41c0bebaaf7da138cb5f9fab",
+    "lib/registry.ml": "b7d3d0a4bb36ac212add5c60d050b7e64e0047722f5a7a542bc2daea3bc83f6a",
     "lib/registry.mli": "007fe6fa9bb2ef09341bd496474b7ed14a9d19ead3576cde56650ccd3f457184",
     "lib/registry_facts.ml": "ad2d706c130785002585a0797b2ec8a070790257bd364a85b34f51f839dfcd63",
     "lib/resources.ml": "99f49caf9937bf6754e62b0011196873fdfbc1488ed90817a49fcd292d6a9fd4",
@@ -210,8 +210,8 @@
     "lib/selector.ml": "b24657f0d60a45a7deefaa23ae4f8d6800ec007f3c13cdbb004944cfa014b432",
     "lib/selector_codec.ml": "3a1dfd0a8bee6be9478c94c550c9e63895ebf9683d5a206bb29f515f90413547",
     "lib/selector_codec.mli": "988eb032a395ae7f5cc38321b1f6323a08bf1d8cbf7faedf73b59083aa85c1bb",
-    "lib/service_token.ml": "5869384fb25f8c9f9ca54fe5beb5dfa5da4b7546dc87930d9eb66d3247322ed2",
-    "lib/service_token.mli": "0b0f3278aa4e36179de32dd07002737067901c3ac9d8c24a0b9888241979f8e8",
+    "lib/service_token.ml": "cf53ac5de5ac0ad42f89ec7e9e7b507ea148397c308182d7acba377408984649",
+    "lib/service_token.mli": "befd1a461a905333e73b04b0c7d9b38dd4b0072f3244e2011fdd45d357dad6e2",
     "lib/session.ml": "9c113a57dca817eda4ef9e843ee120bf8aa489bd7c541d11cbb14ed0f85af0cf",
     "lib/session.mli": "de5dbaf4f50a8e948c17af22ce15078074b6e570440459429ffbeee93fbe0ba7",
     "lib/session_notices.ml": "cccea843423b06e5802f1675a614063b9533b8a5ea8038fa19d76db1f8eeec59",
@@ -219,7 +219,7 @@
     "lib/session_signals.mli": "75d9e803669a38f99e84aa96938790d283100139f1dc35ae9a28d642fe21db5b",
     "lib/session_state.ml": "7d3752fb039db97758080e839678beab12f5022fce698d2bd688ee2827b8b818",
     "lib/session_state.mli": "9e7179985cf0a05b166d65ddb7e6f4600eadf55361884240fe76aa18802cc13e",
-    "lib/sign_in_store.ml": "ff8140c731f1a6484ecebbf4566c8fb1ba8c30c215fb9a3ffbd7d84a25e3db1e",
+    "lib/sign_in_store.ml": "2b7e94ec0059b3f7f2788535c7247c4966e4cd805b0b41144b90e0502a265311",
     "lib/sign_in_store.mli": "e6d3f45d44a69f6becfc3079c6055341ab5c53cb93bb74da150edbb86704f1eb",
     "lib/state_task.ml": "2061a7893545d7ecf7f52b0235c21fa2a5346ef3c65334e043e63dd7dfc74c8c",
     "lib/state_units.ml": "e4d23c751c2502f86de7971d3e32759cc8387e40e230f86ad935ef6afb760d94",
@@ -17443,29 +17443,11 @@
     {
       "kind": "type",
       "path": "Xynolog.OAuth.error",
-      "declaration": "type error = Invalid_response | Invalid_redirect | Rejected of string",
-      "representation": "variant",
-      "constructors": [
-        "Invalid_response",
-        "Invalid_redirect",
-        "Rejected"
-      ],
-      "variants": [
-        {
-          "name": "Invalid_response",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Invalid_redirect",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Rejected",
-          "fields": [],
-          "unit": false
-        }
+      "declaration": "type error = { code : string; status : int option; }",
+      "representation": "record",
+      "fields": [
+        "code",
+        "status"
       ]
     },
     {
@@ -17495,6 +17477,34 @@
         "access_token",
         "refresh_token",
         "expires_in"
+      ]
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.OAuth.poll",
+      "declaration": "type poll = Issued of script tokens | Pending | Slow_down",
+      "representation": "variant",
+      "constructors": [
+        "Issued",
+        "Pending",
+        "Slow_down"
+      ],
+      "variants": [
+        {
+          "name": "Issued",
+          "fields": [],
+          "unit": false
+        },
+        {
+          "name": "Pending",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Slow_down",
+          "fields": [],
+          "unit": true
+        }
       ]
     },
     {
@@ -17571,7 +17581,7 @@
     {
       "kind": "value",
       "path": "Xynolog.OAuth.poll_device",
-      "declaration": "val poll_device : http -> issuer -> device -> (script tokens, error) result"
+      "declaration": "val poll_device : http -> issuer -> device -> (poll, error) result"
     },
     {
       "kind": "value",
@@ -17607,7 +17617,7 @@
     {
       "kind": "value",
       "path": "Xynolog.OAuth.rsa_key_of_pem",
-      "declaration": "val rsa_key_of_pem : string -> (rsa_key, error) result"
+      "declaration": "val rsa_key_of_pem : string -> rsa_key option"
     },
     {
       "kind": "value",
@@ -21558,11 +21568,23 @@
     {
       "kind": "type",
       "path": "Xynolog.Service_token.failure",
-      "declaration": "type failure = { error : Xynolog__.Oauth.error; status : int option; }",
-      "representation": "record",
-      "fields": [
-        "error",
-        "status"
+      "declaration": "type failure = Issuer of Xynolog__.Oauth.error | Closed",
+      "representation": "variant",
+      "constructors": [
+        "Issuer",
+        "Closed"
+      ],
+      "variants": [
+        {
+          "name": "Issuer",
+          "fields": [],
+          "unit": false
+        },
+        {
+          "name": "Closed",
+          "fields": [],
+          "unit": true
+        }
       ]
     },
     {
