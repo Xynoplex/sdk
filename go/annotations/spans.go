@@ -413,7 +413,7 @@ func Reconcile(text string, quoted api.QuotedText) (api.ReconciledSpan, bool) {
 		at := own(counted, chosen)
 		err = span.From(api.ReconciledSpanFuzzyMatch{
 			AnchorMethod: api.ReconciledSpanFuzzyMatchAnchorMethodFuzzyMatch, MatchQuality: quality,
-			Start:        at.Start, End: at.End, Exact: at.Exact, Prefix: at.Prefix, Suffix: at.Suffix,
+			Start: at.Start, End: at.End, Exact: at.Exact, Prefix: at.Prefix, Suffix: at.Suffix,
 		})
 	}
 	if err != nil {
