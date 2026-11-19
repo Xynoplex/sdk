@@ -174,25 +174,35 @@ func NewHTTPContentTransport(transport *HTTPTransport) *HTTPContentTransport {
 // a time: the grain its progress is reported in.
 const uploadChunk = 64 * 1024
 
-// form is an upload's multipart/form-data body: each field under its own
-// name, and the bytes as the part `file`.
+// form is an upload's body, as routeUploadResource sends it: its members
+// every upload sends, then the bytes as the file member, then the others it
+// sends.
 func form(request PutBinaryRequest) (body []byte, contentType string, err error) {
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
-	field := func(name, value string) {
-		if err == nil {
-			err = writer.WriteField(name, value)
+	fields := func(required bool) error {
+		for _, member := range uploadFields {
+			if member.required != required || member.name == uploadFieldFile {
+				continue
+			}
+			text, sent, err := uploadSent[member.name](request)
+			if err != nil {
+				return err
+			}
+			if sent {
+				if err := writer.WriteField(member.name, text); err != nil {
+					return err
+				}
+			}
 		}
+		return nil
 	}
-	field("name", request.Name)
-	field("format", request.Format)
-	field("storageUri", request.StorageURI)
-	if err != nil {
+	if err := fields(true); err != nil {
 		return nil, "", err
 	}
 	header := make(textproto.MIMEHeader)
 	escaped := strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(request.Name)
-	header.Set("Content-Disposition", fmt.Sprintf(`form-data; name="file"; filename="%s"`, escaped))
+	header.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, uploadFieldFile, escaped))
 	header.Set("Content-Type", request.Format)
 	part, err := writer.CreatePart(header)
 	if err != nil {
@@ -201,47 +211,51 @@ func form(request PutBinaryRequest) (body []byte, contentType string, err error)
 	if _, err := part.Write(request.Bytes); err != nil {
 		return nil, "", err
 	}
-	if len(request.EntityTypes) > 0 {
-		encoded, encodeErr := json.Marshal(request.EntityTypes)
-		if encodeErr != nil {
-			return nil, "", encodeErr
-		}
-		field("entityTypes", string(encoded))
-	}
-	for _, text := range []struct{ name, value string }{
-		{"language", request.Language},
-		{"sourceAnnotationId", request.SourceAnnotationID.String()},
-		{"sourceResourceId", request.SourceResourceID.String()},
-		{"generationPrompt", request.GenerationPrompt},
-		{"jobId", request.JobID.String()},
-		{"cloneToken", request.CloneToken},
-	} {
-		if text.value != "" {
-			field(text.name, text.value)
-		}
-	}
-	if request.Generator != nil {
-		encoded, encodeErr := json.Marshal(request.Generator)
-		if encodeErr != nil {
-			return nil, "", encodeErr
-		}
-		field("generator", string(encoded))
-	}
-	for _, flag := range []struct {
-		name  string
-		value *bool
-	}{{"archiveOriginal", request.ArchiveOriginal}, {"isDraft", request.IsDraft}} {
-		if flag.value != nil {
-			field(flag.name, fmt.Sprint(*flag.value))
-		}
-	}
-	if err != nil {
+	if err := fields(false); err != nil {
 		return nil, "", err
 	}
 	if err := writer.Close(); err != nil {
 		return nil, "", err
 	}
-	return buffer.Bytes(), writer.FormDataContentType(), nil
+	return buffer.Bytes(), routeUploadResourceSends + "; boundary=" + writer.Boundary(), nil
+}
+
+// uploadSent is each member of an upload but its file, as request sends it:
+// its text, and whether it is sent.
+var uploadSent = map[string]func(request PutBinaryRequest) (string, bool, error){
+	uploadFieldName:               func(r PutBinaryRequest) (string, bool, error) { return r.Name, true, nil },
+	uploadFieldFormat:             func(r PutBinaryRequest) (string, bool, error) { return r.Format, true, nil },
+	uploadFieldStorageUri:         func(r PutBinaryRequest) (string, bool, error) { return r.StorageURI, true, nil },
+	uploadFieldLanguage:           func(r PutBinaryRequest) (string, bool, error) { return given(r.Language) },
+	uploadFieldEntityTypes:        func(r PutBinaryRequest) (string, bool, error) { return encoded(r.EntityTypes, len(r.EntityTypes) > 0) },
+	uploadFieldSourceAnnotationId: func(r PutBinaryRequest) (string, bool, error) { return given(r.SourceAnnotationID.String()) },
+	uploadFieldSourceResourceId:   func(r PutBinaryRequest) (string, bool, error) { return given(r.SourceResourceID.String()) },
+	uploadFieldGenerationPrompt:   func(r PutBinaryRequest) (string, bool, error) { return given(r.GenerationPrompt) },
+	uploadFieldGenerator:          func(r PutBinaryRequest) (string, bool, error) { return encoded(r.Generator, r.Generator != nil) },
+	uploadFieldJobId:              func(r PutBinaryRequest) (string, bool, error) { return given(r.JobID.String()) },
+	uploadFieldIsDraft:            func(r PutBinaryRequest) (string, bool, error) { return flag(r.IsDraft) },
+	uploadFieldCloneToken:         func(r PutBinaryRequest) (string, bool, error) { return given(r.CloneToken) },
+	uploadFieldArchiveOriginal:    func(r PutBinaryRequest) (string, bool, error) { return flag(r.ArchiveOriginal) },
+}
+
+// given is text, sent when it is not empty.
+func given(text string) (string, bool, error) { return text, text != "", nil }
+
+// flag is value's text, sent when it is set.
+func flag(value *bool) (string, bool, error) {
+	if value == nil {
+		return "", false, nil
+	}
+	return fmt.Sprint(*value), true, nil
+}
+
+// encoded is value as JSON, sent when sent is true.
+func encoded(value any, sent bool) (string, bool, error) {
+	if !sent {
+		return "", false, nil
+	}
+	text, err := json.Marshal(value)
+	return string(text), true, err
 }
 
 // progressReader hands body to the connection a chunk at a time, reporting
@@ -293,7 +307,7 @@ func (c *HTTPContentTransport) PutBinary(ctx context.Context, putting PutBinaryR
 		var reported int64
 		var mu sync.Mutex
 		return answer[api.CreateResourceResponse](ctx, c.shared, request{
-			method: http.MethodPost, path: "/resources", authenticated: true, contentType: contentType, idempotencyKey: uuid.NewString(),
+			method: routeUploadResource.method, path: routeUploadResource.path, authenticated: true, contentType: contentType, idempotencyKey: uuid.NewString(),
 			body: func() (io.Reader, int64) {
 				return &progressReader{body: body, reported: &reported, mu: &mu, report: report}, int64(len(body))
 			},
@@ -301,15 +315,18 @@ func (c *HTTPContentTransport) PutBinary(ctx context.Context, putting PutBinaryR
 	})
 }
 
-// path is where a resource is read. Its id is one segment of the path as it
-// is: the rule a ResourceId is held to admits nothing a path reads as its own.
-func path(resource api.ResourceId) string { return "/resources/" + resource.String() }
+// resourcePath is route's path for resource. Its id is one segment of the path
+// as it is: the rule a ResourceId is held to admits nothing a path reads as its
+// own.
+func resourcePath(route gatewayRoute, resource api.ResourceId) string {
+	return strings.Replace(route.path, "{id}", resource.String(), 1)
+}
 
 // read is the stored bytes, as they are: no Accept, so the gateway serves them
 // with their own media type. The deadline is on their beginning to arrive:
 // how long they take after that is how many there are.
 func (c *HTTPContentTransport) read(ctx context.Context, resource api.ResourceId) (answered, error) {
-	return c.shared.exchange(ctx, request{method: http.MethodGet, path: path(resource), authenticated: true, deadline: c.shared.timing.HttpRequestTimeout})
+	return c.shared.exchange(ctx, c.get(routeGetResourceRepresentation, resource))
 }
 
 func contentType(response *http.Response) string {
@@ -321,7 +338,7 @@ func contentType(response *http.Response) string {
 
 // interrupted is a read whose bytes stopped coming.
 func interrupted(resource api.ResourceId, err error) *TransportError {
-	return transportErrorWithoutResponse(fmt.Sprintf("GET %s ended before its bytes did: %v", path(resource), err), TransportErrorCodeUnavailable)
+	return transportErrorWithoutResponse(fmt.Sprintf("%s %s ended before its bytes did: %v", routeGetResourceRepresentation.method, resourcePath(routeGetResourceRepresentation, resource), err), TransportErrorCodeUnavailable)
 }
 
 // GetBinary reads a resource's bytes, whole.
@@ -383,8 +400,8 @@ func (c *HTTPContentTransport) GetBinaryStream(ctx context.Context, resource api
 	}, nil
 }
 
-func (c *HTTPContentTransport) get(resource api.ResourceId, suffix string) request {
-	return request{method: http.MethodGet, path: path(resource) + suffix, authenticated: true, deadline: c.shared.timing.HttpRequestTimeout}
+func (c *HTTPContentTransport) get(route gatewayRoute, resource api.ResourceId) request {
+	return request{method: route.method, path: resourcePath(route, resource), authenticated: true, deadline: c.shared.timing.HttpRequestTimeout}
 }
 
 // GetResourceGraph reads a resource's description as linked data.
@@ -392,7 +409,7 @@ func (c *HTTPContentTransport) GetResourceGraph(ctx context.Context, resource ap
 	busLog(ctx, busGet, "content", map[string]any{"resourceId": resource, "graph": true}, Envelope{})
 	ctx, span := reading(ctx, spanContentGetGraph, resource)
 	defer span.End()
-	return answer[api.GetResourceResponse](ctx, c.shared, c.get(resource, "/jsonld"))
+	return answer[api.GetResourceResponse](ctx, c.shared, c.get(routeGetResourceJsonLd, resource))
 }
 
 // GetAnnotations reads a resource's annotations.
@@ -400,7 +417,7 @@ func (c *HTTPContentTransport) GetAnnotations(ctx context.Context, resource api.
 	busLog(ctx, busGet, "content", map[string]any{"resourceId": resource, "annotations": true}, Envelope{})
 	ctx, span := reading(ctx, spanContentGetAnnotations, resource)
 	defer span.End()
-	return answer[api.GetAnnotationsResponse](ctx, c.shared, c.get(resource, "/annotations"))
+	return answer[api.GetAnnotationsResponse](ctx, c.shared, c.get(routeGetResourceAnnotations, resource))
 }
 
 // GetAnchoredText reads a resource's anchored text. The Archivist may hold
@@ -410,33 +427,33 @@ func (c *HTTPContentTransport) GetAnchoredText(ctx context.Context, resource api
 	busLog(ctx, busGet, "content", map[string]any{"resourceId": resource, "anchoredText": true}, Envelope{})
 	ctx, span := reading(ctx, spanContentGetAnchoredText, resource)
 	defer span.End()
-	return answer[api.AnchoredTextAnswer](ctx, c.shared, c.get(resource, "/anchored-text"))
+	return answer[api.AnchoredTextAnswer](ctx, c.shared, c.get(routeGetResourceAnchoredText, resource))
 }
 
-func (t *HTTPTransport) operation(method, path string, authenticated bool) request {
-	return request{method: method, path: path, authenticated: authenticated, deadline: t.shared.timing.HttpRequestTimeout}
+func (t *HTTPTransport) operation(route gatewayRoute, authenticated bool) request {
+	return request{method: route.method, path: route.path, authenticated: authenticated, deadline: t.shared.timing.HttpRequestTimeout}
 }
 
 // GetCurrentUser is who the gateway says this client's token is.
 func (t *HTTPTransport) GetCurrentUser(ctx context.Context) (api.UserResponse, error) {
-	return answer[api.UserResponse](ctx, t.shared, t.operation(http.MethodGet, "/api/users/me", true))
+	return answer[api.UserResponse](ctx, t.shared, t.operation(routeGetCurrentUser, true))
 }
 
 // GetMediaToken is a token for reading a resource's media.
 func (t *HTTPTransport) GetMediaToken(ctx context.Context, resource api.ResourceId) (api.MediaTokenResponse, error) {
-	spec := t.operation(http.MethodPost, "/api/tokens/media", true)
+	spec := t.operation(routeCreateMediaToken, true)
 	body, err := jsonBody(api.MediaTokenRequest{ResourceId: resource})
 	if err != nil {
 		return api.MediaTokenResponse{}, t.shared.failures.Report(transportErrorWithoutResponse(fmt.Sprintf("a media token request that does not serialize: %v", err), TransportErrorCodeError))
 	}
-	spec.body, spec.contentType = body, "application/json"
+	spec.body, spec.contentType = body, routeCreateMediaTokenSends
 	return answer[api.MediaTokenResponse](ctx, t.shared, spec)
 }
 
 // GetProtectedResourceMetadata is the gateway's OAuth protected resource
 // metadata, which any caller may read.
 func (t *HTTPTransport) GetProtectedResourceMetadata(ctx context.Context) (api.ProtectedResourceMetadata, error) {
-	return answer[api.ProtectedResourceMetadata](ctx, t.shared, t.operation(http.MethodGet, "/.well-known/oauth-protected-resource", false))
+	return answer[api.ProtectedResourceMetadata](ctx, t.shared, t.operation(routeGetProtectedResourceMetadata, false))
 }
 
 // HealthCheck asks the gateway to report itself. A nil error means it
@@ -446,7 +463,7 @@ func (t *HTTPTransport) GetProtectedResourceMetadata(ctx context.Context) (api.P
 // client does not know, since calling that down would take a gateway offline
 // over a field renamed. Liveness is the status; the body is detail.
 func (t *HTTPTransport) HealthCheck(ctx context.Context) (report api.HealthResponse, ok bool, err error) {
-	spec := t.operation(http.MethodGet, "/api/health", true)
+	spec := t.operation(routeGetHealth, true)
 	got, err := t.shared.exchange(ctx, spec)
 	if err != nil {
 		return api.HealthResponse{}, false, err
@@ -464,5 +481,5 @@ func (t *HTTPTransport) HealthCheck(ctx context.Context) (report api.HealthRespo
 
 // GetStatus is the gateway's status.
 func (t *HTTPTransport) GetStatus(ctx context.Context) (api.StatusResponse, error) {
-	return answer[api.StatusResponse](ctx, t.shared, t.operation(http.MethodGet, "/api/status", true))
+	return answer[api.StatusResponse](ctx, t.shared, t.operation(routeGetStatus, true))
 }

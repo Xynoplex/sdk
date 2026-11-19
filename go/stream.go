@@ -391,15 +391,6 @@ func (s *stream) opened(conn uint64) {
 	s.settleConnect(conn, true)
 }
 
-// wireFrame is a frame as the stream's data line carries it, its payload as
-// it was written.
-type wireFrame struct {
-	Channel       string          `json:"channel"`
-	Payload       json.RawMessage `json:"payload"`
-	CorrelationID *string         `json:"correlationId"`
-	Scope         *string         `json:"scope"`
-}
-
 // carried is data read as a frame, and true; or, when BusFrame does not allow
 // it, its first fault. A frame carries what BusFrame names, and nothing more.
 func carried(data string) (Frame, required.Fault, bool) {
@@ -407,20 +398,19 @@ func carried(data string) (Frame, required.Fault, bool) {
 	if faulty {
 		return Frame{}, fault, false
 	}
-	var read wireFrame
-	if json.Unmarshal(stated, &read) != nil {
+	// The payload is kept as it was written; the other members are read as
+	// BusFrame's.
+	var read api.BusFrame
+	var members map[string]json.RawMessage
+	if json.Unmarshal(stated, &read) != nil || json.Unmarshal(stated, &members) != nil {
 		return Frame{}, required.Undecoded, false
 	}
-	frame := Frame{Channel: bus.Channel(read.Channel), Payload: read.Payload}
-	if read.CorrelationID != nil {
-		frame.CorrelationID = *read.CorrelationID
+	frame := Frame{Channel: bus.Channel(read.Channel), Payload: members[busFramePayload]}
+	if read.CorrelationId != nil {
+		frame.CorrelationID = *read.CorrelationId
 	}
 	if read.Scope != nil {
-		scope, err := api.ParseResourceId(*read.Scope)
-		if err != nil {
-			return Frame{}, required.Undecoded, false
-		}
-		frame.Scope = scope
+		frame.Scope = *read.Scope
 	}
 	return frame, required.Fault{}, true
 }
@@ -435,18 +425,18 @@ func refusalOf(data string, fault required.Fault) (*FrameRefusal, bool) {
 		return nil, false
 	}
 	// They name its readers when a frame of them alone is one BusFrame allows.
-	named := map[string]json.RawMessage{"channel": members["channel"], "payload": json.RawMessage(`{}`)}
-	if scope, has := members["scope"]; has {
-		named["scope"] = scope
+	named := map[string]json.RawMessage{busFrameChannel: members[busFrameChannel], busFramePayload: json.RawMessage(`{}`)}
+	if scope, has := members[busFrameScope]; has {
+		named[busFrameScope] = scope
 	}
 	readers, ok := framed(named)
 	if !ok {
 		return nil, false
 	}
-	refusal := &FrameRefusal{Channel: readers.Channel, Member: fault.Member, Reason: fault.Reason, Payload: members["payload"], Envelope: readers.Envelope}
+	refusal := &FrameRefusal{Channel: readers.Channel, Member: fault.Member, Reason: fault.Reason, Payload: members[busFramePayload], Envelope: readers.Envelope}
 	// Its correlation id can be read when a frame of it and its readers alone is one BusFrame allows.
-	if correlationID, has := members["correlationId"]; has {
-		named["correlationId"] = correlationID
+	if correlationID, has := members[busFrameCorrelationId]; has {
+		named[busFrameCorrelationId] = correlationID
 		if read, ok := framed(named); ok {
 			refusal.CorrelationID = read.CorrelationID
 		}
@@ -778,13 +768,13 @@ func (s *stream) read(ctx context.Context, conn uint64, token string, body api.B
 	// StreamOpenTimeout: once the stream is open, it may be quiet.
 	opening, cancel := context.WithCancel(ctx)
 	defer cancel()
-	request, err := http.NewRequestWithContext(opening, http.MethodPost, s.shared.baseURL+"/bus/subscribe", bytes.NewReader(encoded))
+	request, err := http.NewRequestWithContext(opening, routeSubscribeToBus.method, s.shared.baseURL+routeSubscribeToBus.path, bytes.NewReader(encoded))
 	if err != nil {
 		report(streamEvent{kind: eventEnded})
 		return
 	}
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Accept", "text/event-stream")
+	request.Header.Set("Content-Type", routeSubscribeToBusSends)
+	request.Header.Set("Accept", routeSubscribeToBusAnswers)
 	request.Header.Set("Authorization", "Bearer "+token)
 	deadline := time.AfterFunc(s.shared.timing.StreamOpenTimeout, cancel)
 	response, err := s.shared.http.Do(request)
@@ -799,7 +789,7 @@ func (s *stream) read(ctx context.Context, conn uint64, token string, body api.B
 		return
 	}
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		wait, hasWait := RetryAfter(response.Header.Get("Retry-After"))
+		wait, hasWait := RetryAfter(response.Header.Get(headerRetryAfter))
 		// A refusal's body is read within HttpRequestTimeout, as any other
 		// answer is: one not read by then is a refusal that says nothing.
 		reading := time.AfterFunc(s.shared.timing.HttpRequestTimeout, cancel)
@@ -809,8 +799,8 @@ func (s *stream) read(ctx context.Context, conn uint64, token string, body api.B
 			said = nil
 		}
 		message := fmt.Sprintf("SSE connect failed: %d", response.StatusCode)
-		if words, ok := gatewayWords(said); ok {
-			message += ": " + words
+		if refused, ok := required.ReadAs[api.ErrorResponse](said); ok {
+			message += ": " + refused.Error
 		}
 		report(streamEvent{kind: eventRefused, err: refusal(message, response.StatusCode, wait, hasWait, said)})
 		return
