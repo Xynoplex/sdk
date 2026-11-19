@@ -82,7 +82,7 @@ type JobRefused struct {
 	Data struct {
 		Channel bus.Channel            `json:"channel"`
 		Member  string                 `json:"member"`
-		Reason  bus.FrameRefusalReason `json:"reason"`
+		Reason  api.FrameRefusalReason `json:"reason"`
 	}
 }
 

@@ -40,7 +40,7 @@ type frameCase struct {
 	Data    string                 `json:"data"`
 	Refused bool                   `json:"refused"`
 	Member  string                 `json:"member"`
-	Reason  bus.FrameRefusalReason `json:"reason"`
+	Reason  api.FrameRefusalReason `json:"reason"`
 	Told    string                 `json:"told"`
 	// CorrelationID is the correlation id the case's refusal carries; empty
 	// when it carries none.

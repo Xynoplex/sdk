@@ -54,7 +54,7 @@ func kb(t *testing.T, value map[string]any) api.DiscoveredKB {
 	return read
 }
 
-func reason(state discovery.DiscoveryState) (discovery.DiscoveryAbsentReason, bool) {
+func reason(state discovery.DiscoveryState) (api.DiscoveryAbsentReason, bool) {
 	absent, isAbsent := state.(discovery.Absent)
 	return absent.Reason, isAbsent
 }
@@ -89,23 +89,23 @@ func TestADocumentOfKnowledgeBasesIsManagedAndOneOfNoneIsManagedToo(t *testing.T
 func TestWhatIsNotADocumentIsAbsentAndSaysWhy(t *testing.T) {
 	cases := []struct {
 		text     string
-		expected discovery.DiscoveryAbsentReason
+		expected api.DiscoveryAbsentReason
 	}{
-		{"<!doctype html><html></html>", discovery.NotJSON},
-		{"[]", discovery.Invalid},
-		{written(t, map[string]any{"kbs": []any{}}), discovery.Invalid},
-		{written(t, map[string]any{"version": "1", "kbs": []any{}}), discovery.Invalid},
-		{written(t, map[string]any{"version": 2, "kbs": []any{}}), discovery.UnsupportedVersion},
-		{written(t, map[string]any{"version": 1}), discovery.Invalid},
-		{written(t, map[string]any{"version": 1, "kbs": []any{"localhost"}}), discovery.Invalid},
+		{"<!doctype html><html></html>", api.DiscoveryAbsentReasonNotJson},
+		{"[]", api.DiscoveryAbsentReasonInvalid},
+		{written(t, map[string]any{"kbs": []any{}}), api.DiscoveryAbsentReasonInvalid},
+		{written(t, map[string]any{"version": "1", "kbs": []any{}}), api.DiscoveryAbsentReasonInvalid},
+		{written(t, map[string]any{"version": 2, "kbs": []any{}}), api.DiscoveryAbsentReasonUnsupportedVersion},
+		{written(t, map[string]any{"version": 1}), api.DiscoveryAbsentReasonInvalid},
+		{written(t, map[string]any{"version": 1, "kbs": []any{"localhost"}}), api.DiscoveryAbsentReasonInvalid},
 		{
 			document(t, map[string]any{"host": "localhost", "port": 4000, "placement": "elsewhere", "managedBy": "x", "did": a}),
-			discovery.Invalid,
+			api.DiscoveryAbsentReasonInvalid,
 		},
-		{document(t, entry("localhost", 0, a)), discovery.Invalid},
+		{document(t, entry("localhost", 0, a)), api.DiscoveryAbsentReasonInvalid},
 		{
 			document(t, map[string]any{"host": "localhost", "port": 70000, "placement": "local", "managedBy": "x", "did": a}),
-			discovery.Invalid,
+			api.DiscoveryAbsentReasonInvalid,
 		},
 	}
 	for _, stated := range cases {
@@ -121,7 +121,7 @@ func TestWhatIsNotADocumentIsAbsentAndSaysWhy(t *testing.T) {
 
 func TestADocumentOfAnotherVersionIsNotReadInPart(t *testing.T) {
 	state := discovery.ParseDiscoveryDocument(written(t, map[string]any{"version": 2, "kbs": []any{entry("localhost", 4000, a)}}))
-	if got, isAbsent := reason(state); !isAbsent || got != discovery.UnsupportedVersion {
+	if got, isAbsent := reason(state); !isAbsent || got != api.DiscoveryAbsentReasonUnsupportedVersion {
 		t.Errorf("read %#v", state)
 	}
 	if !strings.Contains(diagnostic(state), "version 2") {
@@ -133,7 +133,7 @@ func TestOneEntryThatIsNotOneMakesTheWholeDocumentAbsent(t *testing.T) {
 	// A reading of the good entry alone would hide a running knowledge base.
 	withoutADid := map[string]any{"host": "localhost", "port": 4100, "placement": "local", "managedBy": "x"}
 	state := discovery.ParseDiscoveryDocument(document(t, entry("localhost", 4000, a), withoutADid))
-	if got, isAbsent := reason(state); !isAbsent || got != discovery.Invalid {
+	if got, isAbsent := reason(state); !isAbsent || got != api.DiscoveryAbsentReasonInvalid {
 		t.Errorf("read %#v", state)
 	}
 	if !strings.Contains(diagnostic(state), "did") {
@@ -151,10 +151,10 @@ func TestTextIsReadThroughTheOneValidator(t *testing.T) {
 	if got, want := readOf(document(t, entry("localhost", 4000, a)), nil), (discovery.Managed{KBs: []api.DiscoveredKB{kb(t, entry("localhost", 4000, a))}}); !reflect.DeepEqual(got, want) {
 		t.Errorf("read %#v, not %#v", got, want)
 	}
-	if got, want := readOf("", fs.ErrNotExist), (discovery.Absent{Reason: discovery.NotFound}); !reflect.DeepEqual(got, want) {
+	if got, want := readOf("", fs.ErrNotExist), (discovery.Absent{Reason: api.DiscoveryAbsentReasonNotFound}); !reflect.DeepEqual(got, want) {
 		t.Errorf("read %#v, not %#v", got, want)
 	}
-	if got, want := readOf("", errors.New("permission denied")), (discovery.Absent{Reason: discovery.Unreadable, Diagnostic: "permission denied"}); !reflect.DeepEqual(got, want) {
+	if got, want := readOf("", errors.New("permission denied")), (discovery.Absent{Reason: api.DiscoveryAbsentReasonUnreadable, Diagnostic: "permission denied"}); !reflect.DeepEqual(got, want) {
 		t.Errorf("read %#v, not %#v", got, want)
 	}
 }
@@ -341,7 +341,7 @@ func TestALauncherThatGoesAndComesBackIsToldWithWhatItTookAndBrought(t *testing.
 		told := changes(s, 6)
 
 		type said struct {
-			reason  discovery.DiscoveryAbsentReason
+			reason  api.DiscoveryAbsentReason
 			absent  bool
 			summary summary
 		}
@@ -351,10 +351,10 @@ func TestALauncherThatGoesAndComesBackIsToldWithWhatItTookAndBrought(t *testing.
 			got = append(got, said{why, isAbsent, summaryOf(diff)})
 		}
 		want := []said{
-			{discovery.NotJSON, true, summary{at(), at(), at()}},
+			{api.DiscoveryAbsentReasonNotJson, true, summary{at(), at(), at()}},
 			{"", false, summary{at("localhost:4000"), at(), at()}},
-			{discovery.NotJSON, true, summary{at(), at(), at("localhost:4000")}},
-			{discovery.Invalid, true, summary{at(), at(), at()}},
+			{api.DiscoveryAbsentReasonNotJson, true, summary{at(), at(), at("localhost:4000")}},
+			{api.DiscoveryAbsentReasonInvalid, true, summary{at(), at(), at()}},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("told %v, not %v", got, want)

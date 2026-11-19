@@ -67,7 +67,7 @@ type FrameRefusal struct {
 	// frame's payload is within `payload`.
 	Member string
 	// Reason is why the frame is refused at Member.
-	Reason bus.FrameRefusalReason
+	Reason api.FrameRefusalReason
 	// Payload is the frame's payload as it came; nil when it carried none.
 	Payload json.RawMessage
 	// Envelope is the scope the frame names, and its correlation id when it
