@@ -17,43 +17,14 @@ host's to write, in their language.
 """
 
 from types import TracebackType
-from typing import Annotated, Final, Self, final, override
-
-from pydantic import Field
+from typing import Final, Self, final, override
 
 from xynolog._reading import Reading
-from xynolog.model import WireModel
-from xynolog.session import SessionEndReason
 from xynolog.state_unit import StateUnit
+from xynolog.types import KbIdentityConflict, PermissionDenied, SessionEnded, SessionEndReason
 from xynolog.watched import Variable, Watched
 
-__all__ = ["KbIdentityConflict", "PermissionDenied", "SessionEnded", "SessionSignals"]
-
-
-@final
-class SessionEnded(WireModel, frozen=True):
-    """A session ended, and why."""
-
-    reason: SessionEndReason
-
-
-@final
-class PermissionDenied(WireModel, frozen=True):
-    """A request was refused for lack of permission. `detail` is the refusal's own message, untranslated; none when there is none."""
-
-    detail: str | None
-
-
-@final
-class KbIdentityConflict(WireModel, frozen=True):
-    """What a registered entry said it was, and what answered.
-
-    Both, because neither alone can be acted on: a person has to recognise
-    which knowledge base they registered and which one is there now.
-    """
-
-    expected_did: Annotated[str, Field(alias="expectedDid")]
-    observed_did: Annotated[str, Field(alias="observedDid")]
+__all__ = ["SessionSignals"]
 
 
 @final

@@ -28,7 +28,6 @@ it is.
 import asyncio
 from collections.abc import AsyncGenerator, Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, asynccontextmanager
-from dataclasses import dataclass
 from typing import Final, final, override
 
 import httpx
@@ -52,21 +51,28 @@ from xynolog.http.oauth import (
     sign_in_with_device_grant,
 )
 from xynolog.http.transport import HttpTransport
-from xynolog.identifiers import UserId
 from xynolog.identity import kb_did
 from xynolog.oauth_clients import BROWSER_CLIENT_ID, SCRIPT_CLIENT_ID
 from xynolog.operations import BROWSE_KB_REQUESTED
-from xynolog.registry import SessionFactory, SessionFactoryOptions, SignedIn, SignInOutcome, XynologBrowser, kept_in
+from xynolog.registry import SessionFactory, SessionFactoryOptions, XynologBrowser, kept_in
 from xynolog.resume import CoupledBookmarks
-from xynolog.session import HeldSignIn, SessionEndReason, SignInKept, Validate, XynologSession
+from xynolog.session import HeldSignIn, SignInKept, Validate, XynologSession
 from xynolog.storage import SessionStorage
 from xynolog.storage_keys import last_event_id_key, person_key
-from xynolog.stored import StoredSession
-from xynolog.types import HttpEndpoint, KbDescription, KbTarget, LocalEndpoint, UserResponse
+from xynolog.types import (
+    ConnectionIdentity,
+    HttpEndpoint,
+    KbTarget,
+    LocalEndpoint,
+    SessionEndReason,
+    SignedIn,
+    SignInOutcome,
+    StoredSession,
+    UserResponse,
+)
 from xynolog.watched import Variable
 
 __all__ = [
-    "ConnectionIdentity",
     "HttpSessionFactory",
     "begin_sign_in",
     "complete_sign_in",
@@ -656,15 +662,6 @@ class HttpSessionFactory(SessionFactory):
 
 
 # ── What a completed sign-in learns ─────────────────────────────────────
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class ConnectionIdentity:
-    """Who the knowledge base at an address says it is."""
-
-    did: UserId
-    description: KbDescription
 
 
 async def describe_connection(target: HttpEndpoint, access: str, *, http: httpx.AsyncClient | None = None) -> ConnectionIdentity:

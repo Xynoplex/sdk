@@ -1,7 +1,8 @@
 (* The Python SDK's protocol types (python/sdk/src/xynolog/types.py): a
-   frozen [WireModel] for every component schema that is an object and a
-   type alias for every other, but the kinds of id, which
-   [xynolog.identifiers] holds. They are types, and state no rule beside
+   frozen [WireModel] for every component schema and every record Protocol
+   states in its tables ([Table_records]), with every schema they reach,
+   that is an object, and a type alias for every other, but the kinds of id,
+   which [xynolog.identifiers] holds. They are types, and state no rule beside
    what a type says: what a value must be is the required table's
    ([_required_table.py]), which the SDK holds what it reads to.
 
@@ -163,7 +164,7 @@ let rec placed st owner held_as (s : D.t) : P.expr =
       | D.Node n -> (
           View.refuse_const (owner ^ "." ^ held_as) s;
           match (n.all_of, View.union s, n.enum) with
-          | Some [ (D.Ref _ as only) ], _, _ when properties n = [] ->
+          | Some [ (D.Ref _ as only) ], _, None when properties n = [] ->
               placed st owner held_as only
           | Some _, _, _ -> (
               match D.meant s with
@@ -477,12 +478,14 @@ let module_ ~kinds (definitions : D.definitions) =
     {
       header =
         Banner.python_lines
-          ~from_:"the component schemas of protocol/specs/src/openapi.json"
+          ~from_:
+            "the component schemas of protocol/specs/src/openapi.json and the \
+             records of its tables"
           __FILE__;
       doc =
         As_is
-          "The protocol's shapes: a model for every component schema that is \
-           an object, and a type for every other.";
+          "The protocol's shapes: a model for every component schema and table \
+           record that is an object, and a type for every other.";
       imports =
         [
           [ P.From ("__future__", [ "annotations" ]) ];
@@ -502,14 +505,40 @@ let module_ ~kinds (definitions : D.definitions) =
         :: List.map snd (ordered decls);
     }
 
+(* The schemas [s] names. *)
+let rec named_in (s : D.t) =
+  match s with
+  | D.Ref { name; _ } -> [ name ]
+  | D.Null | D.Bool _ -> []
+  | D.Node n ->
+      List.concat_map named_in
+        (List.map snd (properties n)
+        @ Option.to_list n.additional_properties
+        @ Option.to_list n.items
+        @ List.concat (List.filter_map Fun.id [ n.all_of; n.any_of; n.one_of ])
+        )
+
 let text (spec : Spec.t) =
+  let definitions = (Definitions.bundle spec).definitions in
+  let rec reach written = function
+    | [] -> written
+    | name :: rest when List.mem name written -> reach written rest
+    | name :: rest ->
+        reach (name :: written) (named_in (definitions.schema name) @ rest)
+  in
   module_
     ~kinds:
       (List.sort compare
          (List.map
             (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
             spec.tables.identifiers_kinds.kinds))
-    (Definitions.bundle spec).definitions
+    {
+      definitions with
+      names =
+        List.sort compare
+          (reach definitions.names
+             (List.map (fun (_, name, _) -> name) (Definitions.records spec)));
+    }
 
 let files ~root:_ (spec : Spec.t) =
   match text spec with

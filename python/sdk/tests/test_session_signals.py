@@ -10,8 +10,9 @@ from typing import final, override
 
 from aio import run, soon
 
-from xynolog.session_signals import KbIdentityConflict, PermissionDenied, SessionEnded, SessionSignals
+from xynolog.session_signals import SessionSignals
 from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.types import KbIdentityConflict, PermissionDenied, SessionEnded
 
 
 def test_a_second_occurrence_is_told_even_when_it_says_the_same() -> None:

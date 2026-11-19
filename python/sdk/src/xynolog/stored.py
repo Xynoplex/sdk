@@ -3,10 +3,9 @@
 # ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """What a registry of knowledge bases keeps in a `SessionStorage` (`protocol/specs/src/session/stored.json`):
-the key each thing it keeps is kept under, the shape of a knowledge base's
-stored session, and the shape of a resource open in one. And what the
-sessions it makes keep there: which queries, and the stream's places. The
-keys made of these prefixes are `xynolog.storage_keys`'s.
+the key each thing it keeps is kept under, and the shape of a resource open in one.
+And what the sessions it makes keep there: which queries, and the stream's
+places. The keys made of these prefixes are `xynolog.storage_keys`'s.
 """
 
 from typing import Annotated, Final, Literal, final
@@ -32,7 +31,6 @@ __all__ = [
     "KeptQuery",
     "LastEventIds",
     "OpenResource",
-    "StoredSession",
     "WholeKey",
 ]
 
@@ -114,39 +112,6 @@ WHOLE_KEY: Final[WholeKey] = "_"
 
 # The form of the document. A document of another version is read as none.
 CACHE_DOCUMENT_VERSION: Final = 1
-
-
-@final
-class StoredSession(WireModel, frozen=True):
-    """What is kept of a sign-in: the tokens an issuer issued, the client they were issued to, and
-    the issuer's endpoints a renewal and a sign-out need, learned once at sign-in so no session
-    asks again. TOKENS, never a password. A stored value that lacks a member it requires is no
-    session.
-    """
-
-    # The access token: short-lived, sent as a Bearer token.
-    access: str
-
-    # The refresh token: what renews the access token at the issuer without another sign-in.
-    refresh: str
-
-    # The client the tokens were issued to, which a renewal and a revocation name.
-    client_id: Annotated[str, Field(alias="clientId")]
-
-    # The issuer's token endpoint, where the refresh grant is made.
-    token_endpoint: Annotated[str, Field(alias="tokenEndpoint")]
-
-    # The issuer's revocation endpoint (RFC 7009), where a sign-out tells it to forget the
-    # refresh token. Absent when the issuer has none.
-    revocation_endpoint: Annotated[str | None, Field(alias="revocationEndpoint")] = None
-
-    # Who the gateway said the sign-in's person is, as the key their caches and stream position
-    # are kept under (`lastEventIdKeyPrefix`), never the did itself. Written once the gateway
-    # names the person, on the sign-in whose token it was asked about; a renewal keeps it, a new
-    # sign-in starts without it, and forgetting the sign-in, however it is forgotten, reads it
-    # first to delete what is kept under it. Absent for a sign-in whose gateway has not yet
-    # named its person.
-    person_key: Annotated[str | None, Field(alias="personKey")] = None
 
 
 @final
