@@ -5,12 +5,14 @@ import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import xynolog.Timings
 import xynolog.errors.TransportError
@@ -18,6 +20,10 @@ import xynolog.errors.TransportErrorCode
 import xynolog.identifiers.ResourceId
 import xynolog.transport.PutBinaryRequest
 import xynolog.types.CreateResourceResponse
+import xynolog.types.UploadProgress
+import xynolog.types.UploadProgressFinished
+import xynolog.types.UploadProgressProgress
+import xynolog.types.UploadProgressStarted
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -101,6 +107,45 @@ class HttpContentTransportTest {
                 withTimeout(10_000) { content.putBinary(request).use { it.await() } }
             }
         }
+
+    /** What an upload through `gateway` reported, read to its end, and then what awaiting it gave or threw. */
+    private suspend fun reported(gateway: UploadGateway): Pair<List<UploadProgress>, Result<CreateResourceResponse>> =
+        HttpTransport(gateway.origin, MutableStateFlow("token"), emptyList()).use { transport ->
+            HttpContentTransport(transport).use { content ->
+                withTimeout(10_000) {
+                    content.putBinary(request).use { upload -> upload.progress.toList() to runCatching { upload.await() } }
+                }
+            }
+        }
+
+    @Test
+    fun anUploadSentAgainReportsItsSizeOnceItsBytesNeverLessThanItLastSaidAndThenTheResourceMade() = runBlocking {
+        UploadGateway(Answered(503, """{"error":"not now"}"""), Answered(202, CREATED)).use { gateway ->
+            val (reports, created) = reported(gateway)
+            gateway.sentTwiceAsOne()
+            // Its size is the whole request's, the same for both sendings.
+            val size = gateway.attempts.last().body.size.toLong()
+            assertEquals(UploadProgressStarted(totalBytes = size), reports.first())
+            assertEquals(UploadProgressFinished(resourceId = created.getOrThrow().resourceId), reports.last())
+            val sending = reports.subList(1, reports.size - 1)
+            val progress = sending.filterIsInstance<UploadProgressProgress>()
+            assertEquals(sending, progress)
+            assertTrue(progress.isNotEmpty())
+            assertEquals(setOf(size), progress.map { it.totalBytes }.toSet())
+            assertEquals(progress.map { it.bytesUploaded }.distinct().sorted(), progress.map { it.bytesUploaded }, "a count was said twice, or went back")
+            assertEquals(size, progress.last().bytesUploaded)
+        }
+    }
+
+    @Test
+    fun anUploadAnsweredWithNoResourceFailsAndNeverSaysItFinished() = runBlocking {
+        UploadGateway(Answered(202, "{}")).use { gateway ->
+            val (reports, created) = reported(gateway)
+            assertEquals(TransportErrorCode.Error, (created.exceptionOrNull() as TransportError).reason)
+            assertEquals(UploadProgressStarted(totalBytes = gateway.attempts.single().body.size.toLong()), reports.first())
+            assertEquals(emptyList<UploadProgressFinished>(), reports.filterIsInstance<UploadProgressFinished>())
+        }
+    }
 
     @Test
     fun anUploadAnswered503IsSentOnceMoreUnderItsKeyAndResolves() = runBlocking {

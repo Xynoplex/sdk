@@ -35,6 +35,9 @@ import xynolog.transport.ConnectionState
 import xynolog.transport.Content
 import xynolog.transport.Frame
 import xynolog.transport.PutBinaryRequest
+import xynolog.types.UploadProgressFinished
+import xynolog.types.UploadProgressProgress
+import xynolog.types.UploadProgressStarted
 import xynolog.types.wireJson
 import kotlin.time.Duration.Companion.seconds
 
@@ -226,7 +229,10 @@ class DoublesTest {
         val upload = content.putBinary(PutBinaryRequest(name = "a.txt", file = "the words".toByteArray(), format = "text/plain", storageUri = "file://a.txt"))
         val made = upload.await().resourceId
         assertEquals("test-content-1", made.value)
-        assertEquals(listOf(9L), upload.progress.toList().map { it.bytesUploaded })
+        assertEquals(
+            listOf(UploadProgressStarted(totalBytes = 9), UploadProgressProgress(bytesUploaded = 9, totalBytes = 9), UploadProgressFinished(resourceId = made)),
+            upload.progress.toList(),
+        )
         assertEquals("the words", String(content.getBinary(made).bytes))
         content.seed(RESOURCE, Content("text/plain", "seeded".toByteArray()))
         assertEquals("seeded", String(content.getBinaryStream(RESOURCE).bytes.toList().single()))

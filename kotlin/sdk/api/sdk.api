@@ -143,46 +143,6 @@ public final class xynolog/XynologClient : java/lang/AutoCloseable {
 	public final fun getYield ()Lxynolog/namespaces/YieldNamespace;
 }
 
-public abstract interface class xynolog/annotations/AnchorMethod {
-	public abstract fun getValue ()Ljava/lang/String;
-}
-
-public final class xynolog/annotations/AnchorMethod$ContextRecovered : xynolog/annotations/AnchorMethod {
-	public static final field INSTANCE Lxynolog/annotations/AnchorMethod$ContextRecovered;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getValue ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/annotations/AnchorMethod$FirstOfMany : xynolog/annotations/AnchorMethod {
-	public static final field INSTANCE Lxynolog/annotations/AnchorMethod$FirstOfMany;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getValue ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/annotations/AnchorMethod$FuzzyMatch : xynolog/annotations/AnchorMethod {
-	public fun <init> (Lxynolog/types/MatchQuality;)V
-	public final fun component1 ()Lxynolog/types/MatchQuality;
-	public final fun copy (Lxynolog/types/MatchQuality;)Lxynolog/annotations/AnchorMethod$FuzzyMatch;
-	public static synthetic fun copy$default (Lxynolog/annotations/AnchorMethod$FuzzyMatch;Lxynolog/types/MatchQuality;ILjava/lang/Object;)Lxynolog/annotations/AnchorMethod$FuzzyMatch;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getQuality ()Lxynolog/types/MatchQuality;
-	public fun getValue ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/annotations/AnchorMethod$UniqueMatch : xynolog/annotations/AnchorMethod {
-	public static final field INSTANCE Lxynolog/annotations/AnchorMethod$UniqueMatch;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getValue ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class xynolog/annotations/AnnotationsKt {
 	public static final fun annotationExactText (Lxynolog/types/Annotation;)Ljava/lang/String;
 	public static final fun annotationOfResource (Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;)Lxynolog/types/Annotation;
@@ -192,16 +152,16 @@ public final class xynolog/annotations/AnnotationsKt {
 	public static final fun annotationOfResource-_HOLNf0 (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
 	public static synthetic fun annotationOfResource-_HOLNf0$default (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
 	public static final fun annotationOfResource-e71mPsk (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan (Ljava/lang/String;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan (Ljava/lang/String;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-6fYgrzQ (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-6fYgrzQ (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static synthetic fun annotationOfSpan-6fYgrzQ$default (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
-	public static synthetic fun annotationOfSpan-6fYgrzQ$default (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-9IMsetE (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-9IMsetE (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan (Ljava/lang/String;Lxynolog/types/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan (Ljava/lang/String;Lxynolog/types/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan (Lxynolog/types/AnchoredText;Lxynolog/types/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan (Lxynolog/types/AnchoredText;Lxynolog/types/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-6fYgrzQ (Ljava/lang/String;Lxynolog/types/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-6fYgrzQ (Lxynolog/types/AnchoredText;Lxynolog/types/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
+	public static synthetic fun annotationOfSpan-6fYgrzQ$default (Ljava/lang/String;Lxynolog/types/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
+	public static synthetic fun annotationOfSpan-6fYgrzQ$default (Lxynolog/types/AnchoredText;Lxynolog/types/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-9IMsetE (Ljava/lang/String;Lxynolog/types/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-9IMsetE (Lxynolog/types/AnchoredText;Lxynolog/types/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
 	public static final fun bodySource (Lxynolog/types/AnnotationBodies;)Ljava/lang/String;
 	public static final fun commentText (Lxynolog/types/Annotation;)Ljava/lang/String;
 	public static final fun entityTypes (Lxynolog/types/Annotation;)Ljava/util/List;
@@ -214,65 +174,13 @@ public final class xynolog/annotations/AnnotationsKt {
 	public static final fun isResolvedReference (Lxynolog/types/Annotation;)Z
 	public static final fun isStubReference (Lxynolog/types/Annotation;)Z
 	public static final fun isTag (Lxynolog/types/Annotation;)Z
-	public static final fun reconcile (Ljava/lang/String;Lxynolog/annotations/QuotedText;)Lxynolog/annotations/ReconciledSpan;
+	public static final fun reconcile (Ljava/lang/String;Lxynolog/types/QuotedText;)Lxynolog/types/ReconciledSpan;
 	public static final fun tagCategory (Lxynolog/types/Annotation;)Ljava/lang/String;
 	public static final fun tagSchemaId (Lxynolog/types/Annotation;)Ljava/lang/String;
 	public static final fun targetSelector (Lxynolog/types/AnnotationTargetValue;)Lxynolog/types/AnnotationSelector;
 	public static final fun targetSource (Lxynolog/types/AnnotationTargetValue;)Ljava/lang/String;
 	public static final fun textQuoteSelector (Lxynolog/types/AnnotationSelector;)Lxynolog/types/TextQuoteSelector;
-}
-
-public final class xynolog/annotations/QuotedText {
-	public fun <init> (Ljava/lang/String;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lxynolog/annotations/QuotedText;
-	public static synthetic fun copy$default (Lxynolog/annotations/QuotedText;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/annotations/QuotedText;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getExact ()Ljava/lang/String;
-	public final fun getPrefix ()Ljava/lang/String;
-	public final fun getSuffix ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/annotations/ReconciledSpan {
-	public fun <init> (Lxynolog/annotations/TextSpan;Lxynolog/annotations/AnchorMethod;)V
-	public final fun component1 ()Lxynolog/annotations/TextSpan;
-	public final fun component2 ()Lxynolog/annotations/AnchorMethod;
-	public final fun copy (Lxynolog/annotations/TextSpan;Lxynolog/annotations/AnchorMethod;)Lxynolog/annotations/ReconciledSpan;
-	public static synthetic fun copy$default (Lxynolog/annotations/ReconciledSpan;Lxynolog/annotations/TextSpan;Lxynolog/annotations/AnchorMethod;ILjava/lang/Object;)Lxynolog/annotations/ReconciledSpan;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAnchorMethod ()Lxynolog/annotations/AnchorMethod;
-	public final fun getSpan ()Lxynolog/annotations/TextSpan;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/annotations/TextSpan {
-	public fun <init> (JJLjava/lang/String;)V
-	public fun <init> (JJLjava/lang/String;Ljava/lang/String;)V
-	public fun <init> (JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()J
-	public final fun component2 ()J
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lxynolog/annotations/TextSpan;
-	public static synthetic fun copy$default (Lxynolog/annotations/TextSpan;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/annotations/TextSpan;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getEnd ()J
-	public final fun getExact ()Ljava/lang/String;
-	public final fun getPrefix ()Ljava/lang/String;
-	public final fun getStart ()J
-	public final fun getSuffix ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+	public static final fun toTextSpan (Lxynolog/types/ReconciledSpan;)Lxynolog/types/TextSpan;
 }
 
 public final class xynolog/bus/Bus {
@@ -604,12 +512,12 @@ public final class xynolog/http/AgentToken : java/lang/AutoCloseable, xynolog/ht
 }
 
 public final class xynolog/http/AuthorizationKt {
-	public static final fun beginAuthorization (Lxynolog/http/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun beginAuthorization$default (Lxynolog/http/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun beginAuthorizationFuture (Lxynolog/http/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;)Ljava/util/concurrent/CompletableFuture;
-	public static final fun beginAuthorizationFuture (Lxynolog/http/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;)Ljava/util/concurrent/CompletableFuture;
-	public static final fun beginAuthorizationFuture (Lxynolog/http/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;)Ljava/util/concurrent/CompletableFuture;
-	public static synthetic fun beginAuthorizationFuture$default (Lxynolog/http/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public static final fun beginAuthorization (Lxynolog/types/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun beginAuthorization$default (Lxynolog/types/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun beginAuthorizationFuture (Lxynolog/types/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;)Ljava/util/concurrent/CompletableFuture;
+	public static final fun beginAuthorizationFuture (Lxynolog/types/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;)Ljava/util/concurrent/CompletableFuture;
+	public static final fun beginAuthorizationFuture (Lxynolog/types/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;)Ljava/util/concurrent/CompletableFuture;
+	public static synthetic fun beginAuthorizationFuture$default (Lxynolog/types/BeginAuthorizationOptions;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
 	public static final fun codeChallenge (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun completeAuthorization (Ljava/lang/String;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun completeAuthorization$default (Ljava/lang/String;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
@@ -617,29 +525,6 @@ public final class xynolog/http/AuthorizationKt {
 	public static final fun completeAuthorizationFuture (Ljava/lang/String;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;)Ljava/util/concurrent/CompletableFuture;
 	public static final fun completeAuthorizationFuture (Ljava/lang/String;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;)Ljava/util/concurrent/CompletableFuture;
 	public static synthetic fun completeAuthorizationFuture$default (Ljava/lang/String;Lxynolog/storage/SessionStorage;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
-}
-
-public final class xynolog/http/BeginAuthorizationOptions {
-	public fun <init> (Lxynolog/types/HttpEndpoint;Ljava/lang/String;)V
-	public fun <init> (Lxynolog/types/HttpEndpoint;Ljava/lang/String;Ljava/lang/String;)V
-	public fun <init> (Lxynolog/types/HttpEndpoint;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun <init> (Lxynolog/types/HttpEndpoint;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Lxynolog/types/HttpEndpoint;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lxynolog/types/HttpEndpoint;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Lxynolog/types/HttpEndpoint;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lxynolog/http/BeginAuthorizationOptions;
-	public static synthetic fun copy$default (Lxynolog/http/BeginAuthorizationOptions;Lxynolog/types/HttpEndpoint;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/http/BeginAuthorizationOptions;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getExpectedDid ()Ljava/lang/String;
-	public final fun getExpectedName ()Ljava/lang/String;
-	public final fun getKbId ()Ljava/lang/String;
-	public final fun getRedirectUri ()Ljava/lang/String;
-	public final fun getTarget ()Lxynolog/types/HttpEndpoint;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class xynolog/http/Bookmarks {
@@ -660,23 +545,6 @@ public final class xynolog/http/ConnectKt {
 public abstract interface class xynolog/http/Credential {
 	public abstract fun getClientId ()Ljava/lang/String;
 	public abstract fun getIssuer ()Ljava/lang/String;
-}
-
-public final class xynolog/http/DeviceCode {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;D)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()D
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;D)Lxynolog/http/DeviceCode;
-	public static synthetic fun copy$default (Lxynolog/http/DeviceCode;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;DILjava/lang/Object;)Lxynolog/http/DeviceCode;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getExpiresIn ()D
-	public final fun getUserCode ()Ljava/lang/String;
-	public final fun getVerificationUri ()Ljava/lang/String;
-	public final fun getVerificationUriComplete ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/http/DiscoveryKt {
@@ -759,19 +627,6 @@ public final class xynolog/http/HttpTransport : xynolog/transport/GatewayOperati
 	public fun subscribeToResource (Lxynolog/identifiers/ResourceId;)Lxynolog/transport/ResourceHold;
 	public fun subscribeToResource-n-VWWI8 (Ljava/lang/String;)Lxynolog/transport/ResourceHold;
 	public fun trackReply (Ljava/lang/String;Ljava/util/Collection;)Lxynolog/transport/PendingReply;
-}
-
-public final class xynolog/http/IssuedTokens {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lxynolog/http/IssuedTokens;
-	public static synthetic fun copy$default (Lxynolog/http/IssuedTokens;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/http/IssuedTokens;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAccess ()Ljava/lang/String;
-	public final fun getRefresh ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/http/IssuerEndpoints {
@@ -908,11 +763,11 @@ public final class xynolog/http/ServiceToken {
 }
 
 public final class xynolog/http/SessionsKt {
-	public static final fun beginSignIn (Lxynolog/registry/XynologBrowser;Lxynolog/http/BeginAuthorizationOptions;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun beginSignIn$default (Lxynolog/registry/XynologBrowser;Lxynolog/http/BeginAuthorizationOptions;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun beginSignInFuture (Lxynolog/registry/XynologBrowser;Lxynolog/http/BeginAuthorizationOptions;)Ljava/util/concurrent/CompletableFuture;
-	public static final fun beginSignInFuture (Lxynolog/registry/XynologBrowser;Lxynolog/http/BeginAuthorizationOptions;Ljava/net/http/HttpClient;)Ljava/util/concurrent/CompletableFuture;
-	public static synthetic fun beginSignInFuture$default (Lxynolog/registry/XynologBrowser;Lxynolog/http/BeginAuthorizationOptions;Ljava/net/http/HttpClient;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public static final fun beginSignIn (Lxynolog/registry/XynologBrowser;Lxynolog/types/BeginAuthorizationOptions;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun beginSignIn$default (Lxynolog/registry/XynologBrowser;Lxynolog/types/BeginAuthorizationOptions;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun beginSignInFuture (Lxynolog/registry/XynologBrowser;Lxynolog/types/BeginAuthorizationOptions;)Ljava/util/concurrent/CompletableFuture;
+	public static final fun beginSignInFuture (Lxynolog/registry/XynologBrowser;Lxynolog/types/BeginAuthorizationOptions;Ljava/net/http/HttpClient;)Ljava/util/concurrent/CompletableFuture;
+	public static synthetic fun beginSignInFuture$default (Lxynolog/registry/XynologBrowser;Lxynolog/types/BeginAuthorizationOptions;Ljava/net/http/HttpClient;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
 	public static final fun completeSignIn (Lxynolog/registry/XynologBrowser;Ljava/lang/String;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun completeSignIn$default (Lxynolog/registry/XynologBrowser;Ljava/lang/String;Ljava/net/http/HttpClient;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static final fun completeSignInFuture (Lxynolog/registry/XynologBrowser;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
@@ -1710,19 +1565,6 @@ public final class xynolog/state/MatchStateUnit : xynolog/StateUnit {
 	public fun close ()V
 }
 
-public final class xynolog/state/PendingAnnotation {
-	public fun <init> (Lxynolog/types/AnnotationSelector;Lxynolog/types/Motivation;)V
-	public final fun component1 ()Lxynolog/types/AnnotationSelector;
-	public final fun component2 ()Lxynolog/types/Motivation;
-	public final fun copy (Lxynolog/types/AnnotationSelector;Lxynolog/types/Motivation;)Lxynolog/state/PendingAnnotation;
-	public static synthetic fun copy$default (Lxynolog/state/PendingAnnotation;Lxynolog/types/AnnotationSelector;Lxynolog/types/Motivation;ILjava/lang/Object;)Lxynolog/state/PendingAnnotation;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getMotivation ()Lxynolog/types/Motivation;
-	public final fun getSelector ()Lxynolog/types/AnnotationSelector;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class xynolog/state/SearchPipeline : xynolog/StateUnit {
 	public fun <init> (Lkotlin/jvm/functions/Function1;)V
 	public fun <init> (Lkotlin/jvm/functions/Function1;J)V
@@ -2334,19 +2176,6 @@ public final class xynolog/transport/Upload : java/lang/AutoCloseable {
 	public final fun awaitFuture ()Ljava/util/concurrent/CompletableFuture;
 	public fun close ()V
 	public final fun getProgress ()Lxynolog/transport/Events;
-}
-
-public final class xynolog/transport/UploadProgress {
-	public fun <init> (JJ)V
-	public final fun component1 ()J
-	public final fun component2 ()J
-	public final fun copy (JJ)Lxynolog/transport/UploadProgress;
-	public static synthetic fun copy$default (Lxynolog/transport/UploadProgress;JJILjava/lang/Object;)Lxynolog/transport/UploadProgress;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getBytesUploaded ()J
-	public final fun getTotalBytes ()J
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/transport/Watched : kotlinx/coroutines/flow/Flow {

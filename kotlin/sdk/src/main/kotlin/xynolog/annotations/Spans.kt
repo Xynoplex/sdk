@@ -1,66 +1,14 @@
 package xynolog.annotations
 
 import xynolog.types.MatchQuality
+import xynolog.types.TextSpan
 
 /*
- * A span of a text, and finding the one a model quoted. A model asked to mark
- * a text quotes it, and nothing it says is trusted: `reconcile` finds the
- * quoted words in the text and answers a span that is the text's own, or
- * nothing (protocol/specs/src/annotations/reconcile-cases.json).
+ * Finding the span of a text that a model quoted. A model asked to mark a
+ * text quotes it, and nothing it says is trusted: `reconcile` finds the quoted
+ * words in the text and answers a span that is the text's own, or nothing
+ * (protocol/specs/src/annotations/reconcile-cases.json).
  */
-
-/**
- * The words a model quoted from a text, and what it says stands beside them.
- * `prefix` and `suffix` are hints of which place is meant, where the text has
- * the words in more than one. Neither is kept: a span's context is the text's.
- */
-public data class QuotedText @JvmOverloads constructor(
-    public val exact: String,
-    public val prefix: String? = null,
-    public val suffix: String? = null,
-)
-
-/**
- * A span of a text: the code points from `start` up to but not including
- * `end`. `exact` is the words there, and `prefix` and `suffix` what the text
- * has just before and just after them.
- */
-public data class TextSpan @JvmOverloads constructor(
-    public val start: Long,
-    public val end: Long,
-    public val exact: String,
-    public val prefix: String? = null,
-    public val suffix: String? = null,
-)
-
-/** How a span was found. */
-public sealed interface AnchorMethod {
-    /** The value as the tables spell it. */
-    public val value: String
-
-    /** The text has the words in exactly one place. */
-    public data object UniqueMatch : AnchorMethod {
-        override val value: String get() = "unique-match"
-    }
-
-    /** The text has them in several, and what the model said stands around them chose this one. */
-    public data object ContextRecovered : AnchorMethod {
-        override val value: String get() = "context-recovered"
-    }
-
-    /** The text has them in several and nothing chose among them: this is the first, and may not be the one the model meant. */
-    public data object FirstOfMany : AnchorMethod {
-        override val value: String get() = "first-of-many"
-    }
-
-    /** The text does not have them character for character, and a looser search, `quality`, found them. */
-    public data class FuzzyMatch(public val quality: MatchQuality) : AnchorMethod {
-        override val value: String get() = "fuzzy-match"
-    }
-}
-
-/** A span `reconcile` found, which is the text's own, and how it was found. */
-public data class ReconciledSpan(public val span: TextSpan, public val anchorMethod: AnchorMethod)
 
 /** How many code points of the text a prefix or a suffix is. */
 private const val CONTEXT = 64
@@ -290,8 +238,8 @@ internal fun hinted(text: IntArray, found: List<Place>, prefix: String?, suffix:
     if (prefix == null && suffix == null) null else found.firstOrNull { fits(text, it, prefix, suffix) }
 
 /** A place as the span it is: its words and its context are the text's, never the model's spelling of them. */
-internal fun reconciled(text: IntArray, place: Place, anchorMethod: AnchorMethod): ReconciledSpan {
+internal fun own(text: IntArray, place: Place): TextSpan {
     val (start, end) = place
     val (prefix, suffix) = contextOf(text, place)
-    return ReconciledSpan(TextSpan(start.toLong(), end.toLong(), text.text(start, end), prefix, suffix), anchorMethod)
+    return TextSpan(start.toLong(), end.toLong(), text.text(start, end), prefix, suffix)
 }

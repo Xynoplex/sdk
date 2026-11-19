@@ -1,6 +1,7 @@
 package xynolog.annotations
 
 import xynolog.types.AnchoredText
+import xynolog.types.PdfCoordinate
 import xynolog.types.PdfTextItem
 import java.math.BigDecimal
 import kotlin.math.abs
@@ -14,9 +15,6 @@ import kotlin.math.abs
 
 /** Items whose `y` is within this many points of the first item of a line are on that line. */
 private const val SAME_LINE = 2.0
-
-/** A rectangle on a page: its bottom-left corner and its size, in PDF points. */
-internal data class Rectangle(val page: Long, val x: Double, val y: Double, val width: Double, val height: Double)
 
 /** A page's items as its lines, the top of the page first and each line from its left. */
 private fun linesOf(items: List<PdfTextItem>): List<List<PdfTextItem>> {
@@ -37,11 +35,11 @@ private fun edgesOf(item: PdfTextItem, start: Long, end: Long): Pair<Double, Dou
 }
 
 /** The rectangle that spans a line's items, as far as the span reaches into each. */
-private fun spanning(page: Long, line: List<PdfTextItem>, start: Long, end: Long): Rectangle {
+private fun spanning(page: Long, line: List<PdfTextItem>, start: Long, end: Long): PdfCoordinate {
     val edges = line.map { edgesOf(it, start, end) }
     val x = edges.minOf { it.first }
     val y = line.minOf { it.y }
-    return Rectangle(page, x, y, edges.maxOf { it.second } - x, line.maxOf { it.y + it.height } - y)
+    return PdfCoordinate(page, x, y, edges.maxOf { it.second } - x, line.maxOf { it.y + it.height } - y)
 }
 
 /**
@@ -50,7 +48,7 @@ private fun spanning(page: Long, line: List<PdfTextItem>, start: Long, end: Long
  * their first overlapped item has in the text. A span that no item overlaps
  * has neither, and an empty span overlaps none.
  */
-internal fun locate(anchored: AnchoredText, start: Long, end: Long): Pair<List<PdfTextItem>, List<Rectangle>> {
+internal fun locate(anchored: AnchoredText, start: Long, end: Long): Pair<List<PdfTextItem>, List<PdfCoordinate>> {
     // An empty span has no character for an item to hold, inside one as between two.
     if (start == end) return emptyList<PdfTextItem>() to emptyList()
     val overlapping = anchored.items.filter { it.start < end && it.end > start }
@@ -62,5 +60,5 @@ internal fun locate(anchored: AnchoredText, start: Long, end: Long): Pair<List<P
 private fun decimal(number: Double): String = BigDecimal(number.toString()).stripTrailingZeros().toPlainString()
 
 /** A rectangle as the value of a `FragmentSelector`: `page=P&viewrect=X,Y,W,H`. */
-internal fun fragmentOf(rectangle: Rectangle): String =
+internal fun fragmentOf(rectangle: PdfCoordinate): String =
     "page=${rectangle.page}&viewrect=${decimal(rectangle.x)},${decimal(rectangle.y)},${decimal(rectangle.width)},${decimal(rectangle.height)}"

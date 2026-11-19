@@ -19,6 +19,7 @@ import xynolog.types.HealthResponse
 import xynolog.types.MediaTokenResponse
 import xynolog.types.ProtectedResourceMetadata
 import xynolog.types.StatusResponse
+import xynolog.types.UploadProgress
 import xynolog.types.UserResponse
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Flow.Publisher
@@ -112,18 +113,18 @@ public data class PutBinaryRequest(
     }
 }
 
-/** How much of an upload has been sent. */
-public data class UploadProgress(public val bytesUploaded: Long, public val totalBytes: Long)
-
 /**
- * An upload under way: what it has sent, as it sends it, and the resource it
- * created. It began when it was made. Its progress is read once, and ends
- * when all of it has been sent; closing it gives up the upload, which then
- * reports nothing more.
+ * An upload under way: what it reports as it goes, and the resource it
+ * created. It began when it was made. Its reports are read once: `started`
+ * with its size before any bytes are sent, `progress` as they are sent, and
+ * `finished` with the resource made, once the knowledge base has answered.
+ * Its size is every byte sent for it: over HTTP, the whole request. An upload
+ * that fails throws to its awaiter, and its reports end without `finished`.
+ * Closing it gives up the upload, which then reports nothing more.
  */
 public class Upload internal constructor(
     private val sending: Deferred<CreateResourceResponse>,
-    /** How much has been sent, never less than it last said, ending when it has all gone. */
+    /** What it reports, the bytes sent never less than it last said, ending when it has ended. */
     public val progress: Events<UploadProgress>,
 ) : AutoCloseable {
     /** The resource the upload created. */

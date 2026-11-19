@@ -3,7 +3,6 @@ package xynolog.annotations
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -17,26 +16,18 @@ import xynolog.Spec
 import xynolog.identifiers.ResourceId
 import xynolog.sameJson
 import xynolog.types.AgentSoftware
+import xynolog.types.AnchorMethod
 import xynolog.types.AnnotationTarget
 import xynolog.types.MatchQuality
 import xynolog.types.Motivation
+import xynolog.types.QuotedText
+import xynolog.types.ReconciledSpan
+import xynolog.types.ReconciledSpanUniqueMatch
+import xynolog.types.wireJson
 import java.util.Random
 
-/** What `reconcile` gave, as the table writes it: a member for each thing the span has, and none for what it lacks. */
-private fun asTheTableWrites(found: ReconciledSpan?): JsonElement {
-    if (found == null) return JsonNull
-    val span = found.span
-    val written = mutableMapOf<String, JsonElement>(
-        "start" to JsonPrimitive(span.start),
-        "end" to JsonPrimitive(span.end),
-        "exact" to JsonPrimitive(span.exact),
-        "anchorMethod" to JsonPrimitive(found.anchorMethod.value),
-    )
-    span.prefix?.let { written["prefix"] = JsonPrimitive(it) }
-    span.suffix?.let { written["suffix"] = JsonPrimitive(it) }
-    (found.anchorMethod as? AnchorMethod.FuzzyMatch)?.let { written["matchQuality"] = JsonPrimitive(it.quality.value) }
-    return JsonObject(written)
-}
+/** What `reconcile` gave, as the table writes it: the span on the wire, or null. */
+private fun asTheTableWrites(found: ReconciledSpan?): JsonElement = found?.let { wireJson.encodeToJsonElement(ReconciledSpan.serializer(), it) } ?: JsonNull
 
 /** The edit distance, worked out in full. */
 private fun edits(one: IntArray, other: IntArray): Int {
@@ -101,7 +92,7 @@ class ReconcileCasesTest {
 
     @Test
     fun howASpanWasFoundIsOneOfTheWaysTheTableStatesAndNoOther() {
-        val ways = listOf(AnchorMethod.UniqueMatch, AnchorMethod.ContextRecovered, AnchorMethod.FirstOfMany, AnchorMethod.FuzzyMatch(MatchQuality.Fuzzy)).map { it.value }
+        val ways = AnchorMethod.entries.map { it.value }
         assertEquals(ways.sorted(), found.map { it.text("anchorMethod") }.toSet().sorted())
         assertEquals(MatchQuality.entries.map { it.value }.sorted(), found.mapNotNull { it["matchQuality"]?.jsonPrimitive?.content }.toSet().sorted())
     }
@@ -109,7 +100,7 @@ class ReconcileCasesTest {
     @TestFactory
     fun aReconciledSpanIsOneTheBuilderTakesAsItIs(): List<DynamicTest> = cases.filter { it["reconciled"] is JsonObject }.map { case ->
         DynamicTest.dynamicTest(case.text("why")) {
-            val span = checkNotNull(reconcile(case.text("text"), quoted(case))).span
+            val span = checkNotNull(reconcile(case.text("text"), quoted(case))).toTextSpan()
             val built = annotationOfSpan(case.text("text"), span, ResourceId("res-1"), Motivation.Highlighting, AgentSoftware(name = "ollama gemma3"))
             val quote = checkNotNull(textQuoteSelector(checkNotNull((built.target as AnnotationTarget).selector)))
             assertEquals(Triple(span.exact, span.prefix, span.suffix), Triple(quote.exact, quote.prefix, quote.suffix))
@@ -122,8 +113,7 @@ class ReconcileCasesTest {
         val separator = "\u001f"
         assertTrue(separator.single().isWhitespace())
         // So one is words to find, where a quote of white space alone is refused.
-        val found = checkNotNull(reconcile("a${separator}b", QuotedText(separator)))
-        assertEquals(Triple(1L, 2L, AnchorMethod.UniqueMatch), Triple(found.span.start, found.span.end, found.anchorMethod))
+        assertEquals(ReconciledSpanUniqueMatch(1, 2, separator, "a", "b"), reconcile("a${separator}b", QuotedText(separator)))
         assertNull(reconcile("a b", QuotedText(" ")))
         // And it is no run to collapse: the quote with a space where the text has one is not found by normalizing.
         assertNull(reconcile("one${separator}two three", QuotedText("one two three")))

@@ -11,7 +11,9 @@ import xynolog.signin.BROWSER_CLIENT_ID
 import xynolog.signin.SIGN_IN_SCOPE
 import xynolog.storage.SessionStorage
 import xynolog.telemetry.futureOf
+import xynolog.types.BeginAuthorizationOptions
 import xynolog.types.HttpEndpoint
+import xynolog.types.IssuedTokens
 import xynolog.types.wireJson
 import java.net.URI
 import java.net.URISyntaxException
@@ -51,18 +53,6 @@ public data class PendingAuthorization(
     public val expectedName: String? = null,
 )
 
-/** What a sign-in by a page redirect begins from. */
-public data class BeginAuthorizationOptions @JvmOverloads constructor(
-    public val target: HttpEndpoint,
-    /** Where the issuer sends the person back to. The issuer accepts only an address its registration of the client lists. */
-    public val redirectUri: String,
-    /** The registered knowledge base being signed in to again; null when it is none. */
-    public val kbId: String? = null,
-    /** What the person believed they clicked; null when they named nothing. */
-    public val expectedDid: String? = null,
-    public val expectedName: String? = null,
-)
-
 /** `size` random bytes, as base64url. */
 private fun randomUrlSafe(size: Int): String = base64Url.encodeToString(ByteArray(size).also(random::nextBytes))
 
@@ -71,9 +61,11 @@ private fun queryOf(pairs: List<Pair<String, String>>): String = pairs.joinToStr
 /**
  * Begin the authorization-code grant: find the issuer the target trusts,
  * remember the pending sign-in in `pending`, and give the address to send the
- * person to. The target and its issuer are asked with `http`. Throws
- * `SignInError` (`discovery`) for a target whose host is no host's name,
- * before anything is asked or remembered, and as finding the issuer does.
+ * person to. The issuer sends them back only to a `redirectUri` its
+ * registration of the client lists. The target and its issuer are asked with
+ * `http`. Throws `SignInError` (`discovery`) for a target whose host is no
+ * host's name, before anything is asked or remembered, and as finding the
+ * issuer does.
  */
 public suspend fun beginAuthorization(options: BeginAuthorizationOptions, pending: SessionStorage, http: HttpClient = ownHttp): String {
     val baseUrl = try {
