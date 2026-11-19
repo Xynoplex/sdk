@@ -137,10 +137,53 @@ let schema_of ~ids ~schemas (r : Decode.reference) =
   | Some s -> Ok s
   | None -> Error ("$ref " ^ r.target ^ " names no schema")
 
+(* A schema of [spec] as it means one: each schema within it that closes what
+   it composes read as the one object it means ([Normalize.closed_within]). *)
+let closed_in (spec : Spec.t) =
+  let schemas = Hashtbl.of_seq (List.to_seq spec.schemas) in
+  Normalize.closed_within spec.ids ~find:(schema_of ~ids:spec.ids ~schemas)
+
 (* What a client hands its callers that no wire message carries: each file of
    protocol/specs/src/client/types, and the records of the registry and of the
    state units' notices. *)
 let client_types = "client/types/"
+
+(* The client types each SDK writes by hand: SearchState and JobEvent, each
+   held to its schema by a census in every SDK, and the options the namespace
+   methods take, which wait on the namespace types that take them. *)
+let hand_written_client_types =
+  [
+    "SearchState";
+    "JobEvent";
+    "ClaimOptions";
+    "CreateFromTokenOptions";
+    "GatherResourceOptions";
+    "JobPollOptions";
+    "MatchSearchOptions";
+    "PutBinaryRequest";
+    "ResourceSearchFilters";
+  ]
+
+(* The client types every SDK generates, by name: each file of
+   protocol/specs/src/client/types but the hand-written ones, each of which
+   must still be one. *)
+let generated_client_types (spec : Spec.t) =
+  let names =
+    List.filter_map
+      (fun (key, _) ->
+        if String.starts_with ~prefix:client_types key then
+          Some (Filename.remove_extension (Filename.basename key))
+        else None)
+      spec.schemas
+  in
+  List.iter
+    (fun name ->
+      if not (List.mem name names) then
+        refuse "%s%s.json, which an SDK writes by hand, is gone" client_types
+          name)
+    hand_written_client_types;
+  List.sort String.compare
+    (List.filter (fun n -> not (List.mem n hand_written_client_types)) names)
 
 let records spec =
   match Table_records.all spec with

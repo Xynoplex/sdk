@@ -119,6 +119,7 @@ let rec adapter ~words_of name =
              Schema.empty with
              type_ = Some [ Object ];
              properties = Some properties;
+             additional_properties = Some (Schema.Boolean_schema false);
              required =
                Some
                  (List.filter_map
@@ -138,22 +139,20 @@ let rec adapter ~words_of name =
                  SDK models";
             ])
 
-(* The client types the Haskell SDK models, each by its name. A union's tag
-   is typed by the one of them whose words are its tags. *)
-let adapters ~shape =
-  let names =
-    [
-      "QuotedText";
-      "TextSpan";
-      "ReconciledSpan";
-      "AnchorMethod";
-      "MatchQuality";
-      "PdfCoordinate";
-      "IssuedTokens";
-      "DeviceCode";
-      "BeginAuthorizationOptions";
-    ]
-  in
+(* The client types the Haskell SDK models as their group states them: each
+   it generates but PendingAnnotation, which [pending_annotation] writes, and
+   UploadProgress and FrameRefusalReason, which [operation_reports] writes. *)
+let adapted spec =
+  List.filter
+    (fun n ->
+      not
+        (List.mem n
+           [ "PendingAnnotation"; "UploadProgress"; "FrameRefusalReason" ]))
+    (Definitions.generated_client_types spec)
+
+(* The client types [names] the Haskell SDK models. A union's tag is typed by
+   the one of them whose words are its tags. *)
+let adapters ~names ~shape =
   let words_of tags =
     match
       List.filter

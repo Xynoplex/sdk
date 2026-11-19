@@ -519,13 +519,6 @@ let rec named_in (s : D.t) =
         @ List.concat (List.filter_map Fun.id [ n.all_of; n.any_of; n.one_of ])
         )
 
-(* The client types (protocol/specs/src/client/types) the SDK generates. Of
-   the rest, the objects that state no additionalProperties wait on Protocol,
-   since the types read them as open, and the closed parameter types
-   (ClaimOptions and the six beside it) wait on the namespace types that take
-   them. *)
-let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
-
 (* Why a client that read a launcher's discovery document found no launcher
    (protocol/specs/src/client/discovery-absent.json): a word a reason, each
    reason's meaning in the docstring. *)
@@ -569,7 +562,7 @@ let text (spec : Spec.t) =
         List.sort compare
           (reach definitions.names
              (List.map (fun (_, name, _) -> name) (Definitions.records spec)
-             @ client_types));
+             @ Definitions.generated_client_types spec));
     }
 
 let files ~root:_ (spec : Spec.t) =

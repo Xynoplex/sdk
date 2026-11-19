@@ -86,13 +86,9 @@ let schema_of (spec : Spec.t) path =
           };
         ]
 
-(* The client types (protocol/specs/src/client/types) the SDK models. The
-   rest, the objects, wait on the model's reading of them. *)
-let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
-
 (* The schemas the models are made from: every root ([Roots]), the gateway's
    components and the discovery document's among them, the sign-in store's
-   entry, the client types above, and the records Protocol states in its
+   entry, the client types it generates ([Definitions.generated_client_types]), and the records Protocol states in its
    tables ([Table_records]);
    each with the file, or the place in a file, it is read from. *)
 let roots ~root (spec : Spec.t) =
@@ -105,9 +101,19 @@ let roots ~root (spec : Spec.t) =
     ((name, path, { Models.schema; json = titled spec.ids ~file records json })
       : _)
   in
+  let closed_in = Definitions.closed_in spec in
+  (* A schema that closes what it composes is read as the one object it means
+     ([Definitions.closed_in]), and validated as that object. *)
   let whole name path =
-    let* schema = schema_of spec path in
-    let* json = json ~root path in
+    let* stated = schema_of spec path in
+    let* schema =
+      Result.map_error
+        (fun message -> [ { Decode.file = path; pointer = ""; message } ])
+        (closed_in stated)
+    in
+    let* json =
+      if schema = stated then json ~root path else Ok (Schema.runtime schema)
+    in
     Ok (read ~file:path name path schema json)
   in
   let record (key, name, schema) =
@@ -135,7 +141,7 @@ let roots ~root (spec : Spec.t) =
     @ [ whole "SignIn" Sign_in.schema_file ]
     @ List.map
         (fun name -> whole name ("client/types/" ^ name ^ ".json"))
-        client_types
+        (Definitions.generated_client_types spec)
     @ List.map record records)
 
 let refused message =

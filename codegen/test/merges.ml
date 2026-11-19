@@ -236,6 +236,32 @@ let closed_cases () =
           {
             (closing []) with
             additional_properties = Some (Schema.Boolean_schema false);
+          }));
+  Alcotest.check written
+    "each branch of a union that closes what it composes, as its one object"
+    (Ok
+       (layer
+          {
+            Schema.empty with
+            one_of =
+              Some
+                [
+                  layer
+                    {
+                      Schema.empty with
+                      type_ = Some [ Object ];
+                      properties = Some [ ("a", text); ("b", text) ];
+                      additional_properties = Some (Schema.Boolean_schema false);
+                    };
+                  text;
+                ];
+          }))
+    (Normalize.closed_within ids
+       ~find:(find_referenced [ ("Members", members) ])
+       (layer
+          {
+            Schema.empty with
+            one_of = Some [ layer (closing [ object_ [ ("b", text) ] ]); text ];
           }))
 
 let () =

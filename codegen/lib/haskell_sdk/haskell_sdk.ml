@@ -31,7 +31,9 @@ let banner from_ = Banner.lines ~from_ __FILE__
 (* The client types the SDK models, as their group states them. *)
 let adapters (spec : Spec.t) =
   let* model = Client_types.Model.derive spec in
-  Client_types.Haskell.adapters ~shape:(Client_types.Model.shape model)
+  Client_types.Haskell.adapters
+    ~names:(Client_types.Haskell.adapted spec)
+    ~shape:(Client_types.Model.shape model)
 
 (* The package's manifest: its template with the model modules listed, at
    the version the committed manifest states, which scripts/sdk_version.py

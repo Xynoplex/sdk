@@ -983,6 +983,25 @@ type BeckonSparkleEvent struct {
 	AnnotationId AnnotationId `json:"annotationId"`
 }
 
+// BeginAuthorizationOptions What starting an authorization-code grant is
+// told: the knowledge base to sign in to, where the issuer sends the person
+// back, and, re-authenticating, which registered knowledge base it is and
+// what the person believed they chose.
+type BeginAuthorizationOptions struct {
+	// ExpectedDid The knowledge base's DID the person believed they chose:
+	// verified after, never assumed.
+	ExpectedDid *string `json:"expectedDid,omitempty"`
+	// ExpectedName The knowledge base's name the person believed they chose:
+	// verified after, never assumed.
+	ExpectedName *string `json:"expectedName,omitempty"`
+	// KbId The registered knowledge base being re-authenticated, rather than a
+	// new address connected to.
+	KbId *string `json:"kbId,omitempty"`
+	// RedirectUri Where the issuer sends the person back to.
+	RedirectUri string       `json:"redirectUri"`
+	Target      HttpEndpoint `json:"target"`
+}
+
 // BindBodyOperation One edit to a linking annotation's body list: add or
 // remove a body item, or replace an existing one.
 type BindBodyOperation struct {
@@ -1958,6 +1977,20 @@ type CreateResourceResponse struct {
 type (
 	CursorsPath = string
 )
+
+// DeviceCode What a device-authorization grant (RFC 8628) shows the person
+// signing in: the code they enter, and where.
+type DeviceCode struct {
+	// ExpiresIn How many seconds the code stays good for.
+	ExpiresIn int `json:"expiresIn"`
+	// UserCode The code the person enters at the issuer.
+	UserCode string `json:"userCode"`
+	// VerificationUri Where the person enters it.
+	VerificationUri string `json:"verificationUri"`
+	// VerificationUriComplete Where the person goes to sign in with the code
+	// already entered, when the issuer gives one.
+	VerificationUriComplete *string `json:"verificationUriComplete,omitempty"`
+}
 
 type DirEntry struct {
 	// Mtime Last modified time (ISO 8601)
@@ -3706,6 +3739,15 @@ func (v InferenceLimitsResultResponse) MarshalJSON() ([]byte, error) {
 	type written InferenceLimitsResultResponse
 	v.Limits = listOf(v.Limits)
 	return json.Marshal(written(v))
+}
+
+// IssuedTokens The tokens an issuer issued at the end of a sign-in.
+type IssuedTokens struct {
+	// Access The access token: short-lived, sent as a Bearer token.
+	Access string `json:"access"`
+	// Refresh The refresh token: what renews the access token without another
+	// sign-in.
+	Refresh string `json:"refresh"`
 }
 
 // JanusGraphConfig A graph kept in a JanusGraph server, asked in Gremlin. No
@@ -6578,6 +6620,22 @@ func (e PdfClass) Valid() bool {
 	return false
 }
 
+// PdfCoordinate A rectangle on a page of a PDF, in PDF points, from the
+// page's bottom-left corner with y increasing upward: what an RFC 3778
+// fragment selector names.
+type PdfCoordinate struct {
+	// Height The rectangle's height.
+	Height float64 `json:"height"`
+	// Page The page the rectangle is on.
+	Page int `json:"page"`
+	// Width The rectangle's width.
+	Width float64 `json:"width"`
+	// X The rectangle's x.
+	X float64 `json:"x"`
+	// Y The rectangle's y.
+	Y float64 `json:"y"`
+}
+
 // PdfTextItem One positioned text run. Coordinates are PDF points with the
 // origin at the bottom-left of the page, Y increasing upward; the flip to
 // canvas pixels happens in the browser.
@@ -6594,6 +6652,13 @@ type PdfTextItem struct {
 	Width float64 `json:"width"`
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
+}
+
+// PendingAnnotation The annotation a mark state unit is composing, from the
+// selection a request asked for, until it is submitted or cancelled.
+type PendingAnnotation struct {
+	Motivation Motivation         `json:"motivation"`
+	Selector   AnnotationSelector `json:"selector"`
 }
 
 // PermissionDenied A request was refused for lack of permission.
@@ -6743,6 +6808,207 @@ const (
 func (e QdrantVectorsConfigType) Valid() bool {
 	switch e {
 	case QdrantVectorsConfigTypeQdrant:
+		return true
+	}
+	return false
+}
+
+// QuotedText Words of a text, as a selection quotes them: the words
+// themselves, and maybe the text just before and just after them, which tell
+// apart the places they occur.
+type QuotedText struct {
+	// Exact The words quoted.
+	Exact string `json:"exact"`
+	// Prefix The text just before them.
+	Prefix *string `json:"prefix,omitempty"`
+	// Suffix The text just after them.
+	Suffix *string `json:"suffix,omitempty"`
+}
+
+// ReconciledSpan Where a quoted selection was found in a text, and how it was
+// found, told apart by `anchorMethod`, one of AnchorMethod's words: a fuzzy
+// match also names its search, `matchQuality`, and no other states one.
+type ReconciledSpan struct {
+	union[reconciledSpanMember]
+}
+
+// reconciledSpanMember is a member of ReconciledSpan:
+// ReconciledSpanUniqueMatch, ReconciledSpanContextRecovered,
+// ReconciledSpanFirstOfMany, ReconciledSpanFuzzyMatch.
+type reconciledSpanMember interface {
+	memberOfReconciledSpan()
+}
+
+// Discriminator is the `anchorMethod` this value states.
+func (u ReconciledSpan) Discriminator() (string, error) { return u.stated("anchorMethod") }
+
+// ValueByDiscriminator is the member this value's `anchorMethod` names.
+func (u ReconciledSpan) ValueByDiscriminator() (any, error) {
+	tag, err := u.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch tag {
+	case "unique-match":
+		return as[ReconciledSpanUniqueMatch](u.union)
+	case "context-recovered":
+		return as[ReconciledSpanContextRecovered](u.union)
+	case "first-of-many":
+		return as[ReconciledSpanFirstOfMany](u.union)
+	case "fuzzy-match":
+		return as[ReconciledSpanFuzzyMatch](u.union)
+	}
+	return nil, unnamedMember("ReconciledSpan", "anchorMethod", tag)
+}
+
+// ReconciledSpanContextRecovered The text has the words in more than one
+// place, and the span is the first that fits every hint the quote gave.
+type ReconciledSpanContextRecovered struct {
+	AnchorMethod ReconciledSpanContextRecoveredAnchorMethod `json:"anchorMethod"`
+	// End The offset just past the span, in Unicode code points from the text's
+	// start.
+	End int `json:"end"`
+	// Exact The words quoted.
+	Exact string `json:"exact"`
+	// Prefix The text just before them.
+	Prefix *string `json:"prefix,omitempty"`
+	// Start The offset the span starts at, in Unicode code points from the
+	// text's start.
+	Start int `json:"start"`
+	// Suffix The text just after them.
+	Suffix *string `json:"suffix,omitempty"`
+}
+
+func (ReconciledSpanContextRecovered) memberOfReconciledSpan() {}
+func (ReconciledSpanContextRecovered) told() (string, string) {
+	return "anchorMethod", "context-recovered"
+}
+
+type ReconciledSpanContextRecoveredAnchorMethod string
+
+// The values of ReconciledSpanContextRecoveredAnchorMethod.
+const (
+	ReconciledSpanContextRecoveredAnchorMethodContextRecovered ReconciledSpanContextRecoveredAnchorMethod = "context-recovered"
+)
+
+// Valid is whether e is one of ReconciledSpanContextRecoveredAnchorMethod's
+// values.
+func (e ReconciledSpanContextRecoveredAnchorMethod) Valid() bool {
+	switch e {
+	case ReconciledSpanContextRecoveredAnchorMethodContextRecovered:
+		return true
+	}
+	return false
+}
+
+// ReconciledSpanFirstOfMany The text has the words in more than one place,
+// and the span is the first, since the quote gave no hint or none fits.
+type ReconciledSpanFirstOfMany struct {
+	AnchorMethod ReconciledSpanFirstOfManyAnchorMethod `json:"anchorMethod"`
+	// End The offset just past the span, in Unicode code points from the text's
+	// start.
+	End int `json:"end"`
+	// Exact The words quoted.
+	Exact string `json:"exact"`
+	// Prefix The text just before them.
+	Prefix *string `json:"prefix,omitempty"`
+	// Start The offset the span starts at, in Unicode code points from the
+	// text's start.
+	Start int `json:"start"`
+	// Suffix The text just after them.
+	Suffix *string `json:"suffix,omitempty"`
+}
+
+func (ReconciledSpanFirstOfMany) memberOfReconciledSpan() {}
+func (ReconciledSpanFirstOfMany) told() (string, string)  { return "anchorMethod", "first-of-many" }
+
+type ReconciledSpanFirstOfManyAnchorMethod string
+
+// The values of ReconciledSpanFirstOfManyAnchorMethod.
+const (
+	ReconciledSpanFirstOfManyAnchorMethodFirstOfMany ReconciledSpanFirstOfManyAnchorMethod = "first-of-many"
+)
+
+// Valid is whether e is one of ReconciledSpanFirstOfManyAnchorMethod's
+// values.
+func (e ReconciledSpanFirstOfManyAnchorMethod) Valid() bool {
+	switch e {
+	case ReconciledSpanFirstOfManyAnchorMethodFirstOfMany:
+		return true
+	}
+	return false
+}
+
+// ReconciledSpanFuzzyMatch The text has the words nowhere, and a looser
+// search found the span: `matchQuality` names which.
+type ReconciledSpanFuzzyMatch struct {
+	AnchorMethod ReconciledSpanFuzzyMatchAnchorMethod `json:"anchorMethod"`
+	// End The offset just past the span, in Unicode code points from the text's
+	// start.
+	End int `json:"end"`
+	// Exact The words quoted.
+	Exact        string       `json:"exact"`
+	MatchQuality MatchQuality `json:"matchQuality"`
+	// Prefix The text just before them.
+	Prefix *string `json:"prefix,omitempty"`
+	// Start The offset the span starts at, in Unicode code points from the
+	// text's start.
+	Start int `json:"start"`
+	// Suffix The text just after them.
+	Suffix *string `json:"suffix,omitempty"`
+}
+
+func (ReconciledSpanFuzzyMatch) memberOfReconciledSpan() {}
+func (ReconciledSpanFuzzyMatch) told() (string, string)  { return "anchorMethod", "fuzzy-match" }
+
+type ReconciledSpanFuzzyMatchAnchorMethod string
+
+// The values of ReconciledSpanFuzzyMatchAnchorMethod.
+const (
+	ReconciledSpanFuzzyMatchAnchorMethodFuzzyMatch ReconciledSpanFuzzyMatchAnchorMethod = "fuzzy-match"
+)
+
+// Valid is whether e is one of ReconciledSpanFuzzyMatchAnchorMethod's values.
+func (e ReconciledSpanFuzzyMatchAnchorMethod) Valid() bool {
+	switch e {
+	case ReconciledSpanFuzzyMatchAnchorMethodFuzzyMatch:
+		return true
+	}
+	return false
+}
+
+// ReconciledSpanUniqueMatch The text has the words in exactly one place.
+type ReconciledSpanUniqueMatch struct {
+	AnchorMethod ReconciledSpanUniqueMatchAnchorMethod `json:"anchorMethod"`
+	// End The offset just past the span, in Unicode code points from the text's
+	// start.
+	End int `json:"end"`
+	// Exact The words quoted.
+	Exact string `json:"exact"`
+	// Prefix The text just before them.
+	Prefix *string `json:"prefix,omitempty"`
+	// Start The offset the span starts at, in Unicode code points from the
+	// text's start.
+	Start int `json:"start"`
+	// Suffix The text just after them.
+	Suffix *string `json:"suffix,omitempty"`
+}
+
+func (ReconciledSpanUniqueMatch) memberOfReconciledSpan() {}
+func (ReconciledSpanUniqueMatch) told() (string, string)  { return "anchorMethod", "unique-match" }
+
+type ReconciledSpanUniqueMatchAnchorMethod string
+
+// The values of ReconciledSpanUniqueMatchAnchorMethod.
+const (
+	ReconciledSpanUniqueMatchAnchorMethodUniqueMatch ReconciledSpanUniqueMatchAnchorMethod = "unique-match"
+)
+
+// Valid is whether e is one of ReconciledSpanUniqueMatchAnchorMethod's
+// values.
+func (e ReconciledSpanUniqueMatchAnchorMethod) Valid() bool {
+	switch e {
+	case ReconciledSpanUniqueMatchAnchorMethodUniqueMatch:
 		return true
 	}
 	return false
@@ -8218,6 +8484,24 @@ func (e TextQuoteSelectorType) Valid() bool {
 	return false
 }
 
+// TextSpan A span of a text: the code points from `start` up to but not
+// including `end`, the words they are, and maybe the text just before and
+// just after them.
+type TextSpan struct {
+	// End The offset just past the span, in Unicode code points from the text's
+	// start.
+	End int `json:"end"`
+	// Exact The words quoted.
+	Exact string `json:"exact"`
+	// Prefix The text just before them.
+	Prefix *string `json:"prefix,omitempty"`
+	// Start The offset the span starts at, in Unicode code points from the
+	// text's start.
+	Start int `json:"start"`
+	// Suffix The text just after them.
+	Suffix *string `json:"suffix,omitempty"`
+}
+
 type TextualBody struct {
 	// Format MIME type (defaults to text/plain)
 	Format *string `json:"format,omitempty"`
@@ -8312,6 +8596,117 @@ func (v UpdateAnnotationBodyRequest) MarshalJSON() ([]byte, error) {
 	type written UpdateAnnotationBodyRequest
 	v.Operations = listOf(v.Operations)
 	return json.Marshal(written(v))
+}
+
+// UploadProgress What an upload reports as it goes, told apart by `phase`:
+// its size first, then the bytes sent so far, then the resource made.
+type UploadProgress struct {
+	union[uploadProgressMember]
+}
+
+// uploadProgressMember is a member of UploadProgress: UploadProgressStarted,
+// UploadProgressProgress, UploadProgressFinished.
+type uploadProgressMember interface {
+	memberOfUploadProgress()
+}
+
+// Discriminator is the `phase` this value states.
+func (u UploadProgress) Discriminator() (string, error) { return u.stated("phase") }
+
+// ValueByDiscriminator is the member this value's `phase` names.
+func (u UploadProgress) ValueByDiscriminator() (any, error) {
+	tag, err := u.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch tag {
+	case "started":
+		return as[UploadProgressStarted](u.union)
+	case "progress":
+		return as[UploadProgressProgress](u.union)
+	case "finished":
+		return as[UploadProgressFinished](u.union)
+	}
+	return nil, unnamedMember("UploadProgress", "phase", tag)
+}
+
+// UploadProgressFinished The upload ended, and the resource is made.
+type UploadProgressFinished struct {
+	Phase      UploadProgressFinishedPhase `json:"phase"`
+	ResourceId ResourceId                  `json:"resourceId"`
+}
+
+func (UploadProgressFinished) memberOfUploadProgress() {}
+func (UploadProgressFinished) told() (string, string)  { return "phase", "finished" }
+
+type UploadProgressFinishedPhase string
+
+// The values of UploadProgressFinishedPhase.
+const (
+	UploadProgressFinishedPhaseFinished UploadProgressFinishedPhase = "finished"
+)
+
+// Valid is whether e is one of UploadProgressFinishedPhase's values.
+func (e UploadProgressFinishedPhase) Valid() bool {
+	switch e {
+	case UploadProgressFinishedPhaseFinished:
+		return true
+	}
+	return false
+}
+
+// UploadProgressProgress Bytes were sent.
+type UploadProgressProgress struct {
+	// BytesUploaded How many bytes are sent so far.
+	BytesUploaded int                         `json:"bytesUploaded"`
+	Phase         UploadProgressProgressPhase `json:"phase"`
+	// TotalBytes How many bytes the upload is.
+	TotalBytes int `json:"totalBytes"`
+}
+
+func (UploadProgressProgress) memberOfUploadProgress() {}
+func (UploadProgressProgress) told() (string, string)  { return "phase", "progress" }
+
+type UploadProgressProgressPhase string
+
+// The values of UploadProgressProgressPhase.
+const (
+	UploadProgressProgressPhaseProgress UploadProgressProgressPhase = "progress"
+)
+
+// Valid is whether e is one of UploadProgressProgressPhase's values.
+func (e UploadProgressProgressPhase) Valid() bool {
+	switch e {
+	case UploadProgressProgressPhaseProgress:
+		return true
+	}
+	return false
+}
+
+// UploadProgressStarted The upload began.
+type UploadProgressStarted struct {
+	Phase UploadProgressStartedPhase `json:"phase"`
+	// TotalBytes How many bytes the upload is.
+	TotalBytes int `json:"totalBytes"`
+}
+
+func (UploadProgressStarted) memberOfUploadProgress() {}
+func (UploadProgressStarted) told() (string, string)  { return "phase", "started" }
+
+type UploadProgressStartedPhase string
+
+// The values of UploadProgressStartedPhase.
+const (
+	UploadProgressStartedPhaseStarted UploadProgressStartedPhase = "started"
+)
+
+// Valid is whether e is one of UploadProgressStartedPhase's values.
+func (e UploadProgressStartedPhase) Valid() bool {
+	switch e {
+	case UploadProgressStartedPhaseStarted:
+		return true
+	}
+	return false
 }
 
 // UserResponse The authenticated principal, as this knowledge base names it.

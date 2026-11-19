@@ -322,3 +322,14 @@ let closed ids ~find (s : Schema.schema) =
       Error "unevaluatedProperties beside additionalProperties"
   | merged ->
       Ok { merged with additional_properties = s.unevaluated_properties }
+
+(* [s], each schema within it that closes what it composes read as the one
+   object it means ([closed]). *)
+let rec closed_within ids ~find = function
+  | Schema.Boolean_schema _ as b -> Ok b
+  | Schema.Schema l -> (
+      let* l = Schema.traverse (closed_within ids ~find) l in
+      match l with
+      | { unevaluated_properties = Some _; _ } ->
+          Result.map (fun s -> Schema.Schema s) (closed ids ~find l)
+      | l -> Ok (Schema.Schema l))

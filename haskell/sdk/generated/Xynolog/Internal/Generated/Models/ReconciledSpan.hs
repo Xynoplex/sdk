@@ -18,11 +18,10 @@ data ReconciledSpan = ReconciledSpan
     reconciledSpanMatchQuality :: Maybe MatchQuality,
     reconciledSpanPrefix :: Maybe Text,
     reconciledSpanStart :: Integer,
-    reconciledSpanSuffix :: Maybe Text,
-    reconciledSpanAdditionalProperties :: KM.KeyMap Value
+    reconciledSpanSuffix :: Maybe Text
   }
   deriving (Eq, Show)
 
-instance FromJSON ReconciledSpan where parseJSON = checked "ReconciledSpan" $ withObject "ReconciledSpan" (\fields -> ReconciledSpan <$> (fields .: "anchorMethod") <*> (fields .: "end") <*> (fields .: "exact") <*> optional fields "matchQuality" <*> optional fields "prefix" <*> (fields .: "start") <*> optional fields "suffix" <*> traverse parseJSON (withoutFields ["anchorMethod", "end", "exact", "matchQuality", "prefix", "start", "suffix"] fields))
+instance FromJSON ReconciledSpan where parseJSON = checked "ReconciledSpan" $ withObject "ReconciledSpan" (\fields -> ReconciledSpan <$> (fields .: "anchorMethod") <*> (fields .: "end") <*> (fields .: "exact") <*> optional fields "matchQuality" <*> optional fields "prefix" <*> (fields .: "start") <*> optional fields "suffix")
 
-instance ToJSON ReconciledSpan where toJSON value = Object (KM.fromList (concat [[("anchorMethod", toJSON (reconciledSpanAnchorMethod value))], [("end", toJSON (reconciledSpanEnd value))], [("exact", toJSON (reconciledSpanExact value))], optionalPair "matchQuality" (reconciledSpanMatchQuality value), optionalPair "prefix" (reconciledSpanPrefix value), [("start", toJSON (reconciledSpanStart value))], optionalPair "suffix" (reconciledSpanSuffix value)]) <> fmap toJSON (withoutFields ["anchorMethod", "end", "exact", "matchQuality", "prefix", "start", "suffix"] (reconciledSpanAdditionalProperties value)))
+instance ToJSON ReconciledSpan where toJSON value = Object (KM.fromList (concat [[("anchorMethod", toJSON (reconciledSpanAnchorMethod value))], [("end", toJSON (reconciledSpanEnd value))], [("exact", toJSON (reconciledSpanExact value))], optionalPair "matchQuality" (reconciledSpanMatchQuality value), optionalPair "prefix" (reconciledSpanPrefix value), [("start", toJSON (reconciledSpanStart value))], optionalPair "suffix" (reconciledSpanSuffix value)]))

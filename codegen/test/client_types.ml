@@ -87,6 +87,19 @@ let kit_records =
 
 (* The client types the Haskell SDK adapts, ReconciledSpan [reconciled]
    and AnchorMethod the words [methods]. *)
+let adapted_names =
+  [
+    "QuotedText";
+    "TextSpan";
+    "ReconciledSpan";
+    "AnchorMethod";
+    "MatchQuality";
+    "PdfCoordinate";
+    "IssuedTokens";
+    "DeviceCode";
+    "BeginAuthorizationOptions";
+  ]
+
 let adapted reconciled ~methods =
   shapes
     [
@@ -160,7 +173,7 @@ let cases =
                   ])));
     case "an adapter states an integer as one" (fun () ->
         match
-          W.adapters
+          W.adapters ~names:adapted_names
             ~shape:
               (adapted
                  (M.Fields [ member "start" (Scalar Integer) ])
@@ -168,7 +181,16 @@ let cases =
         with
         | Ok adapters -> (
             match List.assoc_opt "TextSpan" adapters with
-            | Some (Schema.Schema { properties = Some properties; _ }) -> (
+            | Some
+                (Schema.Schema
+                   {
+                     properties = Some properties;
+                     additional_properties = closed;
+                     _;
+                   }) -> (
+                Alcotest.(check bool)
+                  "it states no member but its own" true
+                  (closed = Some (Schema.Boolean_schema false));
                 match List.assoc_opt "start" properties with
                 | Some (Schema.Schema { type_ = Some [ Integer ]; _ }) -> ()
                 | _ -> Alcotest.fail "start is not an integer")
@@ -177,7 +199,7 @@ let cases =
     case "an adapter states a union as one record of every branch's members"
       (fun () ->
         match
-          W.adapters
+          W.adapters ~names:adapted_names
             ~shape:
               (adapted
                  (reconciled_union
@@ -208,7 +230,7 @@ let cases =
     case "a union whose branches hold a member differently is refused"
       (fun () ->
         refused
-          (W.adapters
+          (W.adapters ~names:adapted_names
              ~shape:
                (adapted
                   (M.Union
@@ -223,7 +245,7 @@ let cases =
                   ~methods:[ "fuzzy-match"; "unique-match" ])));
     case "a union whose tags are no type's words is refused" (fun () ->
         refused
-          (W.adapters
+          (W.adapters ~names:adapted_names
              ~shape:
                (adapted
                   (reconciled_union

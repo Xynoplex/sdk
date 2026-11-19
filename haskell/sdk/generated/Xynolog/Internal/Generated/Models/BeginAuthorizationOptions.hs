@@ -15,11 +15,10 @@ data BeginAuthorizationOptions = BeginAuthorizationOptions
     beginAuthorizationOptionsExpectedName :: Maybe Text,
     beginAuthorizationOptionsKbId :: Maybe Text,
     beginAuthorizationOptionsRedirectUri :: Text,
-    beginAuthorizationOptionsTarget :: HttpEndpoint,
-    beginAuthorizationOptionsAdditionalProperties :: KM.KeyMap Value
+    beginAuthorizationOptionsTarget :: HttpEndpoint
   }
   deriving (Eq, Show)
 
-instance FromJSON BeginAuthorizationOptions where parseJSON = checked "BeginAuthorizationOptions" $ withObject "BeginAuthorizationOptions" (\fields -> BeginAuthorizationOptions <$> optional fields "expectedDid" <*> optional fields "expectedName" <*> optional fields "kbId" <*> (fields .: "redirectUri") <*> (fields .: "target") <*> traverse parseJSON (withoutFields ["expectedDid", "expectedName", "kbId", "redirectUri", "target"] fields))
+instance FromJSON BeginAuthorizationOptions where parseJSON = checked "BeginAuthorizationOptions" $ withObject "BeginAuthorizationOptions" (\fields -> BeginAuthorizationOptions <$> optional fields "expectedDid" <*> optional fields "expectedName" <*> optional fields "kbId" <*> (fields .: "redirectUri") <*> (fields .: "target"))
 
-instance ToJSON BeginAuthorizationOptions where toJSON value = Object (KM.fromList (concat [optionalPair "expectedDid" (beginAuthorizationOptionsExpectedDid value), optionalPair "expectedName" (beginAuthorizationOptionsExpectedName value), optionalPair "kbId" (beginAuthorizationOptionsKbId value), [("redirectUri", toJSON (beginAuthorizationOptionsRedirectUri value))], [("target", toJSON (beginAuthorizationOptionsTarget value))]]) <> fmap toJSON (withoutFields ["expectedDid", "expectedName", "kbId", "redirectUri", "target"] (beginAuthorizationOptionsAdditionalProperties value)))
+instance ToJSON BeginAuthorizationOptions where toJSON value = Object (KM.fromList (concat [optionalPair "expectedDid" (beginAuthorizationOptionsExpectedDid value), optionalPair "expectedName" (beginAuthorizationOptionsExpectedName value), optionalPair "kbId" (beginAuthorizationOptionsKbId value), [("redirectUri", toJSON (beginAuthorizationOptionsRedirectUri value))], [("target", toJSON (beginAuthorizationOptionsTarget value))]]))

@@ -12,11 +12,10 @@ import Xynolog.Internal.Codec
 data QuotedText = QuotedText
   { quotedTextExact :: Text,
     quotedTextPrefix :: Maybe Text,
-    quotedTextSuffix :: Maybe Text,
-    quotedTextAdditionalProperties :: KM.KeyMap Value
+    quotedTextSuffix :: Maybe Text
   }
   deriving (Eq, Show)
 
-instance FromJSON QuotedText where parseJSON = checked "QuotedText" $ withObject "QuotedText" (\fields -> QuotedText <$> (fields .: "exact") <*> optional fields "prefix" <*> optional fields "suffix" <*> traverse parseJSON (withoutFields ["exact", "prefix", "suffix"] fields))
+instance FromJSON QuotedText where parseJSON = checked "QuotedText" $ withObject "QuotedText" (\fields -> QuotedText <$> (fields .: "exact") <*> optional fields "prefix" <*> optional fields "suffix")
 
-instance ToJSON QuotedText where toJSON value = Object (KM.fromList (concat [[("exact", toJSON (quotedTextExact value))], optionalPair "prefix" (quotedTextPrefix value), optionalPair "suffix" (quotedTextSuffix value)]) <> fmap toJSON (withoutFields ["exact", "prefix", "suffix"] (quotedTextAdditionalProperties value)))
+instance ToJSON QuotedText where toJSON value = Object (KM.fromList (concat [[("exact", toJSON (quotedTextExact value))], optionalPair "prefix" (quotedTextPrefix value), optionalPair "suffix" (quotedTextSuffix value)]))

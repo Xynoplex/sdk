@@ -30,13 +30,6 @@ let beside =
     "NewKnowledgeBase";
   ]
 
-(* The client types (protocol/specs/src/client/types) the SDK generates. Of
-   the rest, the objects that state no additionalProperties wait on Protocol,
-   since the types read them as open, AnchorMethod is held with
-   ReconciledSpan's shape, and the closed parameter types (ClaimOptions and
-   the six beside it) wait on the namespace types that take them. *)
-let client_types = [ "FrameRefusalReason"; "MatchQuality" ]
-
 (* A body that is not JSON: an upload is a multipart form, whose fields
    [xynolog::transport::PutBinaryRequest] carries. *)
 let passed_through = [ "ResourceUpload" ]
@@ -70,7 +63,8 @@ let generation (spec : Spec.t) (bundle : Definitions.bundle) :
         @ List.filter (fun b -> not (List.mem b passed_through)) bundle.bodies
         @ beside
         @ List.map fst (Roots.services spec)
-        @ identifiers @ client_types
+        @ identifiers
+        @ Definitions.generated_client_types spec
         @ List.map (fun (_, name, _) -> name) (Definitions.records spec));
     identifiers;
     accessors;

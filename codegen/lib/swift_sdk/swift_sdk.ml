@@ -1,6 +1,6 @@
 (* The swift-sdk group: the Swift SDK's models of every component schema, the
-   records Protocol states in its tables ([Table_records]), the client types
-   below and the sign-in store's entry, with the tables as typed values and
+   records Protocol states in its tables ([Table_records]), the client types it
+   generates and the sign-in store's entry, with the tables as typed values and
    why no launcher was found
    (swift/sdk/Sources/Xynolog/Generated/Models.swift), and its test bridge
    (swift/sdk/Tests/XynologTests/Generated/TestBridge.swift). Models declares
@@ -17,10 +17,6 @@ let models_path = "swift/sdk/Sources/Xynolog/Generated/Models.swift"
 let bridge_path = "swift/sdk/Tests/XynologTests/Generated/TestBridge.swift"
 let sign_in_file = "sign-in-store/SignIn.json"
 let banner = Banner.lines ~from_:"protocol/specs/src" __FILE__
-
-(* The client types (protocol/specs/src/client/types) the SDK generates. The
-   rest, the objects, wait on the model's reading of them. *)
-let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
 
 (* Why a client that read a launcher's discovery document found no launcher
    (protocol/specs/src/client/discovery-absent.json): a case a reason, its
@@ -82,7 +78,9 @@ let swift_files (spec : Spec.t) =
       {
         D.names =
           List.sort String.compare
-            (("SignIn" :: records) @ client_types @ bundle.definitions.names);
+            (("SignIn" :: records)
+            @ Definitions.generated_client_types spec
+            @ bundle.definitions.names);
         schema =
           (fun n ->
             if n = "SignIn" then sign_in else bundle.definitions.schema n);

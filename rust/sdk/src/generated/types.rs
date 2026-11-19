@@ -211,6 +211,35 @@ impl AgentSoftwareType {
     }
 }
 
+/// How a quoted selection was found in a text. Which word a span is found by is reconcile's rule (specs/src/annotations/reconcile-cases.json).
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum AnchorMethod {
+    #[serde(rename = "unique-match")]
+    UniqueMatch,
+    #[serde(rename = "context-recovered")]
+    ContextRecovered,
+    #[serde(rename = "first-of-many")]
+    FirstOfMany,
+    #[serde(rename = "fuzzy-match")]
+    FuzzyMatch,
+}
+
+impl AnchorMethod {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            AnchorMethod::UniqueMatch => "unique-match",
+            AnchorMethod::ContextRecovered => "context-recovered",
+            AnchorMethod::FirstOfMany => "first-of-many",
+            AnchorMethod::FuzzyMatch => "fuzzy-match",
+        }
+    }
+}
+
+schema!(AnchorMethod);
+
 /// Text paired with the geometry that indexes it — the minimum needed to turn a range of the text, two offsets counted in Unicode code points, into a selection, or a rectangle into a quote. Whole-resource: a producer iterates page by page, but every consumer wants one map.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct AnchoredText {
@@ -1092,6 +1121,43 @@ pub struct BeckonSparkleEvent {
 }
 
 schema!(BeckonSparkleEvent);
+
+/// What starting an authorization-code grant is told: the knowledge base to sign in to, where the issuer sends the person back, and, re-authenticating, which registered knowledge base it is and what the person believed they chose.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BeginAuthorizationOptions {
+    pub target: HttpEndpoint,
+    /// Where the issuer sends the person back to.
+    #[serde(rename = "redirectUri")]
+    pub redirect_uri: String,
+    /// The registered knowledge base being re-authenticated, rather than a new address connected to.
+    #[serde(rename = "kbId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kb_id: Option<String>,
+    /// The knowledge base's DID the person believed they chose: verified after, never assumed.
+    #[serde(rename = "expectedDid")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_did: Option<String>,
+    /// The knowledge base's name the person believed they chose: verified after, never assumed.
+    #[serde(rename = "expectedName")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_name: Option<String>,
+}
+
+impl BeginAuthorizationOptions {
+    /// The `BeginAuthorizationOptions` that states these and nothing else.
+    pub fn new(target: HttpEndpoint, redirect_uri: impl Into<String>) -> Self {
+        Self {
+            target,
+            redirect_uri: redirect_uri.into(),
+            kb_id: None,
+            expected_did: None,
+            expected_name: None,
+        }
+    }
+}
+
+schema!(BeginAuthorizationOptions);
 
 /// One edit to a linking annotation's body list: add or remove a body item, or replace an existing one.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2352,6 +2418,43 @@ schema!(CreateResourceResponse);
 
 /// The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
 pub type CursorsPath = String;
+
+/// What a device-authorization grant (RFC 8628) shows the person signing in: the code they enter, and where.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DeviceCode {
+    /// The code the person enters at the issuer.
+    #[serde(rename = "userCode")]
+    pub user_code: String,
+    /// Where the person enters it.
+    #[serde(rename = "verificationUri")]
+    pub verification_uri: String,
+    /// Where the person goes to sign in with the code already entered, when the issuer gives one.
+    #[serde(rename = "verificationUriComplete")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub verification_uri_complete: Option<String>,
+    /// How many seconds the code stays good for.
+    #[serde(rename = "expiresIn")]
+    pub expires_in: u64,
+}
+
+impl DeviceCode {
+    /// The `DeviceCode` that states these and nothing else.
+    pub fn new(
+        user_code: impl Into<String>,
+        verification_uri: impl Into<String>,
+        expires_in: u64,
+    ) -> Self {
+        Self {
+            user_code: user_code.into(),
+            verification_uri: verification_uri.into(),
+            verification_uri_complete: None,
+            expires_in,
+        }
+    }
+}
+
+schema!(DeviceCode);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -4439,6 +4542,18 @@ schema!(InferenceLimitsResult);
 pub struct InferenceLimitsResultResponse {
     pub limits: Vec<EngineLimits>,
 }
+
+/// The tokens an issuer issued at the end of a sign-in.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct IssuedTokens {
+    /// The access token: short-lived, sent as a Bearer token.
+    pub access: String,
+    /// The refresh token: what renews the access token without another sign-in.
+    pub refresh: String,
+}
+
+schema!(IssuedTokens);
 
 /// A graph kept in a JanusGraph server, asked in Gremlin. No service has been run against one.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8304,6 +8419,24 @@ impl PdfClass {
 
 schema!(PdfClass);
 
+/// A rectangle on a page of a PDF, in PDF points, from the page's bottom-left corner with y increasing upward: what an RFC 3778 fragment selector names.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PdfCoordinate {
+    /// The page the rectangle is on.
+    pub page: i64,
+    /// The rectangle's x.
+    pub x: f64,
+    /// The rectangle's y.
+    pub y: f64,
+    /// The rectangle's width.
+    pub width: f64,
+    /// The rectangle's height.
+    pub height: f64,
+}
+
+schema!(PdfCoordinate);
+
 /// One positioned text run. Coordinates are PDF points with the origin at the bottom-left of the page, Y increasing upward; the flip to canvas pixels happens in the browser.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct PdfTextItem {
@@ -8320,6 +8453,16 @@ pub struct PdfTextItem {
 }
 
 schema!(PdfTextItem);
+
+/// The annotation a mark state unit is composing, from the selection a request asked for, until it is submitted or cancelled.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PendingAnnotation {
+    pub selector: AnnotationSelector,
+    pub motivation: Motivation,
+}
+
+schema!(PendingAnnotation);
 
 /// A request was refused for lack of permission.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8466,6 +8609,280 @@ impl QdrantVectorsConfigType {
     pub const fn as_str(&self) -> &'static str {
         match self {
             QdrantVectorsConfigType::Qdrant => "qdrant",
+        }
+    }
+}
+
+/// Words of a text, as a selection quotes them: the words themselves, and maybe the text just before and just after them, which tell apart the places they occur.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct QuotedText {
+    /// The words quoted.
+    pub exact: String,
+    /// The text just before them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// The text just after them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
+}
+
+impl QuotedText {
+    /// The `QuotedText` that states these and nothing else.
+    pub fn new(exact: impl Into<String>) -> Self {
+        Self {
+            exact: exact.into(),
+            prefix: None,
+            suffix: None,
+        }
+    }
+}
+
+schema!(QuotedText);
+
+/// Where a quoted selection was found in a text, and how it was found, told apart by `anchorMethod`, one of AnchorMethod's words: a fuzzy match also names its search, `matchQuality`, and no other states one.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum ReconciledSpan {
+    UniqueMatch(ReconciledSpanUniqueMatch),
+    ContextRecovered(ReconciledSpanContextRecovered),
+    FirstOfMany(ReconciledSpanFirstOfMany),
+    FuzzyMatch(ReconciledSpanFuzzyMatch),
+}
+
+impl<'de> serde::Deserialize<'de> for ReconciledSpan {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value
+            .get("anchorMethod")
+            .and_then(serde_json::Value::as_str)
+        {
+            Some("unique-match") => serde_json::from_value(value).map(ReconciledSpan::UniqueMatch),
+            Some("context-recovered") => {
+                serde_json::from_value(value).map(ReconciledSpan::ContextRecovered)
+            }
+            Some("first-of-many") => serde_json::from_value(value).map(ReconciledSpan::FirstOfMany),
+            Some("fuzzy-match") => serde_json::from_value(value).map(ReconciledSpan::FuzzyMatch),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a ReconciledSpan states a `anchorMethod` that is one of `unique-match`, `context-recovered`, `first-of-many`, `fuzzy-match`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+schema!(ReconciledSpan);
+
+/// The text has the words in more than one place, and the span is the first that fits every hint the quote gave.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReconciledSpanContextRecovered {
+    /// The offset the span starts at, in Unicode code points from the text's start.
+    pub start: u64,
+    /// The offset just past the span, in Unicode code points from the text's start.
+    pub end: u64,
+    /// The words quoted.
+    pub exact: String,
+    /// The text just before them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// The text just after them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
+    #[serde(rename = "anchorMethod")]
+    pub anchor_method: ReconciledSpanContextRecoveredAnchorMethod,
+}
+
+impl ReconciledSpanContextRecovered {
+    /// The `ReconciledSpanContextRecovered` that states these and nothing else.
+    pub fn new(start: u64, end: u64, exact: impl Into<String>) -> Self {
+        Self {
+            start,
+            end,
+            exact: exact.into(),
+            prefix: None,
+            suffix: None,
+            anchor_method: ReconciledSpanContextRecoveredAnchorMethod::ContextRecovered,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ReconciledSpanContextRecoveredAnchorMethod {
+    #[serde(rename = "context-recovered")]
+    ContextRecovered,
+}
+
+impl ReconciledSpanContextRecoveredAnchorMethod {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ReconciledSpanContextRecoveredAnchorMethod::ContextRecovered => "context-recovered",
+        }
+    }
+}
+
+/// The text has the words in more than one place, and the span is the first, since the quote gave no hint or none fits.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReconciledSpanFirstOfMany {
+    /// The offset the span starts at, in Unicode code points from the text's start.
+    pub start: u64,
+    /// The offset just past the span, in Unicode code points from the text's start.
+    pub end: u64,
+    /// The words quoted.
+    pub exact: String,
+    /// The text just before them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// The text just after them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
+    #[serde(rename = "anchorMethod")]
+    pub anchor_method: ReconciledSpanFirstOfManyAnchorMethod,
+}
+
+impl ReconciledSpanFirstOfMany {
+    /// The `ReconciledSpanFirstOfMany` that states these and nothing else.
+    pub fn new(start: u64, end: u64, exact: impl Into<String>) -> Self {
+        Self {
+            start,
+            end,
+            exact: exact.into(),
+            prefix: None,
+            suffix: None,
+            anchor_method: ReconciledSpanFirstOfManyAnchorMethod::FirstOfMany,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ReconciledSpanFirstOfManyAnchorMethod {
+    #[serde(rename = "first-of-many")]
+    FirstOfMany,
+}
+
+impl ReconciledSpanFirstOfManyAnchorMethod {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ReconciledSpanFirstOfManyAnchorMethod::FirstOfMany => "first-of-many",
+        }
+    }
+}
+
+/// The text has the words nowhere, and a looser search found the span: `matchQuality` names which.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReconciledSpanFuzzyMatch {
+    /// The offset the span starts at, in Unicode code points from the text's start.
+    pub start: u64,
+    /// The offset just past the span, in Unicode code points from the text's start.
+    pub end: u64,
+    /// The words quoted.
+    pub exact: String,
+    /// The text just before them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// The text just after them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
+    #[serde(rename = "anchorMethod")]
+    pub anchor_method: ReconciledSpanFuzzyMatchAnchorMethod,
+    #[serde(rename = "matchQuality")]
+    pub match_quality: MatchQuality,
+}
+
+impl ReconciledSpanFuzzyMatch {
+    /// The `ReconciledSpanFuzzyMatch` that states these and nothing else.
+    pub fn new(
+        start: u64,
+        end: u64,
+        exact: impl Into<String>,
+        match_quality: MatchQuality,
+    ) -> Self {
+        Self {
+            start,
+            end,
+            exact: exact.into(),
+            prefix: None,
+            suffix: None,
+            anchor_method: ReconciledSpanFuzzyMatchAnchorMethod::FuzzyMatch,
+            match_quality,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ReconciledSpanFuzzyMatchAnchorMethod {
+    #[serde(rename = "fuzzy-match")]
+    FuzzyMatch,
+}
+
+impl ReconciledSpanFuzzyMatchAnchorMethod {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ReconciledSpanFuzzyMatchAnchorMethod::FuzzyMatch => "fuzzy-match",
+        }
+    }
+}
+
+/// The text has the words in exactly one place.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReconciledSpanUniqueMatch {
+    /// The offset the span starts at, in Unicode code points from the text's start.
+    pub start: u64,
+    /// The offset just past the span, in Unicode code points from the text's start.
+    pub end: u64,
+    /// The words quoted.
+    pub exact: String,
+    /// The text just before them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// The text just after them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
+    #[serde(rename = "anchorMethod")]
+    pub anchor_method: ReconciledSpanUniqueMatchAnchorMethod,
+}
+
+impl ReconciledSpanUniqueMatch {
+    /// The `ReconciledSpanUniqueMatch` that states these and nothing else.
+    pub fn new(start: u64, end: u64, exact: impl Into<String>) -> Self {
+        Self {
+            start,
+            end,
+            exact: exact.into(),
+            prefix: None,
+            suffix: None,
+            anchor_method: ReconciledSpanUniqueMatchAnchorMethod::UniqueMatch,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ReconciledSpanUniqueMatchAnchorMethod {
+    #[serde(rename = "unique-match")]
+    UniqueMatch,
+}
+
+impl ReconciledSpanUniqueMatchAnchorMethod {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ReconciledSpanUniqueMatchAnchorMethod::UniqueMatch => "unique-match",
         }
     }
 }
@@ -10466,6 +10883,39 @@ impl TextQuoteSelectorType {
     }
 }
 
+/// A span of a text: the code points from `start` up to but not including `end`, the words they are, and maybe the text just before and just after them.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TextSpan {
+    /// The offset the span starts at, in Unicode code points from the text's start.
+    pub start: u64,
+    /// The offset just past the span, in Unicode code points from the text's start.
+    pub end: u64,
+    /// The words quoted.
+    pub exact: String,
+    /// The text just before them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// The text just after them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
+}
+
+impl TextSpan {
+    /// The `TextSpan` that states these and nothing else.
+    pub fn new(start: u64, end: u64, exact: impl Into<String>) -> Self {
+        Self {
+            start,
+            end,
+            exact: exact.into(),
+            prefix: None,
+            suffix: None,
+        }
+    }
+}
+
+schema!(TextSpan);
+
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct TextualBody {
     pub r#type: TextualBodyType,
@@ -10534,6 +10984,148 @@ pub struct UnitCursor {
 }
 
 schema!(UnitCursor);
+
+/// What an upload reports as it goes, told apart by `phase`: its size first, then the bytes sent so far, then the resource made.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum UploadProgress {
+    Started(UploadProgressStarted),
+    Progress(UploadProgressProgress),
+    Finished(UploadProgressFinished),
+}
+
+impl<'de> serde::Deserialize<'de> for UploadProgress {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("phase").and_then(serde_json::Value::as_str) {
+            Some("started") => serde_json::from_value(value).map(UploadProgress::Started),
+            Some("progress") => serde_json::from_value(value).map(UploadProgress::Progress),
+            Some("finished") => serde_json::from_value(value).map(UploadProgress::Finished),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a UploadProgress states a `phase` that is one of `started`, `progress`, `finished`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+schema!(UploadProgress);
+
+/// The upload ended, and the resource is made.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct UploadProgressFinished {
+    pub phase: UploadProgressFinishedPhase,
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+}
+
+impl UploadProgressFinished {
+    /// The `UploadProgressFinished` that states these and nothing else.
+    pub fn new(resource_id: ResourceId) -> Self {
+        Self {
+            phase: UploadProgressFinishedPhase::Finished,
+            resource_id,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum UploadProgressFinishedPhase {
+    #[serde(rename = "finished")]
+    Finished,
+}
+
+impl UploadProgressFinishedPhase {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            UploadProgressFinishedPhase::Finished => "finished",
+        }
+    }
+}
+
+/// Bytes were sent.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct UploadProgressProgress {
+    pub phase: UploadProgressProgressPhase,
+    /// How many bytes are sent so far.
+    #[serde(rename = "bytesUploaded")]
+    pub bytes_uploaded: u64,
+    /// How many bytes the upload is.
+    #[serde(rename = "totalBytes")]
+    pub total_bytes: u64,
+}
+
+impl UploadProgressProgress {
+    /// The `UploadProgressProgress` that states these and nothing else.
+    pub fn new(bytes_uploaded: u64, total_bytes: u64) -> Self {
+        Self {
+            phase: UploadProgressProgressPhase::Progress,
+            bytes_uploaded,
+            total_bytes,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum UploadProgressProgressPhase {
+    #[serde(rename = "progress")]
+    Progress,
+}
+
+impl UploadProgressProgressPhase {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            UploadProgressProgressPhase::Progress => "progress",
+        }
+    }
+}
+
+/// The upload began.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct UploadProgressStarted {
+    pub phase: UploadProgressStartedPhase,
+    /// How many bytes the upload is.
+    #[serde(rename = "totalBytes")]
+    pub total_bytes: u64,
+}
+
+impl UploadProgressStarted {
+    /// The `UploadProgressStarted` that states these and nothing else.
+    pub fn new(total_bytes: u64) -> Self {
+        Self {
+            phase: UploadProgressStartedPhase::Started,
+            total_bytes,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum UploadProgressStartedPhase {
+    #[serde(rename = "started")]
+    Started,
+}
+
+impl UploadProgressStartedPhase {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            UploadProgressStartedPhase::Started => "started",
+        }
+    }
+}
 
 /// The identity of whoever did something, a person or a software agent alike: a DID (`did:web:<domain>:users:<subject>`, `did:web:<domain>:agents:<subject>`), with no whitespace in it. Never a name, an address, or a row in a table. What follows `did:` is not constrained further: a subject is the issuer's, percent-encoded, and that encoding leaves some punctuation as it is.
 #[derive(
