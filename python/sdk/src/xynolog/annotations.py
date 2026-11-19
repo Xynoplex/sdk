@@ -23,7 +23,7 @@ from pydantic import JsonValue
 
 from xynolog._annotation_id import annotation_id_for
 from xynolog._pdf_locate import fragment_of, locate
-from xynolog._spans import AnchorMethod, MatchQuality, QuotedText, ReconciledSpan, TextSpan, reconcile
+from xynolog._spans import QuotedText, ReconciledSpan, TextSpan, reconcile
 from xynolog._white_space import collapsed
 from xynolog.error_codes import SpanRefusal
 from xynolog.errors import SpanRefusedError
@@ -32,6 +32,7 @@ from xynolog.model import stated, written
 from xynolog.types import (
     Agent,
     AnchoredText,
+    AnchorMethod,
     Annotation,
     AnnotationBodies,
     AnnotationBody,
@@ -39,6 +40,7 @@ from xynolog.types import (
     AnnotationTarget,
     BodyPurpose,
     FragmentSelector,
+    MatchQuality,
     Motivation,
     Selector,
     SpecificResource,

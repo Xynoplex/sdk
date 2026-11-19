@@ -235,16 +235,15 @@ let cases =
           (W.service_proof ~grant_type:"client_credentials"
              [ member "grant_type" (Word [ "password" ]) ]));
     case "the kit's records are typed member for member" (fun () ->
-        match Testing.derive (table ~records:kit_records) with
-        | Ok t ->
+        match Testing.Haskell.file (table ~records:kit_records) with
+        | Ok file ->
             Alcotest.(check bool)
               "the spec holds its clock" true
-              (contains "    livenessClock :: RetryOptions"
-                 (Testing.haskell t).Output.text)
+              (contains "    livenessClock :: RetryOptions" file.Output.text)
         | Error _ -> Alcotest.fail "refused");
     case "a record member Haskell gives no type is refused" (fun () ->
         refused
-          (Testing.derive
+          (Testing.Haskell.file
              (table
                 ~records:
                   (List.map
@@ -256,7 +255,7 @@ let cases =
     case "a member Haskell types that the table no longer has is refused"
       (fun () ->
         refused
-          (Testing.derive
+          (Testing.Haskell.file
              (table
                 ~records:
                   (List.map
@@ -268,9 +267,20 @@ let cases =
                          }
                        else r)
                      kit_records))));
+    case "a record member TypeScript gives no type is refused" (fun () ->
+        refused
+          (Testing.Typescript.file
+             (table
+                ~records:
+                  (List.map
+                     (fun (r : T.records_item) ->
+                       if r.name = "LivenessScenario" then
+                         { r with members = r.members @ [ "deadline" ] }
+                       else r)
+                     kit_records))));
     case "a fault holding other than one delay is refused" (fun () ->
         refused
-          (Testing.derive
+          (Testing.Table.derive
              {
                (table ~records:kit_records) with
                fault_actions = [ fault "Burst" "burst" [ "count" ] ];
@@ -278,7 +288,7 @@ let cases =
     case "a delay whose maximum is below its minimum is refused" (fun () ->
         let t = table ~records:kit_records in
         refused
-          (Testing.derive
+          (Testing.Table.derive
              { t with delay_ms = { t.delay_ms with minimum = 5; maximum = 4 } }));
   ]
 

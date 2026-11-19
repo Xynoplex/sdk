@@ -452,16 +452,12 @@ private func openedBeforeActivation(
   }
 }
 
-@Test func discoveryMatchesTheSharedReasonsAndRejectsAnInvalidMember() async throws {
-  let table = try Spec.read("client/discovery-absent.json").object
-  let expected = try required(table, "reasons").array.map { try required($0.object, "reason").text }
-  #expect(Set(DiscoveryAbsentReason.allCases.map(\.rawValue)) == Set(expected))
-
+@Test func discoveryTellsWhyNoLauncherWasFoundAndRejectsAnInvalidMember() async throws {
   func absentReason(_ state: DiscoveryState) -> DiscoveryAbsentReason? {
     if case .absent(let absent) = state { return absent.reason }
     return nil
   }
-  #expect(absentReason(parseDiscoveryDocument("{")) == .notJSON)
+  #expect(absentReason(parseDiscoveryDocument("{")) == .notJson)
   #expect(absentReason(parseDiscoveryDocument(#"{"version":2,"kbs":[]}"#)) == .unsupportedVersion)
   #expect(absentReason(parseDiscoveryDocument(#"{"version":1,"kbs":[{}]}"#)) == .invalid)
   guard case .managed(let empty) = parseDiscoveryDocument(#"{"version":1,"kbs":[]}"#) else {

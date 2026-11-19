@@ -68,7 +68,7 @@ func launcher(t *testing.T) (*served, discovery.DiscoveryTransport) {
 	return document, discovery.HttpDiscovery(server.URL+"/discovery/kbs.json", server.Client())
 }
 
-func absentFor(read discovery.DiscoveryRead) (discovery.DiscoveryAbsentReason, bool) {
+func absentFor(read discovery.DiscoveryRead) (api.DiscoveryAbsentReason, bool) {
 	absent, isAbsent := read.(discovery.Absent)
 	return absent.Reason, isAbsent
 }
@@ -102,7 +102,7 @@ func TestADocumentThatHasNotChangedIsNotReadAgain(t *testing.T) {
 func TestWhatIsNotADocumentAtTheAddressIsAbsent(t *testing.T) {
 	document, reader := launcher(t)
 	ctx := context.Background()
-	absentAs := func(expected discovery.DiscoveryAbsentReason, why string) {
+	absentAs := func(expected api.DiscoveryAbsentReason, why string) {
 		t.Helper()
 		if got, isAbsent := absentFor(reader.Read(ctx)); !isAbsent || got != expected {
 			t.Errorf("%s: not absent as %s", why, expected)
@@ -111,20 +111,20 @@ func TestWhatIsNotADocumentAtTheAddressIsAbsent(t *testing.T) {
 
 	// A server that answers every path with its own page.
 	document.serve(http.StatusOK, "text/html", "<!doctype html>", `"page"`)
-	absentAs(discovery.NotFound, "a page")
+	absentAs(api.DiscoveryAbsentReasonNotFound, "a page")
 	// Its tag was not kept: it is not believed the next time.
-	absentAs(discovery.NotFound, "the page again")
+	absentAs(api.DiscoveryAbsentReasonNotFound, "the page again")
 
 	document.serve(http.StatusNotFound, "text/plain", "", "")
-	absentAs(discovery.NotFound, "nothing there")
+	absentAs(api.DiscoveryAbsentReasonNotFound, "nothing there")
 
 	document.serve(http.StatusOK, "application/json", "{", `"bad"`)
-	absentAs(discovery.NotJSON, "a document that is not JSON")
+	absentAs(api.DiscoveryAbsentReasonNotJson, "a document that is not JSON")
 	document.serve(http.StatusOK, "application/json", "{", `"bad"`)
-	absentAs(discovery.NotJSON, "the document that is not JSON again")
+	absentAs(api.DiscoveryAbsentReasonNotJson, "the document that is not JSON again")
 
 	nowhere := discovery.HttpDiscovery("http://127.0.0.1:9/discovery/kbs.json", &http.Client{})
-	if got, isAbsent := absentFor(nowhere.Read(ctx)); !isAbsent || got != discovery.Unreadable {
+	if got, isAbsent := absentFor(nowhere.Read(ctx)); !isAbsent || got != api.DiscoveryAbsentReasonUnreadable {
 		t.Errorf("a launcher that is not there read as %#v", got)
 	}
 }
@@ -149,7 +149,7 @@ func TestALaunchersDocumentThatIsNeverServedIsUnreadableAtTheDeadline(t *testing
 		if took := time.Since(started); took < deadline || took >= deadline+2*time.Second {
 			t.Errorf("took %s", took)
 		}
-		if want := (discovery.Absent{Reason: discovery.Unreadable, Diagnostic: "the document was not served within 30s"}); read != want {
+		if want := (discovery.Absent{Reason: api.DiscoveryAbsentReasonUnreadable, Diagnostic: "the document was not served within 30s"}); read != want {
 			t.Errorf("read %#v, not %#v", read, want)
 		}
 	})

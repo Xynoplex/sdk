@@ -36,65 +36,23 @@ import (
 
 // ── L1, L2 ──────────────────────────────────────────────────────────────
 
-// LivenessScenario is what one fresh run of a composition exposes to the
-// axioms.
-type LivenessScenario struct {
-	// Outputs is one channel per output, closed when the output has said
-	// something, a value or a failure (L1).
-	Outputs []<-chan struct{}
-	// Settlements is one channel per awaited path, closed when it has
-	// settled, either way (L2).
-	Settlements []<-chan struct{}
-}
-
-// LivenessSpec is a composition, and the schedules it is run under.
-type LivenessSpec struct {
-	// Setup builds a fresh composition over the transport it is given, whose
-	// stream names what a client's does (bus.BridgedChannels). It is called
-	// once per schedule, inside the case's bubble; what it opens it
-	// closes by t.Cleanup, which runs before the transport is closed. What it
-	// starts must end once the transport has closed: a goroutine still
-	// blocked then fails the test as the bubble's deadlock.
-	Setup func(t *testing.T, transport *FaultyTransport) LivenessScenario
-	// Timeout is the time the composition gives a bus request. The bound is
-	// derived from it: (Timeout × (1 + RetryBudget) + the schedule's delays)
-	// × 4.
-	Timeout time.Duration
-	// RetryBudget is how often the composition may send a logical request
-	// again.
-	RetryBudget int
-	// Schedules is the fault schedules to run, one case each (FaultSchedules
-	// draws them).
-	Schedules [][]FaultAction
-	// MakeResponse is what the gateway answers a request no queued response
-	// answers, as FaultyConfig.MakeResponse is.
-	MakeResponse MakeResponse
-}
-
 // FaultActions draws a wire behaviour from random, each as likely as the
-// others. A delay is at most 5ms.
+// others. A delay is of delayMsMinimum to delayMsMaximum milliseconds.
 func FaultActions(random *rand.Rand) FaultAction {
-	switch random.IntN(5) {
-	case 0:
-		return Deliver{}
-	case 1:
-		return DropReply{}
-	case 2:
-		return Delay{For: time.Duration(random.IntN(6)) * time.Millisecond}
-	case 3:
-		return DuplicateReply{}
-	default:
-		return RejectEmit{}
+	action := faults[random.IntN(len(faults))]
+	if _, ok := action.(Delay); ok {
+		return Delay{For: time.Duration(delayMsMinimum+random.IntN(delayMsMaximum-delayMsMinimum+1)) * time.Millisecond}
 	}
+	return action
 }
 
-// FaultSchedules is n fault schedules of one to eight behaviours each, the
-// same every run.
+// FaultSchedules is n fault schedules of scheduleLengthMinimum to
+// scheduleLengthMaximum behaviours each, the same every run.
 func FaultSchedules(n int) [][]FaultAction {
 	random := rand.New(rand.NewPCG(5, 7))
 	schedules := make([][]FaultAction, n)
 	for i := range schedules {
-		schedule := make([]FaultAction, 1+random.IntN(8))
+		schedule := make([]FaultAction, scheduleLengthMinimum+random.IntN(scheduleLengthMaximum-scheduleLengthMinimum+1))
 		for j := range schedule {
 			schedule[j] = FaultActions(random)
 		}
@@ -107,17 +65,9 @@ func FaultSchedules(n int) [][]FaultAction {
 func described(schedule []FaultAction) string {
 	names := make([]string, len(schedule))
 	for i, action := range schedule {
-		switch action := action.(type) {
-		case Deliver:
-			names[i] = "deliver"
-		case DropReply:
-			names[i] = "drop-reply"
-		case Delay:
-			names[i] = fmt.Sprintf("delay(%d)", action.For.Milliseconds())
-		case DuplicateReply:
-			names[i] = "duplicate-reply"
-		case RejectEmit:
-			names[i] = "reject-emit"
+		names[i] = action.Kind()
+		if delay, ok := action.(Delay); ok {
+			names[i] = fmt.Sprintf("%s(%d)", delay.Kind(), delay.For.Milliseconds())
 		}
 	}
 	return strings.Join(names, ",")
@@ -140,10 +90,14 @@ func closedNow(channels []<-chan struct{}) []bool {
 // gives the first violation: the axiom broken, how, and under which schedule.
 // It is nil when every schedule kept them.
 func AssertLivenessAxioms(t *testing.T, spec LivenessSpec) error {
-	if len(spec.Schedules) == 0 {
-		return errors.New("the spec states no schedule: a run under none checks nothing")
+	schedules := spec.Schedules
+	if len(schedules) == 0 {
+		schedules = FaultSchedules(spec.Cases)
 	}
-	for _, schedule := range spec.Schedules {
+	if len(schedules) == 0 {
+		return errors.New("the spec states no schedule and draws none: a run under none checks nothing")
+	}
+	for _, schedule := range schedules {
 		var violation error
 		synctest.Test(t, func(t *testing.T) {
 			transport := NewFaultyTransport(FaultyConfig{Schedule: schedule, MakeResponse: spec.MakeResponse, Channels: bus.BridgedChannels})
@@ -155,7 +109,7 @@ func AssertLivenessAxioms(t *testing.T, spec LivenessSpec) error {
 					delays += delay.For
 				}
 			}
-			bound := (spec.Timeout*time.Duration(1+spec.RetryBudget) + delays) * 4
+			bound := (spec.Timeout*time.Duration(1+spec.RetryBudget) + delays) * slack
 			time.Sleep(bound)
 			violation = livenessViolation(spec.RetryBudget, bound, schedule, scenario, transport.RequestLog())
 		})
@@ -228,28 +182,16 @@ type DeliverySubject interface {
 	Delivered() []string
 }
 
-// DeliveryOp is one step of an interleaving: DeliveryOpWrite or
-// DeliveryOpTransition.
-type DeliveryOp string
-
-const (
-	// DeliveryOpWrite writes an event.
-	DeliveryOpWrite DeliveryOp = "write"
-	// DeliveryOpTransition makes a transition.
-	DeliveryOpTransition DeliveryOp = "transition"
-)
-
 // DeliveryOps is n interleavings of writes and transitions, of one to longest
 // steps each, the same every run. Each has at least one write: a sequence
 // that writes nothing checks nothing.
 func DeliveryOps(n, longest int) [][]DeliveryOp {
 	random := rand.New(rand.NewPCG(5, 7))
-	steps := []DeliveryOp{DeliveryOpWrite, DeliveryOpTransition}
 	interleavings := make([][]DeliveryOp, n)
 	for i := range interleavings {
 		ops := make([]DeliveryOp, 1+random.IntN(longest))
 		for j := range ops {
-			ops[j] = steps[random.IntN(len(steps))]
+			ops[j] = deliveryOps[random.IntN(len(deliveryOps))]
 		}
 		if !slices.Contains(ops, DeliveryOpWrite) {
 			ops = append(ops, DeliveryOpWrite)

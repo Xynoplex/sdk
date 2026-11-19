@@ -2,24 +2,22 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
+import type {
+  MarkStateUnit,
+  PendingAnnotation,
+  XynologSession,
+} from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
-import type { components, JobId, ResourceId, Selector } from '@xynolog/core';
+import type { components, JobId, ResourceId } from '@xynolog/core';
 import { getTextPositionSelector, getTargetSelector } from '@xynolog/core';
 import { HighlightEntry } from './HighlightEntry';
 import { DelegateSection } from './DelegateSection';
 import { PanelHeader } from './PanelHeader';
 
 import type { Annotation } from '@xynolog/core';
-type Motivation = components['schemas']['Motivation'];
 type JobProgress = components['schemas']['JobProgress'];
 
 // Unified pending annotation type
-interface PendingAnnotation {
-  selector: Selector | Selector[];
-  motivation: Motivation;
-}
-
 interface HighlightPanelProps {
   /** Session carrying the client and event bus; null renders inert. */
   session: XynologSession | null;

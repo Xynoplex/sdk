@@ -326,20 +326,9 @@ let reconcile row =
     let field name value =
       Option.to_list (Option.map (fun value -> (name, text value)) value)
     in
-    let method_ =
-      match result.anchor_method with
-      | A.Unique_match -> "unique-match"
-      | Context_recovered -> "context-recovered"
-      | First_of_many -> "first-of-many"
-      | Fuzzy_match -> "fuzzy-match"
-    in
+    let method_ = Enums.Anchor_method.to_string result.anchor_method in
     let quality =
-      Option.map
-        (function
-          | A.Normalized -> "normalized"
-          | Case_insensitive -> "case-insensitive"
-          | Fuzzy -> "fuzzy")
-        result.match_quality
+      Option.map Enums.Match_quality.to_string result.match_quality
     in
     `Assoc
       ([

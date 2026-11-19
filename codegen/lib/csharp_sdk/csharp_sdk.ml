@@ -1,4 +1,6 @@
-(* The C# SDK's group: its models (Models), each schema they are made from as
+(* The C# SDK's group: its models (Models), the client types among them, and
+   why no launcher was found (Types/DiscoveryAbsentReason.g.cs); each schema
+   the models are made from as
    the SDK validates a value against it (WireSchemas.g.cs), the code each of
    the wire's own failure codes becomes (FailureCodes.g.cs), and the tables
    the SDK reads as Protocol writes them, with what the sign-in store's
@@ -84,9 +86,14 @@ let schema_of (spec : Spec.t) path =
           };
         ]
 
+(* The client types (protocol/specs/src/client/types) the SDK models. The
+   rest, the objects, wait on the model's reading of them. *)
+let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
+
 (* The schemas the models are made from: every root ([Roots]), the gateway's
    components and the discovery document's among them, the sign-in store's
-   entry, and the records Protocol states in its tables ([Table_records]);
+   entry, the client types above, and the records Protocol states in its
+   tables ([Table_records]);
    each with the file, or the place in a file, it is read from. *)
 let roots ~root (spec : Spec.t) =
   let* records =
@@ -126,6 +133,9 @@ let roots ~root (spec : Spec.t) =
   Spec.all
     (components
     @ [ whole "SignIn" Sign_in.schema_file ]
+    @ List.map
+        (fun name -> whole name ("client/types/" ^ name ^ ".json"))
+        client_types
     @ List.map record records)
 
 let refused message =
@@ -136,6 +146,46 @@ let model_file (name, _, decls) =
     ~from_:"the schemas of protocol/specs/src the C# SDK models"
     (types ^ "/" ^ name ^ ".g.cs")
     decls
+
+(* Why a client that read a launcher's discovery document found no launcher
+   (protocol/specs/src/client/discovery-absent.json): a constant a reason,
+   written as the reason's word. *)
+let discovery_absent (spec : Spec.t) =
+  let name = "DiscoveryAbsentReason" in
+  let serialization = "global::System.Text.Json.Serialization." in
+  file ~nullable:true ~namespace:"Xynolog.Types"
+    ~from_:"protocol/specs/src/client/discovery-absent.json"
+    (types ^ "/" ^ name ^ ".g.cs")
+    [
+      C.Enum
+        {
+          attributes =
+            [
+              {
+                C.name = serialization ^ "JsonConverter";
+                args =
+                  [
+                    Typeof
+                      (Generic
+                         (serialization ^ "JsonStringEnumConverter", [ T name ]));
+                  ];
+              };
+            ];
+          modifiers = [ Public ];
+          name;
+          members =
+            List.map
+              (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+                ( [
+                    {
+                      C.name = serialization ^ "JsonStringEnumMemberName";
+                      args = [ Str r.reason ];
+                    };
+                  ],
+                  Models.enum_constant r.reason ))
+              spec.tables.client_discovery_absent.reasons;
+        };
+    ]
 
 let wire_schemas (models : Models.t) =
   file ~namespace:"Xynolog.Serialization"
@@ -293,7 +343,7 @@ let files ~root (spec : Spec.t) =
   in
   let* failures = failure_codes spec models in
   let* tables = protocol_tables ~root in
-  let written = List.map model_file models.models in
+  let written = List.map model_file models.models @ [ discovery_absent spec ] in
   match Output.stale ~root ~directory:types written with
   | [] -> Ok (written @ [ wire_schemas models; failures; tables ])
   | stale -> Error stale

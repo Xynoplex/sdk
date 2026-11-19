@@ -29,6 +29,8 @@ type type_ =
           it has one field, of a type 30 columns wide at most. A field of no
           names is embedded. *)
   | Func_type of type_ list * type_ list
+  | Receive of type_  (** A channel only received from: [<-chan t]. *)
+  | Empty_struct  (** [struct{}]. *)
 
 (* Items written a line each: one after another, or a blank line between. *)
 type spacing = Packed | Spaced
@@ -82,8 +84,13 @@ type field = {
   tag : string option;
 }
 
-type method_ = { name : string; params : (string * type_) list }
 type results = Unnamed of type_ list | Named_results of (string * type_) list
+
+type method_ = {
+  name : string;
+  params : (string * type_) list;
+  results : results;
+}
 
 (* A body of statements, one statement on the signature's line, or none:
    [{}]. *)
@@ -135,7 +142,9 @@ let lines ?of_ ?(spacing = Packed) elements =
 
 let call name args = Call (Name name, args)
 let spec ?(doc = []) ?type_ name value = { doc; name; type_; value }
-let method_ name params : method_ = { name; params }
+
+let method_ ?(results = Unnamed []) name params : method_ =
+  { name; params; results }
 
 let func ?(doc = []) ?receiver ?(params = []) ?(results = Unnamed []) name body
     =
@@ -180,6 +189,8 @@ let rec type_text = function
         ^ " }"
   | Func_type (params, results) ->
       "func(" ^ listed type_text params ^ ")" ^ results_text (Unnamed results)
+  | Receive t -> "<-chan " ^ type_text t
+  | Empty_struct -> "struct{}"
 
 and results_text = function
   | Unnamed [] | Named_results [] -> ""
@@ -485,7 +496,8 @@ let rec decl = function
             ^ String.concat ""
                 (List.map
                    (fun (m : method_) ->
-                     "\t" ^ checked m.name ^ "(" ^ params_text m.params ^ ")\n")
+                     "\t" ^ checked m.name ^ "(" ^ params_text m.params ^ ")"
+                     ^ results_text m.results ^ "\n")
                    methods)
             ^ "}")
   | Func f -> with_doc f.doc (func_text f)

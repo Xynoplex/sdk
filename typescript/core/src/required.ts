@@ -13,6 +13,7 @@
 
 import { byCodePoint } from './by-code-point';
 import { REQUIRED_SCHEMAS } from './required-schemas';
+import type { FrameRefusalReason } from './payload-types';
 import type { components } from './types';
 
 /** A component schema of the spec, by its name. */
@@ -67,7 +68,7 @@ export interface Shape {
  */
 export interface Fault {
   readonly member: string;
-  readonly reason: 'lacks' | 'malformed';
+  readonly reason: FrameRefusalReason;
 }
 
 /**

@@ -28,67 +28,41 @@
 import * as fc from 'fast-check';
 import type { Observable, Subscription } from 'rxjs';
 import { BRIDGED_CHANNELS } from './bridging';
-import { FaultyTransport, type FaultAction } from './faulty-transport';
+import { FaultyTransport } from './faulty-transport';
+import {
+  DELAY_MS,
+  DELIVERY_OPS,
+  SCHEDULE_LENGTH,
+  SLACK,
+  type DeliveryOp,
+  type FaultAction,
+  type LivenessSpec,
+} from './testing-kit';
 
 // ── L1/L2: liveness over a composition on FaultyTransport ────────────────
 
-/** What one fresh run of the composition exposes to the axioms. */
-export interface LivenessScenario {
-  /**
-   * Live-query-shaped outputs. The harness subscribes each one; every
-   * subscription must see `next` or `error` within the bound (L1).
-   */
-  outputs: readonly Observable<unknown>[];
-  /**
-   * Awaited paths. Each promise must settle — resolve or reject — within the
-   * bound (L2). Rejections are fine; pending-forever is the violation.
-   */
-  settlements?: readonly Promise<unknown>[];
-  teardown?: () => void;
-}
+/** A fault of each kind, as likely as the others; a delay is of `DELAY_MS`. */
+const FAULT_DRAWS: {
+  [K in FaultAction['kind']]: fc.Arbitrary<Extract<FaultAction, { kind: K }>>;
+} = {
+  deliver: fc.constant({ kind: 'deliver' }),
+  'drop-reply': fc.constant({ kind: 'drop-reply' }),
+  delay: fc
+    .integer({ min: DELAY_MS.minimum, max: DELAY_MS.maximum })
+    .map((ms) => ({ kind: 'delay', ms })),
+  'duplicate-reply': fc.constant({ kind: 'duplicate-reply' }),
+  'reject-emit': fc.constant({ kind: 'reject-emit' }),
+};
 
-export interface LivenessAxiomSpec {
-  /** Build a FRESH composition wired to the given transport. Called per run. */
-  setup: (
-    transport: FaultyTransport,
-  ) => LivenessScenario | Promise<LivenessScenario>;
-  /**
-   * The timeoutMs the scenario passes to `Bus.request` — the bound is derived
-   * from it: (timeoutMs × (1 + retryBudget) + Σdelays) × slackFactor.
-   */
-  timeoutMs: number;
-  /** Max sanctioned re-issues per logical request (B14 budget). Default 1. */
-  retryBudget?: number;
-  /** Override the generated fault schedules (teeth tests pin one). */
-  scheduleArb?: fc.Arbitrary<readonly FaultAction[]>;
-  /** Passed through to FaultyTransport (reply synthesis). */
-  makeResponse?: (
-    operation: string,
-    payload: Record<string, unknown>,
-  ) => unknown;
-  /** fast-check run budget (default 25 — CI-fast; crank locally). */
-  numRuns?: number;
-  /** Real-scheduler jitter headroom on the bound (default 4×). */
-  slackFactor?: number;
-}
-
-/** The five wire behaviors, uniformly weighted; delays stay small (≤5 ms). */
 export function arbFaultAction(): fc.Arbitrary<FaultAction> {
-  return fc.oneof(
-    fc.constant<FaultAction>({ kind: 'deliver' }),
-    fc.constant<FaultAction>({ kind: 'drop-reply' }),
-    fc
-      .integer({ min: 0, max: 5 })
-      .map((ms): FaultAction => ({ kind: 'delay', ms })),
-    fc.constant<FaultAction>({ kind: 'duplicate-reply' }),
-    fc.constant<FaultAction>({ kind: 'reject-emit' }),
-  );
+  return fc.oneof(...Object.values(FAULT_DRAWS));
 }
 
-export function arbFaultSchedule(
-  maxLength = 8,
-): fc.Arbitrary<readonly FaultAction[]> {
-  return fc.array(arbFaultAction(), { minLength: 1, maxLength });
+export function arbFaultSchedule(): fc.Arbitrary<readonly FaultAction[]> {
+  return fc.array(arbFaultAction(), {
+    minLength: SCHEDULE_LENGTH.minimum,
+    maxLength: SCHEDULE_LENGTH.maximum,
+  });
 }
 
 function describeSchedule(schedule: readonly FaultAction[]): string {
@@ -133,25 +107,25 @@ function capturing(slot: { violation: Error | null }, block: () => void): void {
 }
 
 /**
- * Run L1 + L2 against `spec` across generated fault schedules. Throws a
- * labeled Error (`L1: …` / `L2: …`) on the first violation.
+ * Run L1 + L2 against `spec` across `spec.cases` fault schedules (25 unless
+ * given), drawn from `spec.schedules` or `arbFaultSchedule`. A case's bound is
+ * (timeoutMs × (1 + retryBudget) + Σdelays) × SLACK, and the retry budget is
+ * one re-issue (B14) unless given. Throws a labeled Error (`L1: …` / `L2: …`)
+ * on the first violation.
  */
-export async function assertLivenessAxioms(
-  spec: LivenessAxiomSpec,
-): Promise<void> {
+export async function assertLivenessAxioms(spec: LivenessSpec): Promise<void> {
   const retryBudget = spec.retryBudget ?? 1;
-  const slack = spec.slackFactor ?? 4;
-  const scheduleArb = spec.scheduleArb ?? arbFaultSchedule();
+  const schedules = spec.schedules ?? arbFaultSchedule();
 
   const slot = { violation: null as Error | null };
   await runLabeled('liveness', slot, () =>
     fc.assert(
-      fc.asyncProperty(scheduleArb, async (schedule) => {
+      fc.asyncProperty(schedules, async (schedule) => {
         const delayTotal = schedule.reduce(
           (n, a) => n + (a.kind === 'delay' ? a.ms : 0),
           0,
         );
-        const bound = (spec.timeoutMs * (1 + retryBudget) + delayTotal) * slack;
+        const bound = (spec.timeoutMs * (1 + retryBudget) + delayTotal) * SLACK;
         const transport = new FaultyTransport({
           channels: BRIDGED_CHANNELS,
           schedule,
@@ -263,7 +237,7 @@ export async function assertLivenessAxioms(
           transport.dispose();
         }
       }),
-      { numRuns: spec.numRuns ?? 25 },
+      { numRuns: spec.cases ?? 25 },
     ),
   );
 }
@@ -292,8 +266,6 @@ export interface DeliverySubject {
   teardown?: () => void;
 }
 
-export type DeliveryOp = 'write' | 'transition';
-
 export interface DeliveryAxiomSpec {
   /** Build a FRESH subject. Called per run. */
   setup: () => DeliverySubject;
@@ -310,7 +282,7 @@ export function arbDeliveryOps(
 ): fc.Arbitrary<readonly DeliveryOp[]> {
   return (
     fc
-      .array(fc.constantFrom<DeliveryOp>('write', 'transition'), {
+      .array(fc.constantFrom(...DELIVERY_OPS), {
         minLength: 1,
         maxLength: maxOps,
       })

@@ -6,7 +6,7 @@ open Fixture
 
 (* The module for [schemas] beside a kind of id, K. *)
 let written schemas =
-  Python_types.module_ ~kinds:[ "K" ]
+  Python_types.module_ ~kinds:[ "K" ] ~also:[]
     (definitions (("K", {|{"type": "string"}|}) :: schemas))
 
 let one json = written [ ("S", json) ]

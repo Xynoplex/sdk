@@ -29,9 +29,11 @@ type type_ =
   | Metatype of type_  (** [Value.Type] *)
   | Any of type_  (** [any Decoder] *)
   | Inout of type_
+  | Escaping of type_  (** A closure parameter's: [@escaping t]. *)
   | Function of {
       sendable : bool;
       params : type_ list;
+      async_ : bool;
       throws : bool;
       result : type_;
     }
@@ -504,7 +506,16 @@ let rec type_ b t =
       before b o inout [ group ];
       after b o inner.last [ L.Close ];
       span inout inner.last Other
-  | Function { sendable; params; throws; result } ->
+  | Escaping t ->
+      let o = visit b in
+      let at = tok b "@" in
+      let escaping = tok b "escaping" in
+      after b o escaping [ break_ ~newline:ignoring L.Continue ];
+      let inner = type_ b t in
+      before b o at [ group ];
+      after b o inner.last [ L.Close ];
+      span at inner.last Other
+  | Function { sendable; params; async_; throws; result } ->
       let o = visit b in
       let attribute =
         if sendable then (
@@ -534,6 +545,7 @@ let rec type_ b t =
           before b of_ p.first [ group ];
           after b of_ p.last [ L.Close ])
         ps;
+      if async_ then before b of_ (tok b "async") [ continue_ ];
       if throws then before b of_ (tok b "throws") [ continue_ ];
       let arrow = tok b "->" in
       before b of_ arrow [ continue_ ];

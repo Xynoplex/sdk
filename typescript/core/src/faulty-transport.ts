@@ -38,41 +38,7 @@ import { BusRequestError } from './bus-request';
 import { RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
 import { isResourceScopedChannel } from './bridging';
 import { relayFrames } from './relay-frames';
-
-/** One wire behavior, applied to a single request-channel emit. */
-export type FaultAction =
-  | { kind: 'deliver' }
-  | { kind: 'drop-reply' }
-  | { kind: 'delay'; ms: number }
-  | { kind: 'duplicate-reply' }
-  | { kind: 'reject-emit' };
-
-/** requestLog entry — one per request-channel emit, in arrival order. */
-export interface RequestLogEntry {
-  channel: BusOperationKey;
-  /** The action the schedule assigned to this emit. */
-  action: FaultAction;
-  correlationId: string | undefined;
-  /**
-   * Request identity for retry accounting: channel + payload minus the
-   * per-issue fields (`TRACE_FIELD`, `_userId`). Two emits with the same key are
-   * the same logical request re-issued.
-   */
-  retryKey: string;
-  /**
-   * The payload as emitted — options, params and all. The envelope is not
-   * part of it: its key is this entry's `correlationId`. This is the surface
-   * for "assert what my orchestrator actually SENT": without it every
-   * consumer harness needs its own per-channel `transport.on(...)` wire
-   * recorder alongside this log.
-   *
-   * SHALLOW snapshot: the top level is copied at emit time, so a caller that
-   * mutates its own payload object afterwards cannot rewrite history. Nested
-   * objects are shared by reference — deep-freeze is not worth the cost in a
-   * double, and no in-repo caller mutates nested request payloads.
-   */
-  payload: Record<string, unknown>;
-}
+import type { FaultAction, RequestLogEntry } from './testing-kit';
 
 export interface FaultyTransportConfig {
   /**
@@ -237,6 +203,8 @@ export class FaultyTransport implements ITransport {
       action,
       correlationId: envelope?.correlationId,
       retryKey: retryKeyOf(name, record),
+      // Copied at emit time, so a caller that mutates its own payload
+      // afterwards cannot rewrite the log; nested objects are shared.
       payload: { ...record },
     });
 

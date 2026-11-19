@@ -27,8 +27,7 @@ test that fixes the schedule fixes the run.
 import asyncio
 from collections import deque
 from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
-from typing import Final, Literal, NoReturn, final, override
+from typing import Final, NoReturn, final, override
 
 from pydantic import JsonValue, TypeAdapter
 
@@ -39,6 +38,7 @@ from xynolog.errors import TransportError, XynologError
 from xynolog.events import Events
 from xynolog.identifiers import ResourceId
 from xynolog.operations import OPERATIONS
+from xynolog.testing._kit import Delay, Deliver, DropReply, DuplicateReply, FaultAction, RejectEmit, RequestLogEntry
 from xynolog.transport import (
     ConnectionState,
     Frame,
@@ -69,50 +69,6 @@ __all__ = [
 ]
 
 
-@final
-@dataclass(frozen=True, slots=True)
-class Deliver:
-    """The request's reply is delivered."""
-
-    kind: Literal["deliver"] = field(default="deliver", init=False)
-
-
-@final
-@dataclass(frozen=True, slots=True)
-class DropReply:
-    """The request's reply is lost."""
-
-    kind: Literal["drop-reply"] = field(default="drop-reply", init=False)
-
-
-@final
-@dataclass(frozen=True, slots=True)
-class Delay:
-    """The request's reply is delivered after `ms` milliseconds."""
-
-    ms: int
-    kind: Literal["delay"] = field(default="delay", init=False)
-
-
-@final
-@dataclass(frozen=True, slots=True)
-class DuplicateReply:
-    """The request's reply is delivered twice."""
-
-    kind: Literal["duplicate-reply"] = field(default="duplicate-reply", init=False)
-
-
-@final
-@dataclass(frozen=True, slots=True)
-class RejectEmit:
-    """The emit itself is refused: the request never reaches the gateway."""
-
-    kind: Literal["reject-emit"] = field(default="reject-emit", init=False)
-
-
-type FaultAction = Deliver | DropReply | Delay | DuplicateReply | RejectEmit
-"""What the wire does to one request."""
-
 type MakeResponse = Callable[[str, Mapping[str, JsonValue]], JsonValue | None]
 """What the gateway answers a request with, given its operation and its payload.
 
@@ -126,21 +82,6 @@ _PAIRS: Final = TypeAdapter[list[tuple[str, JsonValue]]](list[tuple[str, JsonVal
 
 # What a gateway stamps on a payload: no part of what was asked.
 _STAMPED: Final = (TRACE_FIELD, "_userId")
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class RequestLogEntry:
-    """One request the transport was sent."""
-
-    channel: str
-    action: FaultAction
-    """What the schedule did to it."""
-    correlation_id: str | None
-    retry_key: str
-    """The request's identity across retries: two entries with the same key are one logical request, sent again."""
-    payload: Mapping[str, JsonValue]
-    """The payload as it was sent."""
 
 
 def retry_key_of(channel: str, payload: Mapping[str, JsonValue]) -> str:

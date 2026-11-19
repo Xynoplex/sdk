@@ -154,6 +154,24 @@ let reached (definitions : D.definitions) names =
   in
   List.sort String.compare (List.fold_left reach [] names)
 
+(* The client types (protocol/specs/src/client/types) the SDK generates. Of
+   the rest, the objects that state no additionalProperties wait on Protocol,
+   since the types read them as open, and the closed parameter types
+   (ClaimOptions and the six beside it) wait on the namespace types that take
+   them. *)
+let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
+
+(* Why a client that read a launcher's discovery document found no launcher
+   (protocol/specs/src/client/discovery-absent.json): a reason a case. *)
+let discovery_absent (spec : Spec.t) =
+  T.member (Ident "DiscoveryAbsentReason")
+    ~about:[ Doc "Why no launcher was found." ]
+    (T_cases
+       (List.map
+          (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+            T.case ~about:[ Doc_prose [ Text.Words r.docs ] ] (T_str r.reason))
+          spec.tables.client_discovery_absent.reasons))
+
 (* [records[name]]: the type of a record Protocol states in a table, or of a
    schema only such records reach. *)
 let record name = T.T_index (T_name "records", T_str name)
@@ -164,7 +182,8 @@ let text (spec : Spec.t) =
     List.filter
       (fun name -> not (List.mem name definitions.names))
       (reached definitions
-         (List.map (fun (_, name, _) -> name) (Definitions.records spec)))
+         (List.map (fun (_, name, _) -> name) (Definitions.records spec)
+         @ client_types))
   in
   let named name =
     if List.mem name records then record name else T.schema name
@@ -190,6 +209,8 @@ let text (spec : Spec.t) =
               "the component schemas of protocol/specs/src/openapi.json";
               "the records Protocol states in its tables \
                (codegen/lib/table_records.ml)";
+              "the client types it names, of protocol/specs/src/client/types";
+              "protocol/specs/src/client/discovery-absent.json";
               "protocol/specs/src/identifiers/kinds.json, for the brands";
             ]
           __FILE__;
@@ -213,13 +234,14 @@ let text (spec : Spec.t) =
                   Doc_prose
                     [
                       Text.Words
-                        "The records Protocol states in its tables, which no \
-                         wire message carries, and what only they reach.";
+                        "The records Protocol states in its tables and the \
+                         client types, which no wire message carries, and what \
+                         only they reach.";
                     ];
                 ];
               export = true;
               name = "records";
-              members = List.map schema records;
+              members = List.map schema records @ [ discovery_absent spec ];
             };
         ];
     }

@@ -52,9 +52,9 @@ def test_a_quote_is_reconciled_as_the_table_says(case: Case) -> None:
 
 
 def test_how_a_span_was_found_is_one_of_the_ways_the_table_states_and_no_other() -> None:
-    assert sorted({text(found["anchorMethod"], "anchorMethod") for found in FOUND}) == sorted(get_args(AnchorMethod.__value__))
+    assert sorted({text(found["anchorMethod"], "anchorMethod") for found in FOUND}) == sorted(get_args(get_args(AnchorMethod.__value__)[0]))
     qualities = {text(found["matchQuality"], "matchQuality") for found in FOUND if "matchQuality" in found}
-    assert sorted(qualities) == sorted(get_args(MatchQuality.__value__))
+    assert sorted(qualities) == sorted(get_args(get_args(MatchQuality.__value__)[0]))
 
 
 @pytest.mark.parametrize("case", [case for case in TABLE.cases if case.reconciled is not None], ids=lambda case: case.why)

@@ -16,6 +16,7 @@ func roundTripModel(_ name: String, _ value: JSONValue) throws -> JSONValue {
   case "AgentOrganization": return try roundTrip(AgentOrganization.self, value)
   case "AgentPerson": return try roundTrip(AgentPerson.self, value)
   case "AgentSoftware": return try roundTrip(AgentSoftware.self, value)
+  case "AnchorMethod": return try roundTrip(AnchorMethod.self, value)
   case "AnchoredText": return try roundTrip(AnchoredText.self, value)
   case "AnchoredTextAbsent": return try roundTrip(AnchoredTextAbsent.self, value)
   case "AnchoredTextAnswer": return try roundTrip(AnchoredTextAnswer.self, value)
@@ -142,6 +143,7 @@ func roundTripModel(_ name: String, _ value: JSONValue) throws -> JSONValue {
   case "FragmentSelector": return try roundTrip(FragmentSelector.self, value)
   case "FrameAddEntityTypeCommand": return try roundTrip(FrameAddEntityTypeCommand.self, value)
   case "FrameAddTagSchemaCommand": return try roundTrip(FrameAddTagSchemaCommand.self, value)
+  case "FrameRefusalReason": return try roundTrip(FrameRefusalReason.self, value)
   case "GatewayConfig": return try roundTrip(GatewayConfig.self, value)
   case "GatherAnnotationComplete": return try roundTrip(GatherAnnotationComplete.self, value)
   case "GatherAnnotationOptions": return try roundTrip(GatherAnnotationOptions.self, value)
@@ -276,6 +278,7 @@ func roundTripModel(_ name: String, _ value: JSONValue) throws -> JSONValue {
   case "MarkUpdateBodyCommand": return try roundTrip(MarkUpdateBodyCommand.self, value)
   case "MarkUpdateEntityTypesCommand":
     return try roundTrip(MarkUpdateEntityTypesCommand.self, value)
+  case "MatchQuality": return try roundTrip(MatchQuality.self, value)
   case "MatchResourcesRequest": return try roundTrip(MatchResourcesRequest.self, value)
   case "MatchResourcesResponse": return try roundTrip(MatchResourcesResponse.self, value)
   case "MatchResourcesResult": return try roundTrip(MatchResourcesResult.self, value)

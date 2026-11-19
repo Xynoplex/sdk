@@ -28,6 +28,7 @@ import xynolog.Spec
 import xynolog.http.CallersHttp
 import xynolog.http.httpDiscovery
 import xynolog.types.DiscoveredKB
+import xynolog.types.DiscoveryAbsentReason
 import xynolog.types.wireJson
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -185,12 +186,6 @@ class DiscoveryTest {
         val state = assertInstanceOf(Absent::class.java, parseDiscoveryDocument(document(entry("localhost", 4000, A), withoutADid)))
         assertEquals(DiscoveryAbsentReason.Invalid, state.reason)
         assertTrue(checkNotNull(state.diagnostic).contains("did"), state.diagnostic)
-    }
-
-    @Test
-    fun eachReasonIsTheTablesAndTheTableHasNoneKotlinLacks() {
-        val stated = Spec.read("client/discovery-absent.json").jsonObject.getValue("reasons").jsonArray.map { it.jsonObject.getValue("reason").jsonPrimitive.content }
-        assertEquals(stated, DiscoveryAbsentReason.entries.map { it.wire })
     }
 
     // Reading it as text.

@@ -18,30 +18,8 @@ import (
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-)
 
-// AnchorMethod is how a span was found: the text has the words once; it has
-// them more than once and the model's hints chose; it has them more than once
-// and nothing chose, so the first was taken; or it does not have them as
-// quoted, and a looser search found them.
-type AnchorMethod string
-
-const (
-	AnchorMethodUniqueMatch      AnchorMethod = "unique-match"
-	AnchorMethodContextRecovered AnchorMethod = "context-recovered"
-	AnchorMethodFirstOfMany      AnchorMethod = "first-of-many"
-	AnchorMethodFuzzyMatch       AnchorMethod = "fuzzy-match"
-)
-
-// MatchQuality is which looser search found a span: without regard to white
-// space and the forms of quotation marks and dashes, without regard to letter
-// case, or by edits within the allowance.
-type MatchQuality string
-
-const (
-	MatchQualityNormalized      MatchQuality = "normalized"
-	MatchQualityCaseInsensitive MatchQuality = "case-insensitive"
-	MatchQualityFuzzy           MatchQuality = "fuzzy"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // QuotedText is the words a model quoted from a text, and what it says stands
@@ -67,11 +45,11 @@ type TextSpan struct {
 
 // ReconciledSpan is a span Reconcile found, which is the text's own, and how
 // it was found. MatchQuality names the looser search when AnchorMethod is
-// AnchorMethodFuzzyMatch, and is empty otherwise.
+// api.AnchorMethodFuzzyMatch, and is empty otherwise.
 type ReconciledSpan struct {
 	TextSpan
-	AnchorMethod AnchorMethod
-	MatchQuality MatchQuality
+	AnchorMethod api.AnchorMethod
+	MatchQuality api.MatchQuality
 }
 
 // place is a span of a text as its two offsets.
@@ -346,15 +324,15 @@ func nearestStretch(text, exact []rune) (place, bool) {
 
 // looser is the places the first looser search that finds any finds, in the
 // text's order, and which search it was. False when none finds the words.
-func looser(text, exact string) ([]place, MatchQuality, bool) {
+func looser(text, exact string) ([]place, api.MatchQuality, bool) {
 	if found := normalized(text).placesOf(normalized(exact).text); len(found) > 0 {
-		return found, MatchQualityNormalized, true
+		return found, api.MatchQualityNormalized, true
 	}
 	if found := lowerCased(text).placesOf(lowerCased(exact).text); len(found) > 0 {
-		return found, MatchQualityCaseInsensitive, true
+		return found, api.MatchQualityCaseInsensitive, true
 	}
 	if nearest, found := nearestStretch([]rune(text), []rune(exact)); found {
-		return []place{nearest}, MatchQualityFuzzy, true
+		return []place{nearest}, api.MatchQualityFuzzy, true
 	}
 	return nil, "", false
 }
@@ -407,7 +385,7 @@ func hinted(text offsets, found []place, prefix, suffix string) (place, bool) {
 
 // reconciled is a place as the span it is: its words and its context are the
 // text's, never the model's spelling of them.
-func reconciled(text offsets, at place, method AnchorMethod, quality MatchQuality) ReconciledSpan {
+func reconciled(text offsets, at place, method api.AnchorMethod, quality api.MatchQuality) ReconciledSpan {
 	prefix, suffix := contextOf(text, at)
 	return ReconciledSpan{
 		TextSpan:     TextSpan{Start: at.start, End: at.end, Exact: text.between(at.start, at.end), Prefix: prefix, Suffix: suffix},
@@ -434,12 +412,12 @@ func Reconcile(text string, quoted QuotedText) (ReconciledSpan, bool) {
 	found := placesOf(counted, quoted.Exact)
 	switch {
 	case len(found) == 1:
-		return reconciled(counted, found[0], AnchorMethodUniqueMatch, ""), true
+		return reconciled(counted, found[0], api.AnchorMethodUniqueMatch, ""), true
 	case len(found) > 1:
 		if chosen, ok := hinted(counted, found, prefix, suffix); ok {
-			return reconciled(counted, chosen, AnchorMethodContextRecovered, ""), true
+			return reconciled(counted, chosen, api.AnchorMethodContextRecovered, ""), true
 		}
-		return reconciled(counted, found[0], AnchorMethodFirstOfMany, ""), true
+		return reconciled(counted, found[0], api.AnchorMethodFirstOfMany, ""), true
 	}
 
 	found, quality, ok := looser(text, quoted.Exact)
@@ -450,5 +428,5 @@ func Reconcile(text string, quoted QuotedText) (ReconciledSpan, bool) {
 	if !ok {
 		chosen = found[0]
 	}
-	return reconciled(counted, chosen, AnchorMethodFuzzyMatch, quality), true
+	return reconciled(counted, chosen, api.AnchorMethodFuzzyMatch, quality), true
 }

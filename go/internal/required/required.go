@@ -27,7 +27,6 @@ import (
 	"sync"
 
 	"github.com/xynolog/sdk/go/api"
-	"github.com/xynolog/sdk/go/bus"
 )
 
 // shape is what a value must be: codegen/lib/required/shape.ml states
@@ -113,7 +112,7 @@ var (
 // the empty way is the value itself), and why.
 type Fault struct {
 	Member string
-	Reason bus.FrameRefusalReason
+	Reason api.FrameRefusalReason
 }
 
 // Within is f as a fault of the value that holds the faulty value as its
@@ -128,7 +127,7 @@ func (f Fault) Within(name string) Fault {
 // String is what every SDK says of the fault.
 func (f Fault) String() string {
 	switch {
-	case f.Reason == bus.FrameRefusalReasonLacks:
+	case f.Reason == api.FrameRefusalReasonLacks:
 		return fmt.Sprintf("it has no `%s`", f.Member)
 	case f.Member == "":
 		return "it is malformed"
@@ -139,7 +138,7 @@ func (f Fault) String() string {
 
 // Undecoded is the fault of a value Go's decoding refuses that has no fault
 // the table states: the value itself is malformed.
-var Undecoded = Fault{Reason: bus.FrameRefusalReasonMalformed}
+var Undecoded = Fault{Reason: api.FrameRefusalReasonMalformed}
 
 // shapeOf is what a value of generated must be.
 func shapeOf(generated reflect.Type) *shape {
@@ -429,14 +428,14 @@ func allows(kinds []string, value any) bool {
 func faultOf(s *shape, value any, way string) (Fault, []unread, bool) {
 	s = resolved(s)
 	if !allows(s.Kinds, value) || !isOneOf(s.Enum, value) || !inBounds(s, value) {
-		return Fault{Member: way, Reason: bus.FrameRefusalReasonMalformed}, nil, true
+		return Fault{Member: way, Reason: api.FrameRefusalReasonMalformed}, nil, true
 	}
 	var left []unread
 	if object, isObject := value.(map[string]any); isObject {
 		for _, name := range s.Required {
 			held, has := object[name]
 			if !has || (held == nil && !allowsNull(memberShape(s, name))) {
-				return Fault{Member: within(way, name), Reason: bus.FrameRefusalReasonLacks}, nil, true
+				return Fault{Member: within(way, name), Reason: api.FrameRefusalReasonLacks}, nil, true
 			}
 		}
 		for _, name := range sortedKeys(s.Members) {
@@ -457,7 +456,7 @@ func faultOf(s *shape, value any, way string) (Fault, []unread, bool) {
 		if s.Closed != nil {
 			for _, name := range sortedKeys(object) {
 				if !slices.Contains(s.Closed, name) {
-					return Fault{Member: within(way, name), Reason: bus.FrameRefusalReasonMalformed}, nil, true
+					return Fault{Member: within(way, name), Reason: api.FrameRefusalReasonMalformed}, nil, true
 				}
 			}
 		}
@@ -574,7 +573,7 @@ func faultOfOneOf(s *shape, value any, way string) (Fault, []unread, bool) {
 		}
 	}
 	if len(candidates) == 0 {
-		return Fault{Member: way, Reason: bus.FrameRefusalReasonMalformed}, nil, true
+		return Fault{Member: way, Reason: api.FrameRefusalReasonMalformed}, nil, true
 	}
 	var first Fault
 	for i, candidate := range candidates {

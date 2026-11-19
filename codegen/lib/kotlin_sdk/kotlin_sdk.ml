@@ -1,5 +1,6 @@
-(* The kotlin-sdk group: Kotlin's types of the component schemas and of the
-   records Protocol states in its tables, a file each under xynolog/types,
+(* The kotlin-sdk group: Kotlin's types of the component schemas, of the
+   records Protocol states in its tables, of the client types and of why no
+   launcher was found, a file each under xynolog/types,
    and the kinds of id in xynolog/identifiers, in
    kotlin/sdk/src/generated/kotlin. *)
 
@@ -13,9 +14,14 @@ let directory = "kotlin/sdk/src/generated/kotlin"
 let types_directory = directory ^ "/xynolog/types"
 let sign_in_file = "sign-in-store/SignIn.json"
 
+(* The client types (protocol/specs/src/client/types) the SDK generates.
+   AnchorMethod waits on the Kotlin SDK's own, which holds a fuzzy match's
+   quality; the objects wait on the model's reading of them. *)
+let client_types = [ "FrameRefusalReason"; "MatchQuality" ]
+
 (* The schemas a generation writes: every root ([Roots]), the
-   records Protocol states in its tables ([Table_records]), and
-   the sign-in store's entry, which is the store's own schema and no
+   records Protocol states in its tables ([Table_records]), the client
+   types above, and the sign-in store's entry, which is the store's own schema and no
    component of the API. *)
 let spec_of (spec : Spec.t) : (Types.spec, string) result =
   let schema_of file = List.assoc_opt file spec.schemas in
@@ -36,7 +42,11 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
             Error
               ("the component " ^ name ^ " names " ^ file
              ^ ", which the model has not read"))
-      components (Ok [])
+      (components
+      @ List.map
+          (fun name -> (name, "client/types/" ^ name ^ ".json"))
+          client_types)
+      (Ok [])
   in
   let* sign_in =
     match schema_of sign_in_file with
@@ -168,6 +178,40 @@ let stale ~root written =
         ("a generated file no schema writes: " ^ types_directory ^ "/" ^ name)
   | None -> Ok ()
 
+(* Why a client that read a launcher's discovery document found no launcher
+   (protocol/specs/src/client/discovery-absent.json): an entry a reason, its
+   value the reason's word. *)
+let discovery_absent (spec : Spec.t) =
+  let name = "DiscoveryAbsentReason" in
+  {
+    Output.path = path Types.types_package name;
+    text =
+      file ~package:Types.types_package ~imports:[]
+        [
+          K.class_
+            ~about:
+              (K.Doc
+                 "Why a client that read a launcher's discovery document found \
+                  no launcher.")
+            ~visibility:K.Public
+            ~constructor:
+              (K.constructor
+                 [
+                   K.param ~about:(K.Doc "The reason as every SDK spells it.")
+                     ~binding:
+                       (K.Bound { visibility = K.Public; mutable_ = false })
+                     "value" (K.Type "String");
+                 ])
+            ~entries:
+              (List.map
+                 (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+                   K.entry ~about:(K.Doc r.docs) ~args:[ K.Str r.reason ]
+                     (Names.variant_of r.reason))
+                 spec.tables.client_discovery_absent.reasons)
+            K.Enum_class name;
+        ];
+  }
+
 let generate (spec : Spec.t) =
   let* types_spec = spec_of spec in
   match Types.generate types_spec with
@@ -185,13 +229,14 @@ let generate (spec : Spec.t) =
              file ~package:Types.identifiers_package ~imports:[]
                generated.identifier_decls;
          }
-        :: List.map
-             (fun (name, decls) ->
-               {
-                 Output.path = path Types.types_package name;
-                 text = file ~package:Types.types_package ~imports:kinds decls;
-               })
-             generated.types)
+         :: List.map
+              (fun (name, decls) ->
+                {
+                  Output.path = path Types.types_package name;
+                  text = file ~package:Types.types_package ~imports:kinds decls;
+                })
+              generated.types
+        @ [ discovery_absent spec ])
 
 let files ~root (spec : Spec.t) =
   Result.map_error refused

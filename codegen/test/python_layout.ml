@@ -208,7 +208,8 @@ let cases =
           "import"
           ("from m import (\n    " ^ String.make 70 'a' ^ ",\n    "
          ^ String.make 70 'b' ^ ",\n)")
-          (P.import (P.From ("m", [ String.make 70 'a'; String.make 70 'b' ]))));
+          (P.import ~indent:0
+             (P.From ("m", [ String.make 70 'a'; String.make 70 'b' ]))));
   ]
 
 let () = Alcotest.run "python_layout" [ ("layout", cases) ]

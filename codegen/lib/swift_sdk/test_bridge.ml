@@ -186,7 +186,14 @@ let decls ~names ~identifiers =
          })
   in
   let parse ~throws result =
-    S.Function { sendable = true; params = [ string_type ]; throws; result }
+    S.Function
+      {
+        sendable = true;
+        params = [ string_type ];
+        async_ = false;
+        throws;
+        result;
+      }
   in
   let closure e =
     S.Closure { params = []; layout = S.Inline; body = [ S.Expr e ] }

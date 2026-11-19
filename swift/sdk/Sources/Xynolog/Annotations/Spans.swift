@@ -38,17 +38,6 @@ public struct TextSpan: Codable, Sendable {
   }
 
 }
-public enum MatchQuality: String, Codable, Sendable, CaseIterable {
-  case normalized
-  case caseInsensitive = "case-insensitive"
-  case fuzzy
-}
-public enum AnchorMethod: String, Codable, Sendable, CaseIterable {
-  case uniqueMatch = "unique-match"
-  case contextRecovered = "context-recovered"
-  case firstOfMany = "first-of-many"
-  case fuzzyMatch = "fuzzy-match"
-}
 public struct ReconciledSpan: Encodable, Sendable {
   public let span: TextSpan
   public let anchorMethod: AnchorMethod

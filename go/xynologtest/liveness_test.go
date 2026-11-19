@@ -47,7 +47,7 @@ func wantViolation(t *testing.T, err error, said string) {
 }
 
 func TestARequestSettlesUnderEverySchedule(t *testing.T) {
-	err := xynologtest.AssertLivenessAxioms(t, spec(
+	drawn := spec(
 		func(_ *testing.T, transport *xynologtest.FaultyTransport) xynologtest.LivenessScenario {
 			wire := xynolog.NewWire(transport)
 			settled := make(chan struct{})
@@ -57,9 +57,10 @@ func TestARequestSettlesUnderEverySchedule(t *testing.T) {
 			}()
 			return xynologtest.LivenessScenario{Settlements: []<-chan struct{}{settled}}
 		},
-		xynologtest.FaultSchedules(25),
-	))
-	if err != nil {
+		nil,
+	)
+	drawn.Cases = 25
+	if err := xynologtest.AssertLivenessAxioms(t, drawn); err != nil {
 		t.Fatal(err)
 	}
 }

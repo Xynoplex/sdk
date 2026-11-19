@@ -168,6 +168,13 @@ public enum AgentSoftwareType: String, Codable, Sendable, CaseIterable {
   case software = "Software"
 }
 
+public enum AnchorMethod: String, Codable, Sendable, CaseIterable {
+  case uniqueMatch = "unique-match"
+  case contextRecovered = "context-recovered"
+  case firstOfMany = "first-of-many"
+  case fuzzyMatch = "fuzzy-match"
+}
+
 public struct AnchoredText: Codable, Sendable {
   public var items: [PdfTextItem]
   public var text: String
@@ -3332,6 +3339,11 @@ public struct FrameAddTagSchemaCommand: Codable, Sendable {
     try c.encodeIfPresent(self._userId, as: "_userId")
     try c.encode(self.schema, as: "schema")
   }
+}
+
+public enum FrameRefusalReason: String, Codable, Sendable, CaseIterable {
+  case lacks = "lacks"
+  case malformed = "malformed"
 }
 
 public struct GatewayConfig: Codable, Sendable {
@@ -7551,6 +7563,12 @@ public struct MarkUpdateEntityTypesCommand: Codable, Sendable {
   }
 }
 
+public enum MatchQuality: String, Codable, Sendable, CaseIterable {
+  case normalized = "normalized"
+  case caseInsensitive = "case-insensitive"
+  case fuzzy = "fuzzy"
+}
+
 public struct MatchResourcesRequest: Codable, Sendable {
   public var archived: Bool?
   public var entityType: String?
@@ -11720,6 +11738,24 @@ public struct YieldedResource: Codable, Sendable {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.resourceId, as: "resourceId")
   }
+}
+
+/// Why a client that read a launcher's discovery document found no launcher.
+public enum DiscoveryAbsentReason: String, Codable, Sendable, CaseIterable {
+  /// There is no document where it was looked for: no file, an HTTP status that is not success, or
+  /// a page that is not JSON.
+  case notFound = "not-found"
+  /// There is a document, and it is not JSON.
+  case notJson = "not-json"
+  /// It is JSON, and not a discovery document: one entry that is not what the schema says makes the
+  /// whole document invalid, since a partial reading would hide a running knowledge base without a
+  /// trace.
+  case invalid = "invalid"
+  /// It is a discovery document of a version this client does not speak, and is not read in part.
+  case unsupportedVersion = "unsupported-version"
+  /// It could not be read at all: the file could not be opened or decoded, or the request got no
+  /// answer by its deadline.
+  case unreadable = "unreadable"
 }
 
 extension ReceivedFrame {

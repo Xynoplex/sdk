@@ -12,17 +12,6 @@ namespace Xynolog.Testing;
 /// <summary>Returns the response carried by a result, or throws a Xynolog error to send a refusal.</summary>
 public delegate JsonElement? Respond(string operation, JsonElement payload);
 
-public closed record FaultAction
-{
-    public sealed record Deliver : FaultAction;
-    public sealed record DropReply : FaultAction;
-    public sealed record Delay(TimeSpan Duration) : FaultAction;
-    public sealed record DuplicateReply : FaultAction;
-    public sealed record RejectEmit : FaultAction;
-}
-
-public sealed record RequestLogEntry(string Operation, JsonElement Payload, string? CorrelationId, FaultAction Action);
-
 /// <summary>A scripted HTTP gateway for the SDK's real emit and SSE transport.</summary>
 public sealed class FaultyTransport(IEnumerable<FaultAction>? schedule = null, Respond? respond = null,
     TimeProvider? timeProvider = null) : HttpMessageHandler
@@ -93,7 +82,7 @@ public sealed class FaultyTransport(IEnumerable<FaultAction>? schedule = null, R
         {
             ObjectDisposedException.ThrowIf(disposed, this);
             action = faults.Length == 0 || sent.CorrelationId is null ? new FaultAction.Deliver() : faults[requests++ % faults.Length];
-            log.Add(new(sent.Channel, sent.Payload, sent.CorrelationId, action));
+            log.Add(new(sent.Channel, action, sent.CorrelationId, RetryKey(sent.Channel, sent.Payload), sent.Payload));
         }
         if (action is FaultAction.RejectEmit)
             return new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = JsonContent.Create(new { error = $"Scripted rejection of {sent.Channel}." }) };
@@ -114,6 +103,9 @@ public sealed class FaultyTransport(IEnumerable<FaultAction>? schedule = null, R
         }
         return new HttpResponseMessage(HttpStatusCode.Accepted) { Content = JsonContent.Create(new BusEmitAccepted { Subscribers = 1 }) };
     }
+
+    /// <summary>A request's identity across retries: its channel and its payload as it was sent.</summary>
+    private static string RetryKey(string channel, JsonElement payload) => $"{channel} {payload.GetRawText()}";
 
     private static async Task<T> BodyAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken) where T : class
     {

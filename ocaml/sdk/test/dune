@@ -9,6 +9,12 @@
  (libraries xynolog alcotest))
 
 (test
+ (name client_types_census)
+ (modules client_types_census)
+ (libraries protocol xynolog yojson alcotest)
+ (deps (universe)))
+
+(test
  (name enums_cases)
  (modules enums_cases)
  (libraries xynolog alcotest))

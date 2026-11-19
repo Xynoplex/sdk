@@ -14,7 +14,7 @@ import xynolog.testing.FaultAction
 import xynolog.testing.FaultyTransport
 import xynolog.transport.Frame
 import xynolog.transport.FrameRefusal
-import xynolog.transport.FrameRefusalReason
+import xynolog.types.FrameRefusalReason
 import kotlin.coroutines.CoroutineContext
 
 internal fun obj(vararg pairs: Pair<String, Any?>): JsonObject = JsonObject(

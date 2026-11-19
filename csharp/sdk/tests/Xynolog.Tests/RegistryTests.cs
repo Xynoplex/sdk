@@ -420,7 +420,7 @@ public sealed partial class TransportTests
         await foreach (var state in browser.States(deadline.Token))
             if (state.OpenResources.Any(open => open.Name == resource.Name)) break;
         var asked = Assert.Single(factory.Transports(kb.Id)).RequestLog
-            .Where(logged => logged.Operation == BusOperations.BrowseResourceRequested.Request.Name)
+            .Where(logged => logged.Channel == BusOperations.BrowseResourceRequested.Request.Name)
             .Select(logged => logged.Payload.GetProperty("resourceId").GetString());
         Assert.Equal([resource.Id.Value], asked);
         Assert.Equal(tab.Id, Assert.Single(browser.State.OpenResources).Id);

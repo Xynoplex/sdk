@@ -113,8 +113,8 @@
     "lib/agent.ml": "ea862f715d110e68aaacfdc01efb1cc2a198cfc71d5606565c06a36a4308bfc5",
     "lib/agent.mli": "194b536a8f4dee477d1c4ec06dfe091ea256c417fa8a979e11dee640393895ee",
     "lib/annotation_id.ml": "5b737d261c35db2e649bc00f2ece7cda103e8c08d677be4483171ac9f8453951",
-    "lib/annotations.ml": "74528be68ec91bdd855b20af51ae25771b113b5583b95d21753b35d4428a7a8c",
-    "lib/annotations.mli": "e88dfe166745d06335cf7418a69984e190f399120a9c820c9846ff8a7dc9ebbc",
+    "lib/annotations.ml": "41fbe88586351ea7adc131d98031fa7be622fbea756b0f3b369b79ef45f04cd3",
+    "lib/annotations.mli": "1ce755b1d64b46ac7ad305c035a2ade2338c5075e6278af1773cc080e4adf996",
     "lib/assertion_facts.ml": "6046b9175feb660a38619fe2b11f862e2ccad9e4beacb29a79fe479e94ddf0a5",
     "lib/auth.ml": "95cbd3eef3820adfbff02c0ace52d195c7fd35022c2a2a7c6a49d7402880e4f2",
     "lib/beckon_state.ml": "3b37bcacd3c2fc058e2040672ffa1e5e5a456d2bb7e061559df3107cfe180b2b",
@@ -141,11 +141,11 @@
     "lib/clock.mli": "5333b1d2447f81415c54bfc99d87ae98362a4ce249695d7783c35df41cdab364",
     "lib/delegation.ml": "75fe29648750fcc9466308dec0adffc8f4809e86d0f00dc5c834ba109334a1f0",
     "lib/delegation.mli": "36f45f6d1caa39e7eda0024d666bb32e2cd21346343e1dc9946bf5789ec67e23",
-    "lib/discovery.ml": "3fbd431f7ed53eccc27c2c343e6a6556fab618976c42cab23a9b1288b903954d",
-    "lib/discovery.mli": "c9924f5e42d374573dc62eb9aa405126a28769a0ce72b65a2187aae704c33747",
+    "lib/discovery.ml": "227189065a91113da86f0395e43bf1d96ad63d53113b227cb42dba4ec5404d9e",
+    "lib/discovery.mli": "6c0dfb2d59167619ced226e06d53cc05f0e2d83e0c9bf0ef6ec1ed7715d2a28d",
     "lib/dune": "24d5479fcb9187d59547c0cf81851fbcd0ba31d1742c33bc2348b74fd3edb7da",
     "lib/encoding_facts.ml": "dc9602d08894d9a3bd5334cb3254218f7a74dad0528d552acb00cec4061bb9bb",
-    "lib/enums.ml": "6c448b6389865cc8987c536d47f483221fb8d2eff0b8aad696da5d4857809f5c",
+    "lib/enums.ml": "353821c220ee7d5f561b0c16819ac358a27de580637302fc7a395c94bda39c6f",
     "lib/error_codes.ml": "041a91c845d81e0186ab20c62e078491f9616340c38a235411b7e51d0aa64c8f",
     "lib/frame.ml": "6e0ba59a959758ccdc672cec1d8d802be2f882a5d1354ded4e5ab21398716d54",
     "lib/gather.ml": "79ce316d7cb74f60d07da80acbf3570d57ba949e4a3fbec81e4da34a6ca9ce6f",
@@ -242,7 +242,7 @@
     "lib/telemetry_facts.ml": "abd1ec8dd54a246db71223dcf1cb7b4085df79c48de53dca7a36f5a747ee0f83",
     "lib/testing.ml": "2baedf9209704c3dc8426719623448ee739c7fe687ce797724c5879ef04f1b7b",
     "lib/testing.mli": "237bd3501f8d626c1048c23e024e513f87203449d6e9ad3a98e9300aa7b3c73a",
-    "lib/testing_facts.ml": "55a4542fe69fbc0db4ad4e06618d64e4b0c426739d52cbe5c1d33a79462dbe28",
+    "lib/testing_facts.ml": "2ba49cf9d14b0c4b9d55874193f0d622513ec6265c55c4171430551361883113",
     "lib/text_encoding.ml": "905bc2c16c4fc1416236a3e2751e5d61627d6dddf431941e36e8f233f5589dad",
     "lib/text_encoding.mli": "60ca2f5b3a32d1c92e3ee786afb1ae8a38b893b3764052fb1b62897eb115da6e",
     "lib/tokens.ml": "a18316d4f94a7deffdaed3a99670163a86ca3ccf66f179628117c4e3a5e0410a",
@@ -1430,6 +1430,153 @@
     {
       "kind": "value",
       "path": "Xynolog.Enums.Supported_media_type.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Anchor_method",
+      "declaration": "module Anchor_method :\n  sig\n    type t = Unique_match | Context_recovered | First_of_many | Fuzzy_match\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Anchor_method.t",
+      "declaration": "type t = Unique_match | Context_recovered | First_of_many | Fuzzy_match",
+      "representation": "variant",
+      "constructors": [
+        "Unique_match",
+        "Context_recovered",
+        "First_of_many",
+        "Fuzzy_match"
+      ],
+      "variants": [
+        {
+          "name": "Unique_match",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Context_recovered",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "First_of_many",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Fuzzy_match",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Anchor_method.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Anchor_method.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Match_quality",
+      "declaration": "module Match_quality :\n  sig\n    type t = Normalized | Case_insensitive | Fuzzy\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Match_quality.t",
+      "declaration": "type t = Normalized | Case_insensitive | Fuzzy",
+      "representation": "variant",
+      "constructors": [
+        "Normalized",
+        "Case_insensitive",
+        "Fuzzy"
+      ],
+      "variants": [
+        {
+          "name": "Normalized",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Case_insensitive",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Fuzzy",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Match_quality.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Match_quality.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Discovery_absent_reason",
+      "declaration": "module Discovery_absent_reason :\n  sig\n    type t =\n        Not_found\n      | Not_json\n      | Invalid\n      | Unsupported_version\n      | Unreadable\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Discovery_absent_reason.t",
+      "declaration": "type t = Not_found | Not_json | Invalid | Unsupported_version | Unreadable",
+      "representation": "variant",
+      "constructors": [
+        "Not_found",
+        "Not_json",
+        "Invalid",
+        "Unsupported_version",
+        "Unreadable"
+      ],
+      "variants": [
+        {
+          "name": "Not_found",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Not_json",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Invalid",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Unsupported_version",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Unreadable",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Discovery_absent_reason.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Discovery_absent_reason.of_string",
       "declaration": "val of_string : string -> t option"
     },
     {
@@ -19748,46 +19895,6 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.Discovery.discovery_absent_reason",
-      "declaration": "type discovery_absent_reason =\n    Not_found\n  | Unreadable\n  | Not_json\n  | Invalid\n  | Unsupported_version",
-      "representation": "variant",
-      "constructors": [
-        "Not_found",
-        "Unreadable",
-        "Not_json",
-        "Invalid",
-        "Unsupported_version"
-      ],
-      "variants": [
-        {
-          "name": "Not_found",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Unreadable",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Not_json",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Invalid",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Unsupported_version",
-          "fields": [],
-          "unit": true
-        }
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.Discovery.kb",
       "declaration": "type kb = {\n  host : string;\n  port : int;\n  did : string;\n  placement : string;\n  managed_by : string;\n  repo : string option;\n  site_name : string option;\n}",
       "representation": "record",
@@ -19804,7 +19911,7 @@
     {
       "kind": "type",
       "path": "Xynolog.Discovery.discovery_state",
-      "declaration": "type discovery_state = Absent of discovery_absent_reason | Managed of kb list",
+      "declaration": "type discovery_state =\n    Absent of Xynolog__.Enums.Discovery_absent_reason.t\n  | Managed of kb list",
       "representation": "variant",
       "constructors": [
         "Absent",
@@ -21266,70 +21373,8 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.Annotations.anchor_method",
-      "declaration": "type anchor_method =\n    Unique_match\n  | Context_recovered\n  | First_of_many\n  | Fuzzy_match",
-      "representation": "variant",
-      "constructors": [
-        "Unique_match",
-        "Context_recovered",
-        "First_of_many",
-        "Fuzzy_match"
-      ],
-      "variants": [
-        {
-          "name": "Unique_match",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Context_recovered",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "First_of_many",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Fuzzy_match",
-          "fields": [],
-          "unit": true
-        }
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Annotations.match_quality",
-      "declaration": "type match_quality = Normalized | Case_insensitive | Fuzzy",
-      "representation": "variant",
-      "constructors": [
-        "Normalized",
-        "Case_insensitive",
-        "Fuzzy"
-      ],
-      "variants": [
-        {
-          "name": "Normalized",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Case_insensitive",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Fuzzy",
-          "fields": [],
-          "unit": true
-        }
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.Annotations.reconciled_span",
-      "declaration": "type reconciled_span = {\n  span : text_span;\n  anchor_method : anchor_method;\n  match_quality : match_quality option;\n}",
+      "declaration": "type reconciled_span = {\n  span : text_span;\n  anchor_method : Xynolog__.Enums.Anchor_method.t;\n  match_quality : Xynolog__.Enums.Match_quality.t option;\n}",
       "representation": "record",
       "fields": [
         "span",

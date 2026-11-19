@@ -1,67 +1,24 @@
 package xynolog.testing
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import xynolog.channels.BRIDGED_CHANNELS
 import java.util.Random
-import java.util.concurrent.CompletableFuture
-import kotlin.coroutines.CoroutineContext
 
-/** How many times its reckoned bound a case is given: the room a scheduler's jitter takes. */
-private const val SLACK = 4
+/** The seed a spec's schedules are drawn from, so a drawn run is the same run each time. */
+private const val DRAWN_SEED = 7L
 
-/**
- * What one fresh run of a composition exposes to the liveness axioms, and how
- * it is ended. Each output completes when it has said something, a value or a
- * failure (L1); a live query's first state, pending, is nothing said. Each
- * settlement completes when its awaited path has settled, by returning or by
- * failing (L2). Closing it ends the composition.
- */
-public class LivenessScenario @JvmOverloads constructor(
-    public val outputs: List<CompletableFuture<*>>,
-    public val settlements: List<CompletableFuture<*>>,
-    private val end: AutoCloseable = AutoCloseable {},
-) : AutoCloseable {
-    override fun close(): Unit = end.close()
+/** A wire behaviour, each as likely as the others, a delay within `DELAY_MS`. */
+public fun faultActions(random: Random): FaultAction = when (val fault = FAULTS[random.nextInt(FAULTS.size)]) {
+    is Delay -> Delay((DELAY_MS.first + random.nextInt(DELAY_MS.last - DELAY_MS.first + 1)).toLong())
+    else -> fault
 }
 
-/**
- * A composition, and the schedules it is run under. `setup` builds a fresh
- * composition over the transport it is given; the scenario it gives is closed
- * when the case is over, and the transport after it. `timeoutMs` is the time
- * the composition gives a bus request, and the bound of a case is derived from
- * it: the timeout times one more than `retryBudget`, how often a logical
- * request may be sent again, and the schedule's delays, all of it four times
- * over. `respond` answers what nothing queued an answer for, as
- * `FaultyTransport`'s does. The transport's stream names a full client's
- * channels (`BRIDGED_CHANNELS`). It is made on `context`, and each case
- * blocks its caller's thread while it waits out its bound there. A wait on a
- * clock the caller controls ends only when the caller moves it, so on a test
- * dispatcher, whose time moves only when its test advances it, a case never
- * ends: give it a dispatcher that keeps the system's time.
- */
-public class LivenessSpec @JvmOverloads constructor(
-    public val setup: (FaultyTransport) -> LivenessScenario,
-    public val timeoutMs: Long,
-    public val retryBudget: Int,
-    public val schedules: List<List<FaultAction>>,
-    public val respond: Respond = REFUSE_UNSCRIPTED,
-    public val context: CoroutineContext = Dispatchers.Default,
-)
-
-/** A wire behaviour, each as likely as the others: a delay is of 5 ms at most. */
-public fun faultActions(random: Random): FaultAction = when (random.nextInt(5)) {
-    0 -> Deliver
-    1 -> DropReply
-    2 -> Delay(random.nextInt(6).toLong())
-    3 -> DuplicateReply
-    else -> RejectEmit
+/** `count` fault schedules, each of `SCHEDULE_LENGTH` behaviours. */
+public fun faultSchedules(count: Int, random: Random): List<List<FaultAction>> = List(count) {
+    List(SCHEDULE_LENGTH.first + random.nextInt(SCHEDULE_LENGTH.last - SCHEDULE_LENGTH.first + 1)) { faultActions(random) }
 }
-
-/** `count` fault schedules, each of one to eight behaviours. */
-public fun faultSchedules(count: Int, random: Random): List<List<FaultAction>> = List(count) { List(1 + random.nextInt(8)) { faultActions(random) } }
 
 private fun described(schedule: List<FaultAction>): String = schedule.joinToString(",") { if (it is Delay) "delay(${it.ms})" else it.kind }
 
@@ -91,7 +48,8 @@ private fun livenessViolation(
 
 /**
  * The liveness axioms L1 and L2, run against a composition over a
- * `FaultyTransport` under each of the spec's schedules (docs: under any
+ * `FaultyTransport` under each of the spec's schedules, or of `cases` drawn
+ * ones where it states none (docs: under any
  * behaviour of the wire, something is eventually said):
  *
  * - **L1** every output says something, a value or a failure, within the bound;
@@ -105,10 +63,10 @@ private fun livenessViolation(
  * first axiom broken, how, and under which schedule.
  */
 public fun assertLivenessAxioms(spec: LivenessSpec) {
-    for (schedule in spec.schedules) {
+    for (schedule in spec.schedules.ifEmpty { faultSchedules(spec.cases, Random(DRAWN_SEED)) }) {
         val delays = schedule.filterIsInstance<Delay>().sumOf { it.ms }
         val boundMs = (spec.timeoutMs * (1 + spec.retryBudget) + delays) * SLACK
-        val transport = FaultyTransport(BRIDGED_CHANNELS, schedule, spec.respond, spec.context)
+        val transport = FaultyTransport(BRIDGED_CHANNELS, schedule, spec.makeResponse, spec.context)
         val violation = try {
             spec.setup(transport).use { scenario ->
                 runBlocking(spec.context.minusKey(Job)) { delay(boundMs) }
@@ -123,15 +81,6 @@ public fun assertLivenessAxioms(spec: LivenessSpec) {
         }
         violation?.let { throw AssertionError(it) }
     }
-}
-
-/** One step of an interleaving of writes and transitions. */
-public enum class DeliveryOp(
-    /** The step, as every SDK spells it. */
-    public val wire: String,
-) {
-    WRITE("write"),
-    TRANSITION("transition"),
 }
 
 /**
@@ -154,12 +103,12 @@ public interface DeliverySubject : AutoCloseable {
 
 /** `count` interleavings of writes and transitions, each of one to `longest` steps, and each with a write: one that writes nothing checks nothing. */
 public fun deliveryOps(count: Int, longest: Int, random: Random): List<List<DeliveryOp>> = List(count) {
-    val steps = List(1 + random.nextInt(longest)) { if (random.nextBoolean()) DeliveryOp.WRITE else DeliveryOp.TRANSITION }
-    if (DeliveryOp.WRITE in steps) steps else steps + DeliveryOp.WRITE
+    val steps = List(1 + random.nextInt(longest)) { DeliveryOp.entries[random.nextInt(DeliveryOp.entries.size)] }
+    if (DeliveryOp.Write in steps) steps else steps + DeliveryOp.Write
 }
 
 private fun deliveryViolation(ops: List<DeliveryOp>, written: List<String>, delivered: List<String>): String? {
-    val under = "under ⟨${ops.joinToString(",") { it.wire }}⟩"
+    val under = "under ⟨${ops.joinToString(",") { it.value }}⟩"
     for (eventId in written) {
         val times = delivered.count { it == eventId }
         if (times == 0) return "L3: event ⟨$eventId⟩ was delivered 0 times $under: lost across a transition"
@@ -183,8 +132,8 @@ public fun assertExactlyOnceDelivery(setup: () -> DeliverySubject, interleavings
         val violation = setup().use { subject ->
             for ((number, step) in steps.withIndex()) {
                 when (step) {
-                    DeliveryOp.WRITE -> "e$number".also { subject.write(it) }.let(written::add)
-                    DeliveryOp.TRANSITION -> subject.transition()
+                    DeliveryOp.Write -> "e$number".also { subject.write(it) }.let(written::add)
+                    DeliveryOp.Transition -> subject.transition()
                 }
             }
             deliveryViolation(steps, written, subject.delivered())

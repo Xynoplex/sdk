@@ -1,4 +1,4 @@
-(* Generated from string enums in protocol/specs/src/components/schemas and in Protocol's tables. Do not edit.
+(* Generated from string enums in protocol/specs/src/components/schemas and protocol/specs/src/client, and in Protocol's tables. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/enums.ml) *)
 
 let () =
@@ -531,6 +531,65 @@ let () =
   Alcotest.check Alcotest.bool "Supported_media_type decode" true
     (Model.of_string "font/otf" = Some Model.Font_otf);
   Alcotest.check Alcotest.bool "Supported_media_type rejects unknown values"
+    true
+    (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Anchor_method in
+  Alcotest.check Alcotest.string "Anchor_method encode" "unique-match"
+    (Model.to_string Model.Unique_match);
+  Alcotest.check Alcotest.bool "Anchor_method decode" true
+    (Model.of_string "unique-match" = Some Model.Unique_match);
+  Alcotest.check Alcotest.string "Anchor_method encode" "context-recovered"
+    (Model.to_string Model.Context_recovered);
+  Alcotest.check Alcotest.bool "Anchor_method decode" true
+    (Model.of_string "context-recovered" = Some Model.Context_recovered);
+  Alcotest.check Alcotest.string "Anchor_method encode" "first-of-many"
+    (Model.to_string Model.First_of_many);
+  Alcotest.check Alcotest.bool "Anchor_method decode" true
+    (Model.of_string "first-of-many" = Some Model.First_of_many);
+  Alcotest.check Alcotest.string "Anchor_method encode" "fuzzy-match"
+    (Model.to_string Model.Fuzzy_match);
+  Alcotest.check Alcotest.bool "Anchor_method decode" true
+    (Model.of_string "fuzzy-match" = Some Model.Fuzzy_match);
+  Alcotest.check Alcotest.bool "Anchor_method rejects unknown values" true
+    (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Match_quality in
+  Alcotest.check Alcotest.string "Match_quality encode" "normalized"
+    (Model.to_string Model.Normalized);
+  Alcotest.check Alcotest.bool "Match_quality decode" true
+    (Model.of_string "normalized" = Some Model.Normalized);
+  Alcotest.check Alcotest.string "Match_quality encode" "case-insensitive"
+    (Model.to_string Model.Case_insensitive);
+  Alcotest.check Alcotest.bool "Match_quality decode" true
+    (Model.of_string "case-insensitive" = Some Model.Case_insensitive);
+  Alcotest.check Alcotest.string "Match_quality encode" "fuzzy"
+    (Model.to_string Model.Fuzzy);
+  Alcotest.check Alcotest.bool "Match_quality decode" true
+    (Model.of_string "fuzzy" = Some Model.Fuzzy);
+  Alcotest.check Alcotest.bool "Match_quality rejects unknown values" true
+    (Model.of_string "" = None);
+  let module Model = Xynolog.Enums.Discovery_absent_reason in
+  Alcotest.check Alcotest.string "Discovery_absent_reason encode" "not-found"
+    (Model.to_string Model.Not_found);
+  Alcotest.check Alcotest.bool "Discovery_absent_reason decode" true
+    (Model.of_string "not-found" = Some Model.Not_found);
+  Alcotest.check Alcotest.string "Discovery_absent_reason encode" "not-json"
+    (Model.to_string Model.Not_json);
+  Alcotest.check Alcotest.bool "Discovery_absent_reason decode" true
+    (Model.of_string "not-json" = Some Model.Not_json);
+  Alcotest.check Alcotest.string "Discovery_absent_reason encode" "invalid"
+    (Model.to_string Model.Invalid);
+  Alcotest.check Alcotest.bool "Discovery_absent_reason decode" true
+    (Model.of_string "invalid" = Some Model.Invalid);
+  Alcotest.check Alcotest.string "Discovery_absent_reason encode"
+    "unsupported-version"
+    (Model.to_string Model.Unsupported_version);
+  Alcotest.check Alcotest.bool "Discovery_absent_reason decode" true
+    (Model.of_string "unsupported-version" = Some Model.Unsupported_version);
+  Alcotest.check Alcotest.string "Discovery_absent_reason encode" "unreadable"
+    (Model.to_string Model.Unreadable);
+  Alcotest.check Alcotest.bool "Discovery_absent_reason decode" true
+    (Model.of_string "unreadable" = Some Model.Unreadable);
+  Alcotest.check Alcotest.bool "Discovery_absent_reason rejects unknown values"
     true
     (Model.of_string "" = None);
   let module Model = Xynolog.Enums.Kb_session_status in

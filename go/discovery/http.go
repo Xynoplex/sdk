@@ -15,6 +15,7 @@ import (
 	"sync"
 
 	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 type httpDiscovery struct {
@@ -34,9 +35,9 @@ func (h *httpDiscovery) Read(ctx context.Context) DiscoveryRead {
 	defer cancel()
 	unreadable := func(err error) Absent {
 		if errors.Is(asking.Err(), context.DeadlineExceeded) && ctx.Err() == nil {
-			return Absent{Reason: Unreadable, Diagnostic: fmt.Sprintf("the document was not served within %ds", int64(deadline.Seconds()))}
+			return Absent{Reason: api.DiscoveryAbsentReasonUnreadable, Diagnostic: fmt.Sprintf("the document was not served within %ds", int64(deadline.Seconds()))}
 		}
-		return Absent{Reason: Unreadable, Diagnostic: err.Error()}
+		return Absent{Reason: api.DiscoveryAbsentReasonUnreadable, Diagnostic: err.Error()}
 	}
 
 	request, err := http.NewRequestWithContext(asking, http.MethodGet, h.url, nil)
@@ -57,11 +58,11 @@ func (h *httpDiscovery) Read(ctx context.Context) DiscoveryRead {
 		return Unchanged{}
 	}
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return Absent{Reason: NotFound, Diagnostic: fmt.Sprintf("HTTP %d", response.StatusCode)}
+		return Absent{Reason: api.DiscoveryAbsentReasonNotFound, Diagnostic: fmt.Sprintf("HTTP %d", response.StatusCode)}
 	}
 	contentType := response.Header.Get("Content-Type")
 	if !strings.Contains(strings.ToLower(contentType), "json") {
-		return Absent{Reason: NotFound, Diagnostic: fmt.Sprintf("the content type is \"%s\", not JSON", contentType)}
+		return Absent{Reason: api.DiscoveryAbsentReasonNotFound, Diagnostic: fmt.Sprintf("the content type is \"%s\", not JSON", contentType)}
 	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {

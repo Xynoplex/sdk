@@ -67,7 +67,7 @@ import XynologTesting
   let running = Task { try await generate(from: resource.id, using: client) }
   defer { running.cancel() }
   let completed = try await withinTestDeadline {
-    while !transport.attempts.contains(where: { $0.operation == Channels.jobCreate.name }) {
+    while !transport.requestLog.contains(where: { $0.channel == Channels.jobCreate.name }) {
       try await Task.sleep(for: .milliseconds(2))
     }
     let completion = YieldJobCompleteCommand(jobId: job, resourceId: resource.id)

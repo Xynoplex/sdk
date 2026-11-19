@@ -39,36 +39,6 @@ import (
 	"github.com/xynolog/sdk/go/internal/kept"
 )
 
-// FaultAction is what the wire does to one request: Deliver, DropReply,
-// Delay, DuplicateReply or RejectEmit. Read it with a type switch.
-type FaultAction interface {
-	faultAction()
-}
-
-// Deliver is the request's reply delivered.
-type Deliver struct{}
-
-// DropReply is the request's reply lost.
-type DropReply struct{}
-
-// Delay is the request's reply delivered For after the request.
-type Delay struct {
-	For time.Duration
-}
-
-// DuplicateReply is the request's reply delivered twice.
-type DuplicateReply struct{}
-
-// RejectEmit is the emit itself refused: the request never reaches the
-// gateway.
-type RejectEmit struct{}
-
-func (Deliver) faultAction()        {}
-func (DropReply) faultAction()      {}
-func (Delay) faultAction()          {}
-func (DuplicateReply) faultAction() {}
-func (RejectEmit) faultAction()     {}
-
 // MakeResponse is what the gateway answers a request with, given its
 // operation (the request's channel) and its payload as it was sent: the
 // reply's response, or nil for a reply that carries none. An error refuses
@@ -79,18 +49,6 @@ type MakeResponse func(operation bus.Channel, payload json.RawMessage) (json.Raw
 // it with one: the payload of the operation's failure channel, such as
 // {"code":"not-found","message":"…"}; nil when it does not refuse it.
 type Refuse func(operation bus.Channel, payload json.RawMessage) json.RawMessage
-
-// RequestLogEntry is one request the transport was sent: the request as it
-// was sent (its channel, its envelope and its payload), what the schedule did
-// to it, and its identity across retries.
-type RequestLogEntry struct {
-	xynolog.Frame
-	// Action is what the schedule did to it.
-	Action FaultAction
-	// RetryKey is the request's identity across retries: two entries with
-	// the same key are one logical request, sent again (RetryKeyOf).
-	RetryKey string
-}
 
 // stamped is what a gateway stamps on a payload: no part of what was asked.
 var stamped = []string{bus.TraceField, "_userId"}
@@ -349,7 +307,7 @@ func (f *FaultyTransport) Emit(_ context.Context, channel bus.Channel, payload m
 	if n := len(f.config.Schedule); n > 0 {
 		action = f.config.Schedule[len(f.log)%n]
 	}
-	f.log = append(f.log, RequestLogEntry{Frame: request, Action: action, RetryKey: RetryKeyOf(channel, sent)})
+	f.log = append(f.log, RequestLogEntry{Channel: channel, Action: action, CorrelationID: envelope.CorrelationID, RetryKey: RetryKeyOf(channel, sent), Payload: sent, Scope: envelope.Scope})
 	if _, rejected := action.(RejectEmit); rejected {
 		f.mu.Unlock()
 		return 0, false, &xynolog.TransportError{Code: xynolog.TransportErrorCodeError, Message: fmt.Sprintf("FaultyTransport: emit rejected by schedule on %s", channel)}
@@ -370,6 +328,8 @@ func (f *FaultyTransport) Emit(_ context.Context, channel bus.Channel, payload m
 	case Delay:
 		time.AfterFunc(action.For, func() { f.arrive(reply, 1) })
 	case DropReply:
+	default:
+		panic(fmt.Sprintf("xynologtest: the transport makes no reply for a %s fault", action.Kind()))
 	}
 	return subscribers, counted, nil
 }

@@ -8,16 +8,6 @@ using Xynolog.Types;
 
 namespace Xynolog.Discovery;
 
-[JsonConverter(typeof(JsonStringEnumConverter<DiscoveryAbsentReason>))]
-public enum DiscoveryAbsentReason
-{
-    [JsonStringEnumMemberName("not-found")] NotFound,
-    [JsonStringEnumMemberName("not-json")] NotJson,
-    [JsonStringEnumMemberName("invalid")] Invalid,
-    [JsonStringEnumMemberName("unsupported-version")] UnsupportedVersion,
-    [JsonStringEnumMemberName("unreadable")] Unreadable,
-}
-
 public abstract record DiscoveryRead;
 public abstract record DiscoveryState : DiscoveryRead;
 public sealed record Absent(DiscoveryAbsentReason Reason, string? Diagnostic = null) : DiscoveryState;

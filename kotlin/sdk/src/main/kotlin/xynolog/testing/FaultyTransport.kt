@@ -39,37 +39,6 @@ import xynolog.transport.unsubscribed
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext
 
-/** What the wire does to one request. */
-public sealed interface FaultAction {
-    /** The behaviour, as every SDK spells it. */
-    public val kind: String
-}
-
-/** The request's reply is delivered. */
-public data object Deliver : FaultAction {
-    override val kind: String get() = "deliver"
-}
-
-/** The request's reply is lost. */
-public data object DropReply : FaultAction {
-    override val kind: String get() = "drop-reply"
-}
-
-/** The request's reply is delivered `ms` milliseconds after it was sent. */
-public data class Delay(public val ms: Long) : FaultAction {
-    override val kind: String get() = "delay"
-}
-
-/** The request's reply is delivered twice. */
-public data object DuplicateReply : FaultAction {
-    override val kind: String get() = "duplicate-reply"
-}
-
-/** The emit itself is refused: the request never reaches the gateway. */
-public data object RejectEmit : FaultAction {
-    override val kind: String get() = "reject-emit"
-}
-
 /**
  * What the gateway answers a request with, given its operation and its
  * payload: its `response`, or none for a reply that carries none. Throwing
@@ -94,18 +63,6 @@ public val REFUSE_UNSCRIPTED: Respond = Respond { operation, _ ->
 
 /** A response queued for an operation: none, for a reply that carries none. */
 private class Queued(val response: JsonElement?)
-
-/** One request the transport was sent. */
-public data class RequestLogEntry(
-    public val channel: String,
-    /** What the schedule did to it. */
-    public val action: FaultAction,
-    public val correlationId: String?,
-    /** The request's identity across retries: two entries with the same key are one logical request, sent again. */
-    public val retryKey: String,
-    /** The payload as it was sent. */
-    public val payload: JsonObject,
-)
 
 /** A request's identity across retries: its channel and its payload, less what the gateway stamps on it, its members in name order. */
 public fun retryKeyOf(channel: String, payload: JsonObject): String =

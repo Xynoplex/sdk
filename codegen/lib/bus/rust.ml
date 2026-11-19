@@ -266,6 +266,7 @@ let attributes (bus : Registry.t) =
         attrs = [ copy ];
         vis = Pub;
         name = "ChannelAttributes";
+        generics = [];
         body =
           R.Fields
             [

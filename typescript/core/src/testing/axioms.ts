@@ -34,9 +34,12 @@ export {
   arbFaultAction,
   arbFaultSchedule,
   arbDeliveryOps,
-  type LivenessScenario,
-  type LivenessAxiomSpec,
   type DeliverySubject,
-  type DeliveryOp,
   type DeliveryAxiomSpec,
 } from '../liveness-axioms';
+
+export type {
+  DeliveryOp,
+  LivenessScenario,
+  LivenessSpec,
+} from '../testing-kit';

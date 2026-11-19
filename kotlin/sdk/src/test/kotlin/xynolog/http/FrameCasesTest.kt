@@ -39,9 +39,9 @@ import xynolog.transport.Carried
 import xynolog.transport.Delivered
 import xynolog.transport.Frame
 import xynolog.transport.FrameRefusal
-import xynolog.transport.FrameRefusalReason
 import xynolog.transport.Heard
 import xynolog.types.BeckonFocusEvent
+import xynolog.types.FrameRefusalReason
 import xynolog.types.wireJson
 
 /** The channel every case told to its readers is on but a request's, read here by type. */
@@ -173,7 +173,7 @@ class FrameCasesTest {
             val line = case["data"]?.jsonPrimitive?.content
             val frame = case["frame"]?.jsonObject
             assertEquals(setOf("why", if (line == null) "frame" else "data", "refused", "member", "reason", "told"), case.keys - setOf("correlationId", "request"))
-            val reason = FrameRefusalReason.entries.single { it.wire == case.getValue("reason").jsonPrimitive.content }
+            val reason = FrameRefusalReason.entries.single { it.value == case.getValue("reason").jsonPrimitive.content }
             val fault = Fault(case.getValue("member").jsonPrimitive.content, reason)
             val replied = frame?.get("channel") == JsonPrimitive(REPLIES.first())
             val channel = if (replied) REPLIES.first() else READ.name

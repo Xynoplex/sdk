@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
-using Xynolog.Discovery;
 using Xunit;
+using Xynolog.Discovery;
+using Xynolog.Types;
 
 namespace Xynolog.Tests;
 
@@ -19,11 +19,8 @@ public sealed partial class TransportTests
         Assert.Equal(reason, Assert.IsType<Absent>(LauncherDiscovery.ParseDiscoveryDocument(text)).Reason);
 
     [Fact]
-    public void DiscoveryReasonsAndIntervalUseTheSharedSpellings()
+    public void DiscoveryIntervalIsTheSharedOne()
     {
-        using var table = ReadSpec("client/discovery-absent.json");
-        Assert.Equal(table.RootElement.GetProperty("reasons").EnumerateArray().Select(row => Text(row, "reason")).Order(),
-            Enum.GetValues<DiscoveryAbsentReason>().Select(reason => JsonSerializer.SerializeToElement(reason).GetString()).Order());
         using var timings = ReadSpec("client/timing.json");
         Assert.Equal(timings.RootElement.GetProperty("timing").EnumerateArray().Single(row => Text(row, "name") == "discoveryIntervalMs")
             .GetProperty("value").GetInt32(), LauncherDiscovery.DiscoveryInterval.TotalMilliseconds);

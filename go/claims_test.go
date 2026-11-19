@@ -128,7 +128,7 @@ func (w *workerWire) relay(channel bus.Channel, payload string) {
 // refuse is a broadcast on channel the gateway relays to this worker, which
 // its transport refuses: its payload is no object.
 func (w *workerWire) refuse(channel bus.Channel) {
-	w.hub.DeliverRefusal(&FrameRefusal{Channel: channel, Member: "payload", Reason: bus.FrameRefusalReasonMalformed, Payload: json.RawMessage(`"job-8"`)})
+	w.hub.DeliverRefusal(&FrameRefusal{Channel: channel, Member: "payload", Reason: api.FrameRefusalReasonMalformed, Payload: json.RawMessage(`"job-8"`)})
 }
 
 // sent is the payload of every emit on channel so far, in order.

@@ -47,7 +47,7 @@ public sealed partial class TransportTests
             Payload = JsonSerializer.SerializeToElement<JobCompleteCommand>(new JobCompleteCommand.YieldJobCompleteCommandCase(done)),
         });
         Assert.Equal(done, await pending);
-        Assert.Equal(new[] { gathered, create }, gateway.RequestLog.Select(entry => entry.Operation));
+        Assert.Equal(new[] { gathered, create }, gateway.RequestLog.Select(entry => entry.Channel));
     }
 
     [Fact]
