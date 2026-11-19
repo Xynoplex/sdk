@@ -96,7 +96,7 @@ final class TestingTest {
     @Test
     void aJavaCompositionIsHeldToTheLivenessAxioms() {
         List<List<FaultAction>> dropped = List.of(List.of(DropReply.INSTANCE));
-        LivenessSpec silent = new LivenessSpec(transport -> new LivenessScenario(List.of(new CompletableFuture<Void>()), List.of(), transport), 20, 1, dropped);
+        LivenessSpec silent = new LivenessSpec(transport -> new LivenessScenario(List.of(new CompletableFuture<Void>()), List.of(), transport), 20, 1, 0, dropped);
         AssertionError caught = assertThrows(AssertionError.class, () -> LivenessKt.assertLivenessAxioms(silent));
         assertTrue(caught.getMessage().startsWith("L1: output #0 said nothing"), caught.getMessage());
 
@@ -117,7 +117,7 @@ final class TestingTest {
             }
         }
         LivenessKt.assertExactlyOnceDelivery(Connection::new, LivenessKt.deliveryOps(20, 12, new Random(3)));
-        assertEquals(List.of(DeliveryOp.WRITE, DeliveryOp.TRANSITION), List.of(DeliveryOp.values()));
+        assertEquals(List.of(DeliveryOp.Write, DeliveryOp.Transition), List.of(DeliveryOp.values()));
     }
 
     @Test

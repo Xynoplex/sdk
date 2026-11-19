@@ -1,5 +1,7 @@
 package xynolog.annotations
 
+import xynolog.types.MatchQuality
+
 /*
  * A span of a text, and finding the one a model quoted. A model asked to mark
  * a text quotes it, and nothing it says is trusted: `reconcile` finds the
@@ -30,21 +32,6 @@ public data class TextSpan @JvmOverloads constructor(
     public val prefix: String? = null,
     public val suffix: String? = null,
 )
-
-/** Which looser search found a span. */
-public enum class MatchQuality(
-    /** The value as the tables spell it. */
-    public val value: String,
-) {
-    /** Without regard to white space, or to the forms of quotation marks and dashes. */
-    Normalized("normalized"),
-
-    /** Without regard to letter case. */
-    CaseInsensitive("case-insensitive"),
-
-    /** Within a twentieth of the words' length in edits. */
-    Fuzzy("fuzzy"),
-}
 
 /** How a span was found. */
 public sealed interface AnchorMethod {

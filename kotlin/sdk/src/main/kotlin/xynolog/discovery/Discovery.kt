@@ -13,6 +13,7 @@ import xynolog.Timings
 import xynolog.telemetry.futureOf
 import xynolog.transport.Events
 import xynolog.types.DiscoveredKB
+import xynolog.types.DiscoveryAbsentReason
 import xynolog.types.DiscoveryDocument
 import xynolog.types.wireJson
 import java.io.FileNotFoundException
@@ -29,27 +30,6 @@ public const val DISCOVERY_INTERVAL: Long = Timings.DISCOVERY_INTERVAL_MS
 
 /** The version of the document this client reads. */
 private const val VERSION = 1L
-
-/** Why no launcher was found, as protocol/specs/src/client/discovery-absent.json states each reason. */
-public enum class DiscoveryAbsentReason(
-    /** The reason as every SDK spells it. */
-    public val wire: String,
-) {
-    /** There is no document where it was looked for. */
-    NotFound("not-found"),
-
-    /** There is a document, and it is not JSON. */
-    NotJson("not-json"),
-
-    /** It is JSON, and not a discovery document. */
-    Invalid("invalid"),
-
-    /** It is of a version this client does not speak, and is not read in part. */
-    UnsupportedVersion("unsupported-version"),
-
-    /** It could not be read at all. */
-    Unreadable("unreadable"),
-}
 
 /** What one read gave: a state, or that nothing changed since the last. */
 public sealed interface DiscoveryRead

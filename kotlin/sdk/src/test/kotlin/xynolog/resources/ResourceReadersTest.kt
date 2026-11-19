@@ -21,7 +21,7 @@ import xynolog.bus.decoded
 import xynolog.bus.faultOf
 import xynolog.errors.TransportError
 import xynolog.sameJson
-import xynolog.transport.FrameRefusalReason
+import xynolog.types.FrameRefusalReason
 import xynolog.types.Representation
 import xynolog.types.ResourceDescriptor
 import xynolog.types.ResourceDescriptorRepresentations
@@ -74,7 +74,7 @@ class ResourceReadersTest {
             // reply to the table before it decodes it, refuses the resource for that fault.
             assertEquals(setOf("why", "resource", "refused", "member", "reason"), case.keys)
             val member = case.getValue("member").jsonPrimitive.content
-            val reason = FrameRefusalReason.entries.single { it.wire == case.getValue("reason").jsonPrimitive.content }
+            val reason = FrameRefusalReason.entries.single { it.value == case.getValue("reason").jsonPrimitive.content }
             assertEquals(Fault(member, reason), faultOf(ResourceDescriptor.serializer().descriptor, case.getValue("resource")))
             val result = Operations.BROWSE_RESOURCE_REQUESTED.result
             val reply = buildJsonObject {

@@ -92,16 +92,16 @@ public final class xynolog/JobRefused : xynolog/JobEvent {
 }
 
 public final class xynolog/RefusedFrame {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/FrameRefusalReason;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Lxynolog/transport/FrameRefusalReason;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;)Lxynolog/RefusedFrame;
-	public static synthetic fun copy$default (Lxynolog/RefusedFrame;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;ILjava/lang/Object;)Lxynolog/RefusedFrame;
+	public final fun component3 ()Lxynolog/types/FrameRefusalReason;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/FrameRefusalReason;)Lxynolog/RefusedFrame;
+	public static synthetic fun copy$default (Lxynolog/RefusedFrame;Ljava/lang/String;Ljava/lang/String;Lxynolog/types/FrameRefusalReason;ILjava/lang/Object;)Lxynolog/RefusedFrame;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getChannel ()Ljava/lang/String;
 	public final fun getMember ()Ljava/lang/String;
-	public final fun getReason ()Lxynolog/transport/FrameRefusalReason;
+	public final fun getReason ()Lxynolog/types/FrameRefusalReason;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -164,12 +164,12 @@ public final class xynolog/annotations/AnchorMethod$FirstOfMany : xynolog/annota
 }
 
 public final class xynolog/annotations/AnchorMethod$FuzzyMatch : xynolog/annotations/AnchorMethod {
-	public fun <init> (Lxynolog/annotations/MatchQuality;)V
-	public final fun component1 ()Lxynolog/annotations/MatchQuality;
-	public final fun copy (Lxynolog/annotations/MatchQuality;)Lxynolog/annotations/AnchorMethod$FuzzyMatch;
-	public static synthetic fun copy$default (Lxynolog/annotations/AnchorMethod$FuzzyMatch;Lxynolog/annotations/MatchQuality;ILjava/lang/Object;)Lxynolog/annotations/AnchorMethod$FuzzyMatch;
+	public fun <init> (Lxynolog/types/MatchQuality;)V
+	public final fun component1 ()Lxynolog/types/MatchQuality;
+	public final fun copy (Lxynolog/types/MatchQuality;)Lxynolog/annotations/AnchorMethod$FuzzyMatch;
+	public static synthetic fun copy$default (Lxynolog/annotations/AnchorMethod$FuzzyMatch;Lxynolog/types/MatchQuality;ILjava/lang/Object;)Lxynolog/annotations/AnchorMethod$FuzzyMatch;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getQuality ()Lxynolog/annotations/MatchQuality;
+	public final fun getQuality ()Lxynolog/types/MatchQuality;
 	public fun getValue ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -220,16 +220,6 @@ public final class xynolog/annotations/AnnotationsKt {
 	public static final fun targetSelector (Lxynolog/types/AnnotationTargetValue;)Lxynolog/types/AnnotationSelector;
 	public static final fun targetSource (Lxynolog/types/AnnotationTargetValue;)Ljava/lang/String;
 	public static final fun textQuoteSelector (Lxynolog/types/AnnotationSelector;)Lxynolog/types/TextQuoteSelector;
-}
-
-public final class xynolog/annotations/MatchQuality : java/lang/Enum {
-	public static final field CaseInsensitive Lxynolog/annotations/MatchQuality;
-	public static final field Fuzzy Lxynolog/annotations/MatchQuality;
-	public static final field Normalized Lxynolog/annotations/MatchQuality;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getValue ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/annotations/MatchQuality;
-	public static fun values ()[Lxynolog/annotations/MatchQuality;
 }
 
 public final class xynolog/annotations/QuotedText {
@@ -463,30 +453,18 @@ public final class xynolog/channels/ScopedChannel {
 }
 
 public final class xynolog/discovery/Absent : xynolog/discovery/DiscoveryState {
-	public fun <init> (Lxynolog/discovery/DiscoveryAbsentReason;)V
-	public fun <init> (Lxynolog/discovery/DiscoveryAbsentReason;Ljava/lang/String;)V
-	public synthetic fun <init> (Lxynolog/discovery/DiscoveryAbsentReason;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lxynolog/discovery/DiscoveryAbsentReason;
+	public fun <init> (Lxynolog/types/DiscoveryAbsentReason;)V
+	public fun <init> (Lxynolog/types/DiscoveryAbsentReason;Ljava/lang/String;)V
+	public synthetic fun <init> (Lxynolog/types/DiscoveryAbsentReason;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lxynolog/types/DiscoveryAbsentReason;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Lxynolog/discovery/DiscoveryAbsentReason;Ljava/lang/String;)Lxynolog/discovery/Absent;
-	public static synthetic fun copy$default (Lxynolog/discovery/Absent;Lxynolog/discovery/DiscoveryAbsentReason;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/discovery/Absent;
+	public final fun copy (Lxynolog/types/DiscoveryAbsentReason;Ljava/lang/String;)Lxynolog/discovery/Absent;
+	public static synthetic fun copy$default (Lxynolog/discovery/Absent;Lxynolog/types/DiscoveryAbsentReason;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/discovery/Absent;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDiagnostic ()Ljava/lang/String;
-	public final fun getReason ()Lxynolog/discovery/DiscoveryAbsentReason;
+	public final fun getReason ()Lxynolog/types/DiscoveryAbsentReason;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/discovery/DiscoveryAbsentReason : java/lang/Enum {
-	public static final field Invalid Lxynolog/discovery/DiscoveryAbsentReason;
-	public static final field NotFound Lxynolog/discovery/DiscoveryAbsentReason;
-	public static final field NotJson Lxynolog/discovery/DiscoveryAbsentReason;
-	public static final field Unreadable Lxynolog/discovery/DiscoveryAbsentReason;
-	public static final field UnsupportedVersion Lxynolog/discovery/DiscoveryAbsentReason;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getWire ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/discovery/DiscoveryAbsentReason;
-	public static fun values ()[Lxynolog/discovery/DiscoveryAbsentReason;
 }
 
 public final class xynolog/discovery/DiscoveryDiff {
@@ -1828,35 +1806,6 @@ public abstract interface class xynolog/testing/Answer {
 public abstract interface class xynolog/testing/ContentCall {
 }
 
-public final class xynolog/testing/Delay : xynolog/testing/FaultAction {
-	public fun <init> (J)V
-	public final fun component1 ()J
-	public final fun copy (J)Lxynolog/testing/Delay;
-	public static synthetic fun copy$default (Lxynolog/testing/Delay;JILjava/lang/Object;)Lxynolog/testing/Delay;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getKind ()Ljava/lang/String;
-	public final fun getMs ()J
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/testing/Deliver : xynolog/testing/FaultAction {
-	public static final field INSTANCE Lxynolog/testing/Deliver;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getKind ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/testing/DeliveryOp : java/lang/Enum {
-	public static final field TRANSITION Lxynolog/testing/DeliveryOp;
-	public static final field WRITE Lxynolog/testing/DeliveryOp;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getWire ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/testing/DeliveryOp;
-	public static fun values ()[Lxynolog/testing/DeliveryOp;
-}
-
 public abstract interface class xynolog/testing/DeliverySubject : java/lang/AutoCloseable {
 	public fun close ()V
 	public abstract fun delivered ()Ljava/util/List;
@@ -1866,26 +1815,6 @@ public abstract interface class xynolog/testing/DeliverySubject : java/lang/Auto
 
 public final class xynolog/testing/DeliverySubject$DefaultImpls {
 	public static fun close (Lxynolog/testing/DeliverySubject;)V
-}
-
-public final class xynolog/testing/DropReply : xynolog/testing/FaultAction {
-	public static final field INSTANCE Lxynolog/testing/DropReply;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getKind ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/testing/DuplicateReply : xynolog/testing/FaultAction {
-	public static final field INSTANCE Lxynolog/testing/DuplicateReply;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getKind ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public abstract interface class xynolog/testing/FaultAction {
-	public abstract fun getKind ()Ljava/lang/String;
 }
 
 public final class xynolog/testing/FaultyTransport : xynolog/transport/Transport {
@@ -2023,28 +1952,6 @@ public final class xynolog/testing/LivenessKt {
 	public static final fun faultSchedules (ILjava/util/Random;)Ljava/util/List;
 }
 
-public final class xynolog/testing/LivenessScenario : java/lang/AutoCloseable {
-	public fun <init> (Ljava/util/List;Ljava/util/List;)V
-	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/lang/AutoCloseable;)V
-	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/lang/AutoCloseable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun close ()V
-	public final fun getOutputs ()Ljava/util/List;
-	public final fun getSettlements ()Ljava/util/List;
-}
-
-public final class xynolog/testing/LivenessSpec {
-	public fun <init> (Lkotlin/jvm/functions/Function1;JILjava/util/List;)V
-	public fun <init> (Lkotlin/jvm/functions/Function1;JILjava/util/List;Lxynolog/testing/Respond;)V
-	public fun <init> (Lkotlin/jvm/functions/Function1;JILjava/util/List;Lxynolog/testing/Respond;Lkotlin/coroutines/CoroutineContext;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;JILjava/util/List;Lxynolog/testing/Respond;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getContext ()Lkotlin/coroutines/CoroutineContext;
-	public final fun getRespond ()Lxynolog/testing/Respond;
-	public final fun getRetryBudget ()I
-	public final fun getSchedules ()Ljava/util/List;
-	public final fun getSetup ()Lkotlin/jvm/functions/Function1;
-	public final fun getTimeoutMs ()J
-}
-
 public final class xynolog/testing/PutBinary : xynolog/testing/ContentCall {
 	public fun <init> (Lxynolog/transport/PutBinaryRequest;)V
 	public final fun component1 ()Lxynolog/transport/PutBinaryRequest;
@@ -2062,33 +1969,6 @@ public abstract interface class xynolog/testing/Refusal {
 
 public abstract interface class xynolog/testing/Refuse {
 	public abstract fun refuse (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)Lkotlinx/serialization/json/JsonObject;
-}
-
-public final class xynolog/testing/RejectEmit : xynolog/testing/FaultAction {
-	public static final field INSTANCE Lxynolog/testing/RejectEmit;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getKind ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/testing/RequestLogEntry {
-	public fun <init> (Ljava/lang/String;Lxynolog/testing/FaultAction;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lxynolog/testing/FaultAction;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Lkotlinx/serialization/json/JsonObject;
-	public final fun copy (Ljava/lang/String;Lxynolog/testing/FaultAction;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)Lxynolog/testing/RequestLogEntry;
-	public static synthetic fun copy$default (Lxynolog/testing/RequestLogEntry;Ljava/lang/String;Lxynolog/testing/FaultAction;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILjava/lang/Object;)Lxynolog/testing/RequestLogEntry;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAction ()Lxynolog/testing/FaultAction;
-	public final fun getChannel ()Ljava/lang/String;
-	public final fun getCorrelationId ()Ljava/lang/String;
-	public final fun getPayload ()Lkotlinx/serialization/json/JsonObject;
-	public final fun getRetryKey ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class xynolog/testing/Respond {
@@ -2294,36 +2174,27 @@ public final class xynolog/transport/Frame : xynolog/transport/Carried {
 }
 
 public final class xynolog/transport/FrameRefusal : xynolog/transport/Carried, xynolog/transport/Heard {
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/BoxingConstructorMarker;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Lxynolog/identifiers/ResourceId;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/BoxingConstructorMarker;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Lxynolog/identifiers/ResourceId;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Lxynolog/transport/FrameRefusalReason;
+	public final fun component3 ()Lxynolog/types/FrameRefusalReason;
 	public final fun component4 ()Lkotlinx/serialization/json/JsonElement;
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6-3LCPUrU ()Ljava/lang/String;
-	public final fun copy-T8liQTM (Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;)Lxynolog/transport/FrameRefusal;
-	public static synthetic fun copy-T8liQTM$default (Lxynolog/transport/FrameRefusal;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/transport/FrameRefusal;
+	public final fun copy-T8liQTM (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;)Lxynolog/transport/FrameRefusal;
+	public static synthetic fun copy-T8liQTM$default (Lxynolog/transport/FrameRefusal;Ljava/lang/String;Ljava/lang/String;Lxynolog/types/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/transport/FrameRefusal;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getChannel ()Ljava/lang/String;
 	public fun getCorrelationId ()Ljava/lang/String;
 	public final fun getMember ()Ljava/lang/String;
 	public final fun getPayload ()Lkotlinx/serialization/json/JsonElement;
-	public final fun getReason ()Lxynolog/transport/FrameRefusalReason;
+	public final fun getReason ()Lxynolog/types/FrameRefusalReason;
 	public final fun getScope ()Lxynolog/identifiers/ResourceId;
 	public final fun getScope-3LCPUrU ()Ljava/lang/String;
 	public fun getStatus ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
-}
-
-public final class xynolog/transport/FrameRefusalReason : java/lang/Enum {
-	public static final field Lacks Lxynolog/transport/FrameRefusalReason;
-	public static final field Malformed Lxynolog/transport/FrameRefusalReason;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getWire ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lxynolog/transport/FrameRefusalReason;
-	public static fun values ()[Lxynolog/transport/FrameRefusalReason;
 }
 
 public abstract interface class xynolog/transport/FrameSink {

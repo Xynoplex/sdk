@@ -35,7 +35,6 @@ import xynolog.transport.Delivered
 import xynolog.transport.Events
 import xynolog.transport.Frame
 import xynolog.transport.FrameRefusal
-import xynolog.transport.FrameRefusalReason
 import xynolog.transport.FrameSink
 import xynolog.transport.Heard
 import xynolog.transport.PendingReply
@@ -48,6 +47,7 @@ import xynolog.types.AnchoredTextAnswer
 import xynolog.types.BrowseProfilesRequest
 import xynolog.types.BusPingMessage
 import xynolog.types.FrameAddEntityTypeCommand
+import xynolog.types.FrameRefusalReason
 import xynolog.types.GatherAnnotationOptions
 import xynolog.types.JobCompleteCommand
 import java.util.concurrent.CompletableFuture

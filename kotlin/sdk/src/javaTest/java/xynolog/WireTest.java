@@ -32,12 +32,12 @@ import xynolog.transport.Content;
 import xynolog.transport.ContentStream;
 import xynolog.transport.Delivered;
 import xynolog.transport.FrameRefusal;
-import xynolog.transport.FrameRefusalReason;
 import xynolog.transport.Heard;
 import xynolog.transport.PutBinaryRequest;
 import xynolog.transport.Upload;
 import xynolog.types.BeckonFocusEvent;
 import xynolog.types.FrameAddEntityTypeCommand;
+import xynolog.types.FrameRefusalReason;
 import xynolog.types.StatusResponse;
 
 /** The wire layer as a Java program calls it: a request through its future, a stream through its publisher, a request the program gives up, and content uploaded and read. */

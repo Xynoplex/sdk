@@ -47,7 +47,6 @@ import xynolog.transport.ConnectionState
 import xynolog.transport.Events
 import xynolog.transport.Frame
 import xynolog.transport.FrameRefusal
-import xynolog.transport.FrameRefusalReason
 import xynolog.transport.FrameSink
 import xynolog.transport.PendingReply
 import xynolog.transport.ReplyRouter
@@ -55,6 +54,7 @@ import xynolog.transport.ResourceHold
 import xynolog.transport.Transport
 import xynolog.transport.Watched
 import xynolog.types.CommentingJobParams
+import xynolog.types.FrameRefusalReason
 import xynolog.types.GenerationJobParams
 import xynolog.types.HighlightingJobParams
 import xynolog.types.JobCompleteCommand
@@ -184,7 +184,7 @@ private fun <C : JobCompleteCommand> kind(event: JobEvent<C>): String = when (ev
     is JobCreated -> "created ${event.data.jobId.value}"
     is JobProgressed -> "progress ${event.data.percentage.toInt()}"
     is JobAttemptFailed -> "failed"
-    is JobRefused -> "refused ${event.data.channel} ${event.data.member} ${event.data.reason.wire}"
+    is JobRefused -> "refused ${event.data.channel} ${event.data.member} ${event.data.reason.value}"
     is JobCompleted -> "complete"
 }
 
