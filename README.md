@@ -5,10 +5,12 @@ This repository contains the language SDKs and consumer-facing packages for buil
 ## Languages
 
 - `typescript/` — client SDK, HTTP transport, core types, observability, and React UI
-- `rust/` — client SDK, HTTP transport, telemetry, and its published code generator
+- `rust/` — client SDK, HTTP transport, and telemetry
 - `python/` — Python SDK
 - `go/` — Go SDK
 - `csharp/`, `kotlin/`, `swift/`, `haskell/`, and `ocaml/` — SDK implementations under development
+
+[`codegen/`](codegen/README.md) is the generator that writes every SDK's generated code from the pinned Protocol, and cli's and images'.
 
 Each SDK subdirectory has a README with its package contents and development notes. Public packages use the Xynolog names and scopes.
 
