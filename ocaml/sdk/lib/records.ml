@@ -4884,42 +4884,6 @@ module Bus_resume_gap = struct
     project (fields_of (Models.json model))
 end
 
-module Gateway_config = struct
-  type t = {
-    kb : Yojson.Raw.t;
-    port : Yojson.Raw.t;
-    public_url : string;
-    identity : Yojson.Raw.t;
-    archivist : Yojson.Raw.t;
-    signal : Yojson.Raw.t;
-    log_level : Yojson.Raw.t;
-    log_format : Yojson.Raw.t;
-    capacity : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        kb = required reader raw "kb";
-        port = required reader raw "port";
-        public_url = required reader string "publicUrl";
-        identity = required reader raw "identity";
-        archivist = required reader raw "archivist";
-        signal = required reader raw "signal";
-        log_level = required reader raw "logLevel";
-        log_format = required reader raw "logFormat";
-        capacity = required reader raw "capacity";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `GatewayConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
 module Kb_identity = struct
   type t = {
     name : string;
@@ -4985,110 +4949,6 @@ module Resource_upload = struct
     { record with extra = rest reader }
 
   let of_model (model : [ `ResourceUpload ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Archivist_events_response = struct
-  type t = {
-    events : Yojson.Raw.t;
-    last_sequence : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        events = required reader raw "events";
-        last_sequence = required reader raw "lastSequence";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `ArchivistEventsResponse ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Archivist_stream = struct
-  type t = {
-    resource_id : Yojson.Raw.t;
-    last_sequence : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        resource_id = required reader raw "resourceId";
-        last_sequence = required reader raw "lastSequence";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `ArchivistStream ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Archivist_streams_response = struct
-  type t = { streams : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
-
-  let project fields =
-    let reader = start fields in
-    let record = { streams = required reader raw "streams"; extra = [] } in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `ArchivistStreamsResponse ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Archivist_health = struct
-  type t = {
-    status : string;
-    actors : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        status = required reader string "status";
-        actors = required reader raw "actors";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `ArchivistHealth ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Representation_not_found = struct
-  type t = {
-    error : string;
-    code : Yojson.Raw.t;
-    hint : string Types.presence;
-    details : Yojson.Raw.t Types.presence;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        error = required reader string "error";
-        code = required reader raw "code";
-        hint = optional reader string "hint";
-        details = optional reader raw "details";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `RepresentationNotFound ] Models.t) =
     project (fields_of (Models.json model))
 end
 
@@ -5745,590 +5605,6 @@ module Job_claimed_result = struct
     project (fields_of (Models.json model))
 end
 
-module Dispatcher_config = struct
-  type t = {
-    kb : Yojson.Raw.t;
-    gateway_url : string;
-    identity : Yojson.Raw.t;
-    queue : Yojson.Raw.t;
-    port : Yojson.Raw.t;
-    timing : Yojson.Raw.t;
-    log_level : Yojson.Raw.t;
-    log_format : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        kb = required reader raw "kb";
-        gateway_url = required reader string "gatewayUrl";
-        identity = required reader raw "identity";
-        queue = required reader raw "queue";
-        port = required reader raw "port";
-        timing = required reader raw "timing";
-        log_level = required reader raw "logLevel";
-        log_format = required reader raw "logFormat";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `DispatcherConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Worker_config = struct
-  type t = {
-    knowledge_bases : Yojson.Raw.t;
-    model_catalogue : string;
-    port : Yojson.Raw.t;
-    log_level : Yojson.Raw.t;
-    log_format : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        knowledge_bases = required reader raw "knowledgeBases";
-        model_catalogue = required reader string "modelCatalogue";
-        port = required reader raw "port";
-        log_level = required reader raw "logLevel";
-        log_format = required reader raw "logFormat";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `WorkerConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Worker_engine_config = struct
-  type t = {
-    engine : Yojson.Raw.t;
-    jobs : Yojson.Raw.t;
-    base_url : string;
-    api_key_env : string Types.presence;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        engine = required reader raw "engine";
-        jobs = required reader raw "jobs";
-        base_url = required reader string "baseUrl";
-        api_key_env = optional reader string "apiKeyEnv";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `WorkerEngineConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Worker_knowledge_base_config = struct
-  type t = {
-    domain : string;
-    gateway_url : string;
-    identity : Yojson.Raw.t;
-    engines : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        domain = required reader string "domain";
-        gateway_url = required reader string "gatewayUrl";
-        identity = required reader raw "identity";
-        engines = required reader raw "engines";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `WorkerKnowledgeBaseConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Worker_health = struct
-  type t = {
-    status : string;
-    knowledge_bases : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        status = required reader string "status";
-        knowledge_bases = required reader raw "knowledgeBases";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `WorkerHealth ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Worker_knowledge_base_health = struct
-  type t = {
-    domain : string;
-    state : string;
-    did : string Types.presence;
-    engines : Yojson.Raw.t Types.presence;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        domain = required reader string "domain";
-        state = required reader string "state";
-        did = optional reader string "did";
-        engines = optional reader raw "engines";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `WorkerKnowledgeBaseHealth ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Worker_engine_health = struct
-  type t = {
-    engine : Yojson.Raw.t;
-    jobs : Yojson.Raw.t;
-    last_queued_event_at : Yojson.Raw.t;
-    last_claim_at : Yojson.Raw.t;
-    last_finished_at : Yojson.Raw.t;
-    last_activity_at : Yojson.Raw.t;
-    active_job : Yojson.Raw.t;
-    jobs_completed : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        engine = required reader raw "engine";
-        jobs = required reader raw "jobs";
-        last_queued_event_at = required reader raw "lastQueuedEventAt";
-        last_claim_at = required reader raw "lastClaimAt";
-        last_finished_at = required reader raw "lastFinishedAt";
-        last_activity_at = required reader raw "lastActivityAt";
-        active_job = required reader raw "activeJob";
-        jobs_completed = required reader raw "jobsCompleted";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `WorkerEngineHealth ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Weaver_config = struct
-  type t = {
-    kb : Yojson.Raw.t;
-    gateway_url : string;
-    identity : Yojson.Raw.t;
-    archivist : Yojson.Raw.t;
-    graph : Yojson.Raw.t;
-    cursors_path : Yojson.Raw.t;
-    port : Yojson.Raw.t;
-    log_level : Yojson.Raw.t;
-    log_format : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        kb = required reader raw "kb";
-        gateway_url = required reader string "gatewayUrl";
-        identity = required reader raw "identity";
-        archivist = required reader raw "archivist";
-        graph = required reader raw "graph";
-        cursors_path = required reader raw "cursorsPath";
-        port = required reader raw "port";
-        log_level = required reader raw "logLevel";
-        log_format = required reader raw "logFormat";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `WeaverConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Neo4j_graph_config = struct
-  type t = {
-    type_ : string;
-    uri : string;
-    username : string;
-    password_env : string;
-    database : string;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        type_ = required reader string "type";
-        uri = required reader string "uri";
-        username = required reader string "username";
-        password_env = required reader string "passwordEnv";
-        database = required reader string "database";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `Neo4jGraphConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Janus_graph_config = struct
-  type t = {
-    type_ : string;
-    host : string;
-    port : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        type_ = required reader string "type";
-        host = required reader string "host";
-        port = required reader raw "port";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `JanusGraphConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Neptune_graph_config = struct
-  type t = {
-    type_ : string;
-    endpoint : string;
-    port : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        type_ = required reader string "type";
-        endpoint = required reader string "endpoint";
-        port = required reader raw "port";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `NeptuneGraphConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Memory_graph_config = struct
-  type t = { type_ : string; extra : (string * Yojson.Raw.t) list }
-
-  let project fields =
-    let reader = start fields in
-    let record = { type_ = required reader string "type"; extra = [] } in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `MemoryGraphConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Smelter_config = struct
-  type t = {
-    kb : Yojson.Raw.t;
-    gateway_url : string;
-    identity : Yojson.Raw.t;
-    archivist : Yojson.Raw.t;
-    embedding : Yojson.Raw.t;
-    vectors : Yojson.Raw.t;
-    chunking : Yojson.Raw.t;
-    pdfs_at_once : Yojson.Raw.t;
-    cursors_path : Yojson.Raw.t;
-    port : Yojson.Raw.t;
-    log_level : Yojson.Raw.t;
-    log_format : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        kb = required reader raw "kb";
-        gateway_url = required reader string "gatewayUrl";
-        identity = required reader raw "identity";
-        archivist = required reader raw "archivist";
-        embedding = required reader raw "embedding";
-        vectors = required reader raw "vectors";
-        chunking = required reader raw "chunking";
-        pdfs_at_once = required reader raw "pdfsAtOnce";
-        cursors_path = required reader raw "cursorsPath";
-        port = required reader raw "port";
-        log_level = required reader raw "logLevel";
-        log_format = required reader raw "logFormat";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `SmelterConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Librarian_config = struct
-  type t = {
-    kb : Yojson.Raw.t;
-    gateway_url : string;
-    identity : Yojson.Raw.t;
-    archivist : Yojson.Raw.t;
-    graph : Yojson.Raw.t;
-    vectors : Yojson.Raw.t;
-    embedding : Yojson.Raw.t;
-    matcher : Yojson.Raw.t;
-    gatherer : Yojson.Raw.t;
-    model_catalogue : string;
-    gather : Yojson.Raw.t;
-    search : Yojson.Raw.t;
-    port : Yojson.Raw.t;
-    log_level : Yojson.Raw.t;
-    log_format : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        kb = required reader raw "kb";
-        gateway_url = required reader string "gatewayUrl";
-        identity = required reader raw "identity";
-        archivist = required reader raw "archivist";
-        graph = required reader raw "graph";
-        vectors = required reader raw "vectors";
-        embedding = required reader raw "embedding";
-        matcher = required reader raw "matcher";
-        gatherer = required reader raw "gatherer";
-        model_catalogue = required reader string "modelCatalogue";
-        gather = required reader raw "gather";
-        search = required reader raw "search";
-        port = required reader raw "port";
-        log_level = required reader raw "logLevel";
-        log_format = required reader raw "logFormat";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `LibrarianConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Librarian_engine_config = struct
-  type t = {
-    engine : Yojson.Raw.t;
-    base_url : string;
-    api_key_env : string Types.presence;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        engine = required reader raw "engine";
-        base_url = required reader string "baseUrl";
-        api_key_env = optional reader string "apiKeyEnv";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `LibrarianEngineConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Ollama_embedding_config = struct
-  type t = {
-    type_ : string;
-    model : string;
-    base_url : string;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        type_ = required reader string "type";
-        model = required reader string "model";
-        base_url = required reader string "baseUrl";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `OllamaEmbeddingConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Voyage_embedding_config = struct
-  type t = {
-    type_ : string;
-    model : string;
-    endpoint : string;
-    api_key_env : string;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        type_ = required reader string "type";
-        model = required reader string "model";
-        endpoint = required reader string "endpoint";
-        api_key_env = required reader string "apiKeyEnv";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `VoyageEmbeddingConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Qdrant_vectors_config = struct
-  type t = {
-    type_ : string;
-    host : string;
-    port : Yojson.Raw.t;
-    token_env : string;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        type_ = required reader string "type";
-        host = required reader string "host";
-        port = required reader raw "port";
-        token_env = required reader string "tokenEnv";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `QdrantVectorsConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Memory_vectors_config = struct
-  type t = { type_ : string; extra : (string * Yojson.Raw.t) list }
-
-  let project fields =
-    let reader = start fields in
-    let record = { type_ = required reader string "type"; extra = [] } in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `MemoryVectorsConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Dispatcher_health = struct
-  type t = {
-    status : string;
-    queue : string;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        status = required reader string "status";
-        queue = required reader string "queue";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `DispatcherHealth ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Archivist_config = struct
-  type t = {
-    gateway_url : string;
-    identity : Yojson.Raw.t;
-    root : string;
-    state_home : string;
-    anchored_text_dir : string;
-    engines : Yojson.Raw.t;
-    port : Yojson.Raw.t;
-    skip_rebuild : bool;
-    staging : Yojson.Raw.t;
-    log_level : Yojson.Raw.t;
-    log_format : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        gateway_url = required reader string "gatewayUrl";
-        identity = required reader raw "identity";
-        root = required reader string "root";
-        state_home = required reader string "stateHome";
-        anchored_text_dir = required reader string "anchoredTextDir";
-        engines = required reader raw "engines";
-        port = required reader raw "port";
-        skip_rebuild = required reader bool "skipRebuild";
-        staging = required reader raw "staging";
-        log_level = required reader raw "logLevel";
-        log_format = required reader raw "logFormat";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `ArchivistConfig ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
 module Service_identity = struct
   type t = { issuer : string; extra : (string * Yojson.Raw.t) list }
 
@@ -6494,110 +5770,6 @@ module Storage_uri_entry = struct
     { record with extra = rest reader }
 
   let of_model (model : [ `StorageUriEntry ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Anchored_text_extracted_entry = struct
-  type t = {
-    v : Yojson.Raw.t;
-    stamp : string;
-    text : string;
-    lines : Yojson.Raw.t;
-    method_ : Yojson.Raw.t;
-    pdf_class : Yojson.Raw.t Types.presence;
-    ocr_confidence : Yojson.Raw.t Types.presence;
-    unread_pages : Yojson.Raw.t Types.presence;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        v = required reader raw "v";
-        stamp = required reader string "stamp";
-        text = required reader string "text";
-        lines = required reader raw "lines";
-        method_ = required reader raw "method";
-        pdf_class = optional reader raw "pdfClass";
-        ocr_confidence = optional reader raw "ocrConfidence";
-        unread_pages = optional reader raw "unreadPages";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `AnchoredTextExtractedEntry ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Anchored_text_declined_entry = struct
-  type t = {
-    v : Yojson.Raw.t;
-    stamp : string;
-    declined : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        v = required reader raw "v";
-        stamp = required reader string "stamp";
-        declined = required reader raw "declined";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `AnchoredTextDeclinedEntry ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Anchored_text_entries = struct
-  type t = { checksums : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
-
-  let project fields =
-    let reader = start fields in
-    let record = { checksums = required reader raw "checksums"; extra = [] } in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `AnchoredTextEntries ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Anchored_text_stamp = struct
-  type t = { stamp : string; extra : (string * Yojson.Raw.t) list }
-
-  let project fields =
-    let reader = start fields in
-    let record = { stamp = required reader string "stamp"; extra = [] } in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `AnchoredTextStamp ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
-module Anchored_text_write = struct
-  type t = {
-    content_checksum : string;
-    entry : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        content_checksum = required reader string "contentChecksum";
-        entry = required reader raw "entry";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `AnchoredTextWrite ] Models.t) =
     project (fields_of (Models.json model))
 end
 
@@ -6824,6 +5996,834 @@ module Smelt_settled = struct
     { record with extra = rest reader }
 
   let of_model (model : [ `SmeltSettled ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Anchored_text_declined_entry = struct
+  type t = {
+    v : Yojson.Raw.t;
+    stamp : string;
+    declined : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        v = required reader raw "v";
+        stamp = required reader string "stamp";
+        declined = required reader raw "declined";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `AnchoredTextDeclinedEntry ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Anchored_text_entries = struct
+  type t = { checksums : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+
+  let project fields =
+    let reader = start fields in
+    let record = { checksums = required reader raw "checksums"; extra = [] } in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `AnchoredTextEntries ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Anchored_text_extracted_entry = struct
+  type t = {
+    v : Yojson.Raw.t;
+    stamp : string;
+    text : string;
+    lines : Yojson.Raw.t;
+    method_ : Yojson.Raw.t;
+    pdf_class : Yojson.Raw.t Types.presence;
+    ocr_confidence : Yojson.Raw.t Types.presence;
+    unread_pages : Yojson.Raw.t Types.presence;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        v = required reader raw "v";
+        stamp = required reader string "stamp";
+        text = required reader string "text";
+        lines = required reader raw "lines";
+        method_ = required reader raw "method";
+        pdf_class = optional reader raw "pdfClass";
+        ocr_confidence = optional reader raw "ocrConfidence";
+        unread_pages = optional reader raw "unreadPages";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `AnchoredTextExtractedEntry ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Anchored_text_stamp = struct
+  type t = { stamp : string; extra : (string * Yojson.Raw.t) list }
+
+  let project fields =
+    let reader = start fields in
+    let record = { stamp = required reader string "stamp"; extra = [] } in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `AnchoredTextStamp ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Anchored_text_write = struct
+  type t = {
+    content_checksum : string;
+    entry : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        content_checksum = required reader string "contentChecksum";
+        entry = required reader raw "entry";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `AnchoredTextWrite ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Archivist_config = struct
+  type t = {
+    gateway_url : string;
+    identity : Yojson.Raw.t;
+    root : string;
+    state_home : string;
+    anchored_text_dir : string;
+    engines : Yojson.Raw.t;
+    port : Yojson.Raw.t;
+    skip_rebuild : bool;
+    staging : Yojson.Raw.t;
+    log_level : Yojson.Raw.t;
+    log_format : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        root = required reader string "root";
+        state_home = required reader string "stateHome";
+        anchored_text_dir = required reader string "anchoredTextDir";
+        engines = required reader raw "engines";
+        port = required reader raw "port";
+        skip_rebuild = required reader bool "skipRebuild";
+        staging = required reader raw "staging";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `ArchivistConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Archivist_events_response = struct
+  type t = {
+    events : Yojson.Raw.t;
+    last_sequence : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        events = required reader raw "events";
+        last_sequence = required reader raw "lastSequence";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `ArchivistEventsResponse ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Archivist_health = struct
+  type t = {
+    status : string;
+    actors : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        actors = required reader raw "actors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `ArchivistHealth ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Archivist_stream = struct
+  type t = {
+    resource_id : Yojson.Raw.t;
+    last_sequence : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        resource_id = required reader raw "resourceId";
+        last_sequence = required reader raw "lastSequence";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `ArchivistStream ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Archivist_streams_response = struct
+  type t = { streams : Yojson.Raw.t; extra : (string * Yojson.Raw.t) list }
+
+  let project fields =
+    let reader = start fields in
+    let record = { streams = required reader raw "streams"; extra = [] } in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `ArchivistStreamsResponse ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Representation_not_found = struct
+  type t = {
+    error : string;
+    code : Yojson.Raw.t;
+    hint : string Types.presence;
+    details : Yojson.Raw.t Types.presence;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        error = required reader string "error";
+        code = required reader raw "code";
+        hint = optional reader string "hint";
+        details = optional reader raw "details";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `RepresentationNotFound ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Dispatcher_config = struct
+  type t = {
+    kb : Yojson.Raw.t;
+    gateway_url : string;
+    identity : Yojson.Raw.t;
+    queue : Yojson.Raw.t;
+    port : Yojson.Raw.t;
+    timing : Yojson.Raw.t;
+    log_level : Yojson.Raw.t;
+    log_format : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        queue = required reader raw "queue";
+        port = required reader raw "port";
+        timing = required reader raw "timing";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `DispatcherConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Dispatcher_health = struct
+  type t = {
+    status : string;
+    queue : string;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        queue = required reader string "queue";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `DispatcherHealth ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Ollama_embedding_config = struct
+  type t = {
+    type_ : string;
+    model : string;
+    base_url : string;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        model = required reader string "model";
+        base_url = required reader string "baseUrl";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `OllamaEmbeddingConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Voyage_embedding_config = struct
+  type t = {
+    type_ : string;
+    model : string;
+    endpoint : string;
+    api_key_env : string;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        model = required reader string "model";
+        endpoint = required reader string "endpoint";
+        api_key_env = required reader string "apiKeyEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `VoyageEmbeddingConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Gateway_config = struct
+  type t = {
+    kb : Yojson.Raw.t;
+    port : Yojson.Raw.t;
+    public_url : string;
+    identity : Yojson.Raw.t;
+    archivist : Yojson.Raw.t;
+    signal : Yojson.Raw.t;
+    log_level : Yojson.Raw.t;
+    log_format : Yojson.Raw.t;
+    capacity : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        port = required reader raw "port";
+        public_url = required reader string "publicUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        signal = required reader raw "signal";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        capacity = required reader raw "capacity";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `GatewayConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Janus_graph_config = struct
+  type t = {
+    type_ : string;
+    host : string;
+    port : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        host = required reader string "host";
+        port = required reader raw "port";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `JanusGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Memory_graph_config = struct
+  type t = { type_ : string; extra : (string * Yojson.Raw.t) list }
+
+  let project fields =
+    let reader = start fields in
+    let record = { type_ = required reader string "type"; extra = [] } in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `MemoryGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Neo4j_graph_config = struct
+  type t = {
+    type_ : string;
+    uri : string;
+    username : string;
+    password_env : string;
+    database : string;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        uri = required reader string "uri";
+        username = required reader string "username";
+        password_env = required reader string "passwordEnv";
+        database = required reader string "database";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `Neo4jGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Neptune_graph_config = struct
+  type t = {
+    type_ : string;
+    endpoint : string;
+    port : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        endpoint = required reader string "endpoint";
+        port = required reader raw "port";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `NeptuneGraphConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Librarian_config = struct
+  type t = {
+    kb : Yojson.Raw.t;
+    gateway_url : string;
+    identity : Yojson.Raw.t;
+    archivist : Yojson.Raw.t;
+    graph : Yojson.Raw.t;
+    vectors : Yojson.Raw.t;
+    embedding : Yojson.Raw.t;
+    matcher : Yojson.Raw.t;
+    gatherer : Yojson.Raw.t;
+    model_catalogue : string;
+    gather : Yojson.Raw.t;
+    search : Yojson.Raw.t;
+    port : Yojson.Raw.t;
+    log_level : Yojson.Raw.t;
+    log_format : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        graph = required reader raw "graph";
+        vectors = required reader raw "vectors";
+        embedding = required reader raw "embedding";
+        matcher = required reader raw "matcher";
+        gatherer = required reader raw "gatherer";
+        model_catalogue = required reader string "modelCatalogue";
+        gather = required reader raw "gather";
+        search = required reader raw "search";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `LibrarianConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Librarian_engine_config = struct
+  type t = {
+    engine : Yojson.Raw.t;
+    base_url : string;
+    api_key_env : string Types.presence;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        base_url = required reader string "baseUrl";
+        api_key_env = optional reader string "apiKeyEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `LibrarianEngineConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Smelter_config = struct
+  type t = {
+    kb : Yojson.Raw.t;
+    gateway_url : string;
+    identity : Yojson.Raw.t;
+    archivist : Yojson.Raw.t;
+    embedding : Yojson.Raw.t;
+    vectors : Yojson.Raw.t;
+    chunking : Yojson.Raw.t;
+    pdfs_at_once : Yojson.Raw.t;
+    cursors_path : Yojson.Raw.t;
+    port : Yojson.Raw.t;
+    log_level : Yojson.Raw.t;
+    log_format : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        embedding = required reader raw "embedding";
+        vectors = required reader raw "vectors";
+        chunking = required reader raw "chunking";
+        pdfs_at_once = required reader raw "pdfsAtOnce";
+        cursors_path = required reader raw "cursorsPath";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `SmelterConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Memory_vectors_config = struct
+  type t = { type_ : string; extra : (string * Yojson.Raw.t) list }
+
+  let project fields =
+    let reader = start fields in
+    let record = { type_ = required reader string "type"; extra = [] } in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `MemoryVectorsConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Qdrant_vectors_config = struct
+  type t = {
+    type_ : string;
+    host : string;
+    port : Yojson.Raw.t;
+    token_env : string;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        type_ = required reader string "type";
+        host = required reader string "host";
+        port = required reader raw "port";
+        token_env = required reader string "tokenEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `QdrantVectorsConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Weaver_config = struct
+  type t = {
+    kb : Yojson.Raw.t;
+    gateway_url : string;
+    identity : Yojson.Raw.t;
+    archivist : Yojson.Raw.t;
+    graph : Yojson.Raw.t;
+    cursors_path : Yojson.Raw.t;
+    port : Yojson.Raw.t;
+    log_level : Yojson.Raw.t;
+    log_format : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        kb = required reader raw "kb";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        archivist = required reader raw "archivist";
+        graph = required reader raw "graph";
+        cursors_path = required reader raw "cursorsPath";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WeaverConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Worker_config = struct
+  type t = {
+    knowledge_bases : Yojson.Raw.t;
+    model_catalogue : string;
+    port : Yojson.Raw.t;
+    log_level : Yojson.Raw.t;
+    log_format : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        knowledge_bases = required reader raw "knowledgeBases";
+        model_catalogue = required reader string "modelCatalogue";
+        port = required reader raw "port";
+        log_level = required reader raw "logLevel";
+        log_format = required reader raw "logFormat";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WorkerConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Worker_engine_config = struct
+  type t = {
+    engine : Yojson.Raw.t;
+    jobs : Yojson.Raw.t;
+    base_url : string;
+    api_key_env : string Types.presence;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        jobs = required reader raw "jobs";
+        base_url = required reader string "baseUrl";
+        api_key_env = optional reader string "apiKeyEnv";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WorkerEngineConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Worker_engine_health = struct
+  type t = {
+    engine : Yojson.Raw.t;
+    jobs : Yojson.Raw.t;
+    last_queued_event_at : Yojson.Raw.t;
+    last_claim_at : Yojson.Raw.t;
+    last_finished_at : Yojson.Raw.t;
+    last_activity_at : Yojson.Raw.t;
+    active_job : Yojson.Raw.t;
+    jobs_completed : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        engine = required reader raw "engine";
+        jobs = required reader raw "jobs";
+        last_queued_event_at = required reader raw "lastQueuedEventAt";
+        last_claim_at = required reader raw "lastClaimAt";
+        last_finished_at = required reader raw "lastFinishedAt";
+        last_activity_at = required reader raw "lastActivityAt";
+        active_job = required reader raw "activeJob";
+        jobs_completed = required reader raw "jobsCompleted";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WorkerEngineHealth ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Worker_health = struct
+  type t = {
+    status : string;
+    knowledge_bases : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        knowledge_bases = required reader raw "knowledgeBases";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WorkerHealth ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Worker_knowledge_base_config = struct
+  type t = {
+    domain : string;
+    gateway_url : string;
+    identity : Yojson.Raw.t;
+    engines : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        domain = required reader string "domain";
+        gateway_url = required reader string "gatewayUrl";
+        identity = required reader raw "identity";
+        engines = required reader raw "engines";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WorkerKnowledgeBaseConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Worker_knowledge_base_health = struct
+  type t = {
+    domain : string;
+    state : string;
+    did : string Types.presence;
+    engines : Yojson.Raw.t Types.presence;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        domain = required reader string "domain";
+        state = required reader string "state";
+        did = optional reader string "did";
+        engines = optional reader raw "engines";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WorkerKnowledgeBaseHealth ] Models.t) =
     project (fields_of (Models.json model))
 end
 
@@ -7109,6 +7109,22 @@ module Job = struct
     | _ -> None
 end
 
+module Embedding_config = struct
+  type t =
+    | Ollama of Ollama_embedding_config.t
+    | Voyage of Voyage_embedding_config.t
+
+  let of_model (model : [ `EmbeddingConfig ] Models.t) =
+    let fields = fields_of (Models.json model) in
+    match List.assoc_opt "type" fields with
+    | Some (`Stringlit literal) -> (
+        match string (`Stringlit literal) with
+        | "ollama" -> Some (Ollama (Ollama_embedding_config.project fields))
+        | "voyage" -> Some (Voyage (Voyage_embedding_config.project fields))
+        | _ -> None)
+    | _ -> None
+end
+
 module Graph_config = struct
   type t =
     | Neo4j of Neo4j_graph_config.t
@@ -7125,22 +7141,6 @@ module Graph_config = struct
         | "janusgraph" -> Some (Janusgraph (Janus_graph_config.project fields))
         | "neptune" -> Some (Neptune (Neptune_graph_config.project fields))
         | "memory" -> Some (Memory (Memory_graph_config.project fields))
-        | _ -> None)
-    | _ -> None
-end
-
-module Embedding_config = struct
-  type t =
-    | Ollama of Ollama_embedding_config.t
-    | Voyage of Voyage_embedding_config.t
-
-  let of_model (model : [ `EmbeddingConfig ] Models.t) =
-    let fields = fields_of (Models.json model) in
-    match List.assoc_opt "type" fields with
-    | Some (`Stringlit literal) -> (
-        match string (`Stringlit literal) with
-        | "ollama" -> Some (Ollama (Ollama_embedding_config.project fields))
-        | "voyage" -> Some (Voyage (Voyage_embedding_config.project fields))
         | _ -> None)
     | _ -> None
 end

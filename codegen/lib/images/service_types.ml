@@ -1,6 +1,6 @@
-(* The service-types group: the Rust types of the schemas only images'
-   services read (packages/rust/core/src/types.rs), named by images' own
-   table of them, with every schema they reach. A schema the Rust SDK
+(* The service-types group: the Rust types of the schemas images' services
+   read that the Rust SDK does not declare (packages/rust/core/src/types.rs),
+   named by images' own table of them, with every schema they reach. A schema the Rust SDK
    declares is named there ([xynolog::types]), never written again: one home
    for each. *)
 

@@ -287,6 +287,131 @@ member!(AnchoredTextAnswer::ExtractionDeclined(ExtractionDeclined));
 member!(AnchoredTextAnswer::AnchoredTextAbsent(AnchoredTextAbsent));
 schema!(AnchoredTextAnswer);
 
+/// The bytes were declined: no text is extracted from them.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AnchoredTextDeclinedEntry {
+    /// The entry format.
+    pub v: i64,
+    /// The stamp the entry was derived under: the PDF reader's and the OCR engine's. A reader takes the entry only when it equals the stamp the Smelter last stated.
+    pub stamp: String,
+    /// Why extraction yielded nothing, by class.
+    pub declined: ExtractionDeclinedReason,
+}
+
+schema!(AnchoredTextDeclinedEntry);
+
+/// The keys of the entries the anchored-text store holds under the stamp last stated: one checksum for each set of bytes whose text is stored, in no order.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AnchoredTextEntries {
+    pub checksums: Vec<String>,
+}
+
+schema!(AnchoredTextEntries);
+
+/// One entry of the anchored-text store: the file `<ab>/<cd>/<key>.json` under the store's directory, where the key is the SHA-256 of the bytes the text was extracted from, in hex. The Smelter derives it and stores it over the Archivist's HTTP surface (`AnchoredTextWrite`); the Archivist writes it, as compact JSON with `v` and `stamp` first, to a sibling temporary file renamed onto the path. The stamp the Smelter states (`AnchoredTextStamp`) is kept, followed by a newline, in the file `STAMP` at the store's root.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum AnchoredTextEntry {
+    ExtractedEntry(AnchoredTextExtractedEntry),
+    DeclinedEntry(AnchoredTextDeclinedEntry),
+}
+
+member!(AnchoredTextEntry::ExtractedEntry(
+    AnchoredTextExtractedEntry,
+));
+member!(AnchoredTextEntry::DeclinedEntry(AnchoredTextDeclinedEntry));
+schema!(AnchoredTextEntry);
+
+/// The text extracted from the bytes, where each word is on the page, and how it was extracted.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AnchoredTextExtractedEntry {
+    /// The entry format.
+    pub v: i64,
+    /// The stamp the entry was derived under: the PDF reader's and the OCR engine's. A reader takes the entry only when it equals the stamp the Smelter last stated.
+    pub stamp: String,
+    /// The extracted text.
+    pub text: String,
+    /// Where each word of `text` is, line by line, in reading order.
+    pub lines: Vec<AnchoredTextExtractedEntryLinesItem>,
+    /// How the text was extracted.
+    pub method: ExtractionMethod,
+    /// PDF classification, when the source was a PDF.
+    #[serde(rename = "pdfClass")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pdf_class: Option<PdfClass>,
+    /// How well the engine read the pixels, when any of this text came from OCR.
+    #[serde(rename = "ocrConfidence")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ocr_confidence: Option<OcrConfidence>,
+    /// 1-indexed pages this extraction could not read — present only for partially covered documents (class C).
+    #[serde(rename = "unreadPages")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unread_pages: Option<Vec<i64>>,
+}
+
+impl AnchoredTextExtractedEntry {
+    /// The `AnchoredTextExtractedEntry` that states these and nothing else.
+    pub fn new(
+        v: i64,
+        stamp: impl Into<String>,
+        text: impl Into<String>,
+        lines: Vec<AnchoredTextExtractedEntryLinesItem>,
+        method: ExtractionMethod,
+    ) -> Self {
+        Self {
+            v,
+            stamp: stamp.into(),
+            text: text.into(),
+            lines,
+            method,
+            pdf_class: None,
+            ocr_confidence: None,
+            unread_pages: None,
+        }
+    }
+}
+
+schema!(AnchoredTextExtractedEntry);
+
+/// One line of text: the words that share a page, a baseline and a height.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AnchoredTextExtractedEntryLinesItem {
+    /// The page, counted from 1.
+    pub p: i64,
+    /// The line's vertical position in PDF points, from the bottom of the page.
+    pub y: f64,
+    /// The line's height in PDF points.
+    pub h: f64,
+    /// Each word as `[x, width, start, end]`: its horizontal position and width in PDF points, and the offsets of its text in `text`, which are whole numbers of Unicode code points from the start of `text`.
+    pub words: Vec<Vec<f64>>,
+}
+
+/// The stamp an anchored-text store's entries are taken under: which PDF reader and which OCR engine derived them. Its writer states it before it writes or lists an entry; an entry stored under another stamp is answered to no reader.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AnchoredTextStamp {
+    /// The stamp: no white space, since it is held in a file of one line.
+    pub stamp: String,
+}
+
+schema!(AnchoredTextStamp);
+
+/// A write of an anchored-text entry for the bytes of one resource: what the Smelter derived from them, and their checksum. The Archivist files the entry under the checksum, so every resource whose bytes those are has it, and refuses the write when the resource's first representation has other bytes.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AnchoredTextWrite {
+    /// The SHA-256 of the bytes the text was derived from, as 64 lower-case hexadecimal digits: the key the entry is filed under.
+    #[serde(rename = "contentChecksum")]
+    pub content_checksum: String,
+    pub entry: AnchoredTextEntry,
+}
+
+schema!(AnchoredTextWrite);
+
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Annotation {
     /// W3C Web Annotation JSON-LD context
@@ -619,6 +744,170 @@ impl AnnotationType {
         }
     }
 }
+
+/// Everything the Archivist reads at boot: nothing in it is defaulted by the Archivist. The launcher writes it for the Archivist it starts, from the knowledge base's stack documents, and the Archivist reads it from the path its `--config` flag names (its image passes `/etc/xynolog/archivist.json`). Started without `--config`, or with a path that names no file, the Archivist refuses to start and says which. No secret is a value here. What the knowledge base says of itself is not here either: its name, its `site.domain` and its `git.sync` are read from the committed `.xynolog/config.yaml` of the tree at `root`. The Archivist's other inputs are the environment variables specs/src/service-environment/variables.json lists for it. A document that does not validate is refused at boot, naming each failing field.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistConfig {
+    /// The URL the Archivist reaches the gateway at: its only route to the bus.
+    #[serde(rename = "gatewayUrl")]
+    pub gateway_url: String,
+    /// The issuer the Archivist's service account signs in at, and whose tokens it admits callers of its HTTP surface by.
+    pub identity: ServiceIdentity,
+    /// The knowledge base's working tree: the directory holding `.xynolog/`. The event log, the content and the committed config are under it.
+    pub root: String,
+    /// The state volume, this knowledge base's alone: the Archivist keeps the knowledge base's views and projections in it, at its top.
+    #[serde(rename = "stateHome")]
+    pub state_home: String,
+    /// The anchored-text store, which only the Archivist mounts: the Smelter stores each entry in it over HTTP, and the Archivist serves it.
+    #[serde(rename = "anchoredTextDir")]
+    pub anchored_text_dir: String,
+    pub engines: ArchivistEngines,
+    /// The port the Archivist's HTTP surface answers on, `/health` included.
+    pub port: u16,
+    /// Whether the Archivist serves the views it finds at boot instead of rebuilding them from the event log first.
+    #[serde(rename = "skipRebuild")]
+    pub skip_rebuild: bool,
+    /// The bounds on how far the staging driver may run behind the working tree, in milliseconds. A knowledge base that does not sync git stages nothing, and reads neither.
+    pub staging: ArchivistConfigStaging,
+    #[serde(rename = "logLevel")]
+    pub log_level: LogLevel,
+    #[serde(rename = "logFormat")]
+    pub log_format: LogFormat,
+}
+
+schema!(ArchivistConfig);
+
+/// The bounds on how far the staging driver may run behind the working tree, in milliseconds. A knowledge base that does not sync git stages nothing, and reads neither.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistConfigStaging {
+    /// The quiet period after the last change before pending changes are staged.
+    #[serde(rename = "flushMs")]
+    pub flush_ms: u64,
+    /// The longest a change waits to be staged while others keep arriving, measured from the oldest pending change.
+    #[serde(rename = "maxWaitMs")]
+    pub max_wait_ms: u64,
+}
+
+/// The engine for each job and each Librarian actor, behind `browse:engines`: a provider and a model, and no credential. It is the knowledge base's Inference document's `engines` as they stand, with no fallback, so a job or an actor absent here has no engine.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistEngines {
+    /// The engine each job is done with when software does it, keyed as a job description is: by `jobType`, and for `mark` by motivation.
+    pub jobs: ArchivistEnginesJobs,
+    /// The engine each Librarian actor that calls a model asks.
+    pub actors: ArchivistEnginesActors,
+}
+
+schema!(ArchivistEngines);
+
+/// The engine each Librarian actor that calls a model asks.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistEnginesActors {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gatherer: Option<Engine>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub matcher: Option<Engine>,
+}
+
+/// The engine each job is done with when software does it, keyed as a job description is: by `jobType`, and for `mark` by motivation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistEnginesJobs {
+    /// The engine for `mark` jobs of each motivation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mark: Option<ArchivistEnginesJobsMark>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#yield: Option<Engine>,
+}
+
+/// The engine for `mark` jobs of each motivation.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistEnginesJobsMark {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub highlighting: Option<Engine>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub commenting: Option<Engine>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub assessing: Option<Engine>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linking: Option<Engine>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tagging: Option<Engine>,
+}
+
+/// A page of one stream's events from one sequence number, inclusive, in log order, and the sequence number of the stream's last event: the Archivist's answer to `GET /events/{resourceId}`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ArchivistEventsResponse {
+    pub events: Vec<StoredEventResponse>,
+    /// The sequence number of the stream's last event when it was read: 0 for a stream with none. More events follow the page while its last event's number is below it.
+    #[serde(rename = "lastSequence")]
+    pub last_sequence: u64,
+}
+
+schema!(ArchivistEventsResponse);
+
+/// The Archivist's liveness answer: it serves, and the actors it hosts.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct ArchivistHealth {
+    pub status: ArchivistHealthStatus,
+    /// The record actors this process hosts.
+    pub actors: Vec<String>,
+}
+
+impl ArchivistHealth {
+    /// The `ArchivistHealth` that states these and nothing else.
+    pub fn new(actors: Vec<String>) -> Self {
+        Self {
+            status: ArchivistHealthStatus::Ok,
+            actors,
+        }
+    }
+}
+
+schema!(ArchivistHealth);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ArchivistHealthStatus {
+    #[serde(rename = "ok")]
+    Ok,
+}
+
+impl ArchivistHealthStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ArchivistHealthStatus::Ok => "ok",
+        }
+    }
+}
+
+/// One stream of the event log, and where it stands: the resource it is of, or `__system__` for the knowledge base's own, and the sequence number of its last event.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistStream {
+    #[serde(rename = "resourceId")]
+    pub resource_id: ResourceId,
+    /// The sequence number of the stream's last event when it was read: 0 for a stream with none.
+    #[serde(rename = "lastSequence")]
+    pub last_sequence: u64,
+}
+
+schema!(ArchivistStream);
+
+/// Every stream of the event log, `__system__` among them, each with the sequence number of its last event, in no order: the Archivist's answer to `GET /events`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchivistStreamsResponse {
+    pub streams: Vec<ArchivistStream>,
+}
+
+schema!(ArchivistStreamsResponse);
 
 /// What an assessing job takes: passages of the resource are marked, each with an assessment the model writes.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2061,6 +2350,9 @@ pub struct CreateResourceResponse {
 
 schema!(CreateResourceResponse);
 
+/// The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
+pub type CursorsPath = String;
+
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirEntry {
@@ -2210,6 +2502,146 @@ pub struct DiscoveryDocument {
 
 schema!(DiscoveryDocument);
 
+/// Everything the dispatcher reads at boot: nothing in it is defaulted by the dispatcher. The launcher writes it for the dispatcher it starts, from the knowledge base's stack documents, and the dispatcher reads it from the path its `--config` flag names (its image passes `/etc/xynolog/dispatcher.json`). Started without `--config`, or with a path that names no file, the dispatcher refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The dispatcher's other inputs are the environment variables specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot, naming each failing field.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DispatcherConfig {
+    pub kb: KbIdentity,
+    /// The URL the dispatcher reaches the gateway at: its only route to the bus.
+    #[serde(rename = "gatewayUrl")]
+    pub gateway_url: String,
+    /// The issuer the dispatcher's service account signs in at.
+    pub identity: ServiceIdentity,
+    /// The JetStream broker holding the job queue, whose layout is specs/src/jobs/storage.json.
+    pub queue: DispatcherConfigQueue,
+    /// The port the dispatcher answers `/health` on.
+    pub port: u16,
+    /// The queue's clocks, in milliseconds. The launcher writes the values a deployment runs with; a test harness shrinks them.
+    pub timing: DispatcherConfigTiming,
+    #[serde(rename = "logLevel")]
+    pub log_level: LogLevel,
+    #[serde(rename = "logFormat")]
+    pub log_format: LogFormat,
+}
+
+schema!(DispatcherConfig);
+
+/// The JetStream broker holding the job queue, whose layout is specs/src/jobs/storage.json.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DispatcherConfigQueue {
+    /// The broker's address (`host:port`, or several, comma-separated).
+    pub servers: String,
+    /// The environment variable holding the broker user, when the broker requires one.
+    #[serde(rename = "userEnv")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user_env: Option<String>,
+    /// The environment variable holding the broker password, when the broker requires one.
+    #[serde(rename = "passwordEnv")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub password_env: Option<String>,
+}
+
+impl DispatcherConfigQueue {
+    /// The `DispatcherConfigQueue` that states these and nothing else.
+    pub fn new(servers: impl Into<String>) -> Self {
+        Self {
+            servers: servers.into(),
+            user_env: None,
+            password_env: None,
+        }
+    }
+}
+
+/// The queue's clocks, in milliseconds. The launcher writes the values a deployment runs with; a test harness shrinks them.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DispatcherConfigTiming {
+    /// How often the queue re-announces pending jobs and sweeps for dead workers. The re-announcement is insurance against a lost wake-up, not dispatch.
+    #[serde(rename = "tickMs")]
+    pub tick_ms: u64,
+    /// How long a running job may go without progress, a checkpoint or a claim before its worker is presumed dead.
+    #[serde(rename = "staleRunningMs")]
+    pub stale_running_ms: u64,
+    /// How long the broker waits, after this dispatcher stops renewing a job's lease, before redelivering its message.
+    #[serde(rename = "ackWaitMs")]
+    pub ack_wait_ms: u64,
+    /// How long a concluded job is kept before it is deleted.
+    #[serde(rename = "retentionMs")]
+    pub retention_ms: u64,
+    /// How often concluded jobs past `retentionMs` are deleted.
+    #[serde(rename = "retentionSweepMs")]
+    pub retention_sweep_ms: u64,
+    /// The least time between two progress writes for one job; reports closer together than this are not written.
+    #[serde(rename = "progressWriteIntervalMs")]
+    pub progress_write_interval_ms: u64,
+    /// How long the dispatcher waits at boot for the broker before it exits, so that a restart policy can retry.
+    #[serde(rename = "bootDeadlineMs")]
+    pub boot_deadline_ms: u64,
+}
+
+/// The dispatcher's liveness answer. It answers only once its queue has connected and its bus pumps are attached, so a 200 means it can take work.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DispatcherHealth {
+    pub status: DispatcherHealthStatus,
+    /// The queue it holds.
+    pub queue: DispatcherHealthQueue,
+}
+
+impl Default for DispatcherHealth {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl DispatcherHealth {
+    /// The `DispatcherHealth` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            status: DispatcherHealthStatus::Ok,
+            queue: DispatcherHealthQueue::Jetstream,
+        }
+    }
+}
+
+schema!(DispatcherHealth);
+
+/// The queue it holds.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum DispatcherHealthQueue {
+    #[serde(rename = "jetstream")]
+    Jetstream,
+}
+
+impl DispatcherHealthQueue {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            DispatcherHealthQueue::Jetstream => "jetstream",
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum DispatcherHealthStatus {
+    #[serde(rename = "ok")]
+    Ok,
+}
+
+impl DispatcherHealthStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            DispatcherHealthStatus::Ok => "ok",
+        }
+    }
+}
+
 /// How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -2238,6 +2670,42 @@ impl DurabilityEvidence {
 }
 
 schema!(DurabilityEvidence);
+
+/// The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynolog-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum EmbeddingConfig {
+    OllamaEmbeddingConfig(OllamaEmbeddingConfig),
+    VoyageEmbeddingConfig(VoyageEmbeddingConfig),
+}
+
+impl<'de> serde::Deserialize<'de> for EmbeddingConfig {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("type").and_then(serde_json::Value::as_str) {
+            Some("ollama") => {
+                serde_json::from_value(value).map(EmbeddingConfig::OllamaEmbeddingConfig)
+            }
+            Some("voyage") => {
+                serde_json::from_value(value).map(EmbeddingConfig::VoyageEmbeddingConfig)
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a EmbeddingConfig states a `type` that is one of `ollama`, `voyage`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+member!(EmbeddingConfig::OllamaEmbeddingConfig(
+    OllamaEmbeddingConfig,
+));
+member!(EmbeddingConfig::VoyageEmbeddingConfig(
+    VoyageEmbeddingConfig,
+));
+schema!(EmbeddingConfig);
 
 /// An object with no properties.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Deserialize, serde::Serialize)]
@@ -2822,6 +3290,102 @@ impl FrameRefusalReason {
 }
 
 schema!(FrameRefusalReason);
+
+/// Everything the gateway reads at boot: nothing in it is defaulted by the gateway. The launcher writes it for the gateway it starts — from the knowledge base's committed identity and its stack documents — and a gateway started any other way is given the same document at the path its `--config` flag names (the image passes `/etc/xynolog/gateway.json`). Started without `--config`, or with a path that names no file, the gateway refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The gateway's other inputs are the environment variables specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot — the gateway exits without serving — and the refusal names each failing field by its JSON pointer.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GatewayConfig {
+    pub kb: KbIdentity,
+    /// The port the gateway listens on, on every address the host has: IPv4 and IPv6.
+    pub port: u16,
+    /// The URL clients reach this gateway at: the `servers` entry of the OpenAPI document it serves.
+    #[serde(rename = "publicUrl")]
+    pub public_url: String,
+    /// The issuer this knowledge base trusts.
+    pub identity: GatewayConfigIdentity,
+    /// Where the Archivist listens.
+    pub archivist: ServiceAddress,
+    /// The signal plane: `in-process`, one gateway on its own fabric; or `nats`, the fabric every replica on one broker shares, which requires `servers` and a broker with JetStream.
+    pub signal: GatewayConfigSignal,
+    #[serde(rename = "logLevel")]
+    pub log_level: LogLevel,
+    #[serde(rename = "logFormat")]
+    pub log_format: LogFormat,
+    /// What this gateway process can hold, from the memory its deployment gives it. `queuedBytes`: the bytes queued for all its streams together; at it, a new stream is refused with 503 (`AtCapacity`, code `capacity`) until the queues drain — each stream's own bound is `x-xynolog-limits.pendingWriteBytes`. `connections`: the connections it holds open at once; one past it is closed unanswered. The launcher derives both from the memory it gives the gateway's container.
+    pub capacity: GatewayConfigCapacity,
+}
+
+schema!(GatewayConfig);
+
+/// What this gateway process can hold, from the memory its deployment gives it. `queuedBytes`: the bytes queued for all its streams together; at it, a new stream is refused with 503 (`AtCapacity`, code `capacity`) until the queues drain — each stream's own bound is `x-xynolog-limits.pendingWriteBytes`. `connections`: the connections it holds open at once; one past it is closed unanswered. The launcher derives both from the memory it gives the gateway's container.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GatewayConfigCapacity {
+    #[serde(rename = "queuedBytes")]
+    pub queued_bytes: u64,
+    pub connections: u64,
+}
+
+/// The issuer this knowledge base trusts.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GatewayConfigIdentity {
+    /// The issuer URL, exactly as tokens carry it in `iss`.
+    pub issuer: String,
+    /// The claim a person's DID is built from: `did:web:<domain>:users:<its value>`.
+    #[serde(rename = "subjectClaim")]
+    pub subject_claim: String,
+}
+
+/// The signal plane: `in-process`, one gateway on its own fabric; or `nats`, the fabric every replica on one broker shares, which requires `servers` and a broker with JetStream.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GatewayConfigSignal {
+    pub r#type: GatewayConfigSignalType,
+    /// The broker's address (`host:port`, or several, comma-separated). Required for `nats`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub servers: Option<String>,
+    /// The environment variable holding the broker user, when the broker requires one.
+    #[serde(rename = "userEnv")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user_env: Option<String>,
+    /// The environment variable holding the broker password, when the broker requires one.
+    #[serde(rename = "passwordEnv")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub password_env: Option<String>,
+}
+
+impl GatewayConfigSignal {
+    /// The `GatewayConfigSignal` that states these and nothing else.
+    pub fn new(r#type: GatewayConfigSignalType) -> Self {
+        Self {
+            r#type,
+            servers: None,
+            user_env: None,
+            password_env: None,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum GatewayConfigSignalType {
+    #[serde(rename = "in-process")]
+    InProcess,
+    #[serde(rename = "nats")]
+    Nats,
+}
+
+impl GatewayConfigSignalType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            GatewayConfigSignalType::InProcess => "in-process",
+            GatewayConfigSignalType::Nats => "nats",
+        }
+    }
+}
 
 /// Completion payload emitted on the gather:annotation-complete bus channel when annotation context gathering finishes.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3616,6 +4180,40 @@ impl GraphAnnotationNodeType {
     }
 }
 
+/// The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynolog-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum GraphConfig {
+    Neo4jGraphConfig(Neo4jGraphConfig),
+    JanusGraphConfig(JanusGraphConfig),
+    NeptuneGraphConfig(NeptuneGraphConfig),
+    MemoryGraphConfig(MemoryGraphConfig),
+}
+
+impl<'de> serde::Deserialize<'de> for GraphConfig {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("type").and_then(serde_json::Value::as_str) {
+            Some("neo4j") => serde_json::from_value(value).map(GraphConfig::Neo4jGraphConfig),
+            Some("janusgraph") => serde_json::from_value(value).map(GraphConfig::JanusGraphConfig),
+            Some("neptune") => serde_json::from_value(value).map(GraphConfig::NeptuneGraphConfig),
+            Some("memory") => serde_json::from_value(value).map(GraphConfig::MemoryGraphConfig),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a GraphConfig states a `type` that is one of `neo4j`, `janusgraph`, `neptune`, `memory`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+member!(GraphConfig::Neo4jGraphConfig(Neo4jGraphConfig));
+member!(GraphConfig::JanusGraphConfig(JanusGraphConfig));
+member!(GraphConfig::NeptuneGraphConfig(NeptuneGraphConfig));
+member!(GraphConfig::MemoryGraphConfig(MemoryGraphConfig));
+schema!(GraphConfig);
+
 /// A resource's presence in the gathered knowledge graph.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct GraphResourceNode {
@@ -3840,6 +4438,47 @@ schema!(InferenceLimitsResult);
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct InferenceLimitsResultResponse {
     pub limits: Vec<EngineLimits>,
+}
+
+/// A graph kept in a JanusGraph server, asked in Gremlin. No service has been run against one.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JanusGraphConfig {
+    pub r#type: JanusGraphConfigType,
+    /// The server's host.
+    pub host: String,
+    /// The port its Gremlin endpoint listens on.
+    pub port: u16,
+}
+
+impl JanusGraphConfig {
+    /// The `JanusGraphConfig` that states these and nothing else.
+    pub fn new(host: impl Into<String>, port: u16) -> Self {
+        Self {
+            r#type: JanusGraphConfigType::Janusgraph,
+            host: host.into(),
+            port,
+        }
+    }
+}
+
+schema!(JanusGraphConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum JanusGraphConfigType {
+    #[serde(rename = "janusgraph")]
+    Janusgraph,
+}
+
+impl JanusGraphConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            JanusGraphConfigType::Janusgraph => "janusgraph",
+        }
+    }
 }
 
 /// A job as the dispatcher holds it. Its `status` decides which timestamps and outcome fields it carries. It is what a claim returns (`job:claimed`, always `running`) and what the queue stores, inside a JobRecord.
@@ -5809,6 +6448,18 @@ member!(KbEndpoint::HttpEndpoint(HttpEndpoint));
 member!(KbEndpoint::LocalEndpoint(LocalEndpoint));
 schema!(KbEndpoint);
 
+/// A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KbIdentity {
+    /// Its name. The gateway publishes it as its resource metadata's `resource_name`.
+    pub name: String,
+    /// Its did:web domain: its permanent identity, the source of the audience its tokens must carry, and the authority its people and agents are named under.
+    pub domain: String,
+}
+
+schema!(KbIdentity);
+
 /// A different knowledge base answers at a registered address. Both dids, because neither alone says what to do: a person has to recognise which knowledge base they registered and which one answers.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -6181,6 +6832,85 @@ impl<'de> serde::Deserialize<'de> for KnowledgeGraphNodesItem {
 
 member!(KnowledgeGraphNodesItem::ResourceNode(GraphResourceNode));
 member!(KnowledgeGraphNodesItem::AnnotationNode(GraphAnnotationNode));
+
+/// Everything a Librarian reads at boot: nothing in it is defaulted by the Librarian. Whoever starts a Librarian writes it, from the knowledge base's stack documents, and the Librarian reads it from the path its `--config` flag names. This schema is the contract, and a Librarian needs no launcher. Started without `--config`, or with a path that names no file, the Librarian refuses to start and says which. No secret is a value here: the graph database's password, an embedding provider's key and a model provider's key are each named by the environment variable that holds it, and the Librarian's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LibrarianConfig {
+    pub kb: KbIdentity,
+    /// The URL the Librarian reaches the gateway at: its route to the bus.
+    #[serde(rename = "gatewayUrl")]
+    pub gateway_url: String,
+    /// The issuer the Librarian's service account signs in at.
+    pub identity: ServiceIdentity,
+    /// Where the Archivist listens. The Librarian reads a resource's bytes from it, as its service account.
+    pub archivist: ServiceAddress,
+    pub graph: GraphConfig,
+    pub vectors: VectorsConfig,
+    pub embedding: EmbeddingConfig,
+    pub matcher: LibrarianEngineConfig,
+    pub gatherer: LibrarianEngineConfig,
+    /// The path of a model catalogue file: what each model of a provider can take, for the providers whose own APIs do not say (`google`, `openai`, `together`). A Librarian whose matcher or gatherer is of one of those providers refuses to start where the file cannot be read, and where it states nothing of that model. A Librarian with no such model does not read it.
+    #[serde(rename = "modelCatalogue")]
+    pub model_catalogue: String,
+    /// The bound on a gather.
+    pub gather: LibrarianConfigGather,
+    /// The bound on a search by meaning.
+    pub search: LibrarianConfigSearch,
+    /// The port the Librarian answers `/health` on.
+    pub port: u16,
+    #[serde(rename = "logLevel")]
+    pub log_level: LogLevel,
+    #[serde(rename = "logFormat")]
+    pub log_format: LogFormat,
+}
+
+schema!(LibrarianConfig);
+
+/// The bound on a gather.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LibrarianConfigGather {
+    /// How long a gather around a resource waits for the Smelter's decision on it before answering without similar passages, in milliseconds.
+    #[serde(rename = "settleTimeoutMs")]
+    pub settle_timeout_ms: u64,
+}
+
+/// The bound on a search by meaning.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LibrarianConfigSearch {
+    /// The least similarity a hit by meaning must have.
+    #[serde(rename = "semanticFloor")]
+    pub semantic_floor: f64,
+}
+
+/// The engine a Librarian actor asks: which it is, and where its provider is reached.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LibrarianEngineConfig {
+    pub engine: Engine,
+    /// The address the provider's API is reached at.
+    #[serde(rename = "baseUrl")]
+    pub base_url: String,
+    /// The environment variable holding the provider's API key, when the provider requires one.
+    #[serde(rename = "apiKeyEnv")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub api_key_env: Option<String>,
+}
+
+impl LibrarianEngineConfig {
+    /// The `LibrarianEngineConfig` that states these and nothing else.
+    pub fn new(engine: Engine, base_url: impl Into<String>) -> Self {
+        Self {
+            engine,
+            base_url: base_url.into(),
+            api_key_env: None,
+        }
+    }
+}
+
+schema!(LibrarianEngineConfig);
 
 /// An ErrorResponse that names, in `code`, the limit the request met.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7213,6 +7943,88 @@ pub struct MediaTokenResponse {
 
 schema!(MediaTokenResponse);
 
+/// A graph held in the memory of the one process that is given it: for a test. It cannot be shared between processes, so a service that writes the graph for another to read, or reads what another wrote, refuses it.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MemoryGraphConfig {
+    pub r#type: MemoryGraphConfigType,
+}
+
+impl Default for MemoryGraphConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl MemoryGraphConfig {
+    /// The `MemoryGraphConfig` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            r#type: MemoryGraphConfigType::Memory,
+        }
+    }
+}
+
+schema!(MemoryGraphConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MemoryGraphConfigType {
+    #[serde(rename = "memory")]
+    Memory,
+}
+
+impl MemoryGraphConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MemoryGraphConfigType::Memory => "memory",
+        }
+    }
+}
+
+/// A vector index held in the memory of the one process that is given it: for a test. It cannot be shared between processes, so a service that writes the index for another to search, or searches what another wrote, refuses it.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MemoryVectorsConfig {
+    pub r#type: MemoryVectorsConfigType,
+}
+
+impl Default for MemoryVectorsConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl MemoryVectorsConfig {
+    /// The `MemoryVectorsConfig` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            r#type: MemoryVectorsConfigType::Memory,
+        }
+    }
+}
+
+schema!(MemoryVectorsConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum MemoryVectorsConfigType {
+    #[serde(rename = "memory")]
+    Memory,
+}
+
+impl MemoryVectorsConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            MemoryVectorsConfigType::Memory => "memory",
+        }
+    }
+}
+
 /// Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -7244,6 +8056,100 @@ impl Motivation {
 }
 
 schema!(Motivation);
+
+/// A graph kept in a Neo4j database.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Neo4jGraphConfig {
+    pub r#type: Neo4jGraphConfigType,
+    /// Where the database is reached (`bolt://host:7687`).
+    pub uri: String,
+    /// The user the service connects as.
+    pub username: String,
+    /// The environment variable holding that user's password. The password is never a value here.
+    #[serde(rename = "passwordEnv")]
+    pub password_env: String,
+    /// Which of the server's databases holds the graph.
+    pub database: String,
+}
+
+impl Neo4jGraphConfig {
+    /// The `Neo4jGraphConfig` that states these and nothing else.
+    pub fn new(
+        uri: impl Into<String>,
+        username: impl Into<String>,
+        password_env: impl Into<String>,
+        database: impl Into<String>,
+    ) -> Self {
+        Self {
+            r#type: Neo4jGraphConfigType::Neo4j,
+            uri: uri.into(),
+            username: username.into(),
+            password_env: password_env.into(),
+            database: database.into(),
+        }
+    }
+}
+
+schema!(Neo4jGraphConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum Neo4jGraphConfigType {
+    #[serde(rename = "neo4j")]
+    Neo4j,
+}
+
+impl Neo4jGraphConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            Neo4jGraphConfigType::Neo4j => "neo4j",
+        }
+    }
+}
+
+/// A graph kept in Amazon Neptune, asked in Gremlin. No service has been run against one.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct NeptuneGraphConfig {
+    pub r#type: NeptuneGraphConfigType,
+    /// The cluster's endpoint: its host name.
+    pub endpoint: String,
+    /// The port its Gremlin endpoint listens on.
+    pub port: u16,
+}
+
+impl NeptuneGraphConfig {
+    /// The `NeptuneGraphConfig` that states these and nothing else.
+    pub fn new(endpoint: impl Into<String>, port: u16) -> Self {
+        Self {
+            r#type: NeptuneGraphConfigType::Neptune,
+            endpoint: endpoint.into(),
+            port,
+        }
+    }
+}
+
+schema!(NeptuneGraphConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum NeptuneGraphConfigType {
+    #[serde(rename = "neptune")]
+    Neptune,
+}
+
+impl NeptuneGraphConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            NeptuneGraphConfigType::Neptune => "neptune",
+        }
+    }
+}
 
 /// What registering a knowledge base takes: everything a registered one holds but its id, which the client's list makes. It has a did, because registering follows a sign-in: the knowledge base has already said what it is.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7286,6 +8192,48 @@ pub struct OcrConfidence {
 }
 
 schema!(OcrConfidence);
+
+/// An embedding model served by an Ollama.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct OllamaEmbeddingConfig {
+    pub r#type: OllamaEmbeddingConfigType,
+    /// The model asked for, by the name the Ollama serves it under.
+    pub model: String,
+    /// The address the Ollama's API is reached at (`http://host:11434`).
+    #[serde(rename = "baseUrl")]
+    pub base_url: String,
+}
+
+impl OllamaEmbeddingConfig {
+    /// The `OllamaEmbeddingConfig` that states these and nothing else.
+    pub fn new(model: impl Into<String>, base_url: impl Into<String>) -> Self {
+        Self {
+            r#type: OllamaEmbeddingConfigType::Ollama,
+            model: model.into(),
+            base_url: base_url.into(),
+        }
+    }
+}
+
+schema!(OllamaEmbeddingConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum OllamaEmbeddingConfigType {
+    #[serde(rename = "ollama")]
+    Ollama,
+}
+
+impl OllamaEmbeddingConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            OllamaEmbeddingConfigType::Ollama => "ollama",
+        }
+    }
+}
 
 /// One Agent, or a non-empty list of them: the parties PROV-O and the Web Annotation model let a resource or an annotation name in one place, as one agent or several.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7477,6 +8425,51 @@ impl ProtectedResourceMetadataBearerMethodsSupportedItem {
     }
 }
 
+/// A vector index kept in a Qdrant server, asked over its REST API with a token.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct QdrantVectorsConfig {
+    pub r#type: QdrantVectorsConfigType,
+    /// The server's host.
+    pub host: String,
+    /// The port its REST API listens on.
+    pub port: u16,
+    /// The environment variable holding the token the service presents to the server on every request, which says what of the index it may read and write. The token is never a value here.
+    #[serde(rename = "tokenEnv")]
+    pub token_env: String,
+}
+
+impl QdrantVectorsConfig {
+    /// The `QdrantVectorsConfig` that states these and nothing else.
+    pub fn new(host: impl Into<String>, port: u16, token_env: impl Into<String>) -> Self {
+        Self {
+            r#type: QdrantVectorsConfigType::Qdrant,
+            host: host.into(),
+            port,
+            token_env: token_env.into(),
+        }
+    }
+}
+
+schema!(QdrantVectorsConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum QdrantVectorsConfigType {
+    #[serde(rename = "qdrant")]
+    Qdrant,
+}
+
+impl QdrantVectorsConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            QdrantVectorsConfigType::Qdrant => "qdrant",
+        }
+    }
+}
+
 /// A specific, byte-addressable rendition of a resource (file/asset/variant).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Representation {
@@ -7572,6 +8565,55 @@ pub struct RepresentationAddedPayload {
 }
 
 schema!(RepresentationAddedPayload);
+
+/// The Archivist's 404 for a resource's bytes: an ErrorResponse whose `code` says which half of the lookup failed — `resource` when the record holds no such resource, `representation` when it holds the resource but not its bytes. Each reader answers the two differently.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct RepresentationNotFound {
+    /// What went wrong, in a sentence.
+    pub error: String,
+    /// A machine-readable class, when the route defines one.
+    pub code: RepresentationNotFoundCode,
+    /// What the caller can do about it, when there is something to say.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hint: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<serde_json::Value>,
+}
+
+impl RepresentationNotFound {
+    /// The `RepresentationNotFound` that states these and nothing else.
+    pub fn new(error: impl Into<String>, code: RepresentationNotFoundCode) -> Self {
+        Self {
+            error: error.into(),
+            code,
+            hint: None,
+            details: None,
+        }
+    }
+}
+
+schema!(RepresentationNotFound);
+
+/// A machine-readable class, when the route defines one.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum RepresentationNotFoundCode {
+    #[serde(rename = "resource")]
+    Resource,
+    #[serde(rename = "representation")]
+    Representation,
+}
+
+impl RepresentationNotFoundCode {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            RepresentationNotFoundCode::Resource => "resource",
+            RepresentationNotFoundCode::Representation => "representation",
+        }
+    }
+}
 
 /// Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived).
 #[derive(
@@ -8342,6 +9384,26 @@ impl SemanticMatch {
 
 schema!(SemanticMatch);
 
+/// The host and port a service listens at.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ServiceAddress {
+    pub host: String,
+    pub port: u16,
+}
+
+schema!(ServiceAddress);
+
+/// The identity provider a service's account signs in at, by its issuer.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ServiceIdentity {
+    /// The issuer URL, exactly as tokens carry it in `iss`.
+    pub issuer: String,
+}
+
+schema!(ServiceIdentity);
+
 /// Why a session ended: `expired`, the issuer refused to renew its token; `refused`, the gateway refused a token its issuer had just issued.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -8606,6 +9668,48 @@ impl SmeltSettledReason {
             SmeltSettledReason::TooLarge => "too-large",
         }
     }
+}
+
+/// Everything a Smelter reads at boot: nothing in it is defaulted by the Smelter. Whoever starts a Smelter writes it, from the knowledge base's stack documents, and the Smelter reads it from the path its `--config` flag names. This schema is the contract, and a Smelter needs no launcher. Started without `--config`, or with a path that names no file, the Smelter refuses to start and says which. No secret is a value here: an embedding provider's key is named by the environment variable that holds it, and the Smelter's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterConfig {
+    pub kb: KbIdentity,
+    /// The URL the Smelter reaches the gateway at: its route to the bus.
+    #[serde(rename = "gatewayUrl")]
+    pub gateway_url: String,
+    /// The issuer the Smelter's service account signs in at.
+    pub identity: ServiceIdentity,
+    /// Where the Archivist listens. The Smelter reads a resource's bytes from it, and keeps the anchored-text store there, as its service account.
+    pub archivist: ServiceAddress,
+    pub embedding: EmbeddingConfig,
+    pub vectors: VectorsConfig,
+    /// The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
+    pub chunking: SmelterConfigChunking,
+    /// How many PDFs the Smelter works on at once. Each one under way holds its bytes, a page of a scan in pixels beside the OCR process reading it, and its text and vectors, so whoever starts a Smelter sizes this with the memory it gives it. Every other resource is indexed beside them.
+    #[serde(rename = "pdfsAtOnce")]
+    pub pdfs_at_once: u64,
+    #[serde(rename = "cursorsPath")]
+    pub cursors_path: CursorsPath,
+    /// The port the Smelter answers `/health` on.
+    pub port: u16,
+    #[serde(rename = "logLevel")]
+    pub log_level: LogLevel,
+    #[serde(rename = "logFormat")]
+    pub log_format: LogFormat,
+}
+
+schema!(SmelterConfig);
+
+/// The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterConfigChunking {
+    /// The size of a chunk.
+    #[serde(rename = "chunkSize")]
+    pub chunk_size: u64,
+    /// How much of a chunk the next one repeats.
+    pub overlap: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9544,6 +10648,83 @@ pub struct UserResponse {
 
 schema!(UserResponse);
 
+/// The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynolog-vectors` has a store for, told apart by `type`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum VectorsConfig {
+    QdrantVectorsConfig(QdrantVectorsConfig),
+    MemoryVectorsConfig(MemoryVectorsConfig),
+}
+
+impl<'de> serde::Deserialize<'de> for VectorsConfig {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("type").and_then(serde_json::Value::as_str) {
+            Some("qdrant") => serde_json::from_value(value).map(VectorsConfig::QdrantVectorsConfig),
+            Some("memory") => serde_json::from_value(value).map(VectorsConfig::MemoryVectorsConfig),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a VectorsConfig states a `type` that is one of `qdrant`, `memory`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+member!(VectorsConfig::QdrantVectorsConfig(QdrantVectorsConfig));
+member!(VectorsConfig::MemoryVectorsConfig(MemoryVectorsConfig));
+schema!(VectorsConfig);
+
+/// An embedding model served by Voyage AI. No service has been run against Voyage itself.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct VoyageEmbeddingConfig {
+    pub r#type: VoyageEmbeddingConfigType,
+    /// The model asked for, by Voyage's name for it.
+    pub model: String,
+    /// The whole address of Voyage's embeddings call (`https://api.voyageai.com/v1/embeddings`).
+    pub endpoint: String,
+    /// The environment variable holding the Voyage API key. The key is never a value here.
+    #[serde(rename = "apiKeyEnv")]
+    pub api_key_env: String,
+}
+
+impl VoyageEmbeddingConfig {
+    /// The `VoyageEmbeddingConfig` that states these and nothing else.
+    pub fn new(
+        model: impl Into<String>,
+        endpoint: impl Into<String>,
+        api_key_env: impl Into<String>,
+    ) -> Self {
+        Self {
+            r#type: VoyageEmbeddingConfigType::Voyage,
+            model: model.into(),
+            endpoint: endpoint.into(),
+            api_key_env: api_key_env.into(),
+        }
+    }
+}
+
+schema!(VoyageEmbeddingConfig);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum VoyageEmbeddingConfigType {
+    #[serde(rename = "voyage")]
+    Voyage,
+}
+
+impl VoyageEmbeddingConfigType {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            VoyageEmbeddingConfigType::Voyage => "voyage",
+        }
+    }
+}
+
 /// The payload of `weave:applied`: the Weaver has applied a resource's events to the graph up to this sequence number. Emitted after applying an event, or a batch's last event.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct WeaveApplied {
@@ -9571,6 +10752,242 @@ pub struct WeaveRebuildCommand {
 }
 
 schema!(WeaveRebuildCommand);
+
+/// Everything a Weaver reads at boot: nothing in it is defaulted by the Weaver. The launcher writes it for the Weaver it starts, from the knowledge base's stack documents, and the Weaver reads it from the path its `--config` flag names (its image passes `/etc/xynolog/weaver.json`). Whoever starts a Weaver another way writes the same document: this schema is the contract, and a Weaver needs no launcher. Started without `--config`, or with a path that names no file, the Weaver refuses to start and says which. No secret is a value here: the graph database's password is named by the environment variable that holds it, and the Weaver's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WeaverConfig {
+    pub kb: KbIdentity,
+    /// The URL the Weaver reaches the gateway at: its route to the bus.
+    #[serde(rename = "gatewayUrl")]
+    pub gateway_url: String,
+    /// The issuer the Weaver's service account signs in at.
+    pub identity: ServiceIdentity,
+    /// Where the Archivist listens. The Weaver reads the record by position from it, and a resource's annotations, as its service account.
+    pub archivist: ServiceAddress,
+    pub graph: GraphConfig,
+    #[serde(rename = "cursorsPath")]
+    pub cursors_path: CursorsPath,
+    /// The port the Weaver answers `/health` on.
+    pub port: u16,
+    #[serde(rename = "logLevel")]
+    pub log_level: LogLevel,
+    #[serde(rename = "logFormat")]
+    pub log_format: LogFormat,
+}
+
+schema!(WeaverConfig);
+
+/// Everything a worker reads at boot: nothing in it is defaulted by the worker. The launcher writes it for the machine's worker, from the knowledge bases on that worker's list: each local knowledge base as its start places it, from its stack documents, and each added by `xynolog worker kb add`, offered the engines of the local one it was added from. The worker reads it from the path its `--config` flag names (its image passes `/etc/xynolog/worker.json`). Whoever starts a worker another way writes the same document: this schema is the contract, and a worker needs no launcher. Started without `--config`, or with a path that names no file, the worker refuses to start and says which. No secret is a value here: a provider's key is named by the environment variable that holds it, and the key the worker signs in with at every knowledge base is `XYNOLOG_OIDC_CLIENT_KEY` in its environment, an RSA private key; each knowledge base names the client that holds its public half there. A document that does not validate is refused at boot, naming each failing field.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerConfig {
+    /// The knowledge bases this worker does jobs for. At each it signs in, confirms which knowledge base it reached and claims for its engines, apart from every other: one knowledge base's trouble stops that knowledge base's work alone (`contract/WORKER-SERVICE.md` § Knowledge bases). No two name one `domain`, which the worker refuses at boot.
+    #[serde(rename = "knowledgeBases")]
+    pub knowledge_bases: Vec<WorkerKnowledgeBaseConfig>,
+    /// The path of a model catalogue file: what each model of a provider can take, for the providers whose own APIs do not say (`google`, `openai`, `together`). A worker with an engine of one of those providers refuses to start where the file cannot be read, and where it states nothing of that engine's model. A worker with no such engine does not read it.
+    #[serde(rename = "modelCatalogue")]
+    pub model_catalogue: String,
+    /// The port the worker answers `/health` on.
+    pub port: u16,
+    #[serde(rename = "logLevel")]
+    pub log_level: LogLevel,
+    #[serde(rename = "logFormat")]
+    pub log_format: LogFormat,
+}
+
+schema!(WorkerConfig);
+
+/// One engine a worker runs: which it is, the jobs the worker claims to do with it, and where its provider is reached.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerEngineConfig {
+    pub engine: Engine,
+    /// The jobs the worker claims to do with this engine, as a claim names them (`job:claim`'s `accepts`): it claims with these filters and no other.
+    pub jobs: Vec<JobFilter>,
+    /// The address the provider's API is reached at.
+    #[serde(rename = "baseUrl")]
+    pub base_url: String,
+    /// The environment variable holding the provider's API key, when the provider requires one.
+    #[serde(rename = "apiKeyEnv")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub api_key_env: Option<String>,
+}
+
+impl WorkerEngineConfig {
+    /// The `WorkerEngineConfig` that states these and nothing else.
+    pub fn new(engine: Engine, jobs: Vec<JobFilter>, base_url: impl Into<String>) -> Self {
+        Self {
+            engine,
+            jobs,
+            base_url: base_url.into(),
+            api_key_env: None,
+        }
+    }
+}
+
+schema!(WorkerEngineConfig);
+
+/// One engine at one knowledge base: which it is, the jobs it claims, and what its claims can say of themselves (WORKER-CONTRACT V1).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerEngineHealth {
+    pub engine: Engine,
+    /// The jobs it claims, as its claims state them.
+    pub jobs: Vec<JobFilter>,
+    /// When a `job:queued` last reached it, or null.
+    #[serde(rename = "lastQueuedEventAt")]
+    pub last_queued_event_at: Option<String>,
+    /// When it was last handed a job, or null. A claim answered with none pending is not one.
+    #[serde(rename = "lastClaimAt")]
+    pub last_claim_at: Option<String>,
+    /// When a job it held last settled, or null.
+    #[serde(rename = "lastFinishedAt")]
+    pub last_finished_at: Option<String>,
+    /// When it was last active, or null.
+    #[serde(rename = "lastActivityAt")]
+    pub last_activity_at: Option<String>,
+    /// The job it holds, or null.
+    #[serde(rename = "activeJob")]
+    pub active_job: Option<WorkerEngineHealthActiveJob>,
+    /// How many jobs it has completed since the service started.
+    #[serde(rename = "jobsCompleted")]
+    pub jobs_completed: u64,
+}
+
+schema!(WorkerEngineHealth);
+
+/// The job it holds, or null.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerEngineHealthActiveJob {
+    #[serde(rename = "jobId")]
+    pub job_id: JobId,
+    pub r#type: JobType,
+    /// When it was handed the job.
+    pub since: String,
+}
+
+/// The Worker service's health answer (WORKER-SERVICE H1). It answers only once a knowledge base of its document is confirmed, so a 200 means it is working somewhere.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerHealth {
+    pub status: WorkerHealthStatus,
+    /// One entry for each of the document's `knowledgeBases`, in its order.
+    #[serde(rename = "knowledgeBases")]
+    pub knowledge_bases: Vec<WorkerKnowledgeBaseHealth>,
+}
+
+impl WorkerHealth {
+    /// The `WorkerHealth` that states these and nothing else.
+    pub fn new(knowledge_bases: Vec<WorkerKnowledgeBaseHealth>) -> Self {
+        Self {
+            status: WorkerHealthStatus::Ok,
+            knowledge_bases,
+        }
+    }
+}
+
+schema!(WorkerHealth);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum WorkerHealthStatus {
+    #[serde(rename = "ok")]
+    Ok,
+}
+
+impl WorkerHealthStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            WorkerHealthStatus::Ok => "ok",
+        }
+    }
+}
+
+/// One knowledge base a worker does jobs for: which it is, where its gateway is, the account the worker signs in as there, and the engines it offers it. The worker signs in, confirms the knowledge base and claims at each knowledge base apart from every other.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerKnowledgeBaseConfig {
+    /// The knowledge base's did:web domain, as it answers `browse:kb-requested`: which knowledge base this is. The worker confirms it there before it claims, and refuses a knowledge base that answers another domain, or none.
+    pub domain: String,
+    /// The URL the worker reaches the knowledge base's gateway at: its route to the bus and to a resource's bytes, and the only address of the knowledge base it holds.
+    #[serde(rename = "gatewayUrl")]
+    pub gateway_url: String,
+    /// Where the worker signs in for this knowledge base, and as which client.
+    pub identity: WorkerKnowledgeBaseConfigIdentity,
+    /// The engines the worker offers this knowledge base, and the jobs it does with each: its own choice, on its own providers' keys. It claims each engine's jobs there for it, so a job no engine here is used for is not claimed at this knowledge base.
+    pub engines: Vec<WorkerEngineConfig>,
+}
+
+schema!(WorkerKnowledgeBaseConfig);
+
+/// Where the worker signs in for this knowledge base, and as which client.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerKnowledgeBaseConfigIdentity {
+    /// The issuer URL, exactly as tokens carry it in `iss`.
+    pub issuer: String,
+    /// The client the issuer holds the public half of the worker's key on: the worker's account at this knowledge base. It is also what the worker says it is called there (`principal:profile`).
+    #[serde(rename = "clientId")]
+    pub client_id: String,
+}
+
+/// One knowledge base the worker serves, as its health says it. `did` and `engines` are there while it is `working`, and only then.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkerKnowledgeBaseHealth {
+    /// The entry's `domain`.
+    pub domain: String,
+    /// `starting`: signing in, opening its stream, confirming it, or waiting to start again. `working`: confirmed, its engines claiming. `refused`: refused, until the service is started again.
+    pub state: WorkerKnowledgeBaseHealthState,
+    /// The agent's DID at this knowledge base, as its gateway named it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub did: Option<String>,
+    /// One entry for each of the entry's engines, in its order.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub engines: Option<Vec<WorkerEngineHealth>>,
+}
+
+impl WorkerKnowledgeBaseHealth {
+    /// The `WorkerKnowledgeBaseHealth` that states these and nothing else.
+    pub fn new(domain: impl Into<String>, state: WorkerKnowledgeBaseHealthState) -> Self {
+        Self {
+            domain: domain.into(),
+            state,
+            did: None,
+            engines: None,
+        }
+    }
+}
+
+schema!(WorkerKnowledgeBaseHealth);
+
+/// `starting`: signing in, opening its stream, confirming it, or waiting to start again. `working`: confirmed, its engines claiming. `refused`: refused, until the service is started again.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum WorkerKnowledgeBaseHealthState {
+    #[serde(rename = "starting")]
+    Starting,
+    #[serde(rename = "working")]
+    Working,
+    #[serde(rename = "refused")]
+    Refused,
+}
+
+impl WorkerKnowledgeBaseHealthState {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            WorkerKnowledgeBaseHealthState::Starting => "starting",
+            WorkerKnowledgeBaseHealthState::Working => "working",
+            WorkerKnowledgeBaseHealthState::Refused => "refused",
+        }
+    }
+}
 
 /// Bus command to create a cloned resource from a clone token. Bytes are stored by the upload path BEFORE this command is emitted, because bytes travel over HTTP and never over the bus — the command carries the storage coordinates, never content.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
