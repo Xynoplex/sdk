@@ -4,12 +4,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslations } from '../../contexts/TranslationContext';
 import { getSupportedShapes } from '../../lib/media-shapes';
 import type { Annotator } from '../../lib/annotation-registry';
+import type { Motivation } from '@xynolog/core';
 import './annotations.css';
 import './annotation-entries.css';
 import './references.css';
 
-export type SelectionMotivation =
-  'linking' | 'highlighting' | 'assessing' | 'commenting' | 'tagging';
 export type ClickAction = 'detail' | 'follow' | 'jsonld' | 'deleting';
 export type ShapeType = 'rectangle' | 'circle' | 'polygon';
 
@@ -17,7 +16,7 @@ export type ShapeType = 'rectangle' | 'circle' | 'polygon';
 export type ToolbarPart = 'clickAction' | 'mode' | 'selection' | 'shape';
 
 interface AnnotateToolbarProps {
-  selectedMotivation: SelectionMotivation | null;
+  selectedMotivation: Motivation | null;
   selectedClick: ClickAction;
   showDeleteButton?: boolean;
   selectedShape?: ShapeType;
@@ -42,7 +41,7 @@ interface AnnotateToolbarProps {
    */
   onModeChange?: (mode: boolean) => void;
   onClickActionChange?: (action: ClickAction) => void;
-  onSelectionChange?: (motivation: SelectionMotivation | null) => void;
+  onSelectionChange?: (motivation: Motivation | null) => void;
   onShapeChange?: (shape: ShapeType) => void;
 
   // Compact display form (display-only): icon-only, tight, chromeless — for inline
@@ -141,7 +140,7 @@ export function AnnotateToolbar({
   const t = useTranslations('AnnotateToolbar');
 
   // Helper to get emoji from annotators by motivation (with fallback for safety)
-  const getMotivationEmoji = (motivation: SelectionMotivation): string => {
+  const getMotivationEmoji = (motivation: Motivation): string => {
     const annotator = Object.values(annotators).find(
       (a) => a.motivation === motivation,
     );
@@ -222,7 +221,7 @@ export function AnnotateToolbar({
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const handleSelectionClick = (motivation: SelectionMotivation | null) => {
+  const handleSelectionClick = (motivation: Motivation | null) => {
     // If null is clicked, always deselect. Otherwise toggle.
     onSelectionChange?.(
       motivation === null
@@ -318,17 +317,18 @@ export function AnnotateToolbar({
     });
   }
 
-  // Selection motivations data
-  const selectionMotivations: Array<{
-    motivation: SelectionMotivation;
-    label: string;
-  }> = [
-    { motivation: 'linking', label: t('linking') },
-    { motivation: 'highlighting', label: t('highlighting') },
-    { motivation: 'assessing', label: t('assessing') },
-    { motivation: 'commenting', label: t('commenting') },
-    { motivation: 'tagging', label: t('tagging') },
-  ];
+  // The selection menu's entry for each motivation, in the menu's order: a
+  // motivation the spec adds does not compile until it has one.
+  const selectionMenu: {
+    [M in Motivation]: { motivation: M; label: string };
+  } = {
+    linking: { motivation: 'linking', label: t('linking') },
+    highlighting: { motivation: 'highlighting', label: t('highlighting') },
+    assessing: { motivation: 'assessing', label: t('assessing') },
+    commenting: { motivation: 'commenting', label: t('commenting') },
+    tagging: { motivation: 'tagging', label: t('tagging') },
+  };
+  const selectionMotivations = Object.values(selectionMenu);
 
   // Shape types data - filter based on media type
   const allShapeTypes: Array<{

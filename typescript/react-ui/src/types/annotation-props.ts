@@ -7,7 +7,7 @@
  * - UI state
  */
 
-import type { Annotation } from '@xynolog/core';
+import type { Annotation, Motivation } from '@xynolog/core';
 
 /**
  * Collection of all annotation types for a resource.
@@ -41,7 +41,7 @@ export interface AnnotationHandlers {
  */
 export interface AnnotationUIState {
   /** Currently selected annotation motivation (linking, highlighting, etc.) */
-  selectedMotivation: import('@xynolog/react-ui').SelectionMotivation | null;
+  selectedMotivation: Motivation | null;
 
   /** Currently selected click mode (detail, follow, delete, jsonld) */
   selectedClick: import('@xynolog/react-ui').ClickAction;

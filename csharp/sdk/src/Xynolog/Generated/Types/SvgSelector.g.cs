@@ -7,6 +7,7 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record SvgSelector
 {
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "SvgSelector";
+    public const string TypeValue = "SvgSelector";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
     [global::Xynolog.Serialization.Wire("value")] public required string Value { get; init; }
 }

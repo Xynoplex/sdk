@@ -10,9 +10,13 @@
  * CHANNEL_SCHEMAS, scope classification).
  */
 
-import type { components } from './types';
+import type { components, records } from './types';
 
 export type Selector = components['schemas']['Selector'];
+
+/** One of an annotation's bodies, and one change to its list of bodies. */
+export type AnnotationBody = components['schemas']['AnnotationBody'];
+export type BodyOperation = components['schemas']['BodyOperation'];
 
 export type GatheredContext = components['schemas']['GatheredContext'];
 
@@ -100,3 +104,22 @@ export type KbRead = components['schemas']['KbRead'];
 export type KbEndpoint = components['schemas']['KbEndpoint'];
 export type HttpEndpoint = components['schemas']['HttpEndpoint'];
 export type LocalEndpoint = components['schemas']['LocalEndpoint'];
+
+/**
+ * What a registry of knowledge bases hands its caller, and what the state
+ * units' signals say: records Protocol states in its tables
+ * (protocol/specs/src/client/registry.json, client/state-units.json), with why
+ * a session ended (session/cases.json's `told`) and what is kept of a sign-in
+ * (session/stored.json).
+ */
+export type ConnectionIdentity = records['ConnectionIdentity'];
+export type Expected = records['Expected'];
+export type SignInOutcome = records['SignInOutcome'];
+export type KbReadVerdict = records['KbReadVerdict'];
+export type TabCheck = records['TabCheck'];
+export type KbSessionStatus = records['KbSessionStatus'];
+export type SessionEnded = records['SessionEnded'];
+export type PermissionDenied = records['PermissionDenied'];
+export type KbIdentityConflict = records['KbIdentityConflict'];
+export type SessionEndReason = records['SessionEndReason'];
+export type StoredSession = records['StoredSession'];

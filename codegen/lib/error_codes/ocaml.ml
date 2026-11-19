@@ -10,6 +10,8 @@ let said =
     ("Transport", "TransportErrorCode");
     ("Job", "JobErrorCode");
     ("Session", "XynologSessionErrorCode");
+    ("Sign_in", "SignInErrorCode");
+    ("Kb_identity", "IdentityUnverifiableReason");
   ]
 
 let value_name code =

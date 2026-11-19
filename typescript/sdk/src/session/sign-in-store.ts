@@ -35,7 +35,8 @@ import {
   type SignIn,
 } from '@xynolog/core';
 import type { SignInKept } from './sign-in-kept';
-import { parseJwtExpiry, textClaim, type StoredSession } from './storage';
+import { parseJwtExpiry, textClaim } from './storage';
+import type { StoredSession } from '@xynolog/core';
 
 /** The systems whose state homes differ. */
 export type System = 'macos' | 'windows' | 'other';

@@ -453,7 +453,7 @@ public sealed partial class HttpTransport : IDisposable
                 {
                     foreach (var message in parser.Feed(buffer.AsSpan(0, count)))
                     {
-                        if (message.Event != "bus-event" || message.Data.Length == 0) continue;
+                        if (message.Event != BusEventMessage.EventValue || message.Data.Length == 0) continue;
                         var line = LineOf(message.Data);
                         lock (gate)
                         {
@@ -633,7 +633,7 @@ public sealed partial class HttpTransport : IDisposable
         try
         {
             using var body = JsonDocument.Parse(text);
-            if (status == 429 && body.RootElement.ValueKind == JsonValueKind.Object && body.RootElement.TryGetProperty("code", out var value) && value.ValueKind == JsonValueKind.String && value.GetString() == "refusal-rate") code = ProtocolFacts.Error(401);
+            if (status == 429 && body.RootElement.ValueKind == JsonValueKind.Object && body.RootElement.TryGetProperty("code", out var value) && value.ValueKind == JsonValueKind.String && value.Deserialize<LimitRefusalCode>() == LimitRefusalCode.RefusalRate) code = ProtocolFacts.Error(401);
         }
         catch (JsonException) { }
         return new TransportError(code, $"HTTP {status}: {text}", status);

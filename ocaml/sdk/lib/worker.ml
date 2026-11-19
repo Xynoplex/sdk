@@ -20,7 +20,7 @@ type held = {
   settled : unit Eio.Promise.t * unit Eio.Promise.u;
   mutable phase : phase;
   cancellation : bool State_value.t * bool State_value.writer;
-  mutable durability : (int * string) option;
+  mutable durability : (int * Enums.Durability_evidence.t) option;
 }
 
 type claim = Held of held | Empty | Refused of string option
@@ -57,6 +57,11 @@ let kind job = Enums.Job_type.to_string job.verb
 
 let accepts ~filters ~announcement =
   let verb = J.member "jobType" announcement in
+  let job_type =
+    match verb with
+    | `String value -> Enums.Job_type.of_string value
+    | _ -> None
+  in
   let motivation value =
     match J.member "params" value with
     | `Assoc _ as params -> J.member "motivation" params
@@ -66,12 +71,12 @@ let accepts ~filters ~announcement =
   |> List.exists (fun filter ->
       J.member "jobType" filter = verb
       &&
-      match verb with
-      | `String "yield" -> true
-      | `String "mark" ->
+      match job_type with
+      | Some Enums.Job_type.Yield -> true
+      | Some Enums.Job_type.Mark ->
           let wanted = motivation filter in
           wanted <> `Null && wanted = motivation announcement
-      | _ -> false)
+      | None -> false)
 
 let claim subscription http ~client_id ~correlation_id ?trace
     ?(on_activity = ignore) ?(on_settled = ignore)
@@ -231,7 +236,7 @@ let commit job subscription ~correlation_id
                 ]
             with
             | Ok (Subscription.Result _) ->
-                record 0 "acknowledged";
+                record 0 Enums.Durability_evidence.Acknowledged;
                 Ok ()
             | Ok (Subscription.Failure payload) ->
                 Error (Http_wire.bus_failure payload)
@@ -242,10 +247,13 @@ let commit job subscription ~correlation_id
                       request B.Operations.browse_annotation_requested
                         [ resource; ("annotationId", J.member "id" last) ]
                     with
-                    | Ok (Subscription.Result _) -> (0, "probe-confirmed")
-                    | Ok (Subscription.Failure _) -> (1, "probe-refused")
-                    | Error _ -> (2, "probe-unreachable")
-                  with Http_wire.Failed _ -> (2, "probe-unreachable")
+                    | Ok (Subscription.Result _) ->
+                        (0, Enums.Durability_evidence.Probe_confirmed)
+                    | Ok (Subscription.Failure _) ->
+                        (1, Enums.Durability_evidence.Probe_refused)
+                    | Error _ -> (2, Enums.Durability_evidence.Probe_unreachable)
+                  with Http_wire.Failed _ ->
+                    (2, Enums.Durability_evidence.Probe_unreachable)
                 in
                 let rank, label = evidence in
                 record rank label;
@@ -256,7 +264,8 @@ let commit job subscription ~correlation_id
 let durability job =
   Option.to_list
     (Option.map
-       (fun (_, evidence) -> ("durability", text evidence))
+       (fun (_, evidence) ->
+         ("durability", text (Enums.Durability_evidence.to_string evidence)))
        job.durability)
 
 let settle job ~completed send =

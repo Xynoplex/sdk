@@ -7,6 +7,29 @@ export type RenderMode = 'text' | 'image' | 'pdf' | 'none';
 export type AnchoringModel = 'text-selector' | 'spatial' | 'none';
 export type TextSource = 'decode' | 'pdf-text-layer' | 'none';
 
+/** What the system can do with a media type: a row of the registry. */
+export interface MediaTypeCapabilities {
+  /** A file extension, with its dot. */
+  extension: string;
+  /** The name a person reads. */
+  label: string;
+  /** The viewer a reader mounts. */
+  render: RenderMode;
+  /** The annotation model. */
+  anchoring: AnchoringModel;
+  /** Where its text comes from. */
+  textSource: TextSource;
+  /** Whether the compose editor offers it. */
+  authorable: boolean;
+  /** Whether it may be uploaded. */
+  uploadable: boolean;
+  /**
+   * Whether the generation worker can produce it as a yield artifact: the gate
+   * for `outputMediaType`, which refuses any other.
+   */
+  generatable: boolean;
+}
+
 /** A row of the registry, by media type, in the registry's order. */
 export const MEDIA_TYPE_ROWS = {
   'text/markdown': {

@@ -12,6 +12,7 @@ import { useObservable } from '../hooks/useObservable';
 import type {
   Annotation,
   AnnotationId,
+  Motivation,
   ResourceId,
   Selector,
 } from '@xynolog/core';
@@ -34,8 +35,7 @@ interface ResourceAnnotationsContextType {
   // Generic annotation creation (supports both text and image annotations)
   markAnnotation: (
     rUri: ResourceId,
-    motivation:
-      'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging',
+    motivation: Motivation,
     selector: Selector | Selector[],
     body?: Annotation['body'],
   ) => Promise<string | undefined>;
@@ -70,8 +70,7 @@ export function ResourceAnnotationsProvider({
   const markAnnotation = useCallback(
     async (
       rUri: ResourceId,
-      motivation:
-        'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging',
+      motivation: Motivation,
       selector: Selector | Selector[],
       body?: Annotation['body'],
     ): Promise<string | undefined> => {

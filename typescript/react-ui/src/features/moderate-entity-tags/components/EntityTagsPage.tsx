@@ -19,6 +19,7 @@ import {
   type ToolbarPanelsProps,
   type ToolbarProps,
 } from '../../../components/Toolbar';
+import type { Theme } from '../../../contexts/ThemeContext';
 export interface EntityTagsPageProps {
   // Data props
   entityTypes: string[];
@@ -34,7 +35,7 @@ export interface EntityTagsPageProps {
   isAddingTag: boolean;
 
   // UI state
-  theme: 'light' | 'dark' | 'system';
+  theme: Theme;
   activePanel: ToolbarPanelType | null;
 
   // Translations

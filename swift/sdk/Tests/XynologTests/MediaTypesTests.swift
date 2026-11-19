@@ -20,11 +20,11 @@ import Testing
   for value in try required(table, "textSource").array {
     let row = try value.object
     let format = try required(row, "format").text
-    #expect(.string(textSourceOf(format)) == (try required(row, "textSource")))
+    #expect(.string(textSourceOf(format).rawValue) == (try required(row, "textSource")))
     #expect(.bool(yieldsGeometryOf(format)) == (try required(row, "yieldsGeometry")))
     #expect(.bool(derivesTextOf(format)) == (try required(row, "derivesText")))
   }
-  #expect(Set(mediaTypes.map(\.textSource)) == Set(["decode", "pdf-text-layer", "none"]))
+  #expect(Set(mediaTypes.map(\.textSource)) == Set(TextSource.allCases))
   #expect(Set(mediaTypes.map(\.mediaType)) == Set(SupportedMediaType.allCases.map(\.rawValue)))
   for (suffix, type) in extensionAliases {
     #expect(mediaTypeForExtension(suffix) == type)

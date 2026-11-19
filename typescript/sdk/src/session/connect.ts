@@ -14,9 +14,9 @@ import {
   isUserId,
   replyChannelsFor,
   type AccessToken,
+  type ConnectionIdentity,
   type IdentityUnverifiableReason,
   type KbDescription,
-  type UserId,
 } from '@xynolog/core';
 import { XynologClient } from '../client';
 import type { HttpEndpoint } from '@xynolog/core';
@@ -38,11 +38,6 @@ export class IdentityUnverifiableError extends Error {
     super(detail);
     this.name = 'IdentityUnverifiableError';
   }
-}
-
-export interface ConnectionIdentity {
-  did: UserId;
-  description: KbDescription;
 }
 
 export async function describeConnection(

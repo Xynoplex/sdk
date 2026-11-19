@@ -8,5 +8,6 @@ namespace Xynolog.Types;
 public sealed record BusPingMessage
 {
     [global::Xynolog.Serialization.Wire("data")] public required string Data { get; init; }
-    [global::Xynolog.Serialization.Wire("event")] public string Event => "ping";
+    public const string EventValue = "ping";
+    [global::Xynolog.Serialization.Wire("event")] public string Event => EventValue;
 }

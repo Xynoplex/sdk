@@ -702,7 +702,7 @@ let redirect () =
   let state = Option.get (Uri.get_query_param location "state") in
   let callback = origin ^ "?code=one&state=" ^ state in
   assert (complete (callback ^ "bad") = Error "oauth.invalid-redirect");
-  assert (complete callback = Error "oauth.invalid-redirect");
+  assert (complete callback = Error Error_codes.Sign_in.no_pending);
   assert (!exchanges = 0);
   ignore (begin_ ());
   let outcome = Result.get_ok (complete callback) in
@@ -711,7 +711,7 @@ let redirect () =
   let kept = Option.get ((R.kept_in storage "kb-redirect").held ()) in
   assert (kept.access = "access" && kept.refresh = "refresh");
   assert (kept.revocation_endpoint = Some "https://issuer.example/revoke");
-  assert (complete callback = Error "oauth.invalid-redirect");
+  assert (complete callback = Error Error_codes.Sign_in.no_pending);
   assert (!discovery = 2 && !exchanges = 1 && !takes = 4)
 
 let session_unit startup () =

@@ -11,5 +11,6 @@ public sealed record GraphResourceNode
     [global::Xynolog.Serialization.Wire("id")] public required global::Xynolog.Identifiers.ResourceId Id { get; init; }
     [global::Xynolog.Serialization.Wire("label")] public required string Label { get; init; }
     [global::Xynolog.Serialization.Wire("metadata")] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement>? Metadata { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "resource";
+    public const string TypeValue = "resource";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

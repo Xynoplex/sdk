@@ -7,7 +7,8 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record KbReadVerdictConflict
 {
-    [global::Xynolog.Serialization.Wire("kind")] public string Kind => "conflict";
+    public const string KindValue = "conflict";
+    [global::Xynolog.Serialization.Wire("kind")] public string Kind => KindValue;
     [global::Xynolog.Serialization.Wire("observedDid")] public required string ObservedDid { get; init; }
     [global::Xynolog.Serialization.Wire("observedName")] public required string ObservedName { get; init; }
 }

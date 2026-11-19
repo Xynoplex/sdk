@@ -10,5 +10,6 @@ public sealed record QdrantVectorsConfig
     [global::Xynolog.Serialization.Wire("host")] public required string Host { get; init; }
     [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
     [global::Xynolog.Serialization.Wire("tokenEnv")] public required string TokenEnv { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "qdrant";
+    public const string TypeValue = "qdrant";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

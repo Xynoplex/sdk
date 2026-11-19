@@ -303,21 +303,55 @@ let typescript (t : T.t) =
   let union name words =
     S.type_alias name (T_union (List.map (fun w -> S.T_str w) words))
   in
-  let attrs (r : T.media_types_item) =
+  (* Each column of a row: its name, its type, what is said of it, and its
+     value in a row. *)
+  let columns =
+    [
+      ( "extension",
+        S.T_name "string",
+        [ "A file extension, with its dot." ],
+        fun (r : T.media_types_item) -> text r.extension );
+      ( "label",
+        S.T_name "string",
+        [ "The name a person reads." ],
+        fun r -> text r.label );
+      ( "render",
+        S.T_name "RenderMode",
+        [ "The viewer a reader mounts." ],
+        fun r -> text r.render );
+      ( "anchoring",
+        S.T_name "AnchoringModel",
+        [ "The annotation model." ],
+        fun r -> text r.anchoring );
+      ( "textSource",
+        S.T_name "TextSource",
+        [ "Where its text comes from." ],
+        fun r -> text r.text_source );
+      ( "authorable",
+        S.T_name "boolean",
+        [ "Whether the compose editor offers it." ],
+        fun r -> S.Bool r.authorable );
+      ( "uploadable",
+        S.T_name "boolean",
+        [ "Whether it may be uploaded." ],
+        fun r -> S.Bool r.uploadable );
+      ( "generatable",
+        S.T_name "boolean",
+        [
+          "Whether the generation worker can produce it as a yield artifact: \
+           the gate for `outputMediaType`, which refuses any other.";
+        ],
+        fun r -> S.Bool r.generatable );
+    ]
+  in
+  let attrs r =
     S.Object
       {
         layout = Inline;
         entries =
-          [
-            S.entry (Ident "extension") (text r.extension);
-            S.entry (Ident "label") (text r.label);
-            S.entry (Ident "render") (text r.render);
-            S.entry (Ident "anchoring") (text r.anchoring);
-            S.entry (Ident "textSource") (text r.text_source);
-            S.entry (Ident "authorable") (Bool r.authorable);
-            S.entry (Ident "uploadable") (Bool r.uploadable);
-            S.entry (Ident "generatable") (Bool r.generatable);
-          ];
+          List.map
+            (fun (name, _, _, value) -> S.entry (Ident name) (value r))
+            columns;
       }
   in
   {
@@ -337,6 +371,27 @@ let typescript (t : T.t) =
                   union "AnchoringModel" t.anchoring;
                   union "TextSource" t.text_source;
                 ];
+              S.Interface
+                {
+                  about =
+                    [
+                      Doc
+                        "What the system can do with a media type: a row of \
+                         the registry.";
+                    ];
+                  export = true;
+                  name = "MediaTypeCapabilities";
+                  members =
+                    List.map
+                      (fun (name, type_, about, _) ->
+                        S.member (Ident name) type_
+                          ~about:
+                            [
+                              S.Doc_prose
+                                (List.map (fun d -> Text.Words d) about);
+                            ])
+                      columns;
+                };
               S.const "MEDIA_TYPE_ROWS" ~as_const:true
                 ~about:
                   [

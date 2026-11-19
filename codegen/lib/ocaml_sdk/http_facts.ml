@@ -1,9 +1,9 @@
 (* What the OCaml SDK's HTTP transport says (ocaml/sdk/lib/http_facts.ml):
    the method and path of each operation it calls, by operationId; the
    transport code each status becomes; the bus code each of CommandError's
-   codes becomes; the statuses a transport retries; and ResourceUpload's
-   members. Which operations it calls is the SDK's, each by its operationId;
-   one the document no longer has is refused. *)
+   codes becomes; and ResourceUpload's members. Which operations it calls is
+   the SDK's, each by its operationId; one the document no longer has is
+   refused. *)
 
 module O = Ocaml_syntax
 
@@ -90,16 +90,6 @@ let file (spec : Spec.t) (codes : Error_codes.Table.t) =
         (wire, c.code, constructor))
       codes.wire
   in
-  let retry_statuses =
-    List.sort_uniq compare
-      (List.filter_map
-         (function
-           | Tables.Retry_cases.Transport { retries = true; status = Some s; _ }
-             ->
-               Some s
-           | _ -> None)
-         spec.tables.retry_cases.rules)
-  in
   let upload_fields =
     match
       List.assoc_opt "components/schemas/ResourceUpload.json" spec.schemas
@@ -154,7 +144,6 @@ let file (spec : Spec.t) (codes : Error_codes.Table.t) =
         O.let_ "status_code" (O.function_ status_code);
         failure_code;
         bus_failure;
-        O.let_ "retry_statuses" (O.list (List.map O.int retry_statuses));
         O.let_ "upload_fields" (O.list (List.map O.string upload_fields));
       ]
   in
@@ -163,7 +152,7 @@ let file (spec : Spec.t) (codes : Error_codes.Table.t) =
       Ok
         (O.implementation ~path:"ocaml/sdk/lib/http_facts.ml"
            ~banner:
-             (Banner.ocaml ~from_:"OpenAPI paths, error codes and retry cases"
+             (Banner.ocaml ~from_:"OpenAPI paths and schemas, and error codes"
                 __FILE__)
            items)
   | errors -> Error errors

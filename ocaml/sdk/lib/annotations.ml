@@ -1,13 +1,19 @@
 module J = Yojson.Safe.Util
 
-type t = { body : Yojson.Safe.t; target : Yojson.Safe.t; motivation : string }
+type t = {
+  body : Yojson.Safe.t;
+  target : Yojson.Safe.t;
+  motivation : Enums.Motivation.t;
+}
 
 let of_model model =
   let json = Yojson.Safe.from_string (Models.encode model) in
   {
     body = J.member "body" json;
     target = J.member "target" json;
-    motivation = J.member "motivation" json |> J.to_string;
+    motivation =
+      J.member "motivation" json |> J.to_string |> Enums.Motivation.of_string
+      |> Option.get;
   }
 
 let many = function `Null -> [] | `List values -> values | value -> [ value ]
@@ -28,11 +34,16 @@ let target_selector annotation =
   | `Assoc fields -> List.assoc_opt "selector" fields
   | _ -> None
 
-let is_highlight annotation = annotation.motivation = "highlighting"
-let is_reference annotation = annotation.motivation = "linking"
-let is_assessment annotation = annotation.motivation = "assessing"
-let is_comment annotation = annotation.motivation = "commenting"
-let is_tag annotation = annotation.motivation = "tagging"
+let is_highlight annotation =
+  annotation.motivation = Enums.Motivation.Highlighting
+
+let is_reference annotation = annotation.motivation = Enums.Motivation.Linking
+
+let is_assessment annotation =
+  annotation.motivation = Enums.Motivation.Assessing
+
+let is_comment annotation = annotation.motivation = Enums.Motivation.Commenting
+let is_tag annotation = annotation.motivation = Enums.Motivation.Tagging
 
 let is_stub_reference annotation =
   is_reference annotation && not (is_body_resolved annotation)
@@ -61,19 +72,24 @@ let exact_text selection =
 let annotation_exact_text annotation = exact_text (target_selector annotation)
 
 let texts_for purpose annotation =
+  let purpose = Enums.Body_purpose.to_string purpose in
   many annotation.body
   |> List.filter_map (fun value ->
       if text "purpose" value = Some purpose then text "value" value else None)
 
 let entity_types annotation =
-  List.filter (fun name -> name <> "") (texts_for "tagging" annotation)
+  List.filter
+    (fun name -> name <> "")
+    (texts_for Enums.Body_purpose.Tagging annotation)
 
 let tag_category annotation =
-  if is_tag annotation then List.nth_opt (texts_for "tagging" annotation) 0
+  if is_tag annotation then
+    List.nth_opt (texts_for Enums.Body_purpose.Tagging annotation) 0
   else None
 
 let tag_schema_id annotation =
-  if is_tag annotation then List.nth_opt (texts_for "classifying" annotation) 0
+  if is_tag annotation then
+    List.nth_opt (texts_for Enums.Body_purpose.Classifying annotation) 0
   else None
 
 type quoted_text = {

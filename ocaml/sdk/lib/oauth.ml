@@ -90,7 +90,7 @@ let exchange http request =
                "invalid_client";
              ] ->
         Error (Rejected code)
-    | _ -> Error (Rejected "oauth.request-failed")
+    | _ -> Error (Rejected Error_codes.Sign_in.exchange)
 
 let discover http ~issuer =
   let* issuer = required (endpoint issuer) in
@@ -382,7 +382,7 @@ let revoke_script http ~revocation_endpoint ~refresh_token =
           ];
       }
   in
-  if status = 200 then Ok () else Error (Rejected "oauth.revocation-failed")
+  if status = 200 then Ok () else Error (Rejected Error_codes.Sign_in.exchange)
 
 let keep_redirect issuer redirect =
   let field key value = (key, `String value) in

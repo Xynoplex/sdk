@@ -9,7 +9,7 @@ import { useHoverDwell } from '../../hooks/useHoverDwell';
 import { toViewportAnchorRect } from '../../lib/anchor-rect';
 import { rectsForPage } from './rects-for-page';
 import { useTranslations } from '../../contexts/TranslationContext';
-import type { SelectionMotivation } from '../annotation/AnnotateToolbar';
+import type { Motivation } from '@xynolog/core';
 import {
   canvasToPdfCoordinates,
   pdfToCanvasCoordinates,
@@ -22,7 +22,7 @@ import {
 // Type-only, so this leaves no runtime edge back to the parent module.
 import type { DrawingMode } from './PdfAnnotationCanvas';
 
-function getMotivationColor(motivation: SelectionMotivation | null): {
+function getMotivationColor(motivation: Motivation | null): {
   stroke: string;
   fill: string;
 } {
@@ -70,7 +70,7 @@ interface PdfPageViewProps {
   /** Null while no tool is chosen, and while the canvas does not hold the
    *  document's text. */
   drawing: PageDrawing | null;
-  selectedMotivation?: SelectionMotivation | null;
+  selectedMotivation?: Motivation | null;
   session?: XynologSession | null | undefined;
   hoveredAnnotationId?: string | null;
   selectedAnnotationId?: string | null;
@@ -95,7 +95,7 @@ interface PdfPageViewProps {
  * mode.
  *
  * @emits browse:click - Annotation clicked on the page. Payload: { annotationId: string, anchorRect?: AnchorRect }
- * @emits mark:requested - New annotation drawn on the page. Payload: { source: ResourceId, selector: [FragmentSelector, TextQuoteSelector?], motivation: SelectionMotivation } — the quote is the text under the rectangle, omitted when there is none
+ * @emits mark:requested - New annotation drawn on the page. Payload: { source: ResourceId, selector: [FragmentSelector, TextQuoteSelector?], motivation: Motivation } — the quote is the text under the rectangle, omitted when there is none
  */
 export function PdfPageView({
   doc,
@@ -461,8 +461,7 @@ export function PdfPageView({
                 const isSelected = r.annId === selectedAnnotationId;
 
                 // Colour by the annotation's own motivation (not the toolbar's).
-                const annMotivation = r.annotation
-                  .motivation as SelectionMotivation | null;
+                const annMotivation = r.annotation.motivation;
                 const { stroke: annStroke, fill: annFill } =
                   getMotivationColor(annMotivation);
 

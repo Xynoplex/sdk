@@ -144,22 +144,22 @@ let start_open t ~verb ?resource ?stall_ms ~params ~on_report ~on_failure
       | None, _ -> Queue.add (channel, signal) pending
       | Some _, Error detail -> on_report Refused detail
       | Some id, Ok (`Assoc fields as payload)
-        when field "jobId" payload = text id -> (
+        when field "jobId" payload = text id ->
           let payload = `Assoc (List.remove_assoc "_roles" fields) in
           last_seen := Clock.monotonic_now t.clock;
-          match channel with
-          | "job:report-progress" ->
-              retrying := false;
-              polling := false;
-              on_report Progress (field "progress" payload)
-          | "job:complete" ->
-              on_report Complete payload;
-              finish ()
-          | "job:fail" when field "willRetry" payload = `Bool true ->
+          let is signal = channel = B.name signal in
+          if is B.Channels.job_report_progress then (
+            retrying := false;
+            polling := false;
+            on_report Progress (field "progress" payload))
+          else if is B.Channels.job_complete then (
+            on_report Complete payload;
+            finish ())
+          else if is B.Channels.job_fail then
+            if field "willRetry" payload = `Bool true then (
               retrying := true;
-              on_report Retrying payload
-          | "job:fail" -> fail Error_codes.Job.failed payload
-          | _ -> ())
+              on_report Retrying payload)
+            else fail Error_codes.Job.failed payload
       | _ -> ()
   in
 
@@ -175,7 +175,10 @@ let start_open t ~verb ?resource ?stall_ms ~params ~on_report ~on_failure
         (fun () ->
           let payload =
             `Assoc
-              ([ ("jobType", text verb); ("params", params) ]
+              ([
+                 ("jobType", text (Enums.Job_type.to_string verb));
+                 ("params", params);
+               ]
               @ Option.to_list
                   (Option.map
                      (fun value -> ("resourceId", text value))
@@ -237,7 +240,9 @@ let start_open t ~verb ?resource ?stall_ms ~params ~on_report ~on_failure
                                   (`Assoc
                                      ([
                                         ("jobId", text id);
-                                        ("jobType", text verb);
+                                        ( "jobType",
+                                          text (Enums.Job_type.to_string verb)
+                                        );
                                       ]
                                      @ Option.to_list
                                          (Option.map

@@ -70,7 +70,7 @@ from datetime import UTC, datetime
 from types import TracebackType
 from typing import Final, Literal, Self, assert_never, final
 
-from pydantic import JsonValue, TypeAdapter
+from pydantic import JsonValue, TypeAdapter, ValidationError
 
 from xynolog import telemetry
 from xynolog._kept_for_first_reader import KeptForFirstReader, Latest
@@ -90,7 +90,7 @@ from xynolog.channels import (
 from xynolog.error_codes import BusRequestErrorCode
 from xynolog.errors import BusRequestError, XynologError
 from xynolog.events import Events
-from xynolog.identifiers import AnnotationId, InvalidIdentifier, JobId, ResourceId
+from xynolog.identifiers import AnnotationId, JobId, ResourceId
 from xynolog.job_filter import job_matches_filter
 from xynolog.model import WireModel, written
 from xynolog.operations import BROWSE_ANNOTATION_REQUESTED, JOB_CLAIM, MARK_COMMIT
@@ -101,6 +101,9 @@ from xynolog.types import (
     BrowseAnnotationRequest,
     DurabilityEvidence,
     FailureClass,
+    GatheredContext,
+    GatheredContextFocusAnnotation,
+    GatheredContextFocusResource,
     JobCancelCommand,
     JobCheckpointCommand,
     JobClaimCommand,
@@ -278,18 +281,15 @@ def _anchor_of(job_type: JobType, params: Mapping[str, JsonValue]) -> Annotation
     """
     if job_type != "yield":
         return None
-    context = params.get("context")
-    focus = context.get("focus") if isinstance(context, Mapping) else None
-    if not isinstance(focus, Mapping) or focus.get("kind") != "annotation":
-        return None
-    annotation = focus.get("annotation")
-    named = annotation.get("id") if isinstance(annotation, Mapping) else None
-    if not isinstance(named, str):
-        return None
     try:
-        return AnnotationId.parse(named)
-    except InvalidIdentifier:
+        context = GatheredContext.model_validate(params.get("context"))
+    except ValidationError:
         return None
+    match context.focus:
+        case GatheredContextFocusAnnotation(annotation=annotation):
+            return annotation.id
+        case GatheredContextFocusResource():
+            return None
 
 
 @final

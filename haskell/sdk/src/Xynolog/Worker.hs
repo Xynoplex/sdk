@@ -182,12 +182,10 @@ annotationId :: HeldJob result -> Maybe AnnotationId
 annotationId job = case jobType job of
   JobTypeMark -> Nothing
   JobTypeYield -> do
-    Object context <- KM.lookup "context" (jobParamsAdditionalProperties (params job))
-    Object focus <- KM.lookup "focus" context
-    String "annotation" <- KM.lookup "kind" focus
-    Object annotation <- KM.lookup "annotation" focus
-    value <- KM.lookup "id" annotation
-    case fromJSON value of { Success identity -> Just identity; Error _ -> Nothing }
+    stated <- KM.lookup "context" (jobParamsAdditionalProperties (params job))
+    Success context <- Just (fromJSON stated)
+    GatheredContextFocusBranch1 focus <- Just (gatheredContextFocus context)
+    Just (Types.annotationId (gatheredContextFocusBranch1ValueAnnotation focus))
 
 trace :: HeldJob result -> Maybe TraceCarrier
 trace = heldTrace

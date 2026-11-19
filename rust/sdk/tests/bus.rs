@@ -64,28 +64,31 @@ async fn a_request_nobody_answers_times_out_and_is_tracked_no_more() {
 
 #[tokio::test(start_paused = true)]
 async fn a_failure_reply_fails_under_the_code_its_own_code_becomes() {
-    // The code the failure is read with: a code none of CommandError's is
-    // read as absent.
-    for (stated, expected, kept) in [
-        (Some("not-found"), "bus.not-found", Some("not-found")),
-        (
-            Some("peer-unavailable"),
-            "bus.peer-unavailable",
-            Some("peer-unavailable"),
-        ),
-        (
-            Some("unauthorized"),
-            "bus.unauthorized",
-            Some("unauthorized"),
-        ),
-        (
-            Some("none-pending"),
-            "bus.none-pending",
-            Some("none-pending"),
-        ),
-        (Some("not-invented-yet"), "bus.rejected", None),
-        (None, "bus.rejected", None),
-    ] {
+    // The code the failure is read with, as errors/codes.json's `busRequest`
+    // states it: a code CommandError lists is the member whose `wire` it is,
+    // and a code none of CommandError's is read as absent.
+    let codes: Value = serde_json::from_str(include_str!("../specs/errors/codes.json"))
+        .expect("the codes are JSON");
+    let vocabulary = &codes["busRequest"];
+    let unrecognized = vocabulary["unrecognizedFailure"]
+        .as_str()
+        .expect("the code an unrecognized failure is read as");
+    let mut cases: Vec<(Option<&str>, &str, Option<&str>)> = vocabulary["codes"]
+        .as_array()
+        .expect("the vocabulary's codes")
+        .iter()
+        .filter_map(|entry| {
+            let wire = entry["wire"].as_str()?;
+            Some((
+                Some(wire),
+                entry["code"].as_str().expect("a code"),
+                Some(wire),
+            ))
+        })
+        .collect();
+    cases.push((Some("not-invented-yet"), unrecognized, None));
+    cases.push((None, unrecognized, None));
+    for (stated, expected, kept) in cases {
         let (bus, transport) = bus(vec![FaultAction::DropReply]);
         transport.queue_reply(read().request, [None]);
         let asked = tokio::spawn({

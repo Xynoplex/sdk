@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { resourceId } from '@xynolog/core';
 import type { Annotation, AnnotationId } from '@xynolog/core';
-import { ThemeProvider } from '../../contexts/ThemeContext';
+import { ThemeProvider, type ResolvedTheme } from '../../contexts/ThemeContext';
 import { ReferenceResolutionWidget } from '../codemirror-widgets';
 
 const unresolvedReference: Annotation = {
@@ -27,7 +27,7 @@ const unresolvedReference: Annotation = {
 };
 
 /** The pulsing ring and the badge over it: the two children of the indicator's wrapper. */
-function generatingIndicatorUnder(theme: 'light' | 'dark') {
+function generatingIndicatorUnder(theme: ResolvedTheme) {
   localStorage.setItem('theme', theme);
   render(<ThemeProvider>{null}</ThemeProvider>);
 

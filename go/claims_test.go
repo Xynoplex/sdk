@@ -739,7 +739,9 @@ func TestAHeldJobSaysItsWholeLifecycleItself(t *testing.T) {
 
 func TestAYieldJobFocusedOnAnAnnotationIsAnchoredToItAndSaysSo(t *testing.T) {
 	w := newClaimWorld(t, DefaultTiming())
-	w.offer(running("job-1", "yield", `"maxRetries": 0`, `"context": {"focus": {"kind": "annotation", "annotation": {"id": "ann-7"}}}`))
+	w.offer(running("job-1", "yield", `"maxRetries": 0`, `"context": {"focus": {"kind": "annotation", "annotation": `+annotationJSON("ann-7")+`,
+		"sourceResource": {"@context": "https://schema.org", "@id": "res-1", "name": "A resource", "representations": []}},
+		"graph": {"nodes": [], "edges": []}, "metadata": {}}`))
 	claims := w.client.Job.Claim(filters(t, everything))
 	defer claims.Close()
 	job, ok := pulling(t, claims).held(t).(*HeldYieldJob)

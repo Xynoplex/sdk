@@ -48,7 +48,6 @@ import {
   setStoredSession,
   swapStoredSession,
   takeStoredSession,
-  type StoredSession,
 } from './storage';
 import {
   BROWSER_CLIENT_ID,
@@ -61,15 +60,19 @@ import { describeConnection } from './connect';
 import type {
   KbEndpoint,
   KbRead,
+  KbReadVerdict,
+  KbSessionStatus,
   KnowledgeBase,
   NewKnowledgeBase,
+  SignInOutcome,
+  StoredSession,
+  TabCheck,
 } from '@xynolog/core';
-import { kbRead, type KbSessionStatus } from './knowledge-base';
+import { kbRead } from './knowledge-base';
 import {
   applyTabChecks,
   sortOpenResources,
   type OpenResource,
-  type TabCheck,
 } from './open-resource';
 import { XynologSession } from './xynolog-session';
 import { createSessionSignals, type SessionSignals } from './session-signals';
@@ -156,33 +159,6 @@ function changeKept<T>(
     throw new Error(`The storage did not change ${key}`);
   return written;
 }
-
-/**
- * What a completed sign-in registered or re-authenticated, plus what the
- * user believed they were connecting to — a discovered row they clicked, or
- * the registered record they re-authenticated — so a host can verify the
- * two against each other and report a mismatch. Verification reports; it
- * never blocks, because the KB that answered is the one they reached.
- */
-export interface SignInOutcome {
-  kb: KnowledgeBase;
-  expected?: { did: string; name?: string };
-}
-
-/**
- * What a knowledge base said when it was asked to describe itself, read
- * against the entry it was asked as.
- *
- *  - `recorded`: it answered as that entry, and its name and branch are recorded on it.
- *  - `conflict`: a different knowledge base answered. Its did and the name it
- *    gave itself are here, and on nothing else: the entry is as it was.
- *  - `no-verdict`: it did not answer, or could not say who it is. Not evidence
- *    of anything.
- */
-export type KbReadVerdict =
-  | { kind: 'recorded' }
-  | { kind: 'conflict'; observedDid: string; observedName: string }
-  | { kind: 'no-verdict' };
 
 export interface XynologBrowserConfig {
   /** Persistence adapter. The browser reads/writes all persisted state via this. */

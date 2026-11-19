@@ -38,9 +38,9 @@ from xynolog.registry import XynologBrowser, XynologBrowserConfig, save_knowledg
 from xynolog.session import XynologSession
 from xynolog.storage import MemoryStorage, SessionStorage
 from xynolog.storage_keys import last_event_id_key, person_key
-from xynolog.stored import PENDING_AUTHORIZATION_KEY, StoredSession
+from xynolog.stored import PENDING_AUTHORIZATION_KEY
 from xynolog.transport import Transport
-from xynolog.types import HttpEndpoint, KnowledgeBase, LocalEndpoint
+from xynolog.types import HttpEndpoint, KnowledgeBase, LocalEndpoint, StoredSession
 from xynolog.watched import reached
 
 _JSON = TypeAdapter[JsonValue](JsonValue)

@@ -49,7 +49,7 @@ enum RetryContext: String, CaseIterable {
       status.map { [408, 413, 429, 500, 502, 503, 504].contains($0) } == true
         && (keyed || method.map { Self.idempotentMethods.contains($0.uppercased()) } == true)
     case .refresh: status.map { $0 == 408 || $0 == 429 || $0 >= 500 } ?? true
-    case .job: status.map { [408, 429, 500, 503].contains($0) } == true
+    case .job: status.map { $0 == 408 || $0 == 429 || $0 >= 500 } == true
     }
   }
 }

@@ -52,9 +52,9 @@ from xynolog.session import HeldSignIn, MemorySignIn, XynologSession
 from xynolog.session_signals import SessionSignals
 from xynolog.storage import MemoryStorage, SessionStorage
 from xynolog.storage_keys import cache_key, last_event_id_key, person_key, session_key
-from xynolog.stored import ACTIVE_KEY, KEPT_QUERIES, StoredSession
+from xynolog.stored import ACTIVE_KEY, KEPT_QUERIES
 from xynolog.testing import FaultyTransport, ScriptedSessions, SharedStorage
-from xynolog.types import HttpEndpoint, KnowledgeBase, ResourceDescriptor, UserResponse
+from xynolog.types import HttpEndpoint, KnowledgeBase, ResourceDescriptor, StoredSession, UserResponse
 from xynolog.watched import reached
 
 _JSON: Final = TypeAdapter[JsonValue](JsonValue)

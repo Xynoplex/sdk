@@ -26,10 +26,9 @@ from xynolog.channels import BRIDGED_CHANNELS
 from xynolog.errors import SessionError, SignInError, TransportError
 from xynolog.registry import SessionFactory, SessionFactoryOptions, kept_in
 from xynolog.session import XynologSession
-from xynolog.stored import StoredSession
 from xynolog.testing.client import create_test_client
 from xynolog.testing.transport import FaultyTransport
-from xynolog.types import KbTarget, UserResponse
+from xynolog.types import KbTarget, StoredSession, UserResponse
 from xynolog.watched import Variable
 
 __all__ = ["ScriptedSessions"]

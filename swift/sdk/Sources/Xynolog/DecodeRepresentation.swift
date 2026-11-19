@@ -14,7 +14,7 @@ private let singleByteScalars = Dictionary(
 
 /// Reads the text of a representation according to its media type, charset, and byte-order mark.
 public func decodeRepresentation(_ bytes: Data, contentType: String) throws -> String {
-  guard textSourceOf(contentType) == "decode" else {
+  guard textSourceOf(contentType) == .decode else {
     throw TransportError(
       .error, "The resource's media type \(baseMediaType(contentType)) does not supply decoded text"
     )

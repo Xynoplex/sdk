@@ -28,7 +28,7 @@ from collections import OrderedDict
 from collections.abc import Mapping
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Final, Protocol, final
+from typing import Final, Protocol, final, get_args
 
 import httpx
 from pydantic import JsonValue, TypeAdapter, ValidationError
@@ -58,10 +58,13 @@ from xynolog.timing import (
     STREAM_OPEN_TIMEOUT_MS,
 )
 from xynolog.transport import CONNECTION_STATE_MAY_BECOME, ConnectionState, Frame, FrameHub, FrameRefusal, ReplyRouter, TraceContext
-from xynolog.types import BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem, ErrorResponse
+from xynolog.types import BusEventMessage, BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem, ErrorResponse
 from xynolog.watched import Variable, Watched
 
 __all__ = ["Bookmarks", "SeenIds", "Stream", "Timing", "backoff_cap_ms"]
+
+# The event a bus frame comes as: the one value of BusEventMessage's `event`.
+_BUS_EVENT: Final = TypeAdapter[tuple[str]](tuple[str]).validate_python(get_args(BusEventMessage.model_fields["event"].annotation))[0]
 
 
 def _sent_under(carried: JsonValue) -> TraceContext | None:
@@ -728,7 +731,7 @@ class Stream:
                 parser = SseParser()
                 async for read in response.aiter_bytes():
                     for event in parser.feed(read):
-                        if event.event == "bus-event" and event.data != "":
+                        if event.event == _BUS_EVENT and event.data != "":
                             self._reports.put_nowait(_Framed(conn, event.id, event.data))
             finally:
                 await response.aclose()

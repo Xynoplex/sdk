@@ -9,5 +9,6 @@ public sealed record TextPositionSelector
 {
     [global::Xynolog.Serialization.Wire("end")] public required long End { get; init; }
     [global::Xynolog.Serialization.Wire("start")] public required long Start { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "TextPositionSelector";
+    public const string TypeValue = "TextPositionSelector";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

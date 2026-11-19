@@ -40,12 +40,8 @@ import type { XynologClient } from './client';
 import { XynologSessionError } from './session/errors';
 import type { SessionStorage } from './session/session-storage';
 import type { SignInKept } from './session/sign-in-kept';
-import {
-  cacheKey,
-  lastEventIdKey,
-  personKey,
-  type StoredSession,
-} from './session/storage';
+import { cacheKey, lastEventIdKey, personKey } from './session/storage';
+import type { StoredSession } from '@xynolog/core';
 
 /**
  * B17 — where a client keeps its persisted queries' values: a store, under

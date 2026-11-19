@@ -133,7 +133,11 @@ let rec expression models (value : Yojson.Safe.t) type_ ~owner ~part =
     match value with
     | `Null -> S.Nil
     | `Bool b -> S.Bool b
-    | `String s -> S.String s
+    | `String s -> (
+        (* A word of a vocabulary ([vocabulary]) is its enumeration's case. *)
+        match resolved with
+        | D.Ref _ -> case s
+        | _ -> S.String s)
     | `Int i -> S.Int i
     | `Float f ->
         if Float.is_integer f then S.Int (int_of_float f) else S.Float f
@@ -176,6 +180,43 @@ let rec expression models (value : Yojson.Safe.t) type_ ~owner ~part =
                 (fun (a, _) (b, _) -> String.compare a b)
                 (properties_of resolved)))
     | _ -> refuse "a table value of no kind"
+
+(* A vocabulary a table states, as the public enumeration [n] of its words,
+   and the type of a member that states one of them. *)
+let vocabulary models n words =
+  match
+    M.inline models ~modifiers:[ "public" ] "" n
+      (D.Node
+         {
+           (D.node [ "type"; "enum" ]) with
+           type_ = Some (D.One Schema.String);
+           enum = Some (List.map (fun w -> Schema.String_literal w) words);
+         })
+  with
+  | S.Named name when name = n -> D.Ref { name; description = None }
+  | _ -> refuse "the vocabulary %s is declared by another name" n
+
+(* [shape], the rows of a list, with its rows' member [key] typed [type_]. *)
+let typing_rows ~key type_ = function
+  | D.Node
+      ({ items = Some (D.Node ({ properties = Some ps; _ } as row)); _ } as list)
+    when List.mem_assoc key ps ->
+      D.Node
+        {
+          list with
+          items =
+            Some
+              (D.Node
+                 {
+                   row with
+                   properties =
+                     Some
+                       (List.map
+                          (fun (k, s) -> (k, if k = key then type_ else s))
+                          ps);
+                 });
+        }
+  | _ -> refuse "a table's rows state no %s" key
 
 (* Timings *)
 
@@ -1276,10 +1317,19 @@ let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes =
   let error_decls =
     error_codes models ~shapes ~table:tables.errors_codes codes
   in
+  let text_source =
+    vocabulary models "TextSource" tables.media_types_registry.text_source
+  in
+  let typed = [ ("mediaTypes", typing_rows ~key:"textSource" text_source) ] in
   let values =
     List.map
       (fun (_, _, n, value) ->
         let shape = infer [ value ] in
+        let shape =
+          match List.assoc_opt n typed with
+          | Some type_rows -> type_rows shape
+          | None -> shape
+        in
         let type_ = M.type_ models "Spec" n shape in
         constant [ "internal" ] n (Some type_)
           (expression models value shape ~owner:"Spec" ~part:n))

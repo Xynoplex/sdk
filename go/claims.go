@@ -742,31 +742,16 @@ func anchorOf(jobType api.JobType, params api.JobParams) api.AnnotationId {
 		return api.AnnotationId{}
 	}
 	var stated struct {
-		Context *struct {
-			Focus *struct {
-				Kind       string `json:"kind"`
-				Annotation *struct {
-					ID json.RawMessage `json:"id"`
-				} `json:"annotation"`
-			} `json:"focus"`
-		} `json:"context"`
+		Context *api.GatheredContext `json:"context"`
 	}
-	if json.Unmarshal(encoded, &stated) != nil || stated.Context == nil || stated.Context.Focus == nil {
+	if json.Unmarshal(encoded, &stated) != nil || stated.Context == nil {
 		return api.AnnotationId{}
 	}
-	focus := stated.Context.Focus
-	if focus.Kind != "annotation" || focus.Annotation == nil {
+	var focus api.GatheredContextFocusAnnotation
+	if stated.Context.Focus.As(&focus) != nil || focus.Kind != api.GatheredContextFocusAnnotationKindAnnotation {
 		return api.AnnotationId{}
 	}
-	var named string
-	if json.Unmarshal(focus.Annotation.ID, &named) != nil {
-		return api.AnnotationId{}
-	}
-	anchored, err := api.ParseAnnotationId(named)
-	if err != nil {
-		return api.AnnotationId{}
-	}
-	return anchored
+	return focus.Annotation.Id
 }
 
 // handedOut is what the claims hand out next: a job, or a refusal.

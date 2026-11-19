@@ -593,7 +593,7 @@ export class BrowseNamespace implements IBrowseNamespace {
 
   async files(
     dirPath?: string,
-    sort?: 'name' | 'mtime' | 'annotationCount',
+    sort?: components['schemas']['BrowseDirectoryRequest']['sort'],
   ): Promise<components['schemas']['BrowseFilesResponse']> {
     return this.wire.request(
       'browse:directory-requested',

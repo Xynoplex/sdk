@@ -34,7 +34,7 @@ import {
   type SignInFiles,
   type System,
 } from '../sign-in-store';
-import type { StoredSession } from '../storage';
+import type { StoredSession } from '@xynolog/core';
 
 const SPECS = join(
   dirname(fileURLToPath(import.meta.url)),

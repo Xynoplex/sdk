@@ -43,14 +43,12 @@ from xynolog.registry import (
     store_session,
 )
 from xynolog.session import XynologSession
-from xynolog.session_signals import PermissionDenied
 from xynolog.storage import MemoryStorage, SessionStorage
 from xynolog.storage_keys import cache_key, person_key
-from xynolog.stored import StoredSession
 from xynolog.testing import FaultyTransport, create_test_client
 from xynolog.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT
 from xynolog.transport import Transport
-from xynolog.types import HttpEndpoint, KbTarget, KnowledgeBase
+from xynolog.types import HttpEndpoint, KbTarget, KnowledgeBase, PermissionDenied, StoredSession
 from xynolog.watched import Variable, reached
 
 

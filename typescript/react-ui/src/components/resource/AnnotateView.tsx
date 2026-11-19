@@ -25,17 +25,17 @@ import { useSessionEventSubscriptions } from '../../hooks/useSessionEventSubscri
 import { scrollAnnotationIntoView } from '../../lib/scroll-utils';
 import {
   AnnotateToolbar,
-  type SelectionMotivation,
   type ClickAction,
   type ShapeType,
 } from '../annotation/AnnotateToolbar';
+import type { Motivation } from '@xynolog/core';
 import type {
   AnnotationsCollection,
   AnnotationUIState,
 } from '../../types/annotation-props';
 
 // Re-export for convenience
-export type { SelectionMotivation, ClickAction, ShapeType };
+export type { ClickAction, ShapeType };
 
 interface Props {
   content: string;
@@ -81,7 +81,7 @@ export function AnnotateView(props: Props & TranslationSource) {
 /**
  * View component for annotating resources with text selection and drawing
  *
- * @emits mark:requested - User requested to create annotation. Payload: { source: ResourceId, selector: Selector | Selector[], motivation: SelectionMotivation }
+ * @emits mark:requested - User requested to create annotation. Payload: { source: ResourceId, selector: Selector | Selector[], motivation: Motivation }
  * @subscribes beckon:hover - Annotation hovered. Payload: { annotationId: string | null }
  * @subscribes beckon:focus - Scroll to and highlight the annotation, or to the top when it names none, unless `resourceId` names a different resource. Payload: { resourceId: string, annotationId?: string }
  */
@@ -145,7 +145,7 @@ function AnnotateViewBody({
   // Toolbar callbacks: the presentational bar reports chosen values; route them up
   // through the existing onUIStateChange path (the owner applies them).
   const handleToolbarSelectionChange = useCallback(
-    (motivation: SelectionMotivation | null) => {
+    (motivation: Motivation | null) => {
       onUIStateChangeRef.current?.({ selectedMotivation: motivation });
     },
     [],

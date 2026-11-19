@@ -98,8 +98,9 @@ public sealed class SignInStoreTests
             await entry.RenewedAsync(original, TokenTests.Jwt(new { iss = "https://issuer.example", exp = 2000003600 }), "refresh-2");
             var after = await store.ReadAsync();
             Assert.True(JsonNode.DeepEquals(before["other"], after["other"]));
-            foreach (var name in new[] { "future", "email", "issuer", "tokenEndpoint", "revocationEndpoint" })
+            foreach (var name in new[] { "email", "issuer", "tokenEndpoint", "revocationEndpoint" })
                 Assert.True(JsonNode.DeepEquals(before["stack"]?[name], after["stack"]?[name]), name);
+            Assert.Null(after["stack"]?["future"]);
             if (!OperatingSystem.IsWindows())
             {
                 Assert.Equal(StorePermissions.DirectoryMode, File.GetUnixFileMode(directory));

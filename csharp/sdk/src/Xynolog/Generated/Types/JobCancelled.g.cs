@@ -11,5 +11,6 @@ public sealed record JobCancelled
     [global::Xynolog.Serialization.Wire("metadata")] public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
     [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.JobParams Params { get; init; }
     [global::Xynolog.Serialization.Wire("startedAt")] public string? StartedAt { get; init; }
-    [global::Xynolog.Serialization.Wire("status")] public string Status => "cancelled";
+    public const string StatusValue = "cancelled";
+    [global::Xynolog.Serialization.Wire("status")] public string Status => StatusValue;
 }

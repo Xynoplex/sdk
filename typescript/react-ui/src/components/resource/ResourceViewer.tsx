@@ -8,12 +8,8 @@ import {
   type TranslationSource,
 } from '../../contexts/TranslationContext';
 import { translationSourceOf } from '../../lib/translation-source';
-import {
-  AnnotateView,
-  type SelectionMotivation,
-  type ClickAction,
-  type ShapeType,
-} from './AnnotateView';
+import { AnnotateView, type ClickAction, type ShapeType } from './AnnotateView';
+import type { Motivation } from '@xynolog/core';
 import type { AnnotateMediaRenderers } from './annotate-renderers';
 import { BrowseView, type ReferenceHover } from './BrowseView';
 import type { BrowseMediaRenderers } from './browse-renderers';
@@ -97,10 +93,8 @@ interface Props {
   onAnnotateModeChange?: (mode: boolean) => void;
   clickAction?: ClickAction;
   onClickActionChange?: (action: ClickAction) => void;
-  selectionMotivation?: SelectionMotivation | null;
-  onSelectionMotivationChange?: (
-    motivation: SelectionMotivation | null,
-  ) => void;
+  selectionMotivation?: Motivation | null;
+  onSelectionMotivationChange?: (motivation: Motivation | null) => void;
   shape?: ShapeType;
   onShapeChange?: (shape: ShapeType) => void;
   /**
@@ -243,13 +237,13 @@ function ResourceViewerBody({
 
   // Remaining toolbar preferences — same controlled/uncontrolled split as mode.
   const [internalSelectionMotivation, setInternalSelectionMotivation] =
-    useState<SelectionMotivation | null>('linking');
+    useState<Motivation | null>('linking');
   const selectedMotivation =
     selectionMotivationProp !== undefined
       ? selectionMotivationProp
       : internalSelectionMotivation;
   const changeSelectionMotivation = useCallback(
-    (motivation: SelectionMotivation | null) => {
+    (motivation: Motivation | null) => {
       if (selectionMotivationProp === undefined)
         setInternalSelectionMotivation(motivation);
       onSelectionMotivationChangeRef.current?.(motivation);

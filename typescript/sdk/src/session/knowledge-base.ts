@@ -26,7 +26,12 @@
  * `@xynolog/core`); what is here is made from them.
  */
 
-import type { KbDescription, KbRead, KbTarget } from '@xynolog/core';
+import type {
+  HttpEndpoint,
+  KbDescription,
+  KbRead,
+  KbTarget,
+} from '@xynolog/core';
 
 export function kbRead(description: KbDescription, at: Date): KbRead {
   return {
@@ -36,12 +41,6 @@ export function kbRead(description: KbDescription, at: Date): KbRead {
       : {}),
   };
 }
-
-/**
- * Status of the locally-stored credential for a KB. Derived from the
- * presence and validity of the JWT in session storage.
- */
-export type KbSessionStatus = 'authenticated' | 'expired' | 'signed-out';
 
 /**
  * Construct a `KbTarget` for an HTTP-backed Xynolog gateway without
@@ -78,7 +77,7 @@ export function httpKb(opts: {
   label: string;
   host: string;
   port: number;
-  protocol: 'http' | 'https';
+  protocol: HttpEndpoint['protocol'];
 }): KbTarget {
   const { id, label, host, port, protocol } = opts;
   return {

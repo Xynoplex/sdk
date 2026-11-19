@@ -35,6 +35,7 @@ import { CodeMirrorRenderer } from '../../../components/CodeMirrorRenderer';
 import { useFormAnnouncements } from '../../../components/LiveRegion';
 import { useLineNumbers } from '../../../contexts/LineNumbersContext';
 import { UploadProgressBar } from './UploadProgressBar';
+import type { ResolvedTheme } from '../../../contexts/ThemeContext';
 
 /**
  * Big tent: every registry type is uploadable. The `accept` hint lists all
@@ -74,7 +75,7 @@ export interface ResourceComposePageProps {
   initialLocale: string;
 
   // UI state
-  theme: 'light' | 'dark';
+  theme: ResolvedTheme;
   hoverDelayMs: number;
   activePanel: ToolbarPanelType | null;
 
