@@ -162,19 +162,8 @@ public sealed class Bus
     /// reads it; or its first fault. What the gateway stamps on a payload (a member whose name begins <c>_</c>) is the
     /// bus's, not the payload's: one <typeparamref name="T"/> does not declare is left out before the payload is read.</summary>
     private static bool TryDecode<T>(JsonElement payload, [NotNullWhen(true)] out T? decoded,
-        [NotNullWhen(false)] out Fault? fault) where T : class
-    {
-        decoded = null;
-        fault = Required.FaultOf(typeof(T).Name, Declared(typeof(T).Name, payload), out var read);
-        if (fault is not null) return false;
-        try { decoded = read.Deserialize<T>() ?? throw new JsonException("A bus payload is null."); }
-        catch (JsonException)
-        {
-            fault = Fault.Undecoded;
-            return false;
-        }
-        return true;
-    }
+        [NotNullWhen(false)] out Fault? fault) where T : class =>
+        Required.TryRead(Declared(typeof(T).Name, payload), out decoded, out fault);
 
     /// <summary><paramref name="payload"/> without what the gateway stamped on it that <paramref name="schema"/> does
     /// not declare.</summary>

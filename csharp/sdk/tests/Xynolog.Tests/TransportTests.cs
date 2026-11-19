@@ -979,6 +979,21 @@ public sealed partial class TransportTests
         Assert.NotNull(await content.GetAnchoredTextAsync(ResourceId.Parse("r1")));
     }
 
+    [Fact]
+    public async Task AnAnswerIsHeldToTheTableBeforeItIsRead()
+    {
+        var status = "{\"status\":\"ready\",\"message\":\"ready\",\"version\":\"1\",\"features\":{\"semanticContent\":\"ready\",\"collaboration\":\"ready\"},\"authenticatedAs\":null}";
+        using var server = new Handler();
+        server.Other = (_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(status) });
+        using var client = new HttpClient(server);
+        using var transport = new HttpTransport("http://unit.test", "token", ["beckon:focus"], httpClient: client);
+        await OpenAsync(transport);
+        Assert.Null((await transport.GetStatusAsync()).AuthenticatedAs);
+        status = "{\"status\":\"ready\",\"message\":\"ready\",\"features\":{\"semanticContent\":\"ready\",\"collaboration\":\"ready\"}}";
+        var refused = await Assert.ThrowsAsync<TransportError>(() => transport.GetStatusAsync());
+        Assert.Contains("it has no `version`", refused.Message);
+    }
+
     [Theory]
     [InlineData("emitRetry")]
     [InlineData("refreshRetry")]
