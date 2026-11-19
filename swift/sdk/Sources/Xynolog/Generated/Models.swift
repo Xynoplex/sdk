@@ -10083,8 +10083,8 @@ public struct SpecTelemetrySpansItem: Codable, Sendable {
 public struct SpecTelemetrySpansItemAttributesItem: Codable, Sendable {
   public var key: String
   public var only: String?
-  public var values: [String]?
-  public init(key: String, only: String? = nil, values: [String]? = nil) {
+  public var values: [Bool]?
+  public init(key: String, only: String? = nil, values: [Bool]? = nil) {
     self.key = key
     self.only = only
     self.values = values
@@ -11919,7 +11919,7 @@ internal let telemetrySpans: [SpecTelemetrySpansItem] = [
     attributes: [
       SpecTelemetrySpansItemAttributesItem(key: "resource.id"),
       SpecTelemetrySpansItemAttributesItem(
-        key: "content.stream", only: "on a read taken as a stream", values: ["true"]),
+        key: "content.stream", only: "on a read taken as a stream", values: [true]),
       SpecTelemetrySpansItemAttributesItem(
         key: "thread.id",
         only: "when the host OpenTelemetry API supplies its runtime thread identity"),
