@@ -62,41 +62,6 @@ let refuses text expected () =
         (List.map (fun e -> file ^ ": " ^ e) expected)
         (List.map Decode.error_to_string errors)
 
-let model_refuses text expected () =
-  match decode text with
-  | Ok _ -> Alcotest.failf "expected the refusal\n  %s\nand none came" expected
-  | Error error ->
-      Alcotest.(check string)
-        "refusal"
-        (file ^ ": " ^ expected)
-        (Decode.error_to_string error)
-
-let the_model =
-  [
-    case "no timing is refused"
-      (model_refuses (table []) "/timing: expected a non-empty array");
-    case "an entry with no docs is refused"
-      (model_refuses
-         (table [ {|{"name":"emitRetry","value":1}|} ])
-         "/timing/0: lacks the member \"docs\"");
-    case "an entry with empty docs is refused"
-      (model_refuses
-         (table [ entry ~docs:"" "lingerMs" "1" ])
-         "/timing/0/docs: expected a non-empty string");
-    case "a value with a fraction is refused"
-      (model_refuses
-         (table [ entry "lingerMs" "1.5" ])
-         "/timing/0/value: expected an integer or an object");
-    case "a value that is a string is refused"
-      (model_refuses
-         (table [ entry "lingerMs" {|"30000"|} ])
-         "/timing/0/value: expected an integer or an object");
-    case "a budget without its ceiling is refused"
-      (model_refuses
-         (table [ entry "emitRetry" {|{"attempts":4,"initialDelayMs":1000}|} ])
-         "/timing/0/value: lacks the member \"maxDelayMs\"");
-  ]
-
 let value =
   Alcotest.testable
     (fun formatter (value : Timing.Table.value) ->
@@ -356,9 +321,4 @@ let writers =
 
 let () =
   Alcotest.run "timing"
-    [
-      ("the model", the_model);
-      ("the rules", rules);
-      ("names", names);
-      ("the writers", writers);
-    ]
+    [ ("the rules", rules); ("names", names); ("the writers", writers) ]

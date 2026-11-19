@@ -212,8 +212,7 @@ let protocol_tables ~root =
    the order CommandError names them; one that states none is the
    unrecognized failure. *)
 let failure_codes (spec : Spec.t) (models : Models.t) =
-  let* wire_codes = Error_codes.Table.wire_codes spec in
-  let* t = Error_codes.Table.derive ~wire_codes spec.tables.errors_codes in
+  let* t = Error_codes.Table.derive spec.tables.errors_codes in
   let* code_type =
     match models.member_type "CommandError" "code" with
     | Some name -> Ok ("global::Xynolog.Types." ^ name)
@@ -226,7 +225,7 @@ let failure_codes (spec : Spec.t) (models : Models.t) =
         let failure : Error_codes.Table.code = List.assoc code t.wire in
         ( C.Value (Name (code_type ^ "." ^ Models.enum_constant code)),
           C.Str failure.code ))
-      wire_codes
+      Error_codes.Table.wire_codes
   in
   Ok
     (file ~namespace:"Xynolog.Protocol"

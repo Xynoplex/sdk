@@ -58,24 +58,27 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
   let index name = O.tags [ name ] in
   let rows =
     List.mapi
-      (fun i (c : R.channel) ->
+      (fun i (c : R.channels_item) ->
         let at = Printf.sprintf "/channels/%d" i in
         let named schema =
           if not (known schema) then
             refuse at (Printf.sprintf "names %s, which no component is" schema)
         in
         let type_, shape =
-          match c.payload with
+          match c with
           | Schema { schema; _ } ->
               named schema;
               ( O.type_ "component" ~args:[ index schema ],
                 O.construct "Component" ~arg:(O.string schema) )
-          | Envelope { schema } ->
+          | Envelope { schema; _ } ->
               named schema;
               ( O.type_ "envelope" ~args:[ index schema ],
                 O.construct "Envelope" ~arg:(O.string schema) )
           | Stored_event { enriched; payload; _ } ->
-              let envelope = Bus.Registry.stored_event_component ~enriched in
+              let envelope =
+                Bus.Registry.stored_event_component
+                  ~enriched:(enriched = Some true)
+              in
               named envelope;
               named payload;
               ( O.type_ "recorded"
@@ -87,12 +90,12 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
                          ("envelope", O.string envelope);
                          ("payload", O.string payload);
                        ]) )
-          | Void -> (O.type_ "void", O.construct "Void")
-          | Empty -> (O.type_ "empty", O.construct "Empty")
+          | Void _ -> (O.type_ "void", O.construct "Void")
+          | Empty _ -> (O.type_ "empty", O.construct "Empty")
         in
         {
-          channel = c.channel;
-          name = name_of c.channel;
+          channel = Bus.Registry.name c;
+          name = name_of (Bus.Registry.name c);
           type_;
           shape;
           emittable = Option.is_some (Bus.Registry.validate_of c);
@@ -105,7 +108,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
   let row channel = List.find (fun r -> r.channel = channel) rows in
   let operations =
     List.mapi
-      (fun i (o : R.operation) ->
+      (fun i (o : R.operations_item) ->
         if not (row o.request).emittable then
           refuse
             (Printf.sprintf "/operations/%d/request" i)
@@ -120,7 +123,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
   in
   let bridged =
     List.concat_map
-      (fun (o : R.operation) -> [ o.result; o.failure ])
+      (fun (o : R.operations_item) -> [ o.result; o.failure ])
       reg.operations
     @ reg.audience.everyone
   in
@@ -402,7 +405,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
   in
   let operation_values =
     List.map
-      (fun ((o : R.operation), _) ->
+      (fun ((o : R.operations_item), _) ->
         let channel c = O.ident ("Channels." ^ name_of c) in
         O.let_ (name_of o.request)
           (O.record
@@ -430,7 +433,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
         O.let_ "operations"
           (packed "Operation"
              (List.map
-                (fun ((o : R.operation), _) ->
+                (fun ((o : R.operations_item), _) ->
                   "Operations." ^ name_of o.request)
                 operations));
         O.let_ "bridged_channels"
@@ -447,17 +450,30 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
              rows);
         O.module_spec "Operations"
           (List.map
-             (fun ((o : R.operation), t) -> O.val_ (name_of o.request) t)
+             (fun ((o : R.operations_item), t) -> O.val_ (name_of o.request) t)
              operations);
       ]
   in
   (* Each method a channel or an operation is, by its namespace. *)
   let surface = spec.tables.client_surface in
-  let correlated (m : S.method_) =
-    List.exists (fun (c : S.case) -> Option.is_some c.correlation_id) m.cases
+  (* The channels a method names: the request it asks, the local channel it
+     publishes, the channel it emits. *)
+  let via_channels (m : S.methods_item) =
+    match m.via with
+    | Request { request } -> (Some request, None, None)
+    | Local { local } -> (None, Some local, None)
+    | Emit { emit } -> (None, None, Some emit)
+    | Content _ | Gateway _ | Observes _ -> (None, None, None)
+  in
+  let correlated (m : S.methods_item) =
+    List.exists
+      (fun (c : S.cases_item) -> Option.is_some c.correlation_id)
+      m.cases
   in
   let operation_of request =
-    List.find_opt (fun ((o : R.operation), _) -> o.request = request) operations
+    List.find_opt
+      (fun ((o : R.operations_item), _) -> o.request = request)
+      operations
   in
   let channel_of at kind channel =
     match List.find_opt (fun r -> r.channel = channel) rows with
@@ -471,11 +487,11 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
   let plain value = (Asttypes.Nolabel, value) in
   let wired =
     List.filter_map
-      (fun ((n, ns) : int * S.namespace) ->
+      (fun ((n, ns) : int * S.namespaces_item) ->
         let functions =
           List.concat
             (List.mapi
-               (fun i (m : S.method_) ->
+               (fun i (m : S.methods_item) ->
                  let at = Printf.sprintf "/namespaces/%d/methods/%d/via" n i in
                  let name = Text.snake m.method_ in
                  let correlation =
@@ -497,9 +513,9 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
                      ((plain (O.ident "client") :: List.map optional options)
                      @ [ plain (O.ident channel); plain (O.ident "payload") ])
                  in
-                 match (m.via.request, m.via.local, m.via.emit) with
+                 match via_channels m with
                  | Some request, _, _
-                   when m.shape = "promise" && not (List.mem m.method_ by_hand)
+                   when m.shape = S.Promise && not (List.mem m.method_ by_hand)
                    -> (
                      match operation_of request with
                      | Some (o, _) ->
@@ -513,7 +529,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
                            (Printf.sprintf "names %s, which no operation asks"
                               request);
                          [])
-                 | _, Some local, _ when m.shape = "signal" ->
+                 | _, Some local, _ when m.shape = S.Signal ->
                      let c = channel_of (at ^ "/local") "local" local in
                      [
                        method_ correlation
@@ -523,7 +539,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
                  | _, _, Some emit ->
                      let c = channel_of (at ^ "/emit") "emitted" emit in
                      let how =
-                       if m.shape = "count" then "drive" else "signal"
+                       if m.shape = S.Count then "drive" else "signal"
                      in
                      [
                        method_ [ "scope" ]
@@ -539,17 +555,17 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
   in
   let behavior =
     List.concat_map
-      (fun (ns : S.namespace) ->
+      (fun (ns : S.namespaces_item) ->
         List.filter_map
-          (fun (m : S.method_) ->
+          (fun (m : S.methods_item) ->
             (* A promise that asks, or any method that emits or publishes,
                dispatches to the first channel it names. *)
+            let request, local, emit = via_channels m in
             let target =
               if
-                (Option.is_some m.via.request && m.shape = "promise")
-                || Option.is_some m.via.emit || Option.is_some m.via.local
-              then
-                List.find_map Fun.id [ m.via.request; m.via.emit; m.via.local ]
+                (Option.is_some request && m.shape = S.Promise)
+                || Option.is_some emit || Option.is_some local
+              then List.find_map Fun.id [ request; emit; local ]
               else None
             in
             match target with

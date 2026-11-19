@@ -34,12 +34,17 @@ let file ~from_ (table : T.t) =
         ~visibility:K.Internal
         ~members:
           (List.map
-             (fun (s : T.span) ->
+             (fun (s : T.spans_item) ->
                row ~meaning:s.meaning ~type_:"SpanRow" s.name
-                 [ K.Member (K.Name "SpanKind", String.uppercase_ascii s.kind) ])
+                 [
+                   K.Member
+                     ( K.Name "SpanKind",
+                       String.uppercase_ascii
+                         (T.service_telemetry_telemetry_kind_value s.kind) );
+                 ])
              table.spans
           @ List.map
-              (fun (m : T.metric) ->
+              (fun (m : T.metrics_item) ->
                 row ~meaning:m.meaning ~type_:"MetricRow" m.name
                   [ K.Str m.meaning ])
               table.metrics)

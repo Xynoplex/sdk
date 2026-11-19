@@ -112,8 +112,10 @@ let files ~root (spec : Spec.t) =
   let* channels =
     collect
       (List.map
-         (fun (c : Tables.Bus_registry.channel) ->
-           Result.map (fun shape -> (c.channel, shape)) (Event.channel ~known c))
+         (fun (c : Tables.Bus_registry.channels_item) ->
+           Result.map
+             (fun shape -> (Bus.Registry.name c, shape))
+             (Event.channel ~known c))
          spec.tables.bus_registry.channels)
   in
   let* http = collect (replies spec derivation) in

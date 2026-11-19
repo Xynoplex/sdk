@@ -50,7 +50,7 @@ let member_types =
 
 type t = {
   table : T.t;
-  records : (T.record * (string * H.type_) list) list;
+  records : (T.records_item * (string * H.type_) list) list;
       (** Each record, with its members' Haskell types. *)
 }
 
@@ -60,7 +60,7 @@ let derive (table : T.t) =
     refusals := refusal pointer message :: !refusals
   in
   List.iteri
-    (fun i (fault : T.fault_action) ->
+    (fun i (fault : T.fault_actions_item) ->
       match fault.holds with
       | [] | [ "ms" ] -> ()
       | _ ->
@@ -68,9 +68,23 @@ let derive (table : T.t) =
             (Printf.sprintf "/faultActions/%d/holds" i)
             "holds what is not one delay of milliseconds")
     table.fault_actions;
+  (* JSON Schema cannot bound one member by another, so the schema leaves a
+     range's maximum free of its minimum. *)
+  List.iter
+    (fun (at, minimum, maximum) ->
+      if maximum < minimum then
+        refuse at
+          (Printf.sprintf "is from %d up to %d, which is no range" minimum
+             maximum))
+    [
+      ("/delayMs", table.delay_ms.minimum, table.delay_ms.maximum);
+      ( "/scheduleLength",
+        table.schedule_length.minimum,
+        table.schedule_length.maximum );
+    ];
   let records =
     List.mapi
-      (fun i (record : T.record) ->
+      (fun i (record : T.records_item) ->
         let at = Printf.sprintf "/records/%d" i in
         match List.assoc_opt record.name member_types with
         | None ->
@@ -102,28 +116,32 @@ let derive (table : T.t) =
   in
   List.iter
     (fun (name, _) ->
-      if not (List.exists (fun (r : T.record) -> r.name = name) table.records)
+      if
+        not
+          (List.exists
+             (fun (r : T.records_item) -> r.name = name)
+             table.records)
       then refuse "/records" (name ^ " is no record, and Haskell types one"))
     member_types;
   match List.rev !refusals with
   | [] -> Ok { table; records }
   | errors -> Error errors
 
-let fields (record : T.record) typed =
+let fields (record : T.records_item) typed =
   List.map
     (fun (member, t) ->
       (String.uncapitalize_ascii record.name ^ String.capitalize_ascii member, t))
     typed
 
-let record name = List.find (fun ((r : T.record), _) -> r.name = name)
+let record name = List.find (fun ((r : T.records_item), _) -> r.name = name)
 
 let haskell t =
   let s = t.table in
-  let constructor (fault : T.fault_action) =
+  let constructor (fault : T.fault_actions_item) =
     H.constructor fault.name
       ~fields:(List.map (fun _ -> H.T_name "Integer") fault.holds)
   in
-  let draw (fault : T.fault_action) =
+  let draw (fault : T.fault_actions_item) =
     match fault.holds with
     | [] -> H.Apply (Name "pure", [ Name fault.name ])
     | _ ->
@@ -171,7 +189,7 @@ let haskell t =
                   type_ = T_fun (T_name "FaultAction", T_name "Text");
                   clauses =
                     List.map
-                      (fun (fault : T.fault_action) ->
+                      (fun (fault : T.fault_actions_item) ->
                         {
                           H.patterns =
                             [
@@ -264,10 +282,10 @@ let haskell t =
 let ocaml t =
   let module O = Ocaml_syntax in
   let s = t.table in
-  let name (fault : T.fault_action) =
+  let name (fault : T.fault_actions_item) =
     String.capitalize_ascii (Text.snake fault.name)
   in
-  let span (b : T.bounds) = b.maximum - b.minimum + 1 in
+  let span (b : T.delay_ms) = b.maximum - b.minimum + 1 in
   let random_int bound =
     O.apply (O.ident "Random.State.int") [ O.ident "random"; O.int bound ]
   in
@@ -278,7 +296,7 @@ let ocaml t =
         (O.type_declaration "fault_action"
            (Variant
               (List.map
-                 (fun (fault : T.fault_action) ->
+                 (fun (fault : T.fault_actions_item) ->
                    O.constructor (name fault)
                      ~args:(if fault.holds = [] then [] else [ O.type_ "int" ]))
                  s.fault_actions)));
@@ -294,7 +312,7 @@ let ocaml t =
            (O.match_
               (random_int (List.length s.fault_actions))
               (List.mapi
-                 (fun i (fault : T.fault_action) ->
+                 (fun i (fault : T.fault_actions_item) ->
                    O.case (O.Pattern.int i)
                      (if fault.holds = [] then O.construct (name fault)
                       else

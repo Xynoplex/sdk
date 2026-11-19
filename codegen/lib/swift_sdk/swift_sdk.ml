@@ -23,8 +23,7 @@ let swift_files (spec : Spec.t) =
   let ( let* ) = Result.bind in
   let* derivation = Required.derive spec in
   let* timing = Timing.Table.derive spec.tables.client_timing in
-  let* wire_codes = Error_codes.Table.wire_codes spec in
-  let* codes = Error_codes.Table.derive ~wire_codes spec.tables.errors_codes in
+  let* codes = Error_codes.Table.derive spec.tables.errors_codes in
   match
     let bundle = D.bundle spec in
     let sign_in =
@@ -46,13 +45,13 @@ let swift_files (spec : Spec.t) =
     let identifiers =
       List.sort String.compare
         (List.map
-           (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+           (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
            spec.tables.identifiers_kinds.kinds)
     in
     let models = Models.create definitions ~identifiers in
     let tables =
       Table_decls.declarations models ~spec ~view:bundle.view
-        ~shapes:derivation.shapes ~timing ~codes ~wire_codes
+        ~shapes:derivation.shapes ~timing ~codes
     in
     Models.generate models;
     let models_file =

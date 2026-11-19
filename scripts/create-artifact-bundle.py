@@ -178,7 +178,7 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
         "kotlin": "eclipse-temurin (version from kotlin/sdk/.java-version)",
         "ocaml": "ocaml/opam:debian-13-ocaml-5.5",
         "swift": f"swift:{(ROOT / 'swift/sdk/.swift-version').read_text().strip()}",
-        "codegen": "xynolog-ocaml-toolchain (ocaml/toolchain.json), linked statically",
+        "codegen": "xynolog-ocaml-toolchain (build-tools/ocaml/toolchain.json), linked statically",
     }
     release = sdk_version.config()
     verifier_source = ROOT / "scripts/verify-artifact-bundle.py"

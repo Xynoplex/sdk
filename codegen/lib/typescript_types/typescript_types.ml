@@ -123,7 +123,7 @@ let text (spec : Spec.t) =
   let definitions = (Definitions.bundle spec).definitions in
   let kinds =
     List.map
-      (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+      (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
       spec.tables.identifiers_kinds.kinds
   in
   let schema name =

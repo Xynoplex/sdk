@@ -134,7 +134,7 @@ let files ~root (spec : Spec.t) =
   in
   let identifiers =
     List.map
-      (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+      (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
       spec.tables.identifiers_kinds.kinds
   in
   let* models =
@@ -276,7 +276,8 @@ let files ~root (spec : Spec.t) =
             Error_codes.Haskell.member = "discoveryAbsent";
             codes =
               List.map
-                (fun (r : Tables.Client_discovery_absent.reason) -> r.reason)
+                (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+                  r.reason)
                 spec.tables.client_discovery_absent.reasons;
             statuses = None;
           };

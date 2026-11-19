@@ -27,7 +27,7 @@ type carried = Component of string | Response of string | Nothing
 
 type t = {
   registry : R.t;
-  channel : string -> R.channel;
+  channel : string -> R.channels_item;
   reply_names : (string * string list) list;
       (* Each operation's request, with what its result states beside its
          response, in the order the result's schema requires them. *)
@@ -35,26 +35,62 @@ type t = {
       (* Each channel of channelOrder.eventMap, with the stamps its payload's
          schema declares: its properties whose names begin with "_". *)
   attrs : attrs list; (* Each channel of channelOrder.eventMap. *)
-  limits : R.operation * R.operation list;
+  limits : R.operations_item * R.operations_item list;
       (* The operations named <flow>:limits-requested, which all ask and
          answer the same. *)
 }
 
+(* What every shape of channel states alike. *)
+let name : R.channels_item -> string = function
+  | Schema { channel; _ }
+  | Envelope { channel; _ }
+  | Stored_event { channel; _ }
+  | Void { channel; _ }
+  | Empty { channel; _ } ->
+      channel
+
+let docs : R.channels_item -> R.docs = function
+  | Schema { docs; _ }
+  | Envelope { docs; _ }
+  | Stored_event { docs; _ }
+  | Void { docs; _ }
+  | Empty { docs; _ } ->
+      docs
+
+let schema_docs : R.channels_item -> R.docs = function
+  | Schema { schema_docs; _ }
+  | Envelope { schema_docs; _ }
+  | Stored_event { schema_docs; _ }
+  | Void { schema_docs; _ }
+  | Empty { schema_docs; _ } ->
+      schema_docs
+
+(* Prose as the registry states it, in no language's shape: paragraphs, each
+   a text or a list of items, every text one line of words that a writer lays
+   out for its own language. *)
+let paragraph : R.event_name_item -> Text.paragraph = function
+  | String words -> Words words
+  | Object { items } -> Items items
+
+let prose = List.map paragraph
+
 let stored_event_component ~enriched =
   if enriched then "EnrichedResourceEvent" else "StoredEventResponse"
 
-let carried (c : R.channel) =
-  match c.payload with
+let carried : R.channels_item -> carried = function
   | Schema { schema; _ } -> Component schema
-  | Envelope { schema } -> Response schema
-  | Stored_event { enriched; _ } -> Component (stored_event_component ~enriched)
-  | Void | Empty -> Nothing
+  | Envelope { schema; _ } -> Response schema
+  | Stored_event { enriched; _ } ->
+      Component (stored_event_component ~enriched:(enriched = Some true))
+  | Void _ | Empty _ -> Nothing
 
-let is_recorded (c : R.channel) =
-  match c.payload with Stored_event _ -> true | _ -> false
+let is_recorded : R.channels_item -> bool = function
+  | Stored_event _ -> true
+  | _ -> false
 
-let validate_of (c : R.channel) =
-  match c.payload with Schema { validate; _ } -> validate | _ -> None
+let validate_of : R.channels_item -> string option = function
+  | Schema { validate; _ } -> validate
+  | _ -> None
 
 let indexed list = List.mapi (fun i x -> (i, x)) list
 let member set x = List.mem x set
@@ -72,12 +108,12 @@ let check (reg : R.t) =
   in
   let declared = Hashtbl.create 256 in
   List.iter
-    (fun (i, (c : R.channel)) ->
-      if Hashtbl.mem declared c.channel then
+    (fun (i, (c : R.channels_item)) ->
+      if Hashtbl.mem declared (name c) then
         refuse
           (Printf.sprintf "/channels/%d" i)
-          "channel %S is declared more than once" c.channel
-      else Hashtbl.replace declared c.channel c)
+          "channel %S is declared more than once" (name c)
+      else Hashtbl.replace declared (name c) c)
     (indexed reg.channels);
   let known pointer ch =
     if not (Hashtbl.mem declared ch) then
@@ -88,15 +124,17 @@ let check (reg : R.t) =
   in
   known_list "/channelOrder/eventMap" reg.channel_order.event_map;
   known_list "/channelOrder/schemas" reg.channel_order.schemas;
-  let requests = List.map (fun (o : R.operation) -> o.request) reg.operations in
+  let requests =
+    List.map (fun (o : R.operations_item) -> o.request) reg.operations
+  in
   let replies =
     List.concat_map
-      (fun (o : R.operation) -> [ o.result; o.failure ])
+      (fun (o : R.operations_item) -> [ o.result; o.failure ])
       reg.operations
   in
   let owners = Hashtbl.create 64 in
   List.iter
-    (fun (i, (o : R.operation)) ->
+    (fun (i, (o : R.operations_item)) ->
       let at member = Printf.sprintf "/operations/%d/%s" i member in
       known (at "request") o.request;
       known (at "result") o.result;
@@ -191,42 +229,53 @@ let check (reg : R.t) =
               never crosses"
              ch)
           (Hashtbl.find_opt kind_of ch)))
-    (List.map (fun (c : R.channel) -> c.channel) reg.channels);
+    (List.map name reg.channels);
   List.iter
-    (fun (i, (c : R.channel)) ->
+    (fun (i, (c : R.channels_item)) ->
       let at = Printf.sprintf "/channels/%d" i in
-      if not (member in_process c.channel || operation_channel c.channel) then (
-        if not (Hashtbl.mem kind_of c.channel) then
+      let channel = name c in
+      if not (member in_process channel || operation_channel channel) then (
+        if not (Hashtbl.mem kind_of channel) then
           refuse at
             "channel %S declares no kind: add it to kind.command or \
              kind.event, or to inProcess if it never crosses. There is no \
              default."
-            c.channel;
-        if not (Hashtbl.mem audience_of c.channel) then
+            channel;
+        if not (Hashtbl.mem audience_of channel) then
           refuse at
             "channel %S declares no audience: add it to audience.everyone, \
              audience.scoped or audience.declared. There is no default."
-            c.channel);
-      (match c.payload with
-      | Stored_event { event; _ } when event <> c.channel ->
+            channel);
+      (match c with
+      | Stored_event { event; _ } when event <> channel ->
           refuse at
             "%S is a stored event named %S: a persisted event is published on \
              the channel of its own type"
-            c.channel event
+            channel event
       | Schema { schema; validate = Some validate; _ } when validate <> schema
         ->
           refuse at
             "%S carries %s and validates against %s: one channel, one schema"
-            c.channel schema validate
+            channel schema validate
+      | Envelope { validate = Some validate; _ }
+      | Stored_event { validate = Some validate; _ }
+      | Void { validate = Some validate; _ }
+      | Empty { validate = Some validate; _ } ->
+          (* The schema's description says so, and Schema has no null
+             literal to state it with. *)
+          refuse at
+            "%S validates against %s and carries no schema: only a channel \
+             that carries one is validated against it"
+            channel validate
       | _ -> ());
       if
-        Hashtbl.find_opt audience_of c.channel = Some "scoped"
+        Hashtbl.find_opt audience_of channel = Some "scoped"
         && not (is_recorded c)
       then
         refuse at
           "%S has audience scoped and is no stored event: a resource's scope \
            carries the events of its record"
-          c.channel)
+          channel)
     (indexed reg.channels);
   (* Who emits a channel: whether that emit changes the knowledge base is
      declared, since the gateway reads it to decide whether an emit was an
@@ -413,11 +462,10 @@ let composition (schema : Schema.t) =
 (* What an operation's result states beside its response: the properties its
    schema requires, which must be properties of the request, since whoever
    answers takes each from it. *)
-let reply_names component channel (o : R.operation) =
-  let reply : R.channel = channel o.result in
+let reply_names component channel (o : R.operations_item) =
   let names =
-    match reply.payload with
-    | Schema { schema = name; _ } ->
+    match channel o.result with
+    | R.Schema { schema = name; _ } ->
         let schema = named component name in
         (match composition schema with
         | Some keyword ->
@@ -427,7 +475,7 @@ let reply_names component channel (o : R.operation) =
               o.result name keyword
         | None -> ());
         List.filter (fun name -> name <> "response") (required schema)
-    | Envelope _ | Empty | Void -> []
+    | Envelope _ | Empty _ | Void _ -> []
     | Stored_event _ ->
         problem
           "%s is the reply to %s and is a stored event, which states no \
@@ -435,10 +483,9 @@ let reply_names component channel (o : R.operation) =
           o.result o.request
   in
   (if names <> [] then
-     let asked : R.channel = channel o.request in
      let stated =
-       match asked.payload with
-       | Schema { schema; _ } -> properties (named component schema)
+       match channel o.request with
+       | R.Schema { schema; _ } -> properties (named component schema)
        | _ -> []
      in
      match List.find_opt (fun name -> not (List.mem name stated)) names with
@@ -455,14 +502,15 @@ let delivery_classes (reg : R.t) =
   let classes = Hashtbl.create 256 in
   let set ch delivery = Hashtbl.replace classes ch delivery in
   List.iter
-    (fun (o : R.operation) ->
+    (fun (o : R.operations_item) ->
       set o.request Passing;
       set o.result Correlated;
       set o.failure Correlated)
     reg.operations;
   let recorded =
     List.filter_map
-      (fun (c : R.channel) -> if is_recorded c then Some c.channel else None)
+      (fun (c : R.channels_item) ->
+        if is_recorded c then Some (name c) else None)
       reg.channels
   in
   List.iter
@@ -480,7 +528,7 @@ let derive ~component (reg : R.t) =
   | [] -> (
       let by_channel = Hashtbl.create 256 in
       List.iter
-        (fun (c : R.channel) -> Hashtbl.replace by_channel c.channel c)
+        (fun (c : R.channels_item) -> Hashtbl.replace by_channel (name c) c)
         reg.channels;
       let channel name = Hashtbl.find by_channel name in
       let problems = ref [] in
@@ -496,7 +544,7 @@ let derive ~component (reg : R.t) =
       in
       let reply_names =
         List.mapi
-          (fun i (o : R.operation) ->
+          (fun i (o : R.operations_item) ->
             ( o.request,
               attempt
                 (Printf.sprintf "/operations/%d" i)
@@ -511,8 +559,8 @@ let derive ~component (reg : R.t) =
               attempt
                 (Printf.sprintf "/channelOrder/eventMap/%d" i)
                 (fun () ->
-                  match (channel ch).payload with
-                  | Schema { schema; _ } ->
+                  match channel ch with
+                  | R.Schema { schema; _ } ->
                       List.sort_uniq String.compare
                         (stamps component ~of_:schema (named component schema))
                   | _ -> [])
@@ -521,11 +569,11 @@ let derive ~component (reg : R.t) =
       in
       let delivery = delivery_classes reg in
       let requests =
-        List.map (fun (o : R.operation) -> o.request) reg.operations
+        List.map (fun (o : R.operations_item) -> o.request) reg.operations
       in
       let replies =
         List.concat_map
-          (fun (o : R.operation) -> [ o.result; o.failure ])
+          (fun (o : R.operations_item) -> [ o.result; o.failure ])
           reg.operations
       in
       let audiences =
@@ -566,11 +614,11 @@ let derive ~component (reg : R.t) =
       in
       let limits =
         List.filter
-          (fun (o : R.operation) ->
+          (fun (o : R.operations_item) ->
             String.ends_with ~suffix:":limits-requested" o.request)
           reg.operations
       in
-      let shape (o : R.operation) =
+      let shape (o : R.operations_item) =
         List.map
           (fun ch -> carried (channel ch))
           [ o.request; o.result; o.failure ]
@@ -587,7 +635,8 @@ let derive ~component (reg : R.t) =
               limits_problem
                 ("the limits operations do not all ask and answer the same: "
                 ^ String.concat ", "
-                    (List.map (fun (o : R.operation) -> o.request) limits))
+                    (List.map (fun (o : R.operations_item) -> o.request) limits)
+                )
       in
       match (limits, List.rev !problems @ mismatched) with
       | first :: rest, [] ->

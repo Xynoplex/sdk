@@ -474,10 +474,7 @@ let writers =
                ("B", string_shape);
              ]));
     case "an envelope holds only its response" (fun () ->
-        let channel payload : Tables.Bus_registry.channel =
-          let docs : Tables.Bus_registry.docs = { lead = []; trailing = "" } in
-          { channel = "c"; payload; docs; schema_docs = docs }
-        in
+        let docs : Tables.Bus_registry.docs = { lead = []; trailing = "" } in
         Alcotest.(check (list (result string string)))
           "shapes"
           [
@@ -489,23 +486,51 @@ let writers =
               {|bus/registry.json: /channels: "c" carries Missing, which is no component|};
           ]
           (List.map
-             (fun payload ->
+             (fun channel ->
                Result.map_error Decode.error_to_string
                  (Result.map json
                     (Required.Event.channel
                        ~known:(fun name -> name <> "Missing")
-                       (channel payload))))
+                       channel)))
              [
-               Tables.Bus_registry.Envelope { schema = "A" };
-               Void;
+               Tables.Bus_registry.Envelope
+                 {
+                   channel = "c";
+                   shape = "envelope";
+                   schema = "A";
+                   validate = None;
+                   docs;
+                   schema_docs = docs;
+                 };
+               Void
+                 {
+                   channel = "c";
+                   shape = "void";
+                   validate = None;
+                   docs;
+                   schema_docs = docs;
+                 };
                Stored_event
                  {
+                   channel = "c";
+                   shape = "storedEvent";
                    event = "e";
                    payload = "P";
-                   enriched = false;
-                   system = false;
+                   enriched = None;
+                   system = None;
+                   validate = None;
+                   docs;
+                   schema_docs = docs;
                  };
-               Schema { schema = "Missing"; validate = None };
+               Schema
+                 {
+                   channel = "c";
+                   shape = "schema";
+                   schema = "Missing";
+                   validate = None;
+                   docs;
+                   schema_docs = docs;
+                 };
              ]));
   ]
 

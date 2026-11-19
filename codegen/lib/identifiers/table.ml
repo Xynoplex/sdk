@@ -32,7 +32,7 @@ let anchored pattern =
 
 let derive (spec : Spec.t) =
   let table = spec.tables.identifiers_kinds in
-  let kind i (k : Tables.Identifiers_kinds.kind) =
+  let kind i (k : Tables.Identifiers_kinds.kinds_item) =
     let refuse message =
       Error
         {

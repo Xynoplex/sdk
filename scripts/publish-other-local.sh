@@ -129,7 +129,7 @@ fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == ocaml ]]; then
 echo 'Building and archiving the OCaml SDK in an OCaml container…'
 ocaml_package_version="$(version_of ocaml)"
-ocaml_image="$(python3 "$ROOT/ocaml/check-toolchain.py" --base-image)"
+ocaml_image="$(python3 "$ROOT/build-tools/ocaml/check-toolchain.py" --base-image)"
 opam_archive_uri="file://$STATE_ROOT/opam-repo/repo/archives/xynolog.$ocaml_package_version.tar.gz"
 opam_archive_uri="${opam_archive_uri// /%20}"
 if ! "$RUNTIME" volume inspect "$OPAM_VOLUME" >/dev/null 2>&1; then

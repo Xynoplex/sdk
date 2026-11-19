@@ -243,17 +243,17 @@ let families
        control;
      } :
       Tables.Errors_codes.t) =
-  let codes (v : Tables.Errors_codes.vocabulary) =
-    List.map (fun (c : Tables.Errors_codes.code) -> c.code) v.codes
+  let codes (v : Tables.Errors_codes.job) =
+    List.map (fun (c : Tables.Errors_codes.job_codes_item) -> c.code) v.codes
   in
   [
     ( "busRequest",
       List.map
-        (fun (c : Tables.Errors_codes.bus_code) -> c.code)
+        (fun (c : Tables.Errors_codes.codes_item) -> c.code)
         bus_request.codes );
     ( "transport",
       List.map
-        (fun (c : Tables.Errors_codes.transport_code) -> c.code)
+        (fun c -> fst (Error_codes.Table.transport_code_and_docs c))
         transport.codes );
     ("job", codes job);
     ("session", codes session);
@@ -263,8 +263,8 @@ let families
     ("control", codes control);
   ]
 
-let error_codes models ~shapes ~table (codes : Error_codes.Table.t) ~wire_codes
-    =
+let error_codes models ~shapes ~table (codes : Error_codes.Table.t) =
+  let wire_codes = Error_codes.Table.wire_codes in
   let enums =
     List.map
       (fun (family, listed) ->
@@ -614,11 +614,11 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
   and payload_shapes = ref [] in
   let channel_decls =
     List.map
-      (fun (c : Tables.Bus_registry.channel) ->
-        let n = c.channel in
+      (fun (c : Tables.Bus_registry.channels_item) ->
+        let n = Bus.Registry.name c in
         if Hashtbl.mem rows n then refuse "duplicate channel %s" n;
         let row, shape =
-          match c.payload with
+          match c with
           | Schema { schema; _ } ->
               let s = M.schema models schema in
               ignore (M.named models schema);
@@ -628,7 +628,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
                   stamps = stamps models s;
                 },
                 component schema )
-          | Envelope { schema } ->
+          | Envelope { schema; _ } ->
               ignore (M.named models schema);
               ( {
                   payload = S.Generic ("ResponseEnvelope", [ S.Named schema ]);
@@ -648,7 +648,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
               stored_events := n :: !stored_events;
               ignore (M.schema models payload);
               let p =
-                if enriched then "EnrichedResourceEvent"
+                if enriched = Some true then "EnrichedResourceEvent"
                 else "StoredEventResponse"
               in
               ignore (M.named models p);
@@ -658,7 +658,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
                   stamps = stamps models (M.schema models p);
                 },
                 component p )
-          | Void | Empty ->
+          | Void _ | Empty _ ->
               ( {
                   payload = S.Named "BusEmptyPayload";
                   schema = None;
@@ -703,7 +703,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
   let replies = ref [] and limits = ref [] in
   let operation_decls =
     List.map
-      (fun (op : Tables.Bus_registry.operation) ->
+      (fun (op : Tables.Bus_registry.operations_item) ->
         let request = row op.request
         and result = row op.result
         and failure = row op.failure in
@@ -755,7 +755,7 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
   in
   let wire_operations =
     List.map
-      (fun (op : Tables.Bus_registry.operation) ->
+      (fun (op : Tables.Bus_registry.operations_item) ->
         let request = Hashtbl.find rows op.request
         and response = Hashtbl.find rows op.result in
         let failure_schema =
@@ -861,7 +861,11 @@ let channels models ~shapes (registry : Tables.Bus_registry.t) =
 
 let cache_refresh (refresh : Tables.Client_refresh.t) ~channels =
   let queries =
-    List.map (fun (q : Tables.Client_refresh.query) -> q.name) refresh.queries
+    List.map
+      (fun q ->
+        let name, _, _, _, _ = Cache_refresh.Table.query_fields q in
+        name)
+      refresh.queries
   in
   if List.length (List.sort_uniq String.compare queries) <> List.length queries
   then refuse "duplicate cache query";
@@ -876,15 +880,16 @@ let cache_refresh (refresh : Tables.Client_refresh.t) ~channels =
   let rows =
     List.map
       (fun (row : Tables.Client_refresh.refresh_item) ->
-        let trigger = Tables.Client_refresh.trigger_name row.trigger in
-        (match row.trigger with
-        | On channel when not (List.mem channel channels) ->
+        let module R = Cache_refresh.Table in
+        let trigger = R.trigger_name row in
+        (match row with
+        | On { on = channel; _ } when not (List.mem channel channels) ->
             refuse "unknown cache refresh trigger %s" channel
         | On _ | Stream _ -> ());
         if not (List.mem trigger !triggers) then
           triggers := !triggers @ [ trigger ];
         let names =
-          Option.value row.names
+          Option.value (R.names_of row)
             ~default:
               { Tables.Client_refresh.resource = None; annotation = None }
         in
@@ -903,21 +908,21 @@ let cache_refresh (refresh : Tables.Client_refresh.t) ~channels =
           [
             arg "trigger" (case trigger);
             arg "when"
-              (match row.when_ with
+              (match R.when_of row with
               | None -> S.Nil
               | Some Enriched -> case "enriched"
               | Some Unenriched -> case "unenriched");
             arg "reach"
               (case
-                 (match row.reach with
+                 (match R.reach_of row with
                  | None | Some Subject -> "subject"
                  | Some Held -> "held"));
             arg "resource" (way names.resource);
             arg "annotation" (way names.annotation);
-            arg "carries" (way row.carries);
-            listed "refetches" row.refetches;
-            listed "writes" row.writes;
-            listed "removes" row.removes;
+            arg "carries" (way (R.carries_of row));
+            listed "refetches" (R.refetches_of row);
+            listed "writes" (R.writes_of row);
+            listed "removes" (R.removes_of row);
           ])
       refresh.refresh
   in
@@ -1017,41 +1022,65 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
     (stored : Tables.Session_stored.t) =
   let persisted =
     List.filter_map
-      (fun (q : Tables.Client_refresh.query) ->
-        if not q.persisted then None
+      (fun q ->
+        let name, per, persisted, value, _ =
+          Cache_refresh.Table.query_fields q
+        in
+        if not persisted then None
         else
           let key =
-            match q.per with
+            match per with
             | None -> "WholeKey"
             | Some Resource -> "ResourceId"
             | Some Annotation -> "AnnotationId"
             | Some Filters ->
-                refuse "%s is persisted per filters, which keeps nothing" q.name
+                refuse "%s is persisted per filters, which keeps nothing" name
           in
-          Some (q.name, key, stored_type models ~of_:q.name q.value.target))
+          Some (name, key, stored_type models ~of_:name value.target))
       refresh.queries
   in
   let kept_name q = "Kept" ^ Text.pascal q in
   let version =
-    let document = stored.cache_document in
-    let items = document.properties.entries.items in
-    match items.prefix_items with
-    | [ _; _; stamp ]
-      when List.sort String.compare document.required = [ "entries"; "version" ]
-           && items.min_items = 3 && items.max_items = 3
-           && stamp.type_ = Some "integer"
-           && stamp.minimum = Some 0 ->
-        document.properties.version.const
+    let at pointer = Decode.at_pointer pointer stored.cache_document in
+    let items = "/properties/entries/items" in
+    let required =
+      match at "/required" with
+      | Some (`List names) ->
+          List.sort compare
+            (List.filter_map
+               (function `String name -> Some name | _ -> None)
+               names)
+      | _ -> []
+    in
+    match (at (items ^ "/prefixItems/2"), at "/properties/version/const") with
+    | Some (`Assoc stamp), Some (`Int version)
+      when required = [ "entries"; "version" ]
+           && at (items ^ "/minItems") = Some (`Int 3)
+           && at (items ^ "/maxItems") = Some (`Int 3)
+           && List.assoc_opt "type" stamp = Some (`String "integer")
+           && List.assoc_opt "minimum" stamp = Some (`Int 0) ->
+        version
     | _ ->
         refuse
           "session/stored.json's cacheDocument is not the document \
            Sources/Xynolog/CachePersistence.swift reads"
   in
-  let places = stored.last_event_ids in
-  (match stored_type models ~of_:"lastEventIds" places.property_names.ref with
+  let referred : Schema.t option -> string = function
+    | Some (Schema { ref_ = Some r; _ }) -> r.target
+    | _ -> refuse "session/stored.json's lastEventIds names no schema"
+  in
+  let places =
+    match stored.last_event_ids with
+    | Schema s -> s
+    | Boolean_schema _ ->
+        refuse "session/stored.json's lastEventIds is no schema"
+  in
+  (match
+     stored_type models ~of_:"lastEventIds" (referred places.property_names)
+   with
   | S.Named "ResourceId" -> ()
   | _ -> refuse "places are kept by a type no scope is");
-  let place = component_name places.additional_properties.ref in
+  let place = component_name (referred places.additional_properties) in
   if not (List.mem_assoc place shapes) then
     refuse "places are held to %s, which no shape states" place;
   let enum =
@@ -1145,8 +1174,7 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
     ]
 
 (* Every table declaration, in the order the SDK's file holds them. *)
-let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes
-    ~wire_codes =
+let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes =
   let tables = spec.tables in
   (match M.schema models "GatherResourceRequestOptions" with
   | D.Node n ->
@@ -1237,16 +1265,16 @@ let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes
   let telemetry key rows = string_enumeration [ "public" ] key rows in
   let spans =
     List.map
-      (fun (s : Tables.Sdk_telemetry_telemetry.span) -> s.name)
+      (fun (s : Tables.Sdk_telemetry_telemetry.spans_item) -> s.name)
       tables.sdk_telemetry_telemetry.spans
   in
   let metrics =
     List.map
-      (fun (m : Tables.Sdk_telemetry_telemetry.metric) -> m.name)
+      (fun (m : Tables.Sdk_telemetry_telemetry.metrics_item) -> m.name)
       tables.sdk_telemetry_telemetry.metrics
   in
   let error_decls =
-    error_codes models ~shapes ~table:tables.errors_codes codes ~wire_codes
+    error_codes models ~shapes ~table:tables.errors_codes codes
   in
   let values =
     List.map

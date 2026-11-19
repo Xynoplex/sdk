@@ -58,12 +58,12 @@ let derive (table : Tables.Client_timing.t) =
                     count: a name is camel case, ending in Ms, Retry or Count"
                    item.name);
               None
-          | Some Of_duration, Int ms ->
+          | Some Of_duration, Integer ms ->
               whole ~at:(at ^ "/value")
                 ~what:"a duration is a whole number of milliseconds above zero"
                 ms;
               Some (Duration ms)
-          | Some Of_count, Int n ->
+          | Some Of_count, Integer n ->
               whole ~at:(at ^ "/value")
                 ~what:"a count is a whole number above zero" n;
               Some (Count n)
@@ -100,7 +100,7 @@ let derive (table : Tables.Client_timing.t) =
               refuse (at ^ "/value")
                 "is an object: a count is a whole number above zero";
               None
-          | Some Of_budget, Int n ->
+          | Some Of_budget, Integer n ->
               refuse (at ^ "/value")
                 (Printf.sprintf
                    "is %d: a budget is attempts, initialDelayMs and maxDelayMs"

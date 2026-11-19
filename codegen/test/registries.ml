@@ -36,7 +36,7 @@ let accepts = function
 module M = Tables.Media_types_registry
 
 let row ?(media_type = "text/markdown") ?(extension = ".md")
-    ?(label = "Markdown") ?(render = "text") () : M.media_type =
+    ?(label = "Markdown") ?(render = "text") () : M.media_types_item =
   {
     media_type;
     extension;
@@ -146,21 +146,22 @@ let media_types =
 
 module Tm = Tables.Sdk_telemetry_telemetry
 
-let attribute ?only key : Tm.attribute = { key; only; values = None }
+let attribute ?only key : Tm.service_telemetry_telemetry_attributes_item =
+  { key; only; values = None }
 
-let span ?(name = "bus.emit:{channel}") ?(kind = "producer")
+let span ?(name = "bus.emit:{channel}") ?(kind = Tm.Producer)
     ?(attributes =
       [ attribute "bus.channel"; attribute ~only:"scoped" "bus.scope" ]) () :
-    Tm.span =
-  { name; transport = "bus"; kind; meaning = "A frame sent."; attributes }
+    Tm.spans_item =
+  { name; transport = Bus; kind; meaning = "A frame sent."; attributes }
 
-let metric ?(instrument = "counter") () : Tm.metric =
+let metric ?(instrument = Tm.Counter) () : Tm.metrics_item =
   {
     name = "xynolog.bus.sent";
-    transport = "bus";
+    transport = Bus;
     instrument;
     meaning = "Emits sent.";
-    attributes = [ { key = "bus.channel"; only = None } ];
+    attributes = [ { key = "bus.channel"; only = None; values = None } ];
   }
 
 let telemetry ?(spans = [ span () ]) ?(metrics = [ metric () ]) () =
@@ -169,12 +170,9 @@ let telemetry ?(spans = [ span () ]) ?(metrics = [ metric () ]) () =
 let telemetries =
   [
     case "a table every rule holds" (fun () -> accepts (telemetry ()));
-    case "a span of a kind OTLP has not" (fun () ->
-        refuses "/spans/0/kind" "none of"
-          (telemetry ~spans:[ span ~kind:"sideways" () ] ()));
     case "a metric of an instrument but a counter" (fun () ->
         refuses "/metrics/0/instrument" "none of"
-          (telemetry ~metrics:[ metric ~instrument:"gauge" () ] ()));
+          (telemetry ~metrics:[ metric ~instrument:Tm.Gauge () ] ()));
     case "a span name with a placeholder but the channel" (fun () ->
         refuses "/spans/0/name" "placeholder"
           (telemetry ~spans:[ span ~name:"bus.emit:{thread}" () ] ()));
@@ -208,7 +206,8 @@ let oauth names =
       comment = "c";
       clients =
         List.map
-          (fun name : O.client -> { name; id = "xynolog-" ^ name; docs = "D." })
+          (fun name : O.clients_item ->
+            { name; id = "xynolog-" ^ name; docs = "D." })
           names;
       scopes = { value = "openid"; docs = "D." };
     }
@@ -284,7 +283,7 @@ let sign_in =
   ]
 
 let locale ?(native_name = "Deutsch") ?(english_name = "German") code :
-    Tables.Locales_registry.locale =
+    Tables.Locales_registry.locales_item =
   { code; native_name; english_name }
 
 let locales rows = Locales.derive { comment = "c"; locales = rows }

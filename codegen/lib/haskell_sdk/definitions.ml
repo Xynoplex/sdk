@@ -236,7 +236,7 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
     @ [
         ("SignIn", sign_in);
         ("StoredSession", tables.session_stored.stored_session);
-        ("OpenResource", tables.session_stored.open_resource_schema);
+        ("OpenResource", tables.session_stored.open_resource);
         ("IssuerEndpoints", issuer);
         ( "PendingAuthorization",
           Schema.Schema
