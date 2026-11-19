@@ -3,25 +3,6 @@ import Crypto
 import Foundation
 import Synchronization
 
-public struct BeginAuthorizationOptions: Sendable {
-  public let target: HttpEndpoint
-  public let redirectUri: String
-  public let kbId: String?
-  public let expectedDid: String?
-  public let expectedName: String?
-
-  public init(
-    target: HttpEndpoint, redirectUri: String, kbId: String? = nil,
-    expectedDid: String? = nil, expectedName: String? = nil
-  ) {
-    self.target = target
-    self.redirectUri = redirectUri
-    self.kbId = kbId
-    self.expectedDid = expectedDid
-    self.expectedName = expectedName
-  }
-}
-
 public struct PendingAuthorization: Codable, Sendable {
   public let state: String
   public let verifier: String

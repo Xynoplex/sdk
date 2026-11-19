@@ -204,11 +204,14 @@ private let sampleUpload = PutBinaryRequest(
   storageUri: "file://uploads/sample.txt")
 private func uploadSentOnceMore(after first: UploadReply) async throws {
   let script = UploadScript([first, .answer(202, #"{"resourceId":"uploaded"}"#)])
-  let created = try await server(.uploads(script)) { base, http in
+  let (created, reported) = try await server(.uploads(script)) { base, http in
     let transport = HttpTransport(baseUrl: base, httpClient: http, token: "token", channels: [])
     defer { transport.dispose() }
     return try await withinTestDeadline {
-      try await transport.putBinary(sampleUpload).completed()
+      let upload = transport.putBinary(sampleUpload)
+      var reported: [UploadProgress] = []
+      for try await report in upload { reported.append(report) }
+      return (try await upload.completed(), reported)
     }
   }
   #expect(created.resourceId.value == "uploaded")
@@ -216,6 +219,44 @@ private func uploadSentOnceMore(after first: UploadReply) async throws {
   #expect(arrivals.count == 2)
   #expect(arrivals.first?.key != nil)
   #expect(arrivals.first == arrivals.last)
+  // Its size once, for both sendings; then what is sent, never going back and ending at the
+  // request's length; then the resource made.
+  let size = try #require(arrivals.last?.body.count)
+  guard case .started(let started)? = reported.first,
+    case .finished(let finished)? = reported.last
+  else { throw SpecFailure.shape("An upload reports its start first and its end last") }
+  #expect(started.totalBytes == size)
+  #expect(finished.resourceId.value == "uploaded")
+  let sent = try reported.dropFirst().dropLast().map { report in
+    guard case .progress(let progress) = report else {
+      throw SpecFailure.shape("An upload reports only progress between its start and its end")
+    }
+    #expect(progress.totalBytes == size)
+    return progress.bytesUploaded
+  }
+  #expect(sent == Array(Set(sent)).sorted())
+  #expect(sent.last == size)
+}
+@Test func anUploadAnsweredWithoutItsResourceFailsAndReportsNoneMade() async throws {
+  let script = UploadScript([.answer(201, "{}")])
+  let reported = try await server(.uploads(script)) { base, http in
+    let transport = HttpTransport(baseUrl: base, httpClient: http, token: "token", channels: [])
+    defer { transport.dispose() }
+    return try await withinTestDeadline {
+      let upload = transport.putBinary(sampleUpload)
+      var reported: [UploadProgress] = []
+      for try await report in upload { reported.append(report) }
+      do {
+        _ = try await upload.completed()
+        Issue.record("An upload answered without its resource succeeded")
+      } catch let failure as TransportError { #expect(failure.reason == .error) }
+      return reported
+    }
+  }
+  #expect(!reported.isEmpty)
+  for report in reported {
+    if case .finished = report { Issue.record("An upload that failed reported a resource made") }
+  }
 }
 @Test func anUploadAnswered503IsSentOnceMoreWithItsKeyAndBytes() async throws {
   try await uploadSentOnceMore(after: .answer(503, #"{"error":"Unavailable"}"#))

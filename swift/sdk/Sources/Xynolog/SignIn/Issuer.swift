@@ -49,10 +49,6 @@ func issuerAnswer(
     throw SignInError(.exchange, "The issuer did not answer")
   }
 }
-struct IssuedTokens: Sendable {
-  let access: String
-  let refresh: String
-}
 func refreshAtIssuer(_ held: StoredSession, http: HTTPClient, clock: any Clock<Duration>)
   async throws -> IssuedTokens
 {
@@ -168,12 +164,6 @@ func discoverIssuer(_ gateway: String, http: HTTPClient, clock: any Clock<Durati
     device: document.text("device_authorization_endpoint"),
     revocation: document.text("revocation_endpoint"))
 }
-public struct DeviceCode: Sendable {
-  public let userCode: String
-  public let verificationUri: String
-  public let verificationUriComplete: String?
-  public let expiresIn: Double
-}
 public func signInDevice(
   kb: KbTarget, kept: any SignInKept, httpClient: HTTPClient,
   clock: any Clock<Duration> = ContinuousClock(), onCode: @Sendable (DeviceCode) -> Void
@@ -190,18 +180,18 @@ public func signInDevice(
     form: [("client_id", scriptClientID), ("scope", signInScope.value)])
   guard answer.status == 200, let deviceCode = answer.text("device_code"),
     let userCode = answer.text("user_code"), let uri = answer.text("verification_uri"),
-    let expires = answer.seconds("expires_in"), expires < Double(Int.max / 1000)
+    let expires = answer.seconds("expires_in").flatMap({ Int(exactly: $0) })
   else {
     throw SignInError(.exchange, "The issuer refused device authorization", status: answer.status)
   }
   onCode(
     DeviceCode(
-      userCode: userCode, verificationUri: uri,
-      verificationUriComplete: answer.text("verification_uri_complete"), expiresIn: expires))
+      expiresIn: expires, userCode: userCode, verificationUri: uri,
+      verificationUriComplete: answer.text("verification_uri_complete")))
   var interval = max(
     answer.seconds("interval") ?? Double(Timings.devicePollMs) / 1000,
     Double(Timings.devicePollFloorMs) / 1000)
-  let expiry = Duration.milliseconds(Int(expires * 1000))
+  let expiry = Duration.seconds(expires)
   let elapsed = stopwatch(clock)
   while true {
     guard interval < Double(Int.max / 1000) else {

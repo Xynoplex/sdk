@@ -1,54 +1,26 @@
 import Foundation
 
-public struct QuotedText: Codable, Sendable {
-  public let exact: String
-  public let prefix: String?
-  public let suffix: String?
-  public init(exact: String, prefix: String? = nil, suffix: String? = nil) {
-    self.exact = exact
-    self.prefix = prefix
-    self.suffix = suffix
-  }
-}
-public struct TextSpan: Codable, Sendable {
-  public let start: Int
-  public let end: Int
-  public let exact: String
-  public let prefix: String?
-  public let suffix: String?
-  public init(start: Int, end: Int, exact: String, prefix: String? = nil, suffix: String? = nil) {
-    self.start = start
-    self.end = end
-    self.exact = exact
-    self.prefix = prefix
-    self.suffix = suffix
-  }
-  private enum CodingKeys: String, CodingKey { case start, end, exact, prefix, suffix }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: CodingKeys.self)
-    do {
-      start = try c.decode(Int.self, forKey: .start)
-      end = try c.decode(Int.self, forKey: .end)
-    } catch {
-      throw SpanRefusedError(reason: .spanOutOfRange, message: "Span offsets must be whole numbers")
+extension TextSpan {
+  public init(_ reconciled: ReconciledSpan) {
+    switch reconciled {
+    case .uniqueMatch(let span):
+      self.init(
+        end: span.end, exact: span.exact, prefix: span.prefix, start: span.start,
+        suffix: span.suffix)
+    case .contextRecovered(let span):
+      self.init(
+        end: span.end, exact: span.exact, prefix: span.prefix, start: span.start,
+        suffix: span.suffix)
+    case .firstOfMany(let span):
+      self.init(
+        end: span.end, exact: span.exact, prefix: span.prefix, start: span.start,
+        suffix: span.suffix)
+    case .fuzzyMatch(let span):
+      self.init(
+        end: span.end, exact: span.exact, prefix: span.prefix, start: span.start,
+        suffix: span.suffix)
     }
-    exact = try c.decode(String.self, forKey: .exact)
-    prefix = try c.decodeIfPresent(String.self, forKey: .prefix)
-    suffix = try c.decodeIfPresent(String.self, forKey: .suffix)
   }
-
-}
-public struct ReconciledSpan: Encodable, Sendable {
-  public let span: TextSpan
-  public let anchorMethod: AnchorMethod
-  public let matchQuality: MatchQuality?
-  public func encode(to encoder: any Encoder) throws {
-    try span.encode(to: encoder)
-    var c = encoder.container(keyedBy: CodingKeys.self)
-    try c.encode(anchorMethod, forKey: .anchorMethod)
-    try c.encodeIfPresent(matchQuality, forKey: .matchQuality)
-  }
-  private enum CodingKeys: String, CodingKey { case anchorMethod, matchQuality }
 }
 
 struct ScalarText {
@@ -209,9 +181,7 @@ private func hinted(_ text: ScalarText, _ places: [Range<Int>], _ quoted: Quoted
     return true
   }
 }
-private func reconciled(
-  _ text: ScalarText, _ at: Range<Int>, _ method: AnchorMethod, _ quality: MatchQuality? = nil
-) -> ReconciledSpan {
+private func own(_ text: ScalarText, _ at: Range<Int>) -> TextSpan {
   let boundary = Set(".,;:!?'\"()[]{}<>/\\".unicodeScalars)
   func isBoundary(_ point: Unicode.Scalar) -> Bool {
     point.properties.isWhitespace || boundary.contains(point)
@@ -222,24 +192,42 @@ private func reconciled(
   var ends = min(text.count, at.upperBound + 64)
   let last = min(text.count, ends + 32)
   while ends < last, !isBoundary(text.points[ends]) { ends += 1 }
-  return ReconciledSpan(
-    span: TextSpan(
-      start: at.lowerBound, end: at.upperBound, exact: text.text(at.lowerBound, at.upperBound),
-      prefix: at.lowerBound == 0 ? nil : text.text(begins, at.lowerBound),
-      suffix: at.upperBound == text.count ? nil : text.text(at.upperBound, ends)),
-    anchorMethod: method, matchQuality: quality)
+  return TextSpan(
+    end: at.upperBound, exact: text.text(at.lowerBound, at.upperBound),
+    prefix: at.lowerBound == 0 ? nil : text.text(begins, at.lowerBound), start: at.lowerBound,
+    suffix: at.upperBound == text.count ? nil : text.text(at.upperBound, ends))
+}
+private func fuzzy(_ span: TextSpan, _ quality: MatchQuality) -> ReconciledSpan {
+  .fuzzyMatch(
+    ReconciledSpanFuzzyMatch(
+      end: span.end, exact: span.exact, matchQuality: quality, prefix: span.prefix,
+      start: span.start, suffix: span.suffix))
 }
 public func reconcile(text: String, quoted: QuotedText) -> ReconciledSpan? {
   guard !trimmed(quoted.exact).isEmpty else { return nil }
   let whole = ScalarText(text)
   let exact = ScalarText(quoted.exact)
   let found = whole.places(exact).map { $0..<($0 + exact.count) }
-  if found.count == 1, let first = found.first { return reconciled(whole, first, .uniqueMatch) }
+  if found.count == 1, let first = found.first {
+    let span = own(whole, first)
+    return .uniqueMatch(
+      ReconciledSpanUniqueMatch(
+        end: span.end, exact: span.exact, prefix: span.prefix, start: span.start,
+        suffix: span.suffix))
+  }
   if let first = found.first {
     if let chosen = hinted(whole, found, quoted) {
-      return reconciled(whole, chosen, .contextRecovered)
+      let span = own(whole, chosen)
+      return .contextRecovered(
+        ReconciledSpanContextRecovered(
+          end: span.end, exact: span.exact, prefix: span.prefix, start: span.start,
+          suffix: span.suffix))
     }
-    return reconciled(whole, first, .firstOfMany)
+    let span = own(whole, first)
+    return .firstOfMany(
+      ReconciledSpanFirstOfMany(
+        end: span.end, exact: span.exact, prefix: span.prefix, start: span.start,
+        suffix: span.suffix))
   }
   let searches: [(Changed, ScalarText, MatchQuality)] = [
     (normalized(whole), ScalarText(normalized(exact).points), .normalized),
@@ -251,11 +239,11 @@ public func reconcile(text: String, quoted: QuotedText) -> ReconciledSpan? {
   for (changed, wanted, quality) in searches {
     let places = changed.places(wanted)
     if let first = places.first {
-      return reconciled(whole, hinted(whole, places, quoted) ?? first, .fuzzyMatch, quality)
+      return fuzzy(own(whole, hinted(whole, places, quoted) ?? first), quality)
     }
   }
   if let nearest = nearestStretch(whole, exact) {
-    return reconciled(whole, nearest, .fuzzyMatch, .fuzzy)
+    return fuzzy(own(whole, nearest), .fuzzy)
   }
   return nil
 }

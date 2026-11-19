@@ -259,7 +259,9 @@ the HTTP client.
 
 Annotation readers accept every generated body, target and selector variant.
 `reconcile(text:quoted:)` finds a model's quote and returns the resource's own
-words and context; offsets count Unicode scalars. `annotationOfSpan` takes an
+words and context as a `ReconciledSpan`, whose case is how it was found; only
+`fuzzyMatch` carries a `matchQuality`. Offsets count Unicode scalars.
+`TextSpan(_:)` makes it the span an `OfSpan` carries. `annotationOfSpan` takes an
 `OfSpan` whose `Spanned` text is either plain text or a PDF's `AnchoredText`.
 It checks the span before building position/quote selectors or PDF rectangles.
 `annotationOfResource` builds an annotation of the whole resource. Both builders
@@ -307,7 +309,10 @@ order they slept.
 surface. `XynologClient(transport:gateway:content:)` takes another `Transport`, with
 `auth` and `system` present only when a `GatewayOperations` is supplied. Browse
 content and annotation list reads and Yield uploads use the supplied `ContentTransport` or the
-client transport itself when it conforms. Custom content transports supply
+client transport itself when it conforms. An `Upload` is awaited with `completed()` for the
+resource it created, and iterated for its `UploadProgress`: `started` with its size, `progress`
+as its bytes are sent, and `finished` with the resource made. An upload that fails throws to its
+awaiter and reports no `finished`. Custom content transports supply
 `getAnnotations(_:)` for the live annotation list. The client implements all 66
 namespace methods: vocabulary writes, binding,
 attention, authentication/status, annotation writes, job events/status/cancellation,
