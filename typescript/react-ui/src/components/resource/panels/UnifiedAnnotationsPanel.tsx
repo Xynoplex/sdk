@@ -2,13 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { components, JobId, ResourceId, Selector } from '@xynolog/core';
+import type { components, JobId, ResourceId } from '@xynolog/core';
 type JobProgress = components['schemas']['JobProgress'];
 import type {
   RouteBuilder,
   LinkComponentProps,
 } from '../../../contexts/RoutingContext';
-import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
+import type {
+  MarkStateUnit,
+  PendingAnnotation,
+  XynologSession,
+} from '@xynolog/sdk';
 import {
   annotatorKeyForMotivation,
   type Annotator,
@@ -29,11 +33,6 @@ type Motivation = components['schemas']['Motivation'];
 type TabKey = 'statistics' | AnnotatorKey;
 
 // Unified pending annotation type
-interface PendingAnnotation {
-  selector: Selector | Selector[];
-  motivation: Motivation;
-}
-
 // Tab display order - statistics first, then matches AnnotateToolbar selection group order
 const TAB_ORDER: TabKey[] = [
   'statistics',

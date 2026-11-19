@@ -41,23 +41,6 @@ import (
 // a caller says otherwise.
 var DiscoveryInterval = xynolog.DefaultTiming().DiscoveryInterval
 
-// DiscoveryAbsentReason is why no launcher was found.
-type DiscoveryAbsentReason string
-
-const (
-	// NotFound is that there is no document there.
-	NotFound DiscoveryAbsentReason = "not-found"
-	// NotJSON is that there is one, and it is not JSON.
-	NotJSON DiscoveryAbsentReason = "not-json"
-	// Invalid is that it is JSON, and not a discovery document.
-	Invalid DiscoveryAbsentReason = "invalid"
-	// UnsupportedVersion is that it is of a version this client does not
-	// speak.
-	UnsupportedVersion DiscoveryAbsentReason = "unsupported-version"
-	// Unreadable is that it could not be read at all.
-	Unreadable DiscoveryAbsentReason = "unreadable"
-)
-
 // DiscoveryRead is what one read gave: a DiscoveryState, or Unchanged. Read
 // it with a type switch.
 type DiscoveryRead interface {
@@ -73,7 +56,7 @@ type DiscoveryState interface {
 
 // Absent is that no launcher was found, and why.
 type Absent struct {
-	Reason DiscoveryAbsentReason
+	Reason api.DiscoveryAbsentReason
 	// Diagnostic is what was wrong, in words; "" when there is no more to say.
 	Diagnostic string
 }
@@ -100,7 +83,7 @@ type DiscoveryTransport interface {
 }
 
 func invalid(diagnostic string) Absent {
-	return Absent{Reason: Invalid, Diagnostic: diagnostic}
+	return Absent{Reason: api.DiscoveryAbsentReasonInvalid, Diagnostic: diagnostic}
 }
 
 // ParseDiscoveryDocument is the document's text as a state. Every reader goes
@@ -108,7 +91,7 @@ func invalid(diagnostic string) Absent {
 func ParseDiscoveryDocument(text string) DiscoveryState {
 	data := []byte(text)
 	if err := json.Unmarshal(data, new(any)); err != nil {
-		return Absent{Reason: NotJSON, Diagnostic: err.Error()}
+		return Absent{Reason: api.DiscoveryAbsentReasonNotJson, Diagnostic: err.Error()}
 	}
 	var members map[string]json.RawMessage
 	if json.Unmarshal(data, &members) != nil || members == nil {
@@ -120,7 +103,7 @@ func ParseDiscoveryDocument(text string) DiscoveryState {
 	}
 	if version != int64(api.DiscoveryDocumentVersion1) {
 		return Absent{
-			Reason: UnsupportedVersion,
+			Reason: api.DiscoveryAbsentReasonUnsupportedVersion,
 			Diagnostic: fmt.Sprintf(
 				"discovery document version %d is not the one this client speaks (%d); it is not read in part",
 				version, api.DiscoveryDocumentVersion1,
@@ -166,9 +149,9 @@ func (t textDiscovery) Read(ctx context.Context) DiscoveryRead {
 	text, err := t.read(ctx)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
-		return Absent{Reason: NotFound}
+		return Absent{Reason: api.DiscoveryAbsentReasonNotFound}
 	case err != nil:
-		return Absent{Reason: Unreadable, Diagnostic: err.Error()}
+		return Absent{Reason: api.DiscoveryAbsentReasonUnreadable, Diagnostic: err.Error()}
 	}
 	return ParseDiscoveryDocument(text)
 }

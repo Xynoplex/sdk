@@ -16,7 +16,7 @@
 
 import { occurrencesOf, textOffsets, type TextOffsets } from './text-offsets';
 
-export type MatchQuality = 'normalized' | 'case-insensitive' | 'fuzzy';
+import type { MatchQuality } from './payload-types';
 
 /**
  * Normalize text for comparison - handles common document editing changes

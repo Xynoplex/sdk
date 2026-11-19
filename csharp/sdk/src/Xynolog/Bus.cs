@@ -59,18 +59,6 @@ public sealed record ReceivedBusFrame(BusFrame Frame, ActivityContext Trace) : C
         Identifiers.UserId.TryParse(value.GetString(), out var user) ? user : null;
 }
 
-/// <summary>Why a frame is refused at a member, as every SDK spells it.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<FrameRefusalReason>))]
-public enum FrameRefusalReason
-{
-    /// <summary>It does not carry the member, or the member holds null where it may not.</summary>
-    [JsonStringEnumMemberName("lacks")] Lacks,
-
-    /// <summary>The member is not what its schema allows (of another kind, another value, form or size), or is one a
-    /// closed object does not name.</summary>
-    [JsonStringEnumMemberName("malformed")] Malformed,
-}
-
 /// <summary>A frame refused, in its place: BusFrame does not allow it, or its payload is not its channel's.
 /// <paramref name="Member"/> is the way from the frame to the member its first fault is at, the names of the members it
 /// is within and its own joined by dots (<c>payload.resourceId</c> is within its payload, and <c>payload</c> is the

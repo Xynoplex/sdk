@@ -131,6 +131,10 @@ export type {
   KbIdentityConflict,
   SessionEndReason,
   StoredSession,
+  AnchorMethod,
+  MatchQuality,
+  FrameRefusalReason,
+  DiscoveryAbsentReason,
 } from './payload-types';
 
 // Event utilities
@@ -175,7 +179,6 @@ export type {
   QuotedText,
   TextSpan,
   ReconciledSpan,
-  AnchorMethod,
 } from './annotation-builders';
 
 // W3C Web Annotation accessors (target/body/selector helpers + type guards)
@@ -307,9 +310,6 @@ export {
   type ChannelDirection,
 } from './bus-classification';
 export { channelAttrsOf, channelWrites } from './channel-attrs';
-
-// How well a quote was found in a text (annotation re-anchoring under content edits)
-export type { MatchQuality } from './fuzzy-anchor';
 
 // Render-time anchoring (combines position + quote selectors with scoring)
 export { anchorAnnotation } from './anchor-annotation';

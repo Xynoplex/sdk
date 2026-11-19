@@ -23,14 +23,10 @@ import { annotationIdFor } from './annotation-id';
 import type { Annotation } from './annotation-types';
 import type { Motivation } from './branded-types';
 import { XynologError } from './errors';
-import {
-  findBestTextMatch,
-  buildContentCache,
-  type MatchQuality,
-} from './fuzzy-anchor';
+import { findBestTextMatch, buildContentCache } from './fuzzy-anchor';
 import type { SpanRefusal } from './error-codes';
 import type { ResourceId } from './identifiers';
-import type { Selector } from './payload-types';
+import type { AnchorMethod, MatchQuality, Selector } from './payload-types';
 import { locate, type AnchoredText } from './pdf-anchoring';
 import { createFragmentSelector } from './pdf-coordinates';
 import { contextOf } from './text-context';
@@ -70,21 +66,6 @@ export interface TextSpan {
   prefix?: string;
   suffix?: string;
 }
-
-/**
- * How `reconcile` found a span. `first-of-many` is the one to audit: the
- * words are in the text more than once and nothing chose among the places, so
- * the span may be the wrong one of them.
- */
-export type AnchorMethod =
-  /** The words are in the text once. */
-  | 'unique-match'
-  /** The words are in the text more than once, and the quoted context chose the place. */
-  | 'context-recovered'
-  /** The words are in the text more than once, and no context chose: the first place. */
-  | 'first-of-many'
-  /** The words are not in the text character for character; a looser search found them, `matchQuality` naming which. */
-  | 'fuzzy-match';
 
 /**
  * The span `reconcile` found: its `exact`, `prefix` and `suffix` are the

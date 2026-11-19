@@ -62,14 +62,6 @@ public struct FrameRefusal: Sendable, Equatable {
     self.scope = scope
   }
 }
-/// Why a frame is refused at a member: `lacks`, it does not carry a member its schema requires, or
-/// the member holds null where it may not; `malformed`, a member is not what its schema allows (of
-/// another kind, a value it does not list, a form or a size it does not allow), or is one a closed
-/// object does not name.
-public enum FrameRefusalReason: String, Sendable {
-  case lacks
-  case malformed
-}
 public enum Heard<Payload: Sendable>: Sendable {
   case delivered(Delivered<Payload>)
   case refused(FrameRefusal)

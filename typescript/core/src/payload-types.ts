@@ -123,3 +123,12 @@ export type PermissionDenied = records['PermissionDenied'];
 export type KbIdentityConflict = records['KbIdentityConflict'];
 export type SessionEndReason = records['SessionEndReason'];
 export type StoredSession = records['StoredSession'];
+
+/**
+ * The client types (protocol/specs/src/client/types) a client holds beside the
+ * wire's, and why discovery found no launcher (client/discovery-absent.json).
+ */
+export type AnchorMethod = records['AnchorMethod'];
+export type MatchQuality = records['MatchQuality'];
+export type FrameRefusalReason = records['FrameRefusalReason'];
+export type DiscoveryAbsentReason = records['DiscoveryAbsentReason'];

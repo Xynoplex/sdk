@@ -13,7 +13,7 @@ import xynolog.annotations.BY_CODE_POINT
 import xynolog.annotations.codePointsOf
 import xynolog.channels.Empty
 import xynolog.channels.Response
-import xynolog.transport.FrameRefusalReason
+import xynolog.types.FrameRefusalReason
 import xynolog.types.wireJson
 import java.util.concurrent.ConcurrentHashMap
 

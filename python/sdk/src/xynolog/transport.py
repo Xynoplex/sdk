@@ -29,6 +29,7 @@ from xynolog.types import (
     Agent,
     AnchoredTextAnswer,
     CreateResourceResponse,
+    FrameRefusalReason,
     GetAnnotationsResponse,
     GetResourceResponse,
     HealthResponse,
@@ -138,7 +139,7 @@ class FrameRefusal:
 
     A fault of its payload is within `payload` (`payload.resourceId`); the payload itself is `payload`.
     """
-    reason: Literal["lacks", "malformed"]
+    reason: FrameRefusalReason
     """Why: `lacks`, the frame does not carry the member, or it holds null where it may not.
 
     `malformed`: the member is not what its schema allows (of another kind, another value, form or

@@ -25,7 +25,6 @@ import (
 
 	xynolog "github.com/xynolog/sdk/go"
 	"github.com/xynolog/sdk/go/api"
-	"github.com/xynolog/sdk/go/bus"
 	"github.com/xynolog/sdk/go/internal/required"
 	"github.com/xynolog/sdk/go/mediatypes"
 	"github.com/xynolog/sdk/go/xynologtest"
@@ -230,7 +229,7 @@ func TestEveryReaderOfAResourceGivesWhatTheTableSays(t *testing.T) {
 			PrimaryMediaType      *string                 `json:"primaryMediaType"`
 			Refused               *bool                   `json:"refused"`
 			Member                *string                 `json:"member"`
-			Reason                *bus.FrameRefusalReason `json:"reason"`
+			Reason                *api.FrameRefusalReason `json:"reason"`
 		}
 		strictly(t, raw, &stated)
 		// What the SDK holds a resource to before it decodes it.
@@ -240,7 +239,7 @@ func TestEveryReaderOfAResourceGivesWhatTheTableSays(t *testing.T) {
 			if want := (required.Fault{Member: *stated.Member, Reason: *stated.Reason}); !faulty || fault != want {
 				t.Errorf("%s: has the fault %+v (%v), and the table says it is refused for %+v", stated.Why, fault, faulty, want)
 			}
-			if *stated.Member == "representations" && *stated.Reason == bus.FrameRefusalReasonMalformed {
+			if *stated.Member == "representations" && *stated.Reason == api.FrameRefusalReasonMalformed {
 				// A resource no reply brought can reach the readers, which refuse it.
 				var resource api.ResourceDescriptor
 				if err := json.Unmarshal(stated.Resource, &resource); err != nil {

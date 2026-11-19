@@ -166,19 +166,19 @@ private func registryResource(_ id: ResourceId) throws -> ResourceDescriptor {
   let result = try wirePayload(
     BrowseKbResult(response: KbDescription(domain: "example.org", name: "KB")))
   let spec = LivenessSpec(
-    // The liveness bound allows for contention in the parallel Linux suite.
-    timeout: .seconds(2), retryBudget: 0,
-    schedules: [
-      [.deliver], [.dropReply], [.delay(.milliseconds(5))], [.duplicateReply], [.rejectEmit],
-    ],
-    respond: { _, _ in result },
     setup: { transport in
       let client = try await XynologClient(transport: transport, busRequestTimeoutMs: 500)
       let request = Task { try await client.browse.kb() }
       return LivenessScenario(
         outputs: [{ _ = await request.result }], settlements: [{ _ = await request.result }],
         dispose: { client.dispose() })
-    })
+    },
+    // The liveness bound allows for contention in the parallel Linux suite.
+    timeout: .seconds(2), retryBudget: 0, cases: 0,
+    schedules: [
+      [.deliver], [.dropReply], [.delay(.milliseconds(5))], [.duplicateReply], [.rejectEmit],
+    ],
+    makeResponse: { _, _ in result })
   try await assertLivenessAxioms(spec)
   let operations = deliveryOps(20, longest: 8)
   try await assertExactlyOnceDelivery(operations) { DeliveryProbe(losesOnTransition: false) }

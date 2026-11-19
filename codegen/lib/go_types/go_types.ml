@@ -1,9 +1,44 @@
 (* The Go SDK's protocol types (go/api/types_gen.go): a type for every
-   component schema of the gateway's document and every record Protocol
-   states in its tables ([Table_records]), with every schema they reach, but
-   the kinds of id, which go/api/ids_gen.go declares. *)
+   component schema of the gateway's document, every record Protocol states
+   in its tables ([Table_records]) and the client types below, with every
+   schema they reach, but the kinds of id, which go/api/ids_gen.go declares;
+   and why no launcher was found. *)
 
 module Generate = Generate
+module G = Go_syntax
+
+(* The client types (protocol/specs/src/client/types) the SDK generates. Of
+   the rest, the objects that state no additionalProperties wait on Protocol,
+   since the types read them as open, and the closed parameter types
+   (ClaimOptions and the six beside it) wait on the namespace types that take
+   them. *)
+let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
+
+(* Why a client that read a launcher's discovery document found no launcher
+   (protocol/specs/src/client/discovery-absent.json): a constant a reason. *)
+let discovery_absent (spec : Spec.t) =
+  let name = "DiscoveryAbsentReason" in
+  [
+    G.Type
+      {
+        doc = G.prose (name ^ " is why no launcher was found.");
+        name;
+        def = G.Is (G.Named "string");
+      };
+    G.Consts
+      {
+        doc = [];
+        spacing = Packed;
+        specs =
+          List.map
+            (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+              let constant = name ^ Naming.variant r.reason in
+              G.spec
+                ~doc:(G.prose (constant ^ ": " ^ r.docs))
+                ~type_:(G.Named name) constant (G.Quoted r.reason))
+            spec.tables.client_discovery_absent.reasons;
+      };
+  ]
 
 let path = "go/api/types_gen.go"
 
@@ -17,15 +52,16 @@ let generated (spec : Spec.t) =
   let roots =
     List.filter (fun n -> not (List.mem n identifiers)) bundle.definitions.names
     @ List.map (fun (_, name, _) -> name) (Definitions.records spec)
+    @ client_types
   in
   ( Generate.generate bundle.definitions ~identifiers roots,
     List.map (fun name -> (name, None)) identifiers )
 
 (* Every type package api declares, and what it is an alias of, if it is
-   one: the generated types and the kinds of id. *)
+   one: the generated types, the kinds of id and why no launcher was found. *)
 let declared spec =
   let generated, identifiers = generated spec in
-  generated.declared @ identifiers
+  generated.declared @ identifiers @ [ ("DiscoveryAbsentReason", None) ]
 
 let file spec =
   let generated, _ = generated spec in
@@ -37,11 +73,14 @@ let file spec =
           header =
             Go_syntax.verbatim
               ("Code generated from the component schemas of \
-                protocol/specs/src/openapi.json — DO NOT EDIT.\n\n\
+                protocol/specs/src/openapi.json, the client types of \
+                protocol/specs/src/client/types and \
+                protocol/specs/src/client/discovery-absent.json — DO NOT \
+                EDIT.\n\n\
                 Regenerate: make generate (" ^ Banner.writer __FILE__ ^ ")");
           package = "api";
           imports = (match generated.imports with [] -> [] | used -> [ used ]);
-          decls = generated.decls;
+          decls = generated.decls @ discovery_absent spec;
         };
   }
 

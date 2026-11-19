@@ -1,5 +1,5 @@
 (* Generated from client/testing.json. Do not edit.
-   Regenerate: make generate (codegen/lib/testing/testing.ml) *)
+   Regenerate: make generate (codegen/lib/testing/ocaml.ml) *)
 
 type fault_action =
   | Deliver

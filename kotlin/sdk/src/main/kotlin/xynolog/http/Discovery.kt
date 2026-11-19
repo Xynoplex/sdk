@@ -5,13 +5,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withTimeoutOrNull
 import xynolog.Timings
 import xynolog.discovery.Absent
-import xynolog.discovery.DiscoveryAbsentReason
 import xynolog.discovery.DiscoveryRead
 import xynolog.discovery.DiscoveryTransport
 import xynolog.discovery.Managed
 import xynolog.discovery.Unchanged
 import xynolog.discovery.parseDiscoveryDocument
 import xynolog.telemetry.futureOf
+import xynolog.types.DiscoveryAbsentReason
 import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient

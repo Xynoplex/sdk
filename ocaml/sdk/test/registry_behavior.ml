@@ -65,9 +65,13 @@ let gateway_urls () =
 let discovery () =
   let parse = D.parse_discovery_document in
   assert (parse {|{"version":1,"kbs":[]}|} = D.Managed []);
-  assert (parse {|{"version":2,"kbs":[]}|} = D.Absent D.Unsupported_version);
-  assert (parse "html" = D.Absent D.Not_json);
-  assert (parse {|{"version":1,"kbs":[{}]}|} = D.Absent D.Invalid);
+  assert (
+    parse {|{"version":2,"kbs":[]}|}
+    = D.Absent Enums.Discovery_absent_reason.Unsupported_version);
+  assert (parse "html" = D.Absent Enums.Discovery_absent_reason.Not_json);
+  assert (
+    parse {|{"version":1,"kbs":[{}]}|}
+    = D.Absent Enums.Discovery_absent_reason.Invalid);
   let entry port name =
     Printf.sprintf
       {|{"host":"localhost","port":%d,"did":"did:web:kb.example","managedBy":"xynolog-launcher","placement":"local","siteName":"%s"}|}
@@ -87,7 +91,9 @@ let discovery () =
   assert (List.length changed.updated = 2);
   assert (List.length changed.removed = 1);
   assert (changed.duplicated = [ ("localhost", 4010) ]);
-  assert (D.text_discovery (fun () -> None) () = D.Read (D.Absent D.Not_found))
+  assert (
+    D.text_discovery (fun () -> None) ()
+    = D.Read (D.Absent Enums.Discovery_absent_reason.Not_found))
 
 (* Discovery and deviceGrant rows from client/clock-cases.json. *)
 let controlled () =

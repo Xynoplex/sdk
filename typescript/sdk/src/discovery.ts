@@ -31,16 +31,8 @@ import {
   isString,
   withinDeadline,
 } from '@xynolog/core';
-import type { DiscoveredKB } from '@xynolog/core';
+import type { DiscoveredKB, DiscoveryAbsentReason } from '@xynolog/core';
 import { fetchOf } from './fetch-of';
-
-/** Why discovery reads as "no launcher detected". */
-export type DiscoveryAbsentReason =
-  | 'not-found' // 404, SPA-fallback HTML, or the thunk returned null
-  | 'not-json' // body exists but is not JSON
-  | 'invalid' // JSON, but not a structurally valid DiscoveryDocument
-  | 'unsupported-version' // a version this sdk does not speak — never partially parsed
-  | 'unreadable'; // the read itself failed (network, permissions)
 
 /**
  * The typed absent-vs-managed distinction: `absent` is

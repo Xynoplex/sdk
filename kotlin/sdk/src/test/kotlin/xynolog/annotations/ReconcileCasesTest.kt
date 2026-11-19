@@ -18,6 +18,7 @@ import xynolog.identifiers.ResourceId
 import xynolog.sameJson
 import xynolog.types.AgentSoftware
 import xynolog.types.AnnotationTarget
+import xynolog.types.MatchQuality
 import xynolog.types.Motivation
 import java.util.Random
 

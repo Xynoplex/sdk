@@ -427,7 +427,7 @@ let ordered decls =
   List.rev (snd (List.fold_left visit ([], []) decls))
 
 (* The module for [definitions], whose [kinds] of id are xynolog.identifiers'. *)
-let module_ ~kinds (definitions : D.definitions) =
+let module_ ~kinds ~also (definitions : D.definitions) =
   let rec tagged (s : D.t) =
     match s with
     | D.Node n ->
@@ -471,6 +471,7 @@ let module_ ~kinds (definitions : D.definitions) =
           in
           (component, decl) :: placed)
       definitions.names
+    @ also
   in
   let names = List.sort compare (List.map fst decls) in
   P.text
@@ -478,8 +479,9 @@ let module_ ~kinds (definitions : D.definitions) =
       header =
         Banner.python_lines
           ~from_:
-            "the component schemas of protocol/specs/src/openapi.json and the \
-             records of its tables"
+            "the component schemas of protocol/specs/src/openapi.json, the \
+             records of its tables, its client types and \
+             client/discovery-absent.json"
           __FILE__;
       doc =
         As_is
@@ -517,6 +519,35 @@ let rec named_in (s : D.t) =
         @ List.concat (List.filter_map Fun.id [ n.all_of; n.any_of; n.one_of ])
         )
 
+(* The client types (protocol/specs/src/client/types) the SDK generates. Of
+   the rest, the objects that state no additionalProperties wait on Protocol,
+   since the types read them as open, and the closed parameter types
+   (ClaimOptions and the six beside it) wait on the namespace types that take
+   them. *)
+let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
+
+(* Why a client that read a launcher's discovery document found no launcher
+   (protocol/specs/src/client/discovery-absent.json): a word a reason, each
+   reason's meaning in the docstring. *)
+let discovery_absent (spec : Spec.t) =
+  let reasons = spec.tables.client_discovery_absent.reasons in
+  ( "DiscoveryAbsentReason",
+    P.alias
+      ~doc:
+        (As_is
+           (String.concat "\n\n"
+              ("Why no launcher was found."
+              :: List.map
+                   (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+                     Printf.sprintf "`%s`: %s" r.reason r.docs)
+                   reasons)))
+      "DiscoveryAbsentReason"
+      (P.sub "Literal"
+         (List.map
+            (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+              P.item (P.Str r.reason))
+            reasons)) )
+
 let text (spec : Spec.t) =
   let definitions = (Definitions.bundle spec).definitions in
   let rec reach written = function
@@ -526,6 +557,7 @@ let text (spec : Spec.t) =
         reach (name :: written) (named_in (definitions.schema name) @ rest)
   in
   module_
+    ~also:[ discovery_absent spec ]
     ~kinds:
       (List.sort compare
          (List.map
@@ -536,7 +568,8 @@ let text (spec : Spec.t) =
       names =
         List.sort compare
           (reach definitions.names
-             (List.map (fun (_, name, _) -> name) (Definitions.records spec)));
+             (List.map (fun (_, name, _) -> name) (Definitions.records spec)
+             @ client_types));
     }
 
 let files ~root:_ (spec : Spec.t) =

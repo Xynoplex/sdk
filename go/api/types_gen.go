@@ -1,4 +1,4 @@
-// Code generated from the component schemas of protocol/specs/src/openapi.json — DO NOT EDIT.
+// Code generated from the component schemas of protocol/specs/src/openapi.json, the client types of protocol/specs/src/client/types and protocol/specs/src/client/discovery-absent.json — DO NOT EDIT.
 //
 // Regenerate: make generate (codegen/lib/go_types/go_types.ml)
 
@@ -193,6 +193,28 @@ const (
 func (e AgentSoftwareType) Valid() bool {
 	switch e {
 	case AgentSoftwareTypeSoftware:
+		return true
+	}
+	return false
+}
+
+// AnchorMethod How a quoted selection was found in a text. Which word a span
+// is found by is reconcile's rule
+// (specs/src/annotations/reconcile-cases.json).
+type AnchorMethod string
+
+// The values of AnchorMethod.
+const (
+	AnchorMethodUniqueMatch      AnchorMethod = "unique-match"
+	AnchorMethodContextRecovered AnchorMethod = "context-recovered"
+	AnchorMethodFirstOfMany      AnchorMethod = "first-of-many"
+	AnchorMethodFuzzyMatch       AnchorMethod = "fuzzy-match"
+)
+
+// Valid is whether e is one of AnchorMethod's values.
+func (e AnchorMethod) Valid() bool {
+	switch e {
+	case AnchorMethodUniqueMatch, AnchorMethodContextRecovered, AnchorMethodFirstOfMany, AnchorMethodFuzzyMatch:
 		return true
 	}
 	return false
@@ -2726,6 +2748,26 @@ type FrameAddTagSchemaCommand struct {
 	// Clients do not set this.
 	UserId *UserId   `json:"_userId,omitempty"`
 	Schema TagSchema `json:"schema"`
+}
+
+// FrameRefusalReason Why a reader refused a frame, for its first fault:
+// `lacks`, a member it lacks; `malformed`, a member that is not of its shape.
+// A reader's rule (specs/src/bus/frame-cases.json).
+type FrameRefusalReason string
+
+// The values of FrameRefusalReason.
+const (
+	FrameRefusalReasonLacks     FrameRefusalReason = "lacks"
+	FrameRefusalReasonMalformed FrameRefusalReason = "malformed"
+)
+
+// Valid is whether e is one of FrameRefusalReason's values.
+func (e FrameRefusalReason) Valid() bool {
+	switch e {
+	case FrameRefusalReasonLacks, FrameRefusalReasonMalformed:
+		return true
+	}
+	return false
 }
 
 // GatewayConfig Everything the gateway reads at boot: nothing in it is
@@ -6083,6 +6125,27 @@ func (v MarkUpdateEntityTypesCommand) MarshalJSON() ([]byte, error) {
 	return json.Marshal(written(v))
 }
 
+// MatchQuality Which looser search found a quoted selection, stated of a span
+// whose `anchorMethod` is `fuzzy-match` and only then. Which search finds it
+// is reconcile's rule (specs/src/annotations/reconcile-cases.json).
+type MatchQuality string
+
+// The values of MatchQuality.
+const (
+	MatchQualityNormalized      MatchQuality = "normalized"
+	MatchQualityCaseInsensitive MatchQuality = "case-insensitive"
+	MatchQualityFuzzy           MatchQuality = "fuzzy"
+)
+
+// Valid is whether e is one of MatchQuality's values.
+func (e MatchQuality) Valid() bool {
+	switch e {
+	case MatchQualityNormalized, MatchQualityCaseInsensitive, MatchQualityFuzzy:
+		return true
+	}
+	return false
+}
+
 // MatchResourcesRequest Request to search the knowledge base's resources by
 // text. The Librarian answers: it matches the text lexically, and when
 // nothing matches, by meaning.
@@ -8929,3 +8992,27 @@ type YieldUpdateOk struct {
 type YieldedResource struct {
 	ResourceId ResourceId `json:"resourceId"`
 }
+
+// DiscoveryAbsentReason is why no launcher was found.
+type DiscoveryAbsentReason string
+
+const (
+	// DiscoveryAbsentReasonNotFound: There is no document where it was looked
+	// for: no file, an HTTP status that is not success, or a page that is not
+	// JSON.
+	DiscoveryAbsentReasonNotFound DiscoveryAbsentReason = "not-found"
+	// DiscoveryAbsentReasonNotJson: There is a document, and it is not JSON.
+	DiscoveryAbsentReasonNotJson DiscoveryAbsentReason = "not-json"
+	// DiscoveryAbsentReasonInvalid: It is JSON, and not a discovery document:
+	// one entry that is not what the schema says makes the whole document
+	// invalid, since a partial reading would hide a running knowledge base
+	// without a trace.
+	DiscoveryAbsentReasonInvalid DiscoveryAbsentReason = "invalid"
+	// DiscoveryAbsentReasonUnsupportedVersion: It is a discovery document of a
+	// version this client does not speak, and is not read in part.
+	DiscoveryAbsentReasonUnsupportedVersion DiscoveryAbsentReason = "unsupported-version"
+	// DiscoveryAbsentReasonUnreadable: It could not be read at all: the file
+	// could not be opened or decoded, or the request got no answer by its
+	// deadline.
+	DiscoveryAbsentReasonUnreadable DiscoveryAbsentReason = "unreadable"
+)

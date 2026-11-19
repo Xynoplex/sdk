@@ -1,61 +1,15 @@
 import Foundation
 import Xynolog
 
-/// Each closure waits until one output has spoken or one awaited path has settled.
-public struct LivenessScenario: Sendable {
-  public let outputs: [@Sendable () async -> Void]
-  public let settlements: [@Sendable () async -> Void]
-  public let dispose: @Sendable () -> Void
-
-  public init(
-    outputs: [@Sendable () async -> Void], settlements: [@Sendable () async -> Void],
-    dispose: @escaping @Sendable () -> Void
-  ) {
-    self.outputs = outputs
-    self.settlements = settlements
-    self.dispose = dispose
-  }
-}
-
-/// A composition, and the schedules it is run under. `setup` builds a fresh composition over the
-/// transport it is given, which keeps no deadline: `timeout` is the time the composition gives a
-/// bus request, its client's `busRequestTimeoutMs`. A case's bound is derived from it: the timeout
-/// times one more than `retryBudget`, how often a request may be sent again, and the schedule's
-/// delays, all of it four times over.
-public struct LivenessSpec: Sendable {
-  public let setup: @Sendable (ScriptedTransport) async throws -> LivenessScenario
-  public let respond: Respond
-  public let timeout: Duration
-  public let retryBudget: Int
-  public let schedules: [[FaultAction]]
-  let clock: any Clock<Duration>
-
-  public init(
-    timeout: Duration, retryBudget: Int, schedules: [[FaultAction]],
-    clock: any Clock<Duration> = ContinuousClock(), respond: @escaping Respond,
-    setup: @escaping @Sendable (ScriptedTransport) async throws -> LivenessScenario
-  ) {
-    self.timeout = timeout
-    self.retryBudget = retryBudget
-    self.schedules = schedules
-    self.clock = clock
-    self.respond = respond
-    self.setup = setup
-  }
-}
-
 public struct AxiomViolation: Error, Sendable, CustomStringConvertible {
   public let description: String
   init(_ description: String) { self.description = description }
 }
 
 public func faultActions(using random: inout some RandomNumberGenerator) -> FaultAction {
-  switch Int.random(in: 0..<5, using: &random) {
-  case 0: .deliver
-  case 1: .dropReply
-  case 2: .delay(.milliseconds(Int.random(in: 0...5, using: &random)))
-  case 3: .duplicateReply
-  default: .rejectEmit
+  switch faults[Int.random(in: faults.indices, using: &random)] {
+  case .delay: .delay(.milliseconds(Int.random(in: delayMs, using: &random)))
+  case let fault: fault
   }
 }
 
@@ -63,19 +17,21 @@ public func faultSchedules(_ count: Int) -> [[FaultAction]] {
   precondition(count >= 0)
   var random = ScheduleRandom()
   return (0..<count).map { _ in
-    (0..<Int.random(in: 1...8, using: &random)).map { _ in faultActions(using: &random) }
+    (0..<Int.random(in: scheduleLength, using: &random)).map { _ in faultActions(using: &random) }
   }
 }
 
-/// Runs the output, settlement and retry axioms on each fresh composition.
+/// Runs the output, settlement and retry axioms on each fresh composition, under the spec's
+/// schedules or, with none, `cases` drawn ones.
 public func assertLivenessAxioms(_ spec: LivenessSpec) async throws {
-  guard !spec.schedules.isEmpty, spec.retryBudget >= 0, spec.retryBudget != Int.max,
+  let schedules = spec.schedules.isEmpty ? faultSchedules(spec.cases) : spec.schedules
+  guard !schedules.isEmpty, spec.retryBudget >= 0, spec.retryBudget != Int.max,
     spec.timeout > .zero
   else { throw AxiomViolation("Liveness needs a timeout, retry budget and at least one schedule") }
 
-  for schedule in spec.schedules {
+  for schedule in schedules {
     let transport = ScriptedTransport(
-      channels: bridgedChannels, schedule: schedule, clock: spec.clock, respond: spec.respond)
+      channels: bridgedChannels, schedule: schedule, clock: spec.clock, respond: spec.makeResponse)
     defer { transport.dispose() }
     let scenario = try await spec.setup(transport)
     defer { scenario.dispose() }
@@ -86,7 +42,7 @@ public func assertLivenessAxioms(_ spec: LivenessSpec) async throws {
       if case .delay(let delay) = fault { return total + delay }
       return total
     }
-    let bound = (spec.timeout * (spec.retryBudget + 1) + delays) * 4
+    let bound = (spec.timeout * (spec.retryBudget + 1) + delays) * slack
     let (observations, observation) = AsyncStream<Observation>.makeStream()
     var tasks: [Task<Void, Never>] = []
     for (index, output) in scenario.outputs.enumerated() {
@@ -127,14 +83,10 @@ public func assertLivenessAxioms(_ spec: LivenessSpec) async throws {
     ) {
       throw AxiomViolation("L2: settlement \(index) timed out under \(schedule)")
     }
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = .sortedKeys
-    let attempts = try Dictionary(grouping: transport.attempts) { attempt in
-      RequestKey(operation: attempt.operation, payload: try encoder.encode(attempt.payload))
-    }
-    if let exceeded = attempts.first(where: { $0.value.count > spec.retryBudget + 1 }) {
+    let requests = Dictionary(grouping: transport.requestLog, by: \.retryKey)
+    if let exceeded = requests.values.first(where: { $0.count > spec.retryBudget + 1 }) {
       throw AxiomViolation(
-        "L2: \(exceeded.key.operation) exceeded its retry budget under \(schedule)")
+        "L2: \(exceeded[0].channel) exceeded its retry budget under \(schedule)")
     }
     if let index = scenario.outputs.indices.first(where: { !outcomes.contains(.output($0)) }) {
       throw AxiomViolation("L1: output \(index) stayed silent under \(schedule)")
@@ -148,19 +100,10 @@ private enum Observation: Hashable, Sendable {
   case deadline
 }
 
-private struct RequestKey: Hashable {
-  let operation: String
-  let payload: Data
-}
-
 public protocol DeliverySubject: Sendable {
   func write(_ eventId: String) async throws
   func transition() async throws
   func delivered() async throws -> [String]
-}
-
-public enum DeliveryOp: String, Sendable, CaseIterable {
-  case write, transition
 }
 
 public func deliveryOps(_ count: Int, longest: Int) -> [[DeliveryOp]] {
@@ -168,7 +111,7 @@ public func deliveryOps(_ count: Int, longest: Int) -> [[DeliveryOp]] {
   var random = ScheduleRandom()
   return (0..<count).map { _ in
     var operations: [DeliveryOp] = (0..<Int.random(in: 1...longest, using: &random)).map { _ in
-      Bool.random(using: &random) ? .write : .transition
+      DeliveryOp.allCases[Int.random(in: DeliveryOp.allCases.indices, using: &random)]
     }
     if !operations.contains(.write) { operations[0] = .write }
     return operations

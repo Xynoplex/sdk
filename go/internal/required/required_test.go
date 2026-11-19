@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/xynolog/sdk/go/api"
-	"github.com/xynolog/sdk/go/bus"
 )
 
 // written is a struct of no schema, as the generator writes an object: an
@@ -31,9 +30,9 @@ type item struct {
 }
 
 // lacks and malformed are the faults of each reason at member.
-func lacks(member string) Fault { return Fault{Member: member, Reason: bus.FrameRefusalReasonLacks} }
+func lacks(member string) Fault { return Fault{Member: member, Reason: api.FrameRefusalReasonLacks} }
 func malformed(member string) Fault {
-	return Fault{Member: member, Reason: bus.FrameRefusalReasonMalformed}
+	return Fault{Member: member, Reason: api.FrameRefusalReasonMalformed}
 }
 
 // none is no fault.

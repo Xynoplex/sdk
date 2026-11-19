@@ -24,6 +24,7 @@ import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
 import xynolog.identifiers.UserId
 import xynolog.telemetry.futureOf
+import xynolog.types.FrameRefusalReason
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList
@@ -333,18 +334,6 @@ public data class Delivered<P>(
     public val trace: TraceContext?,
 ) : Heard<P> {
     override val status: String get() = "delivered"
-}
-
-/** Why a frame is refused at a member, as every SDK spells it. */
-public enum class FrameRefusalReason(
-    /** The reason as every SDK spells it. */
-    public val wire: String,
-) {
-    /** It does not carry the member, or the member holds null where it may not. */
-    Lacks("lacks"),
-
-    /** The member is not what its schema allows (of another kind, another value, form or size), or is one a closed object does not name. */
-    Malformed("malformed"),
 }
 
 /**

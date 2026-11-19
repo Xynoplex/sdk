@@ -17,6 +17,7 @@ pub mod content;
 pub mod examples;
 pub mod faulty_transport;
 pub mod gateway;
+pub mod kit;
 pub mod liveness;
 pub mod sessions;
 pub mod storage;
@@ -26,8 +27,9 @@ pub use client::{
     create_test_session,
 };
 pub use content::{ContentCall, InMemoryContent};
-pub use faulty_transport::{FaultAction, FaultyTransport, RequestLogEntry, retry_key_of};
+pub use faulty_transport::{FaultyTransport, retry_key_of};
 pub use gateway::StubGateway;
+pub use kit::{FaultAction, RequestLogEntry};
 pub use sessions::ScriptedSessions;
 pub use storage::SharedStorage;
 

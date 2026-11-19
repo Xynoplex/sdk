@@ -23,7 +23,7 @@ private val ASKING = JsonObject(mapOf("resourceId" to JsonPrimitive("r1")))
 /** Every request answered with a reply that carries no response. */
 private val ANSWERING = Respond { _, _ -> null }
 
-private fun spec(schedules: List<List<FaultAction>>, setup: (FaultyTransport) -> LivenessScenario) = LivenessSpec(setup, TIMEOUT_MS, 1, schedules, ANSWERING)
+private fun spec(schedules: List<List<FaultAction>> = emptyList(), cases: Int = 0, setup: (FaultyTransport) -> LivenessScenario) = LivenessSpec(setup, TIMEOUT_MS, 1, cases, schedules, ANSWERING)
 
 /** A composition's work, ended with its scenario. */
 private fun scenario(outputs: (CoroutineScope) -> List<java.util.concurrent.CompletableFuture<*>>, settlements: (CoroutineScope) -> List<java.util.concurrent.CompletableFuture<*>>): LivenessScenario {
@@ -66,14 +66,14 @@ private class Connections(private val retire: String) : DeliverySubject {
     }
 }
 
-private fun delivery(retire: String) = assertExactlyOnceDelivery({ Connections(retire) }, listOf(listOf(DeliveryOp.WRITE, DeliveryOp.TRANSITION, DeliveryOp.WRITE)))
+private fun delivery(retire: String) = assertExactlyOnceDelivery({ Connections(retire) }, listOf(listOf(DeliveryOp.Write, DeliveryOp.Transition, DeliveryOp.Write)))
 
 /** The liveness harness against compositions that keep its axioms and ones built to break each: an axiom nothing can fail holds nothing. */
 class LivenessTest {
     @Test
     fun aRequestSettlesUnderEverySchedule() {
         assertLivenessAxioms(
-            spec(faultSchedules(25, Random(7))) { transport ->
+            spec(cases = 25) { transport ->
                 scenario({ emptyList() }) { work ->
                     listOf(work.future { runCatching { request(transport, READ, ASKING, TIMEOUT_MS) } })
                 }
@@ -153,7 +153,7 @@ class LivenessTest {
     @Test
     fun theGeneratedInterleavingsEachWriteAndTheSchedulesEachDoSomething() {
         val random = Random(11)
-        assertTrue(deliveryOps(50, 12, random).all { DeliveryOp.WRITE in it && it.size <= 13 })
-        assertTrue(faultSchedules(50, random).all { it.size in 1..8 && it.all { action -> action !is Delay || action.ms in 0..5 } })
+        assertTrue(deliveryOps(50, 12, random).all { DeliveryOp.Write in it && it.size <= 13 })
+        assertTrue(faultSchedules(50, random).all { it.size in SCHEDULE_LENGTH && it.all { action -> action !is Delay || action.ms in DELAY_MS.first..DELAY_MS.last } })
     }
 }

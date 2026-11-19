@@ -5,7 +5,11 @@ import { delegateProgressTranslations } from '../../../lib/delegate-progress-cop
 import { isReady } from '@xynolog/sdk';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import { useObservable } from '../../../hooks/useObservable';
-import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
+import type {
+  MarkStateUnit,
+  PendingAnnotation,
+  XynologSession,
+} from '@xynolog/sdk';
 import { markJobControls } from '../../../lib/delegated-job-controls';
 import { DelegateShell } from './DelegateShell';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
@@ -15,15 +19,9 @@ import { TagEntry } from './TagEntry';
 import { PanelHeader } from './PanelHeader';
 
 import type { Annotation } from '@xynolog/core';
-type Motivation = components['schemas']['Motivation'];
 type JobProgress = components['schemas']['JobProgress'];
 
 // Unified pending annotation type
-interface PendingAnnotation {
-  selector: Selector | Selector[];
-  motivation: Motivation;
-}
-
 // Helper to extract display text from selector
 function getSelectorDisplayText(
   selector: Selector | Selector[],

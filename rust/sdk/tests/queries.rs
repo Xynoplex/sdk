@@ -23,7 +23,8 @@ use xynolog::storage::{
     InMemorySessionStorage, SessionStorage, StorageChange, StorageSubscription,
 };
 use xynolog::testing::as_id;
-use xynolog::testing::liveness::{LivenessScenario, LivenessSpec, assert_liveness_axioms};
+use xynolog::testing::kit::{LivenessScenario, LivenessSpec};
+use xynolog::testing::liveness::assert_liveness_axioms;
 use xynolog::testing::{
     ContentCall, FaultAction, FaultyTransport, InMemoryContent, SharedStorage, TestClientOptions,
     create_test_client,
@@ -1641,11 +1642,11 @@ fn l1_l2_a_watcher_is_given_a_value_or_a_failure_and_a_read_settles_under_every_
                 })],
             }
         },
-        timeout: TIMEOUT,
+        timeout_ms: TIMEOUT,
         // B14: a fetch for the live view is tried once more.
         retry_budget: 1,
         schedules: None,
-        respond: Some(Arc::new(answers(&[]))),
+        make_response: Some(Arc::new(answers(&[]))),
         cases: 60,
     });
     assert_eq!(outcome, Ok(()));

@@ -352,5 +352,5 @@ export type {
   DiscoveryReadResult,
   DiscoveryTransport,
   DiscoveryDiff,
-  DiscoveryAbsentReason,
 } from './discovery';
+export type { DiscoveryAbsentReason } from '@xynolog/core';

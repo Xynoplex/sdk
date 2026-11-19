@@ -9,7 +9,11 @@ import React, {
 } from 'react';
 import { delegateProgressTranslations } from '../../../lib/delegate-progress-copy';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
+import type {
+  MarkStateUnit,
+  PendingAnnotation,
+  XynologSession,
+} from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
 import type {
   RouteBuilder,
@@ -27,16 +31,10 @@ import './ReferencesPanel.css';
 type JobProgress = components['schemas']['JobProgress'];
 
 import type { Annotation } from '@xynolog/core';
-type Motivation = components['schemas']['Motivation'];
 type ReferencedBy =
   components['schemas']['GetReferencedByResponse']['referencedBy'][number];
 
 // Unified pending annotation type
-interface PendingAnnotation {
-  selector: Selector | Selector[];
-  motivation: Motivation;
-}
-
 // Helper to extract display text from selector
 function getSelectorDisplayText(
   selector: Selector | Selector[],

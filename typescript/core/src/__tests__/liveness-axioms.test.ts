@@ -27,9 +27,9 @@ import { FaultyTransport } from '../faulty-transport';
 import {
   assertLivenessAxioms,
   assertExactlyOnceDelivery,
-  type DeliveryOp,
   type DeliverySubject,
 } from '../liveness-axioms';
+import type { DeliveryOp } from '../testing-kit';
 
 /** Small enough that a full drop→timeout→retry→timeout chain stays in ms. */
 const TIMEOUT_MS = 10;
@@ -206,8 +206,8 @@ describe('liveness axioms — the harness has teeth', () => {
           outputs: [swallowingQuery(transport, 'res-a')],
         }),
         timeoutMs: TIMEOUT_MS,
-        scheduleArb: fc.constant([{ kind: 'drop-reply' }] as const),
-        numRuns: 3,
+        schedules: fc.constant([{ kind: 'drop-reply' }] as const),
+        cases: 3,
       }),
     ).rejects.toThrow(/^L2: .*rejection swallowed/s);
   });
@@ -219,8 +219,8 @@ describe('liveness axioms — the harness has teeth', () => {
           outputs: [stormingQuery(transport, 'res-a')],
         }),
         timeoutMs: TIMEOUT_MS,
-        scheduleArb: fc.constant([{ kind: 'drop-reply' }] as const),
-        numRuns: 3,
+        schedules: fc.constant([{ kind: 'drop-reply' }] as const),
+        cases: 3,
       }),
     ).rejects.toThrow(/^L2: .*exceeds the retry budget/s);
   }, 15_000);
@@ -239,8 +239,8 @@ describe('liveness axioms — the harness has teeth', () => {
           ],
         }),
         timeoutMs: TIMEOUT_MS,
-        scheduleArb: fc.constant([{ kind: 'drop-reply' }] as const),
-        numRuns: 3,
+        schedules: fc.constant([{ kind: 'drop-reply' }] as const),
+        cases: 3,
       }),
     ).rejects.toThrow(/^L2: [\s\S]*settlement #0 did not settle/);
   });
@@ -252,7 +252,7 @@ describe('liveness axioms — the harness has teeth', () => {
           outputs: [lateResendingQuery(transport, 'res-a')],
         }),
         timeoutMs: TIMEOUT_MS,
-        scheduleArb: fc.constant([{ kind: 'deliver' }] as const),
+        schedules: fc.constant([{ kind: 'deliver' }] as const),
         makeResponse: (_operation, payload) => ({
           resource: {
             '@context': 'https://schema.org/',
@@ -262,7 +262,7 @@ describe('liveness axioms — the harness has teeth', () => {
           },
           lastSequence: 1,
         }),
-        numRuns: 3,
+        cases: 3,
       }),
     ).rejects.toThrow(/^L2: .*issued 3 times — exceeds the retry budget/s);
   });
@@ -274,8 +274,8 @@ describe('liveness axioms — the harness has teeth', () => {
           outputs: makeContentionStarvedQueries(transport, ['res-a', 'res-b']),
         }),
         timeoutMs: TIMEOUT_MS,
-        scheduleArb: fc.constant([{ kind: 'deliver' }] as const),
-        numRuns: 3,
+        schedules: fc.constant([{ kind: 'deliver' }] as const),
+        cases: 3,
       }),
     ).rejects.toThrow(/^L1: [\s\S]*output #1 [\s\S]*silently pending/);
   });

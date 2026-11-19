@@ -5,7 +5,7 @@ package xynolog
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.jdk9.asPublisher
-import xynolog.transport.FrameRefusalReason
+import xynolog.types.FrameRefusalReason
 import xynolog.types.JobCompleteCommand
 import xynolog.types.JobCreatedResultResponse
 import xynolog.types.JobFailCommand

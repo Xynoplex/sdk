@@ -51,6 +51,8 @@ type type_ =
   | T_array of type_  (** [t[]] *)
   | T_readonly of type_
   | T_predicate of string * type_  (** [name is t]: what a guard returns. *)
+  | T_function of (string * type_) list * type_
+      (** [(name: t, ...) => r]: what a callback a type holds is. *)
   | T_mapped of {
       layout : layout;
       readonly : bool;
@@ -346,6 +348,13 @@ let rec type_ ~depth = function
   | T_array t -> type_ ~depth t ^ "[]"
   | T_readonly t -> "readonly " ^ type_ ~depth t
   | T_predicate (name, t) -> checked name ^ " is " ^ type_ ~depth t
+  | T_function (params, returns) ->
+      "("
+      ^ String.concat ", "
+          (List.map
+             (fun (name, t) -> checked name ^ ": " ^ type_ ~depth t)
+             params)
+      ^ ") => " ^ type_ ~depth returns
   | T_mapped { layout; readonly; key; in_; value } -> (
       let inner ~depth =
         (if readonly then "readonly " else "")

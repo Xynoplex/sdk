@@ -38,24 +38,26 @@ harness from a test that is not itself running an event loop.
 import asyncio
 from abc import ABC, abstractmethod
 from collections import Counter
-from collections.abc import Awaitable, Callable, Coroutine, Sequence
+from collections.abc import Callable, Coroutine, Sequence
 from contextlib import AbstractAsyncContextManager
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Final, Literal, final
+from typing import TYPE_CHECKING, Final
 
 from xynolog.channels import BRIDGED_CHANNELS
-from xynolog.testing.transport import (
+from xynolog.testing._kit import (
+    DELAY_MS,
+    DELIVERY_OPS,
+    FAULTS,
+    SCHEDULE_LENGTH,
+    SLACK,
     Delay,
-    Deliver,
+    DeliveryOp,
     DropReply,
-    DuplicateReply,
     FaultAction,
-    FaultyTransport,
-    MakeResponse,
     RejectEmit,
     RequestLogEntry,
-    refuse_unscripted_operation,
 )
+from xynolog.testing._liveness_kit import LivenessScenario, LivenessSpec
+from xynolog.testing.transport import FaultyTransport, refuse_unscripted_operation
 
 if TYPE_CHECKING:
     from hypothesis.strategies import SearchStrategy
@@ -71,9 +73,6 @@ __all__ = [
     "fault_actions",
     "fault_schedules",
 ]
-
-_SLACK: Final = 4
-"""How many times its reckoned bound a case is given: the room a scheduler's jitter takes."""
 
 _LONGEST: Final = 12
 """The most steps of a drawn interleaving, when no interleavings are given."""
@@ -96,68 +95,26 @@ def _held[T](values: "SearchStrategy[T]", cases: int, case: Callable[[T], Corout
 # ── L1, L2 ──────────────────────────────────────────────────────────────
 
 
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class LivenessScenario:
-    """What one fresh run of a composition exposes to the axioms."""
-
-    outputs: Sequence[Awaitable[object]]
-    """One per output: it completes when the output has said something, a value or a failure (L1).
-
-    A live query's first state, `Pending`, is nothing said: an output of one
-    completes on the first state that is not.
-    """
-    settlements: Sequence[Awaitable[object]]
-    """One per awaited path: it completes when the path has settled, by returning or by raising (L2)."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class LivenessSpec:
-    """A composition, and the schedules it is run under."""
-
-    setup: Callable[[FaultyTransport], AbstractAsyncContextManager[LivenessScenario]]
-    """Build a fresh composition over the transport it is given, and give what it exposes.
-
-    The transport's stream names a full client's channels, `BRIDGED_CHANNELS`.
-
-    Called once per case, inside the case's loop. What it opened it ends on
-    the way out, and the transport is closed after.
-    """
-    timeout_ms: int
-    """The time the composition gives a bus request.
-
-    The bound is derived from it: the timeout times one more than the retry
-    budget, and the schedule's delays, all of it four times over.
-    """
-    retry_budget: int
-    """How often a logical request may be sent again."""
-    cases: int
-    """How many schedules it is run under."""
-    schedules: "SearchStrategy[Sequence[FaultAction]] | None" = None
-    """The schedules drawn; with none, `fault_schedules()`'s."""
-    make_response: MakeResponse = refuse_unscripted_operation
-    """What the gateway answers a request nothing queued an answer for, as `FaultyTransport`'s `make_response` does."""
-
-
 def fault_actions() -> "SearchStrategy[FaultAction]":
-    """A wire behaviour, each as likely as the others. A delay is of 5 ms at most."""
+    """A wire behaviour, each as likely as the others. A delay is of `DELAY_MS` milliseconds."""
     from hypothesis import strategies as st
 
-    return st.one_of(
-        st.just(Deliver()),
-        st.just(DropReply()),
-        st.integers(min_value=0, max_value=5).map(Delay),
-        st.just(DuplicateReply()),
-        st.just(RejectEmit()),
-    )
+    least, most = DELAY_MS
+
+    def drawn(fault: type[FaultAction]) -> "SearchStrategy[FaultAction]":
+        if issubclass(fault, Delay):
+            return st.integers(min_value=least, max_value=most).map(Delay)
+        return st.just(fault())
+
+    return st.one_of(*(drawn(fault) for fault in FAULTS))
 
 
 def fault_schedules() -> "SearchStrategy[list[FaultAction]]":
-    """A fault schedule of one to eight behaviours."""
+    """A fault schedule of `SCHEDULE_LENGTH` behaviours."""
     from hypothesis import strategies as st
 
-    return st.lists(fault_actions(), min_size=1, max_size=8)
+    least, most = SCHEDULE_LENGTH
+    return st.lists(fault_actions(), min_size=least, max_size=most)
 
 
 def _described(schedule: Sequence[FaultAction]) -> str:
@@ -219,8 +176,9 @@ def assert_liveness_axioms(spec: LivenessSpec) -> None:
 
     async def case(schedule: Sequence[FaultAction]) -> str | None:
         delays = sum(action.ms for action in schedule if isinstance(action, Delay))
-        bound_ms = (spec.timeout_ms * (1 + spec.retry_budget) + delays) * _SLACK
-        transport = FaultyTransport(schedule, channels=BRIDGED_CHANNELS, make_response=spec.make_response)
+        bound_ms = (spec.timeout_ms * (1 + spec.retry_budget) + delays) * SLACK
+        make_response = refuse_unscripted_operation if spec.make_response is None else spec.make_response
+        transport = FaultyTransport(schedule, channels=BRIDGED_CHANNELS, make_response=make_response)
         try:
             async with spec.setup(transport) as scenario:
                 notified, settled = await _watched(scenario, bound_ms)
@@ -254,10 +212,6 @@ class DeliverySubject(ABC):
         """Let whatever is in flight be delivered, then give the ids delivered, in order."""
 
 
-type DeliveryOp = Literal["write", "transition"]
-"""One step of an interleaving."""
-
-
 def _writing(ops: list[DeliveryOp]) -> list[DeliveryOp]:
     """The interleaving, with a write at its end when it has none."""
     return ops if "write" in ops else [*ops, "write"]
@@ -270,8 +224,7 @@ def delivery_ops(longest: int) -> "SearchStrategy[list[DeliveryOp]]":
     """
     from hypothesis import strategies as st
 
-    steps: tuple[DeliveryOp, ...] = ("write", "transition")
-    return st.lists(st.sampled_from(steps), min_size=1, max_size=longest).map(_writing)
+    return st.lists(st.sampled_from(DELIVERY_OPS), min_size=1, max_size=longest).map(_writing)
 
 
 def _delivery_violation(ops: Sequence[DeliveryOp], written: Sequence[str], delivered: Sequence[str]) -> str | None:

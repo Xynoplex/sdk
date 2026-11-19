@@ -162,7 +162,7 @@ public sealed class ClockCasesTests
         new($"the gateway was asked {operation}, which this subject does not have it answer");
 
     private static int Sent(FaultyTransport transport, string operation) =>
-        transport.RequestLog.Count(entry => entry.Operation == operation);
+        transport.RequestLog.Count(entry => entry.Channel == operation);
 
     // ── The gateway ─────────────────────────────────────────────────────────
 

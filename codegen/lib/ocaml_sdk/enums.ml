@@ -1,12 +1,20 @@
 (* Every component that is a string enum (protocol/specs/src/components/
-   schemas), and every record Protocol states in a table ([Table_records])
-   that is one but a union's tag, which is the union's constructors
-   ([Records]), as a module of the OCaml SDK (ocaml/sdk/lib/enums.ml): a
+   schemas), the client types below, why no launcher was found
+   (protocol/specs/src/client/discovery-absent.json), and every record
+   Protocol states in a table ([Table_records]) that is one but a union's
+   tag, which is the union's constructors ([Records]), as a module of the
+   OCaml SDK (ocaml/sdk/lib/enums.ml): a
    variant per member, and its name both ways. A member is a letter and then
    letters, digits and . / + -, so it names a constructor; no two name the
    same one, and no two enums name one module. *)
 
 let source = "protocol/specs/src/components/schemas"
+
+(* The client types (protocol/specs/src/client/types) the SDK generates.
+   FrameRefusalReason waits on the decoders, which read a fault's reason as
+   a polymorphic variant of their own; the objects wait on the model's
+   reading of them. *)
+let client_types = [ "AnchorMethod"; "MatchQuality" ]
 let prefix = "components/schemas/"
 
 type enum = { module_ : string; variants : (string * string) list }
@@ -129,6 +137,30 @@ let derive (spec : Spec.t) table =
         | _ -> None)
       (List.sort (fun (a, _) (b, _) -> compare a b) spec.schemas)
   in
+  let clients =
+    List.map
+      (fun name ->
+        let file = "client/types/" ^ name ^ ".json" in
+        match List.assoc_opt file spec.schemas with
+        | Some
+            (Schema.Schema { type_ = Some [ String ]; enum = Some members; _ })
+          ->
+            enum ~file ~pointer:"" (module_name name) members
+        | _ ->
+            refusals :=
+              { Decode.file; pointer = ""; message = "is no string enum" }
+              :: !refusals;
+            { module_ = module_name name; variants = [] })
+      client_types
+  in
+  let discovery_absent =
+    enum ~file:"client/discovery-absent.json" ~pointer:"/reasons"
+      "Discovery_absent_reason"
+      (List.map
+         (fun (r : Tables.Client_discovery_absent.reasons_item) ->
+           Schema.String_literal r.reason)
+         spec.tables.client_discovery_absent.reasons)
+  in
   let tabled =
     List.map
       (fun (key, module_, members) ->
@@ -136,7 +168,7 @@ let derive (spec : Spec.t) table =
         enum ~file ~pointer module_ members)
       (tabled table)
   in
-  let enums = components @ tabled in
+  let enums = components @ clients @ (discovery_absent :: tabled) in
   let modules = List.map (fun e -> e.module_) enums in
   if List.length (List.sort_uniq compare modules) <> List.length modules then
     refusals :=
@@ -152,7 +184,9 @@ module O = Ocaml_syntax
 
 let banner =
   Banner.ocaml
-    ~from_:("string enums in " ^ source ^ " and in Protocol's tables")
+    ~from_:
+      ("string enums in " ^ source
+     ^ " and protocol/specs/src/client, and in Protocol's tables")
     __FILE__
 
 let t e =
