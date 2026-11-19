@@ -6,7 +6,7 @@ Build an Eio application, script, or worker that talks to a Xynolog knowledge ba
 
 ## Install
 
-Build the `xynolog` package from `ocaml/sdk` in this checkout. The compiler and Dune versions are pinned in [build-tools/ocaml/toolchain.json](../../build-tools/ocaml/toolchain.json).
+Build the `xynolog` package from `ocaml/sdk` in this checkout. The compiler and Dune versions are pinned in [build-tools/ocaml/toolchain.json](https://github.com/xynolog/build-tools/blob/main/ocaml/toolchain.json).
 
 ```sh
 cd ocaml/sdk

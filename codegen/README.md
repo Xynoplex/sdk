@@ -1,15 +1,16 @@
 # Codegen
 
 The generator that reads the pinned Protocol's specs and writes every SDK's
-generated code, and cli's. It is a Dune project on the OCaml toolchain that
-[`build-tools/ocaml/toolchain.json`](../build-tools/ocaml/toolchain.json)
+generated code, and cli's and images'. It is a Dune project on the OCaml
+toolchain that
+[`build-tools/ocaml/toolchain.json`](https://github.com/xynolog/build-tools/blob/main/ocaml/toolchain.json)
 pins, and `build-tools/ocaml/check-toolchain.py` holds it to the same pins as
 the OCaml SDK.
 
 ## The model
 
 The generator reads the pinned Protocol through Protocol's own reader,
-[`protocol/reader`](../protocol/reader), which `protocol` here links to and
+[`protocol/reader`](https://github.com/xynolog/protocol/tree/main/reader), which `protocol` here links to and
 dune vendors. The reader reads every file of `specs/src` into OCaml types, and
 refuses what it does not know. An unknown member, a duplicate member, a wrong
 type and a missing member are each a refusal that names the file and the JSON

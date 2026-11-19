@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust)](https://app.codecov.io/gh/xynolog/sdk/components)
 
-The first four are how a Rust program uses Xynolog. The last three are what the Rust services share, and are built into their binaries. A service's own crates are beside its binary in [images/](https://github.com/xynolog/images/blob/main/README.md).
+The first three are how a Rust program uses Xynolog. The last three are what the Rust services share, and are built into their binaries. A service's own crates are beside its binary in [images/](https://github.com/xynolog/images/blob/main/README.md).
 
 | Crate | Published | Coverage | What it is |
 |---|---|---|---|
