@@ -1666,6 +1666,9 @@ let emit toks =
   Dynarray.to_list out
 
 let tokens { banner; imports; decls } =
+  if banner <> [] && imports = [] then
+    invalid_arg
+      "Swift_syntax: a banner is written above the imports, and there are none";
   let b = { toks = []; count = 0; order = 0; seq = 0 } in
   let o = visit b in
   let lowered_imports =

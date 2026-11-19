@@ -52,9 +52,7 @@ func clientAssertion(
 func clientProof(_ credential: Credential, endpoint: String) throws -> [(String, String)] {
   switch credential {
   case .secret(_, let clientId, let secret):
-    return [
-      ("grant_type", "client_credentials"), ("client_id", clientId), ("client_secret", secret),
-    ]
+    return clientSecretForm(clientId: clientId, clientSecret: secret)
   case .key(_, let clientId, let key):
     return [
       ("grant_type", "client_credentials"),
