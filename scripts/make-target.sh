@@ -162,6 +162,7 @@ case "${1:-}" in
       dune exec -- ./test/census.exe ../protocol/specs/src
       dune exec -- ./test/coverage_census.exe ..
       dune exec -- ./test/cli_groups.exe ..
+      dune exec -- ./test/images_groups.exe ..
       dune exec -- xynolog-codegen read ..
       dune exec -- ./test/boundary_census.exe ..
       dune exec -- ./test/protocol_paths_census.exe .. ../protocol' --memory 4g

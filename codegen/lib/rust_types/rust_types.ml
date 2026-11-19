@@ -53,26 +53,39 @@ let payloads (spec : Spec.t) =
       | Void _ | Empty _ -> None)
     spec.tables.bus_registry.channels
 
-let types (spec : Spec.t) =
-  let bundle = Definitions.bundle spec in
+(* The SDK's types: [bundle]'s schemas it generates, and how. *)
+let generation (spec : Spec.t) (bundle : Definitions.bundle) :
+    Generate.generation =
   let identifiers =
     List.map
       (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
       spec.tables.identifiers_kinds.kinds
   in
-  let roots =
-    List.sort_uniq String.compare
-      (payloads spec
-      @ List.filter (fun b -> not (List.mem b passed_through)) bundle.bodies
-      @ beside @ identifiers @ client_types
-      @ List.map (fun (_, name, _) -> name) (Definitions.records spec))
-  in
+  {
+    roots =
+      List.sort_uniq String.compare
+        (payloads spec
+        @ List.filter (fun b -> not (List.mem b passed_through)) bundle.bodies
+        @ beside @ identifiers @ client_types
+        @ List.map (fun (_, name, _) -> name) (Definitions.records spec));
+    identifiers;
+    accessors;
+    elsewhere = [];
+  }
+
+(* The types the SDK's [xynolog::types] declares, by name. *)
+let declared (spec : Spec.t) =
+  let bundle = Definitions.bundle spec in
+  Generate.declared bundle.definitions (generation spec bundle)
+
+let types (spec : Spec.t) =
+  let bundle = Definitions.bundle spec in
   {
     Output.path = "rust/sdk/src/generated/types.rs";
     text =
       Rust_syntax.text
         ~header:(regenerate "the component schemas in protocol/specs/src")
-        (Generate.items bundle.definitions { roots; identifiers; accessors });
+        (Generate.items bundle.definitions (generation spec bundle));
   }
 
 let sign_in (spec : Spec.t) =
@@ -88,7 +101,12 @@ let sign_in (spec : Spec.t) =
         ~header:(regenerate ("protocol/specs/src/" ^ sign_in_file))
         (Generate.items
            (Definitions.alone ~name:"SignIn" schema)
-           { roots = [ "SignIn" ]; identifiers = []; accessors = [] });
+           {
+             roots = [ "SignIn" ];
+             identifiers = [];
+             accessors = [];
+             elsewhere = [];
+           });
   }
 
 (* Why a client that read a launcher's discovery document found no launcher

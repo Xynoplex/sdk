@@ -12,6 +12,10 @@ decoder refuses that the table does not state is a fault of the value
 itself. Whatever decodes a value shows, in its account of a failure, what it
 was given (the token an answer grants, what a person wrote), and a failure
 is printed and logged: so nothing said of a fault is the value's own.
+
+A service that reads a protocol shape the SDK does not read for it (its own
+configuration, a request it answers) reads it here, and asks `bounds_of` the
+sizes and bounds the table states of a member rather than restating them.
 """
 
 from collections.abc import Callable
@@ -23,6 +27,8 @@ from pydantic import BaseModel, Field, JsonValue, TypeAdapter, ValidationError
 from xynolog._required_table import SCHEMAS
 from xynolog.channel import Empty, Response
 from xynolog.model import WireModel
+
+__all__ = ["UNDECODED", "Bounds", "Fault", "as_read", "bounds_of", "fault_of", "read_as"]
 
 type _Kind = Literal["object", "array", "string", "integer", "number", "boolean", "null"]
 
@@ -118,6 +124,22 @@ def _shape_of(declared: object) -> _Shape:
     if declared.__name__ not in _SCHEMAS:
         raise TypeError(f"{declared.__name__} is no component schema of the spec")
     return _Shape(ref=declared.__name__)
+
+
+@final
+@dataclass(frozen=True, slots=True)
+class Bounds:
+    """The sizes and bounds a member's schema states, each None where it states none.
+
+    A text's length counts code points; an array's size counts its items.
+    """
+
+    min_length: int | None
+    max_length: int | None
+    minimum: float | None
+    maximum: float | None
+    min_items: int | None
+    max_items: int | None
 
 
 def _resolved(shape: _Shape) -> _Shape:
@@ -321,3 +343,39 @@ def read_as[T](declared: object, text: str | bytes, decode: Callable[[JsonValue]
         return decode(read)
     except ValidationError:
         return UNDECODED
+
+
+def _member_of(shape: _Shape, name: str) -> _Shape | None:
+    """The member `name` of a value of `shape`, of its array's items, or of a part it is all of; None where none names it."""
+    own = _resolved(shape)
+    while own.items is not None:
+        own = _resolved(own.items)
+    if own.members is not None and name in own.members:
+        return own.members[name]
+    return next((found for part in own.all_of or () if (found := _member_of(part, name)) is not None), None)
+
+
+def bounds_of(declared: object, member: str) -> Bounds:
+    """The bounds the table states of `member` of a `declared`.
+
+    `member` is the way to it, as a fault names one: the names of the members
+    it is within and its own, joined by dots, where a member of an array's
+    items is named as one of the array's, and a member of a part a value is
+    all of as one of the value's. `declared` is as `as_read` takes it.
+    A way that names a member its object does not is a programming error.
+    """
+    shape = _shape_of(declared)
+    for name in member.split("."):
+        within = _member_of(shape, name)
+        if within is None:
+            raise KeyError(f"{declared!r} has no member {member}")
+        shape = within
+    shape = _resolved(shape)
+    return Bounds(
+        min_length=shape.min_length,
+        max_length=shape.max_length,
+        minimum=shape.minimum,
+        maximum=shape.maximum,
+        min_items=shape.min_items,
+        max_items=shape.max_items,
+    )
