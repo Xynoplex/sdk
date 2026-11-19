@@ -345,22 +345,32 @@ def read_as[T](declared: object, text: str | bytes, decode: Callable[[JsonValue]
         return UNDECODED
 
 
+def _member_of(shape: _Shape, name: str) -> _Shape | None:
+    """The member `name` of a value of `shape`, of its array's items, or of a part it is all of; None where none names it."""
+    own = _resolved(shape)
+    while own.items is not None:
+        own = _resolved(own.items)
+    if own.members is not None and name in own.members:
+        return own.members[name]
+    return next((found for part in own.all_of or () if (found := _member_of(part, name)) is not None), None)
+
+
 def bounds_of(declared: object, member: str) -> Bounds:
     """The bounds the table states of `member` of a `declared`.
 
     `member` is the way to it, as a fault names one: the names of the members
     it is within and its own, joined by dots, where a member of an array's
-    items is named as one of the array's. `declared` is as `as_read` takes it.
+    items is named as one of the array's, and a member of a part a value is
+    all of as one of the value's. `declared` is as `as_read` takes it.
     A way that names a member its object does not is a programming error.
     """
-    shape = _resolved(_shape_of(declared))
+    shape = _shape_of(declared)
     for name in member.split("."):
-        while shape.items is not None:
-            shape = _resolved(shape.items)
-        members = shape.members or {}
-        if name not in members:
+        within = _member_of(shape, name)
+        if within is None:
             raise KeyError(f"{declared!r} has no member {member}")
-        shape = _resolved(members[name])
+        shape = within
+    shape = _resolved(shape)
     return Bounds(
         min_length=shape.min_length,
         max_length=shape.max_length,

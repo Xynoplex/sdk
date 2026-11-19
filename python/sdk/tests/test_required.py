@@ -4,7 +4,14 @@ import pytest
 from pydantic import JsonValue
 
 from xynolog.required import Bounds, Fault, bounds_of, fault_of
-from xynolog.types import BrowseProfilesRequest, BusPingMessage, GatherAnnotationOptions, WorkerConfig, WorkerKnowledgeBaseConfig
+from xynolog.types import (
+    BrowseProfilesRequest,
+    BusPingMessage,
+    GatherAnnotationOptions,
+    GenerationJobParams,
+    WorkerConfig,
+    WorkerKnowledgeBaseConfig,
+)
 
 
 def malformed(member: str) -> Fault:
@@ -51,5 +58,6 @@ def test_a_members_bounds_are_the_tables() -> None:
     assert bounds_of(WorkerConfig, "knowledgeBases").min_items == 1
     assert bounds_of(WorkerConfig, "knowledgeBases.engines").min_items == 1
     assert bounds_of(WorkerConfig, "knowledgeBases.identity.clientId").min_length == 1
+    assert bounds_of(GenerationJobParams, "storageUri").min_length == 1
     with pytest.raises(KeyError):
         bounds_of(BrowseProfilesRequest, "more")
