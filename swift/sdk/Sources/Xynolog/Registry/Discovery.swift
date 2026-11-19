@@ -3,14 +3,6 @@ import Foundation
 
 public let discoveryInterval: Duration = .milliseconds(Timings.discoveryIntervalMs)
 
-public enum DiscoveryAbsentReason: String, Codable, CaseIterable, Sendable {
-  case notFound = "not-found"
-  case notJSON = "not-json"
-  case invalid
-  case unsupportedVersion = "unsupported-version"
-  case unreadable
-}
-
 public struct Absent: Sendable {
   public let reason: DiscoveryAbsentReason
   public let diagnostic: String?
@@ -52,7 +44,7 @@ public func parseDiscoveryDocument(_ text: String) -> DiscoveryState {
   do {
     parsed = try decoder.decode(JSONValue.self, from: data)
   } catch {
-    return .absent(Absent(reason: .notJSON, diagnostic: String(describing: error)))
+    return .absent(Absent(reason: .notJson, diagnostic: String(describing: error)))
   }
   guard case .object(let fields) = parsed,
     case .number(let version) = fields["version"], version.rounded() == version

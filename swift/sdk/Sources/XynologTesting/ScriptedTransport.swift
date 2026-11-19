@@ -5,18 +5,6 @@ import Xynolog
 public typealias Respond =
   @Sendable (String, [String: JSONValue]) async throws -> [String: JSONValue]
 
-public enum FaultAction: Sendable, Equatable {
-  case deliver, dropReply
-  case delay(Duration)
-  case duplicateReply, rejectEmit
-}
-
-public struct RequestAttempt: Sendable {
-  public let operation: String
-  public let payload: [String: JSONValue]
-  public let action: FaultAction
-}
-
 /// What a double's stream is subscribed to, as a gateway holds a stream to what it subscribed: the
 /// global channels it was given, and each resource whose scope it holds, once for every hold not
 /// yet released.
@@ -68,7 +56,7 @@ package final class Subscription: Sendable {
 /// request of another.
 public final class ScriptedTransport: Transport {
   private struct State: Sendable {
-    var attempts: [RequestAttempt] = []
+    var requestLog: [RequestLogEntry] = []
     var queued: [String: [[String: JSONValue]]] = [:]
     var closed = false
     var pending: [UUID: Task<[String: JSONValue], any Error>] = [:]
@@ -98,7 +86,8 @@ public final class ScriptedTransport: Transport {
       }
   }
 
-  public var attempts: [RequestAttempt] { wire.withLock { $0.attempts } }
+  /// Every request it was sent, in the order it was sent them.
+  public var requestLog: [RequestLogEntry] { wire.withLock { $0.requestLog } }
 
   public func queue(_ operation: String, reply: [String: JSONValue]) {
     wire.withLock { if !$0.closed { $0.queued[operation, default: []].append(reply) } }
@@ -153,9 +142,12 @@ public final class ScriptedTransport: Transport {
     let id = UUID()
     let task = try wire.withLock { wire -> Task<[String: JSONValue], any Error> in
       guard !wire.closed else { throw closed() }
-      let index = wire.attempts.count
+      let index = wire.requestLog.count
       let action = schedule.indices.contains(index) ? schedule[index] : .deliver
-      wire.attempts.append(RequestAttempt(operation: operation, payload: payload, action: action))
+      wire.requestLog.append(
+        RequestLogEntry(
+          channel: operation, action: action, correlationId: id.uuidString,
+          retryKey: try retryKey(operation, payload), payload: payload))
       let reply = wire.queued[operation]?.first
       if reply != nil { wire.queued[operation]?.removeFirst() }
       let task = spawn { [clock, respond, events, subscription] in
@@ -224,6 +216,15 @@ public final class ScriptedTransport: Transport {
   }
 
   deinit { dispose() }
+
+  /// A request's identity across retries: its operation and its payload, the payload's members
+  /// in order of their names.
+  private func retryKey(_ operation: String, _ payload: [String: JSONValue]) throws -> String {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .sortedKeys
+    let encoded = try encoder.encode(JSONValue.array([.string(operation), .object(payload)]))
+    return String(decoding: encoded, as: UTF8.self)
+  }
 
   private func closed() -> BusRequestError {
     BusRequestError(.busClosed, "The scripted wire closed")
