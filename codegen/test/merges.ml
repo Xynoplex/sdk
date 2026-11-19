@@ -199,6 +199,45 @@ let everywhere_cases () =
        (all_of
           [ named "Wrapped"; object_ [ ("a", all_of [ named "Text"; long ]) ] ]))
 
+(* A schema that closes what its [$ref] and its [allOf] compose, as
+   [Normalize.closed] reads it. *)
+let closed_cases () =
+  let members = object_ [ ("a", text) ] in
+  let closing parts =
+    {
+      Schema.empty with
+      ref_ = Some (reference "Members");
+      all_of = Some parts;
+      unevaluated_properties = Some (Schema.Boolean_schema false);
+      defs = Some [ ("Members", members) ];
+    }
+  in
+  let closed s =
+    Normalize.closed ids ~find:(find_referenced [ ("Members", members) ]) s
+  in
+  Alcotest.check outcome
+    "what it composes, closed by additionalProperties, without its $defs"
+    (Ok
+       {
+         Schema.empty with
+         type_ = Some [ Object ];
+         properties = Some [ ("a", text); ("b", text) ];
+         additional_properties = Some (Schema.Boolean_schema false);
+       })
+    (closed (closing [ object_ [ ("b", text) ] ]));
+  Alcotest.(check bool)
+    "a composition that is no one object is refused" true
+    (Result.is_error
+       (closed (closing [ layer { Schema.empty with one_of = Some [ text ] } ])));
+  Alcotest.(check bool)
+    "a schema closed twice is refused" true
+    (Result.is_error
+       (closed
+          {
+            (closing []) with
+            additional_properties = Some (Schema.Boolean_schema false);
+          }))
+
 let () =
   Alcotest.run "merges"
     [
@@ -206,4 +245,9 @@ let () =
         [ Alcotest.test_case "merged by its rule" `Quick keywords ] );
       ( "everywhere",
         [ Alcotest.test_case "no allOf is left" `Quick everywhere_cases ] );
+      ( "closed",
+        [
+          Alcotest.test_case "unevaluatedProperties closes one object" `Quick
+            closed_cases;
+        ] );
     ]

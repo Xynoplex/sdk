@@ -1,6 +1,7 @@
 (* The schema a JSON pointer names inside [s]: each segment a member of
-   [properties], or [items], [additionalProperties], [not], or an index into
-   [allOf], [anyOf] or [oneOf]. *)
+   [properties] or [$defs], or [items], [additionalProperties],
+   [unevaluatedProperties], [not], or an index into [allOf], [anyOf] or
+   [oneOf]. *)
 let schema s pointer =
   let index list i = Option.bind list (fun l -> List.nth_opt l i) in
   let rec walk s = function
@@ -16,9 +17,16 @@ let schema s pointer =
                     (fun p -> (p, rest))
                     (Option.bind layer.properties
                        (List.assoc_opt (Decode.unescape name)))
+              | "$defs", name :: rest ->
+                  Option.map
+                    (fun p -> (p, rest))
+                    (Option.bind layer.defs
+                       (List.assoc_opt (Decode.unescape name)))
               | "items", rest -> Option.map (fun p -> (p, rest)) layer.items
               | "additionalProperties", rest ->
                   Option.map (fun p -> (p, rest)) layer.additional_properties
+              | "unevaluatedProperties", rest ->
+                  Option.map (fun p -> (p, rest)) layer.unevaluated_properties
               | "not", rest -> Option.map (fun p -> (p, rest)) layer.not_
               | (("allOf" | "anyOf" | "oneOf") as k), i :: rest -> (
                   let list =

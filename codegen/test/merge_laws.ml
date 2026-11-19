@@ -9,8 +9,9 @@
      and discriminator only describe a value. The rest are assertions JSON
      Schema applies from every part, which the merge takes from the later
      one: format, const, propertyNames, minProperties, not, an allOf
-     a part keeps, and additionalProperties when neither part closes the
-     object.
+     a part keeps, and additionalProperties and unevaluatedProperties when
+     neither part closes the object. $schema, $id and $defs, which only a
+     file's root states, are the later part's too.
 
    Each law holds up to what the merge's result means: a property two parts
    state differently is the allOf of both, so the properties are compared as
@@ -65,6 +66,9 @@ let part : Schema.schema Gen.t =
   let* additional_properties =
     stated [ Schema.Boolean_schema false; Boolean_schema true; text; long ]
   in
+  let* unevaluated_properties =
+    stated [ Schema.Boolean_schema false; Boolean_schema true; text ]
+  in
   let* property_names = stated [ text; long ] in
   let* min_properties = stated [ 0; 2 ] in
   let* max_properties = stated [ 1; 3 ] in
@@ -81,6 +85,7 @@ let part : Schema.schema Gen.t =
   let* any_of = stated [ [ text ]; [ text; long ] ] in
   let* one_of = stated [ [ text ]; [ long; text ] ] in
   let* not_ = stated [ text; long ] in
+  let* defs = stated [ [ ("D", text) ]; [ ("D", long) ] ] in
   let+ discriminator =
     stated
       [
@@ -104,6 +109,7 @@ let part : Schema.schema Gen.t =
     properties;
     required;
     additional_properties;
+    unevaluated_properties;
     property_names;
     min_properties;
     max_properties;
@@ -120,6 +126,7 @@ let part : Schema.schema Gen.t =
     any_of;
     one_of;
     not_;
+    defs;
     discriminator;
   }
 
@@ -144,6 +151,7 @@ let undisputed (earlier : Schema.schema)
        properties;
        required;
        additional_properties;
+       unevaluated_properties;
        property_names;
        min_properties;
        max_properties;
@@ -160,6 +168,7 @@ let undisputed (earlier : Schema.schema)
        any_of;
        one_of;
        not_;
+       defs;
        discriminator;
      } :
       Schema.schema) : Schema.schema =
@@ -171,6 +180,9 @@ let undisputed (earlier : Schema.schema)
   let closes = function
     | Some (Schema.Boolean_schema false) -> true
     | _ -> false
+  in
+  let open_ earlier later =
+    if closes earlier || closes later then later else disputed earlier later
   in
   {
     schema = disputed earlier.schema schema;
@@ -188,9 +200,9 @@ let undisputed (earlier : Schema.schema)
     properties;
     required;
     additional_properties =
-      (if closes earlier.additional_properties || closes additional_properties
-       then additional_properties
-       else disputed earlier.additional_properties additional_properties);
+      open_ earlier.additional_properties additional_properties;
+    unevaluated_properties =
+      open_ earlier.unevaluated_properties unevaluated_properties;
     property_names = disputed earlier.property_names property_names;
     min_properties = disputed earlier.min_properties min_properties;
     max_properties;
@@ -207,6 +219,7 @@ let undisputed (earlier : Schema.schema)
     any_of;
     one_of;
     not_ = disputed earlier.not_ not_;
+    defs = disputed earlier.defs defs;
     discriminator = disputed earlier.discriminator discriminator;
   }
 

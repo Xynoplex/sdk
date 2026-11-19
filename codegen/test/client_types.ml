@@ -85,6 +85,40 @@ let kit_records =
     };
   ]
 
+(* The client types the Haskell SDK adapts, ReconciledSpan [reconciled]
+   and AnchorMethod the words [methods]. *)
+let adapted reconciled ~methods =
+  shapes
+    [
+      ("QuotedText", M.Fields [ member "exact" (Scalar String) ]);
+      ("TextSpan", M.Fields [ member "start" (Scalar Integer) ]);
+      ("ReconciledSpan", reconciled);
+      ("AnchorMethod", M.Words methods);
+      ("MatchQuality", M.Words [ "fuzzy" ]);
+      ("PdfCoordinate", M.Fields [ member "page" (Scalar Integer) ]);
+      ("IssuedTokens", M.Fields [ member "access" (Scalar String) ]);
+      ("DeviceCode", M.Fields [ member "expiresIn" (Scalar Integer) ]);
+      ( "BeginAuthorizationOptions",
+        M.Fields
+          [ member "target" (Named { name = "HttpEndpoint"; union = false }) ]
+      );
+    ]
+
+(* ReconciledSpan as Protocol states it: a union on how it was anchored,
+   whose fuzzy branch alone says how well it matched, holding [quality]. *)
+let reconciled_union quality : M.shape =
+  Union
+    {
+      tag = "anchorMethod";
+      branches =
+        [
+          ("unique-match", [ member "start" (Scalar Integer) ]);
+          ( "fuzzy-match",
+            [ member "start" (Scalar Integer); member "matchQuality" quality ]
+          );
+        ];
+    }
+
 let cases =
   [
     case "a refused frame's report is stated by the transport's FrameRefusal"
@@ -128,25 +162,9 @@ let cases =
         match
           W.adapters
             ~shape:
-              (shapes
-                 [
-                   ("QuotedText", M.Fields [ member "exact" (Scalar String) ]);
-                   ("TextSpan", M.Fields [ member "start" (Scalar Integer) ]);
-                   ( "ReconciledSpan",
-                     M.Fields [ member "start" (Scalar Integer) ] );
-                   ("AnchorMethod", M.Words [ "unique-match" ]);
-                   ("MatchQuality", M.Words [ "fuzzy" ]);
-                   ("PdfCoordinate", M.Fields [ member "page" (Scalar Integer) ]);
-                   ("IssuedTokens", M.Fields [ member "access" (Scalar String) ]);
-                   ( "DeviceCode",
-                     M.Fields [ member "expiresIn" (Scalar Integer) ] );
-                   ( "BeginAuthorizationOptions",
-                     M.Fields
-                       [
-                         member "target"
-                           (Named { name = "HttpEndpoint"; union = false });
-                       ] );
-                 ])
+              (adapted
+                 (M.Fields [ member "start" (Scalar Integer) ])
+                 ~methods:[ "unique-match" ])
         with
         | Ok adapters -> (
             match List.assoc_opt "TextSpan" adapters with
@@ -156,6 +174,61 @@ let cases =
                 | _ -> Alcotest.fail "start is not an integer")
             | _ -> Alcotest.fail "no TextSpan of properties")
         | Error _ -> Alcotest.fail "refused");
+    case "an adapter states a union as one record of every branch's members"
+      (fun () ->
+        match
+          W.adapters
+            ~shape:
+              (adapted
+                 (reconciled_union
+                    (Named { name = "MatchQuality"; union = false }))
+                 ~methods:[ "fuzzy-match"; "unique-match" ])
+        with
+        | Ok adapters -> (
+            match List.assoc_opt "ReconciledSpan" adapters with
+            | Some
+                (Schema.Schema
+                   { properties = Some properties; required = Some required; _ })
+              -> (
+                Alcotest.(check (list string))
+                  "members"
+                  [ "start"; "matchQuality"; "anchorMethod" ]
+                  (List.map fst properties);
+                Alcotest.(check (list string))
+                  "required"
+                  [ "start"; "anchorMethod" ]
+                  required;
+                match List.assoc_opt "anchorMethod" properties with
+                | Some (Schema.Schema { ref_ = Some r; _ }) ->
+                    Alcotest.(check string)
+                      "the tag's type" "AnchorMethod.json" r.target
+                | _ -> Alcotest.fail "the tag names no type")
+            | _ -> Alcotest.fail "no ReconciledSpan of properties")
+        | Error _ -> Alcotest.fail "refused");
+    case "a union whose branches hold a member differently is refused"
+      (fun () ->
+        refused
+          (W.adapters
+             ~shape:
+               (adapted
+                  (M.Union
+                     {
+                       tag = "anchorMethod";
+                       branches =
+                         [
+                           ("unique-match", [ member "start" (Scalar Integer) ]);
+                           ("fuzzy-match", [ member "start" (Scalar String) ]);
+                         ];
+                     })
+                  ~methods:[ "fuzzy-match"; "unique-match" ])));
+    case "a union whose tags are no type's words is refused" (fun () ->
+        refused
+          (W.adapters
+             ~shape:
+               (adapted
+                  (reconciled_union
+                     (Named { name = "MatchQuality"; union = false }))
+                  ~methods:[ "unique-match" ])));
     case "a secret proof whose grant is not the client assertion's is refused"
       (fun () ->
         refused

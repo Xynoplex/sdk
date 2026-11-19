@@ -98,6 +98,11 @@ let merge ids (old : Schema.schema) (next : Schema.schema) :
     | Some (Boolean_schema false) -> Ok old.additional_properties
     | _ -> last old.additional_properties next.additional_properties
   in
+  let* unevaluated_properties =
+    match old.unevaluated_properties with
+    | Some (Boolean_schema false) -> Ok old.unevaluated_properties
+    | _ -> last old.unevaluated_properties next.unevaluated_properties
+  in
   let* unique_items =
     match old.unique_items with
     | Some true -> Ok old.unique_items
@@ -131,6 +136,7 @@ let merge ids (old : Schema.schema) (next : Schema.schema) :
   let* max_properties = bound Int.min old.max_properties next.max_properties in
   let* schema = last old.schema next.schema in
   let* id = last old.id next.id in
+  let* defs = last old.defs next.defs in
   let* comment = last old.comment next.comment in
   let* title = last old.title next.title in
   let* description = last old.description next.description in
@@ -160,6 +166,7 @@ let merge ids (old : Schema.schema) (next : Schema.schema) :
       properties;
       required;
       additional_properties;
+      unevaluated_properties;
       property_names;
       min_properties;
       max_properties;
@@ -177,7 +184,14 @@ let merge ids (old : Schema.schema) (next : Schema.schema) :
       one_of;
       not_;
       discriminator;
+      defs;
     }
+
+(* A schema a part refers to, as the part takes it: its keywords, without
+   the definitions it holds for references into it ([$defs]), which the
+   schema the part is in does not hold. A reference within it still names its
+   own file, so they are still found. *)
+let resource (s : Schema.schema) = { s with defs = None }
 
 let layer : Schema.t -> Schema.schema outcome = function
   | Schema s -> Ok s
@@ -227,7 +241,7 @@ let normalize ids ~find schema =
               in
               let* target = find r in
               let* expanded = (expand target).whole (named :: trail) in
-              merge ids expanded { s with ref_ = None }
+              merge ids (resource expanded) { s with ref_ = None }
           | None -> whole trail
         in
         { whole; part })
@@ -275,3 +289,36 @@ let everywhere ids ~referenced ~find =
         | s -> Ok s)
   in
   named []
+
+(* A schema that closes what it composes ([unevaluatedProperties]), as the
+   one object it means: what its [$ref] and its [allOf] merge to, with its own
+   keywords on top. Every member they state is one it evaluates, so over the
+   merge [unevaluatedProperties] is [additionalProperties]. A merge that
+   still composes, by a [oneOf], an [anyOf] or a [not], is no one object, and
+   one that states [additionalProperties] itself would be closed twice: both
+   are refused. *)
+let closed ids ~find (s : Schema.schema) =
+  let parts =
+    Option.to_list
+      (Option.map
+         (fun r -> Schema.Schema { Schema.empty with ref_ = Some r })
+         s.ref_)
+    @ Option.value s.all_of ~default:[]
+  in
+  let* merged =
+    normalize ids ~find
+      (Schema.Schema
+         {
+           (resource s) with
+           ref_ = None;
+           all_of = Some parts;
+           unevaluated_properties = None;
+         })
+  in
+  match merged with
+  | { one_of = Some _; _ } | { any_of = Some _; _ } | { not_ = Some _; _ } ->
+      Error "unevaluatedProperties over a schema that is no one object"
+  | { additional_properties = Some _; _ } ->
+      Error "unevaluatedProperties beside additionalProperties"
+  | merged ->
+      Ok { merged with additional_properties = s.unevaluated_properties }

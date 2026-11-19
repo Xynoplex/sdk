@@ -157,17 +157,29 @@ let derive (spec : Spec.t) =
   let members file pointer s =
     fields file pointer (Schema.map (fun member -> (member, held member)) s)
   in
+  let find (r : Decode.reference) =
+    let file, pointer = Decode.resolve spec.Spec.ids r in
+    match Option.bind (schema file) (fun s -> Pointer.schema s pointer) with
+    | Some s -> Ok s
+    | None -> Error ("refers to " ^ r.target ^ ", which is no schema")
+  in
+  (* A schema that closes what it composes, as the one object it means
+     ([Normalize.closed]); any other as it is. *)
+  let meant file pointer = function
+    | Schema.Schema ({ unevaluated_properties = Some _; _ } as s) -> (
+        match Normalize.closed spec.Spec.ids ~find s with
+        | Ok closed -> Schema.Schema closed
+        | Error message ->
+            refuse file pointer message;
+            Schema.Schema s)
+    | s -> s
+  in
   (* An object's members: one that is all of some schemas, those of what they
      merge to ([Normalize]), in the order they state them. *)
   let object_ file pointer : Schema.t -> member list option = function
     | Schema.Schema ({ all_of = Some _; _ } as s) as t
       when List.for_all (fun k -> List.mem k [ "title"; "allOf" ]) (described s)
       -> (
-        let find (r : Decode.reference) =
-          match schema (fst (Decode.resolve spec.Spec.ids r)) with
-          | Some s -> Ok s
-          | None -> Error ("refers to " ^ r.target ^ ", which is no schema")
-        in
         match Normalize.normalize spec.Spec.ids ~find t with
         | Ok merged -> members file pointer merged
         | Error message ->
@@ -199,7 +211,7 @@ let derive (spec : Spec.t) =
             (List.mapi
                (fun i branch ->
                  let at = Printf.sprintf "/oneOf/%d" i in
-                 match branch with
+                 match meant file at branch with
                  | Schema.Schema
                      ({ type_ = Some [ Object ]; properties = Some p; _ } as b)
                    -> (
@@ -235,7 +247,9 @@ let derive (spec : Spec.t) =
     List.filter_map
       (fun (file, s) ->
         if String.starts_with ~prefix:types file then
-          Option.map (fun shape -> (name_of file, shape)) (shape file s)
+          Option.map
+            (fun shape -> (name_of file, shape))
+            (shape file (meant file "" s))
         else None)
       spec.schemas
   in

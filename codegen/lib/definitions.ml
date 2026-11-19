@@ -176,79 +176,88 @@ let view ~ids ~named ~schemas =
             Node { (node [ "anyOf" ]) with any_of = Some [ Null; other ] })
   and plain l trail =
     let s = Schema.map snd l in
-    match s.ref_ with
-    | Some r -> (
-        let description =
-          match said_of_reference s r with
-          | Ok d -> d
-          | Error message -> refuse "%s" message
-        in
-        match referent ~ids ~named ~schemas r with
-        | Some (Named name) -> Ref { name; description }
-        | Some (In_place (file, target)) ->
-            if Option.is_some description then
-              refuse
-                "$ref %s is written in its place, so nothing can be said of it \
-                 beside it"
-                r.target;
-            view target (in_place ~trail file)
-        | None -> refuse "$ref %s names no schema" r.target)
-    | None when Schema.keywords s = [ "type" ] && s.type_ = Some [ Schema.Null ]
-      ->
-        Null
-    | None ->
-        let sub f = f trail in
-        let subs = Option.map (List.map sub) in
-        let keys = Schema.keywords s in
-        let merged =
-          Option.map
-            (fun _ ->
-              match
-                Normalize.normalize ids ~find:(schema_of ~ids ~schemas)
-                  (Schema.Schema (Schema.map fst l))
-              with
-              | Ok m -> view (Schema.Schema m) trail
-              | Error message -> refuse "%s" message)
-            s.all_of
-        in
-        let types =
-          match s.type_ with
-          | None -> None
-          | Some [ t ] when t <> Schema.Null -> Some (One t)
-          | Some _ ->
-              refuse "a schema of several types the generator does not know"
-        in
-        let own =
-          {
-            keys;
-            description =
-              (match merged with
-              | Some (Node m) -> m.description
-              | _ -> s.description);
-            type_ = types;
-            format = s.format;
-            enum = s.enum;
-            const = Option.is_some s.const;
-            properties =
-              Option.map (List.map (fun (k, v) -> (k, sub v))) s.properties;
-            required = s.required;
-            additional_properties = Option.map sub s.additional_properties;
-            max_properties = s.max_properties;
-            minimum = s.minimum;
-            maximum = s.maximum;
-            items = Option.map sub s.items;
-            all_of = subs s.all_of;
-            merged;
-            any_of = subs s.any_of;
-            one_of = subs s.one_of;
-            discriminator =
-              Option.map
-                (fun (d : Schema.discriminator) -> d.property_name)
-                s.discriminator;
-            pattern = s.pattern;
-          }
-        in
-        Node own
+    if Option.is_some s.unevaluated_properties then closed l trail
+    else
+      match s.ref_ with
+      | Some r -> (
+          let description =
+            match said_of_reference s r with
+            | Ok d -> d
+            | Error message -> refuse "%s" message
+          in
+          match referent ~ids ~named ~schemas r with
+          | Some (Named name) -> Ref { name; description }
+          | Some (In_place (file, target)) ->
+              if Option.is_some description then
+                refuse
+                  "$ref %s is written in its place, so nothing can be said of \
+                   it beside it"
+                  r.target;
+              view target (in_place ~trail file)
+          | None -> refuse "$ref %s names no schema" r.target)
+      | None
+        when Schema.keywords s = [ "type" ] && s.type_ = Some [ Schema.Null ] ->
+          Null
+      | None ->
+          let sub f = f trail in
+          let subs = Option.map (List.map sub) in
+          let keys = Schema.keywords s in
+          let merged =
+            Option.map
+              (fun _ ->
+                match
+                  Normalize.normalize ids ~find:(schema_of ~ids ~schemas)
+                    (Schema.Schema (Schema.map fst l))
+                with
+                | Ok m -> view (Schema.Schema m) trail
+                | Error message -> refuse "%s" message)
+              s.all_of
+          in
+          let types =
+            match s.type_ with
+            | None -> None
+            | Some [ t ] when t <> Schema.Null -> Some (One t)
+            | Some _ ->
+                refuse "a schema of several types the generator does not know"
+          in
+          let own =
+            {
+              keys;
+              description =
+                (match merged with
+                | Some (Node m) -> m.description
+                | _ -> s.description);
+              type_ = types;
+              format = s.format;
+              enum = s.enum;
+              const = Option.is_some s.const;
+              properties =
+                Option.map (List.map (fun (k, v) -> (k, sub v))) s.properties;
+              required = s.required;
+              additional_properties = Option.map sub s.additional_properties;
+              max_properties = s.max_properties;
+              minimum = s.minimum;
+              maximum = s.maximum;
+              items = Option.map sub s.items;
+              all_of = subs s.all_of;
+              merged;
+              any_of = subs s.any_of;
+              one_of = subs s.one_of;
+              discriminator =
+                Option.map
+                  (fun (d : Schema.discriminator) -> d.property_name)
+                  s.discriminator;
+              pattern = s.pattern;
+            }
+          in
+          Node own
+  (* A schema that closes what it composes, as the one object it means. *)
+  and closed l trail =
+    match
+      Normalize.closed ids ~find:(schema_of ~ids ~schemas) (Schema.map fst l)
+    with
+    | Ok closed -> view (Schema.Schema closed) trail
+    | Error message -> refuse "%s" message
   in
   fun s -> view s []
 

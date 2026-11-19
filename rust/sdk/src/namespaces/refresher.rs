@@ -516,7 +516,7 @@ impl Drop for Refresher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     /// The last part of a path: `ResourceDescriptor` of
     /// `xynolog::types::ResourceDescriptor`.
@@ -568,15 +568,14 @@ mod tests {
         }
     }
 
-    /// The Rust type `schema`, read in the directory `within`, is held as,
-    /// by name: a component by its name, an array as a `Vec` of its items,
-    /// text as a `String`.
-    fn named_by(schema: &Value, within: &Path) -> String {
+    /// The Rust type `schema` is held as, by name: a component by its name,
+    /// an array as a `Vec` of its items, text as a `String`.
+    fn named_by(schema: &Value) -> String {
         if let Some(reference) = schema["$ref"].as_str() {
-            return referenced(reference, within);
+            return referenced(reference);
         }
         match schema["type"].as_str() {
-            Some("array") => format!("Vec<{}>", named_by(&schema["items"], within)),
+            Some("array") => format!("Vec<{}>", named_by(&schema["items"])),
             Some("string") => "String".to_owned(),
             other => {
                 panic!("a schema of type {other:?}, which this census does not read: {schema}")
@@ -584,14 +583,14 @@ mod tests {
         }
     }
 
-    /// The Rust type `reference`, a `$ref` from a schema in `within`, names:
-    /// the component its file is, or the member of it its pointer names.
-    fn referenced(reference: &str, within: &Path) -> String {
+    /// The Rust type `reference`, a `$ref`, names: the component its file
+    /// is, or the member of it its pointer names.
+    fn referenced(reference: &str) -> String {
         let (file, pointer) = match reference.split_once('#') {
             Some((file, pointer)) => (file, Some(pointer)),
             None => (reference, None),
         };
-        let path = within.join(file);
+        let path = located(file);
         let Some(pointer) = pointer else {
             return path
                 .file_stem()
@@ -606,10 +605,33 @@ mod tests {
         let member = component
             .pointer(pointer)
             .unwrap_or_else(|| panic!("{reference} names no member"));
-        let directory = path
-            .parent()
-            .unwrap_or_else(|| panic!("{} is in no directory", path.display()));
-        named_by(member, directory)
+        named_by(member)
+    }
+
+    /// The file of the schema whose `$id` is `id`.
+    fn located(id: &str) -> PathBuf {
+        fn stating(directory: &Path, id: &str) -> Option<PathBuf> {
+            let mut entries = std::fs::read_dir(directory)
+                .unwrap_or_else(|unread| panic!("{}: {unread}", directory.display()));
+            entries.find_map(|entry| {
+                let path = entry
+                    .unwrap_or_else(|unread| panic!("{}: {unread}", directory.display()))
+                    .path();
+                if path.is_dir() {
+                    return stating(&path, id);
+                }
+                if path.extension().is_none_or(|extension| extension != "json") {
+                    return None;
+                }
+                let text = std::fs::read_to_string(&path)
+                    .unwrap_or_else(|unread| panic!("{}: {unread}", path.display()));
+                let schema: Value = serde_json::from_str(&text)
+                    .unwrap_or_else(|refused| panic!("{}: {refused}", path.display()));
+                (schema["$id"] == id).then_some(path)
+            })
+        }
+        let specs = Path::new(env!("CARGO_MANIFEST_DIR")).join("specs");
+        stating(&specs, id).unwrap_or_else(|| panic!("{id} is the $id of no schema"))
     }
 
     /// client/refresh.json's `value` owns what each query's cache holds: the
@@ -622,7 +644,6 @@ mod tests {
     fn each_querys_cache_holds_what_its_value_in_the_refresh_table_names() {
         let table: Value = serde_json::from_str(include_str!("../../specs/client/refresh.json"))
             .expect("the refresh table is JSON");
-        let within = Path::new(env!("CARGO_MANIFEST_DIR")).join("specs/client");
         let rows = table["queries"]
             .as_array()
             .expect("the refresh table has queries");
@@ -635,7 +656,7 @@ mod tests {
 
         let mut wrong = Vec::new();
         for (row, query) in rows.iter().zip(CacheQuery::ALL) {
-            let value = named_by(&row["value"], &within);
+            let value = named_by(&row["value"]);
             let cached = value_of(*query);
             if cached != value {
                 wrong.push(format!(

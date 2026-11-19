@@ -29,9 +29,53 @@ let found ~shape name =
   | None ->
       Error [ refusal name "is no client type, and a Haskell writer reads it" ]
 
-(* A client type as the haskell-sdk group models one: words, or an object's
-   members, each a scalar or another type's schema. *)
-let adapter name =
+(* A union as one record, as the Haskell SDK holds one: every branch's
+   members but its tag, each required where every branch requires it, then
+   the tag, typed by the type of words [enum] names its branches by. A member two
+   branches hold differently is refused. *)
+let record_of_union name ~enum ~tag branches =
+  let all = List.concat_map snd branches in
+  let names =
+    List.fold_left
+      (fun names m ->
+        if List.mem m.name names then names else names @ [ m.name ])
+      [] all
+  in
+  Spec.all
+    (List.map
+       (fun n ->
+         match List.filter (fun m -> m.name = n) all with
+         | [] -> assert false
+         | first :: _ as stated ->
+             if List.exists (fun m -> m.held <> first.held) stated then
+               Error
+                 [ refusal name (n ^ " is held differently by two branches") ]
+             else
+               Ok
+                 {
+                   first with
+                   required =
+                     List.for_all
+                       (fun (_, members) ->
+                         List.exists (fun m -> m.name = n && m.required) members)
+                       branches;
+                 })
+       names)
+  |> Result.map (fun members ->
+      members
+      @ [
+          {
+            name = tag;
+            held = Named { name = enum; union = false };
+            required = true;
+          };
+        ])
+
+(* A client type as the haskell-sdk group models one: words, an object's
+   members, each a scalar or another type's schema, or a union, as one record
+   ([record_of_union]) whose tag is typed by the type [words_of] names those
+   words by. *)
+let rec adapter ~words_of name =
   let schema (s : Schema.schema) = Schema.Schema { s with title = Some name } in
   function
   | Words words ->
@@ -81,26 +125,54 @@ let adapter name =
                     (fun m -> if m.required then Some m.name else None)
                     members);
            })
-  | Union _ -> Error [ refusal name "is a union, which an adapter is not" ]
+  | Union { tag; branches } -> (
+      match words_of (List.map fst branches) with
+      | Some enum ->
+          let* members = record_of_union name ~enum ~tag branches in
+          adapter ~words_of name (Fields members)
+      | None ->
+          Error
+            [
+              refusal name
+                "is a union whose tags are the words of no type the Haskell \
+                 SDK models";
+            ])
 
-(* The client types the Haskell SDK models, each by its name. *)
+(* The client types the Haskell SDK models, each by its name. A union's tag
+   is typed by the one of them whose words are its tags. *)
 let adapters ~shape =
+  let names =
+    [
+      "QuotedText";
+      "TextSpan";
+      "ReconciledSpan";
+      "AnchorMethod";
+      "MatchQuality";
+      "PdfCoordinate";
+      "IssuedTokens";
+      "DeviceCode";
+      "BeginAuthorizationOptions";
+    ]
+  in
+  let words_of tags =
+    match
+      List.filter
+        (fun n ->
+          match shape n with
+          | Some (Words words) ->
+              List.sort compare words = List.sort compare tags
+          | _ -> false)
+        names
+    with
+    | [ enum ] -> Some enum
+    | _ -> None
+  in
   Spec.all
     (List.map
        (fun name ->
          let* s = found ~shape name in
-         Result.map (fun a -> (name, a)) (adapter name s))
-       [
-         "QuotedText";
-         "TextSpan";
-         "ReconciledSpan";
-         "AnchorMethod";
-         "MatchQuality";
-         "PdfCoordinate";
-         "IssuedTokens";
-         "DeviceCode";
-         "BeginAuthorizationOptions";
-       ])
+         Result.map (fun a -> (name, a)) (adapter ~words_of name s))
+       names)
 
 let scalar name : Schema.type_name -> (H.type_, Decode.error list) result =
   function
