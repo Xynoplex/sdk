@@ -21,6 +21,7 @@ import {
   SIGN_IN_SCOPE,
   SignInError,
   baseUrl,
+  faultOf,
   isObject,
   isString,
   jsonOf,
@@ -292,6 +293,9 @@ export async function completeAuthorization(
   };
 }
 
+const isHttpEndpoint = (value: unknown): value is HttpEndpoint =>
+  faultOf('HttpEndpoint', value) === undefined;
+
 function parsePending(raw: string): PendingAuthorization | null {
   let value: unknown;
   try {
@@ -312,15 +316,7 @@ function parsePending(raw: string): PendingAuthorization | null {
   } = value;
   if (!isString(state) || !isString(verifier) || !isString(redirectUri))
     return null;
-  if (
-    !isObject(target) ||
-    target['kind'] !== 'http' ||
-    !isString(target['host']) ||
-    typeof target['port'] !== 'number' ||
-    (target['protocol'] !== 'http' && target['protocol'] !== 'https')
-  ) {
-    return null;
-  }
+  if (!isHttpEndpoint(target)) return null;
   if (
     !isObject(issuer) ||
     !isString(issuer['issuer']) ||
@@ -335,9 +331,9 @@ function parsePending(raw: string): PendingAuthorization | null {
     redirectUri,
     target: {
       kind: 'http',
-      host: target['host'],
-      port: target['port'],
-      protocol: target['protocol'],
+      host: target.host,
+      port: target.port,
+      protocol: target.protocol,
     },
     issuer: {
       issuer: issuer['issuer'],

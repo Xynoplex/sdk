@@ -29,38 +29,15 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import { watched, type StateUnit, type Watched } from '@xynolog/core';
-
-/**
- * Why a session ended: its issuer refused to renew its token (`expired`), or
- * the gateway refused a token its issuer had just issued (`refused`). The
- * vocabulary is protocol/specs/src/session/cases.json's `told`.
- */
-export type SessionEndReason = 'expired' | 'refused';
-
-/** A session ended, and why. */
-export interface SessionEnded {
-  reason: SessionEndReason;
-}
-
-/**
- * A request was refused for lack of permission. `detail` is the refusal's own
- * message, untranslated; null when there is none.
- */
-export interface PermissionDenied {
-  detail: string | null;
-}
-
-/**
- * What the registry entry claimed, and what answered.
- *
- * Both dids, because neither alone is actionable: the user has to recognise
- * which KB they registered and which one answers.
- */
-export interface KbIdentityConflict {
-  expectedDid: string;
-  observedDid: string;
-}
+import {
+  watched,
+  type KbIdentityConflict,
+  type PermissionDenied,
+  type SessionEnded,
+  type SessionEndReason,
+  type StateUnit,
+  type Watched,
+} from '@xynolog/core';
 
 /**
  * Each signal is one value: null while nothing is raised, the notice while

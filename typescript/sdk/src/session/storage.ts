@@ -18,6 +18,7 @@ import {
   MIN_REFRESH_DELAY_MS,
   PERSISTED_QUERIES,
   REFRESH_BEFORE_EXP_MS,
+  faultOf,
   isObject,
   isString,
   uuidV4,
@@ -28,6 +29,7 @@ import type {
   KbRead,
   KnowledgeBase,
   PersistedQuery,
+  StoredSession,
 } from '@xynolog/core';
 import type { SessionStorage } from './session-storage';
 import type { SignInKept } from './sign-in-kept';
@@ -132,26 +134,6 @@ function decodeBase64Url(segment: string): string {
   const binary = atob(padded);
   const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
   return new TextDecoder().decode(bytes);
-}
-
-/**
- * The shape persisted per KB: the tokens an issuer issued, the client they
- * were issued to, and the issuer endpoints a renewal and a sign-out need —
- * discovered once at sign-in, so no session re-asks.
- */
-export interface StoredSession {
-  access: string;
-  refresh: string;
-  clientId: string;
-  tokenEndpoint: string;
-  revocationEndpoint?: string;
-  /**
-   * Who the gateway said the sign-in's person is, as {@link personKey} makes
-   * it: what their kept caches and stream position are keyed by. Absent until
-   * the gateway names the person; a renewal keeps it, a new sign-in starts
-   * without it.
-   */
-  personKey?: string;
 }
 
 export function sessionKey(kbId: string): string {
@@ -392,35 +374,8 @@ export function isJwtExpired(token: string): boolean {
 
 // ---------- KB list storage ----------
 
-function isKnowledgeBase(entry: unknown): entry is KnowledgeBase {
-  if (!entry || typeof entry !== 'object') return false;
-  const e = entry as Record<string, unknown>;
-  if (typeof e.id !== 'string' || typeof e.label !== 'string') {
-    return false;
-  }
-  // `did` is required: a knowledge base declares its identity or does not
-  // run. An entry stored without one would, without this check, load and
-  // violate the type at runtime — the identity join would then compare
-  // against `undefined` and silently never match, which is the failure mode
-  // the rule exists to end. The storage format has no back-compat layer, so
-  // such entries drop and the user re-adds; the cost is a one-time list
-  // clear in exchange for every loaded KB actually having the identity its
-  // type promises.
-  if (typeof e.did !== 'string') return false;
-  const ep = e.endpoint as Record<string, unknown> | undefined;
-  if (!ep || typeof ep !== 'object') return false;
-  if (ep.kind === 'http') {
-    return (
-      typeof ep.host === 'string' &&
-      typeof ep.port === 'number' &&
-      (ep.protocol === 'http' || ep.protocol === 'https')
-    );
-  }
-  if (ep.kind === 'local') {
-    return typeof ep.kbId === 'string';
-  }
-  return false;
-}
+const isKnowledgeBase = (entry: unknown): entry is KnowledgeBase =>
+  faultOf('KnowledgeBase', entry) === undefined;
 
 /**
  * Load the persisted KB list. Entries that don't conform to the
@@ -439,26 +394,22 @@ export function loadKnowledgeBases(storage: SessionStorage): KnowledgeBase[] {
     // carry the extra straight back out. `email` is such a field — a copy of
     // whoever last signed in, which would surface under a KB card as the
     // account someone is about to sign in AS.
-    return entries.filter(isKnowledgeBase).map((e) => {
-      const lastRead = kbReadOf(e.lastRead);
-      return {
-        id: e.id,
-        label: e.label,
-        did: e.did,
-        endpoint: e.endpoint,
-        ...(lastRead ? { lastRead } : {}),
-      };
-    });
+    return entries.filter(isKnowledgeBase).map((e) => ({
+      id: e.id,
+      label: e.label,
+      did: e.did,
+      endpoint: e.endpoint,
+      ...(e.lastRead ? { lastRead: kbReadOf(e.lastRead) } : {}),
+    }));
   } catch {
     return [];
   }
 }
 
-function kbReadOf(value: unknown): KbRead | undefined {
-  if (!isObject(value) || !isString(value['at'])) return undefined;
+function kbReadOf(read: KbRead): KbRead {
   return {
-    at: value['at'],
-    ...(isString(value['gitBranch']) ? { gitBranch: value['gitBranch'] } : {}),
+    at: read.at,
+    ...(read.gitBranch !== undefined ? { gitBranch: read.gitBranch } : {}),
   };
 }
 
@@ -471,7 +422,7 @@ export function saveKnowledgeBases(
 
 // ---------- Public pure helpers ----------
 
-export function defaultProtocol(host: string): 'http' | 'https' {
+export function defaultProtocol(host: string): HttpEndpoint['protocol'] {
   return host === 'localhost' || host === '127.0.0.1' ? 'http' : 'https';
 }
 

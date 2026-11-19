@@ -7,7 +7,8 @@ open Fixture
 let written schemas root =
   let definitions = definitions schemas in
   Typescript_syntax.type_ ~depth:0
-    (Typescript_types.type_of (definitions.schema root))
+    (Typescript_types.type_of ~named:Typescript_syntax.schema
+       (definitions.schema root))
 
 let one json = written [ ("S", json); ("A", {|{"type": "string"}|}) ] "S"
 let equal expected actual = Alcotest.(check string) "written" expected actual
@@ -22,6 +23,10 @@ let cases =
         equal "components['schemas']['A'] & (string | boolean)"
           (one
              {|{"allOf": [{"$ref": "A.json"}, {"anyOf": [{"type": "string"}, {"type": "boolean"}]}]}|}));
+    case "an allOf held to values of its part is the part and those values"
+      (fun () ->
+        equal "components['schemas']['A'] & 'x'"
+          (one {|{"allOf": [{"$ref": "A.json"}], "enum": ["x"]}|}));
     case "a nullable reference admits null after it" (fun () ->
         equal "components['schemas']['A'] | null"
           (one {|{"allOf": [{"$ref": "A.json"}], "nullable": true}|}));

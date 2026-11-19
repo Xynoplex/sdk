@@ -74,14 +74,14 @@ import {
   kbGatewayUrl,
   parseJwtExpiry,
   refreshDelayMs,
-  type StoredSession,
 } from './storage';
+import type { StoredSession } from '@xynolog/core';
 import { XynologSessionError } from './errors';
 import type { XynologSessionErrorCode } from '@xynolog/core';
 import type { SignInKept } from './sign-in-kept';
 import type { SessionStorage } from './session-storage';
 import { personKeeping } from '../cache-persister';
-import type { SessionEndReason } from './session-signals';
+import type { SessionEndReason } from '@xynolog/core';
 import {
   SCRIPT_CLIENT_ID,
   renewKept,

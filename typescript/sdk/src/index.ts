@@ -121,7 +121,7 @@ export type {
   UserId,
   // Verb / shape types
   Annotation,
-  BodyItem,
+  AnnotationBody,
   BodyOperation,
   EntityType,
   EventMap,
@@ -237,8 +237,6 @@ export {
 export {
   XynologBrowser,
   type XynologBrowserConfig,
-  type SignInOutcome,
-  type KbReadVerdict,
 } from './session/xynolog-browser';
 export { SignInError } from '@xynolog/core';
 export {
@@ -258,7 +256,6 @@ export {
 } from './session/oauth';
 export {
   IdentityUnverifiableError,
-  type ConnectionIdentity,
   describeConnection,
 } from './session/connect';
 export type {
@@ -269,9 +266,6 @@ export { createHttpSessionFactory } from './session/http-session-factory';
 export {
   createSessionSignals,
   type SessionSignals,
-  type SessionEndReason,
-  type SessionEnded,
-  type PermissionDenied,
 } from './session/session-signals';
 export { XynologSessionError } from './session/errors';
 export { getBrowser, type GetBrowserOptions } from './session/registry';
@@ -289,7 +283,19 @@ export type {
   HttpEndpoint,
   LocalEndpoint,
 } from '@xynolog/core';
-export { type KbSessionStatus, httpKb } from './session/knowledge-base';
+// What a registry hands its caller, what its signals say, and what is kept of
+// a sign-in: records Protocol states in its tables, from core.
+export type {
+  ConnectionIdentity,
+  SignInOutcome,
+  KbReadVerdict,
+  KbSessionStatus,
+  SessionEndReason,
+  SessionEnded,
+  PermissionDenied,
+  StoredSession,
+} from '@xynolog/core';
+export { httpKb } from './session/knowledge-base';
 export { type OpenResource } from './session/open-resource';
 export {
   defaultProtocol,
@@ -307,7 +313,6 @@ export {
   // The key a person's kept caches are held under: what a client built by
   // hand (the conformance driver) keeps them for.
   personKey,
-  type StoredSession,
 } from './session/storage';
 // Where a session's sign-in is kept: a registry's storage (`keptIn`), memory,
 // or an entry of the sign-ins `xynolog login` keeps, over the files a caller

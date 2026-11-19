@@ -59,10 +59,9 @@ import {
 } from '../state/lib/search-pipeline';
 import {
   createSessionSignals,
-  type KbIdentityConflict,
-  type SessionEndReason,
   type SessionSignals,
 } from '../session/session-signals';
+import type { KbIdentityConflict, SessionEndReason } from '@xynolog/core';
 
 /** How many rounds a settle lets pass: enough for what any case sets going to run to its end, the clock held still. */
 const SETTLE_TURNS = 200;

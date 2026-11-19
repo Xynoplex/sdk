@@ -1,6 +1,7 @@
 // ⚠ GENERATED FILE — do not edit.
 //
 // Authority:   the component schemas of protocol/specs/src/openapi.json
+//              the records Protocol states in its tables (codegen/lib/table_records.ml)
 //              protocol/specs/src/identifiers/kinds.json, for the brands
 // Regenerate:  make generate  (codegen/lib/typescript_types/typescript_types.ml)
 
@@ -5465,4 +5466,187 @@ export interface components {
       resourceId: components['schemas']['ResourceId'];
     };
   };
+}
+
+/**
+ * The records Protocol states in its tables, which no wire message carries, and
+ * what only they reach.
+ */
+export interface records {
+  /**
+   * Who the knowledge base at an address says it is, asked with a token just
+   * issued, before any entry is made for it.
+   */
+  ConnectionIdentity: {
+    /** The did it reports for itself. */
+    did: components['schemas']['UserId'];
+    /** What it says of itself. */
+    description: components['schemas']['KbDescription'];
+  };
+  /**
+   * What a person believed they were signing in to: the did and the name of the
+   * row they clicked, or of the entry they signed in to again.
+   */
+  Expected: {
+    /** The did they believed it has. */
+    did: string;
+    /** The name they believed it has. Absent when they had none. */
+    name?: string;
+  };
+  /**
+   * A different knowledge base answers at a registered address. Both dids,
+   * because neither alone says what to do: a person has to recognise which
+   * knowledge base they registered and which one answers.
+   */
+  KbIdentityConflict: {
+    /** The did the entry records. */
+    expectedDid: string;
+    /** The did the knowledge base that answered reported. */
+    observedDid: string;
+  };
+  /** What reading the active knowledge base against its entry concluded. */
+  KbReadKind: 'recorded' | 'conflict' | 'no-verdict';
+  /**
+   * What a knowledge base said when it was asked to describe itself, read
+   * against the entry it was asked as.
+   */
+  KbReadVerdict:
+    | {
+        kind: records['KbReadKind'] & 'recorded';
+      }
+    | {
+        kind: records['KbReadKind'] & 'conflict';
+        /** The did the knowledge base that answered reported. */
+        observedDid: string;
+        /** The name the knowledge base that answered gave itself. */
+        observedName: string;
+      }
+    | {
+        kind: records['KbReadKind'] & 'no-verdict';
+      };
+  /**
+   * What the credential stored for a knowledge base says, read without asking
+   * anyone: `authenticated`, a token is stored and has not expired; `expired`,
+   * a token is stored and has expired; `signed-out`, nothing is stored.
+   */
+  KbSessionStatus: 'authenticated' | 'expired' | 'signed-out';
+  /** A request was refused for lack of permission. */
+  PermissionDenied: {
+    /** The refusal's own message, untranslated; null when it gave none. */
+    detail: string | null;
+  };
+  /**
+   * Why a session ended: `expired`, the issuer refused to renew its token;
+   * `refused`, the gateway refused a token its issuer had just issued.
+   */
+  SessionEndReason: 'expired' | 'refused';
+  /** A session ended, and why. */
+  SessionEnded: {
+    /** Why it ended. */
+    reason: records['SessionEndReason'];
+  };
+  /**
+   * The entry a sign-in landed on, and what the person believed, so a host can
+   * set the two against each other and say when they differ. The sign-in stands
+   * either way: the knowledge base that answered is the one reached.
+   */
+  SignInOutcome: {
+    /** The entry the sign-in made or signed in to again. */
+    kb: components['schemas']['KnowledgeBase'];
+    /**
+     * What the person believed they were signing in to. Absent when they named
+     * nothing.
+     */
+    expected?: records['Expected'];
+  };
+  /**
+   * What a completed sign-in learned, as a registry is handed it to record:
+   * where it was, who the knowledge base there says it is, the tokens, and what
+   * the person believed they were signing in to.
+   */
+  SignedIn: {
+    /** Where the sign-in was. */
+    endpoint: components['schemas']['KbEndpoint'];
+    /** What the knowledge base said of itself, asked with the new token. */
+    description: components['schemas']['KbDescription'];
+    /** The tokens, as a registry keeps them. */
+    session: records['StoredSession'];
+    /**
+     * The registered knowledge base the person signed in to again. Absent when
+     * it is none.
+     */
+    kbId?: string;
+    /**
+     * The did of what the person believed they clicked. Absent when they named
+     * nothing.
+     */
+    expectedDid?: string;
+    /**
+     * The name of what the person believed they clicked. Absent when they named
+     * nothing.
+     */
+    expectedName?: string;
+  };
+  /**
+   * What is kept of a sign-in: the tokens an issuer issued, the client they
+   * were issued to, and the issuer's endpoints a renewal and a sign-out need,
+   * learned once at sign-in so no session asks again. TOKENS, never a password.
+   * A stored value that lacks a member it requires is no session.
+   */
+  StoredSession: {
+    /** The access token: short-lived, sent as a Bearer token. */
+    access: string;
+    /**
+     * The refresh token: what renews the access token at the issuer without
+     * another sign-in.
+     */
+    refresh: string;
+    /**
+     * The client the tokens were issued to, which a renewal and a revocation
+     * name.
+     */
+    clientId: string;
+    /** The issuer's token endpoint, where the refresh grant is made. */
+    tokenEndpoint: string;
+    /**
+     * The issuer's revocation endpoint (RFC 7009), where a sign-out tells it to
+     * forget the refresh token. Absent when the issuer has none.
+     */
+    revocationEndpoint?: string;
+    /**
+     * Who the gateway said the sign-in's person is, as the key their caches and
+     * stream position are kept under (`lastEventIdKeyPrefix`), never the did
+     * itself. Written once the gateway names the person, on the sign-in whose
+     * token it was asked about; a renewal keeps it, a new sign-in starts
+     * without it, and forgetting the sign-in, however it is forgotten, reads it
+     * first to delete what is kept under it. Absent for a sign-in whose gateway
+     * has not yet named its person.
+     */
+    personKey?: string;
+  };
+  /**
+   * What checking one open resource against its knowledge base concluded.
+   * `gone` is the only verdict that closes it, and it means the knowledge base
+   * said the resource does not exist, not that the check failed: a failed
+   * transport, a timeout and a peer that is down are each `unknown`, and an
+   * unknown resource stays open.
+   */
+  TabCheck:
+    | {
+        verdict: records['TabVerdict'] & 'gone';
+      }
+    | {
+        verdict: records['TabVerdict'] & 'ready';
+        /** The name the knowledge base gave the resource. */
+        name: string;
+        /**
+         * The media type of its primary representation. Absent when it said none.
+         */
+        mediaType?: string;
+      }
+    | {
+        verdict: records['TabVerdict'] & 'unknown';
+      };
+  /** What checking an open resource against its knowledge base concluded. */
+  TabVerdict: 'gone' | 'ready' | 'unknown';
 }
