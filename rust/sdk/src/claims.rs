@@ -66,11 +66,13 @@ use crate::timing::{HELD_JOB_STALL, HELD_JOB_STALL_CHECK, JOB_CLAIM_TIMEOUT, MAR
 use crate::transport::{ConnectionState, Envelope, Events, TraceCarrier, Transport};
 use crate::types::{
     Annotation, AnnotationId, BrowseAnnotationRequest, DurabilityEvidence, FailureClass,
-    JobCancelCommand, JobCheckpointCommand, JobClaimCommand, JobCompleteCommand, JobFailCommand,
-    JobFilter, JobId, JobMetadata, JobParams, JobProgress, JobReportProgressCommand, JobRunning,
-    JobStartCommand, JobType, MarkCommitCommand, MarkJobCompleteCommand, MarkJobResult, ResourceId,
-    UnitCursor, YieldJobCompleteCommand, YieldJobResult,
+    GatheredContext, GatheredContextFocus, JobCancelCommand, JobCheckpointCommand, JobClaimCommand,
+    JobCompleteCommand, JobFailCommand, JobFilter, JobId, JobMetadata, JobParams, JobProgress,
+    JobReportProgressCommand, JobRunning, JobStartCommand, JobType, MarkCommitCommand,
+    MarkJobCompleteCommand, MarkJobResult, ResourceId, UnitCursor, YieldJobCompleteCommand,
+    YieldJobResult,
 };
+use serde::Deserialize;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::future::Future;
@@ -1020,11 +1022,11 @@ fn anchor_of(job_type: JobType, params: &JobParams) -> Option<AnnotationId> {
     if job_type != JobType::Yield {
         return None;
     }
-    let focus = params.rest.get("context")?.get("focus")?;
-    if focus.get("kind")?.as_str()? != "annotation" {
-        return None;
+    let context = GatheredContext::deserialize(params.rest.get("context")?).ok()?;
+    match context.focus {
+        GatheredContextFocus::Annotation(focus) => Some(focus.annotation.id),
+        GatheredContextFocus::Resource(_) => None,
     }
-    focus.get("annotation")?.get("id")?.as_str()?.parse().ok()
 }
 
 /// Hold the job a claim was answered with, as its verb's, in the `trace`

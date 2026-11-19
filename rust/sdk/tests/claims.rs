@@ -95,6 +95,19 @@ fn annotated(id: &str) -> Value {
     })
 }
 
+/// A resource as the wire describes one.
+fn described(id: &str) -> Value {
+    json!({
+        "@context": "https://schema.org", "@id": id, "name": "A resource",
+        "representations": [{ "mediaType": "text/plain" }]
+    })
+}
+
+/// A context gathered for `focus`, as a yield job's params carry one.
+fn gathered(focus: Value) -> Value {
+    json!({ "focus": focus, "graph": { "nodes": [], "edges": [] }, "metadata": {} })
+}
+
 /// An annotation as a worker hands one to a commit.
 fn annotation(id: &str) -> Annotation {
     serde_json::from_value(annotated(id)).expect("an annotation")
@@ -917,13 +930,15 @@ async fn a_yield_job_focused_on_an_annotation_is_anchored_to_it_and_says_so() {
         "job-1",
         "yield",
         json!({ "maxRetries": 0 }),
-        json!({ "context": { "focus": { "kind": "annotation", "annotation": { "id": "ann-7" } } } }),
+        json!({ "context": gathered(json!({
+            "kind": "annotation", "annotation": annotated("ann-7"), "sourceResource": described("res-1")
+        })) }),
     ));
     w.offer(running(
         "job-2",
         "yield",
         json!({}),
-        json!({ "context": { "focus": { "kind": "resource" } } }),
+        json!({ "context": gathered(json!({ "kind": "resource", "resource": described("res-1") })) }),
     ));
     let claims = w.claims(everything());
     let job = held(&claims).await;
