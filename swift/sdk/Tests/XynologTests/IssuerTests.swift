@@ -148,7 +148,9 @@ private func form(_ data: Data) -> [String: String] {
     { path, headers, _ in
       calls.withLock { $0.append(path) }
       #expect(headers.first(name: "Authorization") == "Bearer token")
-      return (429, ["error": .string("refused"), "code": .string("refusal-rate")])
+      return (
+        429, ["error": .string("refused"), "code": .string(LimitRefusalCode.refusalRate.rawValue)]
+      )
     },
     run: { base, http in
       do {
