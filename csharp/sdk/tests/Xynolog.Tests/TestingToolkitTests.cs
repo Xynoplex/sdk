@@ -118,7 +118,8 @@ public sealed partial class TransportTests
     {
         var never = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var spec = new LivenessSpec(_ => new([Task.CompletedTask], [Task.CompletedTask]), TimeSpan.FromMilliseconds(5),
-            0, Liveness.FaultSchedules(3, new Random(3)));
+            0, 3)
+        { Random = new Random(3) };
         await Liveness.AssertLivenessAxiomsAsync(spec);
         var silent = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             Liveness.AssertLivenessAxiomsAsync(spec with { Setup = _ => new([never.Task], []) }));

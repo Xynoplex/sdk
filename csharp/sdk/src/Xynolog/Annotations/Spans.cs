@@ -1,12 +1,11 @@
 using System.Text;
+using Xynolog.Types;
 
 namespace Xynolog.Annotations;
 
 public sealed record QuotedText(string Exact, string? Prefix = null, string? Suffix = null);
 public sealed record TextSpan(int Start, int End, string Exact, string? Prefix = null, string? Suffix = null);
 public sealed record ReconciledSpan(TextSpan Span, AnchorMethod AnchorMethod, MatchQuality? MatchQuality = null);
-public enum MatchQuality { Normalized, CaseInsensitive, Fuzzy }
-public enum AnchorMethod { UniqueMatch, ContextRecovered, FirstOfMany, FuzzyMatch }
 
 internal sealed class ScalarText(Rune[] points)
 {

@@ -1,16 +1,21 @@
 namespace Xynolog.Testing;
 
-/// <summary>Outputs finish on a value or refusal. Settlements finish when awaited paths return or fail.</summary>
-public sealed record LivenessScenario(IReadOnlyList<Task> Outputs, IReadOnlyList<Task> Settlements,
-    IDisposable? End = null) : IDisposable
+/// <summary>Outputs finish on a value or refusal. Settlements finish when awaited paths return or fail. Disposing it
+/// disposes <see cref="End"/>, what ends the composition.</summary>
+public sealed partial record LivenessScenario : IDisposable
 {
+    public IDisposable? End { get; init; }
+
     public void Dispose() => End?.Dispose();
 }
 
-public sealed record LivenessSpec(Func<FaultyTransport, LivenessScenario> Setup, TimeSpan Timeout, int RetryBudget,
-    IReadOnlyList<IReadOnlyList<FaultAction>> Schedules, Respond? Respond = null, TimeProvider? TimeProvider = null);
-
-public enum DeliveryOp { Write, Transition }
+/// <summary>A spec's cases wait on <see cref="TimeProvider"/>, and its <see cref="LivenessSpec.Cases"/> schedules
+/// are drawn from <see cref="Random"/>, each the system's or a fixed seed's when it gives none.</summary>
+public sealed partial record LivenessSpec
+{
+    public TimeProvider? TimeProvider { get; init; }
+    public Random? Random { get; init; }
+}
 
 /// <summary>A connection model or real connection whose transitions can interleave with writes.</summary>
 public interface DeliverySubject : IDisposable
@@ -22,17 +27,20 @@ public interface DeliverySubject : IDisposable
 
 public static class Liveness
 {
-    public static FaultAction FaultActions(Random random) => random.Next(5) switch
+    /// <summary>The seed a spec's schedules are drawn from when it gives no Random, so a drawn run is the same run each
+    /// time.</summary>
+    private const int DrawnSeed = 7;
+
+    public static FaultAction FaultActions(Random random) => TestingKit.Faults[random.Next(TestingKit.Faults.Count)] switch
     {
-        0 => new FaultAction.Deliver(),
-        1 => new FaultAction.DropReply(),
-        2 => new FaultAction.Delay(TimeSpan.FromMilliseconds(random.Next(6))),
-        3 => new FaultAction.DuplicateReply(),
-        _ => new FaultAction.RejectEmit(),
+        FaultAction.Delay => new FaultAction.Delay(
+            TimeSpan.FromMilliseconds(random.Next(TestingKit.DelayMsMinimum, TestingKit.DelayMsMaximum + 1))),
+        var fault => fault,
     };
 
     public static IReadOnlyList<IReadOnlyList<FaultAction>> FaultSchedules(int count, Random random) =>
-        Enumerable.Range(0, count).Select(_ => (IReadOnlyList<FaultAction>)Enumerable.Range(0, random.Next(1, 9))
+        Enumerable.Range(0, count).Select(_ => (IReadOnlyList<FaultAction>)Enumerable
+            .Range(0, random.Next(TestingKit.ScheduleLengthMinimum, TestingKit.ScheduleLengthMaximum + 1))
             .Select(_ => FaultActions(random)).ToArray()).ToArray();
 
     /// <summary>Checks that awaited paths settle (L2) and every output says something (L1) within the derived bound.</summary>
@@ -41,12 +49,14 @@ public static class Liveness
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(spec.Timeout, TimeSpan.Zero);
         ArgumentOutOfRangeException.ThrowIfNegative(spec.RetryBudget);
         var clock = spec.TimeProvider ?? TimeProvider.System;
-        foreach (var schedule in spec.Schedules)
+        var schedules = spec.Schedules.Count > 0 ? spec.Schedules
+            : FaultSchedules(spec.Cases, spec.Random ?? new Random(DrawnSeed));
+        foreach (var schedule in schedules)
         {
             cancellation.ThrowIfCancellationRequested();
             var delays = schedule.OfType<FaultAction.Delay>().Sum(action => action.Duration.Ticks);
-            var bound = TimeSpan.FromTicks(checked((spec.Timeout.Ticks * (1L + spec.RetryBudget) + delays) * 4));
-            using var transport = new FaultyTransport(schedule, spec.Respond, clock);
+            var bound = TimeSpan.FromTicks(checked((spec.Timeout.Ticks * (1L + spec.RetryBudget) + delays) * TestingKit.Slack));
+            using var transport = new FaultyTransport(schedule, spec.MakeResponse, clock);
             using var scenario = spec.Setup(transport);
             await Task.Delay(bound, clock, cancellation).ConfigureAwait(Spawning.Captures);
             var under = $"under [{string.Join(", ", schedule)}] within {bound.TotalMilliseconds}ms";
@@ -56,14 +66,14 @@ public static class Liveness
             if (unsettled >= 0) throw new InvalidOperationException($"L2: settlement #{unsettled} remained pending {under}.");
 
             foreach (var requests in transport.RequestLog.Where(entry => entry.CorrelationId is not null)
-                         .GroupBy(entry => (entry.Operation, Payload: entry.Payload.GetRawText())))
+                         .GroupBy(entry => entry.RetryKey))
             {
                 var count = requests.Count();
                 if (count > 1L + spec.RetryBudget)
-                    throw new InvalidOperationException($"L2: '{requests.Key.Operation}' exceeded its retry budget with {count} sends {under}.");
+                    throw new InvalidOperationException($"L2: '{requests.First().Channel}' exceeded its retry budget with {count} sends {under}.");
                 if (requests.Last().Action is FaultAction.DropReply or FaultAction.RejectEmit &&
                     count <= spec.RetryBudget && outputs.Length > 0 && !outputs.Contains(true))
-                    throw new InvalidOperationException($"L2: '{requests.Key.Operation}' swallowed a failure {under}.");
+                    throw new InvalidOperationException($"L2: '{requests.First().Channel}' swallowed a failure {under}.");
             }
 
             var silent = Array.IndexOf(outputs, false);
@@ -77,7 +87,7 @@ public static class Liveness
         return Enumerable.Range(0, count).Select(_ =>
         {
             var steps = Enumerable.Range(0, 1 + random.Next(longest))
-                .Select(_ => random.Next(2) == 0 ? DeliveryOp.Write : DeliveryOp.Transition).ToArray();
+                .Select(_ => Enum.GetValues<DeliveryOp>()[random.Next(Enum.GetValues<DeliveryOp>().Length)]).ToArray();
             if (!steps.Contains(DeliveryOp.Write)) steps[random.Next(steps.Length)] = DeliveryOp.Write;
             return (IReadOnlyList<DeliveryOp>)steps;
         }).ToArray();
