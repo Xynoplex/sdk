@@ -8,7 +8,6 @@
 import type {
   Annotation,
   PersistedEventType,
-  StoredEventLike,
   TextQuoteSelector,
   components,
 } from '@xynolog/core';
@@ -72,9 +71,9 @@ function isTaggingBody(value: unknown): value is TaggingBody {
 
 /** The annotation a `mark:added` event carries, as its payload states it; null for any other event. */
 function addedAnnotation(
-  event: StoredEventLike,
+  event: components['schemas']['StoredEventResponse'],
 ): Record<string, unknown> | null {
-  if (event.type !== 'mark:added' || !isObject(event.payload)) return null;
+  if (event.type !== 'mark:added') return null;
   return isObject(event.payload.annotation) ? event.payload.annotation : null;
 }
 
@@ -86,7 +85,9 @@ function addedMotivation(payload: unknown): unknown {
 }
 
 /** The text an annotation quotes, read off the annotation a `mark:added` event carries. */
-function addedText(event: StoredEventLike): string {
+function addedText(
+  event: components['schemas']['StoredEventResponse'],
+): string {
   const target = addedAnnotation(event)?.target;
   return getExactText(
     isObject(target)
@@ -96,8 +97,10 @@ function addedText(event: StoredEventLike): string {
 }
 
 /** A string field of a payload, or nothing. */
-function stringField(payload: unknown, field: string): string | undefined {
-  if (!isObject(payload)) return undefined;
+function stringField(
+  payload: components['schemas']['StoredEventResponse']['payload'],
+  field: string,
+): string | undefined {
   const value = payload[field];
   return isString(value) ? value : undefined;
 }
@@ -278,9 +281,9 @@ function quoted(
  * `mark:added` event in `allEvents` that carried it.
  */
 export function getEventDisplayContent(
-  event: StoredEventLike,
+  event: components['schemas']['StoredEventResponse'],
   annotations: Annotation[],
-  allEvents: StoredEventLike[],
+  allEvents: components['schemas']['StoredEventResponse'][],
 ): { exact: string; isQuoted: boolean; isTag: boolean } | null {
   const type = event.type;
   if (!isPersistedEventType(type)) return null;
@@ -347,7 +350,9 @@ export function getEventDisplayContent(
  * of its tagging bodies. Any other annotation's tagging body states no
  * entity type (a tag's is its category), and any other event states none.
  */
-export function getEventEntityTypes(event: StoredEventLike): string[] {
+export function getEventEntityTypes(
+  event: components['schemas']['StoredEventResponse'],
+): string[] {
   const annotation = addedAnnotation(event);
   if (!annotation || annotation.motivation !== 'linking') return [];
   return getEntityTypes({
@@ -369,7 +374,7 @@ export interface ResourceCreationDetails {
  * Get resource creation details from event
  */
 export function getResourceCreationDetails(
-  event: StoredEventLike,
+  event: components['schemas']['StoredEventResponse'],
 ): ResourceCreationDetails | null {
   if (event.type === 'yield:created') {
     return { type: 'created' };

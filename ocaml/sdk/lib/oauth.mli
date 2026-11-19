@@ -3,7 +3,12 @@
 
 type request = { meth : string; url : string; form : (string * string) list }
 type http = request -> int * string
-type error = Invalid_response | Invalid_redirect | Rejected of string
+
+type error = { code : string; status : int option }
+(** Why an exchange gave nothing: [code] is a member of {!Error_codes.Sign_in},
+    and [status] the HTTP status the issuer answered with, [None] when there was
+    no answer to read. *)
+
 type script
 type browser
 type service
@@ -13,6 +18,13 @@ type 'grant tokens = private {
   refresh_token : string option;
   expires_in : int option;
 }
+
+type poll =
+  | Issued of script tokens
+  | Pending
+  | Slow_down
+      (** What one poll of a device grant brought: its tokens, or the issuer's
+          word to ask again, after a longer wait for [Slow_down]. *)
 
 type issuer
 type redirect
@@ -47,15 +59,18 @@ val finish_redirect :
 
 val begin_device : http -> issuer -> (device, error) result
 
-val poll_device : http -> issuer -> device -> (script tokens, error) result
+val poll_device : http -> issuer -> device -> (poll, error) result
 (** One poll. Wait at least [device.interval] seconds between polls and back off
-    on [Rejected "slow_down"]. *)
+    on [Slow_down]. *)
 
 val await_device :
   clock:Clock.t -> http -> issuer -> device -> (script tokens, error) result
 (** Poll using the caller's clock, starting the expiry window when called. *)
 
 val refresh_refused : error -> bool
+(** Whether a renewal failed because the issuer refused it: an answer the
+    refresh retry rule does not try again. No answer, and one the rule tries
+    again, is no refusal. *)
 
 val refresh_kept :
   http ->
@@ -79,7 +94,7 @@ val service_secret :
 
 type rsa_key
 
-val rsa_key_of_pem : string -> (rsa_key, error) result
+val rsa_key_of_pem : string -> rsa_key option
 (** Reads an unencrypted RSA PKCS#8 PEM key. *)
 
 val rsa_thumbprint : e:string -> n:string -> string
@@ -93,7 +108,9 @@ val service_key :
   key:rsa_key ->
   (service tokens, error) result
 (** [jti] must supply a fresh unique identifier on every invocation. The host
-    initializes Mirage's secure random generator for RSA blinding. *)
+    initializes Mirage's secure random generator for RSA blinding. Raises
+    [Invalid_argument] when [key] cannot sign an RS256 assertion, which is no
+    failure of the issuer's. *)
 
 val revoke_script :
   http ->

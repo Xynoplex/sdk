@@ -1,6 +1,6 @@
 type request = { meth : string; url : string; form : (string * string) list }
 type http = request -> int * string
-type error = Invalid_response | Invalid_redirect | Rejected of string
+type error = { code : string; status : int option }
 type script
 type browser
 type service
@@ -10,6 +10,8 @@ type 'grant tokens = {
   refresh_token : string option;
   expires_in : int option;
 }
+
+type poll = Issued of script tokens | Pending | Slow_down
 
 type issuer = {
   issuer : string;
@@ -52,13 +54,11 @@ let seconds key json =
   | Some (`Int value) when value > 0 -> Some value
   | _ -> None
 
-let required = function
-  | Some value -> Ok value
-  | None -> Error Invalid_response
+let failed ?status code = Error { code; status }
 
-let decode body =
-  try Ok (Yojson.Safe.from_string body)
-  with Yojson.Json_error _ -> Error Invalid_response
+let required ?status code = function
+  | Some value -> Ok value
+  | None -> failed ?status code
 
 let endpoint value =
   let uri = Uri.of_string value in
@@ -73,38 +73,33 @@ let endpoint value =
         Some value
     | _ -> None
 
-let exchange http request =
+(* The issuer's answer to [request]: its status, and its body when that is
+   JSON. *)
+let answer http request =
   let status, body = http request in
-  let* json = decode body in
-  if status >= 200 && status < 300 then Ok json
-  else
-    match string "error" json with
-    | Some code
-      when List.mem code
-             [
-               "authorization_pending";
-               "slow_down";
-               "access_denied";
-               "expired_token";
-               "invalid_grant";
-               "invalid_client";
-             ] ->
-        Error (Rejected code)
-    | _ -> Error (Rejected Error_codes.Sign_in.exchange)
+  ( status,
+    try Some (Yojson.Safe.from_string body) with Yojson.Json_error _ -> None )
+
+(* The body of an answer that grants [request]. Any other answer fails as
+   [code], with its status. *)
+let exchange http ~code request =
+  match answer http request with
+  | status, Some json when status >= 200 && status < 300 -> Ok (status, json)
+  | status, _ -> failed ~status code
 
 let discover http ~issuer =
-  let* issuer = required (endpoint issuer) in
+  let code = Error_codes.Sign_in.discovery in
+  let* issuer = required code (endpoint issuer) in
   let* () =
-    if Uri.query (Uri.of_string issuer) = [] then Ok ()
-    else Error Invalid_response
+    if Uri.query (Uri.of_string issuer) = [] then Ok () else failed code
   in
   let base =
     if String.ends_with ~suffix:"/" issuer then
       String.sub issuer 0 (String.length issuer - 1)
     else issuer
   in
-  let* json =
-    exchange http
+  let* status, json =
+    exchange http ~code
       {
         meth = "GET";
         url = base ^ "/.well-known/openid-configuration";
@@ -112,10 +107,10 @@ let discover http ~issuer =
       }
   in
   let get name = Option.bind (string name json) endpoint in
-  if string "issuer" json <> Some issuer then Error Invalid_response
+  if string "issuer" json <> Some issuer then failed ~status code
   else
-    let* authorization = required (get "authorization_endpoint") in
-    let* token = required (get "token_endpoint") in
+    let* authorization = required ~status code (get "authorization_endpoint") in
+    let* token = required ~status code (get "token_endpoint") in
     Ok
       {
         issuer;
@@ -162,16 +157,23 @@ let begin_redirect issuer ~random ~redirect_uri =
   in
   { location; redirect_uri; state; verifier; token_url = issuer.token }
 
-let grant http ~token_endpoint form =
-  let* url = required (endpoint token_endpoint) in
-  let* json = exchange http { meth = "POST"; url; form } in
-  let* access_token = required (string "access_token" json) in
+(* The tokens an answer of [status] grants. *)
+let issued ~status json =
+  let* access_token =
+    required ~status Error_codes.Sign_in.exchange (string "access_token" json)
+  in
   Ok
     {
       access_token;
       refresh_token = string "refresh_token" json;
       expires_in = seconds "expires_in" json;
     }
+
+let grant http ~token_endpoint form =
+  let code = Error_codes.Sign_in.exchange in
+  let* url = required code (endpoint token_endpoint) in
+  let* status, json = exchange http ~code { meth = "POST"; url; form } in
+  issued ~status json
 
 let finish_redirect http issuer redirect ~callback =
   let callback = Uri.of_string callback in
@@ -185,25 +187,33 @@ let finish_redirect http issuer redirect ~callback =
     | _ -> None
   in
   let address uri = Uri.with_query (Uri.with_fragment uri None) [] in
-  match (param "state", param "code") with
-  | Some state, Some code
-    when state = redirect.state && code <> ""
-         && issuer.token = redirect.token_url
-         && address callback = address (Uri.of_string redirect.redirect_uri) ->
-      grant http ~token_endpoint:issuer.token
-        [
-          ("grant_type", "authorization_code");
-          ("client_id", Oauth_facts.browser);
-          ("code", code);
-          ("redirect_uri", redirect.redirect_uri);
-          ("code_verifier", redirect.verifier);
-        ]
-  | _ -> Error Invalid_redirect
+  match List.assoc_opt "error" (Uri.query callback) with
+  | Some ("access_denied" :: _) -> failed Error_codes.Sign_in.denied
+  | Some _ -> failed Error_codes.Sign_in.exchange
+  | None -> (
+      if
+        param "state" <> Some redirect.state
+        || issuer.token <> redirect.token_url
+        || address callback <> address (Uri.of_string redirect.redirect_uri)
+      then failed Error_codes.Sign_in.state
+      else
+        match param "code" with
+        | Some code when code <> "" ->
+            grant http ~token_endpoint:issuer.token
+              [
+                ("grant_type", "authorization_code");
+                ("client_id", Oauth_facts.browser);
+                ("code", code);
+                ("redirect_uri", redirect.redirect_uri);
+                ("code_verifier", redirect.verifier);
+              ]
+        | _ -> failed Error_codes.Sign_in.exchange)
 
 let begin_device http issuer =
-  let* url = required issuer.device in
-  let* json =
-    exchange http
+  let code = Error_codes.Sign_in.exchange in
+  let* url = required Error_codes.Sign_in.discovery issuer.device in
+  let* status, json =
+    exchange http ~code
       {
         meth = "POST";
         url;
@@ -211,6 +221,7 @@ let begin_device http issuer =
           [ ("client_id", Oauth_facts.script); ("scope", Oauth_facts.scope) ];
       }
   in
+  let required value = required ~status code value in
   let* device_code = required (string "device_code" json) in
   let* user_code = required (string "user_code" json) in
   let* verification_uri =
@@ -232,12 +243,24 @@ let begin_device http issuer =
     }
 
 let poll_device http issuer device =
-  grant http ~token_endpoint:issuer.token
+  let* url = required Error_codes.Sign_in.exchange (endpoint issuer.token) in
+  let form =
     [
       ("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
       ("client_id", Oauth_facts.script);
       ("device_code", device.device_code);
     ]
+  in
+  match answer http { meth = "POST"; url; form } with
+  | status, Some json when status >= 200 && status < 300 ->
+      Result.map (fun tokens -> Issued tokens) (issued ~status json)
+  | status, json -> (
+      match Option.bind json (string "error") with
+      | Some "authorization_pending" -> Ok Pending
+      | Some "slow_down" -> Ok Slow_down
+      | Some "access_denied" -> failed ~status Error_codes.Sign_in.denied
+      | Some "expired_token" -> failed ~status Error_codes.Sign_in.expired
+      | _ -> failed ~status Error_codes.Sign_in.exchange)
 
 let await_device ~clock http issuer device =
   let stamp () = Clock.monotonic_now clock in
@@ -252,46 +275,31 @@ let await_device ~clock http issuer device =
     Clock.sleep_until clock
       (if Mtime.compare due expires < 0 then due else expires);
     if Mtime.compare (stamp ()) expires >= 0 then
-      Error (Rejected "expired_token")
+      failed Error_codes.Sign_in.expired
     else
       match poll_device http issuer device with
-      | Error (Rejected "authorization_pending") -> wait interval
-      | Error (Rejected "slow_down") ->
+      | Ok Pending -> wait interval
+      | Ok Slow_down ->
           let step = Client_timing.device_slow_down_ms in
           wait (min (max_int - step) interval + step)
-      | result -> result
+      | Ok (Issued tokens) -> Ok tokens
+      | Error error -> Error error
   in
   wait (max Client_timing.device_poll_floor_ms (milliseconds device.interval))
 
-let refresh_refused = function
-  | Rejected
-      ( "invalid_grant" | "invalid_client" | "access_denied" | "expired_token"
-      | "oauth.exchange-refused" ) ->
-      true
-  | _ -> false
+let refresh_refused { code; status } =
+  code = Error_codes.Sign_in.exchange
+  && Option.fold ~none:false
+       ~some:(fun status -> not (Retry.retryable Retry.Refresh ~status ()))
+       status
 
 let refresh_kept http ~token_endpoint ~client_id ~refresh_token =
-  let status = ref None in
-  let observed request =
-    let code, body = http request in
-    status := Some code;
-    (code, body)
-  in
-  let issued =
-    grant observed ~token_endpoint
-      [
-        ("grant_type", "refresh_token");
-        ("client_id", client_id);
-        ("refresh_token", refresh_token);
-      ]
-  in
-  match (issued, !status) with
-  | Error error, Some code when code < 200 || code >= 300 ->
-      if Retry.retryable Retry.Refresh ~status:code () then
-        Error (Rejected "oauth.exchange-unavailable")
-      else if refresh_refused error then issued
-      else Error (Rejected "oauth.exchange-refused")
-  | _ -> issued
+  grant http ~token_endpoint
+    [
+      ("grant_type", "refresh_token");
+      ("client_id", client_id);
+      ("refresh_token", refresh_token);
+    ]
 
 let refresh_script http ~token_endpoint ~refresh_token =
   refresh_kept http ~token_endpoint ~client_id:Oauth_facts.script ~refresh_token
@@ -312,11 +320,11 @@ let rsa_key_of_pem pem =
     not
       (String.starts_with ~prefix:"-----BEGIN PRIVATE KEY-----" trimmed
       && String.ends_with ~suffix:"-----END PRIVATE KEY-----" trimmed)
-  then Error Invalid_response
+  then None
   else
     match X509.Private_key.decode_pem trimmed with
-    | Ok (`RSA _ as key) -> Ok key
-    | _ -> Error Invalid_response
+    | Ok (`RSA _ as key) -> Some key
+    | _ -> None
 
 let unsigned z =
   let little = Z.to_bits z in
@@ -357,7 +365,7 @@ let service_key http issuer ~clock ~jti ~client_id ~key =
       match
         X509.Private_key.sign `SHA256 ~scheme:`RSA_PKCS1 key (`Message message)
       with
-      | Error _ -> Error Invalid_response
+      | Error (`Msg why) -> invalid_arg ("The RSA key cannot sign: " ^ why)
       | Ok signature ->
           grant http ~token_endpoint:issuer.token
             [
@@ -365,10 +373,12 @@ let service_key http issuer ~clock ~jti ~client_id ~key =
               ("client_assertion_type", Assertion_facts.assertion_type);
               ("client_assertion", message ^ "." ^ encoded signature);
             ])
-  | _ -> Error Invalid_response
+  | _ -> invalid_arg "A key rsa_key_of_pem read is not an RSA key"
 
 let revoke_script http ~revocation_endpoint ~refresh_token =
-  let* url = required (endpoint revocation_endpoint) in
+  let* url =
+    required Error_codes.Sign_in.exchange (endpoint revocation_endpoint)
+  in
   let status, _ =
     http
       {
@@ -382,7 +392,7 @@ let revoke_script http ~revocation_endpoint ~refresh_token =
           ];
       }
   in
-  if status = 200 then Ok () else Error (Rejected Error_codes.Sign_in.exchange)
+  if status = 200 then Ok () else failed ~status Error_codes.Sign_in.exchange
 
 let keep_redirect issuer redirect =
   let field key value = (key, `String value) in

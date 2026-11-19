@@ -134,7 +134,6 @@ export type {
 } from './payload-types';
 
 // Event utilities
-export type { StoredEventLike } from './event-utils';
 export { getAnnotationIdFromEvent } from './event-utils';
 
 // Event bus (RxJS-based, framework-agnostic)
