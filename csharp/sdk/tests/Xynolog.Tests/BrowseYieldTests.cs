@@ -263,7 +263,13 @@ public sealed partial class TransportTests
             var progress = new List<UploadProgress>();
             await foreach (var update in upload.WithCancellation(deadline.Token)) progress.Add(update);
             Assert.Throws<InvalidOperationException>(() => upload.GetAsyncEnumerator());
-            Assert.Equal([new UploadProgress(0, bytes.Length), new UploadProgress(bytes.Length, bytes.Length)], progress);
+            UploadProgress[] reported =
+            [
+                new UploadProgress.StartedCase(new UploadProgressStarted { TotalBytes = bytes.Length }),
+                new UploadProgress.ProgressCase(new UploadProgressProgress { BytesUploaded = bytes.Length, TotalBytes = bytes.Length }),
+                new UploadProgress.FinishedCase(new UploadProgressFinished { ResourceId = created }),
+            ];
+            Assert.Equal(reported, progress);
             Assert.Equal(created, (await upload).ResourceId);
         }
     }

@@ -3,10 +3,6 @@ using Xynolog.Types;
 
 namespace Xynolog.Annotations;
 
-public sealed record QuotedText(string Exact, string? Prefix = null, string? Suffix = null);
-public sealed record TextSpan(int Start, int End, string Exact, string? Prefix = null, string? Suffix = null);
-public sealed record ReconciledSpan(TextSpan Span, AnchorMethod AnchorMethod, MatchQuality? MatchQuality = null);
-
 internal sealed class ScalarText(Rune[] points)
 {
     internal ScalarText(string text) : this(text.EnumerateRunes().ToArray()) { }
@@ -56,16 +52,15 @@ public static partial class AnnotationTools
         var whole = new ScalarText(text);
         var exact = new ScalarText(quoted.Exact);
         var places = whole.Places(exact).Select(at => (Start: at, End: at + exact.Length)).ToArray();
-        if (places.Length == 1) return Reconciled(whole, places[0], AnchorMethod.UniqueMatch);
+        if (places.Length == 1) return UniqueMatch(Own(whole, places[0]));
         if (places.Length > 1)
         {
             var recovered = Hinted(whole, places, quoted);
-            return recovered.HasValue ? Reconciled(whole, recovered.Value, AnchorMethod.ContextRecovered) :
-                Reconciled(whole, places[0], AnchorMethod.FirstOfMany);
+            return recovered.HasValue ? ContextRecovered(Own(whole, recovered.Value)) : FirstOfMany(Own(whole, places[0]));
         }
         return ChangedMatch(whole, exact, quoted, Normalize, MatchQuality.Normalized)
             ?? ChangedMatch(whole, exact, quoted, Lower, MatchQuality.CaseInsensitive)
-            ?? (Nearest(whole, exact) is { } near ? Reconciled(whole, near, AnchorMethod.FuzzyMatch, MatchQuality.Fuzzy) : null);
+            ?? (Nearest(whole, exact) is { } near ? FuzzyMatch(Own(whole, near), MatchQuality.Fuzzy) : null);
     }
 
     private static ReconciledSpan? ChangedMatch(ScalarText whole, ScalarText exact, QuotedText quoted,
@@ -75,8 +70,7 @@ public static partial class AnnotationTools
         var wanted = change(exact).Text;
         var places = transformed.Text.Places(wanted)
             .Select(at => (Start: transformed.From[at], End: transformed.From[at + wanted.Length - 1] + 1)).ToArray();
-        return places.Length == 0 ? null :
-            Reconciled(whole, Hinted(whole, places, quoted) ?? places[0], AnchorMethod.FuzzyMatch, quality);
+        return places.Length == 0 ? null : FuzzyMatch(Own(whole, Hinted(whole, places, quoted) ?? places[0]), quality);
     }
 
     private static (int Start, int End)? Hinted(ScalarText text, (int Start, int End)[] places, QuotedText quote)
@@ -97,8 +91,7 @@ public static partial class AnnotationTools
         return null;
     }
 
-    private static ReconciledSpan Reconciled(ScalarText text, (int Start, int End) place, AnchorMethod method,
-        MatchQuality? quality = null)
+    private static TextSpan Own(ScalarText text, (int Start, int End) place)
     {
         var begin = Math.Max(0, place.Start - 64);
         var first = Math.Max(0, begin - 32);
@@ -106,11 +99,27 @@ public static partial class AnnotationTools
         var end = Math.Min(text.Length, place.End + 64);
         var last = Math.Min(text.Length, end + 32);
         while (end < last && !Boundary(text.Points[end])) end++;
-        var span = new TextSpan(place.Start, place.End, text.Slice(place.Start, place.End),
-            place.Start == 0 ? null : text.Slice(begin, place.Start),
-            place.End == text.Length ? null : text.Slice(place.End, end));
-        return new ReconciledSpan(span, method, quality);
+        return new TextSpan
+        {
+            Start = place.Start,
+            End = place.End,
+            Exact = text.Slice(place.Start, place.End),
+            Prefix = place.Start == 0 ? null : text.Slice(begin, place.Start),
+            Suffix = place.End == text.Length ? null : text.Slice(place.End, end),
+        };
     }
+
+    private static ReconciledSpan UniqueMatch(TextSpan span) =>
+        new ReconciledSpan.UniqueMatchCase(new ReconciledSpanUniqueMatch { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix });
+
+    private static ReconciledSpan ContextRecovered(TextSpan span) =>
+        new ReconciledSpan.ContextRecoveredCase(new ReconciledSpanContextRecovered { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix });
+
+    private static ReconciledSpan FirstOfMany(TextSpan span) =>
+        new ReconciledSpan.FirstOfManyCase(new ReconciledSpanFirstOfMany { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix });
+
+    private static ReconciledSpan FuzzyMatch(TextSpan span, MatchQuality quality) =>
+        new ReconciledSpan.FuzzyMatchCase(new ReconciledSpanFuzzyMatch { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix, MatchQuality = quality });
 
     private static bool Boundary(Rune point) => Rune.IsWhiteSpace(point) ||
         (point.IsAscii && ".,;:!?'\"()[]{}<>/\\".Contains((char)point.Value));

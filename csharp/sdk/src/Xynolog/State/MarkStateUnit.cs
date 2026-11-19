@@ -5,8 +5,6 @@ using Xynolog.Types;
 
 namespace Xynolog.State;
 
-public sealed record PendingAnnotation(AnnotationSelector Selector, Motivation Motivation);
-
 public sealed class MarkStateUnit : IStateUnit
 {
     private readonly XynologClient client;
@@ -86,7 +84,7 @@ public sealed class MarkStateUnit : IStateUnit
                 if (carried.Channel == BusChannels.MarkRequested.Name)
                 {
                     if (Bus.HeardOf<MarkRequestedEvent>(carried) is Heard<MarkRequestedEvent>.Delivered { Payload: var request } && request.Source == resourceId)
-                        PendingAnnotation.Set(new PendingAnnotation(request.Selector, request.Motivation));
+                        PendingAnnotation.Set(new PendingAnnotation { Selector = request.Selector, Motivation = request.Motivation });
                 }
                 else if (Bus.HeardOf<MarkSubmitEvent>(carried) is Heard<MarkSubmitEvent>.Delivered { Payload: var submission } && submission.Source == resourceId)
                 {

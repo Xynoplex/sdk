@@ -90,8 +90,8 @@ kept entry when a grant fails.
 ### Signing in with a device code
 
 `Issuer.SignInDeviceAsync(endpoint, kept, onCode)` discovers the issuer the gateway
-trusts and begins a device sign-in. The callback receives the user code and verification
-address for the application to display. Polling follows the issuer's interval and
+trusts and begins a device sign-in. The callback receives a `DeviceCode`: the user code and
+verification address for the application to display, and how many seconds the code is good for. Polling follows the issuer's interval and
 slow-down replies, expires on the supplied clock, and stops on cancellation or issuer
 disposal. A successful grant saves the access and refresh tokens in `kept`.
 Pass that same entry to `XynologSession.FromKeptAsync`.
@@ -341,8 +341,10 @@ public static class RunWorker
 
 Browse reads resource text, bytes, streams, graphs, anchored text, history, and
 knowledge base metadata. Dispose a representation stream when finished with it.
-`Yield.Resource` starts an upload immediately. Read its progress once and await
-the upload for the created resource. Dispose an upload to abandon its request.
+`Yield.Resource` starts an upload immediately. Read what it reports once, each an
+`UploadProgress`: its size before any bytes are sent, the bytes sent as they go, and
+the resource made once the knowledge base has answered. Await the upload for the
+created resource. Dispose an upload to abandon its request.
 `Yield.CreateFromTokenAsync` reads the source first and uploads the copy in a
 format that can be authored, using plain text for other formats.
 
@@ -365,9 +367,11 @@ or a caller-provided text reader and streams changes by address.
 
 `Xynolog.Annotations.AnnotationTools` reads annotation bodies and selectors,
 reconciles a quote against its source, and builds annotations from a whole resource,
-plain text, or PDF anchored text. Spans count Unicode code points. The builders
-derive the same ID when they are given the same resource, motivation, span, and body.
-They stamp `created` from the `TimeProvider` they are given.
+plain text, or PDF anchored text. Spans count Unicode code points. `Reconcile` gives a
+`ReconciledSpan`, one case for each way the quote was found, and only a fuzzy match names
+its `MatchQuality`. `OfSpan` takes that span as it is, or a `TextSpan` found another way.
+The builders derive the same ID when they are given the same resource, motivation, span,
+and body. They stamp `created` from the `TimeProvider` they are given.
 
 ## Testing a composition
 

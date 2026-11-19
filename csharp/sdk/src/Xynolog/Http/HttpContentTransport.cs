@@ -16,8 +16,6 @@ public sealed record BinaryStream(string ContentType, Stream Stream) : IDisposab
     public void Dispose() => Stream.Dispose();
 }
 
-public sealed record UploadProgress(long BytesUploaded, long TotalBytes);
-
 public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
 {
     private readonly CancellationTokenSource lifetime = new();
@@ -62,6 +60,7 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
         using var linked = Link(cancellation);
         cancellation = linked.Token;
         using var activity = SdkTelemetry.Start("content.put", new ActivityTagsCollection { { "content.format", request.Format }, { "content.size_bytes", request.File.LongLength } });
+        progress?.Report(new UploadProgress.StartedCase(new UploadProgressStarted { TotalBytes = request.File.LongLength }));
         using var response = await transport.ExchangeAsync(HttpMethod.Post, "/resources", () =>
         {
             var form = new MultipartFormDataContent();
@@ -76,7 +75,9 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
             form.Add(file, "file", request.Name);
             return form;
         }, upload: true, cancellation: cancellation).ConfigureAwait(Spawning.Captures);
-        return await transport.ReplyAsync<CreateResourceResponse>(response, "/resources", cancellation).ConfigureAwait(Spawning.Captures);
+        var created = await transport.ReplyAsync<CreateResourceResponse>(response, "/resources", cancellation).ConfigureAwait(Spawning.Captures);
+        progress?.Report(new UploadProgress.FinishedCase(new UploadProgressFinished { ResourceId = created.ResourceId }));
+        return created;
     }
 
     public async Task<BinaryContent> GetBinaryAsync(ResourceId resource, CancellationToken cancellation = default)
@@ -141,13 +142,12 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
         protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => SerializeToStreamAsync(stream, context, CancellationToken.None);
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context, CancellationToken cancellationToken)
         {
-            progress?.Report(new UploadProgress(0, bytes.LongLength));
             for (var offset = 0; offset < bytes.Length;)
             {
                 var count = Math.Min(65536, bytes.Length - offset);
                 await stream.WriteAsync(bytes.AsMemory(offset, count), cancellationToken).ConfigureAwait(Spawning.Captures);
                 offset += count;
-                progress?.Report(new UploadProgress(offset, bytes.LongLength));
+                progress?.Report(new UploadProgress.ProgressCase(new UploadProgressProgress { BytesUploaded = offset, TotalBytes = bytes.LongLength }));
             }
         }
     }
