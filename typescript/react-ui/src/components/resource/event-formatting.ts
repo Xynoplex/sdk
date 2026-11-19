@@ -123,6 +123,10 @@ export function formatEventType(
       return t('resourceCreated');
     case 'yield:cloned':
       return t('resourceCloned');
+    case 'yield:updated':
+      return t('contentUpdated');
+    case 'yield:moved':
+      return t('resourceMoved');
     case 'mark:archived':
       return t('resourceArchived');
     case 'mark:unarchived':
@@ -157,14 +161,12 @@ export function formatEventType(
     case 'yield:representation-removed':
       return t('representationEvent');
 
-    // No copy: these show their type. The system events carry no resource,
-    // so a resource's history never holds one.
-    case 'yield:updated':
-    case 'yield:moved':
     case 'frame:entity-type-added':
+      return t('entityTypeAdded');
     case 'frame:tag-schema-added':
+      return t('tagSchemaAdded');
     case 'principal:profiled':
-      return type;
+      return t('displayNameUpdated');
 
     default: {
       const unreachable: never = type;
