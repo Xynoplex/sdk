@@ -7,5 +7,6 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record KbReadVerdictRecorded
 {
-    [global::Xynolog.Serialization.Wire("kind")] public string Kind => "recorded";
+    public const string KindValue = "recorded";
+    [global::Xynolog.Serialization.Wire("kind")] public string Kind => KindValue;
 }

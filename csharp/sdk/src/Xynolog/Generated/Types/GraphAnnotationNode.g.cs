@@ -12,5 +12,6 @@ public sealed record GraphAnnotationNode
     [global::Xynolog.Serialization.Wire("id")] public required global::Xynolog.Identifiers.AnnotationId Id { get; init; }
     [global::Xynolog.Serialization.Wire("label")] public required string Label { get; init; }
     [global::Xynolog.Serialization.Wire("metadata")] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement>? Metadata { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "annotation";
+    public const string TypeValue = "annotation";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
 }

@@ -8,7 +8,8 @@ namespace Xynolog.Types;
 public sealed record AgentSoftware
 {
     [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
-    [global::Xynolog.Serialization.Wire("@type")] public string Type => "Software";
+    public const string TypeValue = "Software";
+    [global::Xynolog.Serialization.Wire("@type")] public string Type => TypeValue;
     [global::Xynolog.Serialization.Wire("model")] public string? Model { get; init; }
     [global::Xynolog.Serialization.Wire("name")] public string? Name { get; init; }
     [global::Xynolog.Serialization.Wire("parameters")] public global::System.Text.Json.JsonElement? Parameters { get; init; }

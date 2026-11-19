@@ -8,5 +8,6 @@ namespace Xynolog.Types;
 public sealed record WorkerHealth
 {
     [global::Xynolog.Serialization.Wire("knowledgeBases")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.WorkerKnowledgeBaseHealth> KnowledgeBases { get; init; }
-    [global::Xynolog.Serialization.Wire("status")] public string Status => "ok";
+    public const string StatusValue = "ok";
+    [global::Xynolog.Serialization.Wire("status")] public string Status => StatusValue;
 }

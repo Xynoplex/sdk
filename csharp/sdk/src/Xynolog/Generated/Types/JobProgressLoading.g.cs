@@ -7,5 +7,6 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressLoading
 {
-    [global::Xynolog.Serialization.Wire("code")] public string Code => "loading";
+    public const string CodeValue = "loading";
+    [global::Xynolog.Serialization.Wire("code")] public string Code => CodeValue;
 }

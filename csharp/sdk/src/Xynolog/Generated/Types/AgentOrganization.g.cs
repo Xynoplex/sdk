@@ -8,7 +8,8 @@ namespace Xynolog.Types;
 public sealed record AgentOrganization
 {
     [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
-    [global::Xynolog.Serialization.Wire("@type")] public string Type => "Organization";
+    public const string TypeValue = "Organization";
+    [global::Xynolog.Serialization.Wire("@type")] public string Type => TypeValue;
     [global::Xynolog.Serialization.Wire("homepage")] public string? Homepage { get; init; }
     [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
     [global::Xynolog.Serialization.WireRest] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();

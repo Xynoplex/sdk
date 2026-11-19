@@ -9,5 +9,6 @@ public sealed record TabCheckReady
 {
     [global::Xynolog.Serialization.Wire("mediaType")] public string? MediaType { get; init; }
     [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
-    [global::Xynolog.Serialization.Wire("verdict")] public string Verdict => "ready";
+    public const string VerdictValue = "ready";
+    [global::Xynolog.Serialization.Wire("verdict")] public string Verdict => VerdictValue;
 }

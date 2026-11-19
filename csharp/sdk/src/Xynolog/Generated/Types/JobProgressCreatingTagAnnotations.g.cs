@@ -7,6 +7,7 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressCreatingTagAnnotations
 {
-    [global::Xynolog.Serialization.Wire("code")] public string Code => "creating-tag-annotations";
+    public const string CodeValue = "creating-tag-annotations";
+    [global::Xynolog.Serialization.Wire("code")] public string Code => CodeValue;
     [global::Xynolog.Serialization.Wire("count")] public required long Count { get; init; }
 }

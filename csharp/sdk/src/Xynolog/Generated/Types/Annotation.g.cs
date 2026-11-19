@@ -7,7 +7,8 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record Annotation
 {
-    [global::Xynolog.Serialization.Wire("@context")] public string Context => "http://www.w3.org/ns/anno.jsonld";
+    public const string ContextValue = "http://www.w3.org/ns/anno.jsonld";
+    [global::Xynolog.Serialization.Wire("@context")] public string Context => ContextValue;
     [global::Xynolog.Serialization.Wire("body")] public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
     [global::Xynolog.Serialization.Wire("created")] public required string Created { get; init; }
     [global::Xynolog.Serialization.Wire("creator")] public global::Xynolog.Types.Agent? Creator { get; init; }
@@ -16,6 +17,7 @@ public sealed record Annotation
     [global::Xynolog.Serialization.Wire("modified")] public string? Modified { get; init; }
     [global::Xynolog.Serialization.Wire("motivation")] public required global::Xynolog.Types.Motivation Motivation { get; init; }
     [global::Xynolog.Serialization.Wire("target")] public required global::Xynolog.Types.AnnotationTargetValue Target { get; init; }
-    [global::Xynolog.Serialization.Wire("type")] public string Type => "Annotation";
+    public const string TypeValue = "Annotation";
+    [global::Xynolog.Serialization.Wire("type")] public string Type => TypeValue;
     [global::Xynolog.Serialization.Wire("wasAttributedTo")] public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
 }

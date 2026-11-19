@@ -8,5 +8,6 @@ namespace Xynolog.Types;
 public sealed record LocalEndpoint
 {
     [global::Xynolog.Serialization.Wire("kbId")] public required string KbId { get; init; }
-    [global::Xynolog.Serialization.Wire("kind")] public string Kind => "local";
+    public const string KindValue = "local";
+    [global::Xynolog.Serialization.Wire("kind")] public string Kind => KindValue;
 }
