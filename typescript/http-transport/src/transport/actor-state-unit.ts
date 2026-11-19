@@ -39,6 +39,8 @@ import {
   RECONNECT_MS,
   SEEN_EVENT_IDS_COUNT,
   STREAM_OPEN_TIMEOUT_MS,
+  gatewayHeaders,
+  gatewayRoutes,
 } from '@xynolog/core';
 import {
   SpanKind,
@@ -261,6 +263,9 @@ export interface ActorStateUnit
   start(): void;
   stop(): void;
 }
+
+const SUBSCRIBE = gatewayRoutes.subscribeToBus;
+const EMIT = gatewayRoutes.emitOnBus;
 
 /** Allowed transitions in the connection state machine. */
 const ALLOWED_TRANSITIONS: Record<
@@ -601,7 +606,7 @@ export function createActorStateUnit(
         : {}),
       clientId,
     } satisfies components['schemas']['BusSubscribeRequest']);
-    const url = `${baseUrl}/bus/subscribe`;
+    const url = `${baseUrl}${SUBSCRIBE.path}`;
 
     const controller = new AbortController();
     inflightControllers.add(controller);
@@ -614,7 +619,7 @@ export function createActorStateUnit(
         // The gate's single read: `token` is what this ATTEMPT sends, and
         // exactly what `refusedToken` records if the gateway refuses it.
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': SUBSCRIBE.sends,
       };
       // The answer's deadline: a gateway that accepts the connection and never
       // answers has failed the connect, which the backoff below makes again.
@@ -625,7 +630,7 @@ export function createActorStateUnit(
       const openDeadline = setTimeout(() => {
         opening.abort(
           new DOMException(
-            `/bus/subscribe got no answer within ${streamOpenTimeoutMs}ms`,
+            `${SUBSCRIBE.path} got no answer within ${streamOpenTimeoutMs}ms`,
             'TimeoutError',
           ),
         );
@@ -636,7 +641,7 @@ export function createActorStateUnit(
       let response: Response;
       try {
         response = await fetchOf(options.fetch)(url, {
-          method: 'POST',
+          method: SUBSCRIBE.method,
           headers,
           body,
           signal: AbortSignal.any([controller.signal, opening.signal]),
@@ -654,7 +659,7 @@ export function createActorStateUnit(
         const readDeadline = setTimeout(() => {
           opening.abort(
             new DOMException(
-              `/bus/subscribe's refusal was not read within ${httpRequestTimeoutMs}ms`,
+              `${SUBSCRIBE.path}'s refusal was not read within ${httpRequestTimeoutMs}ms`,
               'TimeoutError',
             ),
           );
@@ -679,7 +684,7 @@ export function createActorStateUnit(
           response.status,
           response.statusText,
           said,
-          retryAfterMs(response.headers.get('retry-after')),
+          retryAfterMs(response.headers.get(gatewayHeaders.retryAfter)),
         );
       }
 
@@ -1079,8 +1084,8 @@ export function createActorStateUnit(
       // One key for this emit, the same on every attempt at it, the resend
       // with a renewed credential too.
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Idempotency-Key': uuidV4(),
+        'Content-Type': EMIT.sends,
+        [gatewayHeaders.idempotencyKey]: uuidV4(),
       };
       const trace = getActiveTraceparent();
       if (trace) {
@@ -1118,9 +1123,9 @@ export function createActorStateUnit(
               // deadline with a `TimeoutError`. So its rejection is no answer,
               // whatever it says, and worth another attempt.
               const attempt = await fetchOf(options.fetch)(
-                `${baseUrl}/bus/emit`,
+                `${baseUrl}${EMIT.path}`,
                 {
-                  method: 'POST',
+                  method: EMIT.method,
                   headers: { ...headers, Authorization: `Bearer ${token}` },
                   body: JSON.stringify(body),
                   signal:
@@ -1129,7 +1134,7 @@ export function createActorStateUnit(
                       : AbortSignal.any([attemptDue, signal]),
                 },
               ).catch((error: unknown) => {
-                throw new UnansweredError('/bus/emit', error);
+                throw new UnansweredError(EMIT.path, error);
               });
               // A refused emit (validation 400, auth 401…) must REJECT — Bus.request's
               // contract detaches its doomed reply and propagates this to the caller.
@@ -1146,11 +1151,11 @@ export function createActorStateUnit(
                 // APIError, not a bare Error: the status rides as a FIELD, which
                 // is what makes it classifiable without parsing it back out of prose.
                 throw APIError.fromStatus(
-                  `/bus/emit ${attempt.status}${detail ? `: ${detail}` : ''}`,
+                  `${EMIT.path} ${attempt.status}${detail ? `: ${detail}` : ''}`,
                   attempt.status,
                   attempt.statusText,
                   refusalBody(said),
-                  retryAfterMs(attempt.headers.get('retry-after')),
+                  retryAfterMs(attempt.headers.get(gatewayHeaders.retryAfter)),
                 );
               }
               // No count is reported as no count, never as a zero: an absent

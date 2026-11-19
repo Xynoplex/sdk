@@ -32,6 +32,8 @@ import {
   KeptForFirstReader,
   XynologError,
   busLog,
+  gatewayHeaders,
+  gatewayRoutes,
   relayFrames,
 } from '@xynolog/core';
 import { SpanKind, recordBusSent, withSpan } from '@xynolog/observability';
@@ -139,7 +141,7 @@ function refusalOf(error: HTTPError): APIError {
     response.status,
     response.statusText,
     data,
-    response.headers.get('retry-after'),
+    response.headers.get(gatewayHeaders.retryAfter),
   );
 }
 
@@ -269,7 +271,7 @@ const RETRY: RetryOptions = {
       !RETRY_RULES.transport.retryable({
         status: error.response.status,
         method: error.request.method,
-        keyed: error.request.headers.has('Idempotency-Key'),
+        keyed: error.request.headers.has(gatewayHeaders.idempotencyKey),
       }))
       ? false
       : undefined,
@@ -278,7 +280,7 @@ const RETRY: RetryOptions = {
 const withoutTrailingSlash = (baseUrl: BaseUrl): BaseUrl =>
   (baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl) as BaseUrl;
 
-const CURRENT_USER = '/api/users/me';
+const CURRENT_USER = gatewayRoutes.getCurrentUser;
 
 /**
  * Ask the gateway at `baseUrl` who `token` is: one request, by a caller that
@@ -292,12 +294,12 @@ export function currentUserOf(
   token: AccessToken,
   fetch?: typeof globalThis.fetch,
 ): Promise<UserResponse> {
-  return asked('GET', CURRENT_USER, async () =>
+  return asked(CURRENT_USER.method, CURRENT_USER.path, async () =>
     declaredBody(
       'UserResponse',
-      'GET',
-      CURRENT_USER,
-      await ky.get(`${withoutTrailingSlash(baseUrl)}${CURRENT_USER}`, {
+      CURRENT_USER.method,
+      CURRENT_USER.path,
+      await ky.get(`${withoutTrailingSlash(baseUrl)}${CURRENT_USER.path}`, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: HTTP_REQUEST_TIMEOUT_MS,
         retry: RETRY,
@@ -710,12 +712,12 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   }
 
   async getCurrentUser(): Promise<UserResponse> {
-    return this.ask('GET', CURRENT_USER, async (http) =>
+    return this.ask(CURRENT_USER.method, CURRENT_USER.path, async (http) =>
       declaredBody(
         'UserResponse',
-        'GET',
-        CURRENT_USER,
-        await http.get(`${this.baseUrl}${CURRENT_USER}`, {
+        CURRENT_USER.method,
+        CURRENT_USER.path,
+        await http.get(`${this.baseUrl}${CURRENT_USER.path}`, {
           headers: this.authHeaders(),
         }),
         (failure) => this.pushError(failure),
@@ -724,11 +726,11 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   }
 
   async getProtectedResourceMetadata(): Promise<ProtectedResourceMetadata> {
-    const path = '/.well-known/oauth-protected-resource';
-    return this.ask('GET', path, async (http) =>
+    const { method, path } = gatewayRoutes.getProtectedResourceMetadata;
+    return this.ask(method, path, async (http) =>
       declaredBody(
         'ProtectedResourceMetadata',
-        'GET',
+        method,
         path,
         await http.get(`${this.baseUrl}${path}`),
         (failure) => this.pushError(failure),
@@ -737,11 +739,11 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   }
 
   async getMediaToken(resourceId: ResourceId): Promise<{ token: string }> {
-    const path = '/api/tokens/media';
-    return this.ask('POST', path, async (http) =>
+    const { method, path } = gatewayRoutes.createMediaToken;
+    return this.ask(method, path, async (http) =>
       declaredBody(
         'MediaTokenResponse',
-        'POST',
+        method,
         path,
         await http.post(`${this.baseUrl}${path}`, {
           json: { resourceId },
@@ -755,11 +757,11 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   // ── System status ─────────────────────────────────────────────────────
 
   async healthCheck(): Promise<HealthCheckResponse> {
-    const path = '/api/health';
-    return this.ask('GET', path, async (http) =>
+    const { method, path } = gatewayRoutes.getHealth;
+    return this.ask(method, path, async (http) =>
       declaredBody(
         'HealthResponse',
-        'GET',
+        method,
         path,
         await http.get(`${this.baseUrl}${path}`, {
           headers: this.authHeaders(),
@@ -770,11 +772,11 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   }
 
   async getStatus(): Promise<StatusResponse> {
-    const path = '/api/status';
-    return this.ask('GET', path, async (http) =>
+    const { method, path } = gatewayRoutes.getStatus;
+    return this.ask(method, path, async (http) =>
       declaredBody(
         'StatusResponse',
-        'GET',
+        method,
         path,
         await http.get(`${this.baseUrl}${path}`, {
           headers: this.authHeaders(),

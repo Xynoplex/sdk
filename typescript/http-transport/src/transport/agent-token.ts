@@ -28,6 +28,8 @@ import {
   retryWithBackoff,
   userId,
   withinDeadline,
+  gatewayHeaders,
+  gatewayRoutes,
   type RetryAttemptInfo,
   type ServiceToken,
   type UserId,
@@ -88,12 +90,14 @@ async function named(
   token: string,
   fetch: typeof globalThis.fetch | undefined,
 ): Promise<UserId> {
-  const url = `${baseUrl.replace(/\/$/, '')}/api/users/me`;
+  const { method, path } = gatewayRoutes.getCurrentUser;
+  const url = `${baseUrl.replace(/\/$/, '')}${path}`;
   const unanswered = (error: unknown) => new UnansweredError(url, error);
   const { response, answer } = await withinDeadline(
     HTTP_REQUEST_TIMEOUT_MS,
     async (signal) => {
       const response = await fetchOf(fetch)(url, {
+        method,
         headers: { authorization: `Bearer ${token}` },
         signal,
       }).catch((error: unknown) => {
@@ -113,7 +117,7 @@ async function named(
       response.status,
       response.statusText,
       answer,
-      retryAfterMs(response.headers.get('retry-after')),
+      retryAfterMs(response.headers.get(gatewayHeaders.retryAfter)),
     );
   }
   if (!isObject(answer) || !isString(answer['did'])) {

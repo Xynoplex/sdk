@@ -296,6 +296,9 @@ export {
   type SpanRefusal,
 } from './error-codes';
 export * from './oauth-clients';
+// The gateway's routes, headers and client secret form, generated from
+// protocol/specs/src/openapi.json and its paths.
+export * from './gateway-http';
 export * from './sign-in';
 export {
   BUS_OPERATIONS,

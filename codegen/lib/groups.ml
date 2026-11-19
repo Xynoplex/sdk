@@ -30,6 +30,7 @@ let sdk =
     { name = "limits"; files = Limits.files };
     { name = "client-types"; files = Client_types.files };
     { name = "testing"; files = Testing.files };
+    { name = "gateway-http"; files = Gateway_http.files };
     { name = "ocaml-sdk"; files = Ocaml_sdk.files };
     { name = "rust-types"; files = Rust_types.files };
     { name = "go-types"; files = Go_types.files };
