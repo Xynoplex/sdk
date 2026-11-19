@@ -41,6 +41,7 @@ pub mod client;
 pub mod discovery;
 pub mod errors;
 pub mod event_bus;
+pub mod gateway_http;
 pub mod identity;
 pub mod job_filter;
 pub mod job_storage;

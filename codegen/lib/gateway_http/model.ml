@@ -25,6 +25,9 @@ type form_member =
   | Fixed of { name : string; value : string }
   | Filled of string
 
+(* A member of an upload, and whether every upload sends it. *)
+and upload_field = { field : string; required : bool }
+
 (* A credential the gateway takes as a key: where it goes, and its name
    there. *)
 and api_key = { in_ : Openapi.location; name : string }
@@ -32,7 +35,7 @@ and api_key = { in_ : Openapi.location; name : string }
 type t = {
   routes : route list;
   headers : string list;  (** Each named once, as the document spells it. *)
-  upload_fields : string list;
+  upload_fields : upload_field list;  (** In the schema's order. *)
   client_secret_form : form_member list;  (** In the schema's order. *)
   bus_frame : string list;
   api_keys : (string * api_key) list;  (** By the security scheme's name. *)
@@ -171,7 +174,19 @@ let derive (spec : Spec.t) =
       operations
   in
   let* headers = headers spec operations in
-  let* upload_fields = members spec "components/schemas/ResourceUpload.json" in
+  let* upload_fields =
+    let file = "components/schemas/ResourceUpload.json" in
+    let* names = members spec file in
+    let required =
+      match List.assoc_opt file spec.schemas with
+      | Some (Schema.Schema { required = Some r; _ }) -> r
+      | _ -> []
+    in
+    Ok
+      (List.map
+         (fun field -> { field; required = List.mem field required })
+         names)
+  in
   let* bus_frame = members spec "components/schemas/BusFrame.json" in
   let* client_types = Client_types.Model.derive spec in
   let* client_secret_form = form client_types.form in

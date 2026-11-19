@@ -5,6 +5,7 @@
 
 module Model = Model
 module Typescript = Typescript
+module Rust = Rust
 
 let files ~root:_ (spec : Spec.t) =
-  Result.map (fun m -> [ Typescript.file m ]) (Model.derive spec)
+  Result.map (fun m -> [ Typescript.file m; Rust.file m ]) (Model.derive spec)
