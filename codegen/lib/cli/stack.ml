@@ -2,9 +2,11 @@
    it reads them against, from protocol/specs/src/stack/ and
    kb-identity/ProjectConfig.json, for cli's internal/launcher/stack:
 
-   - types_gen.go: a Go type for each document and each object it reaches;
+   - types_gen.go: a Go type for each document, named by its title, and each
+     object it reaches;
    - schemas_gen.go: the text of every schema they reach, and the schema each
-     kind of document is read against.
+     kind of document is read against, by its [kind] (the project file by its
+     title).
 
    A document is each schema in stack/ whose [kind] is a const, and the
    project file. The launcher validates a document against its schema and
@@ -138,7 +140,8 @@ and shaped st ~from_ ?prefix ~document name (l : Schema.schema) =
 
 (* An object's struct. Its fields are named as its properties, and an object
    of its own as [prefix] and the property: a document's spec names its own
-   after the document, KnowledgeBase's gateway is KnowledgeBaseGateway. *)
+   after the document, StackKnowledgeBase's gateway is
+   StackKnowledgeBaseGateway. *)
 and object_type st ~from_ ?(prefix : string option) ~document name
     (l : Schema.schema) =
   let prefix = Option.value ~default:name prefix in
@@ -229,16 +232,6 @@ let derive ~root (spec : Spec.t) =
       spec.schemas
     |> List.sort compare
   in
-  List.iter
-    (fun (file, kind) ->
-      match (layer file (schema spec file)).title with
-      | Some title when title = kind -> ()
-      | title ->
-          refuse file
-            (Printf.sprintf "its title, %s, is not its kind, %s"
-               (Option.value ~default:"absent" title)
-               kind))
-    kinds;
   let documents = List.map fst kinds @ [ project ] in
   let st =
     {
@@ -318,11 +311,10 @@ let derive ~root (spec : Spec.t) =
                      "schemaOf"
                      (map
                         (List.map
-                           (fun file ->
-                             G.element
-                               ~key:(q (fst (titled file)))
-                               (q (repository file)))
-                           documents)));
+                           (fun (key, file) ->
+                             G.element ~key:(q key) (q (repository file)))
+                           (List.map (fun (file, kind) -> (kind, file)) kinds
+                           @ [ (fst (titled project), project) ]))));
               ];
           };
     };
