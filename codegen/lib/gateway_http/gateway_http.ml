@@ -9,9 +9,17 @@ module Rust = Rust
 module Go = Go
 module Python = Python
 module Swift = Swift
+module Kotlin = Kotlin
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
     (fun m ->
-      [ Typescript.file m; Rust.file m; Go.file m; Python.file m; Swift.file m ])
+      [
+        Typescript.file m;
+        Rust.file m;
+        Go.file m;
+        Python.file m;
+        Swift.file m;
+        Kotlin.file m;
+      ])
     (Model.derive spec)

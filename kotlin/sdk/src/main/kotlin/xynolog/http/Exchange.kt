@@ -166,7 +166,7 @@ internal class Exchange(
         body: (() -> HttpRequest.BodyPublisher)? = null,
         atLength: Boolean = false,
     ): Arriving {
-        val keyed = headers.keys.any { it.equals("Idempotency-Key", ignoreCase = true) }
+        val keyed = headers.keys.any { it.equals(IDEMPOTENCY_KEY, ignoreCase = true) }
         val repeatable = TRANSPORT.retryable(RetryFacts(503, method, keyed))
         var sent = if (authenticated) token.value else null
         var retried = false
@@ -193,7 +193,7 @@ internal class Exchange(
             val response = begun ?: throw failed(TransportError.withoutResponse("$method $path got no answer within ${deadlineMs}ms"))
             val status = response.statusCode()
             if (status in 200..299) return response
-            val stated = retryAfterMs(response.headers().firstValue("retry-after").orElse(null))
+            val stated = retryAfterMs(response.headers().firstValue(RETRY_AFTER).orElse(null))
             // A refusal's body is read within the deadline too: one not read by then says nothing.
             val read = try {
                 if (atLength) readAll(response.body()) else withTimeoutOrNull(deadlineMs) { readAll(response.body()) }

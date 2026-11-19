@@ -48,13 +48,13 @@ import java.util.concurrent.Flow
 /** The pieces an upload's body is sent in. */
 private const val PIECE_BYTES = 64 * 1024
 
-/** Where a resource is read: its id is one segment of the path as it is, which the rule an id is held to keeps a segment. */
-private fun pathOf(resourceId: ResourceId): String = "/resources/${resourceId.value}"
+/** Where the route reads a resource: its `{id}`, the id as it is, which the rule an id is held to keeps a segment. */
+private fun GatewayRoute.pathOf(resourceId: ResourceId): String = path.replace("{id}", resourceId.value)
 
 /** `text` as a part's header states it: what would end the value, or the line, written as `%XX`. */
 private fun quoted(text: String): String = text.replace("\"", "%22").replace("\r", "%0D").replace("\n", "%0A")
 
-/** An upload's `multipart/form-data` body: each field under its own name, in the order the spec's form states them, and the bytes as the part `file`. */
+/** An upload's body, as [UPLOAD_RESOURCE] sends it: each field under its own name, in the order the spec's form states them, and the bytes as the part [UploadField.File]. */
 private class Form(request: PutBinaryRequest) {
     val boundary = "xynolog-${UUID.randomUUID().toString().replace("-", "")}"
     private val parts: List<ByteArray>
@@ -85,13 +85,14 @@ private class Form(request: PutBinaryRequest) {
         val before = StringBuilder()
         val after = StringBuilder()
         for ((field, stated) in form) {
-            if (field == "file") continue
+            val member = UploadField.entries.single { it.wire == field }
+            if (member == UploadField.File) continue
             val value = (stated as JsonPrimitive).content
             val part = "--$boundary\r\nContent-Disposition: form-data; name=\"${quoted(field)}\"\r\n\r\n$value\r\n"
-            // The fields that come before the bytes, so whatever reads the form knows what the bytes are before it meets them.
-            if (field in setOf("name", "format", "storageUri")) before.append(part) else after.append(part)
+            // The fields every upload sends come before the bytes, so whatever reads the form knows what the bytes are before it meets them.
+            if (member.required) before.append(part) else after.append(part)
         }
-        before.append("--$boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"${quoted(request.name)}\"\r\nContent-Type: ${request.format}\r\n\r\n")
+        before.append("--$boundary\r\nContent-Disposition: form-data; name=\"${UploadField.File.wire}\"; filename=\"${quoted(request.name)}\"\r\nContent-Type: ${request.format}\r\n\r\n")
         parts = listOf(before.toString().toByteArray(), request.file, "\r\n$after--$boundary--\r\n".toByteArray())
         size = parts.sumOf { it.size.toLong() }
     }
@@ -172,9 +173,9 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
                     // No deadline: how long an upload takes is how large the resource is.
                     exchange.answer(
                         CreateResourceResponse.serializer(),
-                        "POST",
-                        "/resources",
-                        headers = mapOf("Content-Type" to "multipart/form-data; boundary=${form.boundary}", "Idempotency-Key" to key),
+                        UPLOAD_RESOURCE.method,
+                        UPLOAD_RESOURCE.path,
+                        headers = mapOf("Content-Type" to "$UPLOAD_RESOURCE_SENDS; boundary=${form.boundary}", IDEMPOTENCY_KEY to key),
                         body = { form.publisher(report) },
                         atLength = true,
                     )
@@ -187,7 +188,7 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
     }
 
     private suspend fun arriving(resourceId: ResourceId): Pair<String, Flow.Publisher<List<ByteBuffer>>> {
-        val response = exchange.begin("GET", pathOf(resourceId))
+        val response = exchange.begin(GET_RESOURCE_REPRESENTATION.method, GET_RESOURCE_REPRESENTATION.pathOf(resourceId))
         return response.headers().firstValue("content-type").orElse("application/octet-stream") to response.body()
     }
 
@@ -201,7 +202,7 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
         val bytes = try {
             readAll(body)
         } catch (error: IOException) {
-            throw exchange.failed(TransportError.withoutResponse("GET ${pathOf(resourceId)} ended before its bytes did: ${error.message}"))
+            throw exchange.failed(TransportError.withoutResponse("${GET_RESOURCE_REPRESENTATION.method} ${GET_RESOURCE_REPRESENTATION.pathOf(resourceId)} ended before its bytes did: ${error.message}"))
         }
         return Content(contentType, bytes)
     }
@@ -226,7 +227,7 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
                     }
                 }
             } catch (error: IOException) {
-                throw exchange.failed(TransportError.withoutResponse("GET ${pathOf(resourceId)} ended before its bytes did: ${error.message}"))
+                throw exchange.failed(TransportError.withoutResponse("${GET_RESOURCE_REPRESENTATION.method} ${GET_RESOURCE_REPRESENTATION.pathOf(resourceId)} ended before its bytes did: ${error.message}"))
             }
         }
         return ContentStream(contentType, pieces, scope)
@@ -237,7 +238,7 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
 
     override suspend fun getResourceGraph(resourceId: ResourceId): GetResourceResponse {
         BusLog.line(Logged.GET, "content", asked(resourceId, "graph"), null, null)
-        return Telemetry.gettingGraph(resourceId) { exchange.answer(GetResourceResponse.serializer(), "GET", "${pathOf(resourceId)}/jsonld") }
+        return Telemetry.gettingGraph(resourceId) { exchange.answer(GetResourceResponse.serializer(), GET_RESOURCE_JSON_LD.method, GET_RESOURCE_JSON_LD.pathOf(resourceId)) }
     }
 
     @JvmExposeBoxed
@@ -245,7 +246,7 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
 
     override suspend fun getAnnotations(resourceId: ResourceId): GetAnnotationsResponse {
         BusLog.line(Logged.GET, "content", asked(resourceId, "annotations"), null, null)
-        return Telemetry.gettingAnnotations(resourceId) { exchange.answer(GetAnnotationsResponse.serializer(), "GET", "${pathOf(resourceId)}/annotations") }
+        return Telemetry.gettingAnnotations(resourceId) { exchange.answer(GetAnnotationsResponse.serializer(), GET_RESOURCE_ANNOTATIONS.method, GET_RESOURCE_ANNOTATIONS.pathOf(resourceId)) }
     }
 
     @JvmExposeBoxed
@@ -253,7 +254,7 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
 
     override suspend fun getAnchoredText(resourceId: ResourceId): AnchoredTextAnswer {
         BusLog.line(Logged.GET, "content", asked(resourceId, "anchoredText"), null, null)
-        return Telemetry.gettingAnchoredText(resourceId) { exchange.answer(AnchoredTextAnswer.serializer(), "GET", "${pathOf(resourceId)}/anchored-text") }
+        return Telemetry.gettingAnchoredText(resourceId) { exchange.answer(AnchoredTextAnswer.serializer(), GET_RESOURCE_ANCHORED_TEXT.method, GET_RESOURCE_ANCHORED_TEXT.pathOf(resourceId)) }
     }
 
     @JvmExposeBoxed
