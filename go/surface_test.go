@@ -385,12 +385,12 @@ var calls = map[string]call{
 	"yield.resource": func(ctx context.Context, c *xynolog.Client, a args) {
 		var data struct {
 			Name       string `json:"name"`
-			Content    string `json:"content"`
+			File       string `json:"file"`
 			Format     string `json:"format"`
 			StorageURI string `json:"storageUri"`
 		}
 		a.into("data", &data)
-		_, _ = c.Yield.Resource(ctx, xynolog.PutBinaryRequest{Name: data.Name, Bytes: []byte(data.Content), Format: data.Format, StorageURI: data.StorageURI}).Wait(ctx)
+		_, _ = c.Yield.Resource(ctx, xynolog.PutBinaryRequest{Name: data.Name, Bytes: []byte(data.File), Format: data.Format, StorageURI: data.StorageURI}).Wait(ctx)
 	},
 	"yield.delegate": func(ctx context.Context, c *xynolog.Client, a args) {
 		var within time.Duration

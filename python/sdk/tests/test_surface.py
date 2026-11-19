@@ -237,7 +237,7 @@ def uploaded(client: Client, args: Args) -> Awaitable[object]:
     return client.yield_.resource(
         PutBinaryRequest(
             name=text(data["name"], "name"),
-            file=text(data["content"], "content").encode(),
+            file=text(data["file"], "file").encode(),
             format=text(data["format"], "format"),
             storage_uri=text(data["storageUri"], "storageUri"),
         )

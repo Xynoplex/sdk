@@ -45,7 +45,7 @@ newMatchStateUnit client = do
                   (matchSearchRequestResourceId input)
                   (matchSearchRequestReferenceId input)
                   (matchSearchRequestContext input)
-                  (Just (MatchSearchOptions (matchSearchRequestLimit input) (matchSearchRequestUseSemanticScoring input) (matchSearchRequestAdditionalProperties input)))
+                  (Just (MatchSearchOptions (matchSearchRequestLimit input) (matchSearchRequestUseSemanticScoring input)))
                   >>= Running.await
               atomically (Local.signalWithCorrelation (Client.bus client) MatchSearchResults found NoScope (busFrameCorrelationId envelope))
         work `catches` [Handler (reply . busRequestErrorMessage), Handler (reply . transportErrorMessage)]

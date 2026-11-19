@@ -55,11 +55,9 @@ import Testing
     #expect(actual == (try required(row, "ms")), "\(row["why"] ?? .null)")
   }
 }
-// retry/cases.json states no job rows at 502 or 504.
+// retry/cases.json states the job rows from 500 to 504; these are the edges past them.
 @Test func jobRetriesEveryServerFault() {
-  for status in [500, 502, 503, 504, 599] {
-    #expect(RetryContext.job.retryable(status: status, method: nil, keyed: false), "\(status)")
-  }
+  #expect(RetryContext.job.retryable(status: 599, method: nil, keyed: false))
   #expect(!RetryContext.job.retryable(status: 499, method: nil, keyed: false))
   #expect(!RetryContext.job.retryable(status: nil, method: nil, keyed: false))
 }

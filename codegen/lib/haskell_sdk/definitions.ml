@@ -3,10 +3,10 @@
    component is named by its file. Beside them are the form a resource's
    upload states its metadata in (ResourceUpload without its file), the trace
    carrier, the records of the client registry, of the state units' notices
-   and of how a session ends, the stored sign-in, session and resources, the
-   options of an engine, of a gather and of a search (each a request without
-   what an SDK passes positionally), what an HTTP operation states in place,
-   and each bus envelope. None may take a component's name. *)
+   and of how a session ends, the stored sign-in, session and resources, an
+   engine with its limits, the options of a gather and of a search (their
+   client types), what an HTTP operation states in place, and each bus
+   envelope. None may take a component's name. *)
 
 let ( let* ) = Result.bind
 
@@ -129,6 +129,32 @@ let titled records (r : Decode.reference) =
     | None ->
         raise (Unresolved ("reference into a table not read: " ^ r.target))
 
+(* A client type as the models state it: each member a [$ref] names inside
+   another schema is that member. *)
+let client_type (spec : Spec.t) name =
+  let file = "client/types/" ^ name ^ ".json" in
+  let member (r : Decode.reference) =
+    let target, pointer = Decode.resolve r in
+    Option.bind (List.assoc_opt target spec.schemas) (fun s ->
+        Pointer.schema s pointer)
+  in
+  match List.assoc_opt file spec.schemas with
+  | Some (Schema.Schema ({ properties = Some properties; _ } as s)) ->
+      let* properties =
+        each
+          (fun (key, p) ->
+            match p with
+            | Schema.Schema { ref_ = Some r; _ }
+              when snd (Decode.resolve r) <> "" -> (
+                match member r with
+                | Some m -> Ok (key, m)
+                | None -> Error (name ^ "'s " ^ key ^ " names no schema"))
+            | p -> Ok (key, p))
+          properties
+      in
+      Ok (name, Schema.Schema { s with properties = Some properties })
+  | _ -> Error ("Protocol states no client type " ^ name ^ " of members")
+
 let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
   let* components = components spec in
   let component name =
@@ -172,25 +198,15 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
     if engine.properties = None then Error "EngineEntry properties missing"
     else Ok ()
   in
-  let* gather =
-    Result.bind
-      (component "GatherResourceRequestOptions")
-      (layer "GatherResourceRequestOptions")
-  in
-  let* search =
-    Result.bind (component "MatchSearchRequest") (layer "MatchSearchRequest")
-  in
-  let positional = [ "resourceId"; "referenceId"; "context" ] in
-  let* _ = each (fun k -> property "MatchSearchRequest" k search) positional in
+  let* gather = client_type spec "GatherResourceOptions" in
+  let* search = client_type spec "MatchSearchOptions" in
   let options =
     [
       ( "EngineWithLimits",
         Schema.Schema
           (with_property "limits" (reference "InferenceLimits") engine) );
-      ("GatherResourceOptions", Schema.Schema { gather with required = None });
-      ( "MatchSearchOptions",
-        Schema.Schema
-          { (without_properties positional search) with required = None } );
+      gather;
+      search;
     ]
   in
   let tables = spec.tables in

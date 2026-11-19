@@ -351,8 +351,8 @@ invoke (Rig client _ clock _) namespace member args = case (namespace, member) o
   ("mark", "reportDeleteError") -> field "input" args >>= atomically . Mark.reportDeleteError (Client.mark client)
   ("yield", "resource") -> do
     input <- field "data" args
-    text <- field "content" input
-    metadata <- case input of Object fields -> decode (Object (KM.delete "content" fields)); _ -> ioError (userError "resource data is not an object")
+    text <- field "file" input
+    metadata <- case input of Object fields -> decode (Object (KM.delete "file" fields)); _ -> ioError (userError "resource data is not an object")
     Yield.resource (Client.yield client) metadata (Content.bytesBody (encodeUtf8 text)) >>= void . Running.await
   ("yield", "delegate") -> do
     params <- field "params" args

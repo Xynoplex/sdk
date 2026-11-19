@@ -107,19 +107,31 @@ let said_of_reference (s : _ Schema.layer) (r : Decode.reference) =
    schema written in its place from [schemas]. *)
 type referent = Named of string | In_place of string * Schema.t
 
+(* The schema [r] names: a whole file or a table record by its key, or a
+   schema inside a file by its pointer. A pointer at no schema is refused. *)
+let schema_at ~schemas (r : Decode.reference) =
+  match Hashtbl.find_opt schemas (Table_records.key r) with
+  | Some s -> Some s
+  | None -> (
+      match Decode.resolve r with
+      | _, "" -> None
+      | file, pointer -> (
+          match
+            Option.bind (Hashtbl.find_opt schemas file) (fun s ->
+                Pointer.schema s pointer)
+          with
+          | Some s -> Some s
+          | None -> refuse "$ref %s points into its file at no schema" r.target)
+      )
+
 let referent ~named ~schemas (r : Decode.reference) =
   let key = Table_records.key r in
   match named key with
   | Some name -> Some (Named name)
-  | None ->
-      if snd (Decode.resolve r) <> "" then
-        refuse "$ref %s points into a file at a schema no table record is"
-          r.target;
-      Option.map (fun s -> In_place (key, s)) (Hashtbl.find_opt schemas key)
+  | None -> Option.map (fun s -> In_place (key, s)) (schema_at ~schemas r)
 
-(* The schema a [$ref] names, for [Normalize], from [schemas]. *)
 let schema_of ~schemas (r : Decode.reference) =
-  match Hashtbl.find_opt schemas (Table_records.key r) with
+  match schema_at ~schemas r with
   | Some s -> Ok s
   | None -> Error ("$ref " ^ r.target ^ " names no schema")
 
@@ -286,15 +298,16 @@ let bundle (spec : Spec.t) =
   in
   let titled = List.map (fun (key, name, _) -> (key, name)) records in
   (* A schema is named by the name the document gives it, a table's record by
-     its title, and a file of a directory of schemas or of client types by its
-     own. *)
+     its title, and a whole file of a directory of schemas or of client types
+     by its own. A member of a file is named by none. *)
   let named key =
     match List.assoc_opt key (declared @ titled) with
     | Some name -> Some name
     | None ->
         if
-          Filename.basename (Filename.dirname key) = "schemas"
-          || String.starts_with ~prefix:client_types key
+          (not (String.contains key '#'))
+          && (Filename.basename (Filename.dirname key) = "schemas"
+             || String.starts_with ~prefix:client_types key)
         then Some (stem key)
         else None
   in

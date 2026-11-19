@@ -3665,6 +3665,9 @@ public struct GatherResourceOptions: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["depth", "excludeEntityTypes", "includeContent", "includeSummary", "maxResources"],
+      in: "GatherResourceOptions")
     self.depth = try c.ifPresent("depth")
     self.excludeEntityTypes = try c.ifPresent("excludeEntityTypes")
     self.includeContent = try c.ifPresent("includeContent")
@@ -10080,8 +10083,8 @@ public struct SpecTelemetrySpansItem: Codable, Sendable {
 public struct SpecTelemetrySpansItemAttributesItem: Codable, Sendable {
   public var key: String
   public var only: String?
-  public var values: [String]?
-  public init(key: String, only: String? = nil, values: [String]? = nil) {
+  public var values: [Bool]?
+  public init(key: String, only: String? = nil, values: [Bool]? = nil) {
     self.key = key
     self.only = only
     self.values = values
@@ -11922,7 +11925,7 @@ internal let telemetrySpans: [SpecTelemetrySpansItem] = [
     attributes: [
       SpecTelemetrySpansItemAttributesItem(key: "resource.id"),
       SpecTelemetrySpansItemAttributesItem(
-        key: "content.stream", only: "on a read taken as a stream", values: ["true"]),
+        key: "content.stream", only: "on a read taken as a stream", values: [true]),
       SpecTelemetrySpansItemAttributesItem(
         key: "thread.id",
         only: "when the host OpenTelemetry API supplies its runtime thread identity"),

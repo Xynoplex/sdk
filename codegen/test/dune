@@ -200,3 +200,8 @@
  (_
   (flags
    (:standard -open Xynolog_protocol_schema -open Xynolog_protocol))))
+
+(test
+ (name definitions)
+ (modules definitions)
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
