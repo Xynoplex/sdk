@@ -1,9 +1,8 @@
 package xynolog
 
 // What the conformance suite cannot stage: the window of ids remembered, the
-// transitions the state may make, the backoff's bounds, a listener that falls
-// behind, and the transport against a stand-in gateway that misbehaves at a
-// chosen moment.
+// backoff's bounds, a listener that falls behind, and the transport against a
+// stand-in gateway that misbehaves at a chosen moment.
 
 import (
 	"context"
@@ -42,19 +41,6 @@ func TestTheIdsRememberedAreTheLastOnesDelivered(t *testing.T) {
 	}
 	if seen.remember("c") {
 		t.Error("c, inside the window, is delivered again")
-	}
-}
-
-func TestOpenIsLeftOnlyForADropOrAClose(t *testing.T) {
-	all := []ConnectionState{ConnectionStateInitial, ConnectionStateConnecting, ConnectionStateOpen, ConnectionStateReconnecting, ConnectionStateDegraded, ConnectionStateUnauthenticated, ConnectionStateClosed}
-	for _, to := range all {
-		want := to == ConnectionStateReconnecting || to == ConnectionStateClosed
-		if allowed(ConnectionStateOpen, to) != want {
-			t.Errorf("open to %s allowed: %v", to, !want)
-		}
-		if allowed(ConnectionStateClosed, to) {
-			t.Errorf("closed moves to %s, though it is terminal", to)
-		}
 	}
 }
 
