@@ -1,4 +1,4 @@
-# Generated from the component schemas of protocol/specs/src/openapi.json and the records of its tables; do not edit.
+# Generated from the component schemas of protocol/specs/src/openapi.json, the records of its tables, its client types and client/discovery-absent.json; do not edit.
 # Regenerate: make generate (codegen/lib/python_types/python_types.ml)
 # ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
@@ -16,6 +16,7 @@ __all__ = [
     "AgentOrganization",
     "AgentPerson",
     "AgentSoftware",
+    "AnchorMethod",
     "AnchoredText",
     "AnchoredTextAbsent",
     "AnchoredTextAnswer",
@@ -127,6 +128,7 @@ __all__ = [
     "DirectoryEntry",
     "DiscoveredKB",
     "DiscoveredKBPlacement",
+    "DiscoveryAbsentReason",
     "DiscoveryDocument",
     "DispatcherConfig",
     "DispatcherConfigQueue",
@@ -156,6 +158,7 @@ __all__ = [
     "FragmentSelector",
     "FrameAddEntityTypeCommand",
     "FrameAddTagSchemaCommand",
+    "FrameRefusalReason",
     "GatewayConfig",
     "GatewayConfigCapacity",
     "GatewayConfigIdentity",
@@ -316,6 +319,7 @@ __all__ = [
     "MarkUnarchiveCommand",
     "MarkUpdateBodyCommand",
     "MarkUpdateEntityTypesCommand",
+    "MatchQuality",
     "MatchResourcesRequest",
     "MatchResourcesResponse",
     "MatchResourcesResponseMatchKind",
@@ -506,6 +510,13 @@ type Agent = Annotated[
     Field(
         description="Web Annotation / W3C PROV Agent. Discriminated by @type — Person, Organization, or Software (named member schemas: AgentPerson, AgentOrganization, AgentSoftware). Software peers are first-class participants, not a sub-class of Person.",
         discriminator="type",
+    ),
+]
+
+type AnchorMethod = Annotated[
+    Literal["unique-match", "context-recovered", "first-of-many", "fuzzy-match"],
+    Field(
+        description="How a quoted selection was found in a text. Which word a span is found by is reconcile's rule (specs/src/annotations/reconcile-cases.json)."
     ),
 ]
 
@@ -2511,6 +2522,14 @@ class FrameAddTagSchemaCommand(WireModel, frozen=True):
         UserId | None,
         Field(alias="_userId", description="Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this."),
     ] = None
+
+
+type FrameRefusalReason = Annotated[
+    Literal["lacks", "malformed"],
+    Field(
+        description="Why a reader refused a frame, for its first fault: `lacks`, a member it lacks; `malformed`, a member that is not of its shape. A reader's rule (specs/src/bus/frame-cases.json)."
+    ),
+]
 
 
 class GatewayConfigIdentity(WireModel, frozen=True, extra="forbid"):
@@ -4802,6 +4821,14 @@ class MarkUpdateEntityTypesCommand(WireModel, frozen=True):
     updated_entity_types: Annotated[list[str], Field(alias="updatedEntityTypes")]
 
 
+type MatchQuality = Annotated[
+    Literal["normalized", "case-insensitive", "fuzzy"],
+    Field(
+        description="Which looser search found a quoted selection, stated of a span whose `anchorMethod` is `fuzzy-match` and only then. Which search finds it is reconcile's rule (specs/src/annotations/reconcile-cases.json)."
+    ),
+]
+
+
 class MatchResourcesRequest(WireModel, frozen=True):
     """
     Request to search the knowledge base's resources by text. The Librarian answers: it matches the text lexically, and when nothing matches, by meaning.
@@ -5934,3 +5961,17 @@ class YieldUpdateOk(WireModel, frozen=True):
     """
 
     response: Annotated[YieldedResource, Field(description="The updated resource's identity.")]
+
+
+type DiscoveryAbsentReason = Literal["not-found", "not-json", "invalid", "unsupported-version", "unreadable"]
+"""Why no launcher was found.
+
+`not-found`: There is no document where it was looked for: no file, an HTTP status that is not success, or a page that is not JSON.
+
+`not-json`: There is a document, and it is not JSON.
+
+`invalid`: It is JSON, and not a discovery document: one entry that is not what the schema says makes the whole document invalid, since a partial reading would hide a running knowledge base without a trace.
+
+`unsupported-version`: It is a discovery document of a version this client does not speak, and is not read in part.
+
+`unreadable`: It could not be read at all: the file could not be opened or decoded, or the request got no answer by its deadline."""

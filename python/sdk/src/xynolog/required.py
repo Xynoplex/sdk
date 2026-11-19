@@ -27,6 +27,7 @@ from pydantic import BaseModel, Field, JsonValue, TypeAdapter, ValidationError
 from xynolog._required_table import SCHEMAS
 from xynolog.channel import Empty, Response
 from xynolog.model import WireModel
+from xynolog.types import FrameRefusalReason
 
 __all__ = ["UNDECODED", "Bounds", "Fault", "as_read", "bounds_of", "fault_of", "read_as"]
 
@@ -94,7 +95,7 @@ class Fault:
     """
 
     member: str
-    reason: Literal["lacks", "malformed"]
+    reason: FrameRefusalReason
 
     def within(self, name: str) -> "Fault":
         """The fault as one of the value that holds this one as its member `name`: the value itself is that member."""

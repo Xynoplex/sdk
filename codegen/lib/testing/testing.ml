@@ -1,5 +1,5 @@
 (* The testing group: the testing kit's facts (protocol/specs/src/client/
-   testing.json) for the Haskell, OCaml, TypeScript, Rust and Go SDKs. Table
+   testing.json) for the Haskell, OCaml, TypeScript, Rust, Go and Python SDKs. Table
    holds the table to what they read of it; each writes its language's file. *)
 
 module Table = Table
@@ -8,6 +8,7 @@ module Ocaml = Ocaml
 module Typescript = Typescript
 module Rust = Rust
 module Go = Go
+module Python = Python
 
 let files ~root:_ (spec : Spec.t) =
   let ( let* ) = Result.bind in
@@ -16,4 +17,5 @@ let files ~root:_ (spec : Spec.t) =
   let* typescript = Typescript.file table in
   let* rust = Rust.file table in
   let* go = Go.file table in
-  Ok [ haskell; Ocaml.file table; typescript; rust; go ]
+  let* python = Python.files table in
+  Ok ([ haskell; Ocaml.file table; typescript; rust; go ] @ python)

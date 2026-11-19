@@ -11,24 +11,10 @@ offset is a string's own index and a length is `len`: nothing is converted.
 """
 
 from dataclasses import dataclass
-from typing import Final, Literal, final
+from typing import Final, final
 
 from xynolog._white_space import WHITE_SPACE, trimmed
-
-type AnchorMethod = Literal["unique-match", "context-recovered", "first-of-many", "fuzzy-match"]
-"""How a span was found.
-
-The text has the words once; it has them more than once and the model's hints
-chose; it has them more than once and nothing chose, so the first was taken;
-or it does not have them as quoted, and a looser search found them.
-"""
-
-type MatchQuality = Literal["normalized", "case-insensitive", "fuzzy"]
-"""Which looser search found a span.
-
-Without regard to white space and the forms of quotation marks and dashes,
-without regard to letter case, or by edits within the allowance.
-"""
+from xynolog.types import AnchorMethod, MatchQuality
 
 
 @final

@@ -84,8 +84,11 @@ type stmt =
     }
   | Adjacent of stmt list
       (** Top-level statements with no blank line between. *)
+  | Imports of import list list
+      (** Groups, a blank line between: under [if TYPE_CHECKING:], the imports
+          of types only. *)
 
-type import = Import of string | From of string * string list
+and import = Import of string | From of string * string list
 
 type module_ = {
   header : string list;  (** Comment lines, each written after a [#]. *)
@@ -325,6 +328,30 @@ let statement ~indent prefix value =
 
 let is_definition = function Class _ | Def _ -> true | _ -> false
 
+(* An import too long for its line is one name a line, as ruff leaves it. *)
+let import ~indent = function
+  | Import name -> spaces indent ^ "import " ^ checked name
+  | From (from_, names) ->
+      L.render ~indent
+        [
+          L.group
+            [
+              L.Text ("from " ^ checked from_ ^ " import ");
+              L.Broken_text "(";
+              L.Indent
+                ([ L.Break ]
+                @ List.concat
+                    (List.mapi
+                       (fun i n ->
+                         (if i > 0 then [ L.Text ","; L.Space ] else [])
+                         @ [ L.Text (checked n) ])
+                       names)
+                @ [ L.Broken_text "," ]);
+              L.Break;
+              L.Broken_text ")";
+            ];
+        ]
+
 let rec stmt ~indent s =
   let inner = indent + 4 in
   let at = spaces indent in
@@ -391,30 +418,12 @@ let rec stmt ~indent s =
       :: (Option.fold ~none:[] ~some:(docstring ~indent:inner) d
          @ List.concat_map (stmt ~indent:inner) body)
   | Adjacent stmts -> List.concat_map (stmt ~indent) stmts
-
-(* An import too long for its line is one name a line, as ruff leaves it. *)
-let import = function
-  | Import name -> "import " ^ checked name
-  | From (from_, names) ->
-      L.render ~indent:0
-        [
-          L.group
-            [
-              L.Text ("from " ^ checked from_ ^ " import ");
-              L.Broken_text "(";
-              L.Indent
-                ([ L.Break ]
-                @ List.concat
-                    (List.mapi
-                       (fun i n ->
-                         (if i > 0 then [ L.Text ","; L.Space ] else [])
-                         @ [ L.Text (checked n) ])
-                       names)
-                @ [ L.Broken_text "," ]);
-              L.Break;
-              L.Broken_text ")";
-            ];
-        ]
+  | Imports groups ->
+      List.concat
+        (List.mapi
+           (fun i group ->
+             (if i > 0 then [ "" ] else []) @ List.map (import ~indent) group)
+           groups)
 
 let text m =
   let body =
@@ -437,7 +446,8 @@ let text m =
       "\n\n";
       String.concat ""
         (List.map
-           (fun group -> String.concat "\n" (List.map import group) ^ "\n\n")
+           (fun group ->
+             String.concat "\n" (List.map (import ~indent:0) group) ^ "\n\n")
            m.imports);
       String.concat "" body;
       "\n";

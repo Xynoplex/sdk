@@ -52,6 +52,7 @@ from xynolog.required import UNDECODED, Fault, as_read
 from xynolog.running import Running
 from xynolog.transport import Frame, FrameRefusal
 from xynolog.types import (
+    FrameRefusalReason,
     JobCancelRequest,
     JobCompleteCommand,
     JobCreateCommand,
@@ -113,7 +114,7 @@ class RefusedFrame:
 
     channel: str
     member: str
-    reason: Literal["lacks", "malformed"]
+    reason: FrameRefusalReason
 
 
 @final

@@ -27,12 +27,12 @@ lists is a person's act.
 import asyncio
 from collections.abc import AsyncGenerator, Awaitable, Callable, Sequence
 from dataclasses import dataclass
-from typing import Final, Literal, Protocol, final, override
+from typing import Final, Protocol, final, override
 
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
 from xynolog.timing import DISCOVERY_INTERVAL_MS
-from xynolog.types import DiscoveredKB, DiscoveryDocument
+from xynolog.types import DiscoveredKB, DiscoveryAbsentReason, DiscoveryDocument
 
 __all__ = [
     "DISCOVERY_INTERVAL",
@@ -56,11 +56,6 @@ _VERSION: Final = 1
 """The version of the document this client reads."""
 
 _JSON: Final = TypeAdapter[JsonValue](JsonValue)
-
-type DiscoveryAbsentReason = Literal["not-found", "not-json", "invalid", "unsupported-version", "unreadable"]
-"""Why no launcher was found: there is no document there (`not-found`); there is one, and it is not JSON
-(`not-json`); it is JSON, and not a discovery document (`invalid`); it is of a version this client does not
-speak (`unsupported-version`); it could not be read at all (`unreadable`)."""
 
 
 @final
