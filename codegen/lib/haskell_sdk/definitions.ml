@@ -97,7 +97,8 @@ let squeeze text =
           (fun c -> not (List.mem c [ ' '; '\n'; '\r'; '\t' ]))
           (List.of_seq (String.to_seq text))))
 
-(* The component schemas, each the schema of the file its reference names. *)
+(* The roots ([Roots]), each the schema of the file its reference
+   names. *)
 let components (spec : Spec.t) =
   each
     (fun (name, (r : Decode.reference)) ->
@@ -116,7 +117,7 @@ let components (spec : Spec.t) =
         match List.assoc_opt file spec.schemas with
         | Some s -> Ok (name, s)
         | None -> Error ("no schema file " ^ file))
-    spec.gateway.components.schemas
+    (Roots.all spec)
 
 (* A table's record that a reference into the table names is named by its
    title. *)

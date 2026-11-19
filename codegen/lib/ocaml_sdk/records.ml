@@ -128,7 +128,7 @@ let tabled (spec : Spec.t) table =
         if fst (Decode.resolve reference) = key then
           Some (name, List.assoc key spec.schemas)
         else None)
-      spec.gateway.components.schemas
+      (Roots.all spec)
   in
   (* A member's type, and the module of the table record it names. *)
   let member key at ~required (name, schema) =
@@ -277,7 +277,7 @@ let derive (spec : Spec.t) table =
         (fun (name, reference) ->
           let file, _ = Decode.resolve reference in
           (name, file, List.assoc file spec.schemas))
-        spec.gateway.components.schemas
+        (Roots.all spec)
     in
     let records =
       List.filter_map

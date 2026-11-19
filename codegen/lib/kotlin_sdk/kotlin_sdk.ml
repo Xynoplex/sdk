@@ -13,8 +13,8 @@ let directory = "kotlin/sdk/src/generated/kotlin"
 let types_directory = directory ^ "/xynolog/types"
 let sign_in_file = "sign-in-store/SignIn.json"
 
-(* The schemas a generation writes: every component schema of the gateway's
-   document, the records Protocol states in its tables ([Table_records]), and
+(* The schemas a generation writes: every root ([Roots]), the
+   records Protocol states in its tables ([Table_records]), and
    the sign-in store's entry, which is the store's own schema and no
    component of the API. *)
 let spec_of (spec : Spec.t) : (Types.spec, string) result =
@@ -22,7 +22,7 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
   let components =
     List.map
       (fun (name, reference) -> (name, fst (Decode.resolve reference)))
-      spec.gateway.components.schemas
+      (Roots.all spec)
   in
   let* records = Table_records.all spec in
   let* definitions =

@@ -75,8 +75,10 @@ let node keys =
 let meant = function Node { merged = Some m; _ } -> m | s -> s
 
 type definitions = {
-  names : string list;  (** Every component schema, by its name. *)
-  schema : string -> t;  (** A component schema; refused if there is none. *)
+  names : string list;
+      (** Every schema a generation is rooted on ([Roots]), and every schema
+          they reach, by its name. *)
+  schema : string -> t;  (** A schema by its name; refused if there is none. *)
 }
 
 let stem file = Filename.remove_extension (Filename.basename file)
@@ -295,12 +297,10 @@ let bundle (spec : Spec.t) =
   let records = records spec in
   List.iter (fun (key, _, s) -> Hashtbl.replace schemas key s) records;
   let declared =
-    List.map
-      (fun (name, r) -> (fst (Decode.resolve r), name))
-      spec.gateway.components.schemas
+    List.map (fun (name, r) -> (fst (Decode.resolve r), name)) (Roots.all spec)
   in
   let titled = List.map (fun (key, name, _) -> (key, name)) records in
-  (* A schema is named by the name the document gives it, a table's record by
+  (* A schema is named by the name [Roots] gives it, a table's record by
      its title, and a whole file of a directory of schemas or of client types
      by its own. A member of a file is named by none. *)
   let named key =

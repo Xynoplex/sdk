@@ -1,7 +1,8 @@
 (* The Rust SDK's protocol types (rust/sdk/src/types.rs): the body of every
    request and response the gateway declares but the ones a service only
    passes through, every channel's payload, the schemas the SDK holds beside
-   them, every kind of id, and the records Protocol states in its tables
+   them, every service's own schema ([Roots]), every kind of
+   id, and the records Protocol states in its tables
    ([Table_records]), with every schema they reach; and an entry of
    the store [xynolog login] keeps (rust/sdk/src/sign_in_store.rs). *)
 
@@ -67,7 +68,9 @@ let generation (spec : Spec.t) (bundle : Definitions.bundle) :
       List.sort_uniq String.compare
         (payloads spec
         @ List.filter (fun b -> not (List.mem b passed_through)) bundle.bodies
-        @ beside @ identifiers @ client_types
+        @ beside
+        @ List.map fst (Roots.services spec)
+        @ identifiers @ client_types
         @ List.map (fun (_, name, _) -> name) (Definitions.records spec));
     identifiers;
     accessors;

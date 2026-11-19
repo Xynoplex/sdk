@@ -83,8 +83,8 @@ let unknown ~known (s : Schema.schema) =
   List.filter (fun k -> not (List.mem k known)) (Schema.keywords s)
 
 (* The Go SDK's package api, as the launcher's types name its types: every
-   type it declares, the component schema each file is, and which names are
-   component schemas'. *)
+   type it declares, the root schema ([Roots]) each file is, and
+   which names are its schemas'. *)
 type api = {
   declared : string list;
   components : (string * string) list;  (** Each file's component name. *)
@@ -98,7 +98,7 @@ let api (spec : Spec.t) =
     components =
       List.map
         (fun (name, r) -> (fst (Decode.resolve r), name))
-        spec.gateway.components.schemas;
+        (Roots.all spec);
     defined = (fun name -> List.mem name names);
   }
 
