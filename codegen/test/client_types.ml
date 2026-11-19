@@ -146,16 +146,59 @@ let cases =
                          member "target"
                            (Named { name = "HttpEndpoint"; union = false });
                        ] );
+                   ( "GatherResourceOptions",
+                     M.Fields
+                       [
+                         member ~required:false "excludeEntityTypes"
+                           (List (Scalar String));
+                       ] );
+                   ( "MatchSearchOptions",
+                     M.Fields
+                       [ member ~required:false "limit" (Scalar Integer) ] );
                  ])
         with
         | Ok adapters -> (
-            match List.assoc_opt "TextSpan" adapters with
+            (match List.assoc_opt "TextSpan" adapters with
             | Some (Schema.Schema { properties = Some properties; _ }) -> (
                 match List.assoc_opt "start" properties with
                 | Some (Schema.Schema { type_ = Some [ Integer ]; _ }) -> ()
                 | _ -> Alcotest.fail "start is not an integer")
-            | _ -> Alcotest.fail "no TextSpan of properties")
+            | _ -> Alcotest.fail "no TextSpan of properties");
+            match List.assoc_opt "GatherResourceOptions" adapters with
+            | Some
+                (Schema.Schema
+                   { properties = Some properties; required = Some []; _ }) -> (
+                match List.assoc_opt "excludeEntityTypes" properties with
+                | Some
+                    (Schema.Schema
+                       {
+                         type_ = Some [ Array ];
+                         items =
+                           Some (Schema.Schema { type_ = Some [ String ]; _ });
+                         _;
+                       }) ->
+                    ()
+                | _ -> Alcotest.fail "excludeEntityTypes is not a list of text")
+            | _ ->
+                Alcotest.fail "no GatherResourceOptions of optional properties")
         | Error _ -> Alcotest.fail "refused");
+    case "an adapter's list of other than scalars is refused" (fun () ->
+        match
+          W.adapters
+            ~shape:
+              (shapes
+                 [
+                   ("QuotedText", M.Fields [ member "exact" (List (Inline [])) ]);
+                 ])
+        with
+        | Ok _ -> Alcotest.fail "wrote what it should refuse"
+        | Error errors ->
+            Alcotest.(check bool)
+              "the list is what it refuses" true
+              (List.exists
+                 (fun (e : Decode.error) ->
+                   e.message = "exact is no scalar, list of scalars or type")
+                 errors));
     case "a secret proof whose grant is not the client assertion's is refused"
       (fun () ->
         refused

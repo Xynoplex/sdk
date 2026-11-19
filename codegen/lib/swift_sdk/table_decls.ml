@@ -1176,17 +1176,14 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
 (* Every table declaration, in the order the SDK's file holds them. *)
 let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes =
   let tables = spec.tables in
-  (match M.schema models "GatherResourceRequestOptions" with
-  | D.Node n ->
+  (match
+     List.assoc_opt "client/types/GatherResourceOptions.json" spec.schemas
+   with
+  | Some s ->
       ignore
         (M.inline models ~modifiers:[ "public" ] "" "GatherResourceOptions"
-           (D.Node
-              {
-                n with
-                required = None;
-                keys = List.filter (( <> ) "required") n.keys;
-              }))
-  | _ -> refuse "GatherResourceRequestOptions is no object");
+           (view s))
+  | None -> refuse "Protocol states no client type GatherResourceOptions");
   let frame = M.schema models "BusFrame" in
   let metadata =
     [

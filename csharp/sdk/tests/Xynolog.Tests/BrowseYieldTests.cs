@@ -244,7 +244,7 @@ public sealed partial class TransportTests
         foreach (var example in row.GetProperty("cases").EnumerateArray())
         {
             var data = example.GetProperty("args").GetProperty("data");
-            var bytes = Encoding.UTF8.GetBytes(Text(data, "content"));
+            var bytes = Encoding.UTF8.GetBytes(Text(data, "file"));
             var sent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             server.Other = async (request, cancellation) =>
             {

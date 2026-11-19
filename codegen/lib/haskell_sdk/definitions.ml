@@ -3,10 +3,9 @@
    component is named by its file. Beside them are the form a resource's
    upload states its metadata in (ResourceUpload without its file), the trace
    carrier, the records of the client registry, of the state units' notices
-   and of how a session ends, the stored sign-in, session and resources, the
-   options of an engine, of a gather and of a search (each a request without
-   what an SDK passes positionally), what an HTTP operation states in place,
-   and each bus envelope. None may take a component's name. *)
+   and of how a session ends, the stored sign-in, session and resources, an
+   engine with its limits, what an HTTP operation states in place, and each
+   bus envelope. None may take a component's name. *)
 
 let ( let* ) = Result.bind
 
@@ -172,25 +171,11 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
     if engine.properties = None then Error "EngineEntry properties missing"
     else Ok ()
   in
-  let* gather =
-    Result.bind
-      (component "GatherResourceRequestOptions")
-      (layer "GatherResourceRequestOptions")
-  in
-  let* search =
-    Result.bind (component "MatchSearchRequest") (layer "MatchSearchRequest")
-  in
-  let positional = [ "resourceId"; "referenceId"; "context" ] in
-  let* _ = each (fun k -> property "MatchSearchRequest" k search) positional in
   let options =
     [
       ( "EngineWithLimits",
         Schema.Schema
           (with_property "limits" (reference "InferenceLimits") engine) );
-      ("GatherResourceOptions", Schema.Schema { gather with required = None });
-      ( "MatchSearchOptions",
-        Schema.Schema
-          { (without_properties positional search) with required = None } );
     ]
   in
   let tables = spec.tables in

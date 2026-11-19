@@ -8,14 +8,18 @@
 let types = "client/types/"
 let form = "session/ClientSecretForm.json"
 
-(* What a member holds: a scalar by its JSON Schema type, one of some words,
-   another schema by its name (and whether that is a union of branches), a
-   list whose items the schema leaves open, or an object stated in place. *)
+(* What a member holds: a scalar by its JSON Schema type, a file's bytes, one
+   of some words, another schema by its name (and whether that is a union of
+   branches), a list whose items the schema leaves open or states, or an object
+   stated in place. A member a schema states elsewhere ([$ref] to a member of
+   another schema) holds what that member holds. *)
 type held =
   | Scalar of Schema.type_name
+  | Binary
   | Word of string list
   | Named of { name : string; union : bool }
   | Open_list
+  | List of held
   | Inline of member list
 
 and member = { name : string; held : held; required : bool }
@@ -50,7 +54,7 @@ let derive (spec : Spec.t) =
   in
   let schema file = List.assoc_opt file spec.schemas in
   (* The keywords a member's schema may state beyond what it holds: what is
-     said of it, and a scalar's bounds, which no writer reads. *)
+     said of it. A scalar's bounds and a list's least length no writer reads. *)
   let described s =
     List.filter (fun k -> k <> "description") (Schema.keywords s)
   in
@@ -61,17 +65,38 @@ let derive (spec : Spec.t) =
         None)
       ~schema:(fun l file pointer ->
         match l with
-        | { ref_ = Some ref_; _ } when described l = [ "$ref" ] ->
-            let target, _ = Decode.resolve ref_ in
-            let union =
-              match schema target with
-              | Some (Schema.Schema { one_of = Some _; _ }) -> true
-              | _ -> false
-            in
-            Some (Named { name = name_of target; union })
+        | { ref_ = Some ref_; _ } when described l = [ "$ref" ] -> (
+            match Decode.resolve ref_ with
+            | target, "" ->
+                let union =
+                  match schema target with
+                  | Some (Schema.Schema { one_of = Some _; _ }) -> true
+                  | _ -> false
+                in
+                Some (Named { name = name_of target; union })
+            | target, at -> (
+                match
+                  Option.bind (schema target) (fun s ->
+                      Definitions.at_pointer s at)
+                with
+                | Some member -> held member target at
+                | None ->
+                    refuse file pointer
+                      ("refers to " ^ ref_.target ^ ", which is no schema");
+                    None))
         | { type_ = Some [ Array ]; items = None; _ }
           when described l = [ "type" ] ->
             Some Open_list
+        | { type_ = Some [ Array ]; items = Some (_, items); _ }
+          when List.for_all
+                 (fun k -> List.mem k [ "type"; "items"; "minItems" ])
+                 (described l) ->
+            Option.map (fun item -> List item) (items file (pointer ^ "/items"))
+        | { all_of = Some [ (_, one) ]; _ } when described l = [ "allOf" ] ->
+            one file (pointer ^ "/allOf/0")
+        | { type_ = Some [ String ]; format = Some Binary; _ }
+          when described l = [ "type"; "format" ] ->
+            Some Binary
         | { type_ = Some [ String ]; enum = Some literals; _ }
           when described l = [ "type"; "enum" ] -> (
             match words_of literals with
@@ -94,11 +119,25 @@ let derive (spec : Spec.t) =
       member
   (* [s]'s members, each member's schema beside what it holds. *)
   and fields file pointer s =
+    let closed =
+      match s.additional_properties with
+      | None | Some (Schema.Boolean_schema false, _) -> true
+      | Some _ -> false
+    in
     match (s.properties, described s) with
     | Some properties, keywords
-      when List.for_all
-             (fun k -> List.mem k [ "title"; "type"; "properties"; "required" ])
-             keywords ->
+      when closed
+           && List.for_all
+                (fun k ->
+                  List.mem k
+                    [
+                      "title";
+                      "type";
+                      "properties";
+                      "required";
+                      "additionalProperties";
+                    ])
+                keywords ->
         let required = Option.value s.required ~default:[] in
         List.iter
           (fun r ->

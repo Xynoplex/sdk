@@ -209,7 +209,7 @@ private val calls: Map<String, Call> = mapOf(
     "yield.resource" to { c, a ->
         val data = a.getValue("data").jsonObject
         fun text(name: String) = data.getValue(name).jsonPrimitive.content
-        c.yield.resource(PutBinaryRequest(name = text("name"), file = text("content").toByteArray(), format = text("format"), storageUri = text("storageUri")))
+        c.yield.resource(PutBinaryRequest(name = text("name"), file = text("file").toByteArray(), format = text("format"), storageUri = text("storageUri")))
     },
     "yield.delegate" to { c, a -> c.yield.delegate(a.read("params", GenerationJobParams.serializer()), a["stallDeadlineMs"]?.jsonPrimitive?.long).await() },
     "yield.createFromToken" to { c, a ->

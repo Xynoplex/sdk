@@ -218,11 +218,11 @@ let tests env ~name ~via ~row =
       (Bus (B.name channel, None, Yojson.Safe.from_string (B.encode payload)))
   in
   let send_upload data =
-    let bytes = string "content" data in
+    let bytes = string "file" data in
     let fields =
       List.filter_map
         (function
-          | "content", _ -> None
+          | "file", _ -> None
           | key, `String value -> Some (key, value)
           | _ -> None)
         (fields data)

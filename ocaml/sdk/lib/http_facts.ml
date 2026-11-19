@@ -49,7 +49,7 @@ let bus_failure = function
   | Some Failure_code.Unauthorized -> "bus.unauthorized"
   | Some Failure_code.None_pending -> "bus.none-pending"
 
-let retry_statuses = [ 408; 413; 429; 500; 502; 503 ]
+let retry_statuses = [ 408; 413; 429; 500; 502; 503; 504 ]
 
 let upload_fields =
   [

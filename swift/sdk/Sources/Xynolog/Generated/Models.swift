@@ -3665,6 +3665,9 @@ public struct GatherResourceOptions: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["depth", "excludeEntityTypes", "includeContent", "includeSummary", "maxResources"],
+      in: "GatherResourceOptions")
     self.depth = try c.ifPresent("depth")
     self.excludeEntityTypes = try c.ifPresent("excludeEntityTypes")
     self.includeContent = try c.ifPresent("includeContent")

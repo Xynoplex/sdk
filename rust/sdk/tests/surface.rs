@@ -471,7 +471,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             };
             let upload = client.yield_.resource(PutBinaryRequest {
                 name: stated("name"),
-                bytes: Bytes::from(stated("content")),
+                bytes: Bytes::from(stated("file")),
                 format: stated("format"),
                 storage_uri: stated("storageUri"),
                 entity_types: Vec::new(),
