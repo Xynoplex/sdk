@@ -9,8 +9,9 @@ let strings l = `List (List.map string l)
 let optional key write = function None -> [] | Some v -> [ (key, write v) ]
 
 (* An attribute's value, as the JSON value it is carried as. *)
-let value : Tables.Sdk_telemetry_telemetry.values_item -> Yojson.Safe.t =
-  function
+let value :
+    Tables.Sdk_telemetry_telemetry.service_telemetry_telemetry_values_item ->
+    Yojson.Safe.t = function
   | String s -> `String s
   | Boolean b -> `Bool b
 
@@ -34,7 +35,8 @@ let telemetry_spans (t : Tables.Sdk_telemetry_telemetry.t) =
                `List
                  (List.map
                     (fun ({ key; only; values } :
-                           Tables.Sdk_telemetry_telemetry.attributes_item) ->
+                           Tables.Sdk_telemetry_telemetry
+                           .service_telemetry_telemetry_attributes_item) ->
                       `Assoc
                         ([ ("key", string key) ]
                         @ optional "only" string only
@@ -65,7 +67,8 @@ let telemetry_metrics (t : Tables.Sdk_telemetry_telemetry.t) =
                `List
                  (List.map
                     (fun ({ key; only } :
-                           Tables.Sdk_telemetry_telemetry.attributes_item) ->
+                           Tables.Sdk_telemetry_telemetry
+                           .service_telemetry_telemetry_attributes_item) ->
                       `Assoc
                         ([ ("key", string key) ] @ optional "only" string only))
                     attributes) );
