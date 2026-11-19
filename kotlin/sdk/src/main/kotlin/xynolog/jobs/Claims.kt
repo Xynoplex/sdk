@@ -8,13 +8,13 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.serializer
 import xynolog.Timings
 import xynolog.bus.Bus
 import xynolog.bus.Operations
 import xynolog.bus.decoded
+import xynolog.bus.heard
 import xynolog.bus.replyChannelsFor
 import xynolog.bus.resultOf
 import xynolog.channels.Channels
@@ -26,6 +26,7 @@ import xynolog.telemetry.futureOf
 import xynolog.transport.Broadcast
 import xynolog.transport.Carried
 import xynolog.transport.ConnectionState
+import xynolog.transport.Delivered
 import xynolog.transport.Events
 import xynolog.transport.Frame
 import xynolog.transport.FrameRefusal
@@ -227,15 +228,14 @@ public class Claims internal constructor(
             },
             scope.launch {
                 cancellations.collect { carried ->
-                    val frame = when (carried) {
-                        is Frame -> carried
+                    val cancellation = when (val read = heard(Channels.JOB_CANCEL_REQUESTED, carried)) {
+                        is Delivered -> read.payload
                         // A refused frame names no job to cancel.
                         is FrameRefusal -> return@collect
                     }
                     // A cancellation is the held job's only when it names it, and one that arrives after the settle signals nothing.
                     val (holding, signal) = synchronized(lock) { held to cancelling }
-                    val named = (frame.payload["jobId"] as? JsonPrimitive)?.content
-                    if (holding != null && signal != null && !holding.settled && named == holding.jobId.value) signal.set(true)
+                    if (holding != null && signal != null && !holding.settled && cancellation.jobId == holding.jobId) signal.set(true)
                 }
             },
             scope.launch { watchTheStream() },

@@ -15,7 +15,6 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import xynolog.Timings
 import xynolog.channels.Channel
 import xynolog.channels.ScopedChannel
@@ -38,6 +37,7 @@ import xynolog.transport.ResourceHold
 import xynolog.transport.TraceContext
 import xynolog.transport.Transport
 import xynolog.transport.scope
+import xynolog.types.CommandError
 import xynolog.types.wireJson
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -190,7 +190,8 @@ internal suspend fun resultOf(transport: Transport, operation: Operation<*, *, *
  */
 private fun answered(channel: Channel<*>, failure: JsonObject): XynologError {
     val asRead = readOf(channel.payload.descriptor, declared(channel.stamps, failure))
-    val fault = asRead.fault ?: return asRead.value.jsonObject.let { read -> BusRequestError.answered(read.getValue("message").jsonPrimitive.content, read) }
+    // Every failure channel's payload is a CommandError, or one the spec composes of it.
+    val fault = asRead.fault ?: return asRead.value.jsonObject.let { read -> BusRequestError.answered(wireJson.decodeFromJsonElement(CommandError.serializer(), read).message, read) }
     return TransportError(TransportErrorCode.Error, notTheChannels(channel.name, fault))
 }
 

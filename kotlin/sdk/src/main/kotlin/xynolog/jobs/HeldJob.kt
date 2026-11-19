@@ -4,7 +4,6 @@ package xynolog.jobs
 
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import xynolog.bus.Operation
 import xynolog.bus.Operations
@@ -25,6 +24,8 @@ import xynolog.types.Annotation
 import xynolog.types.BrowseAnnotationRequest
 import xynolog.types.DurabilityEvidence
 import xynolog.types.FailureClass
+import xynolog.types.GatheredContextFocusAnnotation
+import xynolog.types.GenerationJobParams
 import xynolog.types.JobCancelCommand
 import xynolog.types.JobCheckpointCommand
 import xynolog.types.JobFailCommand
@@ -59,14 +60,19 @@ private fun weakness(evidence: DurabilityEvidence): Int = when (evidence) {
     DurabilityEvidence.ProbeRefused, DurabilityEvidence.ProbeUnreachable -> 2
 }
 
-/** The annotation a job is anchored to: the one a `yield` job's context is focused on. A `mark` job has none. */
+/**
+ * The annotation a job is anchored to: the one a `yield` job's context is
+ * focused on. A `mark` job has none, and nor has a `yield` job whose
+ * parameters are not a `yield` job's.
+ */
 private fun anchorOf(jobType: JobType, params: JobParams): AnnotationId? {
     if (jobType != JobType.Yield) return null
-    val written = wireJson.encodeToJsonElement(JobParams.serializer(), params).jsonObject
-    val focus = (written["context"] as? JsonObject)?.get("focus") as? JsonObject ?: return null
-    if ((focus["kind"] as? JsonPrimitive)?.content != "annotation") return null
-    val named = ((focus["annotation"] as? JsonObject)?.get("id") as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return null
-    return AnnotationId.parse(named)
+    val generation = try {
+        wireJson.decodeFromJsonElement(GenerationJobParams.serializer(), wireJson.encodeToJsonElement(JobParams.serializer(), params))
+    } catch (_: IllegalArgumentException) {
+        return null
+    }
+    return (generation.context.focus as? GatheredContextFocusAnnotation)?.annotation?.id
 }
 
 /**
