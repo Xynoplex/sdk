@@ -1,6 +1,6 @@
-(* The service-types group: the Rust types of the schemas only images'
-   services read (packages/rust/core/src/types.rs), named by images' own
-   table of them, with every schema they reach. A schema the Rust SDK
+(* The service-types group: the Rust types of the schemas images' services
+   read that the Rust SDK does not declare (packages/rust/core/src/types.rs),
+   named by images' own table of them, with every schema they reach. A schema the Rust SDK
    declares is named there ([xynolog::types]), never written again: one home
    for each. *)
 
@@ -29,7 +29,7 @@ let derive ~root (spec : Spec.t) =
   List.iter
     (fun name ->
       if not (List.mem name bundle.definitions.names) then
-        refuse (name ^ " is no component schema of the gateway's"))
+        refuse (name ^ " is no schema a generation roots ([Roots])"))
     roots;
   (match List.sort_uniq String.compare roots with
   | unique when List.length unique <> List.length roots ->
@@ -41,8 +41,8 @@ let derive ~root (spec : Spec.t) =
       Rust_syntax.text
         ~header:
           [
-            "Generated from the component schemas in protocol/specs/src and "
-            ^ table ^ "; do not edit.";
+            "Generated from the schemas in protocol/specs/src and " ^ table
+            ^ "; do not edit.";
             "Regenerate: make generate (xynolog/sdk's " ^ Banner.writer __FILE__
             ^ ")";
           ]

@@ -93,270 +93,6 @@ let validate_of : R.channels_item -> string option = function
   | _ -> None
 
 let indexed list = List.mapi (fun i x -> (i, x)) list
-let member set x = List.mem x set
-
-(* The rules of the registry's lists: each channel declared once and named
-   only where declared, each crossing channel declaring its kind and audience
-   and each emittable one its effect, with no default for any. *)
-let check (reg : R.t) =
-  let problems = ref [] in
-  let refuse pointer fmt =
-    Printf.ksprintf
-      (fun message ->
-        problems := { Decode.file; pointer; message } :: !problems)
-      fmt
-  in
-  let declared = Hashtbl.create 256 in
-  List.iter
-    (fun (i, (c : R.channels_item)) ->
-      if Hashtbl.mem declared (name c) then
-        refuse
-          (Printf.sprintf "/channels/%d" i)
-          "channel %S is declared more than once" (name c)
-      else Hashtbl.replace declared (name c) c)
-    (indexed reg.channels);
-  let known pointer ch =
-    if not (Hashtbl.mem declared ch) then
-      refuse pointer "names %S, which is not declared in channels[]" ch
-  in
-  let known_list pointer list =
-    List.iteri (fun i ch -> known (Printf.sprintf "%s/%d" pointer i) ch) list
-  in
-  known_list "/channelOrder/eventMap" reg.channel_order.event_map;
-  known_list "/channelOrder/schemas" reg.channel_order.schemas;
-  let requests =
-    List.map (fun (o : R.operations_item) -> o.request) reg.operations
-  in
-  let replies =
-    List.concat_map
-      (fun (o : R.operations_item) -> [ o.result; o.failure ])
-      reg.operations
-  in
-  let owners = Hashtbl.create 64 in
-  List.iter
-    (fun (i, (o : R.operations_item)) ->
-      let at member = Printf.sprintf "/operations/%d/%s" i member in
-      known (at "request") o.request;
-      known (at "result") o.result;
-      known (at "failure") o.failure;
-      (match Hashtbl.find_opt declared o.request with
-      | Some c when validate_of c = None ->
-          refuse (at "request")
-            "%S is an operation's request and names no validate schema: \
-             /bus/emit could never accept it, so Bus.request could never send \
-             it"
-            o.request
-      | _ -> ());
-      if member replies o.request then
-        refuse (at "request") "%S is both a request and a reply" o.request;
-      List.iter
-        (fun (role, ch) ->
-          match Hashtbl.find_opt owners ch with
-          | Some owner ->
-              refuse (at role)
-                "%S is the %s of both %s and %s: a reply channel is one \
-                 operation's"
-                ch role owner o.request
-          | None -> Hashtbl.replace owners ch o.request)
-        [ ("result", o.result); ("failure", o.failure) ])
-    (indexed reg.operations);
-  let operation_channel ch = member requests ch || member replies ch in
-  (* One owner per channel across an axis's values, which name only declared
-     channels, each once. *)
-  let axis name values =
-    let owner = Hashtbl.create 64 in
-    List.iter
-      (fun (value, list) ->
-        let pointer = Printf.sprintf "/%s/%s" name value in
-        known_list pointer list;
-        List.iteri
-          (fun i ch ->
-            let at = Printf.sprintf "%s/%d" pointer i in
-            if
-              List.exists (String.equal ch)
-                (List.filteri (fun j _ -> j < i) list)
-            then refuse at "%s.%s lists %S more than once" name value ch
-            else
-              match Hashtbl.find_opt owner ch with
-              | Some prior ->
-                  refuse at
-                    "%S is declared both %s.%s and %s.%s: a channel crosses \
-                     exactly one way"
-                    ch name prior name value
-              | None -> Hashtbl.replace owner ch value)
-          list)
-      values;
-    owner
-  in
-  let kind_of =
-    axis "kind" [ ("command", reg.kind.command); ("event", reg.kind.event) ]
-  in
-  let audience_of =
-    axis "audience"
-      [
-        ("everyone", reg.audience.everyone);
-        ("scoped", reg.audience.scoped);
-        ("declared", reg.audience.declared);
-      ]
-  in
-  known_list "/inProcess/channels" reg.in_process.channels;
-  let in_process = reg.in_process.channels in
-  List.iter
-    (fun ch ->
-      if operation_channel ch then (
-        Option.iter
-          (refuse "/kind"
-             "%S belongs to an operation, so its kind is derived: remove it \
-              from kind.%s"
-             ch)
-          (Hashtbl.find_opt kind_of ch);
-        Option.iter
-          (refuse "/audience"
-             "%S belongs to an operation, so its audience is derived: remove \
-              it from audience.%s"
-             ch)
-          (Hashtbl.find_opt audience_of ch));
-      if member in_process ch then (
-        Option.iter
-          (refuse "/inProcess/channels"
-             "%S is declared inProcess and given audience.%s: inProcess means \
-              it never crosses"
-             ch)
-          (Hashtbl.find_opt audience_of ch);
-        Option.iter
-          (refuse "/inProcess/channels"
-             "%S is declared inProcess and given kind.%s: inProcess means it \
-              never crosses"
-             ch)
-          (Hashtbl.find_opt kind_of ch)))
-    (List.map name reg.channels);
-  List.iter
-    (fun (i, (c : R.channels_item)) ->
-      let at = Printf.sprintf "/channels/%d" i in
-      let channel = name c in
-      if not (member in_process channel || operation_channel channel) then (
-        if not (Hashtbl.mem kind_of channel) then
-          refuse at
-            "channel %S declares no kind: add it to kind.command or \
-             kind.event, or to inProcess if it never crosses. There is no \
-             default."
-            channel;
-        if not (Hashtbl.mem audience_of channel) then
-          refuse at
-            "channel %S declares no audience: add it to audience.everyone, \
-             audience.scoped or audience.declared. There is no default."
-            channel);
-      (match c with
-      | Stored_event { event; _ } when event <> channel ->
-          refuse at
-            "%S is a stored event named %S: a persisted event is published on \
-             the channel of its own type"
-            channel event
-      | Schema { schema; validate = Some validate; _ } when validate <> schema
-        ->
-          refuse at
-            "%S carries %s and validates against %s: one channel, one schema"
-            channel schema validate
-      | Envelope { validate = Some validate; _ }
-      | Stored_event { validate = Some validate; _ }
-      | Void { validate = Some validate; _ }
-      | Empty { validate = Some validate; _ } ->
-          (* The schema's description says so, and Schema has no null
-             literal to state it with. *)
-          refuse at
-            "%S validates against %s and carries no schema: only a channel \
-             that carries one is validated against it"
-            channel validate
-      | _ -> ());
-      if
-        Hashtbl.find_opt audience_of channel = Some "scoped"
-        && not (is_recorded c)
-      then
-        refuse at
-          "%S has audience scoped and is no stored event: a resource's scope \
-           carries the events of its record"
-          channel)
-    (indexed reg.channels);
-  (* Who emits a channel: whether that emit changes the knowledge base is
-     declared, since the gateway reads it to decide whether an emit was an
-     act. *)
-  let emittable = requests @ reg.kind.command in
-  let effect_of = Hashtbl.create 64 in
-  List.iter
-    (fun (side, list) ->
-      let pointer = "/effect/" ^ side in
-      known_list pointer list;
-      List.iteri
-        (fun i ch ->
-          let at = Printf.sprintf "%s/%d" pointer i in
-          if
-            List.exists (String.equal ch) (List.filteri (fun j _ -> j < i) list)
-          then refuse at "effect.%s lists %S more than once" side ch
-          else (
-            (match Hashtbl.find_opt effect_of ch with
-            | Some prior ->
-                refuse at
-                  "%S is declared both effect.%s and effect.%s: an emit either \
-                   changes the knowledge base or it does not"
-                  ch prior side
-            | None -> Hashtbl.replace effect_of ch side);
-            if not (member emittable ch) then
-              refuse at
-                "effect.%s names %S, which nobody emits: the domain is an \
-                 operation's request or a kind.command"
-                side ch))
-        list)
-    [ ("writes", reg.effect_.writes); ("reads", reg.effect_.reads) ];
-  List.iter
-    (fun ch ->
-      if not (Hashtbl.mem effect_of ch) then
-        refuse "/effect"
-          "emittable channel %S declares no effect: add it to effect.writes or \
-           effect.reads. There is no default."
-          ch)
-    emittable;
-  Hashtbl.iter
-    (fun ch kind ->
-      if kind = "command" && Hashtbl.find_opt audience_of ch = Some "everyone"
-      then
-        refuse "/kind/command"
-          "%S is kind command with audience everyone: a directive is not a \
-           broadcast"
-          ch)
-    kind_of;
-  (* A directive, or a declaration, of a channel the TypeScript EventMap does
-     not carry is drift. *)
-  List.iter
-    (fun (pointer, list) ->
-      List.iter
-        (fun ch ->
-          if not (member reg.channel_order.event_map ch) then
-            refuse pointer "%S is classified but not in channelOrder.eventMap"
-              ch)
-        list)
-    [
-      ("/kind/command", reg.kind.command);
-      ("/audience/declared", reg.audience.declared);
-      ("/inProcess/channels", reg.in_process.channels);
-    ];
-  let field = reg.trace.field in
-  let word_char c =
-    match c with
-    | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' -> true
-    | _ -> false
-  in
-  if
-    not
-      (String.length field >= 2
-      && field.[0] = '_'
-      && (match field.[1] with 'A' .. 'Z' | 'a' .. 'z' -> true | _ -> false)
-      && String.for_all word_char field)
-  then
-    refuse "/trace/field"
-      "is %S: it is a payload field the bus writes, so a name that begins with \
-       \"_\" and a letter"
-      field;
-  List.rev !problems
 
 (* A component schema, by the name the registry gives it. *)
 let component (spec : Spec.t) name =
@@ -496,8 +232,8 @@ let reply_names component channel (o : R.operations_item) =
   names
 
 (* An operation's replies are correlated; a recorded event on a resource's
-   scope is positioned; every other channel that crosses is passing. [check]
-   gives each channel one place on the axes, so each has one class. *)
+   scope is positioned; every other channel that crosses is passing. Protocol's
+   reader gives each channel one place on the axes, so each has one class. *)
 let delivery_classes (reg : R.t) =
   let classes = Hashtbl.create 256 in
   let set ch delivery = Hashtbl.replace classes ch delivery in
@@ -523,130 +259,123 @@ let delivery_classes (reg : R.t) =
 
 (* [component name] is the component schema the registry names [name]. *)
 let derive ~component (reg : R.t) =
-  match check reg with
-  | _ :: _ as problems -> Error problems
-  | [] -> (
-      let by_channel = Hashtbl.create 256 in
-      List.iter
-        (fun (c : R.channels_item) -> Hashtbl.replace by_channel (name c) c)
-        reg.channels;
-      let channel name = Hashtbl.find by_channel name in
-      let problems = ref [] in
-      let refuse pointer message =
-        problems := { Decode.file; pointer; message } :: !problems
-      in
-      let attempt pointer f default =
-        match f () with
-        | value -> value
-        | exception Problem message ->
-            refuse pointer message;
-            default
-      in
-      let reply_names =
-        List.mapi
-          (fun i (o : R.operations_item) ->
-            ( o.request,
-              attempt
-                (Printf.sprintf "/operations/%d" i)
-                (fun () -> reply_names component channel o)
-                [] ))
-          reg.operations
-      in
-      let stamps =
-        List.mapi
-          (fun i ch ->
-            ( ch,
-              attempt
-                (Printf.sprintf "/channelOrder/eventMap/%d" i)
-                (fun () ->
-                  match channel ch with
-                  | R.Schema { schema; _ } ->
-                      List.sort_uniq String.compare
-                        (stamps component ~of_:schema (named component schema))
-                  | _ -> [])
-                [] ))
-          reg.channel_order.event_map
-      in
-      let delivery = delivery_classes reg in
-      let requests =
-        List.map (fun (o : R.operations_item) -> o.request) reg.operations
-      in
-      let replies =
-        List.concat_map
-          (fun (o : R.operations_item) -> [ o.result; o.failure ])
-          reg.operations
-      in
-      let audiences =
-        reg.audience.everyone @ reg.audience.scoped @ reg.audience.declared
-      in
-      let emittable = requests @ reg.kind.command in
-      let attrs =
-        List.filter_map
-          (fun (i, ch) ->
-            let direction =
-              if List.mem ch emittable then Some Outbound
-              else if List.mem ch replies || List.mem ch audiences then
-                Some Inbound
-              else if List.mem ch reg.in_process.channels then Some In_process
-              else (
-                refuse
-                  (Printf.sprintf "/channelOrder/eventMap/%d" i)
-                  (Printf.sprintf
-                     "channel %S declares no direction: add it to operations, \
-                      kind and audience, or inProcess. There is no default."
-                     ch);
-                None)
-            in
-            Option.map
-              (fun direction ->
-                {
-                  channel = ch;
-                  recorded = is_recorded (channel ch);
-                  direction;
-                  writes =
-                    (if List.mem ch emittable then
-                       Some (List.mem ch reg.effect_.writes)
-                     else None);
-                  delivery = Hashtbl.find_opt delivery ch;
-                })
-              direction)
-          (indexed reg.channel_order.event_map)
-      in
-      let limits =
-        List.filter
-          (fun (o : R.operations_item) ->
-            String.ends_with ~suffix:":limits-requested" o.request)
-          reg.operations
-      in
-      let shape (o : R.operations_item) =
-        List.map
-          (fun ch -> carried (channel ch))
-          [ o.request; o.result; o.failure ]
-      in
-      let limits_problem message =
-        [ { Decode.file; pointer = "/operations"; message } ]
-      in
-      let mismatched =
-        match limits with
-        | [] -> limits_problem "no operation is named <flow>:limits-requested"
-        | first :: rest ->
-            if List.for_all (fun o -> shape o = shape first) rest then []
-            else
-              limits_problem
-                ("the limits operations do not all ask and answer the same: "
-                ^ String.concat ", "
-                    (List.map (fun (o : R.operations_item) -> o.request) limits)
-                )
-      in
-      match (limits, List.rev !problems @ mismatched) with
-      | first :: rest, [] ->
-          Ok
+  let by_channel = Hashtbl.create 256 in
+  List.iter
+    (fun (c : R.channels_item) -> Hashtbl.replace by_channel (name c) c)
+    reg.channels;
+  let channel name = Hashtbl.find by_channel name in
+  let problems = ref [] in
+  let refuse pointer message =
+    problems := { Decode.file; pointer; message } :: !problems
+  in
+  let attempt pointer f default =
+    match f () with
+    | value -> value
+    | exception Problem message ->
+        refuse pointer message;
+        default
+  in
+  let reply_names =
+    List.mapi
+      (fun i (o : R.operations_item) ->
+        ( o.request,
+          attempt
+            (Printf.sprintf "/operations/%d" i)
+            (fun () -> reply_names component channel o)
+            [] ))
+      reg.operations
+  in
+  let stamps =
+    List.mapi
+      (fun i ch ->
+        ( ch,
+          attempt
+            (Printf.sprintf "/channelOrder/eventMap/%d" i)
+            (fun () ->
+              match channel ch with
+              | R.Schema { schema; _ } ->
+                  List.sort_uniq String.compare
+                    (stamps component ~of_:schema (named component schema))
+              | _ -> [])
+            [] ))
+      reg.channel_order.event_map
+  in
+  let delivery = delivery_classes reg in
+  let requests =
+    List.map (fun (o : R.operations_item) -> o.request) reg.operations
+  in
+  let replies =
+    List.concat_map
+      (fun (o : R.operations_item) -> [ o.result; o.failure ])
+      reg.operations
+  in
+  let audiences =
+    reg.audience.everyone @ reg.audience.scoped @ reg.audience.declared
+  in
+  let emittable = requests @ reg.kind.command in
+  let attrs =
+    List.filter_map
+      (fun (i, ch) ->
+        let direction =
+          if List.mem ch emittable then Some Outbound
+          else if List.mem ch replies || List.mem ch audiences then Some Inbound
+          else if List.mem ch reg.in_process.channels then Some In_process
+          else (
+            refuse
+              (Printf.sprintf "/channelOrder/eventMap/%d" i)
+              (Printf.sprintf
+                 "channel %S declares no direction: add it to operations, kind \
+                  and audience, or inProcess. There is no default."
+                 ch);
+            None)
+        in
+        Option.map
+          (fun direction ->
             {
-              registry = reg;
-              channel;
-              reply_names;
-              stamps;
-              attrs;
-              limits = (first, rest);
-            }
-      | _, problems -> Error problems)
+              channel = ch;
+              recorded = is_recorded (channel ch);
+              direction;
+              writes =
+                (if List.mem ch emittable then
+                   Some (List.mem ch reg.effect_.writes)
+                 else None);
+              delivery = Hashtbl.find_opt delivery ch;
+            })
+          direction)
+      (indexed reg.channel_order.event_map)
+  in
+  let limits =
+    List.filter
+      (fun (o : R.operations_item) ->
+        String.ends_with ~suffix:":limits-requested" o.request)
+      reg.operations
+  in
+  let shape (o : R.operations_item) =
+    List.map (fun ch -> carried (channel ch)) [ o.request; o.result; o.failure ]
+  in
+  let limits_problem message =
+    [ { Decode.file; pointer = "/operations"; message } ]
+  in
+  let mismatched =
+    match limits with
+    | [] -> limits_problem "no operation is named <flow>:limits-requested"
+    | first :: rest ->
+        if List.for_all (fun o -> shape o = shape first) rest then []
+        else
+          limits_problem
+            ("the limits operations do not all ask and answer the same: "
+            ^ String.concat ", "
+                (List.map (fun (o : R.operations_item) -> o.request) limits))
+  in
+  match (limits, List.rev !problems @ mismatched) with
+  | first :: rest, [] ->
+      Ok
+        {
+          registry = reg;
+          channel;
+          reply_names;
+          stamps;
+          attrs;
+          limits = (first, rest);
+        }
+  | _, problems -> Error problems

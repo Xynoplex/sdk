@@ -306,6 +306,7 @@ let kind_of_type : Schema.type_name -> kind = function
   | Array -> Array
   | Boolean -> Boolean
   | Number -> Number
+  | Null -> Null
 
 let kind_of_literal : Schema.literal -> kind = function
   | String_literal _ -> String
@@ -328,26 +329,21 @@ let token name =
        (fun part -> String.concat "~0" (String.split_on_char '~' part))
        (String.split_on_char '/' name))
 
-(* OpenAPI 3.0's [nullable], read as JSON Schema reads null: beside a single
-   type, null is one more kind the value may be; anywhere else (beside an
-   [allOf], 3.0's only way to make a reference nullable) the schema is a union
-   of null and the schema without it. *)
+(* A schema as it says null ([Null_form]): beside a single type, null is one
+   more kind the value may be; anywhere else the schema is a union of null and
+   what it is beside null. *)
 type 'a view =
   | Plain of { schema : 'a Schema.layer; null : bool }
   | Or_null of 'a Schema.layer
 
-let view file at (schema : _ Schema.layer) =
-  match schema.nullable with
-  | None -> Plain { schema; null = false }
-  | Some false ->
-      refuse file at
-        "states nullable false, which says nothing: a schema is nullable, or \
-         says nothing of null"
-  | Some true -> (
-      let schema = { schema with nullable = None } in
-      match schema.type_ with
-      | Some [ _ ] -> Plain { schema; null = true }
-      | _ -> Or_null schema)
+let view file at (schema : (Schema.t * _) Schema.layer) =
+  match Null_form.without_null fst schema with
+  | Error message -> refuse file at "%s" message
+  | Ok None -> Plain { schema; null = false }
+  | Ok (Some beside) -> (
+      match beside.type_ with
+      | Some [ _ ] -> Plain { schema = beside; null = true }
+      | _ -> Or_null beside)
 
 let variants file at (schema : _ Schema.layer) =
   match (schema.one_of, schema.any_of) with
@@ -567,8 +563,7 @@ let derive ~unrecognized components =
         enum;
         const = _;
         default = _;
-        example = _;
-        nullable = _;
+        examples = _;
         properties;
         required;
         additional_properties;
@@ -597,180 +592,156 @@ let derive ~unrecognized components =
         (Schema.unread schema);
       match ref_ with
       | Some reference -> Ref (referred reference)
-      | None -> (
-          let own =
-            type_ <> None || enum <> None || pattern <> None
-            || min_length <> None || max_length <> None || minimum <> None
-            || maximum <> None || min_items <> None || max_items <> None
-            || properties <> None || required <> None
-            || additional_properties <> None
-            || max_properties <> None || items <> None || one_of <> None
-            || any_of <> None
+      | None ->
+          let kinds =
+            let kinds = plain_kinds file at schema in
+            if null then union [ Null ] kinds else kinds
           in
-          match all_of with
-          (* An allOf around one schema only describes it. *)
-          | Some [ (_, part) ] when not own ->
-              part.shape_of file (at ^ "/allOf/0")
-          | _ ->
-              let kinds =
-                let kinds = plain_kinds file at schema in
-                if null then union [ Null ] kinds else kinds
-              in
-              if enum <> None && List.mem Null kinds then
-                refuse file at
-                  "states an enum beside a type that allows null, and an enum \
-                   states no null";
-              let count keyword = function
-                | Some n when n < 0 ->
-                    refuse file
-                      (at ^ "/" ^ keyword)
-                      "is %d, which is no count" n
-                | bound -> bound
-              in
-              let pattern =
+          if enum <> None && List.mem Null kinds then
+            refuse file at
+              "states an enum beside a type that allows null, and an enum \
+               states no null";
+          let count keyword = function
+            | Some n when n < 0 ->
+                refuse file (at ^ "/" ^ keyword) "is %d, which is no count" n
+            | bound -> bound
+          in
+          let pattern =
+            Option.map
+              (fun text ->
+                try steps_of text
+                with Unspellable ->
+                  refuse file (at ^ "/pattern")
+                    "is %s, which is not a pattern the table can spell out" text)
+              pattern
+          in
+          let names =
+            List.sort String.compare
+              (List.map fst (Option.value properties ~default:[]))
+          in
+          let members =
+            List.map
+              (fun name ->
+                ( name,
+                  (snd (List.assoc name (Option.get properties))).shape_of file
+                    (at ^ "/properties/" ^ token name) ))
+              names
+          in
+          let closed =
+            match (additional_properties, max_properties) with
+            | Some (Schema.Boolean_schema false, _), _ -> Some names
+            | _, Some 0 when names = [] -> Some []
+            | _, Some n ->
+                refuse file (at ^ "/maxProperties")
+                  "is %d beside %d properties, and the table states only an \
+                   object that carries none"
+                  n (List.length names)
+            | _, None -> None
+          in
+          let values =
+            match additional_properties with
+            | Some (Schema _, value) ->
+                Some (value.shape_of file (at ^ "/additionalProperties"))
+            | Some (Boolean_schema _, _) | None -> None
+          in
+          let one_of, discriminator =
+            match (variants file at schema, discriminator) with
+            | None, None -> ([], None)
+            | None, Some _ ->
+                refuse file (at ^ "/discriminator")
+                  "is beside no oneOf or anyOf"
+            | Some (keyword, variants), discriminator ->
+                let shapes =
+                  List.mapi
+                    (fun i (_, variant) ->
+                      variant.shape_of file
+                        (Printf.sprintf "%s/%s/%d" at keyword i))
+                    variants
+                in
+                ( shapes,
+                  Option.map
+                    (fun (d : Schema.discriminator) ->
+                      let at = at ^ "/discriminator" in
+                      let mapping =
+                        match d.mapping with
+                        | Some mapping -> mapping
+                        | None -> refuse file at "states no mapping"
+                      in
+                      let named =
+                        List.map
+                          (function
+                            | Schema.Schema { ref_ = Some reference; _ }, _ ->
+                                Some (referred reference)
+                            | _ -> None)
+                          variants
+                      in
+                      {
+                        property = d.property_name;
+                        mapping =
+                          List.map
+                            (fun (value, target) ->
+                              let pointer = at ^ "/mapping/" ^ token value in
+                              let name =
+                                referred { Decode.target; file; pointer }
+                              in
+                              let rec place i = function
+                                | [] ->
+                                    refuse file pointer
+                                      "maps %S to %s, which is none of its \
+                                       variants"
+                                      value target
+                                | Some n :: _ when n = name -> i
+                                | _ :: rest -> place (i + 1) rest
+                              in
+                              (value, place 0 named))
+                            mapping;
+                      })
+                    discriminator )
+          in
+          let all_of =
+            match all_of with
+            | None -> []
+            | Some parts ->
+                if
+                  List.length parts > 1
+                  && List.exists
+                       (fun (_, part) ->
+                         part.closed_schema file (at ^ "/allOf"))
+                       parts
+                then
+                  refuse file (at ^ "/allOf")
+                    "has a closed part, which would refuse the other parts' \
+                     members";
+                List.mapi
+                  (fun i (_, part) ->
+                    part.shape_of file (Printf.sprintf "%s/allOf/%d" at i))
+                  parts
+          in
+          Shape
+            {
+              kinds = (if any_kind kinds then None else Some (ordered kinds));
+              recognized = None;
+              enum;
+              pattern;
+              min_length = count "minLength" min_length;
+              max_length = count "maxLength" max_length;
+              minimum;
+              maximum;
+              min_items = count "minItems" min_items;
+              max_items = count "maxItems" max_items;
+              required =
+                (match required with Some (_ :: _) -> required | _ -> None);
+              members;
+              closed;
+              items =
                 Option.map
-                  (fun text ->
-                    try steps_of text
-                    with Unspellable ->
-                      refuse file (at ^ "/pattern")
-                        "is %s, which is not a pattern the table can spell out"
-                        text)
-                  pattern
-              in
-              let names =
-                List.sort String.compare
-                  (List.map fst (Option.value properties ~default:[]))
-              in
-              let members =
-                List.map
-                  (fun name ->
-                    ( name,
-                      (snd (List.assoc name (Option.get properties))).shape_of
-                        file
-                        (at ^ "/properties/" ^ token name) ))
-                  names
-              in
-              let closed =
-                match (additional_properties, max_properties) with
-                | Some (Schema.Boolean_schema false, _), _ -> Some names
-                | _, Some 0 when names = [] -> Some []
-                | _, Some n ->
-                    refuse file (at ^ "/maxProperties")
-                      "is %d beside %d properties, and the table states only \
-                       an object that carries none"
-                      n (List.length names)
-                | _, None -> None
-              in
-              let values =
-                match additional_properties with
-                | Some (Schema _, value) ->
-                    Some (value.shape_of file (at ^ "/additionalProperties"))
-                | Some (Boolean_schema _, _) | None -> None
-              in
-              let one_of, discriminator =
-                match (variants file at schema, discriminator) with
-                | None, None -> ([], None)
-                | None, Some _ ->
-                    refuse file (at ^ "/discriminator")
-                      "is beside no oneOf or anyOf"
-                | Some (keyword, variants), discriminator ->
-                    let shapes =
-                      List.mapi
-                        (fun i (_, variant) ->
-                          variant.shape_of file
-                            (Printf.sprintf "%s/%s/%d" at keyword i))
-                        variants
-                    in
-                    ( shapes,
-                      Option.map
-                        (fun (d : Schema.discriminator) ->
-                          let at = at ^ "/discriminator" in
-                          let mapping =
-                            match d.mapping with
-                            | Some mapping -> mapping
-                            | None -> refuse file at "states no mapping"
-                          in
-                          let named =
-                            List.map
-                              (function
-                                | Schema.Schema { ref_ = Some reference; _ }, _
-                                  ->
-                                    Some (referred reference)
-                                | _ -> None)
-                              variants
-                          in
-                          {
-                            property = d.property_name;
-                            mapping =
-                              List.map
-                                (fun (value, target) ->
-                                  let pointer =
-                                    at ^ "/mapping/" ^ token value
-                                  in
-                                  let name =
-                                    referred { Decode.target; file; pointer }
-                                  in
-                                  let rec place i = function
-                                    | [] ->
-                                        refuse file pointer
-                                          "maps %S to %s, which is none of its \
-                                           variants"
-                                          value target
-                                    | Some n :: _ when n = name -> i
-                                    | _ :: rest -> place (i + 1) rest
-                                  in
-                                  (value, place 0 named))
-                                mapping;
-                          })
-                        discriminator )
-              in
-              let all_of =
-                match all_of with
-                | None -> []
-                | Some parts ->
-                    if
-                      List.length parts > 1
-                      && List.exists
-                           (fun (_, part) ->
-                             part.closed_schema file (at ^ "/allOf"))
-                           parts
-                    then
-                      refuse file (at ^ "/allOf")
-                        "has a closed part, which would refuse the other \
-                         parts' members";
-                    List.mapi
-                      (fun i (_, part) ->
-                        part.shape_of file (Printf.sprintf "%s/allOf/%d" at i))
-                      parts
-              in
-              Shape
-                {
-                  kinds =
-                    (if any_kind kinds then None else Some (ordered kinds));
-                  recognized = None;
-                  enum;
-                  pattern;
-                  min_length = count "minLength" min_length;
-                  max_length = count "maxLength" max_length;
-                  minimum;
-                  maximum;
-                  min_items = count "minItems" min_items;
-                  max_items = count "maxItems" max_items;
-                  required =
-                    (match required with
-                    | Some (_ :: _) -> required
-                    | _ -> None);
-                  members;
-                  closed;
-                  items =
-                    Option.map
-                      (fun (_, item) -> item.shape_of file (at ^ "/items"))
-                      items;
-                  values;
-                  one_of;
-                  discriminator;
-                  all_of;
-                })
+                  (fun (_, item) -> item.shape_of file (at ^ "/items"))
+                  items;
+              values;
+              one_of;
+              discriminator;
+              all_of;
+            }
     in
     let unpruned =
       List.map

@@ -87,7 +87,7 @@ let cases =
     case "a nullable member admits None, and is not optional for it" (fun () ->
         has
           (one
-             {|{"type": "object", "required": ["a"], "properties": {"a": {"type": "string", "nullable": true}}}|})
+             {|{"type": "object", "required": ["a"], "properties": {"a": {"type": ["string", "null"]}}}|})
           "    a: str | None\n");
     case "a string enum is the union of its literals" (fun () ->
         has
@@ -160,7 +160,7 @@ let cases =
           written
             [
               ( "S",
-                {|{"type": "object", "required": ["a"], "properties": {"a": {"allOf": [{"$ref": "A.json"}], "nullable": true}}}|}
+                {|{"type": "object", "required": ["a"], "properties": {"a": {"anyOf": [{"$ref": "A.json"}, {"type": "null"}]}}}|}
               );
               ("A", {|{"type": "string", "description": "What an A is."}|});
             ]

@@ -5,10 +5,10 @@
    - It is associative, so the parts of an allOf may be merged in any grouping.
    - It is commutative where JSON Schema's allOf is: the order of the parts
      decides nothing but the keywords the merge lets the later part decide
-     ([disputed]). Of those, title, description, $comment, default, example
+     ([disputed]). Of those, title, description, $comment, default, examples
      and discriminator only describe a value. The rest are assertions JSON
      Schema applies from every part, which the merge takes from the later
-     one: format, const, nullable, propertyNames, minProperties, not, an allOf
+     one: format, const, propertyNames, minProperties, not, an allOf
      a part keeps, and additionalProperties when neither part closes the
      object.
 
@@ -52,8 +52,7 @@ let part : Schema.schema Gen.t =
   in
   let* const = stated [ Schema.String_literal "a"; Int_literal 1 ] in
   let* default = stated [ Schema.String_literal "a"; Bool_literal true ] in
-  let* example = stated [ `String "a"; `Int 1 ] in
-  let* nullable = stated [ true; false ] in
+  let* examples = stated [ [ `String "a" ]; [ `Int 1 ] ] in
   let* properties =
     stated [ [ ("p", text) ]; [ ("p", long); ("q", text) ]; [ ("q", named) ] ]
   in
@@ -94,8 +93,7 @@ let part : Schema.schema Gen.t =
     enum;
     const;
     default;
-    example;
-    nullable;
+    examples;
     properties;
     required;
     additional_properties;
@@ -133,8 +131,7 @@ let undisputed (earlier : Schema.schema)
        enum;
        const;
        default;
-       example;
-       nullable;
+       examples;
        properties;
        required;
        additional_properties;
@@ -176,8 +173,7 @@ let undisputed (earlier : Schema.schema)
     enum;
     const = disputed earlier.const const;
     default = disputed earlier.default default;
-    example = disputed earlier.example example;
-    nullable = disputed earlier.nullable nullable;
+    examples = disputed earlier.examples examples;
     properties;
     required;
     additional_properties =
@@ -282,10 +278,10 @@ let merging () =
 (* The keywords [undisputed] exempts do decide the merge by order: without
    the exemption, commutativity fails. *)
 let disputed_decide () =
-  let earlier = { Schema.empty with nullable = Some true }
-  and later = { Schema.empty with nullable = Some false } in
+  let earlier = { Schema.empty with format = Some Uri }
+  and later = { Schema.empty with format = Some Date_time } in
   Alcotest.(check bool)
-    "nullable is the later part's" false
+    "format is the later part's" false
     (alike ~ordered:false
        (Normalize.merge earlier later)
        (Normalize.merge later earlier))

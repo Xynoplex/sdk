@@ -6,6 +6,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -86,6 +87,15 @@ class TypesTest {
         assertTrue(held > 150, "the census found $held id fields: it is reading the wrong thing")
     }
 
+    /** Whether a schema admits null: null its second type, or a member of its union. */
+    private fun admitsNull(stated: JsonElement): Boolean {
+        val schema = stated as? JsonObject ?: return false
+        val type = schema["type"]
+        if (type is JsonArray) return JsonPrimitive("null") in type
+        val nullType = JsonObject(mapOf("type" to JsonPrimitive("null")))
+        return listOf("anyOf", "oneOf").any { (schema[it] as? JsonArray)?.contains(nullType) == true }
+    }
+
     @Test
     fun aRequiredPropertyTheSpecSaysMayBeNullIsStatedAsNullOrAValue() {
         var held = 0
@@ -94,7 +104,7 @@ class TypesTest {
             val schema = Spec.read("components/schemas/$name.json").jsonObject
             val required = (schema["required"] as? JsonArray)?.map { it.jsonPrimitive.content }.orEmpty().toSet()
             val nullable = (schema["properties"] as? JsonObject)?.filter { (wire, stated) ->
-                wire in required && (stated as? JsonObject)?.get("nullable") == JsonPrimitive(true)
+                wire in required && admitsNull(stated)
             }?.keys.orEmpty()
             if (nullable.isEmpty()) continue
             val descriptor = typeOf(name).descriptor

@@ -124,8 +124,7 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
   let* format = last old.format next.format in
   let* const = last old.const next.const in
   let* default = last old.default next.default in
-  let* example = last old.example next.example in
-  let* nullable = last old.nullable next.nullable in
+  let* examples = last old.examples next.examples in
   let* property_names = last old.property_names next.property_names in
   let* min_properties = last old.min_properties next.min_properties in
   let* all_of = last old.all_of next.all_of in
@@ -142,8 +141,7 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
       enum;
       const;
       default;
-      example;
-      nullable;
+      examples;
       properties;
       required;
       additional_properties;

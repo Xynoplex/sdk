@@ -87,27 +87,36 @@ let kinds =
 
 let nullable =
   [
-    case "nullable beside a type allows null"
+    case "null beside a type allows null"
       (derives
-         [ ("S", {|{"type":"string","nullable":true}|}) ]
+         [ ("S", {|{"type":["string","null"]}|}) ]
          "S" {|{"kinds":["string","null"]}|});
-    case "nullable around a reference is a union with null"
+    case "an anyOf of a reference and null is a union with null"
       (derives
          [
            string_component;
-           ("S", {|{"nullable":true,"allOf":[{"$ref":"./Str.json"}]}|});
+           ("S", {|{"anyOf":[{"$ref":"./Str.json"},{"type":"null"}]}|});
          ]
          "S"
          {|{"kinds":["string","null"],"oneOf":[{"kinds":["null"]},{"ref":"Str"}]}|});
-    case "nullable false is refused"
+    case "a oneOf whose last member is null is a union with null"
+      (derives
+         [
+           ( "S",
+             {|{"oneOf":[{"type":"string"},{"type":"boolean"},{"type":"null"}]}|}
+           );
+         ]
+         "S"
+         {|{"kinds":["string","boolean","null"],"oneOf":[{"kinds":["null"]},{"kinds":["string","boolean"],"oneOf":[{"kinds":["string"]},{"kinds":["boolean"]}]}]}|});
+    case "an anyOf that holds null beside no reference is refused"
       (refuses
-         [ ("S", {|{"type":"string","nullable":false}|}) ]
+         [ ("S", {|{"anyOf":[{"type":"string"},{"type":"null"}]}|}) ]
          (s
-        ^ ": /: states nullable false, which says nothing: a schema is \
-           nullable, or says nothing of null"));
-    case "an enum beside a nullable type is refused"
+        ^ ": /: an anyOf that holds null is of one $ref and { \"type\": \
+           \"null\" }"));
+    case "an enum beside a type that allows null is refused"
       (refuses
-         [ ("S", {|{"type":"string","nullable":true,"enum":["a"]}|}) ]
+         [ ("S", {|{"type":["string","null"],"enum":["a"]}|}) ]
          (s
         ^ ": /: states an enum beside a type that allows null, and an enum \
            states no null"));
@@ -236,11 +245,10 @@ let objects =
          (s
         ^ ": /allOf: has a closed part, which would refuse the other parts' \
            members"));
-    case "an allOf of one schema is that schema"
+    case "a description beside a reference is that reference"
       (derives
          [
-           string_component;
-           ("S", {|{"allOf":[{"$ref":"./Str.json"}],"description":"d"}|});
+           string_component; ("S", {|{"$ref":"./Str.json","description":"d"}|});
          ]
          "S" {|{"ref":"Str"}|});
   ]

@@ -24,7 +24,7 @@ let waits =
 let derive ~root =
   let file = Bundles.archivist in
   let limits =
-    match Documents.document ~root file with
+    match Documents.document ~root ~beside:[] file with
     | `Assoc members -> (
         match List.assoc_opt "x-xynolog-limits" members with
         | Some (`Assoc limits) -> limits

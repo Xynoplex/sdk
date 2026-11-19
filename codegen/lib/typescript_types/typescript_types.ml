@@ -92,6 +92,7 @@ let type_of ~(named : string -> T.type_) =
     | String -> T_name "string"
     | Integer | Number -> T_name "number"
     | Boolean -> T_name "boolean"
+    | Null -> T_name "null"
     | Array ->
         T_array (operand (Option.fold ~none:unknown ~some:type_of n.items))
     | Object -> object_of n

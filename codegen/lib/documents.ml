@@ -1,9 +1,10 @@
 (* Whole OpenAPI documents, bundled from protocol/specs/src as their files
    write them: what a service embeds, serves and reads at run time. Every
    file a $ref names is followed. A file the root document lists under
-   [components], or one in a directory named [schemas] or [responses], is a
-   component, by the name the root lists or by its stem, and a reference
-   names it there; any other file is written in its place. A description
+   [components] is a component by the name it lists; one named [beside] the
+   document, or in a directory named [schemas] or [responses], is one by its
+   stem; and a reference names it there. Any other file is written in its
+   place. A description
    written beside a reference is kept: beside a component's reference, and
    over the description of a file written in its place.
 
@@ -97,8 +98,9 @@ let object_ file what = function
   | `Assoc members -> members
   | _ -> refuse file (what ^ " is no object")
 
-(* The document whose root is [file] under protocol/specs/src of [root]. *)
-let document ~root file =
+(* The document whose root is [file] under protocol/specs/src of [root], and
+   each file of [beside] a component schema of it. *)
+let document ~root ~beside file =
   let st =
     {
       root = specs ~root;
@@ -128,13 +130,19 @@ let document ~root file =
         List.iter (fun (n, entry) -> f kind n entry) entries)
       declared
   in
+  let stem file = Filename.remove_extension (Filename.basename file) in
   each (fun kind n entry ->
       Option.iter (fun target -> name st target (kind, n)) (listed entry));
+  List.iter (fun file -> name st file ("schemas", stem file)) beside;
   each (fun kind n entry ->
       Hashtbl.replace st.components (kind, n)
         (match listed entry with
         | Some target -> load st target
         | None -> resolve st file entry));
+  List.iter
+    (fun file ->
+      Hashtbl.replace st.components ("schemas", stem file) (load st file))
+    beside;
   let rest =
     List.filter_map
       (fun (key, value) ->
@@ -167,9 +175,10 @@ let document ~root file =
       ])
 
 (* A document's component schemas as JSON Schema draft 7, under
-   [definitions]: a reference names its schema there, and [nullable] beside
-   a [type] adds [null] to it; beside anything else, the schema is
-   [anyOf: [{type: null}, <the rest>]]. *)
+   [definitions], where a reference names its schema. The forms Protocol
+   writes in 2020-12 mean the same in draft 7: null is a second [type], an
+   [anyOf] or a [oneOf] member, and nothing but an annotation stands beside a
+   [$ref]. *)
 let definitions file (document : Yojson.Safe.t) : Yojson.Safe.t =
   let prefix = "#/components/schemas/" in
   let rec convert (json : Yojson.Safe.t) : Yojson.Safe.t =
@@ -187,24 +196,6 @@ let definitions file (document : Yojson.Safe.t) : Yojson.Safe.t =
                           (String.length r - String.length prefix)) )
               | member -> member)
             members
-        in
-        let members =
-          if List.assoc_opt "nullable" members = Some (`Bool true) then
-            let rest = List.remove_assoc "nullable" members in
-            match List.assoc_opt "type" rest with
-            | Some (`String t) ->
-                List.map
-                  (function
-                    | "type", _ -> ("type", `List [ `String t; `String "null" ])
-                    | member -> member)
-                  rest
-            | _ ->
-                [
-                  ( "anyOf",
-                    `List [ `Assoc [ ("type", `String "null") ]; `Assoc rest ]
-                  );
-                ]
-          else members
         in
         `Assoc (List.map (fun (k, v) -> (k, convert v)) members)
     | other -> other

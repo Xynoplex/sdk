@@ -1,6 +1,6 @@
 (* images_groups.exe ROOT: images' groups write their files from the Protocol
    sdk pins, and the service-types group refuses a table that names no
-   component, names one twice, or names one the Rust SDK declares. ROOT is
+   root ([Roots]), names one twice, or names one the Rust SDK declares. ROOT is
    the sdk checkout; images' own drift gate holds the files to what images
    commits. The table here is a small one, not images'. *)
 
@@ -55,7 +55,7 @@ let () =
     | Error errors ->
         fail "%s" (String.concat "\n" (List.map Decode.error_to_string errors))
   in
-  let root = root_with ~sdk [ "GatewayConfig"; "JobRecord" ] in
+  let root = root_with ~sdk [ "ResourceView"; "JobRecord" ] in
   List.iter
     (fun (g : Groups.group) ->
       match g.files ~root spec with
@@ -74,8 +74,8 @@ let () =
         (String.concat "\n  " found)
   in
   let file = Images.Service_types.table in
-  refused ~why:"names no component" [ "NoSuchSchema" ]
-    (file ^ ": /: NoSuchSchema is no component schema of the gateway's");
+  refused ~why:"names no root" [ "NoSuchSchema" ]
+    (file ^ ": /: NoSuchSchema is no schema a generation roots ([Roots])");
   refused ~why:"names one twice"
     [ "JobRecord"; "JobRecord" ]
     (file ^ ": /: names a schema twice");

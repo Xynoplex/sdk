@@ -38,12 +38,8 @@ type member = Text_member | Bool_member | Raw_member
 type composed = { properties : (string * member) list; required : string list }
 
 let member_of = function
-  | Schema.Schema { type_ = Some [ String ]; nullable = None | Some false; _ }
-    ->
-      Text_member
-  | Schema.Schema { type_ = Some [ Boolean ]; nullable = None | Some false; _ }
-    ->
-      Bool_member
+  | Schema.Schema { type_ = Some [ String ]; _ } -> Text_member
+  | Schema.Schema { type_ = Some [ Boolean ]; _ } -> Bool_member
   | _ -> Raw_member
 
 exception Refused of Decode.error
@@ -132,17 +128,23 @@ let tabled (spec : Spec.t) table =
         if fst (Decode.resolve reference) = key then
           Some (name, List.assoc key spec.schemas)
         else None)
-      spec.gateway.components.schemas
+      (Roots.all spec)
   in
   (* A member's type, and the module of the table record it names. *)
   let member key at ~required (name, schema) =
     let at = at ^ "/properties/" ^ Decode.escape name in
+    let schema, nullable =
+      match schema with
+      | Schema.Schema l -> (
+          match Null_form.without_null Fun.id l with
+          | Ok (Some beside) -> (Schema.Schema beside, true)
+          | Ok None -> (schema, false)
+          | Error message -> refuse key at message)
+      | Schema.Boolean_schema _ -> (schema, false)
+    in
     let referent =
       match schema with
-      | Schema.Schema { ref_ = Some r; _ }
-      | Schema.Schema
-          { all_of = Some [ Schema.Schema { ref_ = Some r; _ } ]; _ } ->
-          Some (Table_records.key r)
+      | Schema.Schema { ref_ = Some r; _ } -> Some (Table_records.key r)
       | _ -> None
     in
     let base, need =
@@ -167,11 +169,6 @@ let tabled (spec : Spec.t) table =
           | Schema.Schema { type_ = Some [ Boolean ]; _ } ->
               (O.type_ "bool", None)
           | _ -> refuse key at "is no member the OCaml SDK has a type for")
-    in
-    let nullable =
-      match schema with
-      | Schema.Schema { nullable = Some true; _ } -> true
-      | _ -> false
     in
     let type_ =
       match (List.mem name required, nullable) with
@@ -280,7 +277,7 @@ let derive (spec : Spec.t) table =
         (fun (name, reference) ->
           let file, _ = Decode.resolve reference in
           (name, file, List.assoc file spec.schemas))
-        spec.gateway.components.schemas
+        (Roots.all spec)
     in
     let records =
       List.filter_map

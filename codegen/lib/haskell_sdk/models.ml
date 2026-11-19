@@ -88,7 +88,7 @@ let scalar_type : Schema.type_name -> H.type_ option = function
   | Integer -> Some (T_name "Integer")
   | Number -> Some (T_name "Scientific")
   | Boolean -> Some (T_name "Bool")
-  | Array | Object -> None
+  | Array | Object | Null -> None
 
 let one_type name (s : Schema.schema) =
   match s.type_ with
@@ -206,9 +206,12 @@ and declare state name original =
     let owner = state.owner in
     let* s = normalize state original in
     let* () =
-      if s.nullable = Some true then
-        Error (name ^ ": nullable named schemas need an explicit representation")
-      else Ok ()
+      match Null_form.without_null Fun.id s with
+      | Ok None -> Ok ()
+      | Ok (Some _) ->
+          Error
+            (name ^ ": nullable named schemas need an explicit representation")
+      | Error message -> Error (name ^ ": " ^ message)
     in
     let* decls =
       match (s.enum, s.one_of, s.any_of) with
@@ -423,7 +426,12 @@ and object_ state name ~owner (s : Schema.schema) =
            let* fields = Normalize.layer property in
            let suffix = identifier key in
            let field = lower name ^ suffix in
-           let nullable = fields.nullable = Some true in
+           let* beside =
+             Result.map_error
+               (fun message -> name ^ "." ^ key ^ ": " ^ message)
+               (Null_form.without_null Fun.id fields)
+           in
+           let nullable = Option.is_some beside in
            let mandatory = List.mem key required in
            let owner = owner key in
            let* () =
@@ -431,7 +439,7 @@ and object_ state name ~owner (s : Schema.schema) =
            in
            let* t =
              type_of state (member_type owner key)
-               (Schema { fields with nullable = None })
+               (Schema (Option.value beside ~default:fields))
            in
            let held = H.Apply (Name field, [ Name "value" ]) in
            let typ, parser, encoder =

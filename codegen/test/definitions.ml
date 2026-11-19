@@ -42,7 +42,8 @@ let type_name =
         | Number -> "number"
         | Boolean -> "boolean"
         | Array -> "array"
-        | Object -> "object"))
+        | Object -> "object"
+        | Null -> "null"))
     ( = )
 
 let at target = type_of (Definitions.schema_at ~schemas (from_client target))
