@@ -21,25 +21,36 @@ type ToneOf<M extends 'commenting' | 'assessing'> = NonNullable<
   Extract<MarkJobParams, { motivation: M }>['tone']
 >;
 
-// The tones each menu offers, held to the job they are sent to.
-const COMMENT_TONES = [
-  'scholarly',
-  'explanatory',
-  'conversational',
-  'technical',
-] as const satisfies readonly ToneOf<'commenting'>[];
-const ASSESSMENT_TONES = [
-  'analytical',
-  'critical',
-  'balanced',
-  'constructive',
-] as const satisfies readonly ToneOf<'assessing'>[];
+/** A menu's tone, and the key of its label. */
+interface ToneOption<T extends string> {
+  tone: T;
+  label: string;
+}
 
-/** `chosen` as one of `tones`, or none when the menu is on its default. */
+/** Each tone a job of `M` takes, with its menu option: a tone the spec adds does not compile until it has one. */
+type ToneMenu<M extends 'commenting' | 'assessing'> = {
+  [T in ToneOf<M>]: ToneOption<T>;
+};
+
+// The tones each menu offers, in the menu's order.
+const COMMENT_TONES = Object.values({
+  scholarly: { tone: 'scholarly', label: 'toneScholarly' },
+  explanatory: { tone: 'explanatory', label: 'toneExplanatory' },
+  conversational: { tone: 'conversational', label: 'toneConversational' },
+  technical: { tone: 'technical', label: 'toneTechnical' },
+} satisfies ToneMenu<'commenting'>);
+const ASSESSMENT_TONES = Object.values({
+  analytical: { tone: 'analytical', label: 'toneAnalytical' },
+  critical: { tone: 'critical', label: 'toneCritical' },
+  balanced: { tone: 'balanced', label: 'toneBalanced' },
+  constructive: { tone: 'constructive', label: 'toneConstructive' },
+} satisfies ToneMenu<'assessing'>);
+
+/** `chosen` as one of `options`' tones, or none when the menu is on its default. */
 const toneAmong = <T extends string>(
-  tones: readonly T[],
+  options: readonly ToneOption<T>[],
   chosen: string,
-): T | undefined => tones.find((tone) => tone === chosen);
+): T | undefined => options.find((option) => option.tone === chosen)?.tone;
 
 /** `Part` itself, held to `Whole`: a member of `Part` that is no member of `Whole` does not compile. */
 type Subset<Whole, Part extends Whole> = Part;
@@ -197,26 +208,14 @@ export function DelegateSection({
                 className="xynolog-select"
               >
                 <option value="">Default</option>
-                {annotationType === 'comment' && (
-                  <>
-                    <option value="scholarly">{t('toneScholarly')}</option>
-                    <option value="explanatory">{t('toneExplanatory')}</option>
-                    <option value="conversational">
-                      {t('toneConversational')}
-                    </option>
-                    <option value="technical">{t('toneTechnical')}</option>
-                  </>
-                )}
-                {annotationType === 'assessment' && (
-                  <>
-                    <option value="analytical">{t('toneAnalytical')}</option>
-                    <option value="critical">{t('toneCritical')}</option>
-                    <option value="balanced">{t('toneBalanced')}</option>
-                    <option value="constructive">
-                      {t('toneConstructive')}
-                    </option>
-                  </>
-                )}
+                {(annotationType === 'comment'
+                  ? COMMENT_TONES
+                  : ASSESSMENT_TONES
+                ).map(({ tone, label }) => (
+                  <option key={tone} value={tone}>
+                    {t(label)}
+                  </option>
+                ))}
               </select>
             </div>
           )}

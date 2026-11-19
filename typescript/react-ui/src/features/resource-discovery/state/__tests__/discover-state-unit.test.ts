@@ -4,6 +4,7 @@ import { sessionOf } from '../../../../__tests__/test-client';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { filter, map, skip, take, toArray } from 'rxjs/operators';
 import type { XynologClient } from '@xynolog/sdk';
+import type { components } from '@xynolog/core';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
 import {
   createDiscoverStateUnit,
@@ -34,7 +35,7 @@ function mockClient(
       filters: BrowseFilters,
     ) => BehaviorSubject<unknown[] | undefined>;
     /** What the stubbed search envelope reports as its match kind. */
-    matchKind?: 'lexical' | 'semantic';
+    matchKind?: components['schemas']['MatchResourcesResponse']['matchKind'];
   } = {},
 ): { client: XynologClient; resourceCalls: BrowseFilters[] } {
   const resourceCalls: BrowseFilters[] = [];

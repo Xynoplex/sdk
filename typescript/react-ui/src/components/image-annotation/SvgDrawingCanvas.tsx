@@ -14,7 +14,7 @@ import {
 import { toViewportAnchorRect } from '../../lib/anchor-rect';
 import { AnnotationOverlay } from './AnnotationOverlay';
 import { AnchoredTextNotice } from '../annotation/AnchoredTextNotice';
-import type { SelectionMotivation } from '../annotation/AnnotateToolbar';
+import type { Motivation } from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import { useAnchoredText } from '../../hooks/useAnchoredText';
 import { useHoverDelay } from '../../hooks/useHoverDelay';
@@ -26,7 +26,7 @@ export type DrawingMode =
  * Get color for annotation preview based on motivation
  * Returns object with stroke color and fill color (with alpha)
  */
-function getMotivationColor(motivation: SelectionMotivation | null): {
+function getMotivationColor(motivation: Motivation | null): {
   stroke: string;
   fill: string;
 } {
@@ -54,7 +54,7 @@ interface SvgDrawingCanvasProps {
   resourceUri: ResourceId;
   existingAnnotations?: Annotation[];
   drawingMode: DrawingMode;
-  selectedMotivation?: SelectionMotivation | null;
+  selectedMotivation?: Motivation | null;
   session?: XynologSession | null | undefined;
   hoveredAnnotationId?: string | null;
   selectedAnnotationId?: string | null;
@@ -72,7 +72,7 @@ interface SvgDrawingCanvasProps {
  * own element, as `data-annotate-deferred`.
  *
  * @emits browse:click - Annotation clicked on canvas. Payload: { annotationId: string, anchorRect?: AnchorRect }
- * @emits mark:requested - New annotation drawn on canvas. Payload: { source: ResourceId, selector: SvgSelector, motivation: SelectionMotivation }
+ * @emits mark:requested - New annotation drawn on canvas. Payload: { source: ResourceId, selector: SvgSelector, motivation: Motivation }
  */
 export function SvgDrawingCanvas({
   imageUrl,

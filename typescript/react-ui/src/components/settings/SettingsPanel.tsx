@@ -6,10 +6,11 @@ import { useTranslations } from '../../contexts/TranslationContext';
 import { useLanguageChangeAnnouncements } from '../LiveRegion';
 import { useXynolog } from '../../session/XynologProvider';
 import { useLineNumbers } from '../../contexts/LineNumbersContext';
+import type { Theme } from '../../contexts/ThemeContext';
 import './SettingsPanel.css';
 
 interface SettingsPanelProps {
-  theme: 'light' | 'dark' | 'system';
+  theme: Theme;
   locale: string;
   isPendingLocaleChange?: boolean;
   hoverDelayMs: number;
@@ -31,7 +32,7 @@ interface SettingsPanelProps {
  *
  * @emits settings:locale-changed - Locale changed by user. Payload: { locale: string }
  * @emits settings:line-numbers-toggled - Line numbers toggled on/off. Payload: undefined
- * @emits settings:theme-changed - Theme changed by user. Payload: { theme: 'light' | 'dark' | 'system' }
+ * @emits settings:theme-changed - Theme changed by user. Payload: SettingsThemeChangedEvent
  * @emits settings:hover-delay-changed - Hover delay changed by user. Payload: { hoverDelayMs: number }
  */
 export function SettingsPanel({

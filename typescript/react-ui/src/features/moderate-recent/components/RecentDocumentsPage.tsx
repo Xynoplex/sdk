@@ -15,12 +15,13 @@ import {
   type ToolbarPanelsProps,
   type ToolbarProps,
 } from '../../../components/Toolbar';
+import type { Theme } from '../../../contexts/ThemeContext';
 export interface RecentDocumentsPageProps {
   // Data props
   isLoading: boolean;
 
   // UI state
-  theme: 'light' | 'dark' | 'system';
+  theme: Theme;
   activePanel: ToolbarPanelType | null;
 
   // Translations

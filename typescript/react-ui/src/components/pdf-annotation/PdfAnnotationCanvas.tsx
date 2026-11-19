@@ -9,7 +9,7 @@ import { AnchoredTextNotice } from '../annotation/AnchoredTextNotice';
 import { PdfPageView, type PageDrawing } from './PdfPageView';
 import { useTranslations } from '../../contexts/TranslationContext';
 import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
-import type { SelectionMotivation } from '../annotation/AnnotateToolbar';
+import type { Motivation } from '@xynolog/core';
 import {
   loadPdfDocument,
   type PDFDocumentProxy,
@@ -95,7 +95,7 @@ interface PdfAnnotationCanvasProps {
   resourceUri: ResourceId;
   existingAnnotations?: Annotation[];
   drawingMode: DrawingMode;
-  selectedMotivation?: SelectionMotivation | null;
+  selectedMotivation?: Motivation | null;
   session?: XynologSession | null | undefined;
   hoveredAnnotationId?: string | null;
   selectedAnnotationId?: string | null;

@@ -15,7 +15,8 @@ import { useRovingTabIndex } from '../../../hooks/useRovingTabIndex';
 import { Toolbar, type ToolbarPanelsProps } from '../../../components/Toolbar';
 import { ResourceCard } from './ResourceCard';
 
-import type { ResourceDescriptor } from '@xynolog/core';
+import type { ResourceDescriptor, components } from '@xynolog/core';
+import type { ResolvedTheme } from '../../../contexts/ThemeContext';
 
 export interface ResourceDiscoveryPageProps {
   // Data props
@@ -39,7 +40,7 @@ export interface ResourceDiscoveryPageProps {
    * Optional so hosts that never wire it — including external consumers —
    * render exactly as before.
    */
-  searchMatchKind?: 'lexical' | 'semantic';
+  searchMatchKind?: components['schemas']['MatchResourcesResponse']['matchKind'];
 
   // Controlled search state
   searchQuery: string;
@@ -51,7 +52,7 @@ export interface ResourceDiscoveryPageProps {
   onSelectedEntityTypeChange: (entityType: string) => void;
 
   // UI state props
-  theme: 'light' | 'dark';
+  theme: ResolvedTheme;
   activePanel: ToolbarPanelType | null;
 
   // Navigation props

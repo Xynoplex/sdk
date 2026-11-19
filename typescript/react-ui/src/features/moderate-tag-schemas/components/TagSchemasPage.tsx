@@ -20,6 +20,7 @@ import {
   type ToolbarProps,
 } from '../../../components/Toolbar';
 import type { TagSchema } from '@xynolog/sdk';
+import type { Theme } from '../../../contexts/ThemeContext';
 export type { TagSchema };
 
 export interface TagSchemasPageProps {
@@ -28,7 +29,7 @@ export interface TagSchemasPageProps {
   isLoading: boolean;
 
   // UI state
-  theme: 'light' | 'dark' | 'system';
+  theme: Theme;
   activePanel: ToolbarPanelType | null;
 
   // Translations

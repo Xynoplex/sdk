@@ -10,10 +10,8 @@
  * lives in one place. No aliasing, wrappers, or compatibility layers elsewhere.
  */
 
-import type { components } from '@xynolog/core';
 import { isHighlight, isComment, isReference, isTag } from '@xynolog/core';
-import type { Annotation } from '@xynolog/core';
-type Motivation = components['schemas']['Motivation'];
+import type { Annotation, Motivation } from '@xynolog/core';
 
 /**
  * Annotator: the metadata of one annotation type - how its annotations are
@@ -89,6 +87,16 @@ export const ANNOTATORS = {
 
 /** Keys of the annotator registry — also the annotations panel's tab keys. */
 export type AnnotatorKey = keyof typeof ANNOTATORS;
+
+/**
+ * The motivations no annotator has: none. A motivation the spec adds fails to
+ * compile here until {@link ANNOTATORS} has an annotator for it.
+ */
+type Unannotated = Exclude<
+  Motivation,
+  (typeof ANNOTATORS)[AnnotatorKey]['motivation']
+>;
+true satisfies [Unannotated] extends [never] ? true : false;
 
 /**
  * Annotator key (= panel tab key) for a motivation — derived from

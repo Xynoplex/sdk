@@ -1,6 +1,6 @@
 'use client';
 
-import type { ResourceId } from '@xynolog/core';
+import type { RenderMode, ResourceId } from '@xynolog/core';
 import { lazy, Suspense, memo, type ComponentType } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -124,7 +124,7 @@ export function PdfBrowseRenderer({
  * viewer) or add a mode without forking the view.
  */
 export const defaultBrowseRenderers: Record<
-  'text' | 'image' | 'pdf',
+  Exclude<RenderMode, 'none'>,
   ComponentType<MediaRendererProps>
 > = {
   text: TextBrowseRenderer,

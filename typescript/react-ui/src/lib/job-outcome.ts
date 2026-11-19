@@ -1,16 +1,20 @@
 import { isObject, isString } from '@xynolog/core';
 import type { components } from '@xynolog/core';
+import type en from '../../translations/en.json';
 
 type DeclineReason = components['schemas']['JobDeclined']['reason'];
 
-/** The closed vocabulary this client has copy for. */
-const REASONS: readonly string[] = [
-  'no-text-layer',
-  'encrypted',
-  'corrupt',
-  'too-large',
-  'empty',
-];
+/** The reasons this client has copy for: every reason the spec states, or this does not compile. */
+const REASONS: Record<DeclineReason, true> = {
+  'no-text-layer': true,
+  encrypted: true,
+  corrupt: true,
+  'too-large': true,
+  empty: true,
+};
+
+const isDeclineReason = (reason: string): reason is DeclineReason =>
+  Object.hasOwn(REASONS, reason);
 
 /**
  * A detection job can *decline* cleanly rather than succeed or fail: a PDF
@@ -31,7 +35,10 @@ export function declineReason(result: unknown): DeclineReason | null {
     return null;
   // A reason outside the vocabulary has no copy: returning it anyway would put
   // a raw, untranslated wire token in a toast.
-  return REASONS.includes(result.reason)
-    ? (result.reason as DeclineReason)
-    : null;
+  return isDeclineReason(result.reason) ? result.reason : null;
 }
+
+/** The key of a decline's copy in `OutcomeToasts`: a reason with no copy in `en.json` does not compile. */
+export const declineCopyKey = (
+  reason: DeclineReason,
+): keyof (typeof en)['OutcomeToasts'] => `decline_${reason}`;
