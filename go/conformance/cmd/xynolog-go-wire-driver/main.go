@@ -474,7 +474,14 @@ func (w *wire) put(ctx context.Context, args protocol.Arguments, reporting bool,
 	upload := c.content.PutBinary(ctx, request)
 	if reporting {
 		for progress := range upload.Progress() {
-			protocol.Say(map[string]any{"progress": map[string]any{"upload": id, "bytesUploaded": progress.BytesUploaded, "totalBytes": progress.TotalBytes}})
+			member, err := progress.ValueByDiscriminator()
+			if err != nil {
+				return nil, err
+			}
+			// The driver protocol reports the bytes sent: the upload's start and its end are its answer's.
+			if sent, ok := member.(api.UploadProgressProgress); ok {
+				protocol.Say(map[string]any{"progress": map[string]any{"upload": id, "bytesUploaded": sent.BytesUploaded, "totalBytes": sent.TotalBytes}})
+			}
 		}
 	}
 	created, err := upload.Wait(ctx)

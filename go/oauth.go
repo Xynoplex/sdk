@@ -27,6 +27,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/xynolog/sdk/go/api"
 )
 
 const deviceGrant = "urn:ietf:params:oauth:grant-type:device_code"
@@ -49,22 +51,6 @@ type IssuerEndpoints struct {
 	Token         string `json:"token"`
 	Device        string `json:"device,omitempty"`
 	Revocation    string `json:"revocation,omitempty"`
-}
-
-// IssuedTokens is what a grant issued.
-type IssuedTokens struct {
-	Access  string
-	Refresh string
-}
-
-// DeviceCode is what a person is shown to approve a sign-in from wherever
-// they have a browser. VerificationURIComplete carries the code already, and
-// is "" when the issuer gave none.
-type DeviceCode struct {
-	UserCode                string
-	VerificationURI         string
-	VerificationURIComplete string
-	ExpiresIn               time.Duration
 }
 
 // issuerAnswer is what an issuer answered, when that was a JSON object.
@@ -95,6 +81,16 @@ func (a issuerAnswer) seconds(name string) (time.Duration, bool) {
 		return 0, false
 	}
 	return time.Duration(seconds * float64(time.Second)), true
+}
+
+// wholeSeconds is a span of time the answer states as a whole number of
+// seconds, when it states one that can be waited.
+func (a issuerAnswer) wholeSeconds(name string) (int, bool) {
+	seconds, ok := a.seconds(name)
+	if !ok || seconds%time.Second != 0 {
+		return 0, false
+	}
+	return int(seconds / time.Second), true
 }
 
 // refusal is what the issuer said of a refusal: its error and description,
@@ -199,22 +195,22 @@ func (i Issuer) Discover(ctx context.Context, baseURL string) (IssuerEndpoints, 
 
 // Refresh is the refresh grant. An issuer that does not rotate refresh tokens
 // returns none, and the one held stays current.
-func (i Issuer) Refresh(ctx context.Context, tokenEndpoint, clientID, refreshToken string) (IssuedTokens, error) {
+func (i Issuer) Refresh(ctx context.Context, tokenEndpoint, clientID, refreshToken string) (api.IssuedTokens, error) {
 	status, answered, err := i.postForm(ctx, tokenEndpoint, url.Values{
 		"grant_type": {"refresh_token"}, "refresh_token": {refreshToken}, "client_id": {clientID},
 	})
 	if err != nil {
-		return IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
+		return api.IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
 	}
 	access, ok := answered.text("access_token")
 	if status != http.StatusOK || !ok {
-		return IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the token request (%s)", answered.refusal(status)), status)
+		return api.IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the token request (%s)", answered.refusal(status)), status)
 	}
 	rotated, ok := answered.text("refresh_token")
 	if !ok {
 		rotated = refreshToken
 	}
-	return IssuedTokens{Access: access, Refresh: rotated}, nil
+	return api.IssuedTokens{Access: access, Refresh: rotated}, nil
 }
 
 // Revoke is RFC 7009. The issuer answers 200 for a token it has already
@@ -253,7 +249,7 @@ func (i Issuer) RenewKept(ctx context.Context, kept SignInKept, holding string) 
 	}
 	attempts := 0
 	tokens, err := RetryWithBackoff(ctx, i.Timing.RefreshRetry, i.Random,
-		func(ctx context.Context) (IssuedTokens, error) {
+		func(ctx context.Context) (api.IssuedTokens, error) {
 			attempts++
 			return i.Refresh(ctx, held.TokenEndpoint, held.ClientID, held.Refresh)
 		},
@@ -285,64 +281,67 @@ func codeExpired() *SignInError {
 // the issuer Discover found. The issuer mints a code, onCode shows the person
 // where to approve it, and the token endpoint is asked at the issuer's
 // interval until the tokens arrive. Cancelling ctx abandons the sign-in.
-func (i Issuer) SignInWithDeviceGrant(ctx context.Context, issuer IssuerEndpoints, onCode func(DeviceCode)) (IssuedTokens, error) {
+func (i Issuer) SignInWithDeviceGrant(ctx context.Context, issuer IssuerEndpoints, onCode func(api.DeviceCode)) (api.IssuedTokens, error) {
 	if issuer.Device == "" {
-		return IssuedTokens{}, signInUnanswered(SignInErrorCodeDiscovery, fmt.Sprintf(
+		return api.IssuedTokens{}, signInUnanswered(SignInErrorCodeDiscovery, fmt.Sprintf(
 			"Issuer %s offers no device authorization endpoint: the device grant needs one enabled for client %s", issuer.Issuer, ScriptClientID))
 	}
 	status, body, err := i.postForm(ctx, issuer.Device, url.Values{"client_id": {ScriptClientID}, "scope": {SignInScope}})
 	if err != nil {
-		return IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
+		return api.IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
 	}
 	deviceCode, hasDeviceCode := body.text("device_code")
 	userCode, hasUserCode := body.text("user_code")
 	verificationURI, hasVerificationURI := body.text("verification_uri")
-	expiresIn, hasExpiresIn := body.seconds("expires_in")
+	expiresIn, hasExpiresIn := body.wholeSeconds("expires_in")
 	if status != http.StatusOK || !hasDeviceCode || !hasUserCode || !hasVerificationURI || !hasExpiresIn {
-		return IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the device authorization request (%s)", body.refusal(status)), status)
+		return api.IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the device authorization request (%s)", body.refusal(status)), status)
 	}
-	complete, _ := body.text("verification_uri_complete")
-	onCode(DeviceCode{UserCode: userCode, VerificationURI: verificationURI, VerificationURIComplete: complete, ExpiresIn: expiresIn})
+	code := api.DeviceCode{UserCode: userCode, VerificationUri: verificationURI, ExpiresIn: expiresIn}
+	if complete, ok := body.text("verification_uri_complete"); ok {
+		code.VerificationUriComplete = &complete
+	}
+	onCode(code)
 
 	interval, ok := body.seconds("interval")
 	if !ok {
 		interval = i.Timing.DevicePoll
 	}
 	interval = max(interval, i.Timing.DevicePollFloor)
-	deadline := time.Now().Add(expiresIn)
+	deadline := time.Now().Add(time.Duration(expiresIn) * time.Second)
 	for {
 		if !pause(ctx, interval) {
-			return IssuedTokens{}, ctx.Err()
+			return api.IssuedTokens{}, ctx.Err()
 		}
 		if time.Now().After(deadline) {
-			return IssuedTokens{}, codeExpired()
+			return api.IssuedTokens{}, codeExpired()
 		}
 		status, answered, err := i.postForm(ctx, issuer.Token, url.Values{
 			"grant_type": {deviceGrant}, "device_code": {deviceCode}, "client_id": {ScriptClientID},
 		})
 		if err != nil {
 			if ctx.Err() != nil {
-				return IssuedTokens{}, ctx.Err()
+				return api.IssuedTokens{}, ctx.Err()
 			}
-			return IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
+			return api.IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
 		}
 		if access, ok := answered.text("access_token"); status == http.StatusOK && ok {
 			refresh, ok := answered.text("refresh_token")
 			if !ok {
-				return IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, "The issuer returned no refresh token: the session could not outlive its first access token", status)
+				return api.IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, "The issuer returned no refresh token: the session could not outlive its first access token", status)
 			}
-			return IssuedTokens{Access: access, Refresh: refresh}, nil
+			return api.IssuedTokens{Access: access, Refresh: refresh}, nil
 		}
 		switch failure, _ := answered.text("error"); failure {
 		case "authorization_pending":
 		case "slow_down":
 			interval += i.Timing.DeviceSlowDown
 		case "access_denied":
-			return IssuedTokens{}, NewSignInError(SignInErrorCodeDenied, "The sign-in was denied at the issuer", status)
+			return api.IssuedTokens{}, NewSignInError(SignInErrorCodeDenied, "The sign-in was denied at the issuer", status)
 		case "expired_token":
-			return IssuedTokens{}, codeExpired()
+			return api.IssuedTokens{}, codeExpired()
 		default:
-			return IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the token request (%s)", answered.refusal(status)), status)
+			return api.IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the token request (%s)", answered.refusal(status)), status)
 		}
 	}
 }

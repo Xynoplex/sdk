@@ -38,13 +38,6 @@ import (
 	"github.com/xynolog/sdk/go/bus"
 )
 
-// PendingAnnotation is an annotation being composed: where it is, and why it
-// is made. Its selector is what Mark.Submit takes.
-type PendingAnnotation struct {
-	Selector   api.AnnotationSelector `json:"selector"`
-	Motivation api.Motivation         `json:"motivation"`
-}
-
 // MarkStateUnit marks one resource: see the file's documentation. A state
 // holding none is nil, or the zero value of an id or a motivation.
 type MarkStateUnit struct {
@@ -53,7 +46,7 @@ type MarkStateUnit struct {
 	silence    time.Duration
 	life
 
-	pending            *xynolog.Variable[*PendingAnnotation]
+	pending            *xynolog.Variable[*api.PendingAnnotation]
 	delegating         *xynolog.Variable[api.Motivation]
 	progress           *xynolog.Variable[*api.JobProgress]
 	progressMotivation *xynolog.Variable[api.Motivation]
@@ -71,7 +64,7 @@ func NewMarkStateUnit(client *xynolog.Client, resourceID api.ResourceId) *MarkSt
 		resourceID:         resourceID,
 		silence:            xynolog.DefaultTiming().DelegateSilence,
 		life:               newLife(),
-		pending:            xynolog.NewVariable[*PendingAnnotation](nil),
+		pending:            xynolog.NewVariable[*api.PendingAnnotation](nil),
 		delegating:         xynolog.NewVariable[api.Motivation](""),
 		progress:           xynolog.NewVariable[*api.JobProgress](nil),
 		progressMotivation: xynolog.NewVariable[api.Motivation](""),
@@ -83,8 +76,9 @@ func NewMarkStateUnit(client *xynolog.Client, resourceID api.ResourceId) *MarkSt
 	return u
 }
 
-// PendingAnnotation is the annotation being composed, or nil.
-func (u *MarkStateUnit) PendingAnnotation() xynolog.Watched[*PendingAnnotation] {
+// PendingAnnotation is the annotation being composed, or nil. Its selector is
+// what Mark.Submit takes.
+func (u *MarkStateUnit) PendingAnnotation() xynolog.Watched[*api.PendingAnnotation] {
 	return u.pending.Reading()
 }
 
@@ -174,7 +168,7 @@ func (u *MarkStateUnit) heard(frame xynolog.Frame, refused error) {
 	case bus.MarkRequested.Channel():
 		request, err := xynolog.Decoded(bus.MarkRequested, frame, refused)
 		if err == nil && request.Payload.Source == u.resourceID {
-			u.pending.Set(&PendingAnnotation{Selector: request.Payload.Selector, Motivation: request.Payload.Motivation})
+			u.pending.Set(&api.PendingAnnotation{Selector: request.Payload.Selector, Motivation: request.Payload.Motivation})
 		}
 	case bus.MarkSubmit.Channel():
 		submission, err := xynolog.Decoded(bus.MarkSubmit, frame, refused)

@@ -25,13 +25,6 @@ import (
 // within and be on that line.
 const sameLine = 2
 
-// rectangle is a rectangle on a page: its bottom-left corner and its size, in
-// PDF points.
-type rectangle struct {
-	page                int
-	x, y, width, height float64
-}
-
 // lines is a page's items as its lines, the top of the page first and each
 // line from its left.
 func lines(items []api.PdfTextItem) [][]api.PdfTextItem {
@@ -66,7 +59,7 @@ func edges(item api.PdfTextItem, start, end int) (left, right float64) {
 
 // spanning is the rectangle that spans a line's items, as far as the span
 // reaches into each.
-func spanning(page int, line []api.PdfTextItem, start, end int) rectangle {
+func spanning(page int, line []api.PdfTextItem, start, end int) api.PdfCoordinate {
 	x, right := math.Inf(1), math.Inf(-1)
 	y, top := math.Inf(1), math.Inf(-1)
 	for _, item := range line {
@@ -74,14 +67,14 @@ func spanning(page int, line []api.PdfTextItem, start, end int) rectangle {
 		x, right = min(x, left), max(right, itemRight)
 		y, top = min(y, item.Y), max(top, item.Y+item.Height)
 	}
-	return rectangle{page: page, x: x, y: y, width: right - x, height: top - y}
+	return api.PdfCoordinate{Page: page, X: x, Y: y, Width: right - x, Height: top - y}
 }
 
 // locate is the items a span of the anchored text overlaps, in the text's
 // order, and a rectangle for each line of each page it touches. Pages come in
 // the order their first overlapped item has in the text. A span that no item
 // overlaps has neither, and an empty span overlaps none.
-func locate(anchored api.AnchoredText, start, end int) ([]api.PdfTextItem, []rectangle) {
+func locate(anchored api.AnchoredText, start, end int) ([]api.PdfTextItem, []api.PdfCoordinate) {
 	// An empty span has no character for an item to hold, inside one as between two.
 	if start == end {
 		return nil, nil
@@ -98,7 +91,7 @@ func locate(anchored api.AnchoredText, start, end int) ([]api.PdfTextItem, []rec
 			onPage[item.Page] = append(onPage[item.Page], item)
 		}
 	}
-	var rectangles []rectangle
+	var rectangles []api.PdfCoordinate
 	for _, page := range pages {
 		for _, line := range lines(onPage[page]) {
 			rectangles = append(rectangles, spanning(page, line, start, end))
@@ -118,6 +111,6 @@ func decimal(number float64) string {
 
 // fragmentOf is a rectangle as the value of a FragmentSelector:
 // page=P&viewrect=X,Y,W,H.
-func fragmentOf(at rectangle) string {
-	return fmt.Sprintf("page=%d&viewrect=%s,%s,%s,%s", at.page, decimal(at.x), decimal(at.y), decimal(at.width), decimal(at.height))
+func fragmentOf(at api.PdfCoordinate) string {
+	return fmt.Sprintf("page=%d&viewrect=%s,%s,%s,%s", at.Page, decimal(at.X), decimal(at.Y), decimal(at.Width), decimal(at.Height))
 }

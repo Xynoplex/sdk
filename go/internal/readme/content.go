@@ -17,7 +17,18 @@ func Store(ctx context.Context, content xynolog.ContentTransport, gateway xynolo
 		Name: "A page", Bytes: page, Format: "text/markdown", StorageURI: "file://pages/a.md", EntityTypes: []string{"Note"},
 	})
 	for progress := range upload.Progress() {
-		fmt.Println(progress.BytesUploaded, "of", progress.TotalBytes)
+		member, err := progress.ValueByDiscriminator()
+		if err != nil {
+			return api.ResourceId{}, err
+		}
+		switch reported := member.(type) {
+		case api.UploadProgressStarted:
+			fmt.Println("sending", reported.TotalBytes)
+		case api.UploadProgressProgress:
+			fmt.Println(reported.BytesUploaded, "of", reported.TotalBytes)
+		case api.UploadProgressFinished:
+			fmt.Println("made", reported.ResourceId)
+		}
 	}
 	created, err := upload.Wait(ctx)
 	if err != nil {

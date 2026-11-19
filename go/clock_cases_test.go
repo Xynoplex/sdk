@@ -529,7 +529,7 @@ func deviceGrant(t *testing.T, given clockGiven) clockSubject {
 	issuer := &fakeIssuer{t: t, interval: given.IntervalSeconds, answers: given.Answers}
 	client := httptest.NewTestServer(t, issuer).Client()
 	background(t, func(ctx context.Context) {
-		_, err := xynolog.SignInWithDevice(ctx, xynolog.Issuer{HTTP: client, Timing: xynolog.DefaultTiming(), Random: lowest}, gatewayOrigin, &xynolog.MemorySignIn{}, func(xynolog.DeviceCode) {})
+		_, err := xynolog.SignInWithDevice(ctx, xynolog.Issuer{HTTP: client, Timing: xynolog.DefaultTiming(), Random: lowest}, gatewayOrigin, &xynolog.MemorySignIn{}, func(api.DeviceCode) {})
 		if ctx.Err() == nil {
 			t.Errorf("the sign-in ended before the case did: %v", err)
 		}
