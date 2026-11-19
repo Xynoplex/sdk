@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -38,6 +39,24 @@ internal static partial class Required
         var fault = FaultAt(Component(schema), value, "", Place.Value, unread);
         read = fault is null && unread.Count > 0 ? Without(value, unread) : value;
         return fault;
+    }
+
+    /// <summary><paramref name="value"/> as <typeparamref name="T"/>, held to the table before it is decoded and decoded
+    /// as the table reads it; or its first fault. A value the table passes that <typeparamref name="T"/>'s decoder still
+    /// refuses is malformed.</summary>
+    internal static bool TryRead<T>(JsonElement value, [NotNullWhen(true)] out T? decoded,
+        [NotNullWhen(false)] out Fault? fault) where T : class
+    {
+        decoded = null;
+        fault = FaultOf(typeof(T).Name, value, out var read);
+        if (fault is not null) return false;
+        try { decoded = read.Deserialize<T>() ?? throw new JsonException(typeof(T).Name + " is null."); }
+        catch (JsonException)
+        {
+            fault = Fault.Undecoded;
+            return false;
+        }
+        return true;
     }
 
     /// <summary>Whether <paramref name="id"/> is a persisted event's id: components/schemas/PersistedEventId.json, its

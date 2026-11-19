@@ -3,6 +3,7 @@ using Xynolog.Errors;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Xynolog.Identifiers;
+using Xynolog.Serialization;
 using Xynolog.Types;
 
 namespace Xynolog.Http;
@@ -15,15 +16,24 @@ public sealed partial class HttpTransport
     public Task<ProtectedResourceMetadata> GetProtectedResourceMetadataAsync(CancellationToken cancellation = default) => AnswerAsync<ProtectedResourceMetadata>(HttpMethod.Get, "/.well-known/oauth-protected-resource", authenticated: false, cancellation: cancellation);
     public Task<MediaTokenResponse> GetMediaTokenAsync(ResourceId resource, CancellationToken cancellation = default) => AnswerAsync<MediaTokenResponse>(HttpMethod.Post, "/api/tokens/media", () => JsonContent.Create(new MediaTokenRequest { ResourceId = resource }), cancellation: cancellation);
 
-    internal async Task<T> AnswerAsync<T>(HttpMethod method, string path, Func<HttpContent>? content = null, bool authenticated = true, CancellationToken cancellation = default, bool retry = true)
+    internal async Task<T> AnswerAsync<T>(HttpMethod method, string path, Func<HttpContent>? content = null, bool authenticated = true, CancellationToken cancellation = default, bool retry = true) where T : class
     {
         using var response = await ExchangeAsync(method, path, content, authenticated, cancellation: cancellation, retry: retry).ConfigureAwait(Spawning.Captures);
+        return await ReplyAsync<T>(response, path, cancellation).ConfigureAwait(Spawning.Captures);
+    }
+
+    /// <summary>The reply to <paramref name="path"/> as <typeparamref name="T"/>, held to the table before it is decoded,
+    /// as every reply is (<see cref="Required.TryRead"/>): one with a fault is refused, naming the fault.</summary>
+    internal async Task<T> ReplyAsync<T>(HttpResponseMessage response, string path, CancellationToken cancellation) where T : class
+    {
         using var deadline = new CancellationTokenSource(TimeSpan.FromMilliseconds(timing.HttpRequestMs), clock);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(deadline.Token, lifetime.Token, cancellation);
         try
         {
-            return await response.Content.ReadFromJsonAsync<T>(linked.Token).ConfigureAwait(Spawning.Captures)
-                ?? throw new TransportError(ProtocolFacts.Error(0), path + ": null response");
+            var reply = await response.Content.ReadFromJsonAsync<JsonElement>(linked.Token).ConfigureAwait(Spawning.Captures);
+            return Required.TryRead<T>(reply, out var decoded, out var fault)
+                ? decoded
+                : throw Report(new TransportError(ProtocolFacts.Error(0), $"{path}: the reply is not a {typeof(T).Name}: {fault}", (int)response.StatusCode));
         }
         catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
         {

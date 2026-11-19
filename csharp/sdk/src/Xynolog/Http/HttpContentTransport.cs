@@ -2,7 +2,6 @@ using Xynolog.Protocol;
 using Xynolog.Errors;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Net.Http.Headers;
@@ -77,8 +76,7 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
             form.Add(file, "file", request.Name);
             return form;
         }, upload: true, cancellation: cancellation).ConfigureAwait(Spawning.Captures);
-        return await response.Content.ReadFromJsonAsync<CreateResourceResponse>(cancellation).ConfigureAwait(Spawning.Captures)
-            ?? throw new TransportError(ProtocolFacts.Error(0), "Upload returned null");
+        return await transport.ReplyAsync<CreateResourceResponse>(response, "/resources", cancellation).ConfigureAwait(Spawning.Captures);
     }
 
     public async Task<BinaryContent> GetBinaryAsync(ResourceId resource, CancellationToken cancellation = default)

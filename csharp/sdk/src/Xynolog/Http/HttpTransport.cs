@@ -246,7 +246,7 @@ public sealed partial class HttpTransport : IDisposable
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    try { return (await response.Content.ReadFromJsonAsync<BusEmitAccepted>(linked.Token).ConfigureAwait(Spawning.Captures))?.Subscribers; }
+                    try { return Required.TryRead<BusEmitAccepted>(await response.Content.ReadFromJsonAsync<JsonElement>(linked.Token).ConfigureAwait(Spawning.Captures), out var accepted, out _) ? accepted.Subscribers : null; }
                     catch (JsonException) { return null; }
                 }
                 var failure = await RefusalAsync(response, linked.Token).ConfigureAwait(Spawning.Captures);
