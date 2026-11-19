@@ -11,8 +11,8 @@ import {
   annotationOfResource,
   annotationOfSpan,
   SpanRefusedError,
-  type TextSpan,
 } from '../annotation-builders';
+import type { TextSpan } from '../payload-types';
 import type { Annotation } from '../annotation-types';
 import type { Motivation } from '../branded-types';
 import { resourceId } from '../identifiers';

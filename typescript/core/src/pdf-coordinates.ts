@@ -14,17 +14,7 @@
  * RFC 3778 PDF Fragment Identifiers: https://tools.ietf.org/html/rfc3778
  */
 
-/**
- * A bounding rectangle in PDF point coordinates.
- * Origin at the bottom-left of the page; Y increases upward.
- */
-export interface PdfCoordinate {
-  page: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import type { PdfCoordinate } from './payload-types';
 
 /**
  * Serialize a PdfCoordinate to an RFC 3778 FragmentSelector value.

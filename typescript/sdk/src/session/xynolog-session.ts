@@ -81,13 +81,8 @@ import type { XynologSessionErrorCode } from '@xynolog/core';
 import type { SignInKept } from './sign-in-kept';
 import type { SessionStorage } from './session-storage';
 import { personKeeping } from '../cache-persister';
-import type { SessionEndReason } from '@xynolog/core';
-import {
-  SCRIPT_CLIENT_ID,
-  renewKept,
-  signInWithDeviceGrant,
-  type DeviceCode,
-} from './oauth';
+import type { DeviceCode, SessionEndReason } from '@xynolog/core';
+import { SCRIPT_CLIENT_ID, renewKept, signInWithDeviceGrant } from './oauth';
 import { sharedRenewal, type SharedRenewal } from './shared-renewal';
 
 export type UserInfo = components['schemas']['UserResponse'];

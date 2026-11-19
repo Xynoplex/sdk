@@ -20,7 +20,7 @@
  * Y increasing upward. The Y-flip to canvas pixels lives in the browser.
  */
 
-import type { PdfCoordinate } from './pdf-coordinates';
+import type { PdfCoordinate } from './payload-types';
 import { textOffsets } from './text-offsets';
 import type { components } from './types';
 

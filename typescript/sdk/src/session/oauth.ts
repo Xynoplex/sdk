@@ -30,7 +30,12 @@ import {
   withinDeadline,
 } from '@xynolog/core';
 import type { SignInErrorCode } from '@xynolog/core';
-import type { HttpEndpoint } from '@xynolog/core';
+import type {
+  BeginAuthorizationOptions,
+  DeviceCode,
+  HttpEndpoint,
+  IssuedTokens,
+} from '@xynolog/core';
 import { fetchOf } from '../fetch-of';
 import type { SessionStorage } from './session-storage';
 import { sha256 } from './sha256';
@@ -178,16 +183,6 @@ export interface PendingAuthorization {
   expectedName?: string;
 }
 
-export interface BeginAuthorizationOptions {
-  target: HttpEndpoint;
-  redirectUri: string;
-  /** Re-authenticating a registered KB, rather than connecting to a new address. */
-  kbId?: string;
-  /** What the user believed they clicked (a discovered row) — verified after, never assumed. */
-  expectedDid?: string;
-  expectedName?: string;
-}
-
 /**
  * Start the authorization-code grant: discover the issuer, remember the
  * pending sign-in, and return the URL the host navigates the user to. The
@@ -221,11 +216,6 @@ export async function beginAuthorization(
   url.searchParams.set('code_challenge', codeChallenge(verifier));
   url.searchParams.set('code_challenge_method', 'S256');
   return url.toString();
-}
-
-export interface IssuedTokens {
-  access: string;
-  refresh: string;
 }
 
 /**
@@ -556,13 +546,6 @@ export async function revokeAtIssuer(
 }
 
 // ---------- Device authorization grant (a script) ----------
-
-export interface DeviceCode {
-  userCode: string;
-  verificationUri: string;
-  verificationUriComplete?: string;
-  expiresIn: number;
-}
 
 export interface DeviceGrantOptions {
   target: HttpEndpoint;

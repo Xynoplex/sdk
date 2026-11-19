@@ -48,7 +48,7 @@ export {
 export {
   createMarkStateUnit,
   type MarkStateUnit,
-  type PendingAnnotation,
 } from './flows/mark-state-unit';
+export type { PendingAnnotation } from '@xynolog/core';
 
 export type { ConnectionState } from '@xynolog/core';

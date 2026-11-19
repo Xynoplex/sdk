@@ -26,7 +26,12 @@ import { XynologError } from './errors';
 import { findBestTextMatch, buildContentCache } from './fuzzy-anchor';
 import type { SpanRefusal } from './error-codes';
 import type { ResourceId } from './identifiers';
-import type { AnchorMethod, MatchQuality, Selector } from './payload-types';
+import type {
+  QuotedText,
+  ReconciledSpan,
+  Selector,
+  TextSpan,
+} from './payload-types';
 import { locate, type AnchoredText } from './pdf-anchoring';
 import { createFragmentSelector } from './pdf-coordinates';
 import { contextOf } from './text-context';
@@ -40,43 +45,6 @@ import type { components } from './types';
 
 type Agent = components['schemas']['Agent'];
 type TextQuoteSelector = components['schemas']['TextQuoteSelector'];
-
-/**
- * What a model quoted of a text: the words, and maybe what it says stands
- * before and after them. None of it is trusted: the words are looked for in
- * the text, and the context only chooses among the places they are found.
- */
-export interface QuotedText {
-  exact: string;
-  prefix?: string;
-  suffix?: string;
-}
-
-/**
- * A span of a text: from the offset `start` up to but not including the
- * offset `end`, the text between them (`exact`), and maybe the text just
- * before it (`prefix`) and just after it (`suffix`).
- */
-export interface TextSpan {
-  /** The offset the span starts at: how many code points of the text are before it. */
-  start: number;
-  /** The offset just after the span. */
-  end: number;
-  exact: string;
-  prefix?: string;
-  suffix?: string;
-}
-
-/**
- * The span `reconcile` found: its `exact`, `prefix` and `suffix` are the
- * text's own, never the model's, and it says how it was found. It is a
- * `TextSpan`, so it is what `annotationOfSpan` takes.
- */
-export interface ReconciledSpan extends TextSpan {
-  anchorMethod: AnchorMethod;
-  /** Which looser search found the span: stated when `anchorMethod` is `fuzzy-match`, and only then. */
-  matchQuality?: MatchQuality;
-}
 
 /**
  * A span `annotationOfSpan` refused. `code` names the refusal: one of the

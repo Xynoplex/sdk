@@ -54,8 +54,8 @@ import {
   beginAuthorization,
   completeAuthorization,
   revokeAtIssuer,
-  type BeginAuthorizationOptions,
 } from './oauth';
+import type { BeginAuthorizationOptions } from '@xynolog/core';
 import { describeConnection } from './connect';
 import type {
   KbEndpoint,

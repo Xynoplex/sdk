@@ -6,7 +6,8 @@
  */
 
 import { describe, test, it, expect } from 'vitest';
-import { reconcile, type ReconciledSpan } from '../annotation-builders';
+import { reconcile } from '../annotation-builders';
+import type { ReconciledSpan } from '../payload-types';
 
 // ─── Layer 1: per-anchor-method tests ────────────────────────────────────
 
