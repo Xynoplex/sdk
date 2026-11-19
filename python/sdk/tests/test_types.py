@@ -127,12 +127,7 @@ def may_be_null(stated: JsonObject) -> bool:
     # OpenAPI 3.1 says null three ways: in a type list, as an anyOf member,
     # and as a oneOf's member.
     kinds = stated.get("type")
-    members = [
-        member
-        for keyword in ("anyOf", "oneOf")
-        if isinstance(listed := stated.get(keyword), list)
-        for member in listed
-    ]
+    members = [member for keyword in ("anyOf", "oneOf") if isinstance(listed := stated.get(keyword), list) for member in listed]
     return (isinstance(kinds, list) and "null" in kinds) or any(
         isinstance(member, dict) and member.get("type") == "null" for member in members
     )
