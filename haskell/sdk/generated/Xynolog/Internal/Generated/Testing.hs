@@ -1,5 +1,5 @@
 -- Generated from protocol/specs/src/client/testing.json; do not edit.
--- Regenerate: make generate (codegen/lib/testing/testing.ml)
+-- Regenerate: make generate (codegen/lib/testing/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
 module Xynolog.Internal.Generated.Testing (FaultAction (..), faultKind, DeliveryOp (..), deliveryOpName, faultActions, scheduleLength, slack, Respond, RequestLogEntry (..), FaultyTransport (..), LivenessScenario (..), LivenessSpec (..)) where

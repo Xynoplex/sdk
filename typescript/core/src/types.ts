@@ -2,6 +2,8 @@
 //
 // Authority:   the component schemas of protocol/specs/src/openapi.json
 //              the records Protocol states in its tables (codegen/lib/table_records.ml)
+//              the client types it names, of protocol/specs/src/client/types
+//              protocol/specs/src/client/discovery-absent.json
 //              protocol/specs/src/identifiers/kinds.json, for the brands
 // Regenerate:  make generate  (codegen/lib/typescript_types/typescript_types.ml)
 
@@ -5469,10 +5471,16 @@ export interface components {
 }
 
 /**
- * The records Protocol states in its tables, which no wire message carries, and
- * what only they reach.
+ * The records Protocol states in its tables and the client types, which no wire
+ * message carries, and what only they reach.
  */
 export interface records {
+  /**
+   * How a quoted selection was found in a text. Which word a span is found by
+   * is reconcile's rule (specs/src/annotations/reconcile-cases.json).
+   */
+  AnchorMethod:
+    'unique-match' | 'context-recovered' | 'first-of-many' | 'fuzzy-match';
   /**
    * Who the knowledge base at an address says it is, asked with a token just
    * issued, before any entry is made for it.
@@ -5493,6 +5501,12 @@ export interface records {
     /** The name they believed it has. Absent when they had none. */
     name?: string;
   };
+  /**
+   * Why a reader refused a frame, for its first fault: `lacks`, a member it
+   * lacks; `malformed`, a member that is not of its shape. A reader's rule
+   * (specs/src/bus/frame-cases.json).
+   */
+  FrameRefusalReason: 'lacks' | 'malformed';
   /**
    * A different knowledge base answers at a registered address. Both dids,
    * because neither alone says what to do: a person has to recognise which
@@ -5530,6 +5544,12 @@ export interface records {
    * a token is stored and has expired; `signed-out`, nothing is stored.
    */
   KbSessionStatus: 'authenticated' | 'expired' | 'signed-out';
+  /**
+   * Which looser search found a quoted selection, stated of a span whose
+   * `anchorMethod` is `fuzzy-match` and only then. Which search finds it is
+   * reconcile's rule (specs/src/annotations/reconcile-cases.json).
+   */
+  MatchQuality: 'normalized' | 'case-insensitive' | 'fuzzy';
   /** A request was refused for lack of permission. */
   PermissionDenied: {
     /** The refusal's own message, untranslated; null when it gave none. */
@@ -5649,4 +5669,29 @@ export interface records {
       };
   /** What checking an open resource against its knowledge base concluded. */
   TabVerdict: 'gone' | 'ready' | 'unknown';
+  /** Why no launcher was found. */
+  DiscoveryAbsentReason:
+    /**
+     * There is no document where it was looked for: no file, an HTTP status
+     * that is not success, or a page that is not JSON.
+     */
+    | 'not-found'
+    /** There is a document, and it is not JSON. */
+    | 'not-json'
+    /**
+     * It is JSON, and not a discovery document: one entry that is not what the
+     * schema says makes the whole document invalid, since a partial reading
+     * would hide a running knowledge base without a trace.
+     */
+    | 'invalid'
+    /**
+     * It is a discovery document of a version this client does not speak, and
+     * is not read in part.
+     */
+    | 'unsupported-version'
+    /**
+     * It could not be read at all: the file could not be opened or decoded, or
+     * the request got no answer by its deadline.
+     */
+    | 'unreadable';
 }

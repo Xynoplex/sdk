@@ -21,7 +21,7 @@ export {
   FaultyTransport,
   refuseUnscriptedOperation,
   retryKeyOf,
-  type FaultAction,
   type FaultyTransportConfig,
-  type RequestLogEntry,
 } from './faulty-transport';
+
+export type { FaultAction, RequestLogEntry } from './testing-kit';

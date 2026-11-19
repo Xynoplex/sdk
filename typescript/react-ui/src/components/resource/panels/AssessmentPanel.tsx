@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
+import type {
+  MarkStateUnit,
+  PendingAnnotation,
+  XynologSession,
+} from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
 import type { components, JobId, ResourceId, Selector } from '@xynolog/core';
 import { getTextPositionSelector, getTargetSelector } from '@xynolog/core';
@@ -11,15 +15,9 @@ import { DelegateSection } from './DelegateSection';
 import { PanelHeader } from './PanelHeader';
 
 import type { Annotation } from '@xynolog/core';
-type Motivation = components['schemas']['Motivation'];
 type JobProgress = components['schemas']['JobProgress'];
 
 // Unified pending annotation type
-interface PendingAnnotation {
-  selector: Selector | Selector[];
-  motivation: Motivation;
-}
-
 // Helper to extract display text from selector
 function getSelectorDisplayText(
   selector: Selector | Selector[],
