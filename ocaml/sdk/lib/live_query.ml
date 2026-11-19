@@ -359,7 +359,8 @@ let refetch t ~on ~payload =
                         ~some:(fun value ->
                           resource = None || resource = Some value)
                         (name resource_way)
-                      && (List.mem query [ "annotations"; "events" ]
+                      && (List.mem query
+                            Live_facts.Query.[ annotations; events ]
                          || Option.fold ~none:true
                               ~some:(fun value -> annotation = Some value)
                               (name annotation_way)))
@@ -369,10 +370,9 @@ let refetch t ~on ~payload =
                   remove t key Error_codes.Bus_request.not_found;
                 (if List.mem query writes then
                    let value = at carries payload in
-                   match query with
-                   | "annotation" -> set t key value
-                   | "annotations" -> patch t key (written_into value)
-                   | _ -> ());
+                   if query = Live_facts.Query.annotation then set t key value
+                   else if query = Live_facts.Query.annotations then
+                     patch t key (written_into value));
                 if List.mem query queries then
                   if on = "reopened" then refetch_held t key
                   else refresh t key entry))

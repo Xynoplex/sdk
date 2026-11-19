@@ -81,7 +81,7 @@ let deliver t ?id ?correlation_id ?scope channel payload =
             ]))
   in
   let event =
-    "event: bus-event\n"
+    "event: " ^ Bus_registry.stream_event ^ "\n"
     ^ Option.fold ~none:"" ~some:(fun id -> "id: " ^ id ^ "\n") id
     ^ "data: " ^ data ^ "\n\n"
   in
@@ -123,7 +123,7 @@ let call
         (404, [], Eio.Flow.string_source "{}")) t ~sw ~meth ~path ~headers ~body
     ~progress:_ =
   match path with
-  | "/bus/subscribe" ->
+  | path when path = snd Http_facts.subscribe ->
       let open Yojson.Safe.Util in
       let request = Yojson.Safe.from_string body in
       let texts value = List.map to_string (to_list value) in
@@ -146,7 +146,7 @@ let call
       ( 200,
         [],
         Eio.Resource.T ((stream, ref ""), Eio.Flow.Pi.source (module Source)) )
-  | "/bus/emit" -> (
+  | path when path = snd Http_facts.emit -> (
       let open Yojson.Safe.Util in
       let frame = Yojson.Safe.from_string body in
       let channel = to_string (member "channel" frame) in

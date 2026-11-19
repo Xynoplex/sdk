@@ -144,7 +144,7 @@ let store () =
             assert (Store.find store ~key = None);
             assert (List.assoc "token" request.O.form = "refresh-for-revocation");
             (500, ""))
-        = Error (O.Rejected "oauth.revocation-failed"));
+        = Error (O.Rejected Error_codes.Sign_in.exchange));
       assert (Store.find store ~key = None);
       assert (
         Yojson.Safe.from_file path
