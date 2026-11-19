@@ -395,18 +395,34 @@ let put t ~fields ~bytes ~on_progress =
       Buffer.add_string buffer bytes;
       Buffer.add_string buffer ("\r\n--" ^ boundary ^ "--\r\n");
       let body = Buffer.contents buffer in
+      let total_bytes = String.length bytes in
       let reported = ref (-1) in
       let report sent =
-        let sent = min (String.length bytes) (max 0 (sent - offset)) in
+        let sent = min total_bytes (max 0 (sent - offset)) in
         if sent > !reported then (
           reported := sent;
-          on_progress sent)
+          on_progress
+            (Records.Upload_progress.Progress
+               { bytes_uploaded = sent; total_bytes }))
       in
-      exchange t ~auth:true ~body ~progress:report
-        ~headers:
-          [
-            ("content-type", "multipart/form-data; boundary=" ^ boundary);
-            ("idempotency-key", key);
-          ]
-        ~attempts:2 ~initial_delay:Client_timing.request_retry_pause_ms
-        Http_facts.upload read_text)
+      on_progress (Records.Upload_progress.Started { total_bytes });
+      let answer =
+        exchange t ~auth:true ~body ~progress:report
+          ~headers:
+            [
+              ("content-type", "multipart/form-data; boundary=" ^ boundary);
+              ("idempotency-key", key);
+            ]
+          ~attempts:2 ~initial_delay:Client_timing.request_retry_pause_ms
+          Http_facts.upload read_text
+      in
+      match Models.decode Models.create_resource_response answer with
+      | Ok response ->
+          let created = Records.Create_resource_response.of_model response in
+          on_progress
+            (Records.Upload_progress.Finished
+               { resource_id = Record_reader.string created.resource_id });
+          answer
+      | Error _ ->
+          fail t ~message:"The gateway's answer to the upload names no resource"
+            Error_codes.Transport.error)
