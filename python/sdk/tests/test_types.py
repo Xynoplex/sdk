@@ -123,6 +123,21 @@ def test_no_shape_is_typed_by_something_that_rewrites_what_it_reads() -> None:
     assert imported == {"JsonValue", "Field"}
 
 
+def may_be_null(stated: JsonObject) -> bool:
+    # OpenAPI 3.1 says null three ways: in a type list, as an anyOf member,
+    # and as a oneOf's member.
+    kinds = stated.get("type")
+    members = [
+        member
+        for keyword in ("anyOf", "oneOf")
+        if isinstance(listed := stated.get(keyword), list)
+        for member in listed
+    ]
+    return (isinstance(kinds, list) and "null" in kinds) or any(
+        isinstance(member, dict) and member.get("type") == "null" for member in members
+    )
+
+
 def test_a_property_the_spec_says_may_be_null_may_be_null() -> None:
     held = 0
     refusing: list[str] = []
@@ -133,7 +148,7 @@ def test_a_property_the_spec_says_may_be_null_may_be_null() -> None:
             continue
         by_wire = {field.alias or name: field for name, field in model.model_fields.items()}
         for wire, stated in properties.items():
-            if isinstance(stated, dict) and stated.get("nullable") is True:
+            if isinstance(stated, dict) and may_be_null(stated):
                 held += 1
                 if type(None) not in get_args(by_wire[wire].annotation):
                     refusing.append(f"{path.stem}.{wire}")
