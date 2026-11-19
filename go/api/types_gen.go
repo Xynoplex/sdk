@@ -5471,11 +5471,6 @@ type LibrarianEngineConfig struct {
 	Engine  Engine `json:"engine"`
 }
 
-type LibrarianPromptScore struct {
-	Candidate float64 `json:"candidate"`
-	Score     float64 `json:"score"`
-}
-
 // LimitRefusal An ErrorResponse that names, in `code`, the limit the request
 // met.
 type LimitRefusal struct {

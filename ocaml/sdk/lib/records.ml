@@ -6549,28 +6549,6 @@ module Librarian_engine_config = struct
     project (fields_of (Models.json model))
 end
 
-module Librarian_prompt_score = struct
-  type t = {
-    candidate : Yojson.Raw.t;
-    score : Yojson.Raw.t;
-    extra : (string * Yojson.Raw.t) list;
-  }
-
-  let project fields =
-    let reader = start fields in
-    let record =
-      {
-        candidate = required reader raw "candidate";
-        score = required reader raw "score";
-        extra = [];
-      }
-    in
-    { record with extra = rest reader }
-
-  let of_model (model : [ `LibrarianPromptScore ] Models.t) =
-    project (fields_of (Models.json model))
-end
-
 module Smelter_config = struct
   type t = {
     kb : Yojson.Raw.t;

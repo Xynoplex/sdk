@@ -4842,19 +4842,6 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         },
     ),
     (
-        "LibrarianPromptScore",
-        Shape {
-            kinds: Some(&[Kind::Object]),
-            required: &["candidate", "score"],
-            members: &[
-                ("candidate", of(&[Kind::Number])),
-                ("score", of(&[Kind::Number])),
-            ],
-            closed: Some(&["candidate", "score"]),
-            ..NONE
-        },
-    ),
-    (
         "LimitRefusal",
         Shape {
             kinds: Some(&[Kind::Object]),

@@ -6801,26 +6801,6 @@ public struct LibrarianEngineConfig: Codable, Sendable {
   }
 }
 
-public struct LibrarianPromptScore: Codable, Sendable {
-  public var candidate: Double
-  public var score: Double
-  public init(candidate: Double, score: Double) {
-    self.candidate = candidate
-    self.score = score
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["candidate", "score"], in: "LibrarianPromptScore")
-    self.candidate = try c.value("candidate")
-    self.score = try c.value("score")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.candidate, as: "candidate")
-    try c.encode(self.score, as: "score")
-  }
-}
-
 public struct LimitRefusal: Codable, Sendable {
   public var code: LimitRefusalCode
   public var details: JSONValue?
@@ -14968,10 +14948,6 @@ internal let requiredSchemas: [String: Shape] = {
       "apiKeyEnv": Shape(kinds: [.string], minLength: 1),
       "baseUrl": Shape(kinds: [.string], minLength: 1), "engine": Shape(ref: "Engine"),
     ], closed: ["apiKeyEnv", "baseUrl", "engine"])
-  shapes["LibrarianPromptScore"] = Shape(
-    kinds: [.object], required: ["candidate", "score"],
-    members: ["candidate": Shape(kinds: [.number]), "score": Shape(kinds: [.number])],
-    closed: ["candidate", "score"])
   shapes["LimitRefusal"] = Shape(
     kinds: [.object],
     allOf: [

@@ -428,7 +428,6 @@ library internal
     Xynolog.Internal.Generated.Models.KnowledgeGraph
     Xynolog.Internal.Generated.Models.LibrarianConfig
     Xynolog.Internal.Generated.Models.LibrarianEngineConfig
-    Xynolog.Internal.Generated.Models.LibrarianPromptScore
     Xynolog.Internal.Generated.Models.LimitRefusal
     Xynolog.Internal.Generated.Models.LinkingJobParams
     Xynolog.Internal.Generated.Models.ListResourcesResponse

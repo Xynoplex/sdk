@@ -6912,15 +6912,6 @@ impl LibrarianEngineConfig {
 
 schema!(LibrarianEngineConfig);
 
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct LibrarianPromptScore {
-    pub candidate: f64,
-    pub score: f64,
-}
-
-schema!(LibrarianPromptScore);
-
 /// An ErrorResponse that names, in `code`, the limit the request met.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct LimitRefusal {
