@@ -737,6 +737,16 @@ private let callsByName:
   }
 }
 
+/// Whether a schema admits null: null its second type, or a member of its union.
+private func admitsNull(_ schema: [String: JSONValue]) -> Bool {
+  if case .array(let types)? = schema["type"] { return types.contains(.string("null")) }
+  let nullType = JSONValue.object(["type": .string("null")])
+  return ["anyOf", "oneOf"].contains { key in
+    if case .array(let members)? = schema[key] { return members.contains(nullType) }
+    return false
+  }
+}
+
 @Test func payloadDiagnosticsFollowTheSchemaAndPreferMissingParents() async throws {
   let probe = ProbeTransport(channels: bridgedChannels)
   let user = try await encoded(probe.getCurrentUser()).object
@@ -752,7 +762,7 @@ private let callsByName:
     let property = try #require(required(schema, "properties").object[name]).object
     #expect(
       faultOf("UserResponse", .object(missing))
-        == (property["nullable"] == .bool(true) ? nil : lacking))
+        == (admitsNull(property) ? nil : lacking))
   }
   var status = try await encoded(probe.getStatus()).object
   status["features"] = .object([:])

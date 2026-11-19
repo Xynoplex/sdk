@@ -31,10 +31,6 @@ internal static partial class WireJson
             Validate(Definition(Path.GetFileNameWithoutExtension(target)), value, path);
             return;
         }
-        if (value.ValueKind == JsonValueKind.Null && schema.TryGetProperty("nullable", out var nullable) && nullable.GetBoolean())
-        {
-            return;
-        }
         if (schema.TryGetProperty("allOf", out var parts))
         {
             foreach (var part in parts.EnumerateArray())
@@ -55,19 +51,12 @@ internal static partial class WireJson
         {
             return;
         }
-        var matches = type.GetString() switch
+        var types = type.ValueKind == JsonValueKind.Array
+            ? type.EnumerateArray().Select(name => name.GetString()).ToArray()
+            : [type.GetString()];
+        if (!types.Any(name => Admits(name, value)))
         {
-            "object" => value.ValueKind == JsonValueKind.Object,
-            "array" => value.ValueKind == JsonValueKind.Array,
-            "string" => value.ValueKind == JsonValueKind.String,
-            "integer" => value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out _),
-            "number" => value.ValueKind == JsonValueKind.Number,
-            "boolean" => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
-            _ => false,
-        };
-        if (!matches)
-        {
-            throw new JsonException(path + ": expected " + type.GetString());
+            throw new JsonException(path + ": expected " + string.Join(" or ", types));
         }
         if (value.ValueKind == JsonValueKind.Object)
         {
@@ -143,6 +132,18 @@ internal static partial class WireJson
             Bound(schema, "maximum", value.GetDouble(), path, false);
         }
     }
+
+    private static bool Admits(string? type, JsonElement value) => type switch
+    {
+        "object" => value.ValueKind == JsonValueKind.Object,
+        "array" => value.ValueKind == JsonValueKind.Array,
+        "string" => value.ValueKind == JsonValueKind.String,
+        "integer" => value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out _),
+        "number" => value.ValueKind == JsonValueKind.Number,
+        "boolean" => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+        "null" => value.ValueKind == JsonValueKind.Null,
+        _ => false,
+    };
 
     private static void Bound(JsonElement schema, string keyword, double value, string path, bool minimum)
     {

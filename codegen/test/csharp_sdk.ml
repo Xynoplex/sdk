@@ -75,9 +75,9 @@ let refusals =
          ]
          "components/schemas/X.json uses unsupported schema keyword \
           minProperties.");
-    case "a list of types is refused, even of one"
+    case "a list of two types neither null is refused"
       (refuses
-         [ ("X", object_ {|"a":{"type":["string"]}|}) ]
+         [ ("X", object_ {|"a":{"type":["string","integer"]}|}) ]
          "components/schemas/X.json.a has an unsupported type.");
     case "a schema that is a boolean is refused"
       (refuses
@@ -159,7 +159,8 @@ let refusals =
       (unread {|{"type":"object","patternProperties":{"x":{"type":"string"}}}|});
     case "a format other than the spec's is unread"
       (unread {|{"type":"string","format":"uuid"}|});
-    case "the null type is unread" (unread {|{"type":"null"}|});
+    case "OpenAPI 3.0's nullable is unread"
+      (unread {|{"type":"string","nullable":true}|});
     case "additionalProperties of a number is unread"
       (unread {|{"type":"object","additionalProperties":3}|});
   ]

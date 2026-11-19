@@ -3,9 +3,9 @@
    a directory of schemas holds, is a schema by its name, and any other file a
    [$ref] names is written in its place; a [$ref] has only a description
    beside it, which is what is said of it there),
-   and OpenAPI's [nullable] as JSON Schema draft 7 states it: beside one
-   [type], [null] is a second type; beside anything else, the schema is a
-   union of [null] and the rest. A schema that states an [allOf] holds its
+   and a schema that may be null ([Null_form]) as the union of [Null] and what
+   it is beside null, or, beside one [type], [Or_null]. A schema that
+   states an [allOf] holds its
    parts, for the names a writer gives what they state, and what they merge
    to ([Normalize]), which describes it. *)
 
@@ -15,12 +15,12 @@ let refuse fmt = Printf.ksprintf (fun message -> raise (Refused message)) fmt
 
 type types =
   | One of Schema.type_name
-  | Or_null of Schema.type_name  (** draft 7's [[T, "null"]] *)
+  | Or_null of Schema.type_name  (** [[T, "null"]] *)
 
 type t =
   | Ref of { name : string; description : string option }
       (** A component schema, by its name, and what is said of it here. *)
-  | Null  (** [{type: "null"}], a nullable union's other member. *)
+  | Null  (** [{type: "null"}], a union's member that is null. *)
   | Bool of bool
   | Node of node
 
@@ -163,6 +163,16 @@ let client_roots (spec : Spec.t) =
 let view ~named ~schemas =
   let rec view s = Schema.para ~boolean:(fun b _ -> Bool b) ~schema:layer s
   and layer (l : (Schema.t * (string list -> t)) Schema.layer) trail =
+    match Null_form.without_null fst l with
+    | Error message -> refuse "%s" message
+    | Ok None -> plain l trail
+    | Ok (Some beside) -> (
+        match plain beside trail with
+        | Node ({ type_ = Some (One t); _ } as n) ->
+            Node { n with type_ = Some (Or_null t) }
+        | other ->
+            Node { (node [ "anyOf" ]) with any_of = Some [ Null; other ] })
+  and plain l trail =
     let s = Schema.map snd l in
     match s.ref_ with
     | Some r -> (
@@ -181,21 +191,19 @@ let view ~named ~schemas =
                 r.target;
             view target (in_place ~trail file)
         | None -> refuse "$ref %s names no schema" r.target)
-    | None -> (
+    | None when Schema.keywords s = [ "type" ] && s.type_ = Some [ Schema.Null ]
+      ->
+        Null
+    | None ->
         let sub f = f trail in
         let subs = Option.map (List.map sub) in
-        let nullable = s.nullable = Some true in
-        let keys =
-          List.filter
-            (fun k -> not (nullable && k = "nullable"))
-            (Schema.keywords s)
-        in
+        let keys = Schema.keywords s in
         let merged =
           Option.map
             (fun _ ->
               match
                 Normalize.normalize ~find:(schema_of ~schemas)
-                  (Schema.Schema { (Schema.map fst l) with nullable = None })
+                  (Schema.Schema (Schema.map fst l))
               with
               | Ok m -> view (Schema.Schema m) trail
               | Error message -> refuse "%s" message)
@@ -204,7 +212,7 @@ let view ~named ~schemas =
         let types =
           match s.type_ with
           | None -> None
-          | Some [ t ] -> Some (One t)
+          | Some [ t ] when t <> Schema.Null -> Some (One t)
           | Some _ ->
               refuse "a schema of several types the generator does not know"
         in
@@ -238,12 +246,7 @@ let view ~named ~schemas =
             pattern = s.pattern;
           }
         in
-        if not nullable then Node own
-        else
-          match types with
-          | Some (One t) -> Node { own with type_ = Some (Or_null t) }
-          | _ ->
-              Node { (node [ "anyOf" ]) with any_of = Some [ Null; Node own ] })
+        Node own
   in
   fun s -> view s []
 

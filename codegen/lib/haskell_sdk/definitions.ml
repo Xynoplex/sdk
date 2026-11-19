@@ -41,7 +41,7 @@ let canonical ~rewrite : Schema.t -> Schema.t =
             Option.map
               (List.sort (fun (a, _) (b, _) -> String.compare a b))
               s.properties;
-          example = Option.map Yojson.Safe.sort s.example;
+          examples = Option.map (List.map Yojson.Safe.sort) s.examples;
         })
 
 let unchanged (r : Decode.reference) = r.target

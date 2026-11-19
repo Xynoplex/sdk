@@ -135,13 +135,12 @@ let known_keywords =
     "anyOf";
     "allOf";
     "enum";
-    "nullable";
     "discriminator";
     "description";
     "title";
     "format";
     "default";
-    "example";
+    "examples";
     "minimum";
     "maximum";
     "minLength";
@@ -231,6 +230,7 @@ and type_ t owner part raw =
           | Schema.Integer -> enumerated "Int"
           | Schema.Number -> S.Named "Double"
           | Schema.Boolean -> enumerated "Bool"
+          | Schema.Null -> refuse "%s.%s: null alone" owner part
           | Schema.Array -> (
               match n.items with
               | None -> refuse "%s.%s: array without items" owner part
@@ -282,6 +282,7 @@ and plain_declaration t ~modifiers ~owner n s =
           | Schema.Integer -> alias (S.Named "Int")
           | Schema.Number -> alias (S.Named "Double")
           | Schema.Boolean -> alias (S.Named "Bool")
+          | Schema.Null -> refuse "%s: null alone" n
           | Schema.Array -> (
               match node.items with
               | None -> refuse "%s: array without items" n

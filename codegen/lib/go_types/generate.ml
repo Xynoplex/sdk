@@ -112,12 +112,6 @@ and type_of st owner property (s : D.t) =
       | None -> (
           let here () = inline st (inline_name st owner property) s in
           match s with
-          | D.Node ({ all_of = Some [ (D.Ref _ as only) ]; _ } as n)
-            when List.for_all (fun k -> k = "allOf" || k = "description") n.keys
-            ->
-              (* An [allOf] of one schema is that schema: the form a [$ref]
-                 takes when something is said beside it. *)
-              type_of st owner property only
           | D.Node { all_of = Some _; _ } -> here ()
           | _ -> (
               match View.union s with
@@ -137,6 +131,7 @@ and type_of st owner property (s : D.t) =
                       | Boolean -> named "bool"
                       | Number -> named "float64"
                       | Integer -> named "int"
+                      | Null -> refuse "%s: null alone" what
                       | Array -> (
                           match n.items with
                           | Some items ->

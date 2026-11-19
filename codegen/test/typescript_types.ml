@@ -29,7 +29,7 @@ let cases =
           (one {|{"allOf": [{"$ref": "A.json"}], "enum": ["x"]}|}));
     case "a nullable reference admits null after it" (fun () ->
         equal "components['schemas']['A'] | null"
-          (one {|{"allOf": [{"$ref": "A.json"}], "nullable": true}|}));
+          (one {|{"anyOf": [{"$ref": "A.json"}, {"type": "null"}]}|}));
     case "an object of no properties that is not open holds no member"
       (fun () -> equal "Record<string, never>" (one {|{"type": "object"}|}));
     case "an open object holds any member beside its properties" (fun () ->
@@ -59,7 +59,7 @@ let cases =
           written
             [
               ( "S",
-                {|{"type": "object", "properties": {"a": {"allOf": [{"$ref": "A.json"}], "nullable": true}, "b": {"type": "string", "description": "What a b is."}}}|}
+                {|{"type": "object", "properties": {"a": {"anyOf": [{"$ref": "A.json"}, {"type": "null"}]}, "b": {"type": "string", "description": "What a b is."}}}|}
               );
               ("A", {|{"type": "string", "description": "What an A is."}|});
             ]

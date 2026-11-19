@@ -167,9 +167,10 @@ let document ~root file =
       ])
 
 (* A document's component schemas as JSON Schema draft 7, under
-   [definitions]: a reference names its schema there, and [nullable] beside
-   a [type] adds [null] to it; beside anything else, the schema is
-   [anyOf: [{type: null}, <the rest>]]. *)
+   [definitions], where a reference names its schema. The forms Protocol
+   writes in 2020-12 mean the same in draft 7: null is a second [type], an
+   [anyOf] or a [oneOf] member, and nothing but an annotation stands beside a
+   [$ref]. *)
 let definitions file (document : Yojson.Safe.t) : Yojson.Safe.t =
   let prefix = "#/components/schemas/" in
   let rec convert (json : Yojson.Safe.t) : Yojson.Safe.t =
@@ -187,24 +188,6 @@ let definitions file (document : Yojson.Safe.t) : Yojson.Safe.t =
                           (String.length r - String.length prefix)) )
               | member -> member)
             members
-        in
-        let members =
-          if List.assoc_opt "nullable" members = Some (`Bool true) then
-            let rest = List.remove_assoc "nullable" members in
-            match List.assoc_opt "type" rest with
-            | Some (`String t) ->
-                List.map
-                  (function
-                    | "type", _ -> ("type", `List [ `String t; `String "null" ])
-                    | member -> member)
-                  rest
-            | _ ->
-                [
-                  ( "anyOf",
-                    `List [ `Assoc [ ("type", `String "null") ]; `Assoc rest ]
-                  );
-                ]
-          else members
         in
         `Assoc (List.map (fun (k, v) -> (k, convert v)) members)
     | other -> other
