@@ -59,7 +59,7 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
-        using var activity = SdkTelemetry.Start("content.put", new ActivityTagsCollection { { "content.format", request.Format }, { "content.size_bytes", request.File.LongLength } });
+        using var activity = SdkTelemetry.Start("content.put", new ActivityTagsCollection { { TelemetryKeys.ContentFormat, request.Format }, { TelemetryKeys.ContentSizeBytes, request.File.LongLength } });
         progress?.Report(new UploadProgress.StartedCase(new UploadProgressStarted { TotalBytes = request.File.LongLength }));
         using var response = await transport.ExchangeAsync(GatewayRoute.UploadResource.Method, GatewayRoute.UploadResource.Path, () =>
         {
@@ -84,7 +84,7 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
-        using var activity = SdkTelemetry.Start("content.get", new ActivityTagsCollection { { "resource.id", resource.Value } });
+        using var activity = SdkTelemetry.Start("content.get", new ActivityTagsCollection { { TelemetryKeys.ResourceId, resource.Value } });
         using var response = await transport.ExchangeAsync(GatewayRoute.GetResourceRepresentation.Method, PathOf(GatewayRoute.GetResourceRepresentation, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
         return new BinaryContent(ContentType(response.Content), await response.Content.ReadAsByteArrayAsync(cancellation).ConfigureAwait(Spawning.Captures));
     }
@@ -93,7 +93,7 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
-        var activity = SdkTelemetry.Start("content.get", new ActivityTagsCollection { { "resource.id", resource.Value }, { "content.stream", true } });
+        var activity = SdkTelemetry.Start("content.get", new ActivityTagsCollection { { TelemetryKeys.ResourceId, resource.Value }, { TelemetryKeys.ContentStream, true } });
         var response = await transport.ExchangeAsync(GatewayRoute.GetResourceRepresentation.Method, PathOf(GatewayRoute.GetResourceRepresentation, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
         try
         {
@@ -113,21 +113,21 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
-        using var activity = SdkTelemetry.Start("content.get_graph", new ActivityTagsCollection { { "resource.id", resource.Value } });
+        using var activity = SdkTelemetry.Start("content.get_graph", new ActivityTagsCollection { { TelemetryKeys.ResourceId, resource.Value } });
         return await transport.AnswerAsync<GetResourceResponse>(GatewayRoute.GetResourceJsonLd.Method, PathOf(GatewayRoute.GetResourceJsonLd, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
     }
     public async Task<GetAnnotationsResponse> GetAnnotationsAsync(ResourceId resource, CancellationToken cancellation = default)
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
-        using var activity = SdkTelemetry.Start("content.get_annotations", new ActivityTagsCollection { { "resource.id", resource.Value } });
+        using var activity = SdkTelemetry.Start("content.get_annotations", new ActivityTagsCollection { { TelemetryKeys.ResourceId, resource.Value } });
         return await transport.AnswerAsync<GetAnnotationsResponse>(GatewayRoute.GetResourceAnnotations.Method, PathOf(GatewayRoute.GetResourceAnnotations, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
     }
     public async Task<AnchoredTextAnswer> GetAnchoredTextAsync(ResourceId resource, CancellationToken cancellation = default)
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
-        using var activity = SdkTelemetry.Start("content.get_anchored_text", new ActivityTagsCollection { { "resource.id", resource.Value } });
+        using var activity = SdkTelemetry.Start("content.get_anchored_text", new ActivityTagsCollection { { TelemetryKeys.ResourceId, resource.Value } });
         return await transport.AnswerAsync<AnchoredTextAnswer>(GatewayRoute.GetResourceAnchoredText.Method, PathOf(GatewayRoute.GetResourceAnchoredText, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
     }
     private static string ContentType(HttpContent content) =>

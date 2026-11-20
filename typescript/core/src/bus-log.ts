@@ -16,7 +16,7 @@
  *
  * No line holds a credential. The value of a member whose whole name is one
  * a credential goes by (`token`, which is what a payload names the token a
- * resource is cloned by, and the rest of `CREDENTIALS` below) is written as
+ * resource is cloned by, and the rest of `CREDENTIALS`) is written as
  * `[withheld]`, as every bus log writes it (protocol/specs/src/bus/log-cases.json).
  *
  * Cost when disabled: one property read per call, zero allocations.
@@ -28,6 +28,7 @@
 
 import { RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
 import { BRIDGED_CHANNELS } from './bridging';
+import { CREDENTIALS } from './bus-log-credentials';
 import { isObject } from './type-guards';
 
 const NODE_BUS_LOG =
@@ -64,30 +65,6 @@ export function setBusLogTraceIdProvider(
 
 /** What a line says in place of a credential. */
 const WITHHELD = '[withheld]';
-
-/**
- * The names of the members whose value is one: the list
- * protocol/specs/src/bus/log-cases.json states for every bus log, which this
- * package's tests hold this one to.
- */
-const CREDENTIALS: ReadonlySet<string> = new Set([
-  'token',
-  'cloneToken',
-  'accessToken',
-  'access_token',
-  'refreshToken',
-  'refresh_token',
-  'apiKey',
-  'api_key',
-  'clientSecret',
-  'client_secret',
-  'secret',
-  'password',
-  'authorization',
-  'Authorization',
-  'x-api-key',
-  'x-goog-api-key',
-]);
 
 /**
  * A payload as a line shows it: as it is, less the value of each credential.

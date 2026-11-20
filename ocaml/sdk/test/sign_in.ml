@@ -164,6 +164,74 @@ let field = Yojson.Safe.Util.member
 let optional = function `String value -> Some value | _ -> None
 let get_text name value = Option.get (optional (field name value))
 
+(* The sign-in a device grant saves, held to sign-in-store/SignIn.json both
+   ways: it is written with every member the schema states and no other, and
+   one stored without a member is found exactly when the schema does not
+   require it. A member the schema gains, or one the store adds, fails
+   here. *)
+let sign_in_census () =
+  Eio_main.run @@ fun env ->
+  let directory = Filename.temp_file "xynolog-sign-in" "" in
+  Unix.unlink directory;
+  Unix.mkdir directory 0o700;
+  Fun.protect
+    ~finally:(fun () ->
+      Array.iter
+        (fun name -> Unix.unlink (Filename.concat directory name))
+        (Sys.readdir directory);
+      Unix.rmdir directory)
+    (fun () ->
+      let clock =
+        Clock.make ~wall:(Eio.Stdenv.clock env)
+          ~monotonic:(Eio.Stdenv.mono_clock env)
+          ~jitter:(Random.State.make [| 1 |])
+      in
+      let store = Store.make ~clock ~directory in
+      let issuer = issuer () in
+      let key = "local:example.org" in
+      let device =
+        get
+          (O.begin_device
+             (fun _ ->
+               ( 200,
+                 {|{"device_code":"device","user_code":"USER","verification_uri":"https://issuer.example/verify","expires_in":30}|}
+               ))
+             issuer)
+      in
+      (match O.poll_device (fun _ -> token_response "kept") issuer device with
+      | Ok (O.Issued tokens) ->
+          get (Store.save_device store ~key ~issuer tokens)
+      | _ -> failwith "the poll issued no tokens");
+      let path = Filename.concat directory "tokens.json" in
+      let written =
+        Yojson.Safe.Util.to_assoc (field key (Yojson.Safe.from_file path))
+      in
+      let schema = Protocol.table "sign-in-store/SignIn.json" in
+      let names value =
+        List.sort compare (List.map fst (Yojson.Safe.Util.to_assoc value))
+      in
+      let members = names (field "properties" schema) in
+      let required =
+        List.map Yojson.Safe.Util.to_string
+          (Yojson.Safe.Util.to_list (field "required" schema))
+      in
+      let found fields =
+        Out_channel.with_open_gen [ Open_wronly; Open_trunc ] 0o600 path
+          (fun file -> output_string file (json [ (key, `Assoc fields) ]));
+        Store.find store ~key <> None
+      in
+      Alcotest.(check (list string))
+        "a sign-in is written with the schema's members" members
+        (names (`Assoc written));
+      Alcotest.(check bool) "a sign-in is found as written" true (found written);
+      List.iter
+        (fun member ->
+          Alcotest.(check bool)
+            ("a sign-in without " ^ member ^ " is found only if not required")
+            (not (List.mem member required))
+            (found (List.remove_assoc member written)))
+        members)
+
 (* Shared rows from sign-in-store/cases.json. *)
 let paths () =
   Protocol.member "sign-in-store/cases.json" "cases"
@@ -480,5 +548,6 @@ let () =
         [
           Alcotest.test_case "permissions, concurrent update and sign-out"
             `Quick store;
+          Alcotest.test_case "a sign-in is the schema's" `Quick sign_in_census;
         ] );
     ]

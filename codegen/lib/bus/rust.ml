@@ -398,6 +398,8 @@ let channels (bus : Registry.t) component =
                  (strings reg.audience.scoped);
                constant ~doc:[ reg.trace.meaning ] "TRACE_FIELD" R.str_ty
                  (R.Str reg.trace.field);
+               constant ~doc:[ User_stamp.about ] "USER_FIELD" R.str_ty
+                 (R.Str bus.user_field);
              ]
             @ attributes bus
             @ List.concat_map (channel_items bus component) reg.channels

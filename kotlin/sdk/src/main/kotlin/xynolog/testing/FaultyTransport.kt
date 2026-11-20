@@ -12,10 +12,10 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import xynolog.Timings
-import xynolog.bus.EMITTED_BY
 import xynolog.bus.OPERATIONS
 import xynolog.channels.RESOURCE_SCOPED_CHANNELS
 import xynolog.channels.TRACE_FIELD
+import xynolog.channels.USER_FIELD
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
 import xynolog.errors.XynologError
@@ -66,7 +66,7 @@ private class Queued(val response: JsonElement?)
 
 /** A request's identity across retries: its channel and its payload, less what the gateway stamps on it, its members in name order. */
 public fun retryKeyOf(channel: String, payload: JsonObject): String =
-    "$channel ${JsonObject(payload.filterKeys { it != TRACE_FIELD && it != EMITTED_BY }.toSortedMap())}"
+    "$channel ${JsonObject(payload.filterKeys { it != TRACE_FIELD && it != USER_FIELD }.toSortedMap())}"
 
 /**
  * A scriptable `Transport` with no wire, for tests. Two things are scripted,

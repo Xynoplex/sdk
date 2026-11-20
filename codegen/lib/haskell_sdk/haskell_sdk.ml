@@ -106,7 +106,10 @@ let stale ~root written =
 let files ~root (spec : Spec.t) =
   let refused file message = [ { Decode.file; pointer = ""; message } ] in
   let within file result = Result.map_error (refused file) result in
-  let* transport = within Transport.contract (Transport.derive ~root spec) in
+  let* user_field = User_stamp.field spec.tables.identifiers_kinds in
+  let* transport =
+    within Transport.contract (Transport.derive ~root ~user_field spec)
+  in
   let* http = within "openapi.json" (Http.routes spec) in
   let* bus =
     within "bus/registry.json" (Channels.derive spec.tables.bus_registry)

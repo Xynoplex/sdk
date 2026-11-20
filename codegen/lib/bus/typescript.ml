@@ -231,6 +231,8 @@ let protocol (bus : Registry.t) =
                  T_name "EventName" ));
           T.const "TRACE_FIELD" ~about:[ Doc reg.trace.meaning ]
             (word reg.trace.field);
+          T.const "USER_FIELD" ~about:[ Doc User_stamp.about ]
+            (word bus.user_field);
           T.const "CHANNEL_STAMPS" ~as_const:true
             ~about:
               [

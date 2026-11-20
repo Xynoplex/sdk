@@ -30,6 +30,7 @@ import Xynolog.Errors
 import Xynolog.Http.Routes
 import Xynolog.Internal.BusLog qualified as BusLog
 import Xynolog.Internal.Generated.OperationReports (UploadEvent (..))
+import Xynolog.Internal.Generated.TelemetryKeys (attributeContentStream, attributeResourceId)
 import Xynolog.Internal.Http
 import Xynolog.Internal.Lifetime qualified as Lifetime
 import Xynolog.Internal.Telemetry qualified as Telemetry
@@ -47,7 +48,7 @@ newContent http = do
         $ Telemetry.withSpan
           Trace.Client
           "content.get"
-          (("resource.id", toAttribute (resourceIdValue resource)) : [("content.stream", toAttribute True) | streaming])
+          ((attributeResourceId, toAttribute (resourceIdValue resource)) : [(attributeContentStream, toAttribute True) | streaming])
         $ do
           BusLog.content (logger http) "GET" (object ["resourceId" .= resource])
           exchange http GetResourceRepresentation (Just resource) (pure (RequestBodyBS Bytes.empty)) Nothing override [] $ \response -> do
@@ -150,8 +151,8 @@ newContent http = do
       { Content.putBinary = upload,
         Content.getBinaryStream = stream True,
         Content.getBinary = \override resource -> stream False override resource (\media chunks -> deadline http (Settings.httpRequestTimeoutMs (httpTiming (options http))) (Content.BinaryContent media . Bytes.concat <$> Stream.toList_ chunks)),
-        Content.getResourceGraph = \override resource -> owned (readNote resource (Telemetry.withSpan Trace.Client "content.get_graph" [("resource.id", toAttribute (resourceIdValue resource))] (json http GetResourceJsonLd (Just resource) override ()))),
-        Content.getAnnotations = \override resource -> owned (readNote resource (Telemetry.withSpan Trace.Client "content.get_annotations" [("resource.id", toAttribute (resourceIdValue resource))] (json http GetResourceAnnotations (Just resource) override ()))),
-        Content.getAnchoredText = \override resource -> owned (readNote resource (Telemetry.withSpan Trace.Client "content.get_anchored_text" [("resource.id", toAttribute (resourceIdValue resource))] (json http GetResourceAnchoredText (Just resource) override ()))),
+        Content.getResourceGraph = \override resource -> owned (readNote resource (Telemetry.withSpan Trace.Client "content.get_graph" [(attributeResourceId, toAttribute (resourceIdValue resource))] (json http GetResourceJsonLd (Just resource) override ()))),
+        Content.getAnnotations = \override resource -> owned (readNote resource (Telemetry.withSpan Trace.Client "content.get_annotations" [(attributeResourceId, toAttribute (resourceIdValue resource))] (json http GetResourceAnnotations (Just resource) override ()))),
+        Content.getAnchoredText = \override resource -> owned (readNote resource (Telemetry.withSpan Trace.Client "content.get_anchored_text" [(attributeResourceId, toAttribute (resourceIdValue resource))] (json http GetResourceAnchoredText (Just resource) override ()))),
         Content.dispose = Lifetime.close life
       }

@@ -304,12 +304,13 @@ let decode shape source =
       | Error fault -> Error (Invalid_payload fault))
 
 (* The HTTP gateway stamps these verified identity facts after it validates
-   the channel payload. Keep them for consumers, beside the payload as read. *)
-let decode_received shape source =
+   the channel payload: the emitter under [user_field], and its roles. Keep
+   them for consumers, beside the payload as read. *)
+let decode_received user_field shape source =
   match Strict_json.parse source with
   | Error message -> Error (Invalid_json message)
   | Ok (`Assoc fields) -> (
-      let auth = function "_userId" | "_roles" -> true | _ -> false in
+      let auth key = key = user_field || key = "_roles" in
       let identity, payload =
         List.partition (fun (key, _) -> auth key) fields
       in
@@ -317,7 +318,7 @@ let decode_received shape source =
         object_
           ~members:
             [
-              ("_userId", reference "UserId");
+              (user_field, reference "UserId");
               ( "_roles",
                 {
                   any with

@@ -25,6 +25,12 @@ from opentelemetry.propagate import extract, inject
 from opentelemetry.trace import SpanKind
 
 from xynolog.telemetry_table import (
+    ATTR_BUS_CHANNEL,
+    ATTR_BUS_SCOPE,
+    ATTR_CONTENT_FORMAT,
+    ATTR_CONTENT_SIZE_BYTES,
+    ATTR_CONTENT_STREAM,
+    ATTR_RESOURCE_ID,
     BUS_EMIT,
     BUS_RECV,
     CONTENT_GET,
@@ -81,9 +87,9 @@ def _span(row: SpanRow, attributes: Mapping[str, _Attribute], *, channel: str = 
 
 
 def _on_the_bus(channel: str, scope: str | None) -> dict[str, _Attribute]:
-    attributes: dict[str, _Attribute] = {"bus.channel": channel}
+    attributes: dict[str, _Attribute] = {ATTR_BUS_CHANNEL: channel}
     if scope is not None:
-        attributes["bus.scope"] = scope
+        attributes[ATTR_BUS_SCOPE] = scope
     return attributes
 
 
@@ -161,27 +167,27 @@ def received(channel: str, scope: str | None, sent_under: TraceContext | None) -
 
 def putting(media_type: str, size_bytes: int) -> AbstractContextManager[None]:
     """An upload, in a span for as long as it is held."""
-    return _span(CONTENT_PUT, {"content.format": media_type, "content.size_bytes": size_bytes})
+    return _span(CONTENT_PUT, {ATTR_CONTENT_FORMAT: media_type, ATTR_CONTENT_SIZE_BYTES: size_bytes})
 
 
 def getting(resource_id: str, *, stream: bool) -> AbstractContextManager[None]:
     """A read of a resource's bytes, in a span for as long as it is held."""
-    attributes: dict[str, _Attribute] = {"resource.id": resource_id}
+    attributes: dict[str, _Attribute] = {ATTR_RESOURCE_ID: resource_id}
     if stream:
-        attributes["content.stream"] = True
+        attributes[ATTR_CONTENT_STREAM] = True
     return _span(CONTENT_GET, attributes)
 
 
 def getting_graph(resource_id: str) -> AbstractContextManager[None]:
     """A read of a resource's description, in a span for as long as it is held."""
-    return _span(CONTENT_GET_GRAPH, {"resource.id": resource_id})
+    return _span(CONTENT_GET_GRAPH, {ATTR_RESOURCE_ID: resource_id})
 
 
 def getting_annotations(resource_id: str) -> AbstractContextManager[None]:
     """A read of a resource's annotations, in a span for as long as it is held."""
-    return _span(CONTENT_GET_ANNOTATIONS, {"resource.id": resource_id})
+    return _span(CONTENT_GET_ANNOTATIONS, {ATTR_RESOURCE_ID: resource_id})
 
 
 def getting_anchored_text(resource_id: str) -> AbstractContextManager[None]:
     """A read of a resource's anchored text, in a span for as long as it is held."""
-    return _span(CONTENT_GET_ANCHORED_TEXT, {"resource.id": resource_id})
+    return _span(CONTENT_GET_ANCHORED_TEXT, {ATTR_RESOURCE_ID: resource_id})

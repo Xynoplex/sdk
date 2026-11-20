@@ -47,9 +47,7 @@ use std::time::SystemTime;
 
 include!("generated/sign_in.rs");
 include!("generated/owner_only.rs");
-
-/// The file's name in the launcher's state home.
-pub const FILE_NAME: &str = "tokens.json";
+include!("generated/sign_in_store_names.rs");
 
 /// Keep `directory`, and everything made in it from then on, to its owner,
 /// with the sign-in store's access list, which the launcher gives its state

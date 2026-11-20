@@ -26,11 +26,6 @@ import (
 	"time"
 )
 
-// SignInFile is the store's file in the launcher's state home.
-const SignInFile = "tokens.json"
-
-const signInLock = "tokens.lock"
-
 // SignInStore is the store in the file at a path: SignInFile in StateDir,
 // for the launcher's.
 type SignInStore struct {

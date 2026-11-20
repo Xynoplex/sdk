@@ -209,12 +209,11 @@ func payloadAs[P any](frame Frame) (Delivered[P], required.Fault, bool) {
 	if json.Unmarshal(read, &payload) != nil {
 		return Delivered[P]{}, required.Undecoded, true
 	}
-	var stamped struct {
-		UserID *string `json:"_userId"`
-	}
+	var stamped map[string]json.RawMessage
 	var userID api.UserId
-	if json.Unmarshal(frame.Payload, &stamped) == nil && stamped.UserID != nil {
-		if parsed, err := api.ParseUserId(*stamped.UserID); err == nil {
+	var user string
+	if json.Unmarshal(frame.Payload, &stamped) == nil && json.Unmarshal(stamped[bus.UserField], &user) == nil {
+		if parsed, err := api.ParseUserId(user); err == nil {
 			userID = parsed
 		}
 	}

@@ -29,7 +29,7 @@ let each f xs =
          Ok (y :: found))
        (Ok []) xs)
 
-let derive ~root (spec : Spec.t) =
+let derive ~root ~user_field (spec : Spec.t) =
   let* carrier =
     Marker.between "export interface TraceCarrier {\n" "\n}"
       (Marker.read ~root event_bus)
@@ -90,18 +90,6 @@ let derive ~root (spec : Spec.t) =
         (List.for_all (fun t -> List.mem t names) (List.concat_map snd states))
     then Error "connection graph names an unknown state"
     else Ok ()
-  in
-  let* user_field =
-    match
-      List.concat_map
-        (fun (k : Tables.Identifiers_kinds.kinds_item) ->
-          if k.schema = "UserId" then
-            List.filter (String.starts_with ~prefix:"_") k.properties
-          else [])
-        spec.tables.identifiers_kinds.kinds
-    with
-    | [ field ] -> Ok field
-    | _ -> Error "UserId needs exactly one authenticated stamp property"
   in
   Ok
     {

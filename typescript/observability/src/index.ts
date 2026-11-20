@@ -47,6 +47,7 @@ import {
   TRACE_FIELD,
   type TraceCarrier,
 } from '@xynolog/core';
+import { ATTR_BUS_CHANNEL, ATTR_BUS_SCOPE } from './telemetry-keys';
 
 // Wire `busLog`'s trace-id provider once at module load. When an OTel
 // SDK is initialized (and a span is active when `busLog` fires), the
@@ -182,10 +183,12 @@ function busSentCounter(): Counter {
  */
 export function recordBusSent(channel: string, scope?: string): void {
   busSentCounter().add(1, {
-    'bus.channel': channel,
-    ...(scope ? { 'bus.scope': scope } : {}),
+    [ATTR_BUS_CHANNEL]: channel,
+    ...(scope ? { [ATTR_BUS_SCOPE]: scope } : {}),
   });
 }
+
+export * from './telemetry-keys';
 
 // ── Re-export from @opentelemetry/api ──────────────────────────────────
 

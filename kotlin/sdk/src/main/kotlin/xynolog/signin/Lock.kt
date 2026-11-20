@@ -26,7 +26,7 @@ internal fun interface Held : AutoCloseable {
  */
 internal object StoreLock {
     /** The byte the launcher locks on Windows, far past anything a lock file holds. */
-    private const val WINDOWS_BYTE = 0x40000000L shl 32
+    private const val WINDOWS_BYTE = LOCK_OFFSET_HIGH shl 32
 
     fun hold(lock: Path): Held = if (thisPlatform() == Platform.WINDOWS) windows(lock) else Flock.hold(lock)
 

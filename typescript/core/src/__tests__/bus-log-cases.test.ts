@@ -81,7 +81,6 @@ describe('what a bus log shows of a payload (protocol/specs/src/bus/log-cases.js
     expect(shownOf(payload)).toStrictEqual(shown);
   });
 
-  // The names this log withholds under are its own list, and the table's is the one it is held to.
   it.each(table.names)(
     'withholds the value of a member named %s, and shows the member beside it',
     (name) => {

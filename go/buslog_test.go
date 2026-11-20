@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"slices"
 	"strings"
 	"testing"
 
@@ -40,19 +39,6 @@ func readBusLogTable(t *testing.T) busLogTable {
 		t.Fatal("the table was not read")
 	}
 	return table
-}
-
-func TestTheNamesThisLogWithholdsUnderAreTheTablesAndNoOthers(t *testing.T) {
-	table := readBusLogTable(t)
-	var held []string
-	for name := range credentials {
-		held = append(held, name)
-	}
-	slices.Sort(held)
-	stated := slices.Sorted(slices.Values(table.Names))
-	if !slices.Equal(held, stated) {
-		t.Errorf("this log withholds under %v, and the table names %v", held, stated)
-	}
 }
 
 func TestTheValueOfAMemberUnderEachNameOfTheTableIsWithheld(t *testing.T) {

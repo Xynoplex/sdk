@@ -387,7 +387,7 @@ and inherited st name (n : D.node) parts ~doc =
    declaration follows every one it names, as far as a cycle allows. *)
 let rec names_in = function
   | P.Name name -> [ name ]
-  | Str _ | Ascii _ | Int _ | Octal _ | Ellipsis | Joined _ -> []
+  | Str _ | Ascii _ | Int _ | Octal _ | Hex _ | Ellipsis | Joined _ -> []
   | Binary (a, _, b) -> names_in a @ names_in b
   | Call (e, items) | Subscript (e, items) ->
       names_in e @ names_in_items items.elements

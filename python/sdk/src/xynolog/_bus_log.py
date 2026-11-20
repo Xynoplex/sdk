@@ -16,7 +16,7 @@ package reads.
 
 No line holds a credential. The value of a member whose whole name is one a
 credential goes by (`token`, which is what the spec names the token a
-resource is cloned by, and the rest of `_CREDENTIALS` below) is not written,
+resource is cloned by, and the rest of `CREDENTIALS`) is not written,
 wherever in a payload it is: `[withheld]` is written in its place, as every
 bus log writes it (`protocol/specs/src/bus/log-cases.json`).
 """
@@ -30,36 +30,11 @@ from typing import Final, Literal
 from pydantic import JsonValue
 
 from xynolog import telemetry
+from xynolog._bus_log_credentials import CREDENTIALS
 from xynolog.identifiers import ResourceId
 
 _WITHHELD: Final = "[withheld]"
 """What a line says in place of a credential."""
-
-_CREDENTIALS: Final = frozenset(
-    {
-        "token",
-        "cloneToken",
-        "accessToken",
-        "access_token",
-        "refreshToken",
-        "refresh_token",
-        "apiKey",
-        "api_key",
-        "clientSecret",
-        "client_secret",
-        "secret",
-        "password",
-        "authorization",
-        "Authorization",
-        "x-api-key",
-        "x-goog-api-key",
-    }
-)
-"""The names of the members whose value is one.
-
-The list `protocol/specs/src/bus/log-cases.json` states for every bus log, which this
-package's tests hold this one to.
-"""
 
 
 @cache
@@ -71,7 +46,7 @@ def enabled() -> bool:
 def _shown(value: JsonValue) -> JsonValue:
     """A payload as a line shows it: as it is, less the value of each credential."""
     if isinstance(value, dict):
-        return {name: _WITHHELD if name in _CREDENTIALS else _shown(member) for name, member in value.items()}
+        return {name: _WITHHELD if name in CREDENTIALS else _shown(member) for name, member in value.items()}
     if isinstance(value, list):
         return [_shown(item) for item in value]
     return value

@@ -6,6 +6,7 @@ namespace Xynolog;
 
 public static class BusChannels
 {
+    internal const string UserField = "_userId";
     public static BusChannel<StoredEventResponse> YieldCreated { get; } = new("yield:created", false);
     public static BusChannel<StoredEventResponse> YieldCloned { get; } = new("yield:cloned", false);
     public static BusChannel<StoredEventResponse> YieldUpdated { get; } = new("yield:updated", false);

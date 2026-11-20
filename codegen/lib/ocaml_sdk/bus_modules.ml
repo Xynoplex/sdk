@@ -358,7 +358,8 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
                   O.case O.Pattern.any
                     (O.call "channel_shape" [ O.ident "channel" ]);
                 ])
-             (O.call "Schema_codec.decode_received" [ O.ident "shape" ]));
+             (O.call "Schema_codec.decode_received"
+                [ O.string bus.user_field; O.ident "shape" ]));
       ]
     @ List.map
         (fun f -> O.define f [ "value" ] (O.field (O.ident "value") f))

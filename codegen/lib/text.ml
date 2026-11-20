@@ -22,6 +22,10 @@ let pad head col =
   let n = length head in
   head ^ if n < col then String.make (col - n) ' ' else " "
 
+let is_hex_digit = function
+  | '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' -> true
+  | _ -> false
+
 let is_space u =
   match Uchar.to_int u with 0x09 | 0x0A | 0x0D | 0x20 -> true | _ -> false
 
