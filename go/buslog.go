@@ -38,28 +38,6 @@ import (
 // withheld is what a line says in place of a credential.
 const withheld = "[withheld]"
 
-// credentials is the names of the members whose value is one: the list
-// protocol/specs/src/bus/log-cases.json states for every bus log, which this package's
-// tests hold this one to.
-var credentials = map[string]bool{
-	"token":          true,
-	"cloneToken":     true,
-	"accessToken":    true,
-	"access_token":   true,
-	"refreshToken":   true,
-	"refresh_token":  true,
-	"apiKey":         true,
-	"api_key":        true,
-	"clientSecret":   true,
-	"client_secret":  true,
-	"secret":         true,
-	"password":       true,
-	"authorization":  true,
-	"Authorization":  true,
-	"x-api-key":      true,
-	"x-goog-api-key": true,
-}
-
 // busLogged is whether the bus log is written: what the process's
 // environment said when this was first asked.
 var busLogged = sync.OnceValue(func() bool { return os.Getenv("XYNOLOG_BUS_LOG") != "" })

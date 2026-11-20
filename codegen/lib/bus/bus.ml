@@ -1,6 +1,6 @@
 (* The bus group: every SDK's bus vocabulary, from
    protocol/specs/src/bus/registry.json, and the names a credential goes by,
-   which Kotlin's bus log withholds (protocol/specs/src/bus/log-cases.json). *)
+   which the bus logs withhold (protocol/specs/src/bus/log-cases.json). *)
 
 module Registry = Registry
 module Typescript = Typescript
@@ -9,6 +9,7 @@ module Python = Python
 module Kotlin = Kotlin
 module Csharp = Csharp
 module Rust = Rust
+module Credentials = Credentials
 
 let errors = function Ok _ -> [] | Error errors -> errors
 
@@ -20,16 +21,22 @@ let files ~root:_ spec =
   | Ok bus -> (
       let kotlin =
         Result.bind (Kotlin_sdk.types_of spec) (fun types ->
-            Kotlin.files ~component ~types ~log_cases:spec.tables.bus_log_cases
-              bus)
+            Kotlin.files ~component ~types bus)
       in
       match
-        (Go.files bus, Python.files bus, Rust.files bus component, kotlin)
+        ( Go.files bus,
+          Python.files bus,
+          Rust.files bus component,
+          kotlin,
+          Credentials.files spec.tables.bus_log_cases )
       with
-      | Ok go, Ok python, Ok rust, Ok kotlin ->
+      | Ok go, Ok python, Ok rust, Ok kotlin, Ok credentials ->
           Ok
             (Typescript.files bus @ go @ python @ rust @ kotlin
-            @ [ Csharp.file bus ])
-      | go, python, rust, kotlin ->
-          Error (errors go @ errors python @ errors rust @ errors kotlin))
+            @ [ Csharp.file bus ]
+            @ credentials)
+      | go, python, rust, kotlin, credentials ->
+          Error
+            (errors go @ errors python @ errors rust @ errors kotlin
+           @ errors credentials))
   | Error errors -> Error errors

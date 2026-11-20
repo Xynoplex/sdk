@@ -1,15 +1,13 @@
 (* The bus as the Kotlin SDK reads it: the channels (xynolog.channels), each
    typed by the payload a frame on it carries and with the stamps that
    payload declares, the audiences and the trace field; the operations
-   (xynolog.bus), each typed by its three channels; and the names a credential
-   goes by, whose values the bus log withholds (bus/log-cases.json). *)
+   (xynolog.bus), each typed by its three channels. *)
 
 module K = Kotlin_syntax
 module R = Tables.Bus_registry
 module Names = Kotlin_sdk.Names
 module Types = Kotlin_sdk.Types
 
-let log_cases_file = "bus/log-cases.json"
 let generated = K.annotation "Generated"
 
 (* The types xynolog.channels declares beside the channels, which no
@@ -255,35 +253,6 @@ let operations_file ~types (bus : Registry.t) =
         "LIMITS_OPERATIONS";
     ]
 
-let credentials_file (log : Tables.Bus_log_cases.t) =
-  let names = log.names in
-  if
-    names = []
-    || List.length (List.sort_uniq String.compare names) <> List.length names
-  then Names.refuse "the bus log's names are none, or one is named twice";
-  Kotlin_sdk.table ~from_:log_cases_file __FILE__ ~package:"xynolog.bus"
-    ~name:"Credentials" ~imports:[]
-    [
-      K.property
-        ~about:
-          (K.Doc
-             ("The names a credential goes by: a bus log line shows \
-               `[withheld]` for the value of a member under any of them \
-               (protocol/specs/src/" ^ log_cases_file ^ ")."))
-        ~visibility:K.Internal
-        ~type_:(K.Generic ("Set", [ K.Type "String" ]))
-        ~value:
-          (K.Same_line
-             (K.call (K.Name "setOf") (List.map (fun s -> K.Str s) names)))
-        "CREDENTIAL_NAMES";
-    ]
-
-let files ~component ~types ~log_cases bus =
-  Result.bind
-    (Kotlin_sdk.written ~from_:Registry.file (fun () ->
-         [ channels_file ~component ~types bus; operations_file ~types bus ]))
-    (fun registry ->
-      Result.map
-        (fun credentials -> registry @ [ credentials ])
-        (Kotlin_sdk.written ~from_:log_cases_file (fun () ->
-             credentials_file log_cases)))
+let files ~component ~types bus =
+  Kotlin_sdk.written ~from_:Registry.file (fun () ->
+      [ channels_file ~component ~types bus; operations_file ~types bus ])

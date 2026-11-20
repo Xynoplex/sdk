@@ -10,7 +10,7 @@
 //!
 //! No line holds a credential. The value of a member whose whole name is one
 //! a credential goes by (`token`, which is what a payload names the token a
-//! resource is cloned by, and the rest of `CREDENTIALS` below) is written as
+//! resource is cloned by, and the rest of the generated `CREDENTIALS`) is written as
 //! `[withheld]`, as every bus log writes it (protocol/specs/src/bus/log-cases.json).
 
 use serde_json::Value;
@@ -20,30 +20,10 @@ use std::sync::OnceLock;
 static ENABLED: OnceLock<bool> = OnceLock::new();
 static TRACE_ID: OnceLock<fn() -> Option<String>> = OnceLock::new();
 
+include!("generated/bus_log_credentials.rs");
+
 /// What a line says in place of a credential.
 const WITHHELD: &str = "[withheld]";
-
-/// The names of the members whose value is one: the list
-/// protocol/specs/src/bus/log-cases.json states for every bus log, which this file's
-/// tests hold this one to.
-const CREDENTIALS: [&str; 16] = [
-    "token",
-    "cloneToken",
-    "accessToken",
-    "access_token",
-    "refreshToken",
-    "refresh_token",
-    "apiKey",
-    "api_key",
-    "clientSecret",
-    "client_secret",
-    "secret",
-    "password",
-    "authorization",
-    "Authorization",
-    "x-api-key",
-    "x-goog-api-key",
-];
 
 /// The lines a test asked to be given in place of stderr.
 #[cfg(feature = "testing")]
@@ -192,11 +172,6 @@ mod tests {
             .iter()
             .map(|name| name.as_str().expect("a name"))
             .collect()
-    }
-
-    #[test]
-    fn the_names_this_log_withholds_under_are_the_tables_and_no_others() {
-        assert_eq!(names(&table()), CREDENTIALS);
     }
 
     #[test]
