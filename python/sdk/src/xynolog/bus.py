@@ -55,6 +55,7 @@ from xynolog.watched import NeverReached, reached
 
 __all__ = ["Bus", "Delivered", "Heard", "Typed", "decoded", "reply_channels_for", "request"]
 
+
 def reply_channels_for(*operations: AnyOperation) -> tuple[str, ...]:
     """The result and failure channels of `operations`, each once.
 
