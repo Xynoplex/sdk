@@ -14,7 +14,7 @@ let ( let* ) = Result.bind
 (* A schema as two compare it: each reference as the place it names, not
    where it is written, so two files that refer to one schema state it
    alike. *)
-let placed : Schema.t -> Schema.t =
+let placed ids : Schema.t -> Schema.t =
   Schema.cata
     ~boolean:(fun b -> Schema.Boolean_schema b)
     ~schema:(fun s ->
@@ -24,13 +24,15 @@ let placed : Schema.t -> Schema.t =
           ref_ =
             Option.map
               (fun r ->
-                let file, pointer = Decode.resolve r in
+                let file, pointer = Decode.resolve ids r in
                 { Decode.target = file; file = ""; pointer })
               s.ref_;
         })
 
-let alike left right = placed left = placed right
-let same_place left right = Decode.resolve left = Decode.resolve right
+let alike ids left right = placed ids left = placed ids right
+
+let same_place ids left right =
+  Decode.resolve ids left = Decode.resolve ids right
 
 let agree what same left right =
   if same left right then Ok right
@@ -42,9 +44,9 @@ let merge_option combine old next =
   | old, None -> Ok old
   | Some old, Some next -> Result.map Option.some (combine old next)
 
-let union_properties old next =
+let union_properties ids old next =
   let intersection left right =
-    if alike left right then left
+    if alike ids left right then left
     else Schema.Schema { Schema.empty with all_of = Some [ left; right ] }
   in
   let keys =
@@ -67,11 +69,12 @@ let distinct names =
        [] names)
 
 (* [next]'s keywords merged onto [old]'s. *)
-let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
+let merge ids (old : Schema.schema) (next : Schema.schema) :
+    Schema.schema outcome =
   let last old next = Ok (match next with None -> old | Some _ -> next) in
   let bound pick = merge_option (fun l r -> Ok (pick l r)) in
   let* properties =
-    merge_option union_properties old.properties next.properties
+    merge_option (union_properties ids) old.properties next.properties
   in
   let* required =
     merge_option (fun l r -> Ok (distinct (l @ r))) old.required next.required
@@ -95,6 +98,11 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
     | Some (Boolean_schema false) -> Ok old.additional_properties
     | _ -> last old.additional_properties next.additional_properties
   in
+  let* unevaluated_properties =
+    match old.unevaluated_properties with
+    | Some (Boolean_schema false) -> Ok old.unevaluated_properties
+    | _ -> last old.unevaluated_properties next.unevaluated_properties
+  in
   let* unique_items =
     match old.unique_items with
     | Some true -> Ok old.unique_items
@@ -104,13 +112,21 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
     merge_option (agree "\"pattern\"" String.equal) old.pattern next.pattern
   in
   let* one_of =
-    merge_option (agree "\"oneOf\"" (List.equal alike)) old.one_of next.one_of
+    merge_option
+      (agree "\"oneOf\"" (List.equal (alike ids)))
+      old.one_of next.one_of
   in
   let* any_of =
-    merge_option (agree "\"anyOf\"" (List.equal alike)) old.any_of next.any_of
+    merge_option
+      (agree "\"anyOf\"" (List.equal (alike ids)))
+      old.any_of next.any_of
   in
-  let* items = merge_option (agree "\"items\"" alike) old.items next.items in
-  let* ref_ = merge_option (agree "\"$ref\"" same_place) old.ref_ next.ref_ in
+  let* items =
+    merge_option (agree "\"items\"" (alike ids)) old.items next.items
+  in
+  let* ref_ =
+    merge_option (agree "\"$ref\"" (same_place ids)) old.ref_ next.ref_
+  in
   let* minimum = bound Float.max old.minimum next.minimum in
   let* maximum = bound Float.min old.maximum next.maximum in
   let* min_length = bound Int.max old.min_length next.min_length in
@@ -118,6 +134,9 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
   let* max_length = bound Int.min old.max_length next.max_length in
   let* max_items = bound Int.min old.max_items next.max_items in
   let* max_properties = bound Int.min old.max_properties next.max_properties in
+  let* schema = last old.schema next.schema in
+  let* id = last old.id next.id in
+  let* defs = last old.defs next.defs in
   let* comment = last old.comment next.comment in
   let* title = last old.title next.title in
   let* description = last old.description next.description in
@@ -132,7 +151,9 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
   let* discriminator = last old.discriminator next.discriminator in
   Ok
     {
-      Schema.ref_;
+      Schema.schema;
+      id;
+      ref_;
       comment;
       title;
       description;
@@ -145,6 +166,7 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
       properties;
       required;
       additional_properties;
+      unevaluated_properties;
       property_names;
       min_properties;
       max_properties;
@@ -162,7 +184,14 @@ let merge (old : Schema.schema) (next : Schema.schema) : Schema.schema outcome =
       one_of;
       not_;
       discriminator;
+      defs;
     }
+
+(* A schema a part refers to, as the part takes it: its keywords, without
+   the definitions it holds for references into it ([$defs]), which the
+   schema the part is in does not hold. A reference within it still names its
+   own file, so they are still found. *)
+let resource (s : Schema.schema) = { s with defs = None }
 
 let layer : Schema.t -> Schema.schema outcome = function
   | Schema s -> Ok s
@@ -179,7 +208,7 @@ type expansion = {
 
 (* [schema] with its [allOf] merged, the schema each reference in it names
    found by [find]. *)
-let normalize ~find schema =
+let normalize ids ~find schema =
   let rec expand schema =
     Schema.para
       ~boolean:(fun b ->
@@ -196,15 +225,15 @@ let normalize ~find schema =
                   (fun merged (_, p) ->
                     let* merged = merged in
                     let* p = p.part trail in
-                    merge merged p)
+                    merge ids merged p)
                   (Ok Schema.empty) parts
               in
-              merge merged { s with all_of = None }
+              merge ids merged { s with all_of = None }
         in
         let part trail =
           match s.ref_ with
           | Some r ->
-              let named = Decode.resolve r in
+              let named = Decode.resolve ids r in
               let* () =
                 if List.mem named trail then
                   Error ("cyclic schema intersection: " ^ r.target)
@@ -212,7 +241,7 @@ let normalize ~find schema =
               in
               let* target = find r in
               let* expanded = (expand target).whole (named :: trail) in
-              merge expanded { s with ref_ = None }
+              merge ids (resource expanded) { s with ref_ = None }
           | None -> whole trail
         in
         { whole; part })
@@ -227,7 +256,7 @@ let normalize ~find schema =
    [allOf] of both. [referenced] is the name of the schema a reference names.
    A schema whose merge needs its own is refused: written merged, it would
    never end. *)
-let everywhere ~referenced ~find =
+let everywhere ids ~referenced ~find =
   let written = Hashtbl.create 64 in
   let rec named within name =
     match Hashtbl.find_opt written name with
@@ -253,8 +282,54 @@ let everywhere ~referenced ~find =
         let* s = each l in
         match s with
         | Schema { all_of = Some _; _ } ->
-            let* l = normalize ~find:(fun r -> named within (referenced r)) s in
+            let* l =
+              normalize ids ~find:(fun r -> named within (referenced r)) s
+            in
             each l
         | s -> Ok s)
   in
   named []
+
+(* A schema that closes what it composes ([unevaluatedProperties]), as the
+   one object it means: what its [$ref] and its [allOf] merge to, with its own
+   keywords on top. Every member they state is one it evaluates, so over the
+   merge [unevaluatedProperties] is [additionalProperties]. A merge that
+   still composes, by a [oneOf], an [anyOf] or a [not], is no one object, and
+   one that states [additionalProperties] itself would be closed twice: both
+   are refused. *)
+let closed ids ~find (s : Schema.schema) =
+  let parts =
+    Option.to_list
+      (Option.map
+         (fun r -> Schema.Schema { Schema.empty with ref_ = Some r })
+         s.ref_)
+    @ Option.value s.all_of ~default:[]
+  in
+  let* merged =
+    normalize ids ~find
+      (Schema.Schema
+         {
+           (resource s) with
+           ref_ = None;
+           all_of = Some parts;
+           unevaluated_properties = None;
+         })
+  in
+  match merged with
+  | { one_of = Some _; _ } | { any_of = Some _; _ } | { not_ = Some _; _ } ->
+      Error "unevaluatedProperties over a schema that is no one object"
+  | { additional_properties = Some _; _ } ->
+      Error "unevaluatedProperties beside additionalProperties"
+  | merged ->
+      Ok { merged with additional_properties = s.unevaluated_properties }
+
+(* [s], each schema within it that closes what it composes read as the one
+   object it means ([closed]). *)
+let rec closed_within ids ~find = function
+  | Schema.Boolean_schema _ as b -> Ok b
+  | Schema.Schema l -> (
+      let* l = Schema.traverse (closed_within ids ~find) l in
+      match l with
+      | { unevaluated_properties = Some _; _ } ->
+          Result.map (fun s -> Schema.Schema s) (closed ids ~find l)
+      | l -> Ok (Schema.Schema l))

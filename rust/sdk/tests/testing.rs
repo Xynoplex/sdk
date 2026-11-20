@@ -24,11 +24,14 @@ use xynolog::testing::{
     TestSessionOptions, create_test_client, create_test_session,
 };
 use xynolog::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
-use xynolog::transport::{ConnectionState, Content, Events, Failures, Transport};
+use xynolog::transport::{
+    ConnectionState, Content, ContentTransport, Events, Failures, PutBinaryRequest, Transport,
+};
 use xynolog::types::StoredSession;
 use xynolog::types::{
     AnchoredTextAnswer, GatherResourceRequestOptions, HttpEndpoint, HttpEndpointProtocol,
-    KbEndpoint, KbTarget, KnowledgeBase, ResourceId, UserResponse,
+    KbEndpoint, KbTarget, KnowledgeBase, ResourceId, UploadProgress, UploadProgressFinished,
+    UploadProgressProgress, UploadProgressStarted, UserResponse,
 };
 
 fn message(error: XynologError) -> String {
@@ -590,6 +593,37 @@ async fn a_reply_that_names_what_it_answers_for_names_what_its_request_named() {
     assert!(
         message(unanswerable)
             .contains("the reply to gather:resource-requested names \"resourceId\""),
+    );
+}
+
+/// An upload to the content double is kept under an id of the double's
+/// making, and reports its size, that all of it was sent, and the resource
+/// made.
+#[tokio::test]
+async fn an_upload_to_the_content_double_reports_its_size_its_bytes_and_the_resource_made() {
+    use tokio_stream::StreamExt;
+
+    let content = InMemoryContent::new();
+    let mut upload = content.put_binary(PutBinaryRequest::new(
+        "Notes",
+        bytes::Bytes::from_static(b"some notes"),
+        "text/plain",
+        "file://notes.txt",
+    ));
+    let mut reports = Vec::new();
+    while let Some(report) = upload.next().await {
+        reports.push(report);
+    }
+    let created = upload.await.expect("it was stored");
+
+    assert_eq!(created.resource_id, "test-content-1");
+    assert_eq!(
+        reports,
+        [
+            UploadProgress::Started(UploadProgressStarted::new(10)),
+            UploadProgress::Progress(UploadProgressProgress::new(10, 10)),
+            UploadProgress::Finished(UploadProgressFinished::new(created.resource_id)),
+        ]
     );
 }
 

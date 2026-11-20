@@ -31,7 +31,9 @@ let banner from_ = Banner.lines ~from_ __FILE__
 (* The client types the SDK models, as their group states them. *)
 let adapters (spec : Spec.t) =
   let* model = Client_types.Model.derive spec in
-  Client_types.Haskell.adapters ~shape:(Client_types.Model.shape model)
+  Client_types.Haskell.adapters
+    ~names:(Client_types.Haskell.adapted spec)
+    ~shape:(Client_types.Model.shape model)
 
 (* The package's manifest: its template with the model modules listed, at
    the version the committed manifest states, which scripts/sdk_version.py
@@ -141,7 +143,7 @@ let files ~root (spec : Spec.t) =
     within "openapi.json"
       (Models.generate
          ~banner:(banner "protocol/specs/src")
-         ~identifiers definitions)
+         ~ids:spec.ids ~identifiers definitions)
   in
   let* () =
     within "openapi.json"
@@ -157,7 +159,8 @@ let files ~root (spec : Spec.t) =
     | None -> Error ("missing schema: " ^ name)
   in
   let normalize =
-    Normalize.normalize ~find:(fun r -> definition (Definitions.referenced r))
+    Normalize.normalize spec.Spec.ids ~find:(fun r ->
+        definition (Definitions.referenced r))
   in
   let* () = within "bus/registry.json" (Channels.check bus ~models:named) in
   let* limits = within "bus/registry.json" (Channels.limits bus) in
@@ -204,7 +207,8 @@ let files ~root (spec : Spec.t) =
       | None -> Error ("unknown schema reference: " ^ name)
     in
     let merged =
-      Normalize.everywhere ~referenced:Definitions.referenced ~find
+      Normalize.everywhere spec.Spec.ids ~referenced:Definitions.referenced
+        ~find
     in
     Spec.all
       (List.map

@@ -23,13 +23,6 @@ val entity_types : t -> string list
 val tag_category : t -> string option
 val tag_schema_id : t -> string option
 
-type quoted_text = {
-  exact : string;
-  prefix : string option;
-  suffix : string option;
-}
-
-type text_span = { start : int; end_ : int; quote : quoted_text }
 type spanned = Text of string | Pdf of [ `AnchoredText ] Models.t
 
 type span_refusal =
@@ -61,16 +54,11 @@ val annotation_of_span :
   generator:Yojson.Safe.t ->
   ?body:Yojson.Safe.t ->
   spanned ->
-  text_span ->
+  Records.Text_span.t ->
   ([ `Annotation ] Models.t, Models.decode_error) result
 
-type reconciled_span = {
-  span : text_span;
-  anchor_method : Enums.Anchor_method.t;
-  match_quality : Enums.Match_quality.t option;
-}
-
-val reconcile : string -> quoted_text -> reconciled_span option
+val reconcile :
+  string -> Records.Quoted_text.t -> Records.Reconciled_span.t option
 
 type pdf_item = {
   start : int;
@@ -83,6 +71,6 @@ type pdf_item = {
 }
 
 val locate_pdf :
-  pdf_item list -> int -> int -> pdf_item list * Yojson.Safe.t list
+  pdf_item list -> int -> int -> pdf_item list * Records.Pdf_coordinate.t list
 
-val fragment : Yojson.Safe.t -> string
+val fragment : Records.Pdf_coordinate.t -> string

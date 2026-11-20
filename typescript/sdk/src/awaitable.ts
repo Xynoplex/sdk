@@ -22,7 +22,12 @@
 
 import { Observable, EmptyError, firstValueFrom, lastValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import type { FrameRefusal, ResourceId, components } from '@xynolog/core';
+import type {
+  FrameRefusal,
+  ResourceId,
+  UploadProgress,
+  components,
+} from '@xynolog/core';
 import type { CacheState } from './cache';
 
 /**
@@ -168,25 +173,19 @@ const wrapperCache = new WeakMap<
 >();
 
 /**
- * Discriminated phases of an upload's lifecycle.
- *
- * - `started` — emitted immediately on `yield.resource(...)` invocation, before any bytes flow.
- * - `progress` — emitted as the bytes are sent over HTTP, in a browser and outside one; a transport with no wire to send them over emits none. `bytesUploaded` and `totalBytes` carry the running counts; `totalBytes` may be 0 when a browser can't determine the total (rare, e.g. chunked encoding) — UI consumers should render an indeterminate state in that case.
- * - `finished` — emitted on gateway acknowledgement, carries the assigned `resourceId`.
- *
- * Failures surface as `Observable.error(...)` (typically an `APIError` from the transport's `errors$` Subject), not as a `phase: 'failed'` event — `subscribe`'s error callback handles them. Cancellation is honored: unsubscribing before `finished` cancels the upload, and over HTTP closes its connection.
- */
-export type UploadProgress =
-  | { phase: 'started'; totalBytes: number }
-  | { phase: 'progress'; bytesUploaded: number; totalBytes: number }
-  | { phase: 'finished'; resourceId: ResourceId };
-
-/**
  * Specialized `StreamObservable` for `yield.resource`. Subscribers see the
  * full `UploadProgress` event sequence (started → optional progress → finished).
  * Awaiting resolves specifically to `{ resourceId }` extracted from the
  * `'finished'` event, so `await client.yield.resource(...)` callers don't
  * need to narrow the union.
+ *
+ * `started` is emitted on `yield.resource(...)`, before any bytes flow.
+ * `progress` is emitted as the bytes are sent over HTTP; a transport with no
+ * wire to send them over emits none, and `totalBytes` may be 0 when a browser
+ * can't determine the total, which a UI renders as indeterminate. `finished`
+ * is emitted on the gateway's acknowledgement. Failures surface as
+ * `Observable.error(...)`, not as an event. Unsubscribing before `finished`
+ * cancels the upload, and over HTTP closes its connection.
  */
 export class UploadObservable
   extends Observable<UploadProgress>

@@ -1139,6 +1139,43 @@ public struct BeckonSparkleEvent: Codable, Sendable {
   }
 }
 
+public struct BeginAuthorizationOptions: Codable, Sendable {
+  public var expectedDid: String?
+  public var expectedName: String?
+  public var kbId: String?
+  public var redirectUri: String
+  public var target: HttpEndpoint
+  public init(
+    expectedDid: String? = nil, expectedName: String? = nil, kbId: String? = nil,
+    redirectUri: String, target: HttpEndpoint
+  ) {
+    self.expectedDid = expectedDid
+    self.expectedName = expectedName
+    self.kbId = kbId
+    self.redirectUri = redirectUri
+    self.target = target
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["expectedDid", "expectedName", "kbId", "redirectUri", "target"],
+      in: "BeginAuthorizationOptions")
+    self.expectedDid = try c.ifPresent("expectedDid")
+    self.expectedName = try c.ifPresent("expectedName")
+    self.kbId = try c.ifPresent("kbId")
+    self.redirectUri = try c.value("redirectUri")
+    self.target = try c.value("target")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.expectedDid, as: "expectedDid")
+    try c.encodeIfPresent(self.expectedName, as: "expectedName")
+    try c.encodeIfPresent(self.kbId, as: "kbId")
+    try c.encode(self.redirectUri, as: "redirectUri")
+    try c.encode(self.target, as: "target")
+  }
+}
+
 public struct BindBodyOperation: Codable, Sendable {
   public var item: AnnotationBody?
   public var newItem: AnnotationBody?
@@ -2556,6 +2593,38 @@ public struct CreateResourceResponse: Codable, Sendable {
 }
 
 public typealias CursorsPath = String
+
+public struct DeviceCode: Codable, Sendable {
+  public var expiresIn: Int
+  public var userCode: String
+  public var verificationUri: String
+  public var verificationUriComplete: String?
+  public init(
+    expiresIn: Int, userCode: String, verificationUri: String,
+    verificationUriComplete: String? = nil
+  ) {
+    self.expiresIn = expiresIn
+    self.userCode = userCode
+    self.verificationUri = verificationUri
+    self.verificationUriComplete = verificationUriComplete
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["expiresIn", "userCode", "verificationUri", "verificationUriComplete"], in: "DeviceCode")
+    self.expiresIn = try c.value("expiresIn")
+    self.userCode = try c.value("userCode")
+    self.verificationUri = try c.value("verificationUri")
+    self.verificationUriComplete = try c.ifPresent("verificationUriComplete")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.expiresIn, as: "expiresIn")
+    try c.encode(self.userCode, as: "userCode")
+    try c.encode(self.verificationUri, as: "verificationUri")
+    try c.encodeIfPresent(self.verificationUriComplete, as: "verificationUriComplete")
+  }
+}
 
 public struct DirEntry: Codable, Sendable {
   public var mtime: String
@@ -4662,6 +4731,26 @@ public struct InferenceLimitsResultResponse: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.limits, as: "limits")
+  }
+}
+
+public struct IssuedTokens: Codable, Sendable {
+  public var access: String
+  public var refresh: String
+  public init(access: String, refresh: String) {
+    self.access = access
+    self.refresh = refresh
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["access", "refresh"], in: "IssuedTokens")
+    self.access = try c.value("access")
+    self.refresh = try c.value("refresh")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.access, as: "access")
+    try c.encode(self.refresh, as: "refresh")
   }
 }
 
@@ -8040,6 +8129,38 @@ public enum PdfClass: String, Codable, Sendable, CaseIterable {
   case g = "G"
 }
 
+public struct PdfCoordinate: Codable, Sendable {
+  public var height: Double
+  public var page: Int
+  public var width: Double
+  public var x: Double
+  public var y: Double
+  public init(height: Double, page: Int, width: Double, x: Double, y: Double) {
+    self.height = height
+    self.page = page
+    self.width = width
+    self.x = x
+    self.y = y
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["height", "page", "width", "x", "y"], in: "PdfCoordinate")
+    self.height = try c.value("height")
+    self.page = try c.value("page")
+    self.width = try c.value("width")
+    self.x = try c.value("x")
+    self.y = try c.value("y")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.height, as: "height")
+    try c.encode(self.page, as: "page")
+    try c.encode(self.width, as: "width")
+    try c.encode(self.x, as: "x")
+    try c.encode(self.y, as: "y")
+  }
+}
+
 public struct PdfTextItem: Codable, Sendable {
   public var end: Int
   public var height: Double
@@ -8077,6 +8198,26 @@ public struct PdfTextItem: Codable, Sendable {
     try c.encode(self.width, as: "width")
     try c.encode(self.x, as: "x")
     try c.encode(self.y, as: "y")
+  }
+}
+
+public struct PendingAnnotation: Codable, Sendable {
+  public var motivation: Motivation
+  public var selector: AnnotationSelector
+  public init(motivation: Motivation, selector: AnnotationSelector) {
+    self.motivation = motivation
+    self.selector = selector
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["motivation", "selector"], in: "PendingAnnotation")
+    self.motivation = try c.value("motivation")
+    self.selector = try c.value("selector")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.motivation, as: "motivation")
+    try c.encode(self.selector, as: "selector")
   }
 }
 
@@ -8240,6 +8381,30 @@ public enum QdrantVectorsConfigType: String, Codable, Sendable, CaseIterable {
   case qdrant = "qdrant"
 }
 
+public struct QuotedText: Codable, Sendable {
+  public var exact: String
+  public var prefix: String?
+  public var suffix: String?
+  public init(exact: String, prefix: String? = nil, suffix: String? = nil) {
+    self.exact = exact
+    self.prefix = prefix
+    self.suffix = suffix
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["exact", "prefix", "suffix"], in: "QuotedText")
+    self.exact = try c.value("exact")
+    self.prefix = try c.ifPresent("prefix")
+    self.suffix = try c.ifPresent("suffix")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.exact, as: "exact")
+    try c.encodeIfPresent(self.prefix, as: "prefix")
+    try c.encodeIfPresent(self.suffix, as: "suffix")
+  }
+}
+
 public struct ReceivedFrame: Codable, Sendable {
   public var channel: String
   public var correlationId: String?
@@ -8278,6 +8443,211 @@ public struct ReceivedFrame: Codable, Sendable {
     try c.encodeIfPresent(self.scope, as: "scope")
     try c.encodeIfPresent(self.trace, as: "trace")
   }
+}
+
+public indirect enum ReconciledSpan: Codable, Sendable {
+  case uniqueMatch(ReconciledSpanUniqueMatch)
+  case contextRecovered(ReconciledSpanContextRecovered)
+  case firstOfMany(ReconciledSpanFirstOfMany)
+  case fuzzyMatch(ReconciledSpanFuzzyMatch)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("anchorMethod"))
+    switch tag {
+    case "unique-match": self = .uniqueMatch(try ReconciledSpanUniqueMatch(from: decoder))
+    case "context-recovered":
+      self = .contextRecovered(try ReconciledSpanContextRecovered(from: decoder))
+    case "first-of-many": self = .firstOfMany(try ReconciledSpanFirstOfMany(from: decoder))
+    case "fuzzy-match": self = .fuzzyMatch(try ReconciledSpanFuzzyMatch(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("anchorMethod"), in: c,
+        debugDescription: "unknown ReconciledSpan discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .uniqueMatch(let value): try value.encode(to: encoder)
+    case .contextRecovered(let value): try value.encode(to: encoder)
+    case .firstOfMany(let value): try value.encode(to: encoder)
+    case .fuzzyMatch(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ReconciledSpanContextRecovered: Codable, Sendable {
+  public let anchorMethod: ReconciledSpanContextRecoveredAnchorMethod
+  public var end: Int
+  public var exact: String
+  public var prefix: String?
+  public var start: Int
+  public var suffix: String?
+  public init(end: Int, exact: String, prefix: String? = nil, start: Int, suffix: String? = nil) {
+    self.anchorMethod = .contextRecovered
+    self.end = end
+    self.exact = exact
+    self.prefix = prefix
+    self.start = start
+    self.suffix = suffix
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["anchorMethod", "end", "exact", "prefix", "start", "suffix"],
+      in: "ReconciledSpanContextRecovered")
+    self.anchorMethod = try c.value("anchorMethod")
+    self.end = try c.value("end")
+    self.exact = try c.value("exact")
+    self.prefix = try c.ifPresent("prefix")
+    self.start = try c.value("start")
+    self.suffix = try c.ifPresent("suffix")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.anchorMethod, as: "anchorMethod")
+    try c.encode(self.end, as: "end")
+    try c.encode(self.exact, as: "exact")
+    try c.encodeIfPresent(self.prefix, as: "prefix")
+    try c.encode(self.start, as: "start")
+    try c.encodeIfPresent(self.suffix, as: "suffix")
+  }
+}
+
+public enum ReconciledSpanContextRecoveredAnchorMethod: String, Codable, Sendable, CaseIterable {
+  case contextRecovered = "context-recovered"
+}
+
+public struct ReconciledSpanFirstOfMany: Codable, Sendable {
+  public let anchorMethod: ReconciledSpanFirstOfManyAnchorMethod
+  public var end: Int
+  public var exact: String
+  public var prefix: String?
+  public var start: Int
+  public var suffix: String?
+  public init(end: Int, exact: String, prefix: String? = nil, start: Int, suffix: String? = nil) {
+    self.anchorMethod = .firstOfMany
+    self.end = end
+    self.exact = exact
+    self.prefix = prefix
+    self.start = start
+    self.suffix = suffix
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["anchorMethod", "end", "exact", "prefix", "start", "suffix"], in: "ReconciledSpanFirstOfMany"
+    )
+    self.anchorMethod = try c.value("anchorMethod")
+    self.end = try c.value("end")
+    self.exact = try c.value("exact")
+    self.prefix = try c.ifPresent("prefix")
+    self.start = try c.value("start")
+    self.suffix = try c.ifPresent("suffix")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.anchorMethod, as: "anchorMethod")
+    try c.encode(self.end, as: "end")
+    try c.encode(self.exact, as: "exact")
+    try c.encodeIfPresent(self.prefix, as: "prefix")
+    try c.encode(self.start, as: "start")
+    try c.encodeIfPresent(self.suffix, as: "suffix")
+  }
+}
+
+public enum ReconciledSpanFirstOfManyAnchorMethod: String, Codable, Sendable, CaseIterable {
+  case firstOfMany = "first-of-many"
+}
+
+public struct ReconciledSpanFuzzyMatch: Codable, Sendable {
+  public let anchorMethod: ReconciledSpanFuzzyMatchAnchorMethod
+  public var end: Int
+  public var exact: String
+  public var matchQuality: MatchQuality
+  public var prefix: String?
+  public var start: Int
+  public var suffix: String?
+  public init(
+    end: Int, exact: String, matchQuality: MatchQuality, prefix: String? = nil, start: Int,
+    suffix: String? = nil
+  ) {
+    self.anchorMethod = .fuzzyMatch
+    self.end = end
+    self.exact = exact
+    self.matchQuality = matchQuality
+    self.prefix = prefix
+    self.start = start
+    self.suffix = suffix
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["anchorMethod", "end", "exact", "matchQuality", "prefix", "start", "suffix"],
+      in: "ReconciledSpanFuzzyMatch")
+    self.anchorMethod = try c.value("anchorMethod")
+    self.end = try c.value("end")
+    self.exact = try c.value("exact")
+    self.matchQuality = try c.value("matchQuality")
+    self.prefix = try c.ifPresent("prefix")
+    self.start = try c.value("start")
+    self.suffix = try c.ifPresent("suffix")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.anchorMethod, as: "anchorMethod")
+    try c.encode(self.end, as: "end")
+    try c.encode(self.exact, as: "exact")
+    try c.encode(self.matchQuality, as: "matchQuality")
+    try c.encodeIfPresent(self.prefix, as: "prefix")
+    try c.encode(self.start, as: "start")
+    try c.encodeIfPresent(self.suffix, as: "suffix")
+  }
+}
+
+public enum ReconciledSpanFuzzyMatchAnchorMethod: String, Codable, Sendable, CaseIterable {
+  case fuzzyMatch = "fuzzy-match"
+}
+
+public struct ReconciledSpanUniqueMatch: Codable, Sendable {
+  public let anchorMethod: ReconciledSpanUniqueMatchAnchorMethod
+  public var end: Int
+  public var exact: String
+  public var prefix: String?
+  public var start: Int
+  public var suffix: String?
+  public init(end: Int, exact: String, prefix: String? = nil, start: Int, suffix: String? = nil) {
+    self.anchorMethod = .uniqueMatch
+    self.end = end
+    self.exact = exact
+    self.prefix = prefix
+    self.start = start
+    self.suffix = suffix
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["anchorMethod", "end", "exact", "prefix", "start", "suffix"], in: "ReconciledSpanUniqueMatch"
+    )
+    self.anchorMethod = try c.value("anchorMethod")
+    self.end = try c.value("end")
+    self.exact = try c.value("exact")
+    self.prefix = try c.ifPresent("prefix")
+    self.start = try c.value("start")
+    self.suffix = try c.ifPresent("suffix")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.anchorMethod, as: "anchorMethod")
+    try c.encode(self.end, as: "end")
+    try c.encode(self.exact, as: "exact")
+    try c.encodeIfPresent(self.prefix, as: "prefix")
+    try c.encode(self.start, as: "start")
+    try c.encodeIfPresent(self.suffix, as: "suffix")
+  }
+}
+
+public enum ReconciledSpanUniqueMatchAnchorMethod: String, Codable, Sendable, CaseIterable {
+  case uniqueMatch = "unique-match"
 }
 
 public typealias ReplyEventId = String
@@ -10673,6 +11043,38 @@ public enum TextSource: String, Codable, Sendable, CaseIterable {
   case none = "none"
 }
 
+public struct TextSpan: Codable, Sendable {
+  public var end: Int
+  public var exact: String
+  public var prefix: String?
+  public var start: Int
+  public var suffix: String?
+  public init(end: Int, exact: String, prefix: String? = nil, start: Int, suffix: String? = nil) {
+    self.end = end
+    self.exact = exact
+    self.prefix = prefix
+    self.start = start
+    self.suffix = suffix
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["end", "exact", "prefix", "start", "suffix"], in: "TextSpan")
+    self.end = try c.value("end")
+    self.exact = try c.value("exact")
+    self.prefix = try c.ifPresent("prefix")
+    self.start = try c.value("start")
+    self.suffix = try c.ifPresent("suffix")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.end, as: "end")
+    try c.encode(self.exact, as: "exact")
+    try c.encodeIfPresent(self.prefix, as: "prefix")
+    try c.encode(self.start, as: "start")
+    try c.encodeIfPresent(self.suffix, as: "suffix")
+  }
+}
+
 public struct TextualBody: Codable, Sendable {
   public var format: String?
   public var language: String?
@@ -10758,6 +11160,107 @@ public struct UpdateAnnotationBodyRequest: Codable, Sendable {
     try c.encode(self.operations, as: "operations")
     try c.encode(self.resourceId, as: "resourceId")
   }
+}
+
+public indirect enum UploadProgress: Codable, Sendable {
+  case started(UploadProgressStarted)
+  case progress(UploadProgressProgress)
+  case finished(UploadProgressFinished)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("phase"))
+    switch tag {
+    case "started": self = .started(try UploadProgressStarted(from: decoder))
+    case "progress": self = .progress(try UploadProgressProgress(from: decoder))
+    case "finished": self = .finished(try UploadProgressFinished(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("phase"), in: c, debugDescription: "unknown UploadProgress discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .started(let value): try value.encode(to: encoder)
+    case .progress(let value): try value.encode(to: encoder)
+    case .finished(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct UploadProgressFinished: Codable, Sendable {
+  public let phase: UploadProgressFinishedPhase
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.phase = .finished
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["phase", "resourceId"], in: "UploadProgressFinished")
+    self.phase = try c.value("phase")
+    self.resourceId = try c.value("resourceId")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.phase, as: "phase")
+    try c.encode(self.resourceId, as: "resourceId")
+  }
+}
+
+public enum UploadProgressFinishedPhase: String, Codable, Sendable, CaseIterable {
+  case finished = "finished"
+}
+
+public struct UploadProgressProgress: Codable, Sendable {
+  public var bytesUploaded: Int
+  public let phase: UploadProgressProgressPhase
+  public var totalBytes: Int
+  public init(bytesUploaded: Int, totalBytes: Int) {
+    self.bytesUploaded = bytesUploaded
+    self.phase = .progress
+    self.totalBytes = totalBytes
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["bytesUploaded", "phase", "totalBytes"], in: "UploadProgressProgress")
+    self.bytesUploaded = try c.value("bytesUploaded")
+    self.phase = try c.value("phase")
+    self.totalBytes = try c.value("totalBytes")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.bytesUploaded, as: "bytesUploaded")
+    try c.encode(self.phase, as: "phase")
+    try c.encode(self.totalBytes, as: "totalBytes")
+  }
+}
+
+public enum UploadProgressProgressPhase: String, Codable, Sendable, CaseIterable {
+  case progress = "progress"
+}
+
+public struct UploadProgressStarted: Codable, Sendable {
+  public let phase: UploadProgressStartedPhase
+  public var totalBytes: Int
+  public init(totalBytes: Int) {
+    self.phase = .started
+    self.totalBytes = totalBytes
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["phase", "totalBytes"], in: "UploadProgressStarted")
+    self.phase = try c.value("phase")
+    self.totalBytes = try c.value("totalBytes")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.phase, as: "phase")
+    try c.encode(self.totalBytes, as: "totalBytes")
+  }
+}
+
+public enum UploadProgressStartedPhase: String, Codable, Sendable, CaseIterable {
+  case started = "started"
 }
 
 public struct UserId: Hashable, Sendable, Codable, CustomStringConvertible {
@@ -12472,56 +12975,60 @@ internal let cacheQueries: [SpecCacheQueriesItem] = [
   SpecCacheQueriesItem(
     asks: "browse:resource-requested", docs: "A resource's description.", name: "resource",
     per: "resource", persisted: true,
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/ResourceDescriptor.json")),
+    value: SpecCacheQueriesItemValue(ref: "https://xynolog.org/protocol/ResourceDescriptor.json")),
   SpecCacheQueriesItem(
     docs: "The annotations of a resource.", name: "annotations", per: "resource", persisted: true,
     reads: "GET /resources/{id}/annotations",
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/GetAnnotationsResponse.json")),
+    value: SpecCacheQueriesItemValue(
+      ref: "https://xynolog.org/protocol/GetAnnotationsResponse.json")),
   SpecCacheQueriesItem(
     asks: "browse:annotation-requested", docs: "One annotation.", name: "annotation",
     per: "annotation", persisted: true,
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/Annotation.json")),
+    value: SpecCacheQueriesItemValue(ref: "https://xynolog.org/protocol/Annotation.json")),
   SpecCacheQueriesItem(
     asks: "browse:events-requested", docs: "The recorded history of a resource.", name: "events",
     per: "resource",
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetEventsResponse.json#/properties/events")),
+      ref: "https://xynolog.org/protocol/GetEventsResponse.json#/properties/events")),
   SpecCacheQueriesItem(
     asks: "gather:referenced-by-requested",
     docs: "The annotations elsewhere that refer to a resource.", name: "referencedBy",
     per: "resource",
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetReferencedByResponse.json#/properties/referencedBy")),
+      ref: "https://xynolog.org/protocol/GetReferencedByResponse.json#/properties/referencedBy")),
   SpecCacheQueriesItem(
     asks: "browse:resources-requested",
     docs:
       "A list of resources, one per set of filters asked for. It is a query's answer, kept fresh by what every client hears and by the events of the resources whose scope the client holds, and by nothing else: a resource archived, unarchived or retagged elsewhere, by someone else, does not refresh it.",
     name: "resources", per: "filters",
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/ListResourcesResponse.json")),
+    value: SpecCacheQueriesItemValue(ref: "https://xynolog.org/protocol/ListResourcesResponse.json")
+  ),
   SpecCacheQueriesItem(
     asks: "match:resources-requested",
     docs:
       "The resources a text search found, one per search and set of filters asked for. A query's answer like `resources`, and kept fresh by the same events and no others.",
     name: "matchedResources", per: "filters",
-    value: SpecCacheQueriesItemValue(ref: "../components/schemas/MatchResourcesResponse.json")),
+    value: SpecCacheQueriesItemValue(
+      ref: "https://xynolog.org/protocol/MatchResourcesResponse.json")),
   SpecCacheQueriesItem(
     asks: "browse:entity-types-requested", docs: "The knowledge base's entity types.",
     name: "entityTypes", persisted: true,
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetEntityTypesResponse.json#/properties/entityTypes")),
+      ref: "https://xynolog.org/protocol/GetEntityTypesResponse.json#/properties/entityTypes")),
   SpecCacheQueriesItem(
     asks: "browse:tag-schemas-requested", docs: "The knowledge base's tag schemas.",
     name: "tagSchemas", persisted: true,
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/GetTagSchemasResponse.json#/properties/tagSchemas")),
+      ref: "https://xynolog.org/protocol/GetTagSchemasResponse.json#/properties/tagSchemas")),
   SpecCacheQueriesItem(
     asks: "browse:engines-requested",
     docs:
       "The knowledge base's engines, joined with the limits each inference key holder reports: asking again asks every `<flow>:limits-requested` operation of the registry again too.",
     name: "engines",
     value: SpecCacheQueriesItemValue(
-      ref: "../components/schemas/BrowseEnginesResult.json#/properties/response/properties/engines")
-  ),
+      ref:
+        "https://xynolog.org/protocol/BrowseEnginesResult.json#/properties/response/properties/engines"
+    )),
 ]
 internal let credentialNames: [String] = [
   "token", "cloneToken", "accessToken", "access_token", "refreshToken", "refresh_token", "apiKey",

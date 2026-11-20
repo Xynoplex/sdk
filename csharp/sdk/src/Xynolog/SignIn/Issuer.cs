@@ -69,6 +69,7 @@ public sealed partial class Issuer : IDisposable
     {
         internal string? Text(string name) => Body is JsonElement body && body.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
         internal double? Seconds(string name) => Body is JsonElement body && body.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var seconds) && seconds >= 0 && double.IsFinite(seconds) ? seconds : null;
+        internal long? WholeSeconds(string name) => Body is JsonElement body && body.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var seconds) && seconds >= 0 ? seconds : null;
     }
 
     internal async Task<IssuerAnswer> AnswerAsync(string url, Dictionary<string, string>? form = null,

@@ -240,10 +240,9 @@ let redirect () =
     OAuth.discover http ~issuer:"https://issuer.example" |> Result.get_ok
   in
   let pending =
-    R.begin_authorization
+    R.begin_authorization ~issuer
+      ~random:(fun length -> String.make length 'A')
       {
-        issuer;
-        random = (fun length -> String.make length 'A');
         redirect_uri = "http://localhost/callback";
         target =
           Models.decode Models.http_endpoint

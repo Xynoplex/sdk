@@ -39,7 +39,7 @@ let steps fragment =
 
 (* The file and fragment [reference] names, and the schema there. *)
 let resolve spec (reference : Decode.reference) =
-  let file, fragment = Decode.resolve reference in
+  let file, fragment = Decode.resolve spec.Spec.ids reference in
   (file, fragment, within file (schema spec file) (steps fragment))
 
 let references : Schema.t -> Decode.reference list =
@@ -54,7 +54,7 @@ let reach spec files =
     else
       List.fold_left visit (file :: reached)
         (List.map
-           (fun r -> fst (Decode.resolve r))
+           (fun r -> fst (Decode.resolve spec.Spec.ids r))
            (references (schema spec file)))
   in
   List.sort String.compare (List.fold_left visit [] files)
@@ -97,7 +97,7 @@ let api (spec : Spec.t) =
     declared = List.map fst (Go_types.declared spec);
     components =
       List.map
-        (fun (name, r) -> (fst (Decode.resolve r), name))
+        (fun (name, r) -> (fst (Decode.resolve spec.Spec.ids r), name))
         (Roots.all spec);
     defined = (fun name -> List.mem name names);
   }

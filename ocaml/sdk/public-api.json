@@ -113,8 +113,8 @@
     "lib/agent.ml": "ea862f715d110e68aaacfdc01efb1cc2a198cfc71d5606565c06a36a4308bfc5",
     "lib/agent.mli": "194b536a8f4dee477d1c4ec06dfe091ea256c417fa8a979e11dee640393895ee",
     "lib/annotation_id.ml": "5b737d261c35db2e649bc00f2ece7cda103e8c08d677be4483171ac9f8453951",
-    "lib/annotations.ml": "41fbe88586351ea7adc131d98031fa7be622fbea756b0f3b369b79ef45f04cd3",
-    "lib/annotations.mli": "1ce755b1d64b46ac7ad305c035a2ade2338c5075e6278af1773cc080e4adf996",
+    "lib/annotations.ml": "0c8c0573addbce17b5374e946ffea821a853786989cf75037639b1cee1553d0c",
+    "lib/annotations.mli": "70298ad2a947d7538e02b6017f4a71b5c03d2dbee42e8137406cfffa51d25f3f",
     "lib/assertion_facts.ml": "6046b9175feb660a38619fe2b11f862e2ccad9e4beacb29a79fe479e94ddf0a5",
     "lib/auth.ml": "95cbd3eef3820adfbff02c0ace52d195c7fd35022c2a2a7c6a49d7402880e4f2",
     "lib/beckon_state.ml": "3b37bcacd3c2fc058e2040672ffa1e5e5a456d2bb7e061559df3107cfe180b2b",
@@ -157,8 +157,8 @@
     "lib/hover_dwell.ml": "2a8e9fef90c75ce18569793c04f553523e3dc523d53d869ceef4dab6a7702122",
     "lib/hover_dwell.mli": "3bf63911f6482ad960a6e4d3881e4a637caa0d9929dc8d62dbf7b69421fa19af",
     "lib/http_facts.ml": "fa5774ea443d7d01c8a1186238031bc3b90d65e77cf419ecee487eb3dc65fce8",
-    "lib/http_wire.ml": "c09e35b4aa9b0ac42ed67eb2e84c1c2a78ee9511aa3722ac41bcd134683c5a43",
-    "lib/http_wire.mli": "dea21fe6dacbbb4f02f7b64fa87527890bd6219c8cae8fa32aab45544beb7bdc",
+    "lib/http_wire.ml": "bc293440f3a3c77201e4ad76851731d14c1c0ffe6ed4403741abb15f86faf2d5",
+    "lib/http_wire.mli": "551237395fa11501ae2d4a79502af202913054c6ab49a0408dd25ad8b9ca45e9",
     "lib/identifiers.ml": "bb2e5891eb6174b1655728c2aee5832b0bb959afc6776ad5d6623f193ba0ef02",
     "lib/identifiers.mli": "d344831d9323c9ab0934e9027f4e8269b5d3554ef347c1d71b04cedc65d6a92b",
     "lib/identity.ml": "926a5ae2b89b08a294af2bbee6975347194bdaea78109f82a777b9fcff388e58",
@@ -173,8 +173,8 @@
     "lib/log_facts.ml": "1bf6dc1bb379d78ebf88e28eaad640364552b8f2f469926f7f62333313d04d97",
     "lib/mark.ml": "7bb5dc6de229d81c29c5349f719a2902263b1026d02a10e274facc4781d82b82",
     "lib/mark.mli": "daa70a35284997cf8b5796bda5f3262c19e8690a40090dc415729c4e3dddbbb3",
-    "lib/mark_state.ml": "b85e4cedb400d15ed8e4d4b31c18401ad5a416bc3fdb41b27b3b1f0b00d8304f",
-    "lib/mark_state.mli": "016f04747b303cd634184d4e4d656fa014b46aab99cf890b56c5adcf67d16d8b",
+    "lib/mark_state.ml": "6cbd44642fe6813f5e5087ffd4dce61014ba9e33cdc59f62ab433d9d92d5de09",
+    "lib/mark_state.mli": "bf975ad19fabb066cc94f6815911fe1fd39c7fcfd8274525a97539af770e5afb",
     "lib/match.ml": "688566865cf768c0b4bfb6cddeda957366e7dedce57ddd19d8a2588927f821e6",
     "lib/match.mli": "54ac094a6a9f8e8a09b7bc5f175ae198788c3d82b9b80a1f7efc9014fd135179",
     "lib/match_state.ml": "6667b713046ac9f3c41da077bdf1d6502b72aa51b188f6c86294fcdfa0eaf678",
@@ -191,8 +191,8 @@
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
     "lib/record_reader.ml": "053aa7e17c38b3cedb840b7623fd666e17717a5bbe8e1087b56aaf05d8ac3d89",
     "lib/record_reader.mli": "8f988856668a1d426cb6384fa2bf2703d6d791be33f82c8db87c2e1fd1919ce5",
-    "lib/records.ml": "af18186f533aa8624c38d17717cd39db417f503c49345be1dcaa865e30b85fb8",
-    "lib/redirect_sign_in.ml": "c0f36739c64b48556f18b04b1849e5033a500e681fc6ea0aa7bc357b4e8fb935",
+    "lib/records.ml": "f1d8317a360f19753b296a4541400717940e982e5f8ed855507c6d849d38d521",
+    "lib/redirect_sign_in.ml": "d3b7206b16548f24a4fcf3dfa6143bc7fc8fa0fe4de2e61598a460be41c2ef6f",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
     "lib/registry.ml": "b7d3d0a4bb36ac212add5c60d050b7e64e0047722f5a7a542bc2daea3bc83f6a",
     "lib/registry.mli": "007fe6fa9bb2ef09341bd496474b7ed14a9d19ead3576cde56650ccd3f457184",
@@ -251,7 +251,7 @@
     "lib/types.ml": "5921efffb7596beb176e09960cdfa080ec954349ec2ce9d7e54bc7f638c808fe",
     "lib/types.mli": "97149245ffc84db1b741d7156a08017eff6f941179e9e6df950f212da8d60d76",
     "lib/upload.ml": "fe94bfbfee4573abda5b6527367f76f8bce42459d5ae0a5bede7aebaaea35903",
-    "lib/upload.mli": "904e332f05d2fd57caa955aa4119d702c29420d0711e2be826585594f42e4592",
+    "lib/upload.mli": "2da3e555f0e86db3441a21ce158920509c48a0bafd9d446d8c9d5dc428b658c6",
     "lib/wire_stream.ml": "55af8ca9b5da00423e611b89c0ba1f1d91cffa9784e08a3385f1a5c1ee919f94",
     "lib/wire_stream.mli": "d145d5064298080786a7d80eb55a4936a8dbe89cd0e0ccf4fa81b6e82fc799a5",
     "lib/worker.ml": "4da58d8cca59bf6bfbdd92cf732a0c990c4ef65b083a44161ae1a70d51aae5e2",
@@ -259,7 +259,7 @@
     "lib/xynolog.ml": "5905c4650d1fd442f290b0364072740595dcdc781c75b114f9ad0f9f92110bf6",
     "lib/xynolog.mli": "02e4d8b6ce04271eefd8c710eab15a7388cd4582f65623d16f0ea4bb29c1461c",
     "lib/yield.ml": "eb895203554d9af88f6aa464d397757aba04eab611d69a2429c3ddd83b5b0ca1",
-    "lib/yield.mli": "ebe751eaa065d7816cfff15194d77d5d7364dbfc80ded3043396fa1e44b56210",
+    "lib/yield.mli": "da4db7e1cc2177b532bf7e95c864e3e636e911d31fe86763235a25373930a744",
     "lib/yield_state.ml": "964626f32956299da2c452708bd8be0e9c69017c7c98b8cef2a96cbfae777cf0",
     "lib/yield_state.mli": "fe746d0f5b1657d53c8a2856e1ee7b0626dd570e0c855ba57fe502958686b978",
     "probes/api_inventory.ml": "97b819335b2d6d55f2f4a7c73422ad4df34ca5e459fe4df300f01a0ff5efb36a",
@@ -13939,6 +13939,227 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Begin_authorization_options",
+      "declaration": "module Begin_authorization_options :\n  sig\n    type t = {\n      target : [ `HttpEndpoint ] Xynolog__.Models.t;\n      redirect_uri : string;\n      kb_id : string option;\n      expected_did : string option;\n      expected_name : string option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Begin_authorization_options.t",
+      "declaration": "type t = {\n  target : [ `HttpEndpoint ] Xynolog__.Models.t;\n  redirect_uri : string;\n  kb_id : string option;\n  expected_did : string option;\n  expected_name : string option;\n}",
+      "representation": "record",
+      "fields": [
+        "target",
+        "redirect_uri",
+        "kb_id",
+        "expected_did",
+        "expected_name"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Device_code",
+      "declaration": "module Device_code :\n  sig\n    type t = {\n      user_code : string;\n      verification_uri : string;\n      verification_uri_complete : string option;\n      expires_in : int;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Device_code.t",
+      "declaration": "type t = {\n  user_code : string;\n  verification_uri : string;\n  verification_uri_complete : string option;\n  expires_in : int;\n}",
+      "representation": "record",
+      "fields": [
+        "user_code",
+        "verification_uri",
+        "verification_uri_complete",
+        "expires_in"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Issued_tokens",
+      "declaration": "module Issued_tokens :\n  sig type t = { access : string; refresh : string; } end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Issued_tokens.t",
+      "declaration": "type t = { access : string; refresh : string; }",
+      "representation": "record",
+      "fields": [
+        "access",
+        "refresh"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Pdf_coordinate",
+      "declaration": "module Pdf_coordinate :\n  sig\n    type t = {\n      page : int;\n      x : float;\n      y : float;\n      width : float;\n      height : float;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Pdf_coordinate.t",
+      "declaration": "type t = { page : int; x : float; y : float; width : float; height : float; }",
+      "representation": "record",
+      "fields": [
+        "page",
+        "x",
+        "y",
+        "width",
+        "height"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Pending_annotation",
+      "declaration": "module Pending_annotation :\n  sig\n    type t = {\n      selector : [ `AnnotationSelector ] Xynolog__.Models.t;\n      motivation : [ `Motivation ] Xynolog__.Models.t;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Pending_annotation.t",
+      "declaration": "type t = {\n  selector : [ `AnnotationSelector ] Xynolog__.Models.t;\n  motivation : [ `Motivation ] Xynolog__.Models.t;\n}",
+      "representation": "record",
+      "fields": [
+        "selector",
+        "motivation"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Quoted_text",
+      "declaration": "module Quoted_text :\n  sig\n    type t = {\n      exact : string;\n      prefix : string option;\n      suffix : string option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Quoted_text.t",
+      "declaration": "type t = { exact : string; prefix : string option; suffix : string option; }",
+      "representation": "record",
+      "fields": [
+        "exact",
+        "prefix",
+        "suffix"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Reconciled_span",
+      "declaration": "module Reconciled_span :\n  sig\n    type t =\n        UniqueMatch of { start : int; end_ : int; exact : string;\n          prefix : string option; suffix : string option;\n        }\n      | ContextRecovered of { start : int; end_ : int; exact : string;\n          prefix : string option; suffix : string option;\n        }\n      | FirstOfMany of { start : int; end_ : int; exact : string;\n          prefix : string option; suffix : string option;\n        }\n      | FuzzyMatch of { start : int; end_ : int; exact : string;\n          prefix : string option; suffix : string option;\n          match_quality : Xynolog__.Enums.Match_quality.t;\n        }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Reconciled_span.t",
+      "declaration": "type t =\n    UniqueMatch of { start : int; end_ : int; exact : string;\n      prefix : string option; suffix : string option;\n    }\n  | ContextRecovered of { start : int; end_ : int; exact : string;\n      prefix : string option; suffix : string option;\n    }\n  | FirstOfMany of { start : int; end_ : int; exact : string;\n      prefix : string option; suffix : string option;\n    }\n  | FuzzyMatch of { start : int; end_ : int; exact : string;\n      prefix : string option; suffix : string option;\n      match_quality : Xynolog__.Enums.Match_quality.t;\n    }",
+      "representation": "variant",
+      "constructors": [
+        "UniqueMatch",
+        "ContextRecovered",
+        "FirstOfMany",
+        "FuzzyMatch"
+      ],
+      "variants": [
+        {
+          "name": "UniqueMatch",
+          "fields": [
+            "start",
+            "end_",
+            "exact",
+            "prefix",
+            "suffix"
+          ],
+          "unit": false
+        },
+        {
+          "name": "ContextRecovered",
+          "fields": [
+            "start",
+            "end_",
+            "exact",
+            "prefix",
+            "suffix"
+          ],
+          "unit": false
+        },
+        {
+          "name": "FirstOfMany",
+          "fields": [
+            "start",
+            "end_",
+            "exact",
+            "prefix",
+            "suffix"
+          ],
+          "unit": false
+        },
+        {
+          "name": "FuzzyMatch",
+          "fields": [
+            "start",
+            "end_",
+            "exact",
+            "prefix",
+            "suffix",
+            "match_quality"
+          ],
+          "unit": false
+        }
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Text_span",
+      "declaration": "module Text_span :\n  sig\n    type t = {\n      start : int;\n      end_ : int;\n      exact : string;\n      prefix : string option;\n      suffix : string option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Text_span.t",
+      "declaration": "type t = {\n  start : int;\n  end_ : int;\n  exact : string;\n  prefix : string option;\n  suffix : string option;\n}",
+      "representation": "record",
+      "fields": [
+        "start",
+        "end_",
+        "exact",
+        "prefix",
+        "suffix"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Upload_progress",
+      "declaration": "module Upload_progress :\n  sig\n    type t =\n        Started of { total_bytes : int; }\n      | Progress of { bytes_uploaded : int; total_bytes : int; }\n      | Finished of { resource_id : string; }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Upload_progress.t",
+      "declaration": "type t =\n    Started of { total_bytes : int; }\n  | Progress of { bytes_uploaded : int; total_bytes : int; }\n  | Finished of { resource_id : string; }",
+      "representation": "variant",
+      "constructors": [
+        "Started",
+        "Progress",
+        "Finished"
+      ],
+      "variants": [
+        {
+          "name": "Started",
+          "fields": [
+            "total_bytes"
+          ],
+          "unit": false
+        },
+        {
+          "name": "Progress",
+          "fields": [
+            "bytes_uploaded",
+            "total_bytes"
+          ],
+          "unit": false
+        },
+        {
+          "name": "Finished",
+          "fields": [
+            "resource_id"
+          ],
+          "unit": false
+        }
+      ]
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Signed_in",
       "declaration": "module Signed_in :\n  sig\n    type t = {\n      endpoint : [ `KbEndpoint ] Xynolog__.Models.t;\n      description : [ `KbDescription ] Xynolog__.Models.t;\n      session : Stored_session.t;\n      kb_id : string option;\n      expected_did : string option;\n      expected_name : string option;\n    }\n  end"
     },
@@ -14619,7 +14840,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Http_wire.put",
-      "declaration": "val put :\n  t ->\n  fields:(string * string) list ->\n  bytes:string -> on_progress:(int -> unit) -> string"
+      "declaration": "val put :\n  t ->\n  fields:(string * string) list ->\n  bytes:string ->\n  on_progress:(Xynolog__.Records.Upload_progress.t -> unit) -> string"
     },
     {
       "kind": "value",
@@ -15459,7 +15680,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Yield.resource",
-      "declaration": "val resource :\n  Xynolog__.Client_core.t ->\n  fields:(string * string) list ->\n  bytes:string -> on_progress:(int -> unit) -> Xynolog__.Upload.t"
+      "declaration": "val resource :\n  Xynolog__.Client_core.t ->\n  fields:(string * string) list ->\n  bytes:string ->\n  on_progress:(Xynolog__.Records.Upload_progress.t -> unit) ->\n  Xynolog__.Upload.t"
     },
     {
       "kind": "value",
@@ -15945,7 +16166,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Client.Yield.resource",
-      "declaration": "val resource :\n  Xynolog__.Client_core.t ->\n  fields:(string * string) list ->\n  bytes:string -> on_progress:(int -> unit) -> Xynolog__.Upload.t"
+      "declaration": "val resource :\n  Xynolog__.Client_core.t ->\n  fields:(string * string) list ->\n  bytes:string ->\n  on_progress:(Xynolog__.Records.Upload_progress.t -> unit) ->\n  Xynolog__.Upload.t"
     },
     {
       "kind": "value",
@@ -20721,16 +20942,6 @@
       "representation": "abstract"
     },
     {
-      "kind": "type",
-      "path": "Xynolog.State_units.Mark.pending_annotation",
-      "declaration": "type pending_annotation = { selector : Yojson.Safe.t; motivation : string; }",
-      "representation": "record",
-      "fields": [
-        "selector",
-        "motivation"
-      ]
-    },
-    {
       "kind": "value",
       "path": "Xynolog.State_units.Mark.make",
       "declaration": "val make :\n  ?silence_ms:int ->\n  Xynolog__.Client.t -> resource:Xynolog__.Identifiers.Resource_id.t -> t"
@@ -20738,7 +20949,7 @@
     {
       "kind": "value",
       "path": "Xynolog.State_units.Mark.pending_annotation",
-      "declaration": "val pending_annotation :\n  t -> pending_annotation option Xynolog__.State_value.t"
+      "declaration": "val pending_annotation :\n  t -> Xynolog__.Records.Pending_annotation.t option Xynolog__.State_value.t"
     },
     {
       "kind": "value",
@@ -21254,28 +21465,6 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.Annotations.quoted_text",
-      "declaration": "type quoted_text = {\n  exact : string;\n  prefix : string option;\n  suffix : string option;\n}",
-      "representation": "record",
-      "fields": [
-        "exact",
-        "prefix",
-        "suffix"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Annotations.text_span",
-      "declaration": "type text_span = { start : int; end_ : int; quote : quoted_text; }",
-      "representation": "record",
-      "fields": [
-        "start",
-        "end_",
-        "quote"
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.Annotations.spanned",
       "declaration": "type spanned = Text of string | Pdf of [ `AnchoredText ] Xynolog__.Models.t",
       "representation": "variant",
@@ -21370,23 +21559,12 @@
     {
       "kind": "value",
       "path": "Xynolog.Annotations.annotation_of_span",
-      "declaration": "val annotation_of_span :\n  created:string ->\n  resource:Xynolog__.Identifiers.Resource_id.t ->\n  motivation:Xynolog__.Enums.Motivation.t ->\n  generator:Yojson.Safe.t ->\n  ?body:Yojson.Safe.t ->\n  spanned ->\n  text_span ->\n  ([ `Annotation ] Xynolog__.Models.t, Xynolog__.Models.decode_error) result"
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Annotations.reconciled_span",
-      "declaration": "type reconciled_span = {\n  span : text_span;\n  anchor_method : Xynolog__.Enums.Anchor_method.t;\n  match_quality : Xynolog__.Enums.Match_quality.t option;\n}",
-      "representation": "record",
-      "fields": [
-        "span",
-        "anchor_method",
-        "match_quality"
-      ]
+      "declaration": "val annotation_of_span :\n  created:string ->\n  resource:Xynolog__.Identifiers.Resource_id.t ->\n  motivation:Xynolog__.Enums.Motivation.t ->\n  generator:Yojson.Safe.t ->\n  ?body:Yojson.Safe.t ->\n  spanned ->\n  Xynolog__.Records.Text_span.t ->\n  ([ `Annotation ] Xynolog__.Models.t, Xynolog__.Models.decode_error) result"
     },
     {
       "kind": "value",
       "path": "Xynolog.Annotations.reconcile",
-      "declaration": "val reconcile : string -> quoted_text -> reconciled_span option"
+      "declaration": "val reconcile :\n  string ->\n  Xynolog__.Records.Quoted_text.t ->\n  Xynolog__.Records.Reconciled_span.t option"
     },
     {
       "kind": "type",
@@ -21406,12 +21584,12 @@
     {
       "kind": "value",
       "path": "Xynolog.Annotations.locate_pdf",
-      "declaration": "val locate_pdf :\n  pdf_item list -> int -> int -> pdf_item list * Yojson.Safe.t list"
+      "declaration": "val locate_pdf :\n  pdf_item list ->\n  int -> int -> pdf_item list * Xynolog__.Records.Pdf_coordinate.t list"
     },
     {
       "kind": "value",
       "path": "Xynolog.Annotations.fragment",
-      "declaration": "val fragment : Yojson.Safe.t -> string"
+      "declaration": "val fragment : Xynolog__.Records.Pdf_coordinate.t -> string"
     },
     {
       "kind": "module",
@@ -21683,21 +21861,6 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.Redirect_sign_in.begin_authorization_options",
-      "declaration": "type begin_authorization_options = {\n  issuer : Xynolog__.Oauth.issuer;\n  random : int -> string;\n  redirect_uri : string;\n  target : [ `HttpEndpoint ] Xynolog__.Models.t;\n  kb_id : string option;\n  expected_did : string option;\n  expected_name : string option;\n}",
-      "representation": "record",
-      "fields": [
-        "issuer",
-        "random",
-        "redirect_uri",
-        "target",
-        "kb_id",
-        "expected_did",
-        "expected_name"
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.Redirect_sign_in.pending_authorization",
       "declaration": "type pending_authorization = {\n  issuer : Xynolog__.Oauth.issuer;\n  redirect : Xynolog__.Oauth.redirect;\n  target : [ `HttpEndpoint ] Xynolog__.Models.t;\n  kb_id : string option;\n  expected_did : string option;\n  expected_name : string option;\n}",
       "representation": "record",
@@ -21723,7 +21886,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Redirect_sign_in.begin_authorization",
-      "declaration": "val begin_authorization :\n  begin_authorization_options -> pending_authorization"
+      "declaration": "val begin_authorization :\n  issuer:Xynolog__.Oauth.issuer ->\n  random:(int -> string) ->\n  Xynolog__.Records.Begin_authorization_options.t -> pending_authorization"
     },
     {
       "kind": "value",

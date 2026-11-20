@@ -491,6 +491,10 @@ library internal
     Xynolog.Internal.Generated.Models.QdrantVectorsConfig
     Xynolog.Internal.Generated.Models.QuotedText
     Xynolog.Internal.Generated.Models.ReconciledSpan
+    Xynolog.Internal.Generated.Models.ReconciledSpanContextRecovered
+    Xynolog.Internal.Generated.Models.ReconciledSpanFirstOfMany
+    Xynolog.Internal.Generated.Models.ReconciledSpanFuzzyMatch
+    Xynolog.Internal.Generated.Models.ReconciledSpanUniqueMatch
     Xynolog.Internal.Generated.Models.ReplyEventId
     Xynolog.Internal.Generated.Models.Representation
     Xynolog.Internal.Generated.Models.RepresentationAddedPayload

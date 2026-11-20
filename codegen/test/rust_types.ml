@@ -469,12 +469,15 @@ let cases =
              "InvalidIdentifier"));
     case "a file written in place that reaches itself is refused"
       (refused "reaches itself" (fun () ->
-           ignore (D.view ~named:(fun _ -> None) ~schemas:looped looped_schema);
+           ignore
+             (D.view ~ids ~named:(fun _ -> None) ~schemas:looped looped_schema);
            ""));
     case "a file written in place that reaches itself has no references"
       (refused "reaches itself" (fun () ->
            String.concat " "
-             (D.references ~named:(fun _ -> None) ~schemas:looped looped_schema)));
+             (D.references ~ids
+                ~named:(fun _ -> None)
+                ~schemas:looped looped_schema)));
   ]
 
 let () = Alcotest.run "rust_types" [ ("types", cases) ]

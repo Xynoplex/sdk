@@ -236,7 +236,7 @@ completeAuthorization options callback storage = do
         ("code", code)
       ]
   refresh <- maybe (failWith Code.SignInExchange "The issuer returned no refresh token" Nothing) pure renewal
-  pure (pending, IssuedTokens access refresh KM.empty)
+  pure (pending, IssuedTokens access refresh)
 
 tokenGrant :: IssuerOptions -> Text -> [(Text, Text)] -> IO (Text, Maybe Text)
 tokenGrant options endpoint form = do
@@ -248,7 +248,7 @@ tokenGrant options endpoint form = do
 refreshAtIssuer :: IssuerOptions -> Text -> Text -> Text -> IO IssuedTokens
 refreshAtIssuer options endpoint identity refresh = do
   (access, renewal) <- tokenGrant options endpoint [("grant_type", "refresh_token"), ("client_id", identity), ("refresh_token", refresh)]
-  pure (IssuedTokens access (fromMaybe refresh renewal) KM.empty)
+  pure (IssuedTokens access (fromMaybe refresh renewal))
 
 -- | Only a missing stored grant gives Nothing. Outages exhaust the refresh
 -- budget as typed errors; an atomic comparison prevents resurrecting sign-out
@@ -296,7 +296,7 @@ signInWithDeviceGrant options target onCode = do
   verification <- requiredText Code.SignInExchange "verification_uri" body
   expires <- maybe (failWith Code.SignInExchange "The device code has no lifetime" Nothing) pure (whole "expires_in" body)
   when (expires < 0) (failWith Code.SignInExchange "The device code has a negative lifetime" Nothing)
-  onCode (DeviceCode expires userCode verification (text "verification_uri_complete" body) KM.empty)
+  onCode (DeviceCode expires userCode verification (text "verification_uri_complete" body))
   now <- Retry.retryNow (issuerTime options)
   let settings = issuerTiming options
       interval =
@@ -318,7 +318,7 @@ signInWithDeviceGrant options target onCode = do
         case (pollStatus, text "access_token" answer) of
           (200, Just access) -> do
             refresh <- maybe (failWith Code.SignInExchange "The issuer returned no refresh token" Nothing) pure (text "refresh_token" answer)
-            pure (issuer, IssuedTokens access refresh KM.empty)
+            pure (issuer, IssuedTokens access refresh)
           _ -> case text "error" answer of
             Just "authorization_pending" -> poll delay
             Just "slow_down" -> poll (delay + fromInteger (Timing.deviceSlowDownMs settings))

@@ -56,21 +56,21 @@ let json ~root path =
 (* [json], a schema read from [file], each [$ref] into a table naming the
    record there by its title: WireJson finds the schema a reference names by
    the name of the file it names. *)
-let rec titled ~file records = function
+let rec titled ids ~file records = function
   | `Assoc members ->
       `Assoc
         (List.map
            (function
              | ("$ref", `String target) as reference -> (
                  let key =
-                   Table_records.key { Decode.target; file; pointer = "" }
+                   Table_records.key ids { Decode.target; file; pointer = "" }
                  in
                  match List.find_opt (fun (k, _, _) -> k = key) records with
                  | Some (_, title, _) -> ("$ref", `String (title ^ ".json"))
                  | None -> reference)
-             | key, value -> (key, titled ~file records value))
+             | key, value -> (key, titled ids ~file records value))
            members)
-  | `List items -> `List (List.map (titled ~file records) items)
+  | `List items -> `List (List.map (titled ids ~file records) items)
   | json -> json
 
 let schema_of (spec : Spec.t) path =
@@ -86,13 +86,9 @@ let schema_of (spec : Spec.t) path =
           };
         ]
 
-(* The client types (protocol/specs/src/client/types) the SDK models. The
-   rest, the objects, wait on the model's reading of them. *)
-let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
-
 (* The schemas the models are made from: every root ([Roots]), the gateway's
    components and the discovery document's among them, the sign-in store's
-   entry, the client types above, and the records Protocol states in its
+   entry, the client types it generates ([Definitions.generated_client_types]), and the records Protocol states in its
    tables ([Table_records]);
    each with the file, or the place in a file, it is read from. *)
 let roots ~root (spec : Spec.t) =
@@ -102,11 +98,22 @@ let roots ~root (spec : Spec.t) =
       (Table_records.all spec)
   in
   let read ~file name path schema json =
-    ((name, path, { Models.schema; json = titled ~file records json }) : _)
+    ((name, path, { Models.schema; json = titled spec.ids ~file records json })
+      : _)
   in
+  let closed_in = Definitions.closed_in spec in
+  (* A schema that closes what it composes is read as the one object it means
+     ([Definitions.closed_in]), and validated as that object. *)
   let whole name path =
-    let* schema = schema_of spec path in
-    let* json = json ~root path in
+    let* stated = schema_of spec path in
+    let* schema =
+      Result.map_error
+        (fun message -> [ { Decode.file = path; pointer = ""; message } ])
+        (closed_in stated)
+    in
+    let* json =
+      if schema = stated then json ~root path else Ok (Schema.runtime schema)
+    in
     Ok (read ~file:path name path schema json)
   in
   let record (key, name, schema) =
@@ -125,7 +132,8 @@ let roots ~root (spec : Spec.t) =
   in
   let components =
     List.map
-      (fun (name, reference) -> whole name (fst (Decode.resolve reference)))
+      (fun (name, reference) ->
+        whole name (fst (Decode.resolve spec.Spec.ids reference)))
       (Roots.all spec)
   in
   Spec.all
@@ -133,7 +141,7 @@ let roots ~root (spec : Spec.t) =
     @ [ whole "SignIn" Sign_in.schema_file ]
     @ List.map
         (fun name -> whole name ("client/types/" ^ name ^ ".json"))
-        client_types
+        (Definitions.generated_client_types spec)
     @ List.map record records)
 
 let refused message =
@@ -330,7 +338,7 @@ let files ~root (spec : Spec.t) =
   in
   let* models =
     Result.map_error refused
-      (Models.make
+      (Models.make ~ids:spec.ids
          ~identifiers:
            (List.map (fun (k : Identifiers.Table.kind) -> k.name) kinds)
          ~roots

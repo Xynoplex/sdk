@@ -17,10 +17,17 @@ import xynolog.types.AnnotationTargetValue
 import xynolog.types.BodyPurpose
 import xynolog.types.FragmentSelector
 import xynolog.types.Motivation
+import xynolog.types.QuotedText
+import xynolog.types.ReconciledSpan
+import xynolog.types.ReconciledSpanContextRecovered
+import xynolog.types.ReconciledSpanFirstOfMany
+import xynolog.types.ReconciledSpanFuzzyMatch
+import xynolog.types.ReconciledSpanUniqueMatch
 import xynolog.types.Selector
 import xynolog.types.SpecificResource
 import xynolog.types.TextPositionSelector
 import xynolog.types.TextQuoteSelector
+import xynolog.types.TextSpan
 import xynolog.types.TextualBody
 import xynolog.types.wireJson
 import java.time.Instant
@@ -114,9 +121,13 @@ public fun tagCategory(annotation: Annotation): String? = if (isTag(annotation))
 public fun tagSchemaId(annotation: Annotation): String? = if (isTag(annotation)) textsFor(annotation, BodyPurpose.Classifying).firstOrNull() else null
 
 /**
- * Find the words a model quoted in `text`. The span answered is the text's
- * own: its `exact` is the text between its offsets, and its `prefix` and
- * `suffix` are what the text has on either side; it goes to
+ * Find the words a model quoted in `text`. The quote's `prefix` and `suffix`
+ * are hints of which place is meant, where the text has the words in more
+ * than one, and neither is kept. The span answered is the text's own: its
+ * `exact` is the text between its offsets, and its `prefix` and `suffix` are
+ * what the text has on either side, null where it has nothing. Which member
+ * of the union it is says how it was found, and a fuzzy match's
+ * `matchQuality` is which looser search found it. Its `toTextSpan()` goes to
  * `annotationOfSpan` as it is. Nothing is answered for a quote that is empty
  * or only white space, and for words the text has nowhere, by any of the
  * searches.
@@ -129,14 +140,31 @@ public fun reconcile(text: String, quoted: QuotedText): ReconciledSpan? {
     val suffix = hint(quoted.suffix)
 
     val found = places(points, exact).map { it to it + exact.size }
-    if (found.size == 1) return reconciled(points, found.single(), AnchorMethod.UniqueMatch)
+    if (found.size == 1) {
+        val unique = own(points, found.single())
+        return ReconciledSpanUniqueMatch(unique.start, unique.end, unique.exact, unique.prefix, unique.suffix)
+    }
     if (found.isNotEmpty()) {
-        return hinted(points, found, prefix, suffix)?.let { reconciled(points, it, AnchorMethod.ContextRecovered) }
-            ?: reconciled(points, found.first(), AnchorMethod.FirstOfMany)
+        val chosen = hinted(points, found, prefix, suffix)
+        if (chosen != null) {
+            val recovered = own(points, chosen)
+            return ReconciledSpanContextRecovered(recovered.start, recovered.end, recovered.exact, recovered.prefix, recovered.suffix)
+        }
+        val first = own(points, found.first())
+        return ReconciledSpanFirstOfMany(first.start, first.end, first.exact, first.prefix, first.suffix)
     }
 
     val (loosely, quality) = looser(points, quoted.exact) ?: return null
-    return reconciled(points, hinted(points, loosely, prefix, suffix) ?: loosely.first(), AnchorMethod.FuzzyMatch(quality))
+    val fuzzy = own(points, hinted(points, loosely, prefix, suffix) ?: loosely.first())
+    return ReconciledSpanFuzzyMatch(fuzzy.start, fuzzy.end, fuzzy.exact, fuzzy.prefix, fuzzy.suffix, matchQuality = quality)
+}
+
+/** A span `reconcile` found, as the span `annotationOfSpan` takes: the same offsets, words and context, without how it was found. */
+public fun ReconciledSpan.toTextSpan(): TextSpan = when (this) {
+    is ReconciledSpanUniqueMatch -> TextSpan(start, end, exact, prefix, suffix)
+    is ReconciledSpanContextRecovered -> TextSpan(start, end, exact, prefix, suffix)
+    is ReconciledSpanFirstOfMany -> TextSpan(start, end, exact, prefix, suffix)
+    is ReconciledSpanFuzzyMatch -> TextSpan(start, end, exact, prefix, suffix)
 }
 
 /** What a PDF's fragment conforms to. */
@@ -202,8 +230,8 @@ private fun ofSpan(resourceId: ResourceId, motivation: Motivation, span: TextSpa
  * position and its quote. `generator` says what made the annotation, and
  * `body` is carried as it is given. A span is checked against the text before
  * anything is built, and one that is not the text's throws `SpanRefusedError`,
- * whose `reason` says which refusal it is. A span `reconcile` found is the
- * text's own.
+ * whose `reason` says which refusal it is. A span `reconcile` found, as its
+ * `toTextSpan()`, is the text's own.
  */
 @JvmOverloads
 @JvmExposeBoxed

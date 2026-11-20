@@ -13,7 +13,7 @@ let refused errors =
 
 let generated =
   let spec =
-    match Spec.load (Filename.concat root "protocol/specs/src") with
+    match Spec_shapes.load (Filename.concat root "protocol/specs/src") with
     | Ok spec -> spec
     | Error errors -> refused errors
   in

@@ -42,7 +42,6 @@ export {
   type JobEvent,
   type MarkJobCompletion,
   type YieldJobCompletion,
-  type UploadProgress,
 } from './awaitable';
 
 // A worker's side of the job queue: what `job.claim` returns, the jobs it
@@ -239,13 +238,16 @@ export {
   type XynologBrowserConfig,
 } from './session/xynolog-browser';
 export { SignInError } from '@xynolog/core';
+export type {
+  BeginAuthorizationOptions,
+  DeviceCode,
+  UploadProgress,
+} from '@xynolog/core';
 export {
   BROWSER_CLIENT_ID,
   SCRIPT_CLIENT_ID,
   type SignInErrorCode,
   type IssuerEndpoints,
-  type DeviceCode,
-  type BeginAuthorizationOptions,
   discoverIssuer,
   beginAuthorization,
   completeAuthorization,

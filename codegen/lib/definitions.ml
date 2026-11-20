@@ -111,11 +111,11 @@ type referent = Named of string | In_place of string * Schema.t
 
 (* The schema [r] names: a whole file or a table record by its key, or a
    schema inside a file by its pointer. A pointer at no schema is refused. *)
-let schema_at ~schemas (r : Decode.reference) =
-  match Hashtbl.find_opt schemas (Table_records.key r) with
+let schema_at ~ids ~schemas (r : Decode.reference) =
+  match Hashtbl.find_opt schemas (Table_records.key ids r) with
   | Some s -> Some s
   | None -> (
-      match Decode.resolve r with
+      match Decode.resolve ids r with
       | _, "" -> None
       | file, pointer -> (
           match
@@ -126,21 +126,64 @@ let schema_at ~schemas (r : Decode.reference) =
           | None -> refuse "$ref %s points into its file at no schema" r.target)
       )
 
-let referent ~named ~schemas (r : Decode.reference) =
-  let key = Table_records.key r in
+let referent ~ids ~named ~schemas (r : Decode.reference) =
+  let key = Table_records.key ids r in
   match named key with
   | Some name -> Some (Named name)
-  | None -> Option.map (fun s -> In_place (key, s)) (schema_at ~schemas r)
+  | None -> Option.map (fun s -> In_place (key, s)) (schema_at ~ids ~schemas r)
 
-let schema_of ~schemas (r : Decode.reference) =
-  match schema_at ~schemas r with
+let schema_of ~ids ~schemas (r : Decode.reference) =
+  match schema_at ~ids ~schemas r with
   | Some s -> Ok s
   | None -> Error ("$ref " ^ r.target ^ " names no schema")
+
+(* A schema of [spec] as it means one: each schema within it that closes what
+   it composes read as the one object it means ([Normalize.closed_within]). *)
+let closed_in (spec : Spec.t) =
+  let schemas = Hashtbl.of_seq (List.to_seq spec.schemas) in
+  Normalize.closed_within spec.ids ~find:(schema_of ~ids:spec.ids ~schemas)
 
 (* What a client hands its callers that no wire message carries: each file of
    protocol/specs/src/client/types, and the records of the registry and of the
    state units' notices. *)
 let client_types = "client/types/"
+
+(* The client types each SDK writes by hand: SearchState and JobEvent, each
+   held to its schema by a census in every SDK, and the options the namespace
+   methods take, which wait on the namespace types that take them. *)
+let hand_written_client_types =
+  [
+    "SearchState";
+    "JobEvent";
+    "ClaimOptions";
+    "CreateFromTokenOptions";
+    "GatherResourceOptions";
+    "JobPollOptions";
+    "MatchSearchOptions";
+    "PutBinaryRequest";
+    "ResourceSearchFilters";
+  ]
+
+(* The client types every SDK generates, by name: each file of
+   protocol/specs/src/client/types but the hand-written ones, each of which
+   must still be one. *)
+let generated_client_types (spec : Spec.t) =
+  let names =
+    List.filter_map
+      (fun (key, _) ->
+        if String.starts_with ~prefix:client_types key then
+          Some (Filename.remove_extension (Filename.basename key))
+        else None)
+      spec.schemas
+  in
+  List.iter
+    (fun name ->
+      if not (List.mem name names) then
+        refuse "%s%s.json, which an SDK writes by hand, is gone" client_types
+          name)
+    hand_written_client_types;
+  List.sort String.compare
+    (List.filter (fun n -> not (List.mem n hand_written_client_types)) names)
 
 let records spec =
   match Table_records.all spec with
@@ -162,7 +205,7 @@ let client_roots (spec : Spec.t) =
 
 (* The view of a schema written in [file], each [$ref] it holds resolved by
    [named] or written in place from [schemas]. *)
-let view ~named ~schemas =
+let view ~ids ~named ~schemas =
   let rec view s = Schema.para ~boolean:(fun b _ -> Bool b) ~schema:layer s
   and layer (l : (Schema.t * (string list -> t)) Schema.layer) trail =
     match Null_form.without_null fst l with
@@ -176,90 +219,99 @@ let view ~named ~schemas =
             Node { (node [ "anyOf" ]) with any_of = Some [ Null; other ] })
   and plain l trail =
     let s = Schema.map snd l in
-    match s.ref_ with
-    | Some r -> (
-        let description =
-          match said_of_reference s r with
-          | Ok d -> d
-          | Error message -> refuse "%s" message
-        in
-        match referent ~named ~schemas r with
-        | Some (Named name) -> Ref { name; description }
-        | Some (In_place (file, target)) ->
-            if Option.is_some description then
-              refuse
-                "$ref %s is written in its place, so nothing can be said of it \
-                 beside it"
-                r.target;
-            view target (in_place ~trail file)
-        | None -> refuse "$ref %s names no schema" r.target)
-    | None when Schema.keywords s = [ "type" ] && s.type_ = Some [ Schema.Null ]
-      ->
-        Null
-    | None ->
-        let sub f = f trail in
-        let subs = Option.map (List.map sub) in
-        let keys = Schema.keywords s in
-        let merged =
-          Option.map
-            (fun _ ->
-              match
-                Normalize.normalize ~find:(schema_of ~schemas)
-                  (Schema.Schema (Schema.map fst l))
-              with
-              | Ok m -> view (Schema.Schema m) trail
-              | Error message -> refuse "%s" message)
-            s.all_of
-        in
-        let types =
-          match s.type_ with
-          | None -> None
-          | Some [ t ] when t <> Schema.Null -> Some (One t)
-          | Some _ ->
-              refuse "a schema of several types the generator does not know"
-        in
-        let own =
-          {
-            keys;
-            description =
-              (match merged with
-              | Some (Node m) -> m.description
-              | _ -> s.description);
-            type_ = types;
-            format = s.format;
-            enum = s.enum;
-            const = Option.is_some s.const;
-            properties =
-              Option.map (List.map (fun (k, v) -> (k, sub v))) s.properties;
-            required = s.required;
-            additional_properties = Option.map sub s.additional_properties;
-            max_properties = s.max_properties;
-            minimum = s.minimum;
-            maximum = s.maximum;
-            items = Option.map sub s.items;
-            all_of = subs s.all_of;
-            merged;
-            any_of = subs s.any_of;
-            one_of = subs s.one_of;
-            discriminator =
-              Option.map
-                (fun (d : Schema.discriminator) -> d.property_name)
-                s.discriminator;
-            pattern = s.pattern;
-          }
-        in
-        Node own
+    if Option.is_some s.unevaluated_properties then closed l trail
+    else
+      match s.ref_ with
+      | Some r -> (
+          let description =
+            match said_of_reference s r with
+            | Ok d -> d
+            | Error message -> refuse "%s" message
+          in
+          match referent ~ids ~named ~schemas r with
+          | Some (Named name) -> Ref { name; description }
+          | Some (In_place (file, target)) ->
+              if Option.is_some description then
+                refuse
+                  "$ref %s is written in its place, so nothing can be said of \
+                   it beside it"
+                  r.target;
+              view target (in_place ~trail file)
+          | None -> refuse "$ref %s names no schema" r.target)
+      | None
+        when Schema.keywords s = [ "type" ] && s.type_ = Some [ Schema.Null ] ->
+          Null
+      | None ->
+          let sub f = f trail in
+          let subs = Option.map (List.map sub) in
+          let keys = Schema.keywords s in
+          let merged =
+            Option.map
+              (fun _ ->
+                match
+                  Normalize.normalize ids ~find:(schema_of ~ids ~schemas)
+                    (Schema.Schema (Schema.map fst l))
+                with
+                | Ok m -> view (Schema.Schema m) trail
+                | Error message -> refuse "%s" message)
+              s.all_of
+          in
+          let types =
+            match s.type_ with
+            | None -> None
+            | Some [ t ] when t <> Schema.Null -> Some (One t)
+            | Some _ ->
+                refuse "a schema of several types the generator does not know"
+          in
+          let own =
+            {
+              keys;
+              description =
+                (match merged with
+                | Some (Node m) -> m.description
+                | _ -> s.description);
+              type_ = types;
+              format = s.format;
+              enum = s.enum;
+              const = Option.is_some s.const;
+              properties =
+                Option.map (List.map (fun (k, v) -> (k, sub v))) s.properties;
+              required = s.required;
+              additional_properties = Option.map sub s.additional_properties;
+              max_properties = s.max_properties;
+              minimum = s.minimum;
+              maximum = s.maximum;
+              items = Option.map sub s.items;
+              all_of = subs s.all_of;
+              merged;
+              any_of = subs s.any_of;
+              one_of = subs s.one_of;
+              discriminator =
+                Option.map
+                  (fun (d : Schema.discriminator) -> d.property_name)
+                  s.discriminator;
+              pattern = s.pattern;
+            }
+          in
+          Node own
+  (* A schema that closes what it composes, as the one object it means. *)
+  and closed l trail =
+    match
+      Normalize.closed ids ~find:(schema_of ~ids ~schemas) (Schema.map fst l)
+    with
+    | Ok closed -> view (Schema.Schema closed) trail
+    | Error message -> refuse "%s" message
   in
   fun s -> view s []
 
 (* Every [$ref] a schema holds, through the files written in its place. *)
-let references ~named ~schemas =
+let references ~ids ~named ~schemas =
   let rec references s = Schema.cata ~boolean:(fun _ _ -> []) ~schema:layer s
   and layer (s : (string list -> string list) Schema.layer) trail =
     match s.ref_ with
     | Some r -> (
-        match referent ~named ~schemas r with
-        | Some (Named _) -> [ Table_records.key r ]
+        match referent ~ids ~named ~schemas r with
+        | Some (Named _) -> [ Table_records.key ids r ]
         | Some (In_place (file, target)) ->
             references target (in_place ~trail file)
         | None -> [])
@@ -292,12 +344,15 @@ type bundle = {
 }
 
 let bundle (spec : Spec.t) =
+  let ids = spec.ids in
   let schemas = Hashtbl.create 1024 in
   List.iter (fun (file, s) -> Hashtbl.replace schemas file s) spec.schemas;
   let records = records spec in
   List.iter (fun (key, _, s) -> Hashtbl.replace schemas key s) records;
   let declared =
-    List.map (fun (name, r) -> (fst (Decode.resolve r), name)) (Roots.all spec)
+    List.map
+      (fun (name, r) -> (fst (Decode.resolve spec.Spec.ids r), name))
+      (Roots.all spec)
   in
   let titled = List.map (fun (key, name, _) -> (key, name)) records in
   (* A schema is named by the name [Roots] gives it, a table's record by
@@ -327,7 +382,8 @@ let bundle (spec : Spec.t) =
       (fun (op : Openapi.operation) ->
         List.map
           (function
-            | _, Openapi.Ref r -> response (fst (Decode.resolve r))
+            | _, Openapi.Ref r ->
+                response (fst (Decode.resolve spec.Spec.ids r))
             | _, Openapi.Inline r -> r)
           op.responses)
       (Spec.operations item)
@@ -335,7 +391,7 @@ let bundle (spec : Spec.t) =
   let items =
     List.map
       (fun (_, r) ->
-        let file = fst (Decode.resolve r) in
+        let file = fst (Decode.resolve spec.Spec.ids r) in
         match List.assoc_opt file spec.path_items with
         | Some item -> item
         | None ->
@@ -367,9 +423,12 @@ let bundle (spec : Spec.t) =
   let component_responses =
     match spec.gateway.components.responses with
     | None -> []
-    | Some rs -> List.map (fun (_, r) -> response (fst (Decode.resolve r))) rs
+    | Some rs ->
+        List.map
+          (fun (_, r) -> response (fst (Decode.resolve spec.Spec.ids r)))
+          rs
   in
-  let refs = references ~named ~schemas in
+  let refs = references ~ids ~named ~schemas in
   let body_schemas =
     List.concat_map
       (fun item ->
@@ -417,7 +476,7 @@ let bundle (spec : Spec.t) =
         match Hashtbl.find_opt by_name name with
         | None -> refuse "the spec declares no schema %s" name
         | Some file ->
-            let v = view ~named ~schemas (Hashtbl.find schemas file) in
+            let v = view ~ids ~named ~schemas (Hashtbl.find schemas file) in
             Hashtbl.replace views name v;
             v)
   in
@@ -430,7 +489,7 @@ let bundle (spec : Spec.t) =
   let names = names_of (Hashtbl.mem gateway) in
   {
     definitions = { names; schema };
-    view = view ~named ~schemas;
+    view = view ~ids ~named ~schemas;
     bodies =
       List.filter_map named (List.concat_map refs body_schemas)
       |> List.sort_uniq String.compare;
@@ -438,9 +497,9 @@ let bundle (spec : Spec.t) =
   }
 
 (* One schema file alone, as its own definitions: its [$ref]s are refused. *)
-let alone ~name (s : Schema.t) =
+let alone ~ids ~name (s : Schema.t) =
   let v =
-    view
+    view ~ids
       ~named:(fun file ->
         refuse "%s refers to %s, and is generated alone" name file)
       ~schemas:(Hashtbl.create 0) s

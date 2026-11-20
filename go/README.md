@@ -157,8 +157,8 @@ import (
 	"github.com/xynolog/sdk/go/bus"
 )
 
-func show(code xynolog.DeviceCode) {
-	fmt.Printf("Open %s and enter %s\n", code.VerificationURI, code.UserCode)
+func show(code api.DeviceCode) {
+	fmt.Printf("Open %s and enter %s\n", code.VerificationUri, code.UserCode)
 }
 
 // AsMe is a session as the person signed in to kb, by `xynolog login` or by
@@ -426,7 +426,7 @@ Every method returns one of nine shapes, and the table says which:
 | asked once, answered once | `(T, error)`, given a context | the failure is the error |
 | a long-running operation | `*Running[T]` | `Wait(ctx)` for its final value, or `Events(ctx)` for every report and then the final value; one or the other, once |
 | a job another party does | `*Delegation[C]` | `Wait(ctx)` for the job's completion, or `Events(ctx)` for every event of the job, its completion the last; one or the other, once |
-| an upload | `*Upload` | `Progress()` for how much has been sent, `Wait(ctx)` for the resource it created |
+| an upload | `*Upload` | `Progress()` for what it reports (`api.UploadProgress`: its size, how much has been sent, the resource made), `Wait(ctx)` for the resource it created |
 | a query | `*Cached[T]` | building it sends nothing; `Fresh(ctx)` reads it once, and `States(ctx)` watches it |
 | a worker's claims | `*Claims` | `All()`: each job the worker comes to hold, or a claim it was refused; a held job says its own lifecycle and commits its own annotations, and `Complete`, `Fail` and `Cancel` each settle it once |
 | a signal | no result | published on the client's own bus, or sent and not awaited |
@@ -745,13 +745,16 @@ every SDK reads and builds them, case for case
   `IsStubReference`, `IsResolvedReference`), and what a comment, a tag or a
   linking job said (`CommentText`, `TagCategory`, `TagSchemaId`,
   `EntityTypes`).
-- **`Reconcile`** finds where a model's quoted words are in the text: exactly,
-  then with the text's white space and quotation marks made plain, then case
-  aside, then by the nearest stretch. It says how it found them
-  (`AnchorMethod`) and how closely they match (`MatchQuality`), and finds
-  nothing rather than a guess.
-- **`AnnotationOfSpan`** builds the annotation of a span of text, its
-  offsets counted in code points: a position selector and a quote selector,
+- **`Reconcile`** finds where a model's quoted words (`api.QuotedText`) are
+  in the text: exactly, then with the text's white space and quotation marks
+  made plain, then case aside, then by the nearest stretch. Its answer, an
+  `api.ReconciledSpan`, is one member for each way it found them
+  (`api.AnchorMethod`), and a fuzzy match's also says how closely they match
+  (`api.MatchQuality`). It finds nothing rather than a guess. The span it
+  found, its `TextSpan()`, goes to `AnnotationOfSpan` as it is; a worker that
+  finds its spans another way gives it an `api.TextSpan` it made itself.
+- **`AnnotationOfSpan`** builds the annotation of a span of text
+  (`api.TextSpan`), its offsets counted in code points: a position selector and a quote selector,
   and, for a span of a PDF, the fragment selectors of the pages and
   rectangles it covers. A span that is not the text's is refused with
   `SpanRefusedError`, whose code says why. **`AnnotationOfResource`** builds
@@ -1012,7 +1015,18 @@ func Store(ctx context.Context, content xynolog.ContentTransport, gateway xynolo
 		Name: "A page", Bytes: page, Format: "text/markdown", StorageURI: "file://pages/a.md", EntityTypes: []string{"Note"},
 	})
 	for progress := range upload.Progress() {
-		fmt.Println(progress.BytesUploaded, "of", progress.TotalBytes)
+		member, err := progress.ValueByDiscriminator()
+		if err != nil {
+			return api.ResourceId{}, err
+		}
+		switch reported := member.(type) {
+		case api.UploadProgressStarted:
+			fmt.Println("sending", reported.TotalBytes)
+		case api.UploadProgressProgress:
+			fmt.Println(reported.BytesUploaded, "of", reported.TotalBytes)
+		case api.UploadProgressFinished:
+			fmt.Println("made", reported.ResourceId)
+		}
 	}
 	created, err := upload.Wait(ctx)
 	if err != nil {
@@ -1040,10 +1054,13 @@ func Store(ctx context.Context, content xynolog.ContentTransport, gateway xynolo
 }
 ```
 
-- **An upload** is ranged over for its progress and waited for the resource
-  it created, each once. It carries an `Idempotency-Key`, so one that got no
-  answer, or a status that promises recovery, is sent once more, with the
-  same key and bytes.
+- **An upload** is ranged over for what it reports and waited for the
+  resource it created, each once. It reports its size before any bytes are
+  sent, how much is sent as it goes, and the resource made, once the gateway
+  has answered; an upload that fails reports no resource, and `Wait` gives
+  its failure. It carries an `Idempotency-Key`, so one that got no answer, or
+  a status that promises recovery, is sent once more, with the same key and
+  bytes.
 - **What is read is what was stored**, byte for byte, with its media type.
 - **A resource's description and its anchored text are read here too**, by
   `GetResourceGraph` and `GetAnchoredText`, which are what

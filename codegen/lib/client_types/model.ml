@@ -66,7 +66,7 @@ let derive (spec : Spec.t) =
       ~schema:(fun l file pointer ->
         match l with
         | { ref_ = Some ref_; _ } when described l = [ "$ref" ] -> (
-            match Decode.resolve ref_ with
+            match Decode.resolve spec.Spec.ids ref_ with
             | target, "" ->
                 let union =
                   match schema target with
@@ -157,18 +157,20 @@ let derive (spec : Spec.t) =
   let members file pointer s =
     fields file pointer (Schema.map (fun member -> (member, held member)) s)
   in
+  let find (r : Decode.reference) =
+    let file, pointer = Decode.resolve spec.Spec.ids r in
+    match Option.bind (schema file) (fun s -> Pointer.schema s pointer) with
+    | Some s -> Ok s
+    | None -> Error ("refers to " ^ r.target ^ ", which is no schema")
+  in
+  let closed_in = Definitions.closed_in spec in
   (* An object's members: one that is all of some schemas, those of what they
      merge to ([Normalize]), in the order they state them. *)
   let object_ file pointer : Schema.t -> member list option = function
     | Schema.Schema ({ all_of = Some _; _ } as s) as t
       when List.for_all (fun k -> List.mem k [ "title"; "allOf" ]) (described s)
       -> (
-        let find (r : Decode.reference) =
-          match schema (fst (Decode.resolve r)) with
-          | Some s -> Ok s
-          | None -> Error ("refers to " ^ r.target ^ ", which is no schema")
-        in
-        match Normalize.normalize ~find t with
+        match Normalize.normalize spec.Spec.ids ~find t with
         | Ok merged -> members file pointer merged
         | Error message ->
             refuse file pointer message;
@@ -234,8 +236,13 @@ let derive (spec : Spec.t) =
   let shapes =
     List.filter_map
       (fun (file, s) ->
-        if String.starts_with ~prefix:types file then
-          Option.map (fun shape -> (name_of file, shape)) (shape file s)
+        if String.starts_with ~prefix:types file then (
+          match closed_in s with
+          | Ok s ->
+              Option.map (fun shape -> (name_of file, shape)) (shape file s)
+          | Error message ->
+              refuse file "" message;
+              None)
         else None)
       spec.schemas
   in

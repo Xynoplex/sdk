@@ -281,11 +281,14 @@ let run_case row =
           [
             watch "pendingAnnotation"
               (M.pending_annotation unit)
-              (nullable (fun (pending : M.pending_annotation) ->
+              (nullable (fun (pending : Records.Pending_annotation.t) ->
+                   let json value =
+                     Yojson.Safe.from_string (Models.encode value)
+                   in
                    assoc
                      [
-                       ("selector", pending.selector);
-                       ("motivation", text pending.motivation);
+                       ("selector", json pending.selector);
+                       ("motivation", json pending.motivation);
                      ]));
             watch "delegatingMotivation"
               (M.delegating_motivation unit)

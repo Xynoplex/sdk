@@ -181,8 +181,8 @@ func TestASignInBegunIsKeptAsTheTableStatesIt(t *testing.T) {
 	s := newStack(t)
 
 	believed := NewMemoryStorage()
-	if _, err := BeginAuthorization(context.Background(), issuerOf(), BeginAuthorizationOptions{
-		Target: gatewayEndpoint(t, s), RedirectURI: redirectURI, KbID: "kb-a", ExpectedDid: "did:web:example.org:kb-a", ExpectedName: "KB A",
+	if _, err := BeginAuthorization(context.Background(), issuerOf(), api.BeginAuthorizationOptions{
+		Target: gatewayEndpoint(t, s), RedirectUri: redirectURI, KbId: new("kb-a"), ExpectedDid: new("did:web:example.org:kb-a"), ExpectedName: new("KB A"),
 	}, believed); err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +202,7 @@ func TestASignInBegunIsKeptAsTheTableStatesIt(t *testing.T) {
 
 	// What the person named nothing of is not written.
 	bare := NewMemoryStorage()
-	if _, err := BeginAuthorization(context.Background(), issuerOf(), BeginAuthorizationOptions{Target: gatewayEndpoint(t, s), RedirectURI: redirectURI}, bare); err != nil {
+	if _, err := BeginAuthorization(context.Background(), issuerOf(), api.BeginAuthorizationOptions{Target: gatewayEndpoint(t, s), RedirectUri: redirectURI}, bare); err != nil {
 		t.Fatal(err)
 	}
 	stored, _ = bare.Get(PendingAuthorizationKey)
@@ -252,8 +252,8 @@ func TestAPendingSignInIsReadAsTheTableRequiresIt(t *testing.T) {
 	s := newStack(t)
 	granting(s, "an-access-token", "a-refresh-token")
 	begun := NewMemoryStorage()
-	if _, err := BeginAuthorization(context.Background(), issuerOf(), BeginAuthorizationOptions{
-		Target: gatewayEndpoint(t, s), RedirectURI: redirectURI, KbID: "kb-a", ExpectedDid: "did:web:example.org:kb-a", ExpectedName: "KB A",
+	if _, err := BeginAuthorization(context.Background(), issuerOf(), api.BeginAuthorizationOptions{
+		Target: gatewayEndpoint(t, s), RedirectUri: redirectURI, KbId: new("kb-a"), ExpectedDid: new("did:web:example.org:kb-a"), ExpectedName: new("KB A"),
 	}, begun); err != nil {
 		t.Fatal(err)
 	}

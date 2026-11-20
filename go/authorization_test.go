@@ -65,12 +65,12 @@ func TestBeginningASignInRemembersItAndBuildsTheURLAroundWhatItRemembered(t *tes
 	s := newStack(t)
 	storage := NewMemoryStorage()
 
-	address, err := BeginAuthorization(context.Background(), issuerOf(), BeginAuthorizationOptions{
+	address, err := BeginAuthorization(context.Background(), issuerOf(), api.BeginAuthorizationOptions{
 		Target:       gatewayEndpoint(t, s),
-		RedirectURI:  redirectURI,
-		KbID:         "kb-a",
-		ExpectedDid:  "did:web:example.org:kb-a",
-		ExpectedName: "KB A",
+		RedirectUri:  redirectURI,
+		KbId:         new("kb-a"),
+		ExpectedDid:  new("did:web:example.org:kb-a"),
+		ExpectedName: new("KB A"),
 	}, storage)
 	if err != nil {
 		t.Fatal(err)
@@ -95,7 +95,7 @@ func TestBeginningASignInRemembersItAndBuildsTheURLAroundWhatItRemembered(t *tes
 	if got := queryOf(t, address); !reflect.DeepEqual(got, want) {
 		t.Errorf("the address asks %v", got)
 	}
-	if record.Target != gatewayEndpoint(t, s) || record.Issuer.Token != s.issuer.URL+"/token" || record.KbID != "kb-a" || record.ExpectedName != "KB A" {
+	if record.Target != gatewayEndpoint(t, s) || record.Issuer.Token != s.issuer.URL+"/token" || record.KbID == nil || *record.KbID != "kb-a" || record.ExpectedName == nil || *record.ExpectedName != "KB A" {
 		t.Errorf("the pending sign-in is %+v", record)
 	}
 	// Neither is guessable, and neither is the other.
@@ -107,7 +107,7 @@ func TestBeginningASignInRemembersItAndBuildsTheURLAroundWhatItRemembered(t *tes
 // begun is a sign-in begun at the stand-in, as its storage remembers it.
 func begun(t *testing.T, s *stack, storage SessionStorage) PendingAuthorization {
 	t.Helper()
-	if _, err := BeginAuthorization(context.Background(), issuerOf(), BeginAuthorizationOptions{Target: gatewayEndpoint(t, s), RedirectURI: redirectURI}, storage); err != nil {
+	if _, err := BeginAuthorization(context.Background(), issuerOf(), api.BeginAuthorizationOptions{Target: gatewayEndpoint(t, s), RedirectUri: redirectURI}, storage); err != nil {
 		t.Fatal(err)
 	}
 	record, ok := pendingIn(t, storage)
@@ -153,7 +153,7 @@ func TestCompletingASignInExchangesTheCodeWithItsVerifierOnce(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if completed != record || tokens != (IssuedTokens{Access: "an-access-token", Refresh: "a-refresh-token"}) {
+	if completed != record || tokens != (api.IssuedTokens{Access: "an-access-token", Refresh: "a-refresh-token"}) {
 		t.Errorf("completed %+v with %+v", completed, tokens)
 	}
 	want := url.Values{

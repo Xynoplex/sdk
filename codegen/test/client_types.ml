@@ -85,6 +85,53 @@ let kit_records =
     };
   ]
 
+(* The client types the Haskell SDK adapts, ReconciledSpan [reconciled]
+   and AnchorMethod the words [methods]. *)
+let adapted_names =
+  [
+    "QuotedText";
+    "TextSpan";
+    "ReconciledSpan";
+    "AnchorMethod";
+    "MatchQuality";
+    "PdfCoordinate";
+    "IssuedTokens";
+    "DeviceCode";
+    "BeginAuthorizationOptions";
+  ]
+
+let adapted reconciled ~methods =
+  shapes
+    [
+      ("QuotedText", M.Fields [ member "exact" (Scalar String) ]);
+      ("TextSpan", M.Fields [ member "start" (Scalar Integer) ]);
+      ("ReconciledSpan", reconciled);
+      ("AnchorMethod", M.Words methods);
+      ("MatchQuality", M.Words [ "fuzzy" ]);
+      ("PdfCoordinate", M.Fields [ member "page" (Scalar Integer) ]);
+      ("IssuedTokens", M.Fields [ member "access" (Scalar String) ]);
+      ("DeviceCode", M.Fields [ member "expiresIn" (Scalar Integer) ]);
+      ( "BeginAuthorizationOptions",
+        M.Fields
+          [ member "target" (Named { name = "HttpEndpoint"; union = false }) ]
+      );
+    ]
+
+(* ReconciledSpan as Protocol states it: a union on how it was anchored,
+   whose fuzzy branch alone says how well it matched, holding [quality]. *)
+let reconciled_union quality : M.shape =
+  Union
+    {
+      tag = "anchorMethod";
+      branches =
+        [
+          ("unique-match", [ member "start" (Scalar Integer) ]);
+          ( "fuzzy-match",
+            [ member "start" (Scalar Integer); member "matchQuality" quality ]
+          );
+        ];
+    }
+
 let cases =
   [
     case "a refused frame's report is stated by the transport's FrameRefusal"
@@ -126,35 +173,87 @@ let cases =
                   ])));
     case "an adapter states an integer as one" (fun () ->
         match
-          W.adapters
+          W.adapters ~names:adapted_names
             ~shape:
-              (shapes
-                 [
-                   ("QuotedText", M.Fields [ member "exact" (Scalar String) ]);
-                   ("TextSpan", M.Fields [ member "start" (Scalar Integer) ]);
-                   ( "ReconciledSpan",
-                     M.Fields [ member "start" (Scalar Integer) ] );
-                   ("AnchorMethod", M.Words [ "unique-match" ]);
-                   ("MatchQuality", M.Words [ "fuzzy" ]);
-                   ("PdfCoordinate", M.Fields [ member "page" (Scalar Integer) ]);
-                   ("IssuedTokens", M.Fields [ member "access" (Scalar String) ]);
-                   ( "DeviceCode",
-                     M.Fields [ member "expiresIn" (Scalar Integer) ] );
-                   ( "BeginAuthorizationOptions",
-                     M.Fields
-                       [
-                         member "target"
-                           (Named { name = "HttpEndpoint"; union = false });
-                       ] );
-                 ])
+              (adapted
+                 (M.Fields [ member "start" (Scalar Integer) ])
+                 ~methods:[ "unique-match" ])
         with
         | Ok adapters -> (
             match List.assoc_opt "TextSpan" adapters with
-            | Some (Schema.Schema { properties = Some properties; _ }) -> (
+            | Some
+                (Schema.Schema
+                   {
+                     properties = Some properties;
+                     additional_properties = closed;
+                     _;
+                   }) -> (
+                Alcotest.(check bool)
+                  "it states no member but its own" true
+                  (closed = Some (Schema.Boolean_schema false));
                 match List.assoc_opt "start" properties with
                 | Some (Schema.Schema { type_ = Some [ Integer ]; _ }) -> ()
                 | _ -> Alcotest.fail "start is not an integer")
             | _ -> Alcotest.fail "no TextSpan of properties")
+        | Error _ -> Alcotest.fail "refused");
+    case
+      "an adapter states a union as its branches, each a type closed on its tag"
+      (fun () ->
+        match
+          W.adapters ~names:adapted_names
+            ~shape:
+              (adapted
+                 (reconciled_union
+                    (Named { name = "MatchQuality"; union = false }))
+                 ~methods:[ "fuzzy-match"; "unique-match" ])
+        with
+        | Ok adapters ->
+            let branches =
+              [
+                ("ReconciledSpanUniqueMatch", "unique-match", [ "start" ]);
+                ( "ReconciledSpanFuzzyMatch",
+                  "fuzzy-match",
+                  [ "start"; "matchQuality" ] );
+              ]
+            in
+            (match List.assoc_opt "ReconciledSpan" adapters with
+            | Some (Schema.Schema { one_of = Some refs; _ }) ->
+                Alcotest.(check (list string))
+                  "its branches"
+                  (List.map (fun (b, _, _) -> b ^ ".json") branches)
+                  (List.map
+                     (function
+                       | Schema.Schema { ref_ = Some r; _ } -> r.target
+                       | _ -> "a branch names no type")
+                     refs)
+            | _ -> Alcotest.fail "no ReconciledSpan of branches");
+            List.iter
+              (fun (branch, word, members) ->
+                match List.assoc_opt branch adapters with
+                | Some
+                    (Schema.Schema
+                       {
+                         properties = Some p;
+                         required = Some r;
+                         additional_properties =
+                           Some (Schema.Boolean_schema false);
+                         _;
+                       }) -> (
+                    Alcotest.(check (list string))
+                      (branch ^ "'s members")
+                      ("anchorMethod" :: members)
+                      (List.map fst p);
+                    Alcotest.(check (list string))
+                      (branch ^ " requires them")
+                      (List.map fst p) r;
+                    match List.assoc_opt "anchorMethod" p with
+                    | Some
+                        (Schema.Schema
+                           { enum = Some [ Schema.String_literal w ]; _ }) ->
+                        Alcotest.(check string) (branch ^ "'s tag") word w
+                    | _ -> Alcotest.fail "the tag is no one word")
+                | _ -> Alcotest.fail (branch ^ " is no closed object"))
+              branches
         | Error _ -> Alcotest.fail "refused");
     case "a secret proof whose grant is not the client assertion's is refused"
       (fun () ->

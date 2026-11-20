@@ -37,7 +37,7 @@ use xynolog::timing::{
     DEVICE_POLL, DEVICE_POLL_FLOOR, DEVICE_SLOW_DOWN, HTTP_REQUEST_TIMEOUT, REFRESH_RETRY,
 };
 use xynolog::transport::{GatewayOperations, Transport};
-use xynolog::types::HttpEndpoint;
+use xynolog::types::{BeginAuthorizationOptions, DeviceCode, HttpEndpoint, IssuedTokens};
 
 /// Where a sign-in that is under way is remembered.
 pub const PENDING_AUTHORIZATION_KEY: &str = "xynolog.pendingAuthorization";
@@ -203,19 +203,6 @@ pub struct PendingAuthorization {
     pub expected_name: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct BeginAuthorization {
-    pub target: HttpEndpoint,
-    /// Where the issuer sends the person back to. The issuer accepts only an
-    /// address its registration of the client lists.
-    pub redirect_uri: String,
-    /// The registered knowledge base being signed in to again, when it is one.
-    pub kb_id: Option<String>,
-    /// What the person believed they clicked: checked afterwards, never assumed.
-    pub expected_did: Option<String>,
-    pub expected_name: Option<String>,
-}
-
 fn query(pairs: &[(&str, &str)]) -> String {
     pairs
         .iter()
@@ -226,10 +213,12 @@ fn query(pairs: &[(&str, &str)]) -> String {
 
 /// Begin the authorization-code grant: find the issuer, remember the pending
 /// sign-in in `pending`, and give the URL to send the person to. Sending
-/// them is the host's act. A failure is a `SignInError`, or the storage's
-/// own error when it would not keep the pending sign-in.
+/// them is the host's act. The issuer sends them back only to a
+/// `redirect_uri` its registration of the client lists. A failure is a
+/// `SignInError`, or the storage's own error when it would not keep the
+/// pending sign-in.
 pub async fn begin_authorization(
-    options: BeginAuthorization,
+    options: BeginAuthorizationOptions,
     pending: &dyn SessionStorage,
     http: &reqwest::Client,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -264,12 +253,6 @@ pub async fn begin_authorization(
         '?'
     };
     Ok(format!("{}{joiner}{asked}", record.issuer.authorization))
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IssuedTokens {
-    pub access: String,
-    pub refresh: String,
 }
 
 /// Finish the authorization-code grant from the URL the issuer sent the
@@ -555,16 +538,6 @@ pub async fn revoke_at_issuer(
 
 // ── The device authorization grant ──────────────────────────────────────
 
-/// What a person is shown to approve a sign-in from wherever they have a
-/// browser.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DeviceCode {
-    pub user_code: String,
-    pub verification_uri: String,
-    pub verification_uri_complete: Option<String>,
-    pub expires_in: Duration,
-}
-
 /// Sign in as a person from a process with no browser: the issuer mints a
 /// code, `on_code` shows the person where to approve it, and the token
 /// endpoint is asked at the issuer's interval until the tokens arrive.
@@ -597,11 +570,19 @@ pub async fn sign_in_with_device_grant(
             .filter(|seconds| seconds.is_finite() && *seconds >= 0.0)
             .map(Duration::from_secs_f64)
     };
+    // What a code stays good for is a whole number of seconds.
+    let whole_seconds = |name: &str| {
+        body.as_ref()
+            .and_then(|body| body.get(name))
+            .and_then(Value::as_f64)
+            .filter(|seconds| seconds.is_finite() && *seconds >= 0.0 && seconds.fract() == 0.0)
+            .map(|seconds| seconds as u64)
+    };
     let (Some(device_code), Some(user_code), Some(verification_uri), Some(expires_in)) = (
         text(&body, "device_code").filter(|_| status == 200),
         text(&body, "user_code"),
         text(&body, "verification_uri"),
-        seconds("expires_in"),
+        whole_seconds("expires_in"),
     ) else {
         return Err(SignInError::answered(
             SignInErrorCode::Exchange,
@@ -613,10 +594,8 @@ pub async fn sign_in_with_device_grant(
         ));
     };
     on_code(DeviceCode {
-        user_code: user_code.to_owned(),
-        verification_uri: verification_uri.to_owned(),
         verification_uri_complete: text(&body, "verification_uri_complete").map(str::to_owned),
-        expires_in,
+        ..DeviceCode::new(user_code, verification_uri, expires_in)
     });
 
     let expired = || {
@@ -628,7 +607,7 @@ pub async fn sign_in_with_device_grant(
     let mut interval = seconds("interval")
         .unwrap_or(DEVICE_POLL)
         .max(DEVICE_POLL_FLOOR);
-    let deadline = Instant::now() + expires_in;
+    let deadline = Instant::now() + Duration::from_secs(expires_in);
     loop {
         tokio::time::sleep(interval).await;
         if Instant::now() > deadline {

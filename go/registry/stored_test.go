@@ -3,6 +3,8 @@ package registry_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -25,14 +27,53 @@ type storedTable struct {
 	SessionKeyPrefix struct {
 		Prefix string `json:"prefix"`
 	} `json:"sessionKeyPrefix"`
-	StoredSession struct {
-		Properties map[string]json.RawMessage `json:"properties"`
-		Required   []string                   `json:"required"`
-	} `json:"storedSession"`
-	OpenResource struct {
-		Properties map[string]json.RawMessage `json:"properties"`
-		Required   []string                   `json:"required"`
-	} `json:"openResource"`
+	StoredSession referred `json:"storedSession"`
+	OpenResource  referred `json:"openResource"`
+}
+
+// referred is an object's schema the table names by its $id, read from the
+// spec file that states that $id.
+type referred struct {
+	Properties map[string]json.RawMessage `json:"properties"`
+	Required   []string                   `json:"required"`
+}
+
+func (r *referred) UnmarshalJSON(text []byte) error {
+	var reference struct {
+		Ref string `json:"$ref"`
+	}
+	if err := json.Unmarshal(text, &reference); err != nil {
+		return err
+	}
+	var stating []string
+	err := filepath.WalkDir(filepath.Join("..", "..", "protocol", "specs", "src"), func(path string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || filepath.Ext(path) != ".json" {
+			return err
+		}
+		schema, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		var stated struct {
+			ID string `json:"$id"`
+		}
+		if json.Unmarshal(schema, &stated) == nil && stated.ID == reference.Ref {
+			stating = append(stating, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if len(stating) != 1 {
+		return fmt.Errorf("%d spec files state the $id %q: %v", len(stating), reference.Ref, stating)
+	}
+	schema, err := os.ReadFile(stating[0])
+	if err != nil {
+		return err
+	}
+	type object referred
+	return json.Unmarshal(schema, (*object)(r))
 }
 
 func readStoredTable(t *testing.T) storedTable {

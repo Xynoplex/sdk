@@ -20,7 +20,6 @@ import xynolog.transport.Events
 import xynolog.transport.GatewayOperations
 import xynolog.transport.PutBinaryRequest
 import xynolog.transport.Upload
-import xynolog.transport.UploadProgress
 import xynolog.types.AnchoredTextAnswer
 import xynolog.types.CreateResourceResponse
 import xynolog.types.GetAnnotationsResponse
@@ -29,6 +28,10 @@ import xynolog.types.HealthResponse
 import xynolog.types.MediaTokenResponse
 import xynolog.types.ProtectedResourceMetadata
 import xynolog.types.StatusResponse
+import xynolog.types.UploadProgress
+import xynolog.types.UploadProgressFinished
+import xynolog.types.UploadProgressProgress
+import xynolog.types.UploadProgressStarted
 import xynolog.types.UserResponse
 import java.util.concurrent.CompletableFuture
 
@@ -97,7 +100,7 @@ public class InMemoryContent : ContentTransport {
         read()
     }
 
-    /** Stored under an id of this double's making, `test-content-<n>`, its progress said once, whole. */
+    /** Stored under an id of this double's making, `test-content-<n>`: it reports its size, that all of it was sent, and the resource made. */
     override fun putBinary(request: PutBinaryRequest): Upload {
         val created = synchronized(this) {
             val resourceId = ResourceId("test-content-${stored.size + 1}")
@@ -105,8 +108,11 @@ public class InMemoryContent : ContentTransport {
             made += PutBinary(request)
             CreateResourceResponse(resourceId = resourceId)
         }
-        val progress = Channel<UploadProgress>(1)
-        progress.trySend(UploadProgress(request.file.size.toLong(), request.file.size.toLong()))
+        val length = request.file.size.toLong()
+        val progress = Channel<UploadProgress>(3)
+        progress.trySend(UploadProgressStarted(totalBytes = length))
+        progress.trySend(UploadProgressProgress(bytesUploaded = length, totalBytes = length))
+        progress.trySend(UploadProgressFinished(resourceId = created.resourceId))
         progress.close()
         return Upload(CompletableDeferred(created), Events(progress.consumeAsFlow()) { progress.close() })
     }

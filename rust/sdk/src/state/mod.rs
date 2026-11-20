@@ -25,7 +25,7 @@ mod yield_;
 pub use beckon::BeckonStateUnit;
 pub use gather::GatherStateUnit;
 pub use hover::HoverDwell;
-pub use mark::{MarkStateUnit, PendingAnnotation};
+pub use mark::MarkStateUnit;
 pub use match_::MatchStateUnit;
 pub use search::{SearchPipeline, SearchPipelineOptions, SearchState};
 pub use yield_::YieldStateUnit;

@@ -13,11 +13,10 @@ data DeviceCode = DeviceCode
   { deviceCodeExpiresIn :: Integer,
     deviceCodeUserCode :: Text,
     deviceCodeVerificationUri :: Text,
-    deviceCodeVerificationUriComplete :: Maybe Text,
-    deviceCodeAdditionalProperties :: KM.KeyMap Value
+    deviceCodeVerificationUriComplete :: Maybe Text
   }
   deriving (Eq, Show)
 
-instance FromJSON DeviceCode where parseJSON = checked "DeviceCode" $ withObject "DeviceCode" (\fields -> DeviceCode <$> (fields .: "expiresIn") <*> (fields .: "userCode") <*> (fields .: "verificationUri") <*> optional fields "verificationUriComplete" <*> traverse parseJSON (withoutFields ["expiresIn", "userCode", "verificationUri", "verificationUriComplete"] fields))
+instance FromJSON DeviceCode where parseJSON = checked "DeviceCode" $ withObject "DeviceCode" (\fields -> DeviceCode <$> (fields .: "expiresIn") <*> (fields .: "userCode") <*> (fields .: "verificationUri") <*> optional fields "verificationUriComplete")
 
-instance ToJSON DeviceCode where toJSON value = Object (KM.fromList (concat [[("expiresIn", toJSON (deviceCodeExpiresIn value))], [("userCode", toJSON (deviceCodeUserCode value))], [("verificationUri", toJSON (deviceCodeVerificationUri value))], optionalPair "verificationUriComplete" (deviceCodeVerificationUriComplete value)]) <> fmap toJSON (withoutFields ["expiresIn", "userCode", "verificationUri", "verificationUriComplete"] (deviceCodeAdditionalProperties value)))
+instance ToJSON DeviceCode where toJSON value = Object (KM.fromList (concat [[("expiresIn", toJSON (deviceCodeExpiresIn value))], [("userCode", toJSON (deviceCodeUserCode value))], [("verificationUri", toJSON (deviceCodeVerificationUri value))], optionalPair "verificationUriComplete" (deviceCodeVerificationUriComplete value)]))

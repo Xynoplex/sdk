@@ -9,7 +9,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { locate, type AnchoredText, type PdfTextItem } from '../pdf-anchoring';
-import { createFragmentSelector, type PdfCoordinate } from '../pdf-coordinates';
+import { createFragmentSelector } from '../pdf-coordinates';
+import type { PdfCoordinate } from '../payload-types';
 
 interface Span {
   start: number;

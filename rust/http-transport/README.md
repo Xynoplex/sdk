@@ -317,7 +317,7 @@ while let Some(handed) = claims.next().await {
                 };
                 let built = annotation_of_span(
                     &text,
-                    &found.span,
+                    &TextSpan::from(found),
                     &resource_id,
                     Motivation::Highlighting,
                     &generator,
@@ -389,13 +389,7 @@ let browser = XynologBrowser::new(XynologBrowserConfig {
 let redirect = LoopbackRedirect::bind().await?;
 let url = begin_sign_in(
     &browser,
-    BeginAuthorization {
-        target: gateway,
-        redirect_uri: redirect.redirect_uri(),
-        kb_id: None,
-        expected_did: None,
-        expected_name: None,
-    },
+    BeginAuthorizationOptions::new(gateway, redirect.redirect_uri()),
     &http,
 )
 .await?;

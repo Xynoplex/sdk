@@ -27,6 +27,7 @@ import xynolog.identifiers.UserId
 import xynolog.signin.HeldSignIn
 import xynolog.signin.MemorySignIn
 import xynolog.signin.SCRIPT_CLIENT_ID
+import xynolog.types.DeviceCode
 import xynolog.types.HttpEndpoint
 import xynolog.types.HttpEndpointProtocol
 import xynolog.types.KbTarget
@@ -306,9 +307,9 @@ class SignInTest {
         realm.script("/device", devicesCode)
         realm.script("/token", error("authorization_pending"), error("slow_down"), issued(access, "refresh-1"))
         val kept = MemorySignIn()
-        val shown = mutableListOf<String>()
-        signInDevice(kb(realm), kept) { shown += it.userCode }
-        assertEquals(listOf("ABCD-EFGH"), shown)
+        val shown = mutableListOf<DeviceCode>()
+        signInDevice(kb(realm), kept) { shown += it }
+        assertEquals(listOf(DeviceCode(userCode = "ABCD-EFGH", verificationUri = "https://issuer.example/device", expiresIn = 600)), shown)
         assertEquals(HeldSignIn(access, "refresh-1", SCRIPT_CLIENT_ID, "${realm.origin}/token", "${realm.origin}/revoke", null), kept.held())
         assertEquals(listOf("device-1", "device-1", "device-1"), realm.of("/token").map { it.form.getValue("device_code") })
     }
@@ -334,6 +335,21 @@ class SignInTest {
         val refused = assertThrows(SignInError::class.java) { runBlocking { signInDevice(kb(realm), kept) { shown += it.userCode } } }
         assertEquals(SignInErrorCode.Exchange, refused.reason)
         assertEquals("The issuer refused the device authorization request (HTTP 200)", refused.message)
+        assertEquals(emptyList<String>(), shown)
+        assertEquals(emptyList<String>(), realm.of("/token").map { it.path })
+        assertNull(kept.held())
+    }
+
+    /** A code's lifetime is a whole number of seconds (`DeviceCode.expiresIn`): one in fractions is none it states. */
+    @Test
+    fun aDeviceAuthorizationAnswerWhoseLifetimeIsNoWholeNumberOfSecondsIsRefused() = runBlocking {
+        val realm = realm()
+        realm.script("/device", Said(200, JsonObject(devicesCode.body + ("expires_in" to JsonPrimitive(599.5)))))
+        val kept = MemorySignIn()
+        val shown = mutableListOf<String>()
+        val refused = assertThrows(SignInError::class.java) { runBlocking { signInDevice(kb(realm), kept) { shown += it.userCode } } }
+        assertEquals(SignInErrorCode.Exchange, refused.reason)
+        assertEquals(200, refused.status)
         assertEquals(emptyList<String>(), shown)
         assertEquals(emptyList<String>(), realm.of("/token").map { it.path })
         assertNull(kept.held())

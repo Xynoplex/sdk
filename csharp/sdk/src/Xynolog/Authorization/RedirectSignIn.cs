@@ -24,9 +24,6 @@ public sealed record PendingAuthorization(
     [property: JsonRequired] HttpEndpoint Target, [property: JsonRequired] AuthorizationIssuer Issuer,
     string? KbId = null, string? ExpectedDid = null, string? ExpectedName = null);
 
-public sealed record BeginAuthorizationOptions(HttpEndpoint Target, string RedirectUri, string? KbId = null,
-    string? ExpectedDid = null, string? ExpectedName = null);
-
 public sealed class IdentityUnverifiableError : XynologError
 {
     internal IdentityUnverifiableError(string reason, string message, Exception? cause = null)

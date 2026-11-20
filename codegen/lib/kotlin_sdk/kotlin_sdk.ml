@@ -14,21 +14,21 @@ let directory = "kotlin/sdk/src/generated/kotlin"
 let types_directory = directory ^ "/xynolog/types"
 let sign_in_file = "sign-in-store/SignIn.json"
 
-(* The client types (protocol/specs/src/client/types) the SDK generates.
-   AnchorMethod waits on the Kotlin SDK's own, which holds a fuzzy match's
-   quality; the objects wait on the model's reading of them. *)
-let client_types = [ "FrameRefusalReason"; "MatchQuality" ]
-
 (* The schemas a generation writes: every root ([Roots]), the
    records Protocol states in its tables ([Table_records]), the client
-   types above, and the sign-in store's entry, which is the store's own schema and no
+   types it generates, and the sign-in store's entry, which is the store's own schema and no
    component of the API. *)
 let spec_of (spec : Spec.t) : (Types.spec, string) result =
   let schema_of file = List.assoc_opt file spec.schemas in
+  let closed_in = Definitions.closed_in spec in
   let components =
     List.map
-      (fun (name, reference) -> (name, fst (Decode.resolve reference)))
+      (fun (name, reference) ->
+        (name, fst (Decode.resolve spec.Spec.ids reference)))
       (Roots.all spec)
+    @ List.map
+        (fun name -> (name, "client/types/" ^ name ^ ".json"))
+        (Definitions.generated_client_types spec)
   in
   let* records = Table_records.all spec in
   let* definitions =
@@ -36,16 +36,14 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
       (fun (name, file) rest ->
         let* rest = rest in
         match schema_of file with
-        | Some schema -> Ok ((name, schema) :: rest)
+        | Some schema ->
+            let* schema = closed_in schema in
+            Ok ((name, schema) :: rest)
         | None ->
             Error
               ("the component " ^ name ^ " names " ^ file
              ^ ", which the model has not read"))
-      (components
-      @ List.map
-          (fun name -> (name, "client/types/" ^ name ^ ".json"))
-          client_types)
-      (Ok [])
+      components (Ok [])
   in
   let* sign_in =
     match schema_of sign_in_file with
@@ -75,6 +73,7 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
             List.map
               (fun (k : Tables.Identifiers_kinds.kinds_item) -> k.schema)
               spec.tables.identifiers_kinds.kinds;
+          ids = spec.ids;
           name_of_key =
             List.map (fun (name, file) -> (file, name)) components
             @ List.map (fun (key, name, _) -> (key, name)) records;

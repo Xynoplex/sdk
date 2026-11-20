@@ -69,7 +69,7 @@ let one_media file pointer what = function
 let response (spec : Spec.t) file pointer = function
   | Openapi.Inline r -> Ok r
   | Ref reference -> (
-      let target, _ = Decode.resolve reference in
+      let target, _ = Decode.resolve spec.Spec.ids reference in
       match List.assoc_opt target spec.responses with
       | Some r -> Ok r
       | None -> Error [ refusal file pointer ("names no response " ^ target) ])
@@ -123,7 +123,7 @@ let route spec file path method_ (operation : Openapi.operation) =
 let operations (spec : Spec.t) =
   each
     (fun (path, reference) ->
-      let file, _ = Decode.resolve reference in
+      let file, _ = Decode.resolve spec.Spec.ids reference in
       match List.assoc_opt file spec.path_items with
       | None ->
           Error

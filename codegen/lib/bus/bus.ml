@@ -14,7 +14,9 @@ let errors = function Ok _ -> [] | Error errors -> errors
 
 let files ~root:_ spec =
   let component = Registry.component spec in
-  match Registry.derive ~component spec.Spec.tables.bus_registry with
+  match
+    Registry.derive ~ids:spec.Spec.ids ~component spec.Spec.tables.bus_registry
+  with
   | Ok bus -> (
       let kotlin =
         Result.bind (Kotlin_sdk.types_of spec) (fun types ->

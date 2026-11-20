@@ -18,7 +18,7 @@ use xynolog::transport::{
     BoxFuture, ConnectionState, ContentTransport, Envelope, GatewayOperations, PutBinaryRequest,
     ResourceHold, Transport,
 };
-use xynolog::types::ResourceId;
+use xynolog::types::{ResourceId, UploadProgress};
 use xynolog_conformance_drivers::{
     Arguments, Driver, Ended, Running, count, failure, identifier, locked, object,
     optional_identifier, optional_text, say, serve, text, texts,
@@ -354,12 +354,16 @@ impl Wire {
         };
         let mut upload = client.content.put_binary(request);
         if let Some(id) = reporting {
-            while let Some(progress) = upload.next().await {
-                say(json!({ "progress": {
-                    "upload": id,
-                    "bytesUploaded": progress.bytes_uploaded,
-                    "totalBytes": progress.total_bytes,
-                } }));
+            while let Some(report) = upload.next().await {
+                // The driver protocol reports the bytes sent: the upload's
+                // start and its end are its answer's.
+                if let UploadProgress::Progress(progress) = report {
+                    say(json!({ "progress": {
+                        "upload": id,
+                        "bytesUploaded": progress.bytes_uploaded,
+                        "totalBytes": progress.total_bytes,
+                    } }));
+                }
             }
         }
         let created = upload.await?;

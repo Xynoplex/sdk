@@ -1,10 +1,9 @@
 type t
-type pending_annotation = { selector : Yojson.Safe.t; motivation : string }
 
 val make :
   ?silence_ms:int -> Client.t -> resource:Identifiers.Resource_id.t -> t
 
-val pending_annotation : t -> pending_annotation option State_value.t
+val pending_annotation : t -> Records.Pending_annotation.t option State_value.t
 val delegating_motivation : t -> string option State_value.t
 val progress : t -> Yojson.Safe.t option State_value.t
 val progress_motivation : t -> string option State_value.t

@@ -26,7 +26,9 @@ import xynolog.signin.SIGN_IN_SCOPE
 import xynolog.signin.SignInKept
 import xynolog.telemetry.futureOf
 import xynolog.transport.Broadcast
+import xynolog.types.DeviceCode
 import xynolog.types.HttpEndpoint
+import xynolog.types.IssuedTokens
 import xynolog.types.KbTarget
 import xynolog.types.LocalEndpoint
 import xynolog.types.ProtectedResourceMetadata
@@ -49,9 +51,6 @@ import kotlin.time.TimeSource
  */
 internal val ownHttp: HttpClient by lazy { HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build() }
 
-/** What a grant issued: the access token, and the refresh token that renews it. */
-public data class IssuedTokens(public val access: String, public val refresh: String)
-
 /** An issuer's answer: its status, and its body when that was a JSON object. */
 internal class Answer(val status: Int, private val body: JsonObject?) {
     /** A member of the answer that is text, when it has one. */
@@ -63,6 +62,9 @@ internal class Answer(val status: Int, private val body: JsonObject?) {
         if (value.isString) return null
         return value.doubleOrNull?.takeIf { it >= 0 && it.isFinite() }
     }
+
+    /** A span of time the answer states as a whole number of seconds, when it states one that can be waited. */
+    fun wholeSeconds(name: String): Long? = seconds(name)?.takeIf { it % 1.0 == 0.0 }?.toLong()
 
     /** What the issuer said of a refusal: its error and description, or the status. */
     fun refusal(): String {
@@ -168,15 +170,6 @@ public data class IssuerEndpoints(
     public val revocation: String? = null,
 )
 
-/** What a person is shown to approve a sign-in from wherever they have a browser. */
-public data class DeviceCode(
-    public val userCode: String,
-    public val verificationUri: String,
-    public val verificationUriComplete: String?,
-    /** How long the code is good for, in seconds. */
-    public val expiresIn: Double,
-)
-
 /** An issuer that issued no refresh token: a session it began could not outlive its first access token. */
 internal fun noRefreshToken(): SignInError =
     SignInError(SignInErrorCode.Exchange, "The issuer returned no refresh token: the session could not outlive its first access token")
@@ -237,11 +230,11 @@ internal suspend fun signInWithDeviceGrant(baseUrl: String, http: HttpClient, cl
     val deviceCode = minted.text("device_code")
     val userCode = minted.text("user_code")
     val verificationUri = minted.text("verification_uri")
-    val expiresIn = minted.seconds("expires_in")
+    val expiresIn = minted.wholeSeconds("expires_in")
     if (minted.status != 200 || deviceCode == null || userCode == null || verificationUri == null || expiresIn == null) {
         throw SignInError(SignInErrorCode.Exchange, "The issuer refused the device authorization request (${minted.refusal()})", minted.status)
     }
-    onCode(DeviceCode(userCode, verificationUri, minted.text("verification_uri_complete"), expiresIn))
+    onCode(DeviceCode(userCode = userCode, verificationUri = verificationUri, verificationUriComplete = minted.text("verification_uri_complete"), expiresIn = expiresIn))
     var interval = maxOf(minted.seconds("interval") ?: Timings.DEVICE_POLL_MS / 1000.0, Timings.DEVICE_POLL_FLOOR_MS / 1000.0)
     val minting = clock.markNow()
     while (true) {

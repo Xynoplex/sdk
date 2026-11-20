@@ -31,7 +31,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::mpsc;
 use tokio_stream::StreamExt;
 use tokio_stream::wrappers::UnboundedReceiverStream;
-use xynolog::annotations::{QuotedText, annotation_of_span, reconcile};
+use xynolog::annotations::{annotation_of_span, reconcile};
 use xynolog::cache::CacheState;
 use xynolog::channels::{BRIDGED_CHANNELS, PrincipalProfile};
 use xynolog::claims::{ClaimOptions, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, JobFailure};
@@ -60,9 +60,10 @@ use xynolog::testing::examples::{assert_blocks_are_examples, assert_readme_shows
 use xynolog::timing::{DEVICE_SLOW_DOWN, HTTP_REQUEST_TIMEOUT, REFRESH_RETRY, SAVE_DEBOUNCE};
 use xynolog::transport::{BoxFuture, Envelope, Events, Lagged, PutBinaryRequest};
 use xynolog::types::{
-    AgentSoftware, Annotation, FailureClass, HttpEndpoint, HttpEndpointProtocol,
-    JobCompleteCommand, JobProgress, KbEndpoint, KbTarget, KnowledgeBase, LocalEndpoint,
-    MarkJobDone, MarkJobFilter, MarkJobFilterParams, Motivation, PrincipalProfileCommand,
+    AgentSoftware, Annotation, BeginAuthorizationOptions, DeviceCode, FailureClass, HttpEndpoint,
+    HttpEndpointProtocol, JobCompleteCommand, JobProgress, KbEndpoint, KbTarget, KnowledgeBase,
+    LocalEndpoint, MarkJobDone, MarkJobFilter, MarkJobFilterParams, Motivation,
+    PrincipalProfileCommand, QuotedText, TextSpan,
 };
 use xynolog::types::{SessionEndReason, StoredSession};
 use xynolog_http_transport::agent::{AgentSignInError, AgentToken};
@@ -71,9 +72,9 @@ use xynolog_http_transport::client_assertion::{JWT_BEARER, LIFETIME_SECONDS, thu
 use xynolog_http_transport::discovery::http_discovery;
 use xynolog_http_transport::loopback::LoopbackRedirect;
 use xynolog_http_transport::oauth::{
-    BeginAuthorization, DeviceCode, PENDING_AUTHORIZATION_KEY, PendingAuthorization,
-    begin_authorization, code_challenge, complete_authorization, discover_issuer,
-    refresh_at_issuer, renew_kept, revoke_at_issuer, sign_in_with_device_grant,
+    PENDING_AUTHORIZATION_KEY, PendingAuthorization, begin_authorization, code_challenge,
+    complete_authorization, discover_issuer, refresh_at_issuer, renew_kept, revoke_at_issuer,
+    sign_in_with_device_grant,
 };
 use xynolog_http_transport::service_account::{
     Credential, KeyCredential, KeyError, SecretCredential, ServiceToken, private_key_from_pem,
@@ -573,14 +574,8 @@ impl World {
         }
     }
 
-    fn begin(&self) -> BeginAuthorization {
-        BeginAuthorization {
-            target: self.target(),
-            redirect_uri: "http://127.0.0.1:9/callback".to_owned(),
-            kb_id: None,
-            expected_did: None,
-            expected_name: None,
-        }
+    fn begin(&self) -> BeginAuthorizationOptions {
+        BeginAuthorizationOptions::new(self.target(), "http://127.0.0.1:9/callback")
     }
 }
 
@@ -721,7 +716,7 @@ async fn beginning_a_sign_in_remembers_it_and_builds_the_url_around_what_it_reme
     let storage = InMemorySessionStorage::new();
 
     let url = begin_authorization(
-        BeginAuthorization {
+        BeginAuthorizationOptions {
             kb_id: Some("kb-a".to_owned()),
             expected_did: Some("did:web:example.org:kb-a".to_owned()),
             expected_name: Some("KB A".to_owned()),
@@ -1017,7 +1012,7 @@ async fn a_sign_in_begun_is_kept_as_the_table_states_it() {
 
     let believed = InMemorySessionStorage::new();
     begin_authorization(
-        BeginAuthorization {
+        BeginAuthorizationOptions {
             kb_id: Some("kb-a".to_owned()),
             expected_did: Some("did:web:example.org:kb-a".to_owned()),
             expected_name: Some("KB A".to_owned()),
@@ -1095,12 +1090,10 @@ async fn the_device_grant_shows_the_code_and_asks_until_the_person_approves() {
     assert_eq!(
         *shown.lock().unwrap(),
         Some(DeviceCode {
-            user_code: "WDJB-MJHT".to_owned(),
-            verification_uri: "https://issuer.test/device".to_owned(),
             verification_uri_complete: Some(
                 "https://issuer.test/device?user_code=WDJB-MJHT".to_owned()
             ),
-            expires_in: Duration::from_secs(600),
+            ..DeviceCode::new("WDJB-MJHT", "https://issuer.test/device", 600)
         })
     );
     assert_eq!(
@@ -1215,6 +1208,28 @@ async fn a_device_authorization_answer_with_no_lifetime_is_refused() {
         refused.message,
         "The issuer refused the device authorization request (HTTP 200)"
     );
+    assert_eq!(*shown.lock().unwrap(), 0);
+    assert!(world.token_forms().is_empty());
+}
+
+/// A code's lifetime is a whole number of seconds (`DeviceCode`'s
+/// `expiresIn`): one in fractions is none it states.
+#[tokio::test]
+async fn a_device_authorization_answer_whose_lifetime_is_no_whole_number_of_seconds_is_refused() {
+    let world = World::start().await;
+    world.staged.device_answer.lock().unwrap().1["expires_in"] = json!(599.5);
+    let shown = Arc::new(Mutex::new(0));
+    let showing = shown.clone();
+
+    let refused = sign_in_with_device_grant(
+        &world.target(),
+        move |_| *showing.lock().unwrap() += 1,
+        &world.http,
+    )
+    .await
+    .expect_err("the answer states no lifetime");
+
+    assert_eq!(code(&refused), (SignInErrorCode::Exchange, Some(200)));
     assert_eq!(*shown.lock().unwrap(), 0);
     assert!(world.token_forms().is_empty());
 }
@@ -2597,7 +2612,11 @@ async fn signing_out_of_a_registry_revokes_the_refresh_token_at_its_issuer() {
 
 /// Begin a sign-in through the registry and give the callback URL the
 /// issuer would send the person back to.
-async fn sent_back(world: &World, browser: &XynologBrowser, options: BeginAuthorization) -> String {
+async fn sent_back(
+    world: &World,
+    browser: &XynologBrowser,
+    options: BeginAuthorizationOptions,
+) -> String {
     let url = begin_sign_in(browser, options, &world.http)
         .await
         .expect("a URL");
@@ -2618,7 +2637,7 @@ async fn a_registrys_sign_in_registers_the_knowledge_base_under_what_it_says_it_
     let callback = sent_back(
         &world,
         &browser,
-        BeginAuthorization {
+        BeginAuthorizationOptions {
             expected_did: Some("did:web:example.org:another".to_owned()),
             expected_name: Some("Another".to_owned()),
             ..world.begin()
@@ -4036,7 +4055,7 @@ async fn a_worker(
                     };
                     let built = annotation_of_span(
                         &text,
-                        &found.span,
+                        &TextSpan::from(found),
                         &resource_id,
                         Motivation::Highlighting,
                         &generator,
@@ -4095,13 +4114,7 @@ async fn an_application(
     let redirect = LoopbackRedirect::bind().await?;
     let url = begin_sign_in(
         &browser,
-        BeginAuthorization {
-            target: gateway,
-            redirect_uri: redirect.redirect_uri(),
-            kb_id: None,
-            expected_did: None,
-            expected_name: None,
-        },
+        BeginAuthorizationOptions::new(gateway, redirect.redirect_uri()),
         &http,
     )
     .await?;

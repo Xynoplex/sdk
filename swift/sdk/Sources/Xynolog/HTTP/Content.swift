@@ -44,15 +44,11 @@ public struct PutBinaryRequest: Sendable {
     self.archiveOriginal = archiveOriginal
   }
 }
-public struct UploadProgress: Sendable {
-  public let bytesUploaded: Int
-  public let totalBytes: Int
-
-  public init(bytesUploaded: Int, totalBytes: Int) {
-    self.bytesUploaded = bytesUploaded
-    self.totalBytes = totalBytes
-  }
-}
+/// Awaited, an upload gives the resource it created; iterated, what it reports as it goes:
+/// `started` with its size before any bytes are sent, `progress` as they are sent, and `finished`
+/// with the resource made, once the knowledge base has answered. Its size is every byte sent for
+/// it: over HTTP, the whole request. An upload that fails throws to its awaiter, and its reports
+/// end without `finished`.
 public final class Upload: AsyncSequence, Sendable {
   public typealias Element = UploadProgress
   public typealias AsyncIterator = Events<UploadProgress>.AsyncIterator
@@ -250,8 +246,12 @@ extension HttpTransport: ContentTransport {
         previous = sent
         return true
       }
-      if newer { progress.yield(UploadProgress(bytesUploaded: sent, totalBytes: form.data.count)) }
+      if newer {
+        progress.yield(
+          .progress(UploadProgressProgress(bytesUploaded: sent, totalBytes: form.data.count)))
+      }
     }
+    progress.yield(.started(UploadProgressStarted(totalBytes: form.data.count)))
     BusLog.line(
       "PUT", channel: "content",
       payload: [
@@ -304,7 +304,9 @@ extension HttpTransport: ContentTransport {
         }
         var data = Data()
         for try await chunk in response.body { data.append(contentsOf: chunk.readableBytesView) }
-        return try JSONDecoder().decode(CreateResourceResponse.self, from: data)
+        let created = try JSONDecoder().decode(CreateResourceResponse.self, from: data)
+        progress.yield(.finished(UploadProgressFinished(resourceId: created.resourceId)))
+        return created
       } catch {
         if Task.isCancelled || lifetime.ended { throw CancellationError() }
         let failure =

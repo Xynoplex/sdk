@@ -18,13 +18,6 @@ func TestASpanIsLocatedAsTheTableSays(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	type statedRectangle struct {
-		Page   int     `json:"page"`
-		X      float64 `json:"x"`
-		Y      float64 `json:"y"`
-		Width  float64 `json:"width"`
-		Height float64 `json:"height"`
-	}
 	var table struct {
 		Cases []struct {
 			Why      string           `json:"why"`
@@ -33,9 +26,9 @@ func TestASpanIsLocatedAsTheTableSays(t *testing.T) {
 				Start int `json:"start"`
 				End   int `json:"end"`
 			} `json:"span"`
-			Overlapping []api.PdfTextItem `json:"overlapping"`
-			Rects       []statedRectangle `json:"rects"`
-			Fragments   []string          `json:"fragments"`
+			Overlapping []api.PdfTextItem   `json:"overlapping"`
+			Rects       []api.PdfCoordinate `json:"rects"`
+			Fragments   []string            `json:"fragments"`
 		} `json:"cases"`
 	}
 	if err := json.Unmarshal(text, &table); err != nil {
@@ -49,14 +42,12 @@ func TestASpanIsLocatedAsTheTableSays(t *testing.T) {
 		if !slices.Equal(overlapping, stated.Overlapping) {
 			t.Errorf("%s: the span overlaps %v, and the table says %v", stated.Why, overlapping, stated.Overlapping)
 		}
-		rects := make([]statedRectangle, len(rectangles))
 		fragments := make([]string, len(rectangles))
 		for i, at := range rectangles {
-			rects[i] = statedRectangle{Page: at.page, X: at.x, Y: at.y, Width: at.width, Height: at.height}
 			fragments[i] = fragmentOf(at)
 		}
-		if !slices.Equal(rects, stated.Rects) {
-			t.Errorf("%s: the rectangles are %v, and the table says %v", stated.Why, rects, stated.Rects)
+		if !slices.Equal(rectangles, stated.Rects) {
+			t.Errorf("%s: the rectangles are %v, and the table says %v", stated.Why, rectangles, stated.Rects)
 		}
 		if !slices.Equal(fragments, stated.Fragments) {
 			t.Errorf("%s: the fragments are %v, and the table says %v", stated.Why, fragments, stated.Fragments)
@@ -65,7 +56,7 @@ func TestASpanIsLocatedAsTheTableSays(t *testing.T) {
 }
 
 func TestANumberIsWrittenAsTheShortestDecimalWithNoExponent(t *testing.T) {
-	hairline := rectangle{page: 1, x: 72, y: 700.25, width: 0.00005, height: 12}
+	hairline := api.PdfCoordinate{Page: 1, X: 72, Y: 700.25, Width: 0.00005, Height: 12}
 	if got := fragmentOf(hairline); got != "page=1&viewrect=72,700.25,0.00005,12" {
 		t.Errorf("a hairline is written %s", got)
 	}

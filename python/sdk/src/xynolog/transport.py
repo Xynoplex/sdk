@@ -36,6 +36,8 @@ from xynolog.types import (
     MediaTokenResponse,
     ProtectedResourceMetadata,
     StatusResponse,
+    UploadProgress,
+    UploadProgressFinished,
     UserResponse,
 )
 from xynolog.watched import Watched
@@ -434,22 +436,17 @@ class PutBinaryRequest:
 
 
 @final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class UploadProgress:
-    """How much of an upload has been sent."""
-
-    bytes_uploaded: int
-    total_bytes: int
-    """The size of the whole request."""
-
-
-@final
 class Upload:
-    """An upload. Awaited, it gives the resource created; iterated, how much of it has been sent, ending when it has.
+    """An upload. Awaited, it gives the resource created; iterated, what it reports as it goes, ending when it has ended.
 
-    It begins when it is first awaited or iterated, and each is done once. Its
-    caller abandons it by cancelling the task that awaits it or reads its
-    progress: nothing more is sent, and nothing is reported.
+    It begins when it is first awaited or iterated, and each is done once.
+    Iterated, it reports `started` with its size before any bytes are sent,
+    `progress` as they are sent, and `finished` with the resource made, once
+    the knowledge base has answered. Its size is every byte sent for it: over
+    HTTP, the whole request. An upload that fails raises to its awaiter, and
+    its reports end without `finished`. Its caller abandons it by cancelling
+    the task that awaits it or reads its reports: nothing more is sent, and
+    nothing is reported.
     """
 
     def __init__(self, start: Callable[[Callable[[UploadProgress], None]], "asyncio.Task[CreateResourceResponse]"]) -> None:
@@ -466,11 +463,11 @@ class Upload:
         return self._sending
 
     def _ended(self, sending: "asyncio.Task[CreateResourceResponse]") -> None:
-        # What it reported before it ended has been queued, and it reports no more.
+        # What it reported before it ended has been queued, and it reports no more but that it finished.
+        # Its failure is its awaiter's to hear. Read here, it is not also said to be unheard.
+        if not sending.cancelled() and sending.exception() is None:
+            self._reports.put_nowait(UploadProgressFinished(phase="finished", resource_id=sending.result().resource_id))
         self._reports.put_nowait(None)
-        if not sending.cancelled():
-            # Its failure is its awaiter's to hear. Read here, it is not also said to be unheard.
-            sending.exception()
 
     async def _outcome(self) -> CreateResourceResponse:
         return await self._begun()

@@ -116,9 +116,19 @@ func read[T any](c *InMemoryContent, held map[api.ResourceId]T, what string, res
 }
 
 // PutBinary stores the bytes under an id of this double's making,
-// test-content-<n>.
+// test-content-<n>, and reports their size, that all of them were sent, and
+// the resource made.
 func (c *InMemoryContent) PutBinary(_ context.Context, request xynolog.PutBinaryRequest) *xynolog.Upload {
-	return xynolog.NewUpload(func(report func(xynolog.UploadProgress)) (api.CreateResourceResponse, error) {
+	return xynolog.NewUpload(func(report func(api.UploadProgress)) (api.CreateResourceResponse, error) {
+		size := len(request.Bytes)
+		var started, sent api.UploadProgress
+		if err := started.From(api.UploadProgressStarted{Phase: api.UploadProgressStartedPhaseStarted, TotalBytes: size}); err != nil {
+			return api.CreateResourceResponse{}, err
+		}
+		if err := sent.From(api.UploadProgressProgress{Phase: api.UploadProgressProgressPhaseProgress, BytesUploaded: size, TotalBytes: size}); err != nil {
+			return api.CreateResourceResponse{}, err
+		}
+		report(started)
 		c.mu.Lock()
 		resource, err := api.ParseResourceId(fmt.Sprintf("test-content-%d", len(c.stored)+1))
 		if err != nil {
@@ -128,8 +138,7 @@ func (c *InMemoryContent) PutBinary(_ context.Context, request xynolog.PutBinary
 		c.stored[resource] = xynolog.Content{Bytes: request.Bytes, ContentType: request.Format}
 		c.calls = append(c.calls, ContentCall{Operation: "putBinary", Put: &request})
 		c.mu.Unlock()
-		size := int64(len(request.Bytes))
-		report(xynolog.UploadProgress{BytesUploaded: size, TotalBytes: size})
+		report(sent)
 		return api.CreateResourceResponse{ResourceId: resource}, nil
 	})
 }

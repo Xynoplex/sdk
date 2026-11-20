@@ -10,11 +10,19 @@
 
 let source = "protocol/specs/src/components/schemas"
 
-(* The client types (protocol/specs/src/client/types) the SDK generates.
-   FrameRefusalReason waits on the decoders, which read a fault's reason as
-   a polymorphic variant of their own; the objects wait on the model's
-   reading of them. *)
-let client_types = [ "AnchorMethod"; "MatchQuality" ]
+(* The client types the SDK generates that are words. FrameRefusalReason
+   waits on the decoders, which read a fault's reason as a polymorphic variant
+   of their own. *)
+let client_types (spec : Spec.t) =
+  List.filter
+    (fun name ->
+      name <> "FrameRefusalReason"
+      &&
+      match List.assoc_opt ("client/types/" ^ name ^ ".json") spec.schemas with
+      | Some (Schema.Schema { type_ = Some [ String ]; _ }) -> true
+      | _ -> false)
+    (Definitions.generated_client_types spec)
+
 let prefix = "components/schemas/"
 
 type enum = { module_ : string; variants : (string * string) list }
@@ -45,7 +53,7 @@ let place key =
   | None -> (key, "")
 
 (* The table records a union's branch states its tag by, by key. *)
-let tags table =
+let tags ids table =
   List.concat_map
     (fun (_, _, schema) ->
       match schema with
@@ -65,7 +73,7 @@ let tags table =
                            all_of = Some [ Schema.Schema { ref_ = Some r; _ } ];
                            _;
                          }) ->
-                      Some (Table_records.key r)
+                      Some (Table_records.key ids r)
                   | _ -> None)
               | _ -> None)
             branches
@@ -78,8 +86,8 @@ let is_enum = function
 
 (* Each table record that is a string enum but a union's tag: its key, its
    module and its members. *)
-let tabled table =
-  let tags = tags table in
+let tabled ids table =
+  let tags = tags ids table in
   List.filter_map
     (fun (key, title, schema) ->
       match schema with
@@ -151,7 +159,7 @@ let derive (spec : Spec.t) table =
               { Decode.file; pointer = ""; message = "is no string enum" }
               :: !refusals;
             { module_ = module_name name; variants = [] })
-      client_types
+      (client_types spec)
   in
   let discovery_absent =
     enum ~file:"client/discovery-absent.json" ~pointer:"/reasons"
@@ -166,7 +174,7 @@ let derive (spec : Spec.t) table =
       (fun (key, module_, members) ->
         let file, pointer = place key in
         enum ~file ~pointer module_ members)
-      (tabled table)
+      (tabled spec.ids table)
   in
   let enums = components @ clients @ (discovery_absent :: tabled) in
   let modules = List.map (fun e -> e.module_) enums in

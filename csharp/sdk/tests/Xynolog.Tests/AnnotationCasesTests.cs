@@ -11,8 +11,6 @@ namespace Xynolog.Tests;
 
 public sealed partial class TransportTests
 {
-    private static readonly JsonSerializerOptions AnnotationCaseOptions = new() { PropertyNameCaseInsensitive = true };
-
     [Fact]
     public void AnnotationReadersRunTheSharedCases()
     {
@@ -84,16 +82,16 @@ public sealed partial class TransportTests
             var source = row.TryGetProperty("text", out var plain)
                 ? (Spanned)new Spanned.Text(plain.GetString() ?? throw new InvalidOperationException("Missing source text"))
                 : new Spanned.Anchored(Required<AnchoredText>(row.GetProperty("anchored")));
-            var stated = row.GetProperty("span");
-            if (!stated.GetProperty("start").TryGetInt32(out _) || !stated.GetProperty("end").TryGetInt32(out _))
+            TextSpan span;
+            try { span = Required<TextSpan>(row.GetProperty("span")); }
+            catch (JsonException)
             {
-                // TextSpan's offsets are integers, so a fraction is rejected at the input boundary.
+                // TextSpan's offsets are whole and not negative, so a fraction or a negative offset is refused as it is read,
+                // before any builder is called: that refusal is the table's refusal of a span out of range.
                 Assert.Equal("span-out-of-range", Text(row, "refused"));
-                Assert.Throws<JsonException>(() => stated.Deserialize<TextSpan>(AnnotationCaseOptions));
                 continue;
             }
 
-            var span = stated.Deserialize<TextSpan>(AnnotationCaseOptions) ?? throw new InvalidOperationException("Missing span");
             var input = new OfSpan(resource, motivation, generator ?? throw new InvalidOperationException("Missing generator"), span, source, body);
             if (row.TryGetProperty("refused", out var code))
             {
@@ -121,8 +119,7 @@ public sealed partial class TransportTests
         var qualities = new HashSet<string>();
         foreach (var row in table.RootElement.GetProperty("cases").EnumerateArray())
         {
-            var quote = row.GetProperty("quoted").Deserialize<QuotedText>(AnnotationCaseOptions) ?? throw new InvalidOperationException("Missing quote");
-            var result = Reconcile(Text(row, "text"), quote);
+            var result = Reconcile(Text(row, "text"), Required<QuotedText>(row.GetProperty("quoted")));
             var expected = row.GetProperty("reconciled");
             if (expected.ValueKind == JsonValueKind.Null)
             {
@@ -130,17 +127,19 @@ public sealed partial class TransportTests
                 continue;
             }
             Assert.NotNull(result);
-            var method = JsonNamingPolicy.KebabCaseLower.ConvertName(result.AnchorMethod.ToString());
+            Assert.Equal(Required<ReconciledSpan>(expected), result);
+            Assert.True(JsonElement.DeepEquals(expected, JsonSerializer.SerializeToElement(result)), Text(row, "why"));
             methods.Add(Text(expected, "anchorMethod"));
-            Assert.Equal(Text(expected, "anchorMethod"), method);
             if (expected.TryGetProperty("matchQuality", out var quality))
-            {
-                var name = quality.GetString() ?? throw new InvalidOperationException("Missing quality");
-                qualities.Add(name);
-                Assert.Equal(name, result.MatchQuality is MatchQuality value ? JsonNamingPolicy.KebabCaseLower.ConvertName(value.ToString()) : null);
-            }
-            else Assert.Null(result.MatchQuality);
-            Assert.Equal(expected.Deserialize<TextSpan>(AnnotationCaseOptions), result.Span);
+                qualities.Add(quality.GetString() ?? throw new InvalidOperationException("Missing quality"));
+
+            // A reconciled span is one the builder takes as it is.
+            var built = AnnotationOfSpan(new OfSpan(ResourceId.Parse("res-1"), Motivation.Highlighting,
+                new Agent.AgentSoftwareCase(new AgentSoftware { Provider = "ollama", Model = "gemma3" }), result, new Spanned.Text(Text(row, "text"))));
+            var quote = TextQuoteSelector(TargetSelector(built.Target)) ?? throw new InvalidOperationException("No quote selector");
+            Assert.Equal(Text(expected, "exact"), quote.Exact);
+            Assert.Equal(expected.TryGetProperty("prefix", out var prefix) ? prefix.GetString() : null, quote.Prefix);
+            Assert.Equal(expected.TryGetProperty("suffix", out var suffix) ? suffix.GetString() : null, quote.Suffix);
         }
         Assert.Equal(Enum.GetNames<AnchorMethod>().Select(JsonNamingPolicy.KebabCaseLower.ConvertName).Order(), methods.Order());
         Assert.Equal(Enum.GetNames<MatchQuality>().Select(JsonNamingPolicy.KebabCaseLower.ConvertName).Order(), qualities.Order());
@@ -156,9 +155,8 @@ public sealed partial class TransportTests
             var (items, rectangles) = PdfLocation.Locate(Required<AnchoredText>(row.GetProperty("anchored")),
                 span.GetProperty("start").GetInt32(), span.GetProperty("end").GetInt32());
             Assert.True(JsonElement.DeepEquals(row.GetProperty("overlapping"), JsonSerializer.SerializeToElement(items)), Text(row, "why"));
-            var boxes = rectangles.Select(box => new { page = box.Page, x = box.X, y = box.Y, width = box.Width, height = box.Height });
-            Assert.True(JsonElement.DeepEquals(row.GetProperty("rects"), JsonSerializer.SerializeToElement(boxes)), Text(row, "why"));
-            Assert.Equal(Required<string[]>(row.GetProperty("fragments")), rectangles.Select(box => box.Fragment()));
+            Assert.True(JsonElement.DeepEquals(row.GetProperty("rects"), JsonSerializer.SerializeToElement(rectangles)), Text(row, "why"));
+            Assert.Equal(Required<string[]>(row.GetProperty("fragments")), rectangles.Select(PdfLocation.Fragment));
         }
     }
 

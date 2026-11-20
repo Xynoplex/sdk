@@ -1,4 +1,4 @@
-"""A span of a text, and finding the one a model quoted.
+"""Finding the span of a text that a model quoted.
 
 A model asked to mark a text quotes it, and nothing it says is trusted.
 `reconcile` finds the quoted words in the text and answers a span that is the
@@ -10,53 +10,19 @@ every length a rule here states. A `str` is indexed by code point, so an
 offset is a string's own index and a length is `len`: nothing is converted.
 """
 
-from dataclasses import dataclass
-from typing import Final, final
+from typing import Final
 
 from xynolog._white_space import WHITE_SPACE, trimmed
-from xynolog.types import AnchorMethod, MatchQuality
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class QuotedText:
-    """The words a model quoted from a text, and what it says stands beside them.
-
-    `prefix` and `suffix` are hints of which place is meant, where the text has
-    the words in more than one. Neither is kept: a span's context is the text's.
-    """
-
-    exact: str
-    prefix: str | None = None
-    suffix: str | None = None
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class TextSpan:
-    """A span of a text: the code points from `start` up to but not including `end`.
-
-    `exact` is the words there, and `prefix` and `suffix` what the text has
-    just before and just after them.
-    """
-
-    start: int
-    end: int
-    exact: str
-    prefix: str | None = None
-    suffix: str | None = None
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class ReconciledSpan(TextSpan):
-    """A span `reconcile` found, which is the text's own, and how it was found.
-
-    `match_quality` names the looser search, when `anchor_method` is `fuzzy-match`.
-    """
-
-    anchor_method: AnchorMethod
-    match_quality: MatchQuality | None = None
-
+from xynolog.types import (
+    MatchQuality,
+    QuotedText,
+    ReconciledSpan,
+    ReconciledSpanContextRecovered,
+    ReconciledSpanFirstOfMany,
+    ReconciledSpanFuzzyMatch,
+    ReconciledSpanUniqueMatch,
+    TextSpan,
+)
 
 type _Place = tuple[int, int]
 """A span of the text as its two offsets."""
@@ -268,13 +234,11 @@ def _hinted(text: str, found: list[_Place], prefix: str | None, suffix: str | No
     return next((place for place in found if _fits(text, place, prefix, suffix)), None)
 
 
-def _reconciled(text: str, place: _Place, anchor_method: AnchorMethod, match_quality: MatchQuality | None = None) -> ReconciledSpan:
+def _own(text: str, place: _Place) -> TextSpan:
     """A place as the span it is: its words and its context are the text's, never the model's spelling of them."""
     start, end = place
     prefix, suffix = _context_of(text, place)
-    return ReconciledSpan(
-        start=start, end=end, exact=text[start:end], prefix=prefix, suffix=suffix, anchor_method=anchor_method, match_quality=match_quality
-    )
+    return TextSpan(start=start, end=end, exact=text[start:end], prefix=prefix, suffix=suffix)
 
 
 def reconcile(text: str, quoted: QuotedText) -> ReconciledSpan | None:
@@ -294,16 +258,34 @@ def reconcile(text: str, quoted: QuotedText) -> ReconciledSpan | None:
 
     found: list[_Place] = [(start, start + len(exact)) for start in places(text, exact)]
     if len(found) == 1:
-        return _reconciled(text, found[0], "unique-match")
+        span = _own(text, found[0])
+        return ReconciledSpanUniqueMatch(
+            start=span.start, end=span.end, exact=span.exact, prefix=span.prefix, suffix=span.suffix, anchor_method="unique-match"
+        )
     if found:
         chosen = _hinted(text, found, prefix, suffix)
         if chosen is not None:
-            return _reconciled(text, chosen, "context-recovered")
-        return _reconciled(text, found[0], "first-of-many")
+            span = _own(text, chosen)
+            return ReconciledSpanContextRecovered(
+                start=span.start, end=span.end, exact=span.exact, prefix=span.prefix, suffix=span.suffix, anchor_method="context-recovered"
+            )
+        span = _own(text, found[0])
+        return ReconciledSpanFirstOfMany(
+            start=span.start, end=span.end, exact=span.exact, prefix=span.prefix, suffix=span.suffix, anchor_method="first-of-many"
+        )
 
     looser = _looser(text, exact)
     if looser is None:
         return None
     found, match_quality = looser
     chosen = _hinted(text, found, prefix, suffix)
-    return _reconciled(text, found[0] if chosen is None else chosen, "fuzzy-match", match_quality)
+    span = _own(text, found[0] if chosen is None else chosen)
+    return ReconciledSpanFuzzyMatch(
+        start=span.start,
+        end=span.end,
+        exact=span.exact,
+        prefix=span.prefix,
+        suffix=span.suffix,
+        anchor_method="fuzzy-match",
+        match_quality=match_quality,
+    )

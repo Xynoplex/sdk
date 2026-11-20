@@ -1,6 +1,6 @@
 package annotations
 
-// A span of a text, and finding the one a model quoted.
+// Finding the span of a text that a model quoted.
 //
 // A model asked to mark a text quotes it, and nothing it says is trusted.
 // Reconcile finds the quoted words in the text and answers a span that is the
@@ -21,36 +21,6 @@ import (
 
 	"github.com/xynolog/sdk/go/api"
 )
-
-// QuotedText is the words a model quoted from a text, and what it says stands
-// beside them. Prefix and Suffix are hints of which place is meant, where the
-// text has the words in more than one; one that is empty or only white space
-// is none. Neither is kept: a span's context is the text's.
-type QuotedText struct {
-	Exact  string
-	Prefix string
-	Suffix string
-}
-
-// TextSpan is a span of a text: the code points from Start up to but not
-// including End. Exact is the words there, and Prefix and Suffix what the text
-// has just before and just after them; empty for none.
-type TextSpan struct {
-	Start  int
-	End    int
-	Exact  string
-	Prefix string
-	Suffix string
-}
-
-// ReconciledSpan is a span Reconcile found, which is the text's own, and how
-// it was found. MatchQuality names the looser search when AnchorMethod is
-// api.AnchorMethodFuzzyMatch, and is empty otherwise.
-type ReconciledSpan struct {
-	TextSpan
-	AnchorMethod api.AnchorMethod
-	MatchQuality api.MatchQuality
-}
 
 // place is a span of a text as its two offsets.
 type place struct{ start, end int }
@@ -106,16 +76,16 @@ func placesOf(text offsets, words string) []place {
 	return found
 }
 
-// contextOf is the text just before a place and just after it: empty on a side
+// contextOf is the text just before a place and just after it: nil on a side
 // where the text has nothing.
-func contextOf(text offsets, at place) (prefix, suffix string) {
+func contextOf(text offsets, at place) (prefix, suffix *string) {
 	if at.start > 0 {
 		begins := max(0, at.start-contextLength)
 		furthest := max(0, begins-lengthenedByAtMost)
 		for begins > furthest && !isBoundary(text.at(begins-1)) {
 			begins--
 		}
-		prefix = text.between(begins, at.start)
+		prefix = new(text.between(begins, at.start))
 	}
 	if at.end < text.length() {
 		ends := min(text.length(), at.end+contextLength)
@@ -123,7 +93,7 @@ func contextOf(text offsets, at place) (prefix, suffix string) {
 		for ends < furthest && !isBoundary(text.at(ends)) {
 			ends++
 		}
-		suffix = text.between(at.end, ends)
+		suffix = new(text.between(at.end, ends))
 	}
 	return prefix, suffix
 }
@@ -339,11 +309,11 @@ func looser(text, exact string) ([]place, api.MatchQuality, bool) {
 
 // hint is what a model says stands beside the words when it is more than
 // white space, a hint of where; empty for none.
-func hint(given string) string {
-	if trimmed(given) == "" {
+func hint(given *string) string {
+	if given == nil || trimmed(*given) == "" {
 		return ""
 	}
-	return given
+	return *given
 }
 
 // fits is whether the text around a place carries every hint given.
@@ -383,50 +353,72 @@ func hinted(text offsets, found []place, prefix, suffix string) (place, bool) {
 	return place{}, false
 }
 
-// reconciled is a place as the span it is: its words and its context are the
+// own is a place as the span it is: its words and its context are the
 // text's, never the model's spelling of them.
-func reconciled(text offsets, at place, method api.AnchorMethod, quality api.MatchQuality) ReconciledSpan {
+func own(text offsets, at place) api.TextSpan {
 	prefix, suffix := contextOf(text, at)
-	return ReconciledSpan{
-		TextSpan:     TextSpan{Start: at.start, End: at.end, Exact: text.between(at.start, at.end), Prefix: prefix, Suffix: suffix},
-		AnchorMethod: method,
-		MatchQuality: quality,
-	}
+	return api.TextSpan{Start: at.start, End: at.end, Exact: text.between(at.start, at.end), Prefix: prefix, Suffix: suffix}
 }
 
 // Reconcile finds the words a model quoted in text.
 //
 // The span answered is the text's own: its Exact is the text between its
-// offsets, and its Prefix and Suffix are what the text has on either side. Its
-// TextSpan goes to AnnotationOfSpan as it is.
+// offsets, and its Prefix and Suffix are what the text has on either side,
+// nil where it has nothing. The member it holds is how it was found, and a
+// fuzzy match's MatchQuality is which looser search found it. Its TextSpan()
+// goes to AnnotationOfSpan as it is.
 //
 // False for a quote that is empty or only white space, and for words the text
 // has nowhere, by any of the searches.
-func Reconcile(text string, quoted QuotedText) (ReconciledSpan, bool) {
+func Reconcile(text string, quoted api.QuotedText) (api.ReconciledSpan, bool) {
+	var span api.ReconciledSpan
 	if trimmed(quoted.Exact) == "" {
-		return ReconciledSpan{}, false
+		return span, false
 	}
 	prefix, suffix := hint(quoted.Prefix), hint(quoted.Suffix)
 	counted := offsetsOf(text)
 
+	var err error
 	found := placesOf(counted, quoted.Exact)
 	switch {
 	case len(found) == 1:
-		return reconciled(counted, found[0], api.AnchorMethodUniqueMatch, ""), true
+		at := own(counted, found[0])
+		err = span.From(api.ReconciledSpanUniqueMatch{
+			AnchorMethod: api.ReconciledSpanUniqueMatchAnchorMethodUniqueMatch,
+			Start:        at.Start, End: at.End, Exact: at.Exact, Prefix: at.Prefix, Suffix: at.Suffix,
+		})
 	case len(found) > 1:
 		if chosen, ok := hinted(counted, found, prefix, suffix); ok {
-			return reconciled(counted, chosen, api.AnchorMethodContextRecovered, ""), true
+			at := own(counted, chosen)
+			err = span.From(api.ReconciledSpanContextRecovered{
+				AnchorMethod: api.ReconciledSpanContextRecoveredAnchorMethodContextRecovered,
+				Start:        at.Start, End: at.End, Exact: at.Exact, Prefix: at.Prefix, Suffix: at.Suffix,
+			})
+		} else {
+			at := own(counted, found[0])
+			err = span.From(api.ReconciledSpanFirstOfMany{
+				AnchorMethod: api.ReconciledSpanFirstOfManyAnchorMethodFirstOfMany,
+				Start:        at.Start, End: at.End, Exact: at.Exact, Prefix: at.Prefix, Suffix: at.Suffix,
+			})
 		}
-		return reconciled(counted, found[0], api.AnchorMethodFirstOfMany, ""), true
+	default:
+		found, quality, ok := looser(text, quoted.Exact)
+		if !ok {
+			return span, false
+		}
+		chosen, ok := hinted(counted, found, prefix, suffix)
+		if !ok {
+			chosen = found[0]
+		}
+		at := own(counted, chosen)
+		err = span.From(api.ReconciledSpanFuzzyMatch{
+			AnchorMethod: api.ReconciledSpanFuzzyMatchAnchorMethodFuzzyMatch, MatchQuality: quality,
+			Start: at.Start, End: at.End, Exact: at.Exact, Prefix: at.Prefix, Suffix: at.Suffix,
+		})
 	}
-
-	found, quality, ok := looser(text, quoted.Exact)
-	if !ok {
-		return ReconciledSpan{}, false
+	if err != nil {
+		// A span of text, offsets and the words of two enums always encodes.
+		panic(err)
 	}
-	chosen, ok := hinted(counted, found, prefix, suffix)
-	if !ok {
-		chosen = found[0]
-	}
-	return reconciled(counted, chosen, api.AnchorMethodFuzzyMatch, quality), true
+	return span, true
 }

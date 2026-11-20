@@ -39,6 +39,7 @@ import xynolog.storage.CoupledBookmarks
 import xynolog.storage.SessionStorage
 import xynolog.telemetry.futureOf
 import xynolog.transport.Broadcast
+import xynolog.types.BeginAuthorizationOptions
 import xynolog.types.HttpEndpoint
 import xynolog.types.KbTarget
 import xynolog.types.LocalEndpoint

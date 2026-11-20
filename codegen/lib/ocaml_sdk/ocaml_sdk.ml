@@ -28,7 +28,7 @@ let files ~root (spec : Spec.t) =
   let* http = Http_facts.file codes in
   let* facts = Facts.files spec in
   let* bus =
-    Bus.Registry.derive
+    Bus.Registry.derive ~ids:spec.ids
       ~component:(Bus.Registry.component spec)
       spec.tables.bus_registry
   in

@@ -688,8 +688,8 @@ def describe(annotation: Annotation) -> str:
 - **A span is the text's own.** A `ReconciledSpan` has where the words are
   (`start`, `end`), the words as the text has them (`exact`), what the text
   has on either side (`prefix`, `suffix`), and how it was found
-  (`anchor_method`, and `match_quality` for a looser search). It is a
-  `TextSpan`, and goes to `annotation_of_span` as it is.
+  (`anchor_method`, and `match_quality` for a looser search). It goes to
+  `annotation_of_span` as it is.
 - **`reconcile` is one way to find a model's words**, with its own tolerance
   for a misquote. A worker that finds its spans another way gives
   `annotation_of_span` a `TextSpan` it made itself.
@@ -986,6 +986,7 @@ itself.
 from xynolog.http import HttpTransport
 from xynolog.identifiers import ResourceId
 from xynolog.transport import PutBinaryRequest
+from xynolog.types import UploadProgressFinished, UploadProgressProgress, UploadProgressStarted
 
 
 async def store(transport: HttpTransport, page: bytes) -> ResourceId:
@@ -993,7 +994,13 @@ async def store(transport: HttpTransport, page: bytes) -> ResourceId:
         PutBinaryRequest(name="A page", file=page, format="text/markdown", storage_uri="file://pages/a.md", entity_types=["Note"])
     )
     async for progress in upload:
-        print(progress.bytes_uploaded, "of", progress.total_bytes)
+        match progress:
+            case UploadProgressStarted(total_bytes=total):
+                print("sending", total)
+            case UploadProgressProgress(bytes_uploaded=sent, total_bytes=total):
+                print(sent, "of", total)
+            case UploadProgressFinished(resource_id=made):
+                print("made", made)
     created = await upload
 
     stored = await transport.content.get_binary(created.resource_id)
@@ -1007,9 +1014,12 @@ async def store(transport: HttpTransport, page: bytes) -> ResourceId:
     return created.resource_id
 ```
 
-- **An upload** is awaited for the resource it created and iterated for its
-  progress, each once. Its caller abandons it by cancelling the task that does
-  either: its connection closes, and nothing is reported.
+- **An upload** is awaited for the resource it created and iterated for what
+  it reports, each once: its size before any bytes are sent, how much is sent
+  as it goes, and the resource made, once the knowledge base has answered. An
+  upload that fails reports no resource, and raises to its awaiter. Its caller
+  abandons it by cancelling the task that does either: its connection closes,
+  and nothing is reported.
 - **What is read is what was stored**, byte for byte, with its media type. A
   time or a URI in an answer is the text the gateway sent, and a field it sent
   as null is `None`.

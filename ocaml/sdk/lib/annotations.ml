@@ -92,13 +92,6 @@ let tag_schema_id annotation =
     List.nth_opt (texts_for Enums.Body_purpose.Classifying annotation) 0
   else None
 
-type quoted_text = {
-  exact : string;
-  prefix : string option;
-  suffix : string option;
-}
-
-type text_span = { start : int; end_ : int; quote : quoted_text }
 type spanned = Text of string | Pdf of [ `AnchoredText ] Models.t
 
 type span_refusal =
@@ -239,14 +232,7 @@ let locate_pdf items start end_ =
         (infinity, infinity, neg_infinity, neg_infinity)
         items
     in
-    `Assoc
-      [
-        ("page", `Int page);
-        ("x", `Float x);
-        ("y", `Float y);
-        ("width", `Float (right -. x));
-        ("height", `Float (top -. y));
-      ]
+    { Records.Pdf_coordinate.page; x; y; width = right -. x; height = top -. y }
   in
   let on_page page =
     List.filter (fun item -> item.page = page) overlap
@@ -262,9 +248,8 @@ let locate_pdf items start end_ =
   in
   (overlap, List.concat_map on_page pages)
 
-let fragment rectangle =
-  let decimal field =
-    let value = J.to_number (J.member field rectangle) in
+let fragment (rectangle : Records.Pdf_coordinate.t) =
+  let decimal value =
     let rec shortest precision =
       let rendered = Printf.sprintf "%.*g" precision value in
       if float_of_string rendered = value || precision = 17 then rendered
@@ -274,11 +259,13 @@ let fragment rectangle =
       Printf.sprintf "%.0f" (if value = 0. then 0. else value)
     else shortest 1
   in
-  Printf.sprintf "page=%s&viewrect=%s" (decimal "page")
-    (String.concat "," (List.map decimal [ "x"; "y"; "width"; "height" ]))
+  Printf.sprintf "page=%d&viewrect=%s" rectangle.page
+    (String.concat ","
+       (List.map decimal
+          [ rectangle.x; rectangle.y; rectangle.width; rectangle.height ]))
 
 let annotation_of_span ~created ~resource ~motivation ~generator ?body content
-    (span : text_span) =
+    (span : Records.Text_span.t) =
   let source, items =
     match content with
     | Text source -> (source, None)
@@ -294,12 +281,12 @@ let annotation_of_span ~created ~resource ~motivation ~generator ?body content
     (List.iter (fun item ->
          if not (valid item.start item.end_) then refuse Item_out_of_range))
     items;
-  let { start; end_; quote } = span in
+  let { Records.Text_span.start; end_; exact; prefix; suffix } = span in
   if not (valid start end_) then refuse Span_out_of_range;
   let places =
     match items with
     | None ->
-        if between source start end_ <> quote.exact then refuse Exact_mismatch;
+        if between source start end_ <> exact then refuse Exact_mismatch;
         [
           `Assoc
             [
@@ -318,10 +305,7 @@ let annotation_of_span ~created ~resource ~motivation ~generator ?body content
             (length, 0) overlap
         in
         if
-          not
-            (contains
-               (collapse (between source left right))
-               (collapse quote.exact))
+          not (contains (collapse (between source left right)) (collapse exact))
         then refuse Exact_not_covered;
         List.map
           (fun rectangle ->
@@ -337,17 +321,17 @@ let annotation_of_span ~created ~resource ~motivation ~generator ?body content
     (fun prefix ->
       if not (String.ends_with ~suffix:prefix (between source 0 start)) then
         refuse Prefix_mismatch)
-    quote.prefix;
+    prefix;
   Option.iter
     (fun suffix ->
       if not (String.starts_with ~prefix:suffix (between source end_ length))
       then refuse Suffix_mismatch)
-    quote.suffix;
+    suffix;
   let quote_selector =
     `Assoc
-      ([ ("type", text "TextQuoteSelector"); ("exact", text quote.exact) ]
-      @ optional "prefix" (Option.map text (nonempty quote.prefix))
-      @ optional "suffix" (Option.map text (nonempty quote.suffix)))
+      ([ ("type", text "TextQuoteSelector"); ("exact", text exact) ]
+      @ optional "prefix" (Option.map text (nonempty prefix))
+      @ optional "suffix" (Option.map text (nonempty suffix)))
   in
   let target =
     `Assoc
@@ -357,15 +341,9 @@ let annotation_of_span ~created ~resource ~motivation ~generator ?body content
         ("selector", `List (places @ [ quote_selector ]));
       ]
   in
-  let anchor = Printf.sprintf "%d:%d:%s" start end_ quote.exact in
+  let anchor = Printf.sprintf "%d:%d:%s" start end_ exact in
   build ~created ~resource ~motivation ~anchor ~target
     ~generator:(Some generator) ~body
-
-type reconciled_span = {
-  span : text_span;
-  anchor_method : Enums.Anchor_method.t;
-  match_quality : Enums.Match_quality.t option;
-}
 
 let occurrences source needle =
   let size = Array.length needle in
@@ -514,7 +492,7 @@ let trim_space text =
   in
   between value start (right length)
 
-let reconcile text (quote : quoted_text) =
+let reconcile text (quote : Records.Quoted_text.t) =
   let source = points text in
   let length = Array.length source in
   let wanted = points quote.exact in
@@ -547,7 +525,7 @@ let reconcile text (quote : quoted_text) =
     || Uchar.to_int char < 128
        && String.contains ".,;:!?'\"()[]{}<>/\\" (Char.chr (Uchar.to_int char))
   in
-  let build (start, end_) anchor_method match_quality =
+  let own (start, end_) : Records.Text_span.t =
     let before = max 0 (start - 64) and after = min length (end_ + 64) in
     let rec extend_left i =
       if i > max 0 (before - 32) && not (boundary source.(i - 1)) then
@@ -559,28 +537,40 @@ let reconcile text (quote : quoted_text) =
         extend_right (i + 1)
       else i
     in
-    let quote =
-      {
-        exact = between source start end_;
-        prefix =
-          (if start = 0 then None
-           else Some (between source (extend_left before) start));
-        suffix =
-          (if end_ = length then None
-           else Some (between source end_ (extend_right after)));
-      }
-    in
-    { span = { start; end_; quote }; anchor_method; match_quality }
+    {
+      start;
+      end_;
+      exact = between source start end_;
+      prefix =
+        (if start = 0 then None
+         else Some (between source (extend_left before) start));
+      suffix =
+        (if end_ = length then None
+         else Some (between source end_ (extend_right after)));
+    }
   in
+  let module R = Records.Reconciled_span in
   if trim_space quote.exact = "" then None
   else
     match occurrences source wanted with
-    | [ place ] -> Some (build place Enums.Anchor_method.Unique_match None)
+    | [ place ] ->
+        let { Records.Text_span.start; end_; exact; prefix; suffix } =
+          own place
+        in
+        Some (R.UniqueMatch { start; end_; exact; prefix; suffix })
     | first :: _ as places ->
         Some
           (match hinted places with
-          | Some place -> build place Enums.Anchor_method.Context_recovered None
-          | None -> build first Enums.Anchor_method.First_of_many None)
+          | Some place ->
+              let { Records.Text_span.start; end_; exact; prefix; suffix } =
+                own place
+              in
+              R.ContextRecovered { start; end_; exact; prefix; suffix }
+          | None ->
+              let { Records.Text_span.start; end_; exact; prefix; suffix } =
+                own first
+              in
+              R.FirstOfMany { start; end_; exact; prefix; suffix })
     | [] ->
         let places, quality =
           match mapped source wanted normalized with
@@ -595,7 +585,11 @@ let reconcile text (quote : quoted_text) =
         in
         Option.map
           (fun place ->
-            build place Enums.Anchor_method.Fuzzy_match (Some quality))
+            let { Records.Text_span.start; end_; exact; prefix; suffix } =
+              own place
+            in
+            R.FuzzyMatch
+              { start; end_; exact; prefix; suffix; match_quality = quality })
           (match hinted places with
           | Some _ as found -> found
           | None -> List.nth_opt places 0)

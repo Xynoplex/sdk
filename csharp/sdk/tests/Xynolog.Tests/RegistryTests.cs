@@ -67,7 +67,8 @@ public sealed partial class TransportTests
         var session = RegistryTokens() with { RevocationEndpoint = "https://issuer.test/revoke", PersonKey = PersonKeyOf(cacheExample) };
         RegistryStorage.StoreSession(store, "kb-1", session);
         Assert.Equal(session, RegistryStorage.StoredSession(store, "kb-1"));
-        var schema = table.RootElement.GetProperty("storedSession");
+        using var referred = ReadReferred(table.RootElement.GetProperty("storedSession"));
+        var schema = referred.RootElement;
         var text = Assert.IsType<string>(store.Get(key));
         using var stored = JsonDocument.Parse(text);
         Assert.Equal(schema.GetProperty("properties").EnumerateObject().Select(member => member.Name).Order(),
@@ -141,12 +142,19 @@ public sealed partial class TransportTests
         static string[] RequiredOf(JsonElement schema) =>
             schema.GetProperty("required").EnumerateArray().Select(name => Assert.IsType<string>(name.GetString())).Order().ToArray();
 
-        var full = await Kept(new BeginAuthorizationOptions(endpoint, "https://app.test/callback", "kb-a", "did:web:kb-a.test", "A"));
+        var full = await Kept(new BeginAuthorizationOptions
+        {
+            Target = endpoint,
+            RedirectUri = "https://app.test/callback",
+            KbId = "kb-a",
+            ExpectedDid = "did:web:kb-a.test",
+            ExpectedName = "A",
+        });
         Assert.Equal(Members(schema.GetProperty("properties")), Members(full));
         var issuer = Members(full.GetProperty("issuer")).ToHashSet();
         Assert.Subset(issuer, RequiredOf(issuerSchema).ToHashSet());
         Assert.Subset(Members(issuerSchema.GetProperty("properties")).ToHashSet(), issuer);
-        var bare = await Kept(new BeginAuthorizationOptions(endpoint, "https://app.test/callback"));
+        var bare = await Kept(new BeginAuthorizationOptions { Target = endpoint, RedirectUri = "https://app.test/callback" });
         Assert.Equal(RequiredOf(schema), Members(bare));
     }
 
@@ -278,7 +286,8 @@ public sealed partial class TransportTests
     public async Task AnOpenResourceIsKeptAsTheStoredTableStatesIt()
     {
         using var table = ReadSpec("session/stored.json");
-        var schema = table.RootElement.GetProperty("openResource");
+        using var referred = ReadReferred(table.RootElement.GetProperty("openResource"));
+        var schema = referred.RootElement;
         static string[] Members(JsonElement value) => value.EnumerateObject().Select(member => member.Name).Order().ToArray();
         var required = schema.GetProperty("required").EnumerateArray().Select(name => Assert.IsType<string>(name.GetString())).Order().ToArray();
         var store = new MemoryStorage();
@@ -582,7 +591,7 @@ public sealed partial class TransportTests
         await using var browser = new XynologBrowser(new XynologBrowserConfig(store, factory));
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var endpoint = Assert.IsType<KbEndpoint.HttpEndpointCase>(expected.Endpoint).Value;
-        var options = new BeginAuthorizationOptions(endpoint, "https://app.test/callback", expected.Id);
+        var options = new BeginAuthorizationOptions { Target = endpoint, RedirectUri = "https://app.test/callback", KbId = expected.Id };
         var url = await BrowserSignIn.BeginSignInAsync(browser, options, http, deadline.Token);
         Assert.Contains("code_challenge_method=S256", url);
         var pending = Assert.IsType<PendingAuthorization>(RegistryStorage.Read<PendingAuthorization>(store.Get(RedirectSignIn.PendingAuthorizationKey)));

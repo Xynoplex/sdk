@@ -345,12 +345,14 @@ private actor Driver {
         let output = self.output
         progress = Task {
           do {
-            for try await report in upload {
+            // The driver protocol reports the bytes sent: the upload's start and its end are its
+            // answer's.
+            for try await case .progress(let sent) in upload {
               await output.say([
                 "progress": .object([
                   "upload": .number(Double(id)),
-                  "bytesUploaded": .number(Double(report.bytesUploaded)),
-                  "totalBytes": .number(Double(report.totalBytes)),
+                  "bytesUploaded": .number(Double(sent.bytesUploaded)),
+                  "totalBytes": .number(Double(sent.totalBytes)),
                 ])
               ])
             }

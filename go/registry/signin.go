@@ -14,7 +14,7 @@ import (
 // BeginSignIn begins a sign-in for a registry: it finds the issuer the target
 // trusts, remembers the pending sign-in in the registry's storage, and gives
 // the URL to send the person to.
-func BeginSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog.Issuer, options xynolog.BeginAuthorizationOptions) (string, error) {
+func BeginSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog.Issuer, options api.BeginAuthorizationOptions) (string, error) {
 	return xynolog.BeginAuthorization(ctx, issuer, options, browser.Storage())
 }
 
@@ -40,8 +40,11 @@ func CompleteSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog
 		panic(err)
 	}
 	signedIn := api.SignedIn{
-		Endpoint:    endpoint,
-		Description: identity.Description,
+		Endpoint:     endpoint,
+		Description:  identity.Description,
+		KbId:         pending.KbID,
+		ExpectedDid:  pending.ExpectedDid,
+		ExpectedName: pending.ExpectedName,
 		Session: api.StoredSession{
 			Access:        tokens.Access,
 			Refresh:       tokens.Refresh,
@@ -49,19 +52,9 @@ func CompleteSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog
 			TokenEndpoint: pending.Issuer.Token,
 		},
 	}
-	// The pending sign-in holds "" for what the issuer offers none of, and
-	// for what the person named none of.
+	// The pending sign-in's issuer holds "" for an endpoint it offers none of.
 	if pending.Issuer.Revocation != "" {
 		signedIn.Session.RevocationEndpoint = &pending.Issuer.Revocation
-	}
-	if pending.KbID != "" {
-		signedIn.KbId = &pending.KbID
-	}
-	if pending.ExpectedDid != "" {
-		signedIn.ExpectedDid = &pending.ExpectedDid
-	}
-	if pending.ExpectedName != "" {
-		signedIn.ExpectedName = &pending.ExpectedName
 	}
 	return browser.SignedIn(signedIn)
 }

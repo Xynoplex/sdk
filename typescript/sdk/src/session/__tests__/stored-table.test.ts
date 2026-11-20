@@ -61,13 +61,20 @@ interface Example {
   key: string;
 }
 
+/** An object's schema, as this SDK is held to it. */
+interface ObjectSchema {
+  $id: string;
+  properties: Record<string, unknown>;
+  required: string[];
+}
+
 interface StoredTable {
   keys: { member: string; key: string }[];
   sessionKeyPrefix: { prefix: string };
   lastEventIdKeyPrefix: { prefix: string; example: Example };
   cacheKeyPrefix: { prefix: string; example: Example & { query: string } };
-  storedSession: { properties: Record<string, unknown>; required: string[] };
-  openResource: { properties: Record<string, unknown>; required: string[] };
+  storedSession: { $ref: string };
+  openResource: { $ref: string };
   wholeKey: { key: string };
   cacheDocument: {
     properties: { version: { const: number } } & Record<string, unknown>;
@@ -84,7 +91,25 @@ const PERSON = personKey('did:web:example.org:users:jo');
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../../..');
 const TABLE = join(ROOT, 'protocol/specs/src/session/stored.json');
 const table = JSON.parse(readFileSync(TABLE, 'utf-8')) as StoredTable;
-const members = Object.keys(table.storedSession.properties);
+
+/** The schema the table names by its `$id` at `member`: `file`'s, which states that `$id`. */
+function referred(
+  member: 'storedSession' | 'openResource',
+  file: string,
+): ObjectSchema {
+  const schema = JSON.parse(
+    readFileSync(join(ROOT, 'protocol/specs/src', file), 'utf-8'),
+  ) as ObjectSchema;
+  if (table[member].$ref !== schema.$id)
+    throw new Error(
+      `the table's ${member} names ${table[member].$ref}; ${file} states ${schema.$id}`,
+    );
+  return schema;
+}
+
+const storedSession = referred('storedSession', 'session/StoredSession.json');
+const openResource = referred('openResource', 'session/OpenResource.json');
+const members = Object.keys(storedSession.properties);
 
 /** A key of each kind a kept query's entries are keyed by: a resource's id, an annotation's id, or the whole key. */
 const KEY_OF_KIND: { [P in CachePer[PersistedQuery]]: string } = {
@@ -161,9 +186,8 @@ function writtenUnder(
 
 /** Whether a value holds as the component a `$ref` of the table names, by the rules every SDK reads the table by. */
 function holdsAs(ref: string): (value: unknown) => boolean {
-  const component = /^\.\.\/components\/schemas\/([A-Za-z0-9]+)\.json$/.exec(
-    ref,
-  )?.[1];
+  const component =
+    /^https:\/\/xynolog\.org\/protocol\/([A-Za-z0-9]+)\.json$/.exec(ref)?.[1];
   if (component === undefined || !isSchemaName(component))
     throw new Error(`${ref} names no component`);
   return (value) => faultOf(component, value) === undefined;
@@ -241,7 +265,7 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
       const storage = new InMemorySessionStorage();
       storage.set(sessionKey('kb-a'), storedWithout(member));
       const read = getStoredSession(storage, 'kb-a');
-      if (table.storedSession.required.includes(member)) {
+      if (storedSession.required.includes(member)) {
         expect(read).toBeNull();
       } else {
         expect(read).not.toBeNull();
@@ -252,15 +276,13 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
   it("an open resource is written with the table's members, and no others", async () => {
     const { whole } = await writtenOpenResources();
     expect(Object.keys(whole).sort()).toEqual(
-      Object.keys(table.openResource.properties).sort(),
+      Object.keys(openResource.properties).sort(),
     );
   });
 
   it('an open resource with no media type and no place in the tree is written with the members the table requires, and no others', async () => {
     const { bare } = await writtenOpenResources();
-    expect(Object.keys(bare).sort()).toEqual(
-      [...table.openResource.required].sort(),
-    );
+    expect(Object.keys(bare).sort()).toEqual([...openResource.required].sort());
   });
 
   it('the queries this SDK reads back are those refresh.json marks persisted, in its order, and none other', () => {

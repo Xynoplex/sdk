@@ -328,13 +328,13 @@ func (s *stage) browser(t *testing.T, storage xynolog.SessionStorage) *registry.
 	return browser
 }
 
-func (s *stage) begin(t *testing.T) xynolog.BeginAuthorizationOptions {
-	return xynolog.BeginAuthorizationOptions{Target: s.target(t), RedirectURI: "http://127.0.0.1:9/callback"}
+func (s *stage) begin(t *testing.T) api.BeginAuthorizationOptions {
+	return api.BeginAuthorizationOptions{Target: s.target(t), RedirectUri: "http://127.0.0.1:9/callback"}
 }
 
 // sentBack begins a sign-in through the registry and gives the callback URL
 // the issuer would send the person back to.
-func (s *stage) sentBack(t *testing.T, browser *registry.XynologBrowser, options xynolog.BeginAuthorizationOptions) string {
+func (s *stage) sentBack(t *testing.T, browser *registry.XynologBrowser, options api.BeginAuthorizationOptions) string {
 	t.Helper()
 	address, err := registry.BeginSignIn(context.Background(), browser, s.issuerOf(), options)
 	must(t, err)
@@ -485,7 +485,7 @@ func TestARegistrysSignInRegistersTheKnowledgeBaseUnderWhatItSaysItIs(t *testing
 	access := jwt(time.Hour)
 	s.grant(access, "a-refresh-token")
 	options := s.begin(t)
-	options.ExpectedDid, options.ExpectedName = "did:web:example.org:another", "Another"
+	options.ExpectedDid, options.ExpectedName = new("did:web:example.org:another"), new("Another")
 
 	callback := s.sentBack(t, browser, options)
 	outcome, err := registry.CompleteSignIn(context.Background(), browser, s.issuerOf(), callback)

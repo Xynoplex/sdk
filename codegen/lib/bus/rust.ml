@@ -114,7 +114,7 @@ let channel_items (bus : Registry.t) component (c : Reg.channels_item) =
     match c with
     | Schema { schema; _ } ->
         List.sort_uniq String.compare
-          (Registry.stamps component ~of_:schema
+          (Registry.stamps ~ids:bus.ids component ~of_:schema
              (Registry.named component schema))
     | _ -> []
   in

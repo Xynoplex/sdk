@@ -1,11 +1,6 @@
 import Foundation
 import Synchronization
 
-public struct PendingAnnotation: Encodable, Sendable {
-  public let selector: AnnotationSelector
-  public let motivation: Motivation
-}
-
 /// Holds a composition and its delegated job for one resource.
 public final class MarkStateUnit: StateUnit {
   public let pendingAnnotation = Watched<PendingAnnotation?>(nil)
@@ -62,7 +57,7 @@ public final class MarkStateUnit: StateUnit {
       let request = requested.payload
       life.whileOpen {
         pendingAnnotation.set(
-          PendingAnnotation(selector: request.selector, motivation: request.motivation))
+          PendingAnnotation(motivation: request.motivation, selector: request.selector))
       }
     case Channels.markSubmit.name:
       let channel = Channels.markSubmit

@@ -190,7 +190,12 @@ internal sealed class WireDriver : IDisposable
 
     private sealed class UploadReporter(long id) : IProgress<UploadProgress>
     {
-        public void Report(UploadProgress value) => Say(new { progress = new { upload = id, bytesUploaded = value.BytesUploaded, totalBytes = value.TotalBytes } });
+        // The driver protocol reports the bytes sent: the upload's start and its end are its answer's.
+        public void Report(UploadProgress value)
+        {
+            if (value is UploadProgress.ProgressCase(var sent))
+                Say(new { progress = new { upload = id, bytesUploaded = sent.BytesUploaded, totalBytes = sent.TotalBytes } });
+        }
     }
 
     public void Dispose() => transport?.Dispose();

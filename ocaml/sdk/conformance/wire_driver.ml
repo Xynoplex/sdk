@@ -876,19 +876,22 @@ let run mode env =
               | value -> Some (name, Yojson.Safe.to_string value))
         in
         let bytes = Base64.decode_exn (string "bytes" input) in
-        let on_progress count =
-          if op = "upload" then
-            output_json
-              (`Assoc
-                 [
-                   ( "progress",
-                     `Assoc
-                       [
-                         ("upload", field "id" input);
-                         ("bytesUploaded", `Int count);
-                         ("totalBytes", `Int (String.length bytes));
-                       ] );
-                 ])
+        (* The driver protocol reports the bytes sent: the upload's start and
+           its end are its answer's. *)
+        let on_progress : Xynolog.Records.Upload_progress.t -> unit = function
+          | Progress { bytes_uploaded; total_bytes } when op = "upload" ->
+              output_json
+                (`Assoc
+                   [
+                     ( "progress",
+                       `Assoc
+                         [
+                           ("upload", field "id" input);
+                           ("bytesUploaded", `Int bytes_uploaded);
+                           ("totalBytes", `Int total_bytes);
+                         ] );
+                   ])
+          | Progress _ | Started _ | Finished _ -> ()
         in
         ok
           (Yojson.Safe.from_string

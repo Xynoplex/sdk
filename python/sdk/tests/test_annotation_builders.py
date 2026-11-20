@@ -12,11 +12,19 @@ from operator import methodcaller
 from typing import Annotated, Final
 
 import pytest
-from pydantic import BaseModel, Field, JsonValue
+from pydantic import BaseModel, Field, JsonValue, ValidationError
 from spec import SPEC, JsonObject, objects, read, strings
 
 from xynolog import annotations, error_codes, errors
-from xynolog.annotations import SpanRefusedError, TextSpan, annotation_of_resource, annotation_of_span, reconcile, target_source
+from xynolog.annotations import (
+    SpanRefusal,
+    SpanRefusedError,
+    TextSpan,
+    annotation_of_resource,
+    annotation_of_span,
+    reconcile,
+    target_source,
+)
 from xynolog.identifiers import ResourceId
 from xynolog.model import written
 from xynolog.types import Agent, AnchoredText, Annotation, AnnotationBodies, MarkCommitCommand, Motivation, TextualBody
@@ -74,22 +82,29 @@ def as_python_spells(name: str) -> str:
     return "".join(f"_{letter.lower()}" if letter.isupper() else letter for letter in name)
 
 
-def span_of(stated: JsonObject) -> TextSpan:
-    """The span a case states, made as untyped code makes one.
+def span_of(stated: JsonObject) -> TextSpan | None:
+    """The span a case states, made as untyped code makes one; nothing where `TextSpan` refuses to be made of it.
 
     One case states a fraction for an offset. Both type checkers refuse that
-    (`tests/refusals`), and the builder is to refuse it when it is called.
+    (`tests/refusals`), and so does `TextSpan` when it is made: that refusal
+    is the span type's, given before any builder is called, and it is the
+    table's refusal of a span that is out of range.
     """
-    made: TextSpan = methodcaller("__call__", **stated)(TextSpan)
+    try:
+        made: TextSpan = methodcaller("__call__", **stated)(TextSpan)
+    except ValidationError:
+        return None
     return made
 
 
 def build(case: SpanCase) -> Annotation:
     subject = case.text if case.text is not None else case.anchored
     assert subject is not None, case.why
+    span = span_of(case.span)
+    assert span is not None, case.why
     return annotation_of_span(
         subject,
-        span_of(case.span),
+        span,
         resource_id=case.resource_id,
         motivation=case.motivation,
         generator=case.generator,
@@ -155,9 +170,12 @@ def test_an_annotation_of_a_span_is_built_as_the_table_says(case: SpanCase) -> N
 
 @pytest.mark.parametrize("case", REFUSED, ids=lambda case: case.why)
 def test_a_span_that_is_not_the_text_s_is_refused_by_the_name_the_table_gives(case: SpanCase) -> None:
-    with pytest.raises(SpanRefusedError) as refused:
-        build(case)
-    assert refused.value.code == case.refused, case.why
+    refusal: SpanRefusal = "span-out-of-range"
+    if span_of(case.span) is not None:
+        with pytest.raises(SpanRefusedError) as refused:
+            build(case)
+        refusal = refused.value.code
+    assert refusal == case.refused, case.why
 
 
 def test_the_refusals_the_table_states_are_the_vocabulary_of_the_error_codes_and_no_other() -> None:

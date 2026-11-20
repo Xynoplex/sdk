@@ -108,7 +108,7 @@ private fun event(event: JobEvent<JobCompleteCommand>): JsonObject = Say.of(
         is JobRefused -> Say.of(
             "channel" to JsonPrimitive(event.data.channel),
             "member" to JsonPrimitive(event.data.member),
-            "reason" to JsonPrimitive(event.data.reason.wire),
+            "reason" to JsonPrimitive(event.data.reason.value),
         )
         is JobCompleted -> wire.encodeToJsonElement(JobCompleteCommand.serializer(), event.data)
     },

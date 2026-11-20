@@ -1,18 +1,11 @@
 (* The Go SDK's protocol types (go/api/types_gen.go): a type for every
    component schema of the gateway's document, every record Protocol states
-   in its tables ([Table_records]) and the client types below, with every
+   in its tables ([Table_records]) and the client types it generates, with every
    schema they reach, but the kinds of id, which go/api/ids_gen.go declares;
    and why no launcher was found. *)
 
 module Generate = Generate
 module G = Go_syntax
-
-(* The client types (protocol/specs/src/client/types) the SDK generates. Of
-   the rest, the objects that state no additionalProperties wait on Protocol,
-   since the types read them as open, and the closed parameter types
-   (ClaimOptions and the six beside it) wait on the namespace types that take
-   them. *)
-let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
 
 (* Why a client that read a launcher's discovery document found no launcher
    (protocol/specs/src/client/discovery-absent.json): a constant a reason. *)
@@ -52,7 +45,7 @@ let generated (spec : Spec.t) =
   let roots =
     List.filter (fun n -> not (List.mem n identifiers)) bundle.definitions.names
     @ List.map (fun (_, name, _) -> name) (Definitions.records spec)
-    @ client_types
+    @ Definitions.generated_client_types spec
   in
   ( Generate.generate bundle.definitions ~identifiers roots,
     List.map (fun name -> (name, None)) identifiers )

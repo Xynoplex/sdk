@@ -117,14 +117,14 @@ reconcile :: Text -> QuotedText -> Maybe ReconciledSpan
 reconcile text quoted
   | Text.null (Text.dropAround whiteSpace exact) = Nothing
   | otherwise = case [(offset, offset + Text.length exact) | offset <- occurrencesOf text exact] of
-      [place] -> Just (built place AnchorMethodUniqueU2d_match Nothing)
+      [place] -> Just (ReconciledSpanBranch1 (built place (ReconciledSpanUniqueMatch ReconciledSpanUniqueMatchAnchorMethodUniqueU2d_match)))
       places@(first : _) -> case hinted places of
-        Just place -> Just (built place AnchorMethodContextU2d_recovered Nothing)
-        Nothing -> Just (built first AnchorMethodFirstU2d_ofU2d_many Nothing)
+        Just place -> Just (ReconciledSpanBranch2 (built place (ReconciledSpanContextRecovered ReconciledSpanContextRecoveredAnchorMethodContextU2d_recovered)))
+        Nothing -> Just (ReconciledSpanBranch3 (built first (ReconciledSpanFirstOfMany ReconciledSpanFirstOfManyAnchorMethodFirstU2d_ofU2d_many)))
       [] -> do
         (places, quality) <- looser
         place <- case hinted places of Just found -> Just found; Nothing -> case places of value : _ -> Just value; _ -> Nothing
-        pure (built place AnchorMethodFuzzyU2d_match (Just quality))
+        pure (ReconciledSpanBranch4 (built place (\stop said -> ReconciledSpanFuzzyMatch ReconciledSpanFuzzyMatchAnchorMethodFuzzyU2d_match stop said quality)))
   where
     exact = quotedTextExact quoted
     hint value = value >>= \given -> if Text.null (Text.dropAround whiteSpace given) then Nothing else Just given
@@ -160,4 +160,5 @@ reconcile text quoted
                 | offset < min (Text.length text) (initial + 32) && not (boundary (Text.index text offset)) = extend (offset + 1)
                 | otherwise = offset
            in Just (between text end (extend initial))
-    built (start, end) method quality = ReconciledSpan method (fromIntegral end) (between text start end) quality (buildPrefix start) (fromIntegral start) (buildSuffix end) mempty
+    built :: (Int, Int) -> (Integer -> Text -> Maybe Text -> Integer -> Maybe Text -> found) -> found
+    built (start, end) make = make (fromIntegral end) (between text start end) (buildPrefix start) (fromIntegral start) (buildSuffix end)

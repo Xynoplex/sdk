@@ -48,8 +48,8 @@ type builderTable struct {
 			Start  json.Number `json:"start"`
 			End    json.Number `json:"end"`
 			Exact  string      `json:"exact"`
-			Prefix string      `json:"prefix"`
-			Suffix string      `json:"suffix"`
+			Prefix *string     `json:"prefix"`
+			Suffix *string     `json:"suffix"`
 		} `json:"span"`
 	} `json:"cases"`
 	Resources []builderCase `json:"resources"`
@@ -137,7 +137,7 @@ func TestAnnotationOfSpanBuildsOrRefusesAsTheTableSays(t *testing.T) {
 			ResourceID: stated.ResourceID,
 			Motivation: stated.Motivation,
 			Generator:  *stated.Generator,
-			Span: annotations.TextSpan{
+			Span: api.TextSpan{
 				Start: start, End: end, Exact: stated.Span.Exact, Prefix: stated.Span.Prefix, Suffix: stated.Span.Suffix,
 			},
 			Body:     stated.Body,
@@ -167,7 +167,7 @@ func TestABuilderRefusesWhatItWasNotGiven(t *testing.T) {
 	if err := generator.UnmarshalJSON([]byte(`{"@type":"Software","@id":"did:web:kb.example:agents:a","name":"a"}`)); err != nil {
 		t.Fatal(err)
 	}
-	span := annotations.TextSpan{Start: 0, End: 3, Exact: "Ada"}
+	span := api.TextSpan{Start: 0, End: 3, Exact: "Ada"}
 	whole := annotations.OfSpan{ResourceID: resource, Motivation: api.MotivationHighlighting, Generator: generator, Span: span, Text: "Ada"}
 	if _, err := annotations.AnnotationOfSpan(whole); err != nil {
 		t.Fatalf("the span every check below takes one thing from is refused: %v", err)

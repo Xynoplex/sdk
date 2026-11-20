@@ -14,11 +14,10 @@ data PdfCoordinate = PdfCoordinate
     pdfCoordinatePage :: Integer,
     pdfCoordinateWidth :: Scientific,
     pdfCoordinateX :: Scientific,
-    pdfCoordinateY :: Scientific,
-    pdfCoordinateAdditionalProperties :: KM.KeyMap Value
+    pdfCoordinateY :: Scientific
   }
   deriving (Eq, Show)
 
-instance FromJSON PdfCoordinate where parseJSON = checked "PdfCoordinate" $ withObject "PdfCoordinate" (\fields -> PdfCoordinate <$> (fields .: "height") <*> (fields .: "page") <*> (fields .: "width") <*> (fields .: "x") <*> (fields .: "y") <*> traverse parseJSON (withoutFields ["height", "page", "width", "x", "y"] fields))
+instance FromJSON PdfCoordinate where parseJSON = checked "PdfCoordinate" $ withObject "PdfCoordinate" (\fields -> PdfCoordinate <$> (fields .: "height") <*> (fields .: "page") <*> (fields .: "width") <*> (fields .: "x") <*> (fields .: "y"))
 
-instance ToJSON PdfCoordinate where toJSON value = Object (KM.fromList (concat [[("height", toJSON (pdfCoordinateHeight value))], [("page", toJSON (pdfCoordinatePage value))], [("width", toJSON (pdfCoordinateWidth value))], [("x", toJSON (pdfCoordinateX value))], [("y", toJSON (pdfCoordinateY value))]]) <> fmap toJSON (withoutFields ["height", "page", "width", "x", "y"] (pdfCoordinateAdditionalProperties value)))
+instance ToJSON PdfCoordinate where toJSON value = Object (KM.fromList (concat [[("height", toJSON (pdfCoordinateHeight value))], [("page", toJSON (pdfCoordinatePage value))], [("width", toJSON (pdfCoordinateWidth value))], [("x", toJSON (pdfCoordinateX value))], [("y", toJSON (pdfCoordinateY value))]]))

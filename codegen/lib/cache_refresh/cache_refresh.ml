@@ -20,7 +20,7 @@ let ( let* ) = Result.bind
 let reads (spec : Spec.t) =
   List.filter_map
     (fun (template, reference) ->
-      let file, _ = Decode.resolve reference in
+      let file, _ = Decode.resolve spec.Spec.ids reference in
       match List.assoc file spec.path_items with
       | { Openapi.get = Some _; _ } -> Some ("GET " ^ template)
       | { get = None; _ } -> None)
@@ -58,7 +58,7 @@ let context (spec : Spec.t) =
   let registry = spec.tables.bus_registry in
   let* components = Required.collect (Required.components spec) in
   let* derivation =
-    Required.Shape.derive
+    Required.Shape.derive ~ids:spec.ids
       ~unrecognized:spec.tables.errors_codes.bus_request.unrecognized_failure
       components
   in
@@ -76,6 +76,7 @@ let context (spec : Spec.t) =
       channels;
       shapes;
       components;
+      ids = spec.ids;
     }
 
 let files ~root:_ (spec : Spec.t) =

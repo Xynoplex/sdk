@@ -30,13 +30,16 @@ import xynolog.transport.ContentTransport
 import xynolog.transport.Events
 import xynolog.transport.PutBinaryRequest
 import xynolog.transport.Upload
-import xynolog.transport.UploadProgress
 import xynolog.types.Agent
 import xynolog.types.AnchoredTextAnswer
 import xynolog.types.CreateResourceResponse
 import xynolog.types.GetAnnotationsResponse
 import xynolog.types.GetResourceResponse
 import xynolog.types.ResourceUpload
+import xynolog.types.UploadProgress
+import xynolog.types.UploadProgressFinished
+import xynolog.types.UploadProgressProgress
+import xynolog.types.UploadProgressStarted
 import xynolog.types.wireJson
 import java.io.IOException
 import java.net.http.HttpRequest
@@ -150,13 +153,14 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
         // The upload's own name, the same on every attempt at it.
         val key = UUID.randomUUID().toString()
         val progress = Channel<UploadProgress>(Channel.UNLIMITED)
+        progress.trySend(UploadProgressStarted(totalBytes = form.size))
         var said = -1L
         val report = { sent: Long ->
             // Never less than it last said: a body sent again, after a renewal or a failed attempt, counts from where it was.
             synchronized(progress) {
                 if (sent > said) {
                     said = sent
-                    progress.trySend(UploadProgress(sent, form.size))
+                    progress.trySend(UploadProgressProgress(bytesUploaded = sent, totalBytes = form.size))
                 }
             }
         }
@@ -169,7 +173,7 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
                     "sizeBytes" to JsonPrimitive(request.file.size),
                 )
                 BusLog.line(Logged.PUT, "content", JsonObject(described), null, null)
-                Telemetry.putting(request.format, form.size) {
+                val created = Telemetry.putting(request.format, form.size) {
                     // No deadline: how long an upload takes is how large the resource is.
                     exchange.answer(
                         CreateResourceResponse.serializer(),
@@ -180,6 +184,8 @@ public class HttpContentTransport(private val transport: HttpTransport) : Conten
                         atLength = true,
                     )
                 }
+                synchronized(progress) { progress.trySend(UploadProgressFinished(resourceId = created.resourceId)) }
+                created
             } finally {
                 progress.close()
             }

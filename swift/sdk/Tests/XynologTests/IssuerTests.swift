@@ -241,6 +241,66 @@ private func form(_ data: Data) -> [String: String] {
   #expect(polls.withLock { $0 } == 2)
   #expect(!requests.withLock { $0 }.contains("/bus/subscribe"))
 }
+@Test func aDeviceCodeWhoseLifetimeIsNoWholeNumberOfSecondsIsRefused() async throws {
+  let origin = Mutex("")
+  let requests = Mutex<[String]>([])
+  try await issuerServer(
+    { path, _, _ in
+      requests.withLock { $0.append(path) }
+      let base = origin.withLock { $0 }
+      switch path {
+      case "/.well-known/oauth-protected-resource":
+        return (
+          200,
+          [
+            "authorization_servers": .array([.string(base)]),
+            "bearer_methods_supported": .array([.string("header")]),
+            "resource": .string("https://kb"),
+          ]
+        )
+      case "/.well-known/openid-configuration":
+        return (
+          200,
+          [
+            "issuer": .string(base), "authorization_endpoint": .string(base + "/authorize"),
+            "token_endpoint": .string(base + "/token"),
+            "device_authorization_endpoint": .string(base + "/device"),
+          ]
+        )
+      case "/device":
+        // A code's lifetime is a whole number of seconds (DeviceCode.expiresIn).
+        return (
+          200,
+          [
+            "device_code": .string("device"), "user_code": .string("ABCD"),
+            "verification_uri": .string("https://issuer/approve"), "expires_in": .number(599.5),
+          ]
+        )
+      default: return (404, [:])
+      }
+    },
+    run: { base, http in
+      origin.withLock { $0 = base }
+      let url = try #require(URLComponents(string: base))
+      let target = KbTarget(
+        endpoint: .httpEndpoint(
+          HttpEndpoint(host: "127.0.0.1", port: try #require(url.port), protocol: .http)),
+        id: "test",
+        label: "test")
+      let shown = Mutex<[DeviceCode]>([])
+      do {
+        try await signInDevice(kb: target, kept: MemorySignIn(), httpClient: http) { code in
+          shown.withLock { $0.append(code) }
+        }
+        Issue.record("A lifetime in fractions of a second was accepted")
+      } catch let refused as SignInError {
+        #expect(refused.reason == .exchange)
+        #expect(refused.status == 200)
+      }
+      #expect(shown.withLock { $0 }.isEmpty)
+    })
+  #expect(!requests.withLock { $0 }.contains("/token"))
+}
 @Test func anAgentKeepsItsTokenWhenRenewalIsRefused() async throws {
   let origin = Mutex("")
   let grants = Mutex(0)
@@ -579,14 +639,14 @@ private func form(_ data: Data) -> [String: String] {
       }
       let full = try await kept(
         BeginAuthorizationOptions(
-          target: target, redirectUri: "xynolog://sign-in", kbId: "kb-a",
-          expectedDid: "did:web:kb-a", expectedName: "A"))
+          expectedDid: "did:web:kb-a", expectedName: "A", kbId: "kb-a",
+          redirectUri: "xynolog://sign-in", target: target))
       #expect(Set(full.keys) == (try members(schema)))
       let issuer = Set(try required(full, "issuer").object.keys)
       #expect((try requiredMembers(issuerSchema)).isSubset(of: issuer))
       #expect(issuer.isSubset(of: try members(issuerSchema)))
       let bare = try await kept(
-        BeginAuthorizationOptions(target: target, redirectUri: "xynolog://sign-in"))
+        BeginAuthorizationOptions(redirectUri: "xynolog://sign-in", target: target))
       #expect(Set(bare.keys) == (try requiredMembers(schema)))
     })
 }
@@ -635,7 +695,7 @@ private func form(_ data: Data) -> [String: String] {
       let target = HttpEndpoint(host: "127.0.0.1", port: try #require(url.port), protocol: .http)
       let storage = MemorySessionStorage()
       let address = try await beginAuthorization(
-        BeginAuthorizationOptions(target: target, redirectUri: redirect), storage: storage,
+        BeginAuthorizationOptions(redirectUri: redirect, target: target), storage: storage,
         httpClient: http)
       let pending = try #require(
         decodedStorage(PendingAuthorization.self, storage.get(pendingAuthorizationKey)))

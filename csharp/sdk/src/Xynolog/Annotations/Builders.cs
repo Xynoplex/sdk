@@ -19,7 +19,24 @@ public closed record Spanned
 }
 
 public sealed record OfSpan(ResourceId ResourceId, Motivation Motivation, Agent Generator, TextSpan Span, Spanned Text,
-    AnnotationBodies? Body = null);
+    AnnotationBodies? Body = null)
+{
+    public OfSpan(ResourceId resourceId, Motivation motivation, Agent generator, ReconciledSpan span, Spanned text,
+        AnnotationBodies? body = null) : this(resourceId, motivation, generator, SpanOf(span), text, body) { }
+
+    private static TextSpan SpanOf(ReconciledSpan reconciled) => reconciled switch
+    {
+        ReconciledSpan.UniqueMatchCase(var span) =>
+            new TextSpan { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix },
+        ReconciledSpan.ContextRecoveredCase(var span) =>
+            new TextSpan { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix },
+        ReconciledSpan.FirstOfManyCase(var span) =>
+            new TextSpan { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix },
+        ReconciledSpan.FuzzyMatchCase(var span) =>
+            new TextSpan { Start = span.Start, End = span.End, Exact = span.Exact, Prefix = span.Prefix, Suffix = span.Suffix },
+    };
+}
+
 public sealed record OfResource(ResourceId ResourceId, Motivation Motivation, Agent? Generator = null, AnnotationBodies? Body = null);
 
 public static partial class AnnotationTools
@@ -39,9 +56,9 @@ public static partial class AnnotationTools
         var span = input.Span;
         if (!ValidSpan(span.Start, span.End, text.Length)) throw Refused("span-out-of-range");
         var selectors = anchored is null ? TextSelectors(text, span) : PdfSelectors(text, anchored, span);
-        if (span.Prefix is string prefix && !text.Slice(0, span.Start).EndsWith(prefix, StringComparison.Ordinal))
+        if (span.Prefix is string prefix && !text.Slice(0, (int)span.Start).EndsWith(prefix, StringComparison.Ordinal))
             throw Refused("prefix-mismatch");
-        if (span.Suffix is string suffix && !text.Slice(span.End, text.Length).StartsWith(suffix, StringComparison.Ordinal))
+        if (span.Suffix is string suffix && !text.Slice((int)span.End, text.Length).StartsWith(suffix, StringComparison.Ordinal))
             throw Refused("suffix-mismatch");
         selectors.Add(new Selector.TextQuoteSelectorCase(new TextQuoteSelector
         {
@@ -64,7 +81,7 @@ public static partial class AnnotationTools
 
     private static List<Selector> TextSelectors(ScalarText text, TextSpan span)
     {
-        if (!string.Equals(text.Slice(span.Start, span.End), span.Exact, StringComparison.Ordinal))
+        if (!string.Equals(text.Slice((int)span.Start, (int)span.End), span.Exact, StringComparison.Ordinal))
             throw Refused("exact-mismatch");
         return [new Selector.TextPositionSelectorCase(new TextPositionSelector { Start = span.Start, End = span.End })];
     }
@@ -80,7 +97,7 @@ public static partial class AnnotationTools
         return rectangles.Select(rectangle => (Selector)new Selector.FragmentSelectorCase(new FragmentSelector
         {
             ConformsTo = "http://tools.ietf.org/rfc/rfc3778",
-            Value = rectangle.Fragment(),
+            Value = PdfLocation.Fragment(rectangle),
         })).ToList();
     }
 

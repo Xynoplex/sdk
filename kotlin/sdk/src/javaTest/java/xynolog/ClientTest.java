@@ -5,7 +5,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,11 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Flow;
 import kotlinx.coroutines.flow.StateFlowKt;
 import org.junit.jupiter.api.Test;
-import xynolog.annotations.AnchorMethod;
 import xynolog.annotations.AnnotationsKt;
-import xynolog.annotations.QuotedText;
-import xynolog.annotations.ReconciledSpan;
-import xynolog.annotations.TextSpan;
 import xynolog.cache.CacheState;
 import xynolog.cache.Cached;
 import xynolog.bus.Typed;
@@ -45,7 +40,11 @@ import xynolog.types.HighlightingJobParams;
 import xynolog.types.JobCompleteCommand;
 import xynolog.types.MarkJobCompleteCommand;
 import xynolog.types.Motivation;
+import xynolog.types.QuotedText;
+import xynolog.types.ReconciledSpan;
+import xynolog.types.ReconciledSpanUniqueMatch;
 import xynolog.types.TagSchema;
+import xynolog.types.TextSpan;
 
 /**
  * The client as a Java program calls it: each shape of what its namespaces
@@ -229,13 +228,12 @@ final class ClientTest {
     @Test
     void aQuoteIsReconciledAndItsAnnotationBuiltFromJava() {
         String text = "Ada Lovelace wrote the first algorithm.";
-        ReconciledSpan found = AnnotationsKt.reconcile(text, new QuotedText("Lovelace"));
-        assertNotNull(found);
-        assertSame(AnchorMethod.UniqueMatch.INSTANCE, found.getAnchorMethod());
-        Annotation built = AnnotationsKt.annotationOfSpan(text, found.getSpan(), new ResourceId("res-1"), Motivation.Highlighting, AgentSoftware.builder().name("gemma3").build());
+        ReconciledSpan found = AnnotationsKt.reconcile(text, QuotedText.builder("Lovelace").build());
+        assertInstanceOf(ReconciledSpanUniqueMatch.class, found);
+        Annotation built = AnnotationsKt.annotationOfSpan(text, AnnotationsKt.toTextSpan(found), new ResourceId("res-1"), Motivation.Highlighting, AgentSoftware.builder().name("gemma3").build());
         assertEquals("Lovelace", AnnotationsKt.annotationExactText(built));
         SpanRefusedError refused = assertThrows(SpanRefusedError.class,
-                () -> AnnotationsKt.annotationOfSpan(text, new TextSpan(0, 99, "Ada"), new ResourceId("res-1"), Motivation.Highlighting, AgentSoftware.builder().name("gemma3").build()));
+                () -> AnnotationsKt.annotationOfSpan(text, TextSpan.builder(0, 99, "Ada").build(), new ResourceId("res-1"), Motivation.Highlighting, AgentSoftware.builder().name("gemma3").build()));
         assertEquals(SpanRefusal.SpanOutOfRange, refused.getReason());
     }
 

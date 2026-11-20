@@ -10,8 +10,8 @@ import pytest
 from pydantic import BaseModel
 from spec import SPEC
 
-from xynolog._pdf_locate import Rectangle, fragment_of, locate
-from xynolog.types import AnchoredText, PdfTextItem
+from xynolog._pdf_locate import fragment_of, locate
+from xynolog.types import AnchoredText, PdfCoordinate, PdfTextItem
 
 
 class StatedSpan(BaseModel, frozen=True, extra="forbid"):
@@ -24,7 +24,7 @@ class Case(BaseModel, frozen=True, extra="forbid"):
     anchored: AnchoredText
     span: StatedSpan
     overlapping: list[PdfTextItem]
-    rects: list[Rectangle]
+    rects: list[PdfCoordinate]
     fragments: list[str]
 
 
@@ -50,5 +50,5 @@ def test_a_span_is_located_as_the_table_says(case: Case) -> None:
 def test_a_number_python_would_write_with_an_exponent_is_written_as_a_decimal() -> None:
     # Python writes a number below a ten-thousandth with an exponent (5e-05), and the rule is the shortest decimal.
     assert repr(0.00005) == "5e-05"
-    hairline = Rectangle(page=1, x=72, y=700.25, width=0.00005, height=12)
+    hairline = PdfCoordinate(page=1, x=72, y=700.25, width=0.00005, height=12)
     assert fragment_of(hairline) == "page=1&viewrect=72,700.25,0.00005,12"

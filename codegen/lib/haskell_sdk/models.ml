@@ -70,6 +70,7 @@ type state = {
       (** [None] while the declaration is being made. *)
   mutable owner : string;
   mutable dependencies : Names.t Named.t;
+  ids : Decode.ids;  (** Each schema's [$id]: what a reference names. *)
   identifiers : Names.t;
 }
 
@@ -79,7 +80,7 @@ let find state name =
   | None -> Error ("unknown schema reference: " ^ name)
 
 let normalize state schema =
-  Normalize.normalize
+  Normalize.normalize state.ids
     ~find:(fun r -> find state (Definitions.referenced r))
     schema
 
@@ -630,13 +631,14 @@ let imports body dependencies =
       (H.import "Xynolog.Types.Presence" ~items:[ Plain "Presence" ])
   @ List.map (fun m -> H.import m) dependencies
 
-let generate ~banner ~identifiers definitions =
+let generate ~banner ~ids ~identifiers definitions =
   let state =
     {
       definitions = Named.of_list definitions;
       declarations = Named.empty;
       owner = "";
       dependencies = Named.empty;
+      ids;
       identifiers = Names.of_list identifiers;
     }
   in

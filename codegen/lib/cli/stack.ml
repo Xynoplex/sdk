@@ -74,7 +74,7 @@ let rec type_of st ~from_ ?prefix ?(document = false) name (s : Schema.t) =
       let ruled =
         match rule with
         | Schema.Schema { ref_ = Some r; _ } ->
-            let file, _ = Decode.resolve r in
+            let file, _ = Decode.resolve st.spec.ids r in
             layer file (schema st.spec file)
         | rule -> layer from_ rule
       in

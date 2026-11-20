@@ -20,10 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import kotlin.jvm.internal.StringCompanionObject;
 import kotlinx.serialization.builtins.BuiltinSerializersKt;
 import org.junit.jupiter.api.Test;
-import xynolog.annotations.AnchorMethod;
 import xynolog.annotations.AnnotationsKt;
-import xynolog.annotations.QuotedText;
-import xynolog.annotations.ReconciledSpan;
 import xynolog.bus.BusKt;
 import xynolog.discovery.DiscoveryDiff;
 import xynolog.discovery.DiscoveryKt;
@@ -33,7 +30,6 @@ import xynolog.errors.BusRequestError;
 import xynolog.errors.IdentityUnverifiableError;
 import xynolog.errors.IdentityUnverifiableReason;
 import xynolog.http.AuthorizationKt;
-import xynolog.http.BeginAuthorizationOptions;
 import xynolog.http.ConnectKt;
 import xynolog.http.EndpointKt;
 import xynolog.http.HttpSessionFactory;
@@ -56,8 +52,10 @@ import xynolog.storage.StoragePersister;
 import xynolog.transport.Events;
 import xynolog.transport.TransportKt;
 import xynolog.types.AgentSoftware;
+import xynolog.types.AnchorMethod;
 import xynolog.types.Annotation;
 import xynolog.types.AnnotationSelector;
+import xynolog.types.BeginAuthorizationOptions;
 import xynolog.types.ConnectionIdentity;
 import xynolog.types.Expected;
 import xynolog.types.HttpEndpoint;
@@ -67,6 +65,9 @@ import xynolog.types.KnowledgeBase;
 import xynolog.types.LocalEndpoint;
 import xynolog.types.MatchQuality;
 import xynolog.types.Motivation;
+import xynolog.types.QuotedText;
+import xynolog.types.ReconciledSpan;
+import xynolog.types.ReconciledSpanFuzzyMatch;
 import xynolog.types.SignInOutcome;
 import xynolog.types.SignedIn;
 import xynolog.types.StoredSession;
@@ -116,9 +117,9 @@ final class ModulesTest {
     @Test
     void anAnnotationIsReadFromJava() {
         String text = "Ada Lovelace wrote the first algorithm.";
-        ReconciledSpan found = AnnotationsKt.reconcile(text, new QuotedText("Lovelace"));
+        ReconciledSpan found = AnnotationsKt.reconcile(text, QuotedText.builder("Lovelace").build());
         assertNotNull(found);
-        Annotation highlight = AnnotationsKt.annotationOfSpan(text, found.getSpan(), RESOURCE, Motivation.Highlighting, AgentSoftware.builder().name("gemma3").build());
+        Annotation highlight = AnnotationsKt.annotationOfSpan(text, AnnotationsKt.toTextSpan(found), RESOURCE, Motivation.Highlighting, AgentSoftware.builder().name("gemma3").build());
         assertTrue(AnnotationsKt.isHighlight(highlight));
         assertFalse(AnnotationsKt.isReference(highlight));
         assertFalse(AnnotationsKt.isAssessment(highlight));
@@ -141,7 +142,9 @@ final class ModulesTest {
         Annotation tag = AnnotationsKt.annotationOfResource(RESOURCE, Motivation.Tagging);
         assertTrue(AnnotationsKt.isTag(tag));
         assertEquals("res-1", AnnotationsKt.targetSource(tag.getTarget()));
-        assertEquals(MatchQuality.Fuzzy, new AnchorMethod.FuzzyMatch(MatchQuality.Fuzzy).getQuality());
+        ReconciledSpanFuzzyMatch fuzzy = ReconciledSpanFuzzyMatch.builder(0, 3, "Ada", MatchQuality.Fuzzy).build();
+        assertEquals(AnchorMethod.FuzzyMatch.getValue(), fuzzy.getAnchorMethod().getValue());
+        assertEquals(MatchQuality.Fuzzy, fuzzy.getMatchQuality());
     }
 
     @Test
@@ -174,7 +177,7 @@ final class ModulesTest {
         try (Gateway gateway = new Gateway()) {
             HttpEndpoint target = endpointOf(gateway);
             // The knowledge base names no issuer, so the sign-in cannot begin.
-            assertNotNull(failure(AuthorizationKt.beginAuthorizationFuture(new BeginAuthorizationOptions(target, "kb-a"), storage)));
+            assertNotNull(failure(AuthorizationKt.beginAuthorizationFuture(BeginAuthorizationOptions.builder(target, "kb-a").build(), storage)));
             assertNull(storage.get(StoredKt.PENDING_AUTHORIZATION_KEY));
             // Nothing was begun, so there is nothing to complete.
             assertNotNull(failure(AuthorizationKt.completeAuthorizationFuture("http://app.example/callback?code=c&state=s", storage)));
@@ -219,7 +222,7 @@ final class ModulesTest {
         }
 
         try (Gateway gateway = new Gateway(); XynologBrowser browser = new XynologBrowser(new XynologBrowserConfig(storage, new HttpSessionFactory()))) {
-            assertNotNull(failure(SessionsKt.beginSignInFuture(browser, new BeginAuthorizationOptions(endpointOf(gateway), "kb-a"))));
+            assertNotNull(failure(SessionsKt.beginSignInFuture(browser, BeginAuthorizationOptions.builder(endpointOf(gateway), "kb-a").build())));
             assertNotNull(failure(SessionsKt.completeSignInFuture(browser, "http://app.example/callback?code=c&state=s")));
         }
     }

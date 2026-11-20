@@ -14,11 +14,10 @@ data TextSpan = TextSpan
     textSpanExact :: Text,
     textSpanPrefix :: Maybe Text,
     textSpanStart :: Integer,
-    textSpanSuffix :: Maybe Text,
-    textSpanAdditionalProperties :: KM.KeyMap Value
+    textSpanSuffix :: Maybe Text
   }
   deriving (Eq, Show)
 
-instance FromJSON TextSpan where parseJSON = checked "TextSpan" $ withObject "TextSpan" (\fields -> TextSpan <$> (fields .: "end") <*> (fields .: "exact") <*> optional fields "prefix" <*> (fields .: "start") <*> optional fields "suffix" <*> traverse parseJSON (withoutFields ["end", "exact", "prefix", "start", "suffix"] fields))
+instance FromJSON TextSpan where parseJSON = checked "TextSpan" $ withObject "TextSpan" (\fields -> TextSpan <$> (fields .: "end") <*> (fields .: "exact") <*> optional fields "prefix" <*> (fields .: "start") <*> optional fields "suffix")
 
-instance ToJSON TextSpan where toJSON value = Object (KM.fromList (concat [[("end", toJSON (textSpanEnd value))], [("exact", toJSON (textSpanExact value))], optionalPair "prefix" (textSpanPrefix value), [("start", toJSON (textSpanStart value))], optionalPair "suffix" (textSpanSuffix value)]) <> fmap toJSON (withoutFields ["end", "exact", "prefix", "start", "suffix"] (textSpanAdditionalProperties value)))
+instance ToJSON TextSpan where toJSON value = Object (KM.fromList (concat [[("end", toJSON (textSpanEnd value))], [("exact", toJSON (textSpanExact value))], optionalPair "prefix" (textSpanPrefix value), [("start", toJSON (textSpanStart value))], optionalPair "suffix" (textSpanSuffix value)]))

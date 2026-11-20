@@ -36,8 +36,18 @@ from xynolog.http._gateway_http import (
 from xynolog.http._withheld import why_unanswered
 from xynolog.http.exchange import Exchange
 from xynolog.identifiers import ResourceId
-from xynolog.transport import Content, ContentStream, ContentTransport, PutBinaryRequest, Upload, UploadProgress
-from xynolog.types import Agent, AnchoredTextAnswer, CreateResourceResponse, GetAnnotationsResponse, GetResourceResponse, ResourceUpload
+from xynolog.transport import Content, ContentStream, ContentTransport, PutBinaryRequest, Upload
+from xynolog.types import (
+    Agent,
+    AnchoredTextAnswer,
+    CreateResourceResponse,
+    GetAnnotationsResponse,
+    GetResourceResponse,
+    ResourceUpload,
+    UploadProgress,
+    UploadProgressProgress,
+    UploadProgressStarted,
+)
 
 __all__ = ["HttpContentTransport", "form_of"]
 
@@ -134,19 +144,21 @@ class _Form:
 class _Progress:
     """How much of an upload has been reported sent, over every sending of it.
 
-    A sending that repeats an earlier one, as the second attempt of a refused
-    upload does, reports only what goes past it: progress never goes back.
+    Made, it reports the upload's size, before any sending. A sending that
+    repeats an earlier one, as the second attempt of a refused upload does,
+    reports only what goes past it: progress never goes back.
     """
 
     def __init__(self, total: int, report: Callable[[UploadProgress], None]) -> None:
         self._total = total
         self._report = report
         self._reported = 0
+        report(UploadProgressStarted(phase="started", total_bytes=total))
 
     def sent(self, so_far: int) -> None:
         if so_far > self._reported:
             self._reported = so_far
-            self._report(UploadProgress(bytes_uploaded=so_far, total_bytes=self._total))
+            self._report(UploadProgressProgress(phase="progress", bytes_uploaded=so_far, total_bytes=self._total))
 
 
 @final

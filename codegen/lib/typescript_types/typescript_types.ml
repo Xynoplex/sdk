@@ -154,13 +154,6 @@ let reached (definitions : D.definitions) names =
   in
   List.sort String.compare (List.fold_left reach [] names)
 
-(* The client types (protocol/specs/src/client/types) the SDK generates. Of
-   the rest, the objects that state no additionalProperties wait on Protocol,
-   since the types read them as open, and the closed parameter types
-   (ClaimOptions and the six beside it) wait on the namespace types that take
-   them. *)
-let client_types = [ "AnchorMethod"; "FrameRefusalReason"; "MatchQuality" ]
-
 (* Why a client that read a launcher's discovery document found no launcher
    (protocol/specs/src/client/discovery-absent.json): a reason a case. *)
 let discovery_absent (spec : Spec.t) =
@@ -183,7 +176,7 @@ let text (spec : Spec.t) =
       (fun name -> not (List.mem name definitions.names))
       (reached definitions
          (List.map (fun (_, name, _) -> name) (Definitions.records spec)
-         @ client_types))
+         @ Definitions.generated_client_types spec))
   in
   let named name =
     if List.mem name records then record name else T.schema name

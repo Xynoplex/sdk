@@ -16,8 +16,8 @@
 
 use crate::content::HttpContentTransport;
 use crate::oauth::{
-    BeginAuthorization, DeviceCode, begin_authorization, complete_authorization, renew_kept,
-    revoke_at_issuer, sign_in_with_device_grant,
+    begin_authorization, complete_authorization, renew_kept, revoke_at_issuer,
+    sign_in_with_device_grant,
 };
 use crate::transport::{HttpTransport, HttpTransportConfig, Timing, TokenRefresher, locked};
 use futures::FutureExt;
@@ -44,8 +44,8 @@ use xynolog::session::{
 use xynolog::storage::SessionStorage;
 use xynolog::transport::BoxFuture;
 use xynolog::types::{
-    ConnectionIdentity, HttpEndpoint, KbEndpoint, KbTarget, SignInOutcome, SignedIn, StoredSession,
-    UserId,
+    BeginAuthorizationOptions, ConnectionIdentity, DeviceCode, HttpEndpoint, KbEndpoint, KbTarget,
+    SignInOutcome, SignedIn, StoredSession, UserId,
 };
 
 /// What a session over a gateway is built with.
@@ -610,7 +610,7 @@ pub async fn describe_connection(
 /// error when it would not keep the pending sign-in.
 pub async fn begin_sign_in(
     browser: &XynologBrowser,
-    options: BeginAuthorization,
+    options: BeginAuthorizationOptions,
     http: &reqwest::Client,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     begin_authorization(options, browser.storage().as_ref(), http).await

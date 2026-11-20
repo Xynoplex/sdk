@@ -37,28 +37,13 @@ type PendingAuthorization struct {
 	RedirectURI string           `json:"redirectUri"`
 	Target      api.HttpEndpoint `json:"target"`
 	Issuer      IssuerEndpoints  `json:"issuer"`
-	// KbID is the registered knowledge base being signed in to again; "" when
+	// KbID is the registered knowledge base being signed in to again; nil when
 	// it is none.
-	KbID string `json:"kbId,omitempty"`
+	KbID *string `json:"kbId,omitempty"`
 	// ExpectedDid and ExpectedName are what the person believed they clicked,
-	// checked afterwards and never assumed; "" when they named nothing.
-	ExpectedDid  string `json:"expectedDid,omitempty"`
-	ExpectedName string `json:"expectedName,omitempty"`
-}
-
-// BeginAuthorizationOptions is what a sign-in by redirect begins from.
-type BeginAuthorizationOptions struct {
-	Target api.HttpEndpoint
-	// RedirectURI is where the issuer sends the person back to. The issuer
-	// accepts only an address its registration of the client lists.
-	RedirectURI string
-	// KbID is the registered knowledge base being signed in to again; "" when
-	// it is none.
-	KbID string
-	// ExpectedDid and ExpectedName are what the person believed they clicked;
-	// "" when they named nothing.
-	ExpectedDid  string
-	ExpectedName string
+	// checked afterwards and never assumed; nil when they named nothing.
+	ExpectedDid  *string `json:"expectedDid,omitempty"`
+	ExpectedName *string `json:"expectedName,omitempty"`
 }
 
 // CodeChallenge is RFC 7636 §4.2: BASE64URL(SHA-256(verifier)).
@@ -91,8 +76,9 @@ func query(pairs ...[2]string) string {
 
 // BeginAuthorization begins the authorization-code grant: it finds the issuer
 // the target trusts, remembers the pending sign-in in pending, and gives the
-// URL to send the person to.
-func BeginAuthorization(ctx context.Context, issuer Issuer, options BeginAuthorizationOptions, pending SessionStorage) (string, error) {
+// URL to send the person to. The issuer sends them back only to a RedirectUri
+// its registration of the client lists.
+func BeginAuthorization(ctx context.Context, issuer Issuer, options api.BeginAuthorizationOptions, pending SessionStorage) (string, error) {
 	baseURL, err := GatewayURL(options.Target)
 	if err != nil {
 		return "", signInUnanswered(SignInErrorCodeDiscovery, err.Error())
@@ -104,10 +90,10 @@ func BeginAuthorization(ctx context.Context, issuer Issuer, options BeginAuthori
 	record := PendingAuthorization{
 		State:        randomURLSafe(24),
 		Verifier:     randomURLSafe(48),
-		RedirectURI:  options.RedirectURI,
+		RedirectURI:  options.RedirectUri,
 		Target:       options.Target,
 		Issuer:       endpoints,
-		KbID:         options.KbID,
+		KbID:         options.KbId,
 		ExpectedDid:  options.ExpectedDid,
 		ExpectedName: options.ExpectedName,
 	}
@@ -141,18 +127,18 @@ func BeginAuthorization(ctx context.Context, issuer Issuer, options BeginAuthori
 // finds nothing to complete. A record that lacks a member
 // protocol/specs/src/session/stored.json's pendingAuthorization requires is
 // no pending sign-in.
-func CompleteAuthorization(ctx context.Context, issuer Issuer, callbackURL string, pending SessionStorage) (PendingAuthorization, IssuedTokens, error) {
+func CompleteAuthorization(ctx context.Context, issuer Issuer, callbackURL string, pending SessionStorage) (PendingAuthorization, api.IssuedTokens, error) {
 	var taken string
 	var had bool
 	if err := pending.Update(PendingAuthorizationKey, func(stored string, has bool) (string, bool) {
 		taken, had = stored, has
 		return "", false
 	}); err != nil {
-		return PendingAuthorization{}, IssuedTokens{}, err
+		return PendingAuthorization{}, api.IssuedTokens{}, err
 	}
 	record, readable := required.ReadAs[PendingAuthorization]([]byte(taken))
 	if !had || !readable {
-		return PendingAuthorization{}, IssuedTokens{}, signInUnanswered(SignInErrorCodeNoPending, "No sign-in is pending here")
+		return PendingAuthorization{}, api.IssuedTokens{}, signInUnanswered(SignInErrorCodeNoPending, "No sign-in is pending here")
 	}
 
 	callback, err := url.Parse(callbackURL)
@@ -160,7 +146,7 @@ func CompleteAuthorization(ctx context.Context, issuer Issuer, callbackURL strin
 		err = errors.New("relative URL without a base")
 	}
 	if err != nil {
-		return PendingAuthorization{}, IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The sign-in response is not a URL: "+err.Error())
+		return PendingAuthorization{}, api.IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The sign-in response is not a URL: "+err.Error())
 	}
 	said := callback.Query()
 	if said.Has("error") {
@@ -172,13 +158,13 @@ func CompleteAuthorization(ctx context.Context, issuer Issuer, callbackURL strin
 		if said.Has("error_description") {
 			failure = said.Get("error_description")
 		}
-		return PendingAuthorization{}, IssuedTokens{}, signInUnanswered(code, failure)
+		return PendingAuthorization{}, api.IssuedTokens{}, signInUnanswered(code, failure)
 	}
 	if !said.Has("state") || said.Get("state") != record.State {
-		return PendingAuthorization{}, IssuedTokens{}, signInUnanswered(SignInErrorCodeState, "The sign-in response does not belong to the pending sign-in")
+		return PendingAuthorization{}, api.IssuedTokens{}, signInUnanswered(SignInErrorCodeState, "The sign-in response does not belong to the pending sign-in")
 	}
 	if !said.Has("code") {
-		return PendingAuthorization{}, IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The sign-in response carries no authorization code")
+		return PendingAuthorization{}, api.IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The sign-in response carries no authorization code")
 	}
 
 	status, answered, err := issuer.postForm(ctx, record.Issuer.Token, url.Values{
@@ -189,15 +175,15 @@ func CompleteAuthorization(ctx context.Context, issuer Issuer, callbackURL strin
 		"code_verifier": {record.Verifier},
 	})
 	if err != nil {
-		return PendingAuthorization{}, IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
+		return PendingAuthorization{}, api.IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer did not answer: "+err.Error())
 	}
 	access, ok := answered.text("access_token")
 	if status != http.StatusOK || !ok {
-		return PendingAuthorization{}, IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the token request (%s)", answered.refusal(status)), status)
+		return PendingAuthorization{}, api.IssuedTokens{}, NewSignInError(SignInErrorCodeExchange, fmt.Sprintf("The issuer refused the token request (%s)", answered.refusal(status)), status)
 	}
 	refresh, ok := answered.text("refresh_token")
 	if !ok {
-		return PendingAuthorization{}, IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer returned no refresh token: the session could not outlive its first access token")
+		return PendingAuthorization{}, api.IssuedTokens{}, signInUnanswered(SignInErrorCodeExchange, "The issuer returned no refresh token: the session could not outlive its first access token")
 	}
-	return record, IssuedTokens{Access: access, Refresh: refresh}, nil
+	return record, api.IssuedTokens{Access: access, Refresh: refresh}, nil
 }
