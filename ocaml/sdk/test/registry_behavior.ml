@@ -884,6 +884,63 @@ let pending_authorization_census () =
     (fun issuer ->
       reads (("issuer", `Assoc issuer) :: List.remove_assoc "issuer" written))
 
+(* The pending authorization Redirect_sign_in keeps and takes, held to the
+   table as the registry's is: a value reads when it is taken. *)
+let redirect_sign_in_census () =
+  Eio_mock.Backend.run @@ fun () ->
+  let module S = Redirect_sign_in in
+  let issuer =
+    OAuth.discover
+      (fun _ ->
+        ( 200,
+          {|{"issuer":"https://issuer.example","authorization_endpoint":"https://issuer.example/auth","token_endpoint":"https://issuer.example/token","device_authorization_endpoint":"https://issuer.example/device","revocation_endpoint":"https://issuer.example/revoke"}|}
+        ))
+      ~issuer:"https://issuer.example"
+    |> Result.get_ok
+  in
+  let pending =
+    S.begin_authorization ~issuer
+      ~random:(fun length -> String.make length 'a')
+      {
+        redirect_uri = "http://localhost:4010/callback";
+        target =
+          Models.decode Models.http_endpoint
+            {|{"kind":"http","host":"localhost","port":4010,"protocol":"http"}|}
+          |> Result.get_ok;
+        kb_id = Some "kb-pending";
+        expected_did = Some "did:web:kb.example";
+        expected_name = Some "Actual";
+      }
+  in
+  let values = Hashtbl.create 2 in
+  let storage =
+    Storage.make ~get:(Hashtbl.find_opt values)
+      ~update:(fun key change ->
+        match change (Hashtbl.find_opt values key) with
+        | Some value -> Hashtbl.replace values key value
+        | None -> Hashtbl.remove values key)
+      ()
+  in
+  S.keep storage pending;
+  let key = S.pending_authorization_key in
+  let written =
+    J.to_assoc (Yojson.Safe.from_string (Hashtbl.find values key))
+  in
+  let reads fields =
+    Hashtbl.replace values key (Yojson.Safe.to_string (`Assoc fields));
+    S.take storage <> None
+  in
+  let schema =
+    field "pendingAuthorization" (Protocol.table "session/stored.json")
+  in
+  census ~what:"a pending authorization Redirect_sign_in keeps" schema written
+    reads;
+  census ~what:"its issuer"
+    (field "issuer" (field "properties" schema))
+    (J.to_assoc (List.assoc "issuer" written))
+    (fun issuer ->
+      reads (("issuer", `Assoc issuer) :: List.remove_assoc "issuer" written))
+
 let session_unit startup () =
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
@@ -1658,6 +1715,8 @@ let () =
             open_resource_census;
           Alcotest.test_case "a pending authorization is the table's" `Quick
             pending_authorization_census;
+          Alcotest.test_case "Redirect_sign_in's pending authorization too"
+            `Quick redirect_sign_in_census;
           Alcotest.test_case "session unit and durable renewal" `Quick
             (session_unit `Accept);
           Alcotest.test_case "startup refuses once then confirms" `Quick
