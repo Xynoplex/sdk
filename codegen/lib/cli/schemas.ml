@@ -8,9 +8,6 @@ exception Refused of Decode.error
 
 let refuse file message = raise (Refused { Decode.file; pointer = ""; message })
 
-(* A file of protocol/specs/src as the launcher names it, from its root. *)
-let repository file = "protocol/specs/src/" ^ file
-
 let schema (spec : Spec.t) file =
   match List.assoc_opt file spec.schemas with
   | Some s -> s
@@ -59,13 +56,25 @@ let reach spec files =
   in
   List.sort String.compare (List.fold_left visit [] files)
 
-(* A file's JSON, compact, as the launcher embeds it. *)
-let text ~root file =
+let parse ~root file =
   match
     Decode.parse_file ~root:(Filename.concat root "protocol/specs/src") file
   with
-  | Ok json -> Yojson.Safe.to_string json
+  | Ok json -> json
   | Error error -> raise (Refused error)
+
+(* A file's JSON, compact, as the launcher embeds it. *)
+let text ~root file = Yojson.Safe.to_string (parse ~root file)
+
+(* The ["$id"] a schema's file states: what the launcher registers its text
+   by, and what a [$ref] to it names. *)
+let id ~root file =
+  match parse ~root file with
+  | `Assoc members -> (
+      match List.assoc_opt "$id" members with
+      | Some (`String id) -> id
+      | _ -> refuse file "states no $id")
+  | _ -> refuse file "is not an object"
 
 (* A schema's description, or else the description of the schema its [$ref]
    names. *)
