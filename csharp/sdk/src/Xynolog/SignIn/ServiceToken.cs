@@ -3,6 +3,7 @@ using System.Buffers.Text;
 using System.Text;
 using System.Text.Json;
 using Xynolog.Errors;
+using Xynolog.Http;
 using Xynolog.Protocol;
 using Xynolog.Session;
 
@@ -28,12 +29,7 @@ public sealed class ServiceToken : IDisposable
         this.authority = authority;
         clock = timeProvider ?? TimeProvider.System;
         issuer = new Issuer(httpClient, clock, random);
-        proof = _ => new Dictionary<string, string>
-        {
-            ["grant_type"] = ClientAssertion.GrantType,
-            ["client_id"] = clientId,
-            ["client_secret"] = clientSecret,
-        };
+        proof = _ => GatewayForms.ClientSecret(clientId, clientSecret);
     }
 
     /// <summary>The caller owns the RSA key and keeps it usable for this token's lifetime.</summary>

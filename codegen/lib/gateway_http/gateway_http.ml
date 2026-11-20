@@ -10,6 +10,7 @@ module Go = Go
 module Python = Python
 module Swift = Swift
 module Kotlin = Kotlin
+module Csharp = Csharp
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
@@ -21,5 +22,6 @@ let files ~root:_ (spec : Spec.t) =
         Python.file m;
         Swift.file m;
         Kotlin.file m;
+        Csharp.file m;
       ])
     (Model.derive spec)

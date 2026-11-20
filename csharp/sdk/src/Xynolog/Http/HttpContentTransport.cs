@@ -62,21 +62,21 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
         using var linked = Link(cancellation);
         cancellation = linked.Token;
         using var activity = SdkTelemetry.Start("content.put", new ActivityTagsCollection { { "content.format", request.Format }, { "content.size_bytes", request.File.LongLength } });
-        using var response = await transport.ExchangeAsync(HttpMethod.Post, "/resources", () =>
+        using var response = await transport.ExchangeAsync(GatewayRoute.UploadResource.Method, GatewayRoute.UploadResource.Path, () =>
         {
             var form = new MultipartFormDataContent();
             var metadata = JsonSerializer.SerializeToElement(request);
             foreach (var field in metadata.EnumerateObject())
             {
-                if (field.Name == "file") continue;
+                if (field.Name == UploadField.File) continue;
                 form.Add(new StringContent(field.Value.ValueKind == JsonValueKind.String ? field.Value.GetString() ?? throw new JsonException("Null upload member") : field.Value.GetRawText()), field.Name);
             }
             var file = new ProgressContent(request.File, progress);
             file.Headers.ContentType = new MediaTypeHeaderValue(request.Format);
-            form.Add(file, "file", request.Name);
+            form.Add(file, UploadField.File, request.Name);
             return form;
         }, upload: true, cancellation: cancellation).ConfigureAwait(Spawning.Captures);
-        return await transport.ReplyAsync<CreateResourceResponse>(response, "/resources", cancellation).ConfigureAwait(Spawning.Captures);
+        return await transport.ReplyAsync<CreateResourceResponse>(response, GatewayRoute.UploadResource.Path, cancellation).ConfigureAwait(Spawning.Captures);
     }
 
     public async Task<BinaryContent> GetBinaryAsync(ResourceId resource, CancellationToken cancellation = default)
@@ -84,7 +84,7 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
         using var linked = Link(cancellation);
         cancellation = linked.Token;
         using var activity = SdkTelemetry.Start("content.get", new ActivityTagsCollection { { "resource.id", resource.Value } });
-        using var response = await transport.ExchangeAsync(HttpMethod.Get, Path(resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
+        using var response = await transport.ExchangeAsync(GatewayRoute.GetResourceRepresentation.Method, PathOf(GatewayRoute.GetResourceRepresentation, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
         return new BinaryContent(ContentType(response.Content), await response.Content.ReadAsByteArrayAsync(cancellation).ConfigureAwait(Spawning.Captures));
     }
 
@@ -93,7 +93,7 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
         using var linked = Link(cancellation);
         cancellation = linked.Token;
         var activity = SdkTelemetry.Start("content.get", new ActivityTagsCollection { { "resource.id", resource.Value }, { "content.stream", true } });
-        var response = await transport.ExchangeAsync(HttpMethod.Get, Path(resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
+        var response = await transport.ExchangeAsync(GatewayRoute.GetResourceRepresentation.Method, PathOf(GatewayRoute.GetResourceRepresentation, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
         try
         {
             var mediaType = ContentType(response.Content);
@@ -113,27 +113,27 @@ public sealed class HttpContentTransport(HttpTransport transport) : IDisposable
         using var linked = Link(cancellation);
         cancellation = linked.Token;
         using var activity = SdkTelemetry.Start("content.get_graph", new ActivityTagsCollection { { "resource.id", resource.Value } });
-        return await transport.AnswerAsync<GetResourceResponse>(HttpMethod.Get, Path(resource) + "/jsonld", cancellation: cancellation).ConfigureAwait(Spawning.Captures);
+        return await transport.AnswerAsync<GetResourceResponse>(GatewayRoute.GetResourceJsonLd.Method, PathOf(GatewayRoute.GetResourceJsonLd, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
     }
     public async Task<GetAnnotationsResponse> GetAnnotationsAsync(ResourceId resource, CancellationToken cancellation = default)
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
         using var activity = SdkTelemetry.Start("content.get_annotations", new ActivityTagsCollection { { "resource.id", resource.Value } });
-        return await transport.AnswerAsync<GetAnnotationsResponse>(HttpMethod.Get, Path(resource) + "/annotations", cancellation: cancellation).ConfigureAwait(Spawning.Captures);
+        return await transport.AnswerAsync<GetAnnotationsResponse>(GatewayRoute.GetResourceAnnotations.Method, PathOf(GatewayRoute.GetResourceAnnotations, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
     }
     public async Task<AnchoredTextAnswer> GetAnchoredTextAsync(ResourceId resource, CancellationToken cancellation = default)
     {
         using var linked = Link(cancellation);
         cancellation = linked.Token;
         using var activity = SdkTelemetry.Start("content.get_anchored_text", new ActivityTagsCollection { { "resource.id", resource.Value } });
-        return await transport.AnswerAsync<AnchoredTextAnswer>(HttpMethod.Get, Path(resource) + "/anchored-text", cancellation: cancellation).ConfigureAwait(Spawning.Captures);
+        return await transport.AnswerAsync<AnchoredTextAnswer>(GatewayRoute.GetResourceAnchoredText.Method, PathOf(GatewayRoute.GetResourceAnchoredText, resource), cancellation: cancellation).ConfigureAwait(Spawning.Captures);
     }
     private static string ContentType(HttpContent content) =>
         (content.Headers.NonValidated.TryGetValues("Content-Type", out var values) ? values.FirstOrDefault() : null)
         ?? throw new TransportError(ProtocolFacts.Error(0), "The content response has no media type");
 
-    private static string Path(ResourceId resource) => "/resources/" + Uri.EscapeDataString(resource.Value);
+    private static string PathOf(GatewayRoute route, ResourceId resource) => route.Path.Replace("{id}", Uri.EscapeDataString(resource.Value), StringComparison.Ordinal);
 
     private sealed class ProgressContent(byte[] bytes, IProgress<UploadProgress>? progress) : HttpContent
     {
