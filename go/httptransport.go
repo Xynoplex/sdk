@@ -299,8 +299,8 @@ func (s *transportShared) emit(ctx context.Context, body api.BusEmitRequest) (in
 				if !ok {
 					return true
 				}
-				post := http.MethodPost
-				return RetryRuleBoot.Retryable(RetryFacts{Status: &status, Method: &post})
+				method := routeEmitOnBus.method
+				return RetryRuleBoot.Retryable(RetryFacts{Status: &status, Method: &method})
 			},
 			func(err error) (time.Duration, bool) {
 				var refused *TransportError
@@ -333,32 +333,32 @@ func (s *transportShared) emit(ctx context.Context, body api.BusEmitRequest) (in
 func (s *transportShared) emitOnce(ctx context.Context, token, key string, body []byte) (emitted, error) {
 	attempt, cancel := context.WithTimeout(ctx, s.timing.EmitTimeout)
 	defer cancel()
-	request, err := http.NewRequestWithContext(attempt, http.MethodPost, s.baseURL+"/bus/emit", bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(attempt, routeEmitOnBus.method, s.baseURL+routeEmitOnBus.path, bytes.NewReader(body))
 	if err != nil {
-		return emitted{}, transportErrorWithoutResponse(fmt.Sprintf("/bus/emit cannot be asked: %v", err), TransportErrorCodeError)
+		return emitted{}, transportErrorWithoutResponse(fmt.Sprintf("%s cannot be asked: %v", routeEmitOnBus.path, err), TransportErrorCodeError)
 	}
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", routeEmitOnBusSends)
 	request.Header.Set("Authorization", "Bearer "+token)
-	request.Header.Set("Idempotency-Key", key)
+	request.Header.Set(headerIdempotencyKey, key)
 	carryTrace(ctx, request.Header)
 	response, err := s.http.Do(request)
 	if err != nil {
 		if ctx.Err() != nil {
 			return emitted{}, ctx.Err()
 		}
-		return emitted{}, transportErrorWithoutResponse(fmt.Sprintf("/bus/emit got no answer: %v", err), TransportErrorCodeUnavailable)
+		return emitted{}, transportErrorWithoutResponse(fmt.Sprintf("%s got no answer: %v", routeEmitOnBus.path, err), TransportErrorCodeUnavailable)
 	}
 	defer response.Body.Close()
 	answered, readErr := io.ReadAll(response.Body)
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		wait, hasWait := RetryAfter(response.Header.Get("Retry-After"))
+		wait, hasWait := RetryAfter(response.Header.Get(headerRetryAfter))
 		detail := string(answered)
 		if len(detail) > 500 {
 			detail = detail[:500]
 		}
-		message := fmt.Sprintf("/bus/emit %d", response.StatusCode)
+		message := fmt.Sprintf("%s %d", routeEmitOnBus.path, response.StatusCode)
 		if detail != "" {
-			message = fmt.Sprintf("/bus/emit %d: %s", response.StatusCode, detail)
+			message = fmt.Sprintf("%s %d: %s", routeEmitOnBus.path, response.StatusCode, detail)
 		}
 		return emitted{}, refusal(message, response.StatusCode, wait, hasWait, answered)
 	}

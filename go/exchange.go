@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/xynolog/sdk/go/api"
 	"github.com/xynolog/sdk/go/internal/required"
 )
 
@@ -96,7 +97,7 @@ func (s *transportShared) exchange(ctx context.Context, spec request) (answered,
 			made.Header.Set("Content-Type", spec.contentType)
 		}
 		if spec.idempotencyKey != "" {
-			made.Header.Set("Idempotency-Key", spec.idempotencyKey)
+			made.Header.Set(headerIdempotencyKey, spec.idempotencyKey)
 		}
 		if spec.authenticated && token != "" {
 			made.Header.Set("Authorization", "Bearer "+token)
@@ -144,7 +145,7 @@ func (s *transportShared) exchange(ctx context.Context, spec request) (answered,
 		}
 		response.Body.Close()
 		cancel()
-		wait, hasWait := RetryAfter(response.Header.Get("Retry-After"))
+		wait, hasWait := RetryAfter(response.Header.Get(headerRetryAfter))
 		refused := refusal(refusalMessage(response, said), response.StatusCode, wait, hasWait, said)
 		if refused.Code == TransportErrorCodeUnauthorized {
 			if !renewed {
@@ -170,22 +171,10 @@ func (s *transportShared) exchange(ctx context.Context, spec request) (answered,
 // refusalMessage is what a refusal says: the gateway's words, or its status
 // and its reason, worded as the TypeScript transport words it.
 func refusalMessage(response *http.Response, said []byte) string {
-	if words, ok := gatewayWords(said); ok {
-		return words
+	if refused, ok := required.ReadAs[api.ErrorResponse](said); ok {
+		return refused.Error
 	}
 	return fmt.Sprintf("HTTP %d: %s", response.StatusCode, http.StatusText(response.StatusCode))
-}
-
-// gatewayWords is what a refusal's body says when it is an ErrorResponse:
-// its error.
-func gatewayWords(said []byte) (string, bool) {
-	var body struct {
-		Error *string `json:"error"`
-	}
-	if json.Unmarshal(said, &body) != nil || body.Error == nil {
-		return "", false
-	}
-	return *body.Error, true
 }
 
 // pause waits for wait; false when ctx is done first.

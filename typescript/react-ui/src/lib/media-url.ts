@@ -1,4 +1,4 @@
-import type { ResourceId } from '@xynolog/core';
+import { gatewayApiKeys, gatewayRoutes, type ResourceId } from '@xynolog/core';
 import type { XynologClient } from '@xynolog/sdk';
 
 /**
@@ -26,5 +26,7 @@ export function mediaUrl(
   token: string | undefined,
 ): string | undefined {
   if (!client || !token) return undefined;
-  return `${client.baseUrl}/api/resources/${id}?token=${token}`;
+  const path = gatewayRoutes.getResourceRepresentationWithMediaToken.path;
+  const { name } = gatewayApiKeys.mediaToken;
+  return `${client.baseUrl}${path.replace('{id}', id)}?${name}=${token}`;
 }

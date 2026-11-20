@@ -306,11 +306,7 @@ let refresh_script http ~token_endpoint ~refresh_token =
 
 let service_secret http issuer ~client_id ~client_secret =
   grant http ~token_endpoint:issuer.token
-    [
-      ("grant_type", "client_credentials");
-      ("client_id", client_id);
-      ("client_secret", client_secret);
-    ]
+    (Gateway_http.client_secret_form ~client_id ~client_secret)
 
 type rsa_key = X509.Private_key.t
 

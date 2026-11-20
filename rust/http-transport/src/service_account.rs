@@ -17,6 +17,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::Mutex;
 use tokio::time::Instant;
 use uuid::Uuid;
+use xynolog::gateway_http::client_secret_form;
 use xynolog::identity::encode_uri_component;
 use xynolog::retry::RetryFacts;
 use xynolog::session::{refresh_delay, renewal_delay};
@@ -89,11 +90,11 @@ impl Credential {
                 client_id,
                 client_secret,
                 ..
-            }) => Ok(format!(
-                "grant_type=client_credentials&client_id={}&client_secret={}",
-                encode_uri_component(client_id),
-                encode_uri_component(client_secret)
-            )),
+            }) => Ok(client_secret_form(client_id, client_secret)
+                .iter()
+                .map(|(name, value)| format!("{name}={}", encode_uri_component(value)))
+                .collect::<Vec<_>>()
+                .join("&")),
             Credential::Key(credential) => {
                 let KeyCredential {
                     issuer,

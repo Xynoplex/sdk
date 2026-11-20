@@ -25,6 +25,18 @@ from xynolog._kept_for_first_reader import KeptForFirstReader
 from xynolog.channels import RESOURCE_SCOPED_CHANNELS
 from xynolog.errors import TransportError, XynologError
 from xynolog.events import Events
+from xynolog.http._gateway_http import (
+    CREATE_MEDIA_TOKEN,
+    CREATE_MEDIA_TOKEN_SENDS,
+    EMIT_ON_BUS,
+    EMIT_ON_BUS_SENDS,
+    GET_CURRENT_USER,
+    GET_HEALTH,
+    GET_PROTECTED_RESOURCE_METADATA,
+    GET_STATUS,
+    IDEMPOTENCY_KEY,
+    RETRY_AFTER,
+)
 from xynolog.http._withheld import why_unanswered
 from xynolog.http.content import HttpContentTransport
 from xynolog.http.exchange import Exchange, TokenRefresher, refusal
@@ -305,31 +317,32 @@ class HttpTransport(Transport, GatewayOperations):
     async def _emit_once(self, body: str, key: str, token: str | None) -> int | None:
         """One attempt of an emit: `POST /bus/emit` with its `key` and `token`, answered within `EMIT_TIMEOUT_MS`."""
         if self._closing.is_set():
-            raise TransportError("error", "/bus/emit was not sent: the transport is closed")
+            raise TransportError("error", f"{EMIT_ON_BUS.path} was not sent: the transport is closed")
         try:
             async with asyncio.timeout(EMIT_TIMEOUT_MS / 1000):
-                response = await self._http.post(
-                    f"{self._base_url}/bus/emit",
+                response = await self._http.request(
+                    EMIT_ON_BUS.method,
+                    f"{self._base_url}{EMIT_ON_BUS.path}",
                     content=body,
                     headers={
                         **telemetry.trace_headers(),
                         "Authorization": f"Bearer {token or ''}",
-                        "Content-Type": "application/json",
-                        "Idempotency-Key": key,
+                        "Content-Type": EMIT_ON_BUS_SENDS,
+                        IDEMPOTENCY_KEY: key,
                     },
                 )
         except TimeoutError:
-            raise TransportError.without_response(f"/bus/emit got no answer within {EMIT_TIMEOUT_MS // 1000}s") from None
+            raise TransportError.without_response(f"{EMIT_ON_BUS.path} got no answer within {EMIT_TIMEOUT_MS // 1000}s") from None
         except httpx.HTTPError as error:
-            raise TransportError.without_response(f"/bus/emit got no answer: {why_unanswered(error)}") from None
+            raise TransportError.without_response(f"{EMIT_ON_BUS.path} got no answer: {why_unanswered(error)}") from None
         if not response.is_success:
             status = response.status_code
             detail = response.text[:500]
             raise refusal(
-                f"/bus/emit {status}: {detail}" if detail else f"/bus/emit {status}",
+                f"{EMIT_ON_BUS.path} {status}: {detail}" if detail else f"{EMIT_ON_BUS.path} {status}",
                 status,
                 response.content,
-                retry_after_ms(response.headers.get("retry-after")),
+                retry_after_ms(response.headers.get(RETRY_AFTER)),
             )
         # No count is reported as no count, never as a zero: an absent
         # `subscribers` is the gateway saying it could not count, and a body
@@ -341,29 +354,31 @@ class HttpTransport(Transport, GatewayOperations):
 
     @override
     async def get_current_user(self) -> UserResponse:
-        return await self._exchange.answer(UserResponse, "GET", "/api/users/me")
+        return await self._exchange.answer(UserResponse, GET_CURRENT_USER.method, GET_CURRENT_USER.path)
 
     @override
     async def get_media_token(self, resource_id: ResourceId) -> MediaTokenResponse:
         return await self._exchange.answer(
             MediaTokenResponse,
-            "POST",
-            "/api/tokens/media",
-            headers={"Content-Type": "application/json"},
+            CREATE_MEDIA_TOKEN.method,
+            CREATE_MEDIA_TOKEN.path,
+            headers={"Content-Type": CREATE_MEDIA_TOKEN_SENDS},
             content=MediaTokenRequest(resource_id=resource_id).model_dump_json().encode(),
         )
 
     @override
     async def get_protected_resource_metadata(self) -> ProtectedResourceMetadata:
-        return await self._exchange.answer(ProtectedResourceMetadata, "GET", "/.well-known/oauth-protected-resource", authenticated=False)
+        return await self._exchange.answer(
+            ProtectedResourceMetadata, GET_PROTECTED_RESOURCE_METADATA.method, GET_PROTECTED_RESOURCE_METADATA.path, authenticated=False
+        )
 
     @override
     async def health_check(self) -> HealthResponse:
-        return await self._exchange.answer(HealthResponse, "GET", "/api/health")
+        return await self._exchange.answer(HealthResponse, GET_HEALTH.method, GET_HEALTH.path)
 
     @override
     async def get_status(self) -> StatusResponse:
-        return await self._exchange.answer(StatusResponse, "GET", "/api/status")
+        return await self._exchange.answer(StatusResponse, GET_STATUS.method, GET_STATUS.path)
 
     @override
     async def close(self) -> None:

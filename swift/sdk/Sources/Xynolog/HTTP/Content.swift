@@ -155,7 +155,7 @@ private struct Multipart: Sendable {
     let fields = try JSONDecoder().decode(
       [String: JSONValue].self, from: JSONEncoder().encode(form))
     var data = Data()
-    for name in fields.keys.sorted() where name != "file" {
+    for name in fields.keys.sorted() where name != UploadField.file.rawValue {
       guard case .string(let value) = fields[name] else {
         throw TransportError(.error, "Multipart field \(name) is not text")
       }
@@ -166,11 +166,18 @@ private struct Multipart: Sendable {
     }
     data.append(
       Data(
-        "--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\(quoted(request.name))\"\r\nContent-Type: \(request.format)\r\n\r\n"
+        "--\(boundary)\r\nContent-Disposition: form-data; name=\"\(UploadField.file.rawValue)\"; filename=\"\(quoted(request.name))\"\r\nContent-Type: \(request.format)\r\n\r\n"
           .utf8))
     data.append(request.file)
     data.append(Data("\r\n--\(boundary)--\r\n".utf8))
     self.data = data
+  }
+}
+extension GatewayRoute {
+  /// The route's path for `resource`: its `{id}`, the id as it is, which the rule an id is held to
+  /// keeps to one segment.
+  fileprivate func path(for resource: ResourceId) -> String {
+    path.replacingOccurrences(of: "{id}", with: resource.value)
   }
 }
 private func quoted(_ value: String) -> String {
@@ -254,16 +261,18 @@ extension HttpTransport: ContentTransport {
     let idempotencyKey = UUID().uuidString
     var credential = token
     var renewed = false
-    var resend = OneResend(method: "POST", keyed: true, clock: clock)
+    let route = GatewayRoute.uploadResource
+    var resend = OneResend(method: route.method, keyed: true, clock: clock)
     while true {
       try Task.checkCancellation()
       if lifetime.ended { throw CancellationError() }
-      var wire = HTTPClientRequest(url: baseUrl + "/resources")
-      wire.method = .POST
+      var wire = HTTPClientRequest(url: baseUrl + route.path)
+      wire.method = .RAW(value: route.method)
       for (key, value) in traceCarrier(upload) { wire.headers.add(name: key, value: value) }
       wire.headers.add(
-        name: "Content-Type", value: "multipart/form-data; boundary=" + form.boundary)
-      wire.headers.add(name: "Idempotency-Key", value: idempotencyKey)
+        name: "Content-Type",
+        value: GatewayMedia.uploadResourceSends + "; boundary=" + form.boundary)
+      wire.headers.add(name: GatewayHeader.idempotencyKey, value: idempotencyKey)
       if let credential { wire.headers.add(name: "Authorization", value: "Bearer " + credential) }
       wire.body = .stream(
         UploadBytes(data: form.data, report: report), length: .known(Int64(form.data.count)))
@@ -274,11 +283,12 @@ extension HttpTransport: ContentTransport {
         } catch {
           if Task.isCancelled || lifetime.ended { throw CancellationError() }
           if try await resend.afterNoAnswer() { continue }
-          throw TransportError(.unavailable, "POST /resources got no answer: \(error)")
+          throw TransportError(
+            .unavailable, "\(route.method) \(route.path) got no answer: \(error)")
         }
         if !(200..<300).contains(Int(response.status.code)) {
           let failure = await Self.refusal(
-            response, path: "/resources", deadlineMs: timing.httpRequestMs, clock: clock)
+            response, path: route.path, deadlineMs: timing.httpRequestMs, clock: clock)
           if failure.reason == .unauthorized {
             if !renewed {
               renewed = true
@@ -314,7 +324,8 @@ extension HttpTransport: ContentTransport {
           "GET", channel: "content", payload: ["resourceId": .string(resource.value)], scope: nil,
           correlationID: nil)
         let exchange = try await owner.begin(
-          method: "GET", path: "/resources/" + resource.value, trace: read.headers())
+          method: GatewayRoute.getResourceRepresentation.method,
+          path: GatewayRoute.getResourceRepresentation.path(for: resource), trace: read.headers())
         return try ContentStream(
           response: exchange.response, lifetime: owner.lifetime, onEnd: { await read.end() })
       } catch {
@@ -331,7 +342,8 @@ extension HttpTransport: ContentTransport {
         "GET", channel: "content", payload: ["resourceId": .string(resource.value)], scope: nil,
         correlationID: nil)
       let exchange = try await owner.begin(
-        method: "GET", path: "/resources/" + resource.value, trace: traceCarrier(read))
+        method: GatewayRoute.getResourceRepresentation.method,
+        path: GatewayRoute.getResourceRepresentation.path(for: resource), trace: traceCarrier(read))
       do {
         let stream = try ContentStream(response: exchange.response, lifetime: owner.lifetime)
         defer { stream.dispose() }
@@ -343,7 +355,10 @@ extension HttpTransport: ContentTransport {
       } catch {
         if Task.isCancelled || owner.lifetime.ended { throw CancellationError() }
         let failure = TransportError(
-          .unavailable, "GET /resources/\(resource.value) could not finish: \(error)")
+          .unavailable,
+          "\(GatewayRoute.getResourceRepresentation.method) "
+            + "\(GatewayRoute.getResourceRepresentation.path(for: resource)) could not finish: \(error)"
+        )
         owner.failureEvents.yield(failure)
         throw failure
       }
@@ -354,7 +369,8 @@ extension HttpTransport: ContentTransport {
       .contentGetGraph, attributes: ["resource.id": .string(resource.value)])
     defer { read.end() }
     return try await answer(
-      GetResourceResponse.self, path: "/resources/\(resource.value)/jsonld",
+      GetResourceResponse.self, method: GatewayRoute.getResourceJsonLd.method,
+      path: GatewayRoute.getResourceJsonLd.path(for: resource),
       trace: traceCarrier(read))
   }
   public func getAnnotations(_ resource: ResourceId) async throws -> GetAnnotationsResponse {
@@ -362,7 +378,8 @@ extension HttpTransport: ContentTransport {
       .contentGetAnnotations, attributes: ["resource.id": .string(resource.value)])
     defer { read.end() }
     return try await answer(
-      GetAnnotationsResponse.self, path: "/resources/\(resource.value)/annotations",
+      GetAnnotationsResponse.self, method: GatewayRoute.getResourceAnnotations.method,
+      path: GatewayRoute.getResourceAnnotations.path(for: resource),
       trace: traceCarrier(read))
   }
   public func getAnchoredText(_ resource: ResourceId) async throws -> AnchoredTextAnswer {
@@ -370,7 +387,8 @@ extension HttpTransport: ContentTransport {
       .contentGetAnchoredText, attributes: ["resource.id": .string(resource.value)])
     defer { read.end() }
     return try await answer(
-      AnchoredTextAnswer.self, path: "/resources/\(resource.value)/anchored-text",
+      AnchoredTextAnswer.self, method: GatewayRoute.getResourceAnchoredText.method,
+      path: GatewayRoute.getResourceAnchoredText.path(for: resource),
       trace: traceCarrier(read))
   }
 }

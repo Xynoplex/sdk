@@ -22,7 +22,7 @@
 //! this one task in order, so the state machine has no locks and no races.
 
 use crate::sse::SseParser;
-use crate::transport::{MALFORMED, Shared, gateway_words, locked, refusal};
+use crate::transport::{MALFORMED, Shared, gateway_words, locked, method_of, refusal};
 use futures::StreamExt;
 use serde_json::Value;
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
@@ -33,6 +33,7 @@ use tokio::time::Instant;
 use xynolog::bus_log::{bus_log, bus_note};
 use xynolog::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD};
 use xynolog::errors::{TransportError, TransportErrorCode};
+use xynolog::gateway_http::SUBSCRIBE_TO_BUS;
 use xynolog::resume::is_persisted_event_id;
 use xynolog::retry::{equal_jitter, retry_after};
 use xynolog::timing::{DEGRADED_THRESHOLD, MAX_RECONNECT, RECONNECT_DEBOUNCE};
@@ -763,13 +764,17 @@ async fn connection(
     body: BusSubscribeRequest,
     events: mpsc::Sender<Event>,
 ) {
-    let request = shared
+    let mut request = shared
         .http
-        .post(format!("{}/bus/subscribe", shared.base_url))
-        .bearer_auth(&token)
-        .header(reqwest::header::ACCEPT, "text/event-stream")
-        .json(&body)
-        .send();
+        .request(
+            method_of(&SUBSCRIBE_TO_BUS),
+            format!("{}{}", shared.base_url, SUBSCRIBE_TO_BUS.path),
+        )
+        .bearer_auth(&token);
+    if let Some(media) = SUBSCRIBE_TO_BUS.answers {
+        request = request.header(reqwest::header::ACCEPT, media);
+    }
+    let request = request.json(&body).send();
     let response = match tokio::time::timeout(shared.timing.stream_open, request).await {
         Ok(Ok(response)) => response,
         Ok(Err(_)) | Err(_) => {

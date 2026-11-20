@@ -52,6 +52,8 @@ import {
   REQUEST_RETRY_PAUSE_MS,
   RETRY_RULES,
   busLog,
+  gatewayHeaders,
+  gatewayRoutes,
   uuidV4,
 } from '@xynolog/core';
 import {
@@ -66,6 +68,8 @@ import type { IContentTransport, PutBinaryRequest } from '@xynolog/core';
 
 type GetResourceResponse = components['schemas']['GetResourceResponse'];
 type GetAnnotationsResponse = components['schemas']['GetAnnotationsResponse'];
+
+const UPLOAD = gatewayRoutes.uploadResource;
 
 export class HttpContentTransport implements IContentTransport {
   constructor(private readonly transport: HttpTransport) {}
@@ -90,9 +94,9 @@ export class HttpContentTransport implements IContentTransport {
         // One key for this upload, the same on every attempt at it.
         const headers = {
           ...this.requestHeaders(token),
-          'Idempotency-Key': uuidV4(),
+          [gatewayHeaders.idempotencyKey]: uuidV4(),
         };
-        const path = '/resources';
+        const path = UPLOAD.path;
         const url = `${this.transport.baseUrl}${path}`;
 
         if (
@@ -121,7 +125,7 @@ export class HttpContentTransport implements IContentTransport {
             (unanswered ||
               RETRY_RULES.transport.retryable({
                 status: err.status,
-                method: 'POST',
+                method: UPLOAD.method,
                 keyed: true,
               }));
           // One more sending, as through ky: either a refused credential is
@@ -161,22 +165,25 @@ export class HttpContentTransport implements IContentTransport {
         const sent = options?.onProgress
           ? await inPieces(formData, options.onProgress, options.signal)
           : { body: formData, headers: {} };
-        const result = await this.transport.ask('POST', path, async (http) =>
-          declaredBody(
-            'CreateResourceResponse',
-            'POST',
-            path,
-            await http.post(url, {
-              body: sent.body,
-              headers: { ...headers, ...sent.headers },
-              timeout: false,
-              // Keyed, the upload may be sent again as a read is: ky's retry
-              // takes its method, and asks the transport rule of its key.
-              retry: { methods: ['post'] },
-              ...(options?.signal ? { signal: options.signal } : {}),
-            }),
-            (failure) => this.transport.pushError(failure),
-          ),
+        const result = await this.transport.ask(
+          UPLOAD.method,
+          path,
+          async (http) =>
+            declaredBody(
+              'CreateResourceResponse',
+              UPLOAD.method,
+              path,
+              await http.post(url, {
+                body: sent.body,
+                headers: { ...headers, ...sent.headers },
+                timeout: false,
+                // Keyed, the upload may be sent again as a read is: ky's retry
+                // takes its method, and asks the transport rule of its key.
+                retry: { methods: ['post'] },
+                ...(options?.signal ? { signal: options.signal } : {}),
+              }),
+              (failure) => this.transport.pushError(failure),
+            ),
         );
 
         return { resourceId: result.resourceId };
@@ -201,8 +208,9 @@ export class HttpContentTransport implements IContentTransport {
       async () => {
         // Pure pipe: no Accept header — the route serves the stored bytes
         // verbatim with their real Content-Type.
-        const path = this.pathOf(resourceId);
-        const response = await this.transport.ask('GET', path, (http) =>
+        const route = gatewayRoutes.getResourceRepresentation;
+        const path = this.pathOf(route, resourceId);
+        const response = await this.transport.ask(route.method, path, (http) =>
           http.get(`${this.transport.baseUrl}${path}`, {
             headers: this.requestHeaders(options?.auth),
           }),
@@ -228,8 +236,9 @@ export class HttpContentTransport implements IContentTransport {
       'content.get',
       async () => {
         // Pure pipe: no Accept header (see getBinary).
-        const path = this.pathOf(resourceId);
-        const response = await this.transport.ask('GET', path, (http) =>
+        const route = gatewayRoutes.getResourceRepresentation;
+        const path = this.pathOf(route, resourceId);
+        const response = await this.transport.ask(route.method, path, (http) =>
           http.get(`${this.transport.baseUrl}${path}`, {
             headers: this.requestHeaders(options?.auth),
           }),
@@ -264,11 +273,12 @@ export class HttpContentTransport implements IContentTransport {
     return withSpan(
       'content.get_graph',
       () => {
-        const path = `${this.pathOf(resourceId)}/jsonld`;
-        return this.transport.ask('GET', path, async (http) =>
+        const route = gatewayRoutes.getResourceJsonLd;
+        const path = this.pathOf(route, resourceId);
+        return this.transport.ask(route.method, path, async (http) =>
           declaredBody(
             'GetResourceResponse',
-            'GET',
+            route.method,
             path,
             await http.get(`${this.transport.baseUrl}${path}`, {
               headers: this.requestHeaders(options?.auth),
@@ -296,11 +306,12 @@ export class HttpContentTransport implements IContentTransport {
     return withSpan(
       'content.get_annotations',
       () => {
-        const path = `${this.pathOf(resourceId)}/annotations`;
-        return this.transport.ask('GET', path, async (http) =>
+        const route = gatewayRoutes.getResourceAnnotations;
+        const path = this.pathOf(route, resourceId);
+        return this.transport.ask(route.method, path, async (http) =>
           declaredBody(
             'GetAnnotationsResponse',
-            'GET',
+            route.method,
             path,
             await http.get(`${this.transport.baseUrl}${path}`, {
               headers: this.requestHeaders(options?.auth),
@@ -332,11 +343,12 @@ export class HttpContentTransport implements IContentTransport {
     return withSpan(
       'content.get_anchored_text',
       () => {
-        const path = `${this.pathOf(resourceId)}/anchored-text`;
-        return this.transport.ask('GET', path, async (http) =>
+        const route = gatewayRoutes.getResourceAnchoredText;
+        const path = this.pathOf(route, resourceId);
+        return this.transport.ask(route.method, path, async (http) =>
           declaredBody(
             'AnchoredTextAnswer',
-            'GET',
+            route.method,
             path,
             await http.get(`${this.transport.baseUrl}${path}`, {
               headers: this.requestHeaders(options?.auth),
@@ -358,12 +370,12 @@ export class HttpContentTransport implements IContentTransport {
   }
 
   /**
-   * Where a resource is read: its id as one segment of the path. A
-   * `ResourceId` needs no encoding, by its rule; a caller with no type
+   * Where a resource is read: the route's path, its id as one segment of
+   * it. A `ResourceId` needs no encoding, by its rule; a caller with no type
    * checker can hand over any text, and that text is one segment too.
    */
-  private pathOf(resourceId: ResourceId): string {
-    return `/resources/${encodeURIComponent(resourceId)}`;
+  private pathOf(route: { path: string }, resourceId: ResourceId): string {
+    return route.path.replace('{id}', encodeURIComponent(resourceId));
   }
 
   /** Auth header + W3C trace propagation for the active span. */
@@ -381,45 +393,65 @@ export class HttpContentTransport implements IContentTransport {
   }
 }
 
-function buildFormData(request: PutBinaryRequest): FormData {
-  const formData = new FormData();
-  formData.append('name', request.name);
-  formData.append('format', request.format);
-  formData.append('storageUri', request.storageUri);
+/** An upload's members, as the gateway's `ResourceUpload` names them. */
+type UploadField = keyof components['schemas']['ResourceUpload'];
 
-  if (request.file instanceof File) {
-    formData.append('file', request.file);
-  } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(request.file)) {
-    // `Buffer` is a Node global; referencing it bare in the browser throws
-    // ReferenceError before the isBuffer call. Browser uploads always hit
-    // the File branch above; this branch is for Node-side workers.
-    const blob = new Blob([new Uint8Array(request.file)], {
+/**
+ * How each of an upload's members is sent: as text, as the file, or not at
+ * all. Every member is named, so one `ResourceUpload` gains or loses does not
+ * compile; they are sent in this order.
+ */
+const UPLOAD_FORM: {
+  [field in UploadField]: (
+    request: PutBinaryRequest,
+  ) => string | Blob | undefined;
+} = {
+  name: (request) => request.name,
+  format: (request) => request.format,
+  storageUri: (request) => request.storageUri,
+  file: fileOf,
+  entityTypes: (request) =>
+    request.entityTypes && request.entityTypes.length > 0
+      ? JSON.stringify(request.entityTypes)
+      : undefined,
+  language: (request) => request.language || undefined,
+  sourceAnnotationId: (request) =>
+    request.sourceAnnotationId ? String(request.sourceAnnotationId) : undefined,
+  sourceResourceId: (request) =>
+    request.sourceResourceId ? String(request.sourceResourceId) : undefined,
+  generationPrompt: (request) => request.generationPrompt || undefined,
+  generator: (request) =>
+    request.generator ? JSON.stringify(request.generator) : undefined,
+  jobId: (request) => request.jobId || undefined,
+  cloneToken: (request) => request.cloneToken || undefined,
+  archiveOriginal: (request) =>
+    request.archiveOriginal === undefined
+      ? undefined
+      : String(request.archiveOriginal),
+  isDraft: (request) =>
+    request.isDraft === undefined ? undefined : String(request.isDraft),
+};
+
+/** The upload's bytes: a browser's `File` as it is, a Node `Buffer` as a file named for the resource. */
+function fileOf(request: PutBinaryRequest): Blob {
+  if (request.file instanceof File) return request.file;
+  // `Buffer` is a Node global; referencing it bare in the browser throws
+  // ReferenceError before the isBuffer call. Browser uploads always hit the
+  // File branch above; this branch is for Node-side workers.
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(request.file)) {
+    return new File([new Uint8Array(request.file)], request.name, {
       type: request.format,
     });
-    formData.append('file', blob, request.name);
-  } else {
-    throw new Error('file must be a File or Buffer');
   }
+  throw new Error('file must be a File or Buffer');
+}
 
-  if (request.entityTypes && request.entityTypes.length > 0) {
-    formData.append('entityTypes', JSON.stringify(request.entityTypes));
+function buildFormData(request: PutBinaryRequest): FormData {
+  const formData = new FormData();
+  for (const [field, encode] of Object.entries(UPLOAD_FORM)) {
+    const value = encode(request);
+    if (value !== undefined) formData.append(field, value);
   }
-  if (request.language) formData.append('language', request.language);
-  if (request.sourceAnnotationId)
-    formData.append('sourceAnnotationId', String(request.sourceAnnotationId));
-  if (request.sourceResourceId)
-    formData.append('sourceResourceId', String(request.sourceResourceId));
-  if (request.generationPrompt)
-    formData.append('generationPrompt', request.generationPrompt);
-  if (request.generator)
-    formData.append('generator', JSON.stringify(request.generator));
-  if (request.jobId) formData.append('jobId', request.jobId);
-  if (request.cloneToken) formData.append('cloneToken', request.cloneToken);
-  if (request.archiveOriginal !== undefined)
-    formData.append('archiveOriginal', String(request.archiveOriginal));
-  if (request.isDraft !== undefined)
-    formData.append('isDraft', String(request.isDraft));
-
   return formData;
 }
 
@@ -562,7 +594,7 @@ function uploadViaXhr(
     }
 
     try {
-      xhr.open('POST', url);
+      xhr.open(UPLOAD.method, url);
       for (const [name, value] of Object.entries(headers)) {
         xhr.setRequestHeader(name, value);
       }
@@ -595,8 +627,8 @@ function uploadViaXhr(
         };
         declaredBody(
           'CreateResourceResponse',
-          'POST',
-          '/resources',
+          UPLOAD.method,
+          UPLOAD.path,
           answer,
           (err) => onApiError(err, false),
         ).then((body) => resolve({ resourceId: body.resourceId }), reject);
@@ -606,7 +638,7 @@ function uploadViaXhr(
         xhr.status,
         xhr.statusText,
         refusalBody(xhr.responseText),
-        xhr.getResponseHeader('retry-after'),
+        xhr.getResponseHeader(gatewayHeaders.retryAfter),
       );
       onApiError(err, false);
       reject(err);

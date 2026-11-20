@@ -135,7 +135,7 @@ func discoverIssuer(_ gateway: String, http: HTTPClient, clock: any Clock<Durati
   let metadata: ProtectedResourceMetadata
   do {
     let (response, data) = try await issuerRequest(
-      gateway + "/.well-known/oauth-protected-resource", http: http, clock: clock)
+      gateway + GatewayRoute.getProtectedResourceMetadata.path, http: http, clock: clock)
     if response.status.code == 404 {
       throw SignInError(.noIssuer, "The knowledge base trusts no external issuer")
     }
@@ -250,7 +250,7 @@ public func whoAmI(
   let data: Data
   do {
     (response, data) = try await issuerRequest(
-      baseUrl + "/api/users/me", http: httpClient, clock: clock, bearer: token)
+      baseUrl + GatewayRoute.getCurrentUser.path, http: httpClient, clock: clock, bearer: token)
   } catch {
     if Task.isCancelled { throw CancellationError() }
     throw TransportError(.unavailable, "The gateway did not answer who the token is")

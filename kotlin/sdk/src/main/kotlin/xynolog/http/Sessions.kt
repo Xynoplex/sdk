@@ -109,7 +109,7 @@ private class Renewing(
 /** Ask the gateway who a token is: one request, by a caller that holds nothing else. No stream is opened for it, and nothing renews the token: a refusal is the answer. */
 private fun asking(baseUrl: String, http: HttpClient): suspend (String) -> UserResponse = { token ->
     Exchange(baseUrl.trimEnd('/'), http, MutableStateFlow(token), null, Broadcast(), Timings.HTTP_REQUEST_TIMEOUT_MS) { false }
-        .answer(UserResponse.serializer(), "GET", "/api/users/me")
+        .answer(UserResponse.serializer(), GET_CURRENT_USER.method, GET_CURRENT_USER.path)
 }
 
 /**

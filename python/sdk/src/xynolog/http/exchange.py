@@ -28,6 +28,7 @@ from pydantic import JsonValue, TypeAdapter, ValidationError
 from xynolog import telemetry
 from xynolog._kept_for_first_reader import KeptForFirstReader
 from xynolog.errors import TransportError, XynologError
+from xynolog.http._gateway_http import IDEMPOTENCY_KEY, RETRY_AFTER
 from xynolog.http._withheld import why_unanswered
 from xynolog.model import WireModel
 from xynolog.required import Fault, read_as
@@ -211,7 +212,7 @@ class Exchange:
         long as it takes. A body that is sent as it is made is given as what
         makes it, so a second attempt sends it from its start.
         """
-        keyed = "Idempotency-Key" in httpx.Headers(headers)
+        keyed = IDEMPOTENCY_KEY in httpx.Headers(headers)
         repeatable = TRANSPORT.retryable(RetryFacts(status=503, method=method, keyed=keyed))
         token = self._token.value if authenticated else None
         retried = False
@@ -247,7 +248,7 @@ class Exchange:
                 return response
 
             status = response.status_code
-            stated_wait_ms = retry_after_ms(response.headers.get("retry-after"))
+            stated_wait_ms = retry_after_ms(response.headers.get(RETRY_AFTER))
             body: bytes | None = None
             try:
                 # Read within the deadline too: a body not read by then says nothing.

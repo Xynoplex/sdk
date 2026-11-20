@@ -15,7 +15,7 @@
 //! in a client span (`content.put`, `content.get`, `content.get_graph`,
 //! `content.get_annotations`, `content.get_anchored_text`).
 
-use crate::transport::{HttpTransport, IDEMPOTENCY_KEY, Shared, idempotency_key};
+use crate::transport::{HttpTransport, Shared, idempotency_key, method_of};
 use bytes::Bytes;
 use futures::StreamExt;
 use serde_json::json;
@@ -24,6 +24,10 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::mpsc;
 use xynolog::bus_log::bus_log;
 use xynolog::errors::{TransportError, TransportErrorCode};
+use xynolog::gateway_http::{
+    GET_RESOURCE_ANCHORED_TEXT, GET_RESOURCE_ANNOTATIONS, GET_RESOURCE_JSON_LD,
+    GET_RESOURCE_REPRESENTATION, IDEMPOTENCY_KEY, Route, UPLOAD_RESOURCE, UploadField,
+};
 use xynolog::transport::{
     BoxFuture, Content, ContentStream, ContentTransport, PutBinaryRequest, Upload,
 };
@@ -59,6 +63,39 @@ struct Form {
     parts: [Bytes; 3],
 }
 
+/// What an upload sends as a member's text, if anything: the file is its
+/// bytes, sent between the members every upload sends and the others. Every
+/// member of `ResourceUpload` is named, so one it gains or loses does not
+/// compile.
+fn sent(request: &PutBinaryRequest, member: UploadField) -> Option<String> {
+    let stated = |value: Option<&str>| value.filter(|value| !value.is_empty()).map(str::to_owned);
+    match member {
+        UploadField::Name => Some(request.name.to_string()),
+        UploadField::File => None,
+        UploadField::Format => Some(request.format.to_string()),
+        UploadField::StorageUri => Some(request.storage_uri.to_string()),
+        UploadField::Language => stated(request.language.as_deref()),
+        UploadField::EntityTypes => {
+            (!request.entity_types.is_empty()).then(|| json!(request.entity_types).to_string())
+        }
+        UploadField::SourceAnnotationId => stated(
+            request
+                .source_annotation_id
+                .as_ref()
+                .map(AnnotationId::as_str),
+        ),
+        UploadField::SourceResourceId => {
+            stated(request.source_resource_id.as_ref().map(ResourceId::as_str))
+        }
+        UploadField::GenerationPrompt => stated(request.generation_prompt.as_deref()),
+        UploadField::Generator => request.generator.as_ref().map(ToString::to_string),
+        UploadField::JobId => stated(request.job_id.as_ref().map(JobId::as_str)),
+        UploadField::IsDraft => request.is_draft.map(|value| value.to_string()),
+        UploadField::CloneToken => stated(request.clone_token.as_deref()),
+        UploadField::ArchiveOriginal => request.archive_original.map(|value| value.to_string()),
+    }
+}
+
 impl Form {
     fn of(request: &PutBinaryRequest) -> Form {
         let boundary = format!("xynolog-{}", uuid::Uuid::new_v4().simple());
@@ -69,52 +106,27 @@ impl Form {
         };
         let quoted = |text: &str| text.replace('\\', "\\\\").replace('"', "\\\"");
         let mut before = String::new();
-        before.push_str(&field("name", &request.name));
-        before.push_str(&field("format", &request.format));
-        before.push_str(&field("storageUri", &request.storage_uri));
+        let mut after = String::from("\r\n");
+        let (every, others): (Vec<_>, Vec<_>) = UploadField::ALL
+            .into_iter()
+            .partition(|member| member.required());
+        for member in every
+            .into_iter()
+            .filter(|member| *member != UploadField::File)
+        {
+            if let Some(value) = sent(request, member) {
+                before.push_str(&field(member.name(), &value));
+            }
+        }
         before.push_str(&format!(
-            "--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{}\"\r\nContent-Type: {}\r\n\r\n",
+            "--{boundary}\r\nContent-Disposition: form-data; name=\"{}\"; filename=\"{}\"\r\nContent-Type: {}\r\n\r\n",
+            UploadField::File.name(),
             quoted(&request.name),
             request.format
         ));
-        let mut after = String::from("\r\n");
-        if !request.entity_types.is_empty() {
-            after.push_str(&field(
-                "entityTypes",
-                &json!(request.entity_types).to_string(),
-            ));
-        }
-        let text: [(&str, Option<&str>); 6] = [
-            ("language", request.language.as_deref()),
-            (
-                "sourceAnnotationId",
-                request
-                    .source_annotation_id
-                    .as_ref()
-                    .map(AnnotationId::as_str),
-            ),
-            (
-                "sourceResourceId",
-                request.source_resource_id.as_ref().map(ResourceId::as_str),
-            ),
-            ("generationPrompt", request.generation_prompt.as_deref()),
-            ("jobId", request.job_id.as_ref().map(JobId::as_str)),
-            ("cloneToken", request.clone_token.as_deref()),
-        ];
-        for (name, value) in text {
-            if let Some(value) = value.filter(|value| !value.is_empty()) {
-                after.push_str(&field(name, value));
-            }
-        }
-        if let Some(generator) = &request.generator {
-            after.push_str(&field("generator", &generator.to_string()));
-        }
-        for (name, value) in [
-            ("archiveOriginal", request.archive_original),
-            ("isDraft", request.is_draft),
-        ] {
-            if let Some(value) = value {
-                after.push_str(&field(name, if value { "true" } else { "false" }));
+        for member in others {
+            if let Some(value) = sent(request, member) {
+                after.push_str(&field(member.name(), &value));
             }
         }
         after.push_str(&format!("--{boundary}--\r\n"));
@@ -195,16 +207,24 @@ impl ContentTransport for HttpContentTransport {
             xynolog_telemetry::content_put(
                 &request.format,
                 size as u64,
-                shared.answer_at_length(reqwest::Method::POST, "/resources", true, |builder| {
-                    builder
-                        .header(
-                            reqwest::header::CONTENT_TYPE,
-                            format!("multipart/form-data; boundary={}", form.boundary),
-                        )
-                        .header(reqwest::header::CONTENT_LENGTH, form.len())
-                        .header(IDEMPOTENCY_KEY, key.as_str())
-                        .body(form.body(progress.clone(), reported.clone()))
-                }),
+                shared.answer_at_length(
+                    method_of(&UPLOAD_RESOURCE),
+                    UPLOAD_RESOURCE.path,
+                    true,
+                    |builder| {
+                        let builder = match UPLOAD_RESOURCE.sends {
+                            Some(media) => builder.header(
+                                reqwest::header::CONTENT_TYPE,
+                                format!("{media}; boundary={}", form.boundary),
+                            ),
+                            None => builder,
+                        };
+                        builder
+                            .header(reqwest::header::CONTENT_LENGTH, form.len())
+                            .header(IDEMPOTENCY_KEY, key.as_str())
+                            .body(form.body(progress.clone(), reported.clone()))
+                    },
+                ),
             )
             .await
         };
@@ -283,8 +303,8 @@ impl ContentTransport for HttpContentTransport {
             xynolog_telemetry::content_get_graph(
                 resource_id,
                 self.shared.answer(
-                    reqwest::Method::GET,
-                    &format!("{}/jsonld", path_of(resource_id)),
+                    method_of(&GET_RESOURCE_JSON_LD),
+                    &path_of(&GET_RESOURCE_JSON_LD, resource_id),
                     true,
                     |builder| builder,
                 ),
@@ -308,8 +328,8 @@ impl ContentTransport for HttpContentTransport {
             xynolog_telemetry::content_get_annotations(
                 resource_id,
                 self.shared.answer(
-                    reqwest::Method::GET,
-                    &format!("{}/annotations", path_of(resource_id)),
+                    method_of(&GET_RESOURCE_ANNOTATIONS),
+                    &path_of(&GET_RESOURCE_ANNOTATIONS, resource_id),
                     true,
                     |builder| builder,
                 ),
@@ -336,8 +356,8 @@ impl ContentTransport for HttpContentTransport {
             xynolog_telemetry::content_get_anchored_text(
                 resource_id,
                 self.shared.answer(
-                    reqwest::Method::GET,
-                    &format!("{}/anchored-text", path_of(resource_id)),
+                    method_of(&GET_RESOURCE_ANCHORED_TEXT),
+                    &path_of(&GET_RESOURCE_ANCHORED_TEXT, resource_id),
                     true,
                     |builder| builder,
                 ),
@@ -354,8 +374,8 @@ impl HttpContentTransport {
     async fn read(&self, resource_id: &ResourceId) -> Result<reqwest::Response, TransportError> {
         self.shared
             .send(
-                reqwest::Method::GET,
-                &path_of(resource_id),
+                method_of(&GET_RESOURCE_REPRESENTATION),
+                &path_of(&GET_RESOURCE_REPRESENTATION, resource_id),
                 true,
                 |builder| builder,
             )
@@ -363,10 +383,11 @@ impl HttpContentTransport {
     }
 }
 
-/// Where a resource is read. Its id is one segment of the path as it is: the
-/// rule a `ResourceId` is held to admits nothing a path reads as its own.
-fn path_of(resource_id: &ResourceId) -> String {
-    format!("/resources/{resource_id}")
+/// Where a resource is read: the route's path, its id one segment of it as it
+/// is: the rule a `ResourceId` is held to admits nothing a path reads as its
+/// own.
+fn path_of(route: &Route, resource_id: &ResourceId) -> String {
+    route.path.replace("{id}", resource_id.as_str())
 }
 
 fn content_type(response: &reqwest::Response) -> String {
@@ -381,7 +402,11 @@ fn content_type(response: &reqwest::Response) -> String {
 /// A read whose bytes stopped coming.
 fn interrupted(resource_id: &ResourceId, error: &reqwest::Error) -> TransportError {
     TransportError::without_response(
-        format!("GET /resources/{resource_id} ended before its bytes did: {error}"),
+        format!(
+            "{} {} ended before its bytes did: {error}",
+            method_of(&GET_RESOURCE_REPRESENTATION),
+            path_of(&GET_RESOURCE_REPRESENTATION, resource_id)
+        ),
         TransportErrorCode::Unavailable,
     )
 }

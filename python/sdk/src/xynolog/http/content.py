@@ -23,6 +23,16 @@ from pydantic import TypeAdapter
 from xynolog import telemetry
 from xynolog._bus_log import bus_log
 from xynolog.errors import TransportError
+from xynolog.http._gateway_http import (
+    GET_RESOURCE_ANCHORED_TEXT,
+    GET_RESOURCE_ANNOTATIONS,
+    GET_RESOURCE_JSON_LD,
+    GET_RESOURCE_REPRESENTATION,
+    IDEMPOTENCY_KEY,
+    UPLOAD_RESOURCE,
+    UPLOAD_RESOURCE_SENDS,
+    GatewayRoute,
+)
 from xynolog.http._withheld import why_unanswered
 from xynolog.http.exchange import Exchange
 from xynolog.identifiers import ResourceId
@@ -44,10 +54,6 @@ __all__ = ["HttpContentTransport", "form_of"]
 # How much of an upload's body is handed to the connection at a time: the grain its progress is reported in.
 _UPLOAD_PIECE_BYTES: Final = 64 * 1024
 
-# The field of an upload's form that holds its bytes.
-_FILE: Final = "file"
-# The fields that come before the bytes, so whatever reads the form knows what the bytes are before it meets them.
-_BEFORE_THE_BYTES: Final = ("name", "format", "storage_uri")
 
 _AGENT: Final = TypeAdapter[Agent](Agent)
 _AGENTS: Final = TypeAdapter[list[Agent]](list[Agent])
@@ -94,23 +100,32 @@ def _quoted(text: str) -> str:
 
 @final
 class _Form:
-    """A `multipart/form-data` body: each field under its own name, and the bytes as the part `file`."""
+    """An upload's body, as `UPLOAD_RESOURCE` sends it: each field under its own name, the bytes as the part that holds them.
+
+    The fields every upload sends come before the bytes, so whatever reads the
+    form knows what the bytes are before it meets them; the others follow.
+    """
 
     def __init__(self, request: PutBinaryRequest) -> None:
         self.boundary: Final = f"xynolog-{uuid.uuid4().hex}"
         form = form_of(request)
-        fields = ResourceUpload.model_fields
         before: list[str] = []
         after: list[str] = []
-        for name, field in fields.items():
+        named: str | None = None
+        for name, field in ResourceUpload.model_fields.items():
             value: object = getattr(form, name)
-            if name == _FILE or value is None:
+            member = _quoted(field.alias or name)
+            if isinstance(value, bytes):
+                named = f'name="{member}"; filename="{_quoted(form.name)}"'
+                continue
+            if value is None:
                 continue
             if not isinstance(value, str):
                 raise TypeError(f"the upload form's {name} is not text")
-            part = f'--{self.boundary}\r\nContent-Disposition: form-data; name="{_quoted(field.alias or name)}"\r\n\r\n{value}\r\n'
-            (before if name in _BEFORE_THE_BYTES else after).append(part)
-        named = f'name="{fields[_FILE].alias or _FILE}"; filename="{_quoted(form.name)}"'
+            part = f'--{self.boundary}\r\nContent-Disposition: form-data; name="{member}"\r\n\r\n{value}\r\n'
+            (before if field.is_required() else after).append(part)
+        if named is None:
+            raise TypeError("the upload form has no member that holds its bytes")
         before.append(f"--{self.boundary}\r\nContent-Disposition: form-data; {named}\r\nContent-Type: {form.format}\r\n\r\n")
         # The parts before the bytes, the bytes, and what follows them: the bytes are not copied to make the body.
         self._parts: Final = ("".join(before).encode(), form.file, ("\r\n" + "".join(after) + f"--{self.boundary}--\r\n").encode())
@@ -167,13 +182,13 @@ class _Sending:
         return bytes(piece)
 
 
-def _path_of(resource_id: ResourceId) -> str:
-    """Where a resource is read.
+def _path_of(route: GatewayRoute, resource_id: ResourceId) -> str:
+    """Where `route` reads a resource.
 
     Its id is one segment of the path as it is: the rule an id is held to
     admits nothing a path reads as its own.
     """
-    return f"/resources/{resource_id}"
+    return route.path.replace("{id}", str(resource_id), 1)
 
 
 def _content_type(response: httpx.Response) -> str:
@@ -183,7 +198,8 @@ def _content_type(response: httpx.Response) -> str:
 
 def _interrupted(resource_id: ResourceId, error: httpx.HTTPError) -> TransportError:
     """A read whose bytes stopped coming."""
-    return TransportError.without_response(f"GET {_path_of(resource_id)} ended before its bytes did: {why_unanswered(error)}")
+    read = f"{GET_RESOURCE_REPRESENTATION.method} {_path_of(GET_RESOURCE_REPRESENTATION, resource_id)}"
+    return TransportError.without_response(f"{read} ended before its bytes did: {why_unanswered(error)}")
 
 
 @final
@@ -214,12 +230,12 @@ class HttpContentTransport(ContentTransport):
             # and one that got no answer, or a status that promises recovery, is sent again as a read is.
             return await self._exchange.answer(
                 CreateResourceResponse,
-                "POST",
-                "/resources",
+                UPLOAD_RESOURCE.method,
+                UPLOAD_RESOURCE.path,
                 headers={
-                    "Content-Type": f"multipart/form-data; boundary={form.boundary}",
+                    "Content-Type": f"{UPLOAD_RESOURCE_SENDS}; boundary={form.boundary}",
                     "Content-Length": str(form.size),
-                    "Idempotency-Key": str(uuid.uuid4()),
+                    IDEMPOTENCY_KEY: str(uuid.uuid4()),
                 },
                 content=lambda: _Sending(form, progress),
                 at_length=True,
@@ -230,7 +246,7 @@ class HttpContentTransport(ContentTransport):
         bus_log("GET", "content", {"resourceId": resource_id})
         with telemetry.getting(resource_id, stream=False):
             # The deadline is on the bytes beginning to arrive: how long they take after that is how many there are.
-            response = await self._exchange.begin("GET", _path_of(resource_id))
+            response = await self._exchange.begin(GET_RESOURCE_REPRESENTATION.method, _path_of(GET_RESOURCE_REPRESENTATION, resource_id))
             try:
                 data = await response.aread()
             except httpx.HTTPError as error:
@@ -243,7 +259,7 @@ class HttpContentTransport(ContentTransport):
     async def get_binary_stream(self, resource_id: ResourceId) -> ContentStream:
         bus_log("GET", "content", {"resourceId": resource_id, "stream": True})
         with telemetry.getting(resource_id, stream=True):
-            response = await self._exchange.begin("GET", _path_of(resource_id))
+            response = await self._exchange.begin(GET_RESOURCE_REPRESENTATION.method, _path_of(GET_RESOURCE_REPRESENTATION, resource_id))
         return ContentStream(_content_type(response), self._arriving(resource_id, response))
 
     async def _arriving(self, resource_id: ResourceId, response: httpx.Response) -> AsyncGenerator[bytes]:
@@ -263,16 +279,25 @@ class HttpContentTransport(ContentTransport):
     async def get_resource_graph(self, resource_id: ResourceId) -> GetResourceResponse:
         bus_log("GET", "content", {"resourceId": resource_id, "graph": True})
         with telemetry.getting_graph(resource_id):
-            return await self._exchange.answer(GetResourceResponse, "GET", f"{_path_of(resource_id)}/jsonld")
+            return await self._exchange.answer(
+                GetResourceResponse, GET_RESOURCE_JSON_LD.method, _path_of(GET_RESOURCE_JSON_LD, resource_id)
+            )
 
     @override
     async def get_annotations(self, resource_id: ResourceId) -> GetAnnotationsResponse:
         bus_log("GET", "content", {"resourceId": resource_id, "annotations": True})
         with telemetry.getting_annotations(resource_id):
-            return await self._exchange.answer(GetAnnotationsResponse, "GET", f"{_path_of(resource_id)}/annotations")
+            return await self._exchange.answer(
+                GetAnnotationsResponse, GET_RESOURCE_ANNOTATIONS.method, _path_of(GET_RESOURCE_ANNOTATIONS, resource_id)
+            )
 
     @override
     async def get_anchored_text(self, resource_id: ResourceId) -> AnchoredTextAnswer:
         bus_log("GET", "content", {"resourceId": resource_id, "anchoredText": True})
         with telemetry.getting_anchored_text(resource_id):
-            return await self._exchange.answer_one_of(_ANCHORED_TEXT, AnchoredTextAnswer, "GET", f"{_path_of(resource_id)}/anchored-text")
+            return await self._exchange.answer_one_of(
+                _ANCHORED_TEXT,
+                AnchoredTextAnswer,
+                GET_RESOURCE_ANCHORED_TEXT.method,
+                _path_of(GET_RESOURCE_ANCHORED_TEXT, resource_id),
+            )

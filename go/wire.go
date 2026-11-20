@@ -193,7 +193,7 @@ func delivered[P any](frame Frame) (Delivered[P], *FrameRefusal) {
 // refusedPayload is the refusal of frame, whose payload has fault, named from
 // the payload.
 func refusedPayload(frame Frame, fault required.Fault) *FrameRefusal {
-	return &FrameRefusal{Channel: frame.Channel, Member: fault.Within("payload").Member, Reason: fault.Reason, Payload: frame.Payload, Envelope: frame.Envelope}
+	return &FrameRefusal{Channel: frame.Channel, Member: fault.Within(busFramePayload).Member, Reason: fault.Reason, Payload: frame.Payload, Envelope: frame.Envelope}
 }
 
 // payloadAs is frame with its payload decoded as P, as P's reader reads it;

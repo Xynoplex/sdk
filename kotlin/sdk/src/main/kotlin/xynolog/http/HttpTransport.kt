@@ -141,28 +141,28 @@ public class HttpTransport @JvmOverloads constructor(
         var made = 1
         var capMs = timing.emitRetry.initialDelayMs
         while (true) {
-            if (closing) throw exchange.failed(TransportError(TransportErrorCode.Error, "/bus/emit was not sent: the transport is closed"))
-            val request = exchange.request("/bus/emit", sent)
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .header("Content-Type", "application/json")
-                .header("Idempotency-Key", key)
+            if (closing) throw exchange.failed(TransportError(TransportErrorCode.Error, "${EMIT_ON_BUS.path} was not sent: the transport is closed"))
+            val request = exchange.request(EMIT_ON_BUS.path, sent)
+                .method(EMIT_ON_BUS.method, HttpRequest.BodyPublishers.ofString(body))
+                .header("Content-Type", EMIT_ON_BUS_SENDS)
+                .header(IDEMPOTENCY_KEY, key)
                 .build()
             val failure = try {
                 when (val response = withTimeoutOrNull(Timings.EMIT_TIMEOUT_MS) { http.exchange(request, HttpResponse.BodyHandlers.ofByteArray()) }) {
-                    null -> TransportError.withoutResponse("/bus/emit got no answer within ${Timings.EMIT_TIMEOUT_MS}ms")
+                    null -> TransportError.withoutResponse("${EMIT_ON_BUS.path} got no answer within ${Timings.EMIT_TIMEOUT_MS}ms")
                     else -> {
                         val status = response.statusCode()
                         if (status in 200..299) return accepted(response.body())
-                        val stated = retryAfterMs(response.headers().firstValue("retry-after").orElse(null))
+                        val stated = retryAfterMs(response.headers().firstValue(RETRY_AFTER).orElse(null))
                         val message = when (val words = said(response.body())) {
-                            null -> "/bus/emit $status"
-                            else -> "/bus/emit $status: $words"
+                            null -> "${EMIT_ON_BUS.path} $status"
+                            else -> "${EMIT_ON_BUS.path} $status: $words"
                         }
                         refusal(message, status, response.body(), stated)
                     }
                 }
             } catch (error: IOException) {
-                TransportError.withoutResponse("/bus/emit got no answer: ${error.message ?: error::class.simpleName}")
+                TransportError.withoutResponse("${EMIT_ON_BUS.path} got no answer: ${error.message ?: error::class.simpleName}")
             }
             if (failure.reason == TransportErrorCode.Unauthorized) {
                 // A refused credential is renewed once, outside the retry budget, and never retried.
@@ -179,7 +179,7 @@ public class HttpTransport @JvmOverloads constructor(
                 throw exchange.failed(failure)
             }
             // A limit, a gateway that says it will recover, or no answer at all: made again inside the budget.
-            val again = failure.status == null || BOOT.retryable(RetryFacts(failure.status, "POST", keyed = true))
+            val again = failure.status == null || BOOT.retryable(RetryFacts(failure.status, EMIT_ON_BUS.method, keyed = true))
             if (!again || made >= timing.emitRetry.attempts || closing) throw exchange.failed(failure)
             delay(maxOf(equalJitter(capMs, random), failure.retryAfterMs ?: 0))
             capMs = minOf(capMs * 2, timing.emitRetry.maxDelayMs)
@@ -249,28 +249,28 @@ public class HttpTransport @JvmOverloads constructor(
 
     // ── the gateway's own operations ─────────────────────────────────────
 
-    override suspend fun getCurrentUser(): UserResponse = exchange.answer(UserResponse.serializer(), "GET", "/api/users/me")
+    override suspend fun getCurrentUser(): UserResponse = exchange.answer(UserResponse.serializer(), GET_CURRENT_USER.method, GET_CURRENT_USER.path)
 
     override fun getCurrentUserFuture(): CompletableFuture<UserResponse> = scope.futureOf { getCurrentUser() }
 
     override suspend fun getMediaToken(resourceId: ResourceId): MediaTokenResponse {
         val body = wireJson.encodeToString(MediaTokenRequest.serializer(), MediaTokenRequest(resourceId = resourceId))
-        return exchange.answer(MediaTokenResponse.serializer(), "POST", "/api/tokens/media", headers = mapOf("Content-Type" to "application/json"), body = { HttpRequest.BodyPublishers.ofString(body) })
+        return exchange.answer(MediaTokenResponse.serializer(), CREATE_MEDIA_TOKEN.method, CREATE_MEDIA_TOKEN.path, headers = mapOf("Content-Type" to CREATE_MEDIA_TOKEN_SENDS), body = { HttpRequest.BodyPublishers.ofString(body) })
     }
 
     @JvmExposeBoxed
     override fun getMediaTokenFuture(resourceId: ResourceId): CompletableFuture<MediaTokenResponse> = scope.futureOf { getMediaToken(resourceId) }
 
     override suspend fun getProtectedResourceMetadata(): ProtectedResourceMetadata =
-        exchange.answer(ProtectedResourceMetadata.serializer(), "GET", "/.well-known/oauth-protected-resource", authenticated = false)
+        exchange.answer(ProtectedResourceMetadata.serializer(), GET_PROTECTED_RESOURCE_METADATA.method, GET_PROTECTED_RESOURCE_METADATA.path, authenticated = false)
 
     override fun getProtectedResourceMetadataFuture(): CompletableFuture<ProtectedResourceMetadata> = scope.futureOf { getProtectedResourceMetadata() }
 
-    override suspend fun healthCheck(): HealthResponse = exchange.answer(HealthResponse.serializer(), "GET", "/api/health")
+    override suspend fun healthCheck(): HealthResponse = exchange.answer(HealthResponse.serializer(), GET_HEALTH.method, GET_HEALTH.path)
 
     override fun healthCheckFuture(): CompletableFuture<HealthResponse> = scope.futureOf { healthCheck() }
 
-    override suspend fun getStatus(): StatusResponse = exchange.answer(StatusResponse.serializer(), "GET", "/api/status")
+    override suspend fun getStatus(): StatusResponse = exchange.answer(StatusResponse.serializer(), GET_STATUS.method, GET_STATUS.path)
 
     override fun getStatusFuture(): CompletableFuture<StatusResponse> = scope.futureOf { getStatus() }
 }
