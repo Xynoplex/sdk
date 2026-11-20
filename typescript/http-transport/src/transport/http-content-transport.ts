@@ -57,6 +57,10 @@ import {
   uuidV4,
 } from '@xynolog/core';
 import {
+  ATTR_CONTENT_FORMAT,
+  ATTR_CONTENT_SIZE_BYTES,
+  ATTR_CONTENT_STREAM,
+  ATTR_RESOURCE_ID,
   SpanKind,
   getActiveTraceparent,
   withSpan,
@@ -191,8 +195,8 @@ export class HttpContentTransport implements IContentTransport {
       {
         kind: SpanKind.CLIENT,
         attrs: {
-          'content.format': request.format,
-          'content.size_bytes': sizeBytes,
+          [ATTR_CONTENT_FORMAT]: request.format,
+          [ATTR_CONTENT_SIZE_BYTES]: sizeBytes,
         },
       },
     );
@@ -222,7 +226,7 @@ export class HttpContentTransport implements IContentTransport {
       },
       {
         kind: SpanKind.CLIENT,
-        attrs: { 'resource.id': resourceId as unknown as string },
+        attrs: { [ATTR_RESOURCE_ID]: resourceId as unknown as string },
       },
     );
   }
@@ -253,8 +257,8 @@ export class HttpContentTransport implements IContentTransport {
       {
         kind: SpanKind.CLIENT,
         attrs: {
-          'resource.id': resourceId as unknown as string,
-          'content.stream': true,
+          [ATTR_RESOURCE_ID]: resourceId as unknown as string,
+          [ATTR_CONTENT_STREAM]: true,
         },
       },
     );
@@ -289,7 +293,7 @@ export class HttpContentTransport implements IContentTransport {
       },
       {
         kind: SpanKind.CLIENT,
-        attrs: { 'resource.id': resourceId as unknown as string },
+        attrs: { [ATTR_RESOURCE_ID]: resourceId as unknown as string },
       },
     );
   }
@@ -322,7 +326,7 @@ export class HttpContentTransport implements IContentTransport {
       },
       {
         kind: SpanKind.CLIENT,
-        attrs: { 'resource.id': resourceId as unknown as string },
+        attrs: { [ATTR_RESOURCE_ID]: resourceId as unknown as string },
       },
     );
   }
@@ -359,7 +363,7 @@ export class HttpContentTransport implements IContentTransport {
       },
       {
         kind: SpanKind.CLIENT,
-        attrs: { 'resource.id': resourceId as unknown as string },
+        attrs: { [ATTR_RESOURCE_ID]: resourceId as unknown as string },
       },
     );
   }

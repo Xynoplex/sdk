@@ -21,6 +21,7 @@ import OpenTelemetry.Metric.Core qualified as Metric
 import OpenTelemetry.Propagator qualified as Propagator
 import OpenTelemetry.Trace.Core qualified as Trace
 import Paths_xynolog (version)
+import Xynolog.Internal.Generated.TelemetryKeys (attributeBusChannel, attributeBusScope, attributeContentFormat, attributeContentSizeBytes)
 import Xynolog.Transport.Facts (traceCarrierFields, traceField)
 import Xynolog.Types
 
@@ -51,10 +52,10 @@ withUpload format size action = do
     "content.put"
     Trace.defaultSpanArguments
       { Trace.kind = Trace.Client,
-        Trace.attributes = HashMap.singleton "content.format" (toAttribute format)
+        Trace.attributes = HashMap.singleton attributeContentFormat (toAttribute format)
       }
     $ \activeSpan ->
-      action `finally` (size >>= Trace.addAttribute activeSpan "content.size_bytes" . sizeAttribute)
+      action `finally` (size >>= Trace.addAttribute activeSpan attributeContentSizeBytes . sizeAttribute)
   where
     sizeAttribute value
       | value >= toInteger (minBound :: Int64) && value <= toInteger (maxBound :: Int64) = toAttribute (fromInteger value :: Int64)
@@ -74,8 +75,8 @@ sent frame = do
 
 busAttributes :: BusFrame -> [(Text, Attribute)]
 busAttributes frame =
-  ("bus.channel", toAttribute (busFrameChannel frame))
-    : maybe [] (\resource -> [("bus.scope", toAttribute (resourceIdValue resource))]) (busFrameScope frame)
+  (attributeBusChannel, toAttribute (busFrameChannel frame))
+    : maybe [] (\resource -> [(attributeBusScope, toAttribute (resourceIdValue resource))]) (busFrameScope frame)
 
 withReceived :: BusFrame -> IO result -> IO result
 withReceived frame action = do

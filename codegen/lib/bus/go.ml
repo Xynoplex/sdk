@@ -92,6 +92,10 @@ let channels (bus : Registry.t) =
             (G.spec
                ~doc:(G.prose reg.trace.meaning)
                "TraceField" (G.Quoted reg.trace.field));
+          G.Const
+            (G.spec
+               ~doc:(G.prose ("UserField: " ^ User_stamp.about))
+               "UserField" (G.Quoted bus.user_field));
         ];
     }
 

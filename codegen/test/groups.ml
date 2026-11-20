@@ -169,7 +169,9 @@ let derived ?(schemas = base_schemas) json =
                     "components/schemas/" ^ name ^ ".json" ))
                 schemas))
       in
-      match Bus.Registry.derive ~ids ~component registry with
+      match
+        Bus.Registry.derive ~ids ~component ~user_field:"_userId" registry
+      with
       | Ok bus -> Ok bus
       | Error errors -> Error (List.map Decode.error_to_string errors))
 
@@ -562,6 +564,55 @@ let output =
              ]));
   ]
 
+(* The stamp is the one "_" property of the UserId kind, or a refusal. *)
+let stamp =
+  let read properties =
+    let kinds =
+      `Assoc
+        [
+          ("$comment", `String "The UserId kind alone.");
+          ( "kinds",
+            `List
+              [
+                `Assoc
+                  [
+                    ("schema", `String "UserId");
+                    ( "properties",
+                      `List (List.map (fun p -> `String p) properties) );
+                    ("accepts", `List []);
+                    ("refuses", `List []);
+                  ];
+              ] );
+          ("others", `List []);
+        ]
+    in
+    match
+      Decode.run ~file:User_stamp.file kinds Tables.Identifiers_kinds.decode
+    with
+    | Error error -> Alcotest.fail (Decode.error_to_string error)
+    | Ok (kinds, _) -> (
+        match User_stamp.field kinds with
+        | Ok field -> Ok field
+        | Error errors -> Error (List.map Decode.error_to_string errors))
+  in
+  let refused =
+    "identifiers/kinds.json: /kinds/0/properties: names no stamp, or more than \
+     one: a property beginning with \"_\""
+  in
+  [
+    case "the UserId kind's one stamp" (fun () ->
+        Alcotest.(check (result string (list string)))
+          "stamp" (Ok "_userId")
+          (read [ "_userId"; "userId" ]));
+    case "no stamp" (fun () ->
+        Alcotest.(check (result string (list string)))
+          "stamp" (Error [ refused ]) (read [ "userId" ]));
+    case "two stamps" (fun () ->
+        Alcotest.(check (result string (list string)))
+          "stamp" (Error [ refused ])
+          (read [ "_userId"; "_holder" ]));
+  ]
+
 let () =
   Alcotest.run "groups"
     [
@@ -569,6 +620,7 @@ let () =
       ("bus payloads", payloads);
       ("bus derivations", derivations);
       ("bus names", names);
+      ("user stamp", stamp);
       ("text", text);
       ("output", output);
     ]

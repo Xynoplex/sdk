@@ -1,16 +1,16 @@
 (* The sign-in group: one entry of the sign-in store (sign-in-store/SignIn.json),
    how a writer keeps the store's directory and files to their owner
-   (sign-in-store/owner-only.json), and, for TypeScript, the names the
-   contract gives the store's files (sign-in-store/README.md). Programs in
-   several languages read and write <stateDir>/tokens.json, so each of these
-   is the contract's to state, for the Go, Python, TypeScript and Kotlin
-   SDKs. *)
+   (sign-in-store/owner-only.json), and the names the contract gives the
+   store's files and the byte a Windows writer locks
+   (sign-in-store/README.md). Programs in several languages read and write
+   <stateDir>/tokens.json, so each of these is the contract's to state. *)
 
 module Flat = Flat
 module Owner_only = Owner_only
 module Contract = Contract
 module Kotlin = Kotlin
 module Rust = Rust
+module Store_names = Store_names
 
 let schema_file = "sign-in-store/SignIn.json"
 let snake name = String.lowercase_ascii (Text.upper_snake name)
@@ -486,7 +486,7 @@ let files ~root (spec : Spec.t) =
             Rust.file o;
             Kotlin.file o;
           ]
-          @ ocaml_owner_only o @ haskell_files)
+          @ ocaml_owner_only o @ Store_names.files names @ haskell_files)
         (haskell o names)
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in

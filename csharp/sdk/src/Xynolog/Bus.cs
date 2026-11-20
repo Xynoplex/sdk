@@ -55,7 +55,7 @@ public sealed record ReceivedBusFrame(BusFrame Frame, ActivityContext Trace) : C
     internal long Sequence { get; init; }
 
     public UserId? UserId =>
-        Frame.Payload.TryGetProperty("_userId", out var value) && value.ValueKind == JsonValueKind.String &&
+        Frame.Payload.TryGetProperty(BusChannels.UserField, out var value) && value.ValueKind == JsonValueKind.String &&
         Identifiers.UserId.TryParse(value.GetString(), out var user) ? user : null;
 }
 

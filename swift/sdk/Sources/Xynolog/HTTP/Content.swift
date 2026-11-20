@@ -234,7 +234,8 @@ extension HttpTransport: ContentTransport {
     let upload = transportSpan(
       .contentPut,
       attributes: [
-        "content.format": .string(request.format), "content.size_bytes": .int(request.file.count),
+        attributeContentFormat: .string(request.format),
+        attributeContentSizeBytes: .int(request.file.count),
       ])
     defer { upload.end() }
     let form = try Multipart(request)
@@ -336,7 +337,8 @@ extension HttpTransport: ContentTransport {
   }
   public func getBinary(_ resource: ResourceId) async throws -> Content {
     try await owned { owner in
-      let read = transportSpan(.contentGet, attributes: ["resource.id": .string(resource.value)])
+      let read = transportSpan(
+        .contentGet, attributes: [attributeResourceId: .string(resource.value)])
       defer { read.end() }
       BusLog.line(
         "GET", channel: "content", payload: ["resourceId": .string(resource.value)], scope: nil,
@@ -366,7 +368,7 @@ extension HttpTransport: ContentTransport {
   }
   public func getResourceGraph(_ resource: ResourceId) async throws -> GetResourceResponse {
     let read = transportSpan(
-      .contentGetGraph, attributes: ["resource.id": .string(resource.value)])
+      .contentGetGraph, attributes: [attributeResourceId: .string(resource.value)])
     defer { read.end() }
     return try await answer(
       GetResourceResponse.self, method: GatewayRoute.getResourceJsonLd.method,
@@ -375,7 +377,7 @@ extension HttpTransport: ContentTransport {
   }
   public func getAnnotations(_ resource: ResourceId) async throws -> GetAnnotationsResponse {
     let read = transportSpan(
-      .contentGetAnnotations, attributes: ["resource.id": .string(resource.value)])
+      .contentGetAnnotations, attributes: [attributeResourceId: .string(resource.value)])
     defer { read.end() }
     return try await answer(
       GetAnnotationsResponse.self, method: GatewayRoute.getResourceAnnotations.method,
@@ -384,7 +386,7 @@ extension HttpTransport: ContentTransport {
   }
   public func getAnchoredText(_ resource: ResourceId) async throws -> AnchoredTextAnswer {
     let read = transportSpan(
-      .contentGetAnchoredText, attributes: ["resource.id": .string(resource.value)])
+      .contentGetAnchoredText, attributes: [attributeResourceId: .string(resource.value)])
     defer { read.end() }
     return try await answer(
       AnchoredTextAnswer.self, method: GatewayRoute.getResourceAnchoredText.method,

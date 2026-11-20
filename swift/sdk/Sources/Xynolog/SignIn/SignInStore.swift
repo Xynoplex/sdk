@@ -26,7 +26,7 @@ public final class SignInStore: Sendable {
     try FileManager.default.createDirectory(
       at: directory, withIntermediateDirectories: true,
       attributes: [.posixPermissions: NSNumber(value: directoryMode)])
-    let lock = directory.appendingPathComponent("tokens.lock")
+    let lock = directory.appendingPathComponent(signInLockName)
     let fd = open(lock.path, O_CREAT | O_RDWR, fileMode)
     guard fd >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
     defer { _ = close(fd) }

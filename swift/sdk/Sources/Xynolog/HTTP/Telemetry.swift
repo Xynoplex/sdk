@@ -32,8 +32,8 @@ func transportSpan(
       builder.setNoParent()
     }
   }
-  if let channel { builder.setAttribute(key: "bus.channel", value: channel) }
-  if let scope { builder.setAttribute(key: "bus.scope", value: scope.value) }
+  if let channel { builder.setAttribute(key: attributeBusChannel, value: channel) }
+  if let scope { builder.setAttribute(key: attributeBusScope, value: scope.value) }
   for (key, value) in attributes { builder.setAttribute(key: key, value: value) }
   return builder.startSpan()
 }
@@ -52,8 +52,8 @@ extension HttpTransport {
         name: TransportMetric.xynologBusSent.rawValue
       ).build()
     }
-    var attributes: [String: AttributeValue] = ["bus.channel": .string(channel)]
-    if let scope { attributes["bus.scope"] = .string(scope.value) }
+    var attributes: [String: AttributeValue] = [attributeBusChannel: .string(channel)]
+    if let scope { attributes[attributeBusScope] = .string(scope.value) }
     sentCounter?.add(value: 1, attributes: attributes)
   }
 }
@@ -63,7 +63,9 @@ actor StreamingReadTrace {
   init(_ resource: ResourceId) {
     span = transportSpan(
       .contentGet,
-      attributes: ["resource.id": .string(resource.value), "content.stream": .bool(true)])
+      attributes: [
+        attributeResourceId: .string(resource.value), attributeContentStream: .bool(true),
+      ])
   }
   func headers() -> [String: String] { traceCarrier(span) }
   func end() { span.end() }

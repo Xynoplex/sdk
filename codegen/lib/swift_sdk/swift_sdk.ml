@@ -66,6 +66,7 @@ let swift_files (spec : Spec.t) =
   let* derivation = Required.derive spec in
   let* timing = Timing.Table.derive spec.tables.client_timing in
   let* codes = Error_codes.Table.derive spec.tables.errors_codes in
+  let* user_field = User_stamp.field spec.tables.identifiers_kinds in
   match
     let bundle = D.bundle spec in
     let sign_in =
@@ -95,7 +96,7 @@ let swift_files (spec : Spec.t) =
     let models = Models.create definitions ~identifiers in
     let tables =
       Table_decls.declarations models ~spec ~view:bundle.view
-        ~shapes:derivation.shapes ~timing ~codes
+        ~shapes:derivation.shapes ~timing ~codes ~user_field
     in
     Models.generate models;
     let models_file =

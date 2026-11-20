@@ -104,7 +104,7 @@ let channels_file ?(schemas = schemas) events () =
   | Error error -> Alcotest.fail (Decode.error_to_string error)
   | Ok (reg, _) -> (
       let component name = Option.map schema_of (List.assoc_opt name schemas) in
-      match Bus.Registry.derive ~ids ~component reg with
+      match Bus.Registry.derive ~ids ~component ~user_field:"_userId" reg with
       | Error errors ->
           Alcotest.fail
             (String.concat "\n" (List.map Decode.error_to_string errors))

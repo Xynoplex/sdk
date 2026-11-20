@@ -25,6 +25,7 @@ type expr =
   | Ascii of string  (** Printable ASCII, the rest escaped. *)
   | Int of int
   | Octal of string  (** Octal digits, written after [0o]. *)
+  | Hex of string  (** Hex digits, written after [0x]. *)
   | Ellipsis
   | Binary of expr * binary * expr  (** [a + b + c] is [(a + b) + c]. *)
   | Call of expr * items
@@ -205,6 +206,11 @@ let rec doc = function
       else
         invalid_arg
           (Printf.sprintf "Python_syntax: %S is no octal number" digits)
+  | Hex digits ->
+      if digits <> "" && String.for_all Text.is_hex_digit digits then
+        L.Text ("0x" ^ digits)
+      else
+        invalid_arg (Printf.sprintf "Python_syntax: %S is no hex number" digits)
   | Ellipsis -> L.Text "..."
   | Binary (_, op, _) as e ->
       (* A chain of one operator is one group: ruff breaks before each of its
@@ -251,7 +257,7 @@ let rec doc = function
    too long for its line goes in parentheses of its own; a bracket breaks
    itself, and a text can only overflow. *)
 and assigned = function
-  | (Binary _ | Name _ | Int _ | Octal _ | Ellipsis) as e ->
+  | (Binary _ | Name _ | Int _ | Octal _ | Hex _ | Ellipsis) as e ->
       L.group
         [
           L.Broken_text "(";

@@ -39,7 +39,9 @@
 //! registry's name and the payload a JSON object: for what relays frames it
 //! does not read, or is told its channels at run time.
 
-use crate::channels::{Channel, Request, Scoped, Unscoped, payload_shape, payload_stamps};
+use crate::channels::{
+    Channel, Request, Scoped, USER_FIELD, Unscoped, payload_shape, payload_stamps,
+};
 use crate::errors::{
     BusRequestError, BusRequestErrorCode, TransportError, TransportErrorCode, XynologError,
 };
@@ -363,7 +365,7 @@ fn delivered<C: Channel, E>(
     };
     let user_id = frame
         .payload
-        .get("_userId")
+        .get(USER_FIELD)
         .and_then(Value::as_str)
         .map(str::to_owned);
     Ok(Delivered {

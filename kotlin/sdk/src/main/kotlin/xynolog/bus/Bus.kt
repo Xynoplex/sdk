@@ -18,6 +18,7 @@ import kotlinx.serialization.json.jsonObject
 import xynolog.Timings
 import xynolog.channels.Channel
 import xynolog.channels.ScopedChannel
+import xynolog.channels.USER_FIELD
 import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
 import xynolog.errors.TransportError
@@ -47,9 +48,6 @@ import kotlin.time.TimeSource
 
 /** The type of every event of the record. */
 public val PERSISTED_EVENT_TYPES: List<String> = xynolog.channels.PERSISTED
-
-/** What the gateway stamps on a payload to say who emitted it. */
-internal const val EMITTED_BY = "_userId"
 
 /**
  * The result and failure channels of `operations`, each once: what a process
@@ -200,7 +198,7 @@ private fun <P> delivered(frame: Frame, payload: P): Delivered<P> =
         payload = payload,
         correlationId = frame.correlationId,
         scope = frame.scope,
-        userId = ((frame.payload[EMITTED_BY] as? JsonPrimitive)?.takeIf { it.isString })?.content?.let { UserId.parse(it) },
+        userId = ((frame.payload[USER_FIELD] as? JsonPrimitive)?.takeIf { it.isString })?.content?.let { UserId.parse(it) },
         trace = frame.trace,
     )
 

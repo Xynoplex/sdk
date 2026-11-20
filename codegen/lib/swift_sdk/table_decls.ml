@@ -1215,7 +1215,8 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
     ]
 
 (* Every table declaration, in the order the SDK's file holds them. *)
-let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes =
+let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes
+    ~user_field =
   let tables = spec.tables in
   (match
      List.assoc_opt "client/types/GatherResourceOptions.json" spec.schemas
@@ -1347,6 +1348,7 @@ let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes =
     constant [ "internal" ] "traceField" None
       (S.String tables.bus_registry.trace.field)
   in
+  let user = constant [ "internal" ] "userField" None (S.String user_field) in
   let channel_decls, channels = channels models ~shapes tables.bus_registry in
   let refresh = cache_refresh tables.client_refresh ~channels in
   let kept_decls =
@@ -1354,5 +1356,5 @@ let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes =
   in
   [ received_frame ] @ timings timing
   @ [ telemetry "TransportSpan" spans; telemetry "TransportMetric" metrics ]
-  @ error_decls @ values @ [ aliases; trace ] @ channel_decls @ refresh
+  @ error_decls @ values @ [ aliases; trace; user ] @ channel_decls @ refresh
   @ kept_decls

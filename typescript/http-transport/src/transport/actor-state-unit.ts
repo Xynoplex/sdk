@@ -43,6 +43,8 @@ import {
   gatewayRoutes,
 } from '@xynolog/core';
 import {
+  ATTR_BUS_CHANNEL,
+  ATTR_BUS_SCOPE,
   SpanKind,
   extractTraceparent,
   getActiveTraceparent,
@@ -857,8 +859,10 @@ export function createActorStateUnit(
                     {
                       kind: SpanKind.CONSUMER,
                       attrs: {
-                        'bus.channel': parsed.channel,
-                        ...(parsed.scope ? { 'bus.scope': parsed.scope } : {}),
+                        [ATTR_BUS_CHANNEL]: parsed.channel,
+                        ...(parsed.scope
+                          ? { [ATTR_BUS_SCOPE]: parsed.scope }
+                          : {}),
                       },
                     },
                   ),

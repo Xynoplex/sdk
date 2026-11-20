@@ -25,7 +25,7 @@
 
 use super::kit::{FaultAction, RequestLogEntry};
 use crate::bus::{operation, reply_names};
-use crate::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD};
+use crate::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD, USER_FIELD};
 use crate::errors::{BusRequestError, BusRequestErrorCode, TransportError, TransportErrorCode};
 use crate::event_bus::EventBus;
 use crate::locked;
@@ -46,7 +46,7 @@ use tokio::sync::{broadcast, watch};
 pub fn retry_key_of(channel: &str, payload: &Map<String, Value>) -> String {
     let mut fields: Vec<(&String, &Value)> = payload
         .iter()
-        .filter(|(key, _)| key.as_str() != TRACE_FIELD && key.as_str() != "_userId")
+        .filter(|(key, _)| key.as_str() != TRACE_FIELD && key.as_str() != USER_FIELD)
         .collect();
     fields.sort_by(|a, b| a.0.cmp(b.0));
     let fields: Vec<Value> = fields

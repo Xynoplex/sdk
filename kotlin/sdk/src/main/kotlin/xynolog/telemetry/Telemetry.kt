@@ -27,12 +27,12 @@ internal class MetricRow(val name: String, val meaning: String)
 private const val SCOPE = "xynolog"
 private const val CHANNEL = "{channel}"
 
-private val BUS_CHANNEL = AttributeKey.stringKey("bus.channel")
-private val BUS_SCOPE = AttributeKey.stringKey("bus.scope")
-private val CONTENT_FORMAT = AttributeKey.stringKey("content.format")
-private val CONTENT_SIZE_BYTES = AttributeKey.longKey("content.size_bytes")
-private val CONTENT_STREAM = AttributeKey.booleanKey("content.stream")
-private val RESOURCE_ID = AttributeKey.stringKey("resource.id")
+private val BUS_CHANNEL = AttributeKey.stringKey(ATTR_BUS_CHANNEL)
+private val BUS_SCOPE = AttributeKey.stringKey(ATTR_BUS_SCOPE)
+private val CONTENT_FORMAT = AttributeKey.stringKey(ATTR_CONTENT_FORMAT)
+private val CONTENT_SIZE_BYTES = AttributeKey.longKey(ATTR_CONTENT_SIZE_BYTES)
+private val CONTENT_STREAM = AttributeKey.booleanKey(ATTR_CONTENT_STREAM)
+private val RESOURCE_ID = AttributeKey.stringKey(ATTR_RESOURCE_ID)
 
 /**
  * What this SDK's transports tell OpenTelemetry (protocol/specs/src/sdk-telemetry/telemetry.json).

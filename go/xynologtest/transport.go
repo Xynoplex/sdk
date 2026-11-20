@@ -51,7 +51,7 @@ type MakeResponse func(operation bus.Channel, payload json.RawMessage) (json.Raw
 type Refuse func(operation bus.Channel, payload json.RawMessage) json.RawMessage
 
 // stamped is what a gateway stamps on a payload: no part of what was asked.
-var stamped = []string{bus.TraceField, "_userId"}
+var stamped = []string{bus.TraceField, bus.UserField}
 
 // RetryKeyOf is a request's identity across retries: its channel and its
 // payload, less what the gateway stamps on it, its members in name order.

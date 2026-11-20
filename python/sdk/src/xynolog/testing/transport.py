@@ -33,7 +33,7 @@ from pydantic import JsonValue, TypeAdapter
 
 from xynolog._kept_for_first_reader import KeptForFirstReader
 from xynolog._reading import Reading
-from xynolog.channels import RESOURCE_SCOPED_CHANNELS, TRACE_FIELD
+from xynolog.channels import RESOURCE_SCOPED_CHANNELS, TRACE_FIELD, USER_FIELD
 from xynolog.errors import TransportError, XynologError
 from xynolog.events import Events
 from xynolog.identifiers import ResourceId
@@ -81,7 +81,7 @@ type Refuse = Callable[[str, Mapping[str, JsonValue]], Mapping[str, JsonValue] |
 _PAIRS: Final = TypeAdapter[list[tuple[str, JsonValue]]](list[tuple[str, JsonValue]])
 
 # What a gateway stamps on a payload: no part of what was asked.
-_STAMPED: Final = (TRACE_FIELD, "_userId")
+_STAMPED: Final = (TRACE_FIELD, USER_FIELD)
 
 
 def retry_key_of(channel: str, payload: Mapping[str, JsonValue]) -> str:

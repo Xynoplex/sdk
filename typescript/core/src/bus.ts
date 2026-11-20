@@ -26,6 +26,7 @@ import { defaultIfEmpty, filter, map, take } from 'rxjs/operators';
 import {
   CHANNEL_PAYLOADS,
   CHANNEL_STAMPS,
+  USER_FIELD,
   type EventMap,
 } from './bus-protocol';
 import type { BusEnvelope, BusFrame, TraceCarrier } from './event-bus';
@@ -193,9 +194,6 @@ export class FrameRefusal {
 /** What a typed read gives for each frame: the frame, or, in its place, its refusal. */
 export type Heard<T> = Delivered<T> | FrameRefusal;
 
-/** The field the gateway stamps a payload's emitter in. */
-const EMITTED_BY = '_userId';
-
 /**
  * What a payload on `channel` must carry: the payload of the schema its
  * registry entry names (`CHANNEL_PAYLOADS`), or a `response` that is one.
@@ -287,7 +285,7 @@ function heard<K extends keyof EventMap>(
 ): Heard<EventMap[K]> {
   const declared = asDeclared(channel, frame.payload, frame.correlationId);
   if (declared instanceof FrameRefusal) return declared;
-  const stamped = (frame.payload as Record<string, unknown>)[EMITTED_BY];
+  const stamped = (frame.payload as Record<string, unknown>)[USER_FIELD];
   return {
     status: 'delivered',
     payload: declared,

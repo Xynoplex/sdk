@@ -1,12 +1,14 @@
 (* The telemetry group: every span and metric an SDK's transports export
    (protocol/specs/src/sdk-telemetry/telemetry.json), its kind or instrument,
    what it means, and its attributes, for the Go, Python, OCaml and Kotlin
-   SDKs.
+   SDKs; and every attribute key a row lists, for those and the TypeScript,
+   C#, Swift and Haskell SDKs. The Rust SDK's telemetry is held to the table
+   by its own tests.
 
-   A metric's instrument is a counter, and a span's name holds no placeholder but {channel}. A row says what it means
-   and lists each attribute once; those not marked `only` are the ones every
-   one carries. No two rows, nor two attribute keys, are the same Go or Python
-   name. *)
+   A metric's instrument is a counter, and a span's name holds no placeholder
+   but {channel}. A row says what it means and lists each attribute once;
+   those not marked `only` are the ones every one carries. No two rows, nor
+   two attribute keys, are the same Go or Python name. *)
 
 module T = Tables.Sdk_telemetry_telemetry
 
@@ -21,7 +23,11 @@ type row = {
   always : string list;
 }
 
-type t = { spans : row list; metrics : row list }
+type t = {
+  spans : row list;
+  metrics : row list;
+  keys : string list;  (** Every attribute key a row lists, once, in order. *)
+}
 
 let without_channel = Text.replace_all ~sub:(":" ^ channel) ~by:""
 
@@ -35,6 +41,17 @@ let go_identifier prefix name =
            if word = "id" then "ID" else String.capitalize_ascii word)
          (String.split_on_char '_'
             (String.map (function '.' -> '_' | c -> c) (without_channel name))))
+
+(* The words of an attribute key: content.size_bytes is content, size and
+   bytes. Every SDK names a key by them, so two keys of the same words would
+   be one name in each; the Go names refuse them. *)
+let key_words key =
+  String.split_on_char '_' (String.map (function '.' -> '_' | c -> c) key)
+
+let key_pascal key =
+  String.concat "" (List.map String.capitalize_ascii (key_words key))
+
+let key_upper key = String.uppercase_ascii (String.concat "_" (key_words key))
 
 (* A row's Python constant: its name, without what stands for the channel, in
    upper snake case, each run of what is not a letter or digit an
@@ -52,6 +69,8 @@ let python_constant name =
           then Buffer.add_char out '_')
     (Text.upper_snake (without_channel name));
   Buffer.contents out
+
+let python_key key = "ATTR_" ^ key_upper key
 
 let derive (table : T.t) =
   let refusals = ref [] in
@@ -138,9 +157,10 @@ let derive (table : T.t) =
     @ List.map (fun r -> go_identifier "metric" r.name) metrics
     @ List.map (go_identifier "key") keys);
   distinct "Python constant"
-    (List.map (fun r -> python_constant r.name) (spans @ metrics));
+    (List.map (fun r -> python_constant r.name) (spans @ metrics)
+    @ List.map python_key keys);
   match List.rev !refusals with
-  | [] -> Ok { spans; metrics }
+  | [] -> Ok { spans; metrics; keys }
   | errors -> Error errors
 
 let go (t : t) =
@@ -151,10 +171,6 @@ let go (t : t) =
     | "client" -> "trace.SpanKindClient"
     | "producer" -> "trace.SpanKindProducer"
     | _ -> "trace.SpanKindConsumer"
-  in
-  let keys =
-    List.sort_uniq compare
-      (List.concat_map (fun r -> r.all) (t.spans @ t.metrics))
   in
   let row type_ doc prefix r fields =
     G.Var
@@ -215,7 +231,7 @@ let go (t : t) =
                        G.Const
                          (G.spec ~type_:(G.Named "attribute.Key")
                             (go_identifier "key" k) (G.Quoted k)))
-                     keys);
+                     t.keys);
               ];
         };
   }
@@ -295,7 +311,8 @@ let python (t : t) =
                                  "SpanKindName";
                                  "SpanRow";
                                ]
-                              @ List.map constant (t.spans @ t.metrics))))));
+                              @ List.map constant (t.spans @ t.metrics)
+                              @ List.map python_key t.keys)))));
               P.alias
                 ~about:
                   [
@@ -335,7 +352,12 @@ let python (t : t) =
             @ [
                 table "SPANS" "SpanRow" t.spans;
                 table "METRICS" "MetricRow" t.metrics;
-              ];
+              ]
+            @ List.map
+                (fun k ->
+                  P.assign ~annotation:(P.Name "Final") ~value:(P.Str k)
+                    (python_key k))
+                t.keys;
         };
   }
 
@@ -360,15 +382,128 @@ let ocaml (t : t) =
     @ List.map
         (fun (r : row) -> O.let_ (name r.name) (O.string r.name))
         t.metrics
-    @ List.map
-        (fun key -> O.let_ ("attr_" ^ name key) (O.string key))
-        (List.sort_uniq compare
-           (List.concat_map (fun (r : row) -> r.all) (t.spans @ t.metrics))))
+    @ List.map (fun key -> O.let_ ("attr_" ^ name key) (O.string key)) t.keys)
+
+let about = "An attribute key a row of the telemetry table lists."
+
+let typescript (t : t) =
+  let module T = Typescript_syntax in
+  {
+    Output.path = "typescript/observability/src/telemetry-keys.ts";
+    text =
+      T.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:[ "protocol/specs/src/" ^ file ]
+              __FILE__;
+          body =
+            List.map
+              (fun k ->
+                T.const ("ATTR_" ^ key_upper k) ~about:[ Doc about ] (T.Str k))
+              t.keys;
+        };
+  }
+
+let csharp (t : t) =
+  let module C = Csharp_syntax in
+  {
+    Output.path = "csharp/sdk/src/Xynolog/Generated/TelemetryKeys.g.cs";
+    text =
+      C.text
+        {
+          header = Banner.lines ~from_:("protocol/specs/src/" ^ file) __FILE__;
+          nullable = false;
+          usings = [];
+          namespace = "Xynolog";
+          decls =
+            [
+              C.Type
+                {
+                  attributes = [];
+                  modifiers = [ Internal; Static ];
+                  kind = Class;
+                  name = "TelemetryKeys";
+                  params = None;
+                  base = None;
+                  body =
+                    Some
+                      ( Packed,
+                        List.map
+                          (fun k ->
+                            C.Field
+                              {
+                                modifiers = [ Internal; Const ];
+                                type_ = C.T "string";
+                                name = key_pascal k;
+                                value = Some (C.Str k);
+                              })
+                          t.keys );
+                };
+            ];
+        };
+  }
+
+let swift (t : t) =
+  let module S = Swift_syntax in
+  {
+    Output.path = "swift/sdk/Sources/Xynolog/Generated/TelemetryKeys.swift";
+    text =
+      S.print
+        {
+          S.banner = Banner.lines ~from_:("protocol/specs/src/" ^ file) __FILE__;
+          imports = [ { S.module_ = "Foundation"; testable = false } ];
+          decls =
+            List.mapi
+              (fun i k ->
+                ( (if i = 0 then S.Blank else S.Line),
+                  {
+                    S.doc = Text.wrapped ~lead:"/// " ~width:100 about;
+                    modifiers = [];
+                    body =
+                      S.Property
+                        {
+                          var = false;
+                          name = "attribute" ^ key_pascal k;
+                          type_ = None;
+                          value = Some (S.String k);
+                        };
+                  } ))
+              t.keys;
+        };
+  }
+
+let haskell (t : t) =
+  let module H = Haskell_syntax in
+  Haskell_sdk.file ~under:"generated"
+    {
+      H.banner = Banner.lines ~from_:file __FILE__;
+      extensions = [ "OverloadedStrings" ];
+      name = "Xynolog.Internal.Generated.TelemetryKeys";
+      imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
+      body =
+        List.map
+          (fun k ->
+            H.value ("attribute" ^ key_pascal k) (T_name "Text") (Str k))
+          t.keys;
+    }
 
 let files ~root:_ (spec : Spec.t) =
   let table = spec.tables.sdk_telemetry_telemetry in
   Result.bind (derive table) (fun t ->
       Result.map
-        (fun kotlin -> [ go t; python t; ocaml t; kotlin ])
+        (fun kotlin ->
+          [
+            go t;
+            python t;
+            ocaml t;
+            kotlin;
+            typescript t;
+            csharp t;
+            swift t;
+            haskell t;
+          ])
         (Kotlin_sdk.written ~from_:file (fun () ->
-             Kotlin.file ~from_:file table)))
+             Kotlin.file ~from_:file
+               ~keys:(List.map (fun k -> (python_key k, k)) t.keys)
+               table)))

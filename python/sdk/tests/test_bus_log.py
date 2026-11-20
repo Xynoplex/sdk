@@ -187,7 +187,6 @@ def test_a_line_shows_of_a_payload_what_the_table_says(case: JsonObject, capsys:
 @pytest.mark.usefixtures("logging_the_bus")
 @pytest.mark.parametrize("name", NAMES)
 def test_the_value_of_a_member_under_each_name_of_the_table_is_withheld(name: str, capsys: pytest.CaptureFixture[str]) -> None:
-    # The names this log withholds under are its own list, and the table's is the one it is held to.
     assert shown_of({name: "a-credential", "beside": "shown"}, capsys) == {name: "[withheld]", "beside": "shown"}
 
 
