@@ -80,7 +80,7 @@ let decode_received channel =
     | Recorded { envelope; _ } -> Schema_shape.reference envelope
     | _ -> channel_shape channel
   in
-  Schema_codec.decode_received shape
+  Schema_codec.decode_received "_userId" shape
 
 let name value = value.name
 let payload value = value.payload

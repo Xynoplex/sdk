@@ -170,6 +170,7 @@ __all__ = [
     "PERSISTED_EVENT_TYPES",
     "RESOURCE_SCOPED_CHANNELS",
     "TRACE_FIELD",
+    "USER_FIELD",
     "BECKON_FOCUS",
     "BECKON_HOVER",
     "BECKON_SPARKLE",
@@ -1317,3 +1318,6 @@ PERSISTED_EVENT_TYPES: Final[tuple[ChannelName, ...]] = (
 # from it. No payload schema declares it, and no subscriber sees it. An emit carries its trace
 # in its request's `traceparent` header, and its payload carries no such field.
 TRACE_FIELD: Final = "_trace"
+
+# The member a gateway stamps a payload's emitter under: no part of what was asked.
+USER_FIELD: Final = "_userId"

@@ -126,6 +126,12 @@ import xynolog.types.YieldUpdateOk
 @Generated
 public const val TRACE_FIELD: String = "_trace"
 
+/**
+ * The member a gateway stamps a payload's emitter under: no part of what was asked.
+ */
+@Generated
+internal const val USER_FIELD: String = "_userId"
+
 /** Every channel of the bus, by name, each typed by the payload a frame on it carries; a channel a resource's scope carries is a `ScopedChannel`. */
 @Generated
 public object Channels {

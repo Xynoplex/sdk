@@ -42,6 +42,7 @@ from typing import Final, Literal, Self, final, overload
 from pydantic import JsonValue, ValidationError
 
 from xynolog.channel import AnyChannel, AnyOperation, Channel, Operation, ScopedChannel
+from xynolog.channels import USER_FIELD
 from xynolog.errors import BusRequestError, TransportError
 from xynolog.events import Events
 from xynolog.identifiers import ResourceId, UserId
@@ -53,10 +54,6 @@ from xynolog.types import CommandError
 from xynolog.watched import NeverReached, reached
 
 __all__ = ["Bus", "Delivered", "Heard", "Typed", "decoded", "reply_channels_for", "request"]
-
-# What the gateway stamps on a payload to say who emitted it.
-_EMITTED_BY: Final = "_userId"
-
 
 def reply_channels_for(*operations: AnyOperation) -> tuple[str, ...]:
     """The result and failure channels of `operations`, each once.
@@ -225,7 +222,7 @@ type Heard[P: WireModel] = Delivered[P] | FrameRefusal
 
 def _delivered[P: WireModel](channel: Channel[P] | ScopedChannel[P, WireModel], frame: Frame, read: JsonValue) -> Delivered[P]:
     """`frame`, its payload `read` as `channel` types it. Raises `ValidationError` for a payload that is not that channel's."""
-    stamped = frame.payload.get(_EMITTED_BY)
+    stamped = frame.payload.get(USER_FIELD)
     return Delivered(
         payload=channel.decode(read),
         correlation_id=frame.correlation_id,

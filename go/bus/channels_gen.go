@@ -166,3 +166,7 @@ var (
 // carries its trace in its request's `traceparent` header, and its payload
 // carries no such field.
 const TraceField = "_trace"
+
+// UserField: The member a gateway stamps a payload's emitter under: no part
+// of what was asked.
+const UserField = "_userId"

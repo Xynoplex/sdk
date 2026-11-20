@@ -4,7 +4,7 @@ public struct Delivered<Payload: Sendable>: Sendable {
   public let frame: ReceivedFrame
   public let payload: Payload
   public var userId: UserId? {
-    guard case .string(let value) = frame.payload["_userId"] else { return nil }
+    guard case .string(let value) = frame.payload[userField] else { return nil }
     return UserId.parse(value)
   }
 }

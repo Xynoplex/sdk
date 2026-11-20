@@ -27,10 +27,11 @@ let files ~root (spec : Spec.t) =
   let* codes = Error_codes.Table.derive spec.tables.errors_codes in
   let* http = Http_facts.file codes in
   let* facts = Facts.files spec in
+  let* user_field = User_stamp.field spec.tables.identifiers_kinds in
   let* bus =
     Bus.Registry.derive ~ids:spec.ids
       ~component:(Bus.Registry.component spec)
-      spec.tables.bus_registry
+      ~user_field spec.tables.bus_registry
   in
   let* shapes = Required.derive spec in
   let* bus_modules = Bus_modules.files spec bus ~shapes:shapes.shapes in

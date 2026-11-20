@@ -151,6 +151,9 @@ let channels_file ~component ~types (bus : Registry.t) =
         ~annotations:[ generated ] ~visibility:K.Public ~const:true
         ~type_:(K.Type "String") ~value:(K.Same_line (K.Str reg.trace.field))
         "TRACE_FIELD";
+      K.property ~about:(K.Block User_stamp.about) ~annotations:[ generated ]
+        ~visibility:K.Internal ~const:true ~type_:(K.Type "String")
+        ~value:(K.Same_line (K.Str bus.user_field)) "USER_FIELD";
       K.class_
         ~about:
           (K.Doc

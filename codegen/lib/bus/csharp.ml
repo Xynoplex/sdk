@@ -221,7 +221,15 @@ let file (bus : Registry.t) =
           namespace = "Xynolog";
           decls =
             [
-              static_class "BusChannels" (channels bus.registry);
+              static_class "BusChannels"
+                (C.Field
+                   {
+                     modifiers = [ Internal; Const ];
+                     type_ = C.T "string";
+                     name = "UserField";
+                     value = Some (C.Str bus.user_field);
+                   }
+                :: channels bus.registry);
               static_class "BusOperations" (operations bus);
             ];
         };

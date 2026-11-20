@@ -24,7 +24,7 @@ import { KeptForFirstReader } from './kept-for-first-reader';
 import type { BaseUrl } from './branded-types';
 import { baseUrl as makeBaseUrl } from './branded-types';
 import type { ResourceId } from './identifiers';
-import { TRACE_FIELD, type EventMap } from './bus-protocol';
+import { TRACE_FIELD, USER_FIELD, type EventMap } from './bus-protocol';
 import type { BusEnvelope, BusFrame } from './event-bus';
 import type { ConnectionState, ITransport } from './transport';
 import { EventBus } from './event-bus';
@@ -101,7 +101,7 @@ export function retryKeyOf(
   payload: Record<string, unknown>,
 ): string {
   const entries = Object.entries(payload)
-    .filter(([k]) => k !== TRACE_FIELD && k !== '_userId')
+    .filter(([k]) => k !== TRACE_FIELD && k !== USER_FIELD)
     .sort(([a], [b]) => (a < b ? -1 : 1));
   return `${channel} ${JSON.stringify(entries)}`;
 }

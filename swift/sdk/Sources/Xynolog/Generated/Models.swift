@@ -13042,6 +13042,7 @@ internal let extensionAliases: [String: String] = [
   ".yml": ".yaml",
 ]
 internal let traceField = "_trace"
+internal let userField = "_userId"
 public struct Channel<Payload: Codable & Sendable>: Sendable {
   public let name: String
   let stamps: Set<String>

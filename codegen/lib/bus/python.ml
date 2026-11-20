@@ -175,6 +175,7 @@ let channels (bus : Registry.t) =
                "PERSISTED_EVENT_TYPES";
                "RESOURCE_SCOPED_CHANNELS";
                "TRACE_FIELD";
+               "USER_FIELD";
              ]
             @ List.sort String.compare (List.map constant all_names)
             @ [ "ChannelName" ]);
@@ -228,6 +229,8 @@ let channels (bus : Registry.t) =
             ~about:[ Prose reg.trace.meaning ]
             "TRACE_FIELD" ~annotation:(P.Name "Final")
             ~value:(P.Str reg.trace.field);
+          P.assign ~about:[ Prose User_stamp.about ] "USER_FIELD"
+            ~annotation:(P.Name "Final") ~value:(P.Str bus.user_field);
         ];
     }
 

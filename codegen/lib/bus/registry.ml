@@ -40,6 +40,7 @@ type t = {
   limits : R.operations_item * R.operations_item list;
       (* The operations named <flow>:limits-requested, which all ask and
          answer the same. *)
+  user_field : string;  (** {!User_stamp.field}. *)
 }
 
 (* What every shape of channel states alike. *)
@@ -252,7 +253,7 @@ let delivery_classes (reg : R.t) =
   classes
 
 (* [component name] is the component schema the registry names [name]. *)
-let derive ~ids ~component (reg : R.t) =
+let derive ~ids ~component ~user_field (reg : R.t) =
   let by_channel = Hashtbl.create 256 in
   List.iter
     (fun (c : R.channels_item) -> Hashtbl.replace by_channel (name c) c)
@@ -372,5 +373,6 @@ let derive ~ids ~component (reg : R.t) =
           stamps;
           attrs;
           limits = (first, rest);
+          user_field;
         }
   | _, problems -> Error problems
