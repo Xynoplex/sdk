@@ -69,7 +69,7 @@ var (
 
 // GrantForm is the grant's form: the secret itself.
 func (c SecretCredential) GrantForm(string) (url.Values, error) {
-	return url.Values{"grant_type": {"client_credentials"}, "client_id": {c.ClientID}, "client_secret": {c.ClientSecret}}, nil
+	return clientSecretForm(c.ClientID, c.ClientSecret), nil
 }
 
 // GrantForm is the grant's form: an assertion signed for this grant alone, and
@@ -349,12 +349,12 @@ func (a *AgentToken) renewWithinBudget(due string) {
 		func(error) (time.Duration, bool) { return 0, false })
 }
 
-// named is the DID the gateway names the bearer of token by: GET /api/users/me.
+// named is the DID the gateway names the bearer of token by: routeGetCurrentUser.
 func named(ctx context.Context, config AgentConfig, token string) (api.UserId, error) {
-	target := strings.TrimRight(config.Gateway, "/") + "/api/users/me"
+	target := strings.TrimRight(config.Gateway, "/") + routeGetCurrentUser.path
 	asking, cancel := context.WithTimeout(ctx, config.Timing.HttpRequestTimeout)
 	defer cancel()
-	request, err := http.NewRequestWithContext(asking, http.MethodGet, target, nil)
+	request, err := http.NewRequestWithContext(asking, routeGetCurrentUser.method, target, nil)
 	if err != nil {
 		return api.UserId{}, err
 	}
@@ -369,7 +369,7 @@ func named(ctx context.Context, config AgentConfig, token string) (api.UserId, e
 		return api.UserId{}, transportErrorWithoutResponse(fmt.Sprintf("%s ended before its answer did: %v", target, err), TransportErrorCodeUnavailable)
 	}
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		wait, hasWait := RetryAfter(response.Header.Get("Retry-After"))
+		wait, hasWait := RetryAfter(response.Header.Get(headerRetryAfter))
 		return api.UserId{}, refusal(fmt.Sprintf("the gateway did not name the agent (HTTP %d)", response.StatusCode), response.StatusCode, wait, hasWait, answered)
 	}
 	var user api.UserResponse

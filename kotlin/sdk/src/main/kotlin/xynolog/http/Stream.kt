@@ -530,11 +530,11 @@ internal class Stream(
     /** One connection: the subscribe request, and every event its stream carries, reported in order. */
     private suspend fun connection(conn: Int, token: String, body: String) {
         try {
-            val request = HttpRequest.newBuilder(java.net.URI.create("$baseUrl/bus/subscribe"))
-                .POST(HttpRequest.BodyPublishers.ofString(body))
+            val request = HttpRequest.newBuilder(java.net.URI.create("$baseUrl${SUBSCRIBE_TO_BUS.path}"))
+                .method(SUBSCRIBE_TO_BUS.method, HttpRequest.BodyPublishers.ofString(body))
                 .header("Authorization", "Bearer $token")
-                .header("Content-Type", "application/json")
-                .header("Accept", "text/event-stream")
+                .header("Content-Type", SUBSCRIBE_TO_BUS_SENDS)
+                .header("Accept", SUBSCRIBE_TO_BUS_ANSWERS)
                 .build()
             val response = withTimeoutOrNull(timing.streamOpenMs) { http.exchange(request, HttpResponse.BodyHandlers.ofPublisher()) }
             if (response == null) {
@@ -550,7 +550,7 @@ internal class Stream(
                 } catch (_: IOException) {
                     null
                 }
-                val stated = retryAfterMs(response.headers().firstValue("retry-after").orElse(null))
+                val stated = retryAfterMs(response.headers().firstValue(RETRY_AFTER).orElse(null))
                 val message = when (val words = said(read)) {
                     null -> "SSE connect failed: $status"
                     else -> "SSE connect failed: $status: $words"
@@ -608,20 +608,20 @@ internal fun lineOf(data: String): Line {
         UNDECODED
     }
     val stated = element as? JsonObject ?: return Line.Unaddressed(fault)
-    val channel = (stated["channel"] as? JsonPrimitive)?.takeIf { it.isString && it.content.isNotEmpty() }?.content ?: return Line.Unaddressed(fault)
+    val channel = (stated[BUS_FRAME_CHANNEL] as? JsonPrimitive)?.takeIf { it.isString && it.content.isNotEmpty() }?.content ?: return Line.Unaddressed(fault)
     // A null where a member may be absent is its absence, as BusFrame reads it.
-    val scope = when (val held = stated["scope"]) {
+    val scope = when (val held = stated[BUS_FRAME_SCOPE]) {
         null, JsonNull -> null
         else -> (held as? JsonPrimitive)?.takeIf { it.isString }?.let { ResourceId.parse(it.content) } ?: return Line.Unaddressed(fault)
     }
-    return Line.Refused(FrameRefusal(channel, fault.member, fault.reason, stated["payload"], correlationIdOf(channel, stated["correlationId"]), scope))
+    return Line.Refused(FrameRefusal(channel, fault.member, fault.reason, stated[BUS_FRAME_PAYLOAD], correlationIdOf(channel, stated[BUS_FRAME_CORRELATION_ID]), scope))
 }
 
 /** The correlation id a frame on `channel` carries as `held`, when BusFrame allows it, whatever the frame's other faults. */
 private fun correlationIdOf(channel: String, held: JsonElement?): String? {
     // A null where a member may be absent is its absence, as BusFrame reads it.
     if (held == null || held == JsonNull) return null
-    val alone = JsonObject(mapOf("channel" to JsonPrimitive(channel), "payload" to JsonObject(emptyMap()), "correlationId" to held))
+    val alone = JsonObject(mapOf(BUS_FRAME_CHANNEL to JsonPrimitive(channel), BUS_FRAME_PAYLOAD to JsonObject(emptyMap()), BUS_FRAME_CORRELATION_ID to held))
     if (faultOf(BusFrame.serializer().descriptor, alone) != null) return null
     return held.jsonPrimitive.content
 }

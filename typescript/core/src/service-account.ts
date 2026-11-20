@@ -19,6 +19,7 @@
 
 import { JWT_BEARER, clientAssertion } from './client-assertion';
 import { withinDeadline } from './deadline';
+import type { ClientSecretForm } from './gateway-http';
 import { HTTP_REQUEST_TIMEOUT_MS } from './client-timing';
 import { uuidV4 } from './id-generation';
 import { SignInError } from './sign-in-error';
@@ -72,7 +73,7 @@ async function proof(
       grant_type: 'client_credentials',
       client_id: credential.clientId,
       client_secret: credential.clientSecret,
-    });
+    } satisfies ClientSecretForm);
   }
   const assertion = await clientAssertion(
     credential.privateKey,

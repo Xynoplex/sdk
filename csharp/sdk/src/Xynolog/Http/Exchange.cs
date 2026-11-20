@@ -10,11 +10,11 @@ namespace Xynolog.Http;
 
 public sealed partial class HttpTransport
 {
-    public Task<HealthResponse> HealthCheckAsync(CancellationToken cancellation = default) => AnswerAsync<HealthResponse>(HttpMethod.Get, "/api/health", cancellation: cancellation);
-    public Task<StatusResponse> GetStatusAsync(CancellationToken cancellation = default) => AnswerAsync<StatusResponse>(HttpMethod.Get, "/api/status", cancellation: cancellation);
-    public Task<UserResponse> GetCurrentUserAsync(CancellationToken cancellation = default) => AnswerAsync<UserResponse>(HttpMethod.Get, "/api/users/me", cancellation: cancellation);
-    public Task<ProtectedResourceMetadata> GetProtectedResourceMetadataAsync(CancellationToken cancellation = default) => AnswerAsync<ProtectedResourceMetadata>(HttpMethod.Get, "/.well-known/oauth-protected-resource", authenticated: false, cancellation: cancellation);
-    public Task<MediaTokenResponse> GetMediaTokenAsync(ResourceId resource, CancellationToken cancellation = default) => AnswerAsync<MediaTokenResponse>(HttpMethod.Post, "/api/tokens/media", () => JsonContent.Create(new MediaTokenRequest { ResourceId = resource }), cancellation: cancellation);
+    public Task<HealthResponse> HealthCheckAsync(CancellationToken cancellation = default) => AnswerAsync<HealthResponse>(GatewayRoute.GetHealth.Method, GatewayRoute.GetHealth.Path, cancellation: cancellation);
+    public Task<StatusResponse> GetStatusAsync(CancellationToken cancellation = default) => AnswerAsync<StatusResponse>(GatewayRoute.GetStatus.Method, GatewayRoute.GetStatus.Path, cancellation: cancellation);
+    public Task<UserResponse> GetCurrentUserAsync(CancellationToken cancellation = default) => AnswerAsync<UserResponse>(GatewayRoute.GetCurrentUser.Method, GatewayRoute.GetCurrentUser.Path, cancellation: cancellation);
+    public Task<ProtectedResourceMetadata> GetProtectedResourceMetadataAsync(CancellationToken cancellation = default) => AnswerAsync<ProtectedResourceMetadata>(GatewayRoute.GetProtectedResourceMetadata.Method, GatewayRoute.GetProtectedResourceMetadata.Path, authenticated: false, cancellation: cancellation);
+    public Task<MediaTokenResponse> GetMediaTokenAsync(ResourceId resource, CancellationToken cancellation = default) => AnswerAsync<MediaTokenResponse>(GatewayRoute.CreateMediaToken.Method, GatewayRoute.CreateMediaToken.Path, () => JsonContent.Create(new MediaTokenRequest { ResourceId = resource }), cancellation: cancellation);
 
     internal async Task<T> AnswerAsync<T>(HttpMethod method, string path, Func<HttpContent>? content = null, bool authenticated = true, CancellationToken cancellation = default, bool retry = true) where T : class
     {
@@ -54,7 +54,7 @@ public sealed partial class HttpTransport
         {
             var sent = authenticated ? Token() : null;
             using var request = Request(method, path, sent);
-            if (key is not null) request.Headers.Add(IdempotencyKey, key);
+            if (key is not null) request.Headers.Add(GatewayHeader.IdempotencyKey, key);
             request.Content = content?.Invoke();
             using var deadline = new CancellationTokenSource(upload ? Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(timing.HttpRequestMs), clock);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(deadline.Token, lifetime.Token, cancellation);

@@ -18,7 +18,6 @@ public enum ConnectionState { Connecting, Open, Reconnecting, Degraded, Unauthen
 
 public sealed partial class HttpTransport : IDisposable
 {
-    private const string IdempotencyKey = "Idempotency-Key";
     private readonly object gate = new();
     private readonly HttpClient? client;
     private readonly HttpMessageInvoker? owned;
@@ -227,8 +226,8 @@ public sealed partial class HttpTransport : IDisposable
         for (var attempt = 1; ; attempt++)
         {
             cancellation.ThrowIfCancellationRequested();
-            using var request = Request(HttpMethod.Post, "/bus/emit", sent);
-            request.Headers.Add(IdempotencyKey, key);
+            using var request = Request(GatewayRoute.EmitOnBus.Method, GatewayRoute.EmitOnBus.Path, sent);
+            request.Headers.Add(GatewayHeader.IdempotencyKey, key);
             request.Content = JsonContent.Create(body);
             using var deadline = new CancellationTokenSource(TimeSpan.FromMilliseconds(timing.EmitTimeoutMs), clock);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellation, lifetime.Token, deadline.Token);
@@ -366,8 +365,8 @@ public sealed partial class HttpTransport : IDisposable
                     await WaitChangeAsync(TimeSpan.FromMilliseconds(timing.ReconnectMs)).ConfigureAwait(Spawning.Captures);
                     continue;
                 }
-                using var request = Request(HttpMethod.Post, "/bus/subscribe", sent);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+                using var request = Request(GatewayRoute.SubscribeToBus.Method, GatewayRoute.SubscribeToBus.Path, sent);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GatewayMedia.SubscribeToBusAnswers));
                 request.Content = JsonContent.Create(body);
                 HttpResponseMessage response;
                 using (var deadline = new CancellationTokenSource(TimeSpan.FromMilliseconds(timing.StreamOpenMs), clock))
@@ -538,18 +537,18 @@ public sealed partial class HttpTransport : IDisposable
         if (TryFrame(value, out var frame, out var fault)) return new Line.Framed(frame);
         if (value.ValueKind != JsonValueKind.Object) return new Line.Unaddressed(fault);
         // Its channel and scope name its readers when a frame of them alone is one BusFrame allows.
-        var named = new JsonObject { ["payload"] = new JsonObject() };
-        foreach (var member in (string[])["channel", "scope"])
+        var named = new JsonObject { [BusFrameMember.Payload] = new JsonObject() };
+        foreach (var member in (string[])[BusFrameMember.Channel, BusFrameMember.Scope])
             if (value.TryGetProperty(member, out var held)) named[member] = JsonNode.Parse(held.GetRawText());
         if (!TryFrame(JsonSerializer.SerializeToElement(named), out var readers, out _)) return new Line.Unaddressed(fault);
         // Its correlation id can be read when a frame of it and its readers alone is one BusFrame allows.
         string? correlationId = null;
-        if (value.TryGetProperty("correlationId", out var correlation))
+        if (value.TryGetProperty(BusFrameMember.CorrelationId, out var correlation))
         {
-            named["correlationId"] = JsonNode.Parse(correlation.GetRawText());
+            named[BusFrameMember.CorrelationId] = JsonNode.Parse(correlation.GetRawText());
             if (TryFrame(JsonSerializer.SerializeToElement(named), out var correlated, out _)) correlationId = correlated.CorrelationId;
         }
-        JsonElement? payload = value.TryGetProperty("payload", out var carried) ? carried : null;
+        JsonElement? payload = value.TryGetProperty(BusFrameMember.Payload, out var carried) ? carried : null;
         return new Line.Refused(new FrameRefusal(readers.Channel, fault.Member, fault.Reason, payload, correlationId, readers.Scope));
     }
 
@@ -639,7 +638,7 @@ public sealed partial class HttpTransport : IDisposable
     }
 
     private static double RetryAfter(HttpResponseMessage response) =>
-        response.Headers.TryGetValues("Retry-After", out var values)
+        response.Headers.TryGetValues(GatewayHeader.RetryAfter, out var values)
             ? ProtocolFacts.RetryAfterMilliseconds(values.FirstOrDefault()) ?? 0
             : 0;
 

@@ -116,7 +116,7 @@ public class KeyCredential(
 
 /** The client-credentials grant's form for `credential` at `tokenEndpoint`: the secret itself, or an assertion signed for this grant alone. */
 private fun proof(credential: Credential, tokenEndpoint: String): List<Pair<String, String>> = when (credential) {
-    is SecretCredential -> listOf("grant_type" to "client_credentials", "client_id" to credential.clientId, "client_secret" to credential.clientSecret)
+    is SecretCredential -> clientSecretForm(credential.clientId, credential.clientSecret)
     is KeyCredential -> listOf(
         "grant_type" to "client_credentials",
         "client_assertion_type" to JWT_BEARER,
@@ -322,11 +322,11 @@ public class AgentToken @JvmOverloads constructor(
         }
     }
 
-    /** The DID the gateway names the bearer of `token` by: `GET /api/users/me`. */
+    /** The DID the gateway names the bearer of `token` by: [GET_CURRENT_USER]. */
     private suspend fun named(token: String): UserId {
-        val url = "$gateway/api/users/me"
+        val url = "$gateway${GET_CURRENT_USER.path}"
         val request = HttpRequest.newBuilder(URI.create(url))
-            .GET()
+            .method(GET_CURRENT_USER.method, HttpRequest.BodyPublishers.noBody())
             .header("Authorization", "Bearer $token")
             .build()
         val response = try {
@@ -336,7 +336,7 @@ public class AgentToken @JvmOverloads constructor(
         } ?: throw TransportError.withoutResponse("$url got no answer within ${Timings.HTTP_REQUEST_TIMEOUT_MS}ms")
         val status = response.statusCode()
         if (status !in 200..299) {
-            throw refusal("the gateway refused the agent's token (HTTP $status)", status, response.body(), retryAfterMs(response.headers().firstValue("retry-after").orElse(null)))
+            throw refusal("the gateway refused the agent's token (HTTP $status)", status, response.body(), retryAfterMs(response.headers().firstValue(RETRY_AFTER).orElse(null)))
         }
         val text = response.body().toString(Charsets.UTF_8)
         val fault = faultIn(UserResponse.serializer().descriptor, text) ?: try {

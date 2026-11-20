@@ -219,18 +219,19 @@ public actor HttpTransport: Transport, GatewayOperations {
     let task = spawn { [weak self] in
       defer { life.forget(id) }
       do {
-        var request = HTTPClientRequest(url: base + "/bus/subscribe")
-        request.method = .POST
+        var request = HTTPClientRequest(url: base + GatewayRoute.subscribeToBus.path)
+        request.method = .RAW(value: GatewayRoute.subscribeToBus.method)
         request.headers.add(name: "Authorization", value: "Bearer " + token)
-        request.headers.add(name: "Content-Type", value: "application/json")
-        request.headers.add(name: "Accept", value: "text/event-stream")
+        request.headers.add(name: "Content-Type", value: GatewayMedia.subscribeToBusSends)
+        request.headers.add(name: "Accept", value: GatewayMedia.subscribeToBusAnswers)
         request.body = .bytes(try JSONEncoder().encode(body))
         let response = try await within(.milliseconds(deadline), on: clock) { [request] in
           try await http.execute(request, deadline: .distantFuture)
         }
         if !(200..<300).contains(Int(response.status.code)) {
           let failure = await Self.refusal(
-            response, path: "/bus/subscribe", deadlineMs: bodyDeadline, clock: clock)
+            response, path: GatewayRoute.subscribeToBus.path, deadlineMs: bodyDeadline, clock: clock
+          )
           await self?.connectionRefused(id, error: failure)
           return
         }

@@ -67,7 +67,7 @@ extension HttpTransport {
     let message = path + " \(status)" + (body.map { ": " + $0.error } ?? "")
     return TransportError(
       code, message, status: status,
-      retryAfterMs: retryAfterMs(response.headers.first(name: "Retry-After")))
+      retryAfterMs: retryAfterMs(response.headers.first(name: GatewayHeader.retryAfter)))
   }
   func begin(
     method: String, path: String, body: Data? = nil, contentType: String? = nil,
@@ -126,7 +126,7 @@ extension HttpTransport {
     }
   }
   func answer<Value: Decodable & Sendable>(
-    _ type: Value.Type, method: String = "GET", path: String,
+    _ type: Value.Type, method: String, path: String,
     body: Data? = nil, contentType: String? = nil, authenticated: Bool = true,
     trace: [String: String]? = nil
   ) async throws -> Value {
@@ -162,24 +162,29 @@ extension HttpTransport {
     }
   }
   public func getCurrentUser() async throws -> UserResponse {
-    try await answer(UserResponse.self, path: "/api/users/me")
+    try await answer(
+      UserResponse.self, method: GatewayRoute.getCurrentUser.method,
+      path: GatewayRoute.getCurrentUser.path)
   }
   public func getStatus() async throws -> StatusResponse {
-    try await answer(StatusResponse.self, path: "/api/status")
+    try await answer(
+      StatusResponse.self, method: GatewayRoute.getStatus.method, path: GatewayRoute.getStatus.path)
   }
   public func healthCheck() async throws -> HealthResponse {
-    try await answer(HealthResponse.self, path: "/api/health")
+    try await answer(
+      HealthResponse.self, method: GatewayRoute.getHealth.method, path: GatewayRoute.getHealth.path)
   }
   public func getProtectedResourceMetadata() async throws -> ProtectedResourceMetadata {
     try await answer(
-      ProtectedResourceMetadata.self, path: "/.well-known/oauth-protected-resource",
-      authenticated: false)
+      ProtectedResourceMetadata.self, method: GatewayRoute.getProtectedResourceMetadata.method,
+      path: GatewayRoute.getProtectedResourceMetadata.path, authenticated: false)
   }
   public func getMediaToken(_ resource: ResourceId) async throws -> MediaTokenResponse {
     try await answer(
-      MediaTokenResponse.self, method: "POST", path: "/api/tokens/media",
+      MediaTokenResponse.self, method: GatewayRoute.createMediaToken.method,
+      path: GatewayRoute.createMediaToken.path,
       body: JSONEncoder().encode(MediaTokenRequest(resourceId: resource)),
-      contentType: "application/json")
+      contentType: GatewayMedia.createMediaTokenSends)
   }
 
   public func emit(
@@ -240,10 +245,10 @@ extension HttpTransport {
     while true {
       try Task.checkCancellation()
       if lifetime.ended { throw CancellationError() }
-      var request = HTTPClientRequest(url: baseUrl + "/bus/emit")
-      request.method = .POST
-      request.headers.add(name: "Content-Type", value: "application/json")
-      request.headers.add(name: "Idempotency-Key", value: idempotencyKey)
+      var request = HTTPClientRequest(url: baseUrl + GatewayRoute.emitOnBus.path)
+      request.method = .RAW(value: GatewayRoute.emitOnBus.method)
+      request.headers.add(name: "Content-Type", value: GatewayMedia.emitOnBusSends)
+      request.headers.add(name: GatewayHeader.idempotencyKey, value: idempotencyKey)
       if let credential {
         request.headers.add(name: "Authorization", value: "Bearer " + credential)
       }
@@ -258,7 +263,8 @@ extension HttpTransport {
           let response = try await http.execute(request, deadline: .distantFuture)
           if !(200..<300).contains(Int(response.status.code)) {
             throw await Self.refusal(
-              response, path: "/bus/emit", deadlineMs: self.timing.httpRequestMs, clock: clock)
+              response, path: GatewayRoute.emitOnBus.path, deadlineMs: self.timing.httpRequestMs,
+              clock: clock)
           }
           var data = Data()
           for try await chunk in response.body { data.append(contentsOf: chunk.readableBytesView) }
@@ -267,7 +273,8 @@ extension HttpTransport {
         return accepted.subscribers
       } catch let error as TransportError { failure = error } catch {
         if Task.isCancelled || lifetime.ended { throw CancellationError() }
-        failure = TransportError(.unavailable, "/bus/emit got no answer: \(error)")
+        failure = TransportError(
+          .unavailable, "\(GatewayRoute.emitOnBus.path) got no answer: \(error)")
       }
       if failure.reason == .unauthorized {
         if !renewed {
@@ -284,7 +291,8 @@ extension HttpTransport {
       }
       if attempts >= timing.emitAttempts
         || (failure.status != nil
-          && !RetryContext.boot.retryable(status: failure.status, method: "POST", keyed: true))
+          && !RetryContext.boot.retryable(
+            status: failure.status, method: GatewayRoute.emitOnBus.method, keyed: true))
       {
         failureEvents.yield(failure)
         throw failure

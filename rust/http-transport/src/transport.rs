@@ -25,6 +25,7 @@ use xynolog::bus_log::bus_log;
 use xynolog::channels::RESOURCE_SCOPED_CHANNELS;
 use xynolog::errors::{BusRequestError, TransportError, TransportErrorCode};
 use xynolog::event_bus::EventBus;
+use xynolog::gateway_http::{self, EMIT_ON_BUS, GET_CURRENT_USER, IDEMPOTENCY_KEY, Method, Route};
 use xynolog::retry::{self, RetryFacts, RetryPolicy, retry_after, retry_with_backoff};
 use xynolog::timing;
 use xynolog::transport::{
@@ -38,12 +39,9 @@ use xynolog::types::{
 };
 use xynolog::types::{ResourceId, Schema};
 
-/// The header that names an emit or an upload: a new key for each, and the
-/// same on every attempt at it, so a request sent again is not carried out
-/// twice.
-pub(crate) const IDEMPOTENCY_KEY: &str = "Idempotency-Key";
-
-/// A key for one emit or one upload, made before its first attempt.
+/// A key for one emit or one upload, made before its first attempt: sent as
+/// its `Idempotency-Key`, the same on every attempt at it, so a request sent
+/// again is not carried out twice.
 pub(crate) fn idempotency_key() -> String {
     uuid::Uuid::new_v4().to_string()
 }
@@ -200,9 +198,12 @@ impl Shared {
 
     /// Who the gateway says this token is.
     pub async fn current_user(&self) -> Result<UserResponse, TransportError> {
-        self.answer(reqwest::Method::GET, "/api/users/me", true, |request| {
-            request
-        })
+        self.answer(
+            method_of(&GET_CURRENT_USER),
+            GET_CURRENT_USER.path,
+            true,
+            |request| request,
+        )
         .await
     }
 
@@ -449,7 +450,7 @@ impl Shared {
     /// final. Every attempt, the renewed one too, carries the emit's one
     /// `Idempotency-Key`.
     async fn emit(&self, body: &BusEmitRequest) -> Result<Option<u64>, TransportError> {
-        let url = format!("{}/bus/emit", self.base_url);
+        let url = format!("{}{}", self.base_url, EMIT_ON_BUS.path);
         let trace = xynolog_telemetry::active_trace();
         let key = idempotency_key();
         let mut token = self.current_token();
@@ -459,7 +460,7 @@ impl Shared {
             let attempt = || async {
                 let mut request = self
                     .http
-                    .post(&url)
+                    .request(method_of(&EMIT_ON_BUS), &url)
                     .bearer_auth(sent.unwrap_or_default())
                     .header(IDEMPOTENCY_KEY, key.as_str())
                     .timeout(timing::EMIT_TIMEOUT)
@@ -476,7 +477,7 @@ impl Shared {
                 }
                 let response = request.send().await.map_err(|error| {
                     TransportError::without_response(
-                        format!("/bus/emit got no answer: {error}"),
+                        format!("{} got no answer: {error}", EMIT_ON_BUS.path),
                         TransportErrorCode::Unavailable,
                     )
                 })?;
@@ -486,9 +487,9 @@ impl Shared {
                     let answered = response.text().await.unwrap_or_default();
                     let detail: String = answered.chars().take(500).collect();
                     let message = if detail.is_empty() {
-                        format!("/bus/emit {status}")
+                        format!("{} {status}", EMIT_ON_BUS.path)
                     } else {
-                        format!("/bus/emit {status}: {detail}")
+                        format!("{} {status}: {detail}", EMIT_ON_BUS.path)
                     };
                     let said = serde_json::from_str::<Value>(&answered).ok();
                     return Err(refusal(message, status, stated_wait, said.as_ref()));
@@ -574,6 +575,14 @@ pub(crate) fn refuses_credential(status: u16, body: Option<&Value>) -> bool {
                 .is_ok_and(|refusal| refusal.code == LimitRefusalCode::RefusalRate)
         }),
         _ => false,
+    }
+}
+
+/// The method a route is sent with.
+pub(crate) fn method_of(route: &Route) -> reqwest::Method {
+    match route.method {
+        Method::Get => reqwest::Method::GET,
+        Method::Post => reqwest::Method::POST,
     }
 }
 
@@ -762,14 +771,12 @@ impl GatewayOperations for HttpTransport {
             let body = MediaTokenRequest {
                 resource_id: resource_id.clone(),
             };
+            let route = gateway_http::CREATE_MEDIA_TOKEN;
             self.inner
                 .shared
-                .answer(
-                    reqwest::Method::POST,
-                    "/api/tokens/media",
-                    true,
-                    |request| request.json(&body),
-                )
+                .answer(method_of(&route), route.path, true, |request| {
+                    request.json(&body)
+                })
                 .await
         })
     }
@@ -777,27 +784,29 @@ impl GatewayOperations for HttpTransport {
     fn get_protected_resource_metadata(
         &self,
     ) -> BoxFuture<'_, Result<ProtectedResourceMetadata, TransportError>> {
-        Box::pin(self.inner.shared.answer(
-            reqwest::Method::GET,
-            "/.well-known/oauth-protected-resource",
-            false,
-            |request| request,
-        ))
-    }
-
-    fn health_check(&self) -> BoxFuture<'_, Result<HealthResponse, TransportError>> {
+        let route = gateway_http::GET_PROTECTED_RESOURCE_METADATA;
         Box::pin(
             self.inner
                 .shared
-                .answer(reqwest::Method::GET, "/api/health", true, |request| request),
+                .answer(method_of(&route), route.path, false, |request| request),
+        )
+    }
+
+    fn health_check(&self) -> BoxFuture<'_, Result<HealthResponse, TransportError>> {
+        let route = gateway_http::GET_HEALTH;
+        Box::pin(
+            self.inner
+                .shared
+                .answer(method_of(&route), route.path, true, |request| request),
         )
     }
 
     fn get_status(&self) -> BoxFuture<'_, Result<StatusResponse, TransportError>> {
+        let route = gateway_http::GET_STATUS;
         Box::pin(
             self.inner
                 .shared
-                .answer(reqwest::Method::GET, "/api/status", true, |request| request),
+                .answer(method_of(&route), route.path, true, |request| request),
         )
     }
 }

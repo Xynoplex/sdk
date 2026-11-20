@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Xynolog.Errors;
+using Xynolog.Http;
 using Xynolog.Protocol;
 using Xynolog.Session;
 using Xynolog.Types;
@@ -32,7 +33,7 @@ public sealed partial class Issuer
         string origin;
         try { origin = Gateway.Origin(endpoint); }
         catch (JsonException error) { throw new SignInError(ProtocolFacts.SignInError("discovery"), "Invalid gateway endpoint.", inner: error); }
-        var answer = await AnswerAsync(origin + "/.well-known/oauth-protected-resource", errorCode: "discovery", cancellation: cancellation).ConfigureAwait(Spawning.Captures);
+        var answer = await AnswerAsync(origin + GatewayRoute.GetProtectedResourceMetadata.Path, errorCode: "discovery", cancellation: cancellation).ConfigureAwait(Spawning.Captures);
         if (answer.Status == 404) throw new SignInError(ProtocolFacts.SignInError("no-issuer"), "The knowledge base trusts no external issuer", answer.Status);
         if (answer.Status is < 200 or >= 300) throw new SignInError(ProtocolFacts.SignInError("discovery"), "The gateway refused metadata discovery", answer.Status);
         ProtectedResourceMetadata metadata;

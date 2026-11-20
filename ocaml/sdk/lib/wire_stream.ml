@@ -46,13 +46,18 @@ let recover_route source =
   | Ok (`Assoc fields) -> (
       let get key read = Option.bind (List.assoc_opt key fields) read in
       let valid_scope =
-        match List.assoc_opt "scope" fields with
+        match List.assoc_opt Gateway_http.Bus_frame.scope fields with
         | None | Some `Null -> Some None
         | Some value -> Option.map Option.some (scope value)
       in
-      match (get "channel" string, valid_scope) with
+      match (get Gateway_http.Bus_frame.channel string, valid_scope) with
       | Some channel, Some scope ->
-          Some { channel; scope; correlation_id = get "correlationId" string }
+          Some
+            {
+              channel;
+              scope;
+              correlation_id = get Gateway_http.Bus_frame.correlation_id string;
+            }
       | _ -> None)
   | _ -> None
 
@@ -166,9 +171,12 @@ let normalized = function
   | Ok (Frame { route; payload = Error fault; _ }) ->
       let member, reason =
         match fault with
-        | Bus_registry.Invalid_json _ -> ("payload", `Malformed)
-        | Invalid_payload { member = ""; reason } -> ("payload", reason)
-        | Invalid_payload { member; reason } -> ("payload." ^ member, reason)
+        | Bus_registry.Invalid_json _ ->
+            (Gateway_http.Bus_frame.payload, `Malformed)
+        | Invalid_payload { member = ""; reason } ->
+            (Gateway_http.Bus_frame.payload, reason)
+        | Invalid_payload { member; reason } ->
+            (Gateway_http.Bus_frame.payload ^ "." ^ member, reason)
       in
       Error { route = Some route; member; reason }
   | Ok frame -> Ok frame
@@ -176,7 +184,12 @@ let normalized = function
       let { Refusals.member; reason } = Refusals.of_error fault in
       Error { route; member; reason }
   | Error (Unknown_channel route) ->
-      Error { route = Some route; member = "channel"; reason = `Malformed }
+      Error
+        {
+          route = Some route;
+          member = Gateway_http.Bus_frame.channel;
+          reason = `Malformed;
+        }
 
 let refusal_message (fault : frame_refusal) =
   let problem =

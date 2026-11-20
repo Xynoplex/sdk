@@ -183,7 +183,7 @@ internal suspend fun discoverIssuer(baseUrl: String, http: HttpClient): IssuerEn
     // Its resource metadata is public: asked with no token.
     val asking = Exchange(baseUrl.trimEnd('/'), http, MutableStateFlow(null), null, Broadcast(), Timings.HTTP_REQUEST_TIMEOUT_MS) { false }
     val metadata = try {
-        asking.answer(ProtectedResourceMetadata.serializer(), "GET", "/.well-known/oauth-protected-resource", authenticated = false)
+        asking.answer(ProtectedResourceMetadata.serializer(), GET_PROTECTED_RESOURCE_METADATA.method, GET_PROTECTED_RESOURCE_METADATA.path, authenticated = false)
     } catch (error: TransportError) {
         if (error.status == 404) throw noIssuer()
         throw SignInError(SignInErrorCode.Discovery, "The knowledge base did not answer its resource metadata: ${error.message}", error.status)

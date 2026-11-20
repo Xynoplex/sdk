@@ -123,7 +123,7 @@ let call
         (404, [], Eio.Flow.string_source "{}")) t ~sw ~meth ~path ~headers ~body
     ~progress:_ =
   match path with
-  | path when path = snd Http_facts.subscribe ->
+  | path when path = snd Gateway_http.subscribe_to_bus ->
       let open Yojson.Safe.Util in
       let request = Yojson.Safe.from_string body in
       let texts value = List.map to_string (to_list value) in
@@ -146,7 +146,7 @@ let call
       ( 200,
         [],
         Eio.Resource.T ((stream, ref ""), Eio.Flow.Pi.source (module Source)) )
-  | path when path = snd Http_facts.emit -> (
+  | path when path = snd Gateway_http.emit_on_bus -> (
       let open Yojson.Safe.Util in
       let frame = Yojson.Safe.from_string body in
       let channel = to_string (member "channel" frame) in
@@ -154,7 +154,7 @@ let call
       let correlation_id = to_string_option (member "correlationId" frame) in
       let retry_key =
         Option.value
-          (List.assoc_opt "idempotency-key" headers)
+          (List.assoc_opt Gateway_http.Header.idempotency_key headers)
           ~default:(Option.value correlation_id ~default:channel)
       in
       let action =

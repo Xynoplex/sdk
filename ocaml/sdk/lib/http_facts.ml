@@ -1,21 +1,5 @@
-(* Generated from OpenAPI paths and schemas, and error codes. Do not edit.
+(* Generated from error codes. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/http_facts.ml) *)
-
-let subscribe = ("POST", "/bus/subscribe")
-let emit = ("POST", "/bus/emit")
-let health = ("GET", "/api/health")
-let status = ("GET", "/api/status")
-let current_user = ("GET", "/api/users/me")
-
-let protected_resource_metadata =
-  ("GET", "/.well-known/oauth-protected-resource")
-
-let media_token = ("POST", "/api/tokens/media")
-let representation = ("GET", "/resources/{id}")
-let graph = ("GET", "/resources/{id}/jsonld")
-let annotations = ("GET", "/resources/{id}/annotations")
-let anchored_text = ("GET", "/resources/{id}/anchored-text")
-let upload = ("POST", "/resources")
 
 let status_code = function
   | 401 -> "unauthorized"
@@ -48,21 +32,3 @@ let bus_failure = function
   | Some Failure_code.Peer_unavailable -> "bus.peer-unavailable"
   | Some Failure_code.Unauthorized -> "bus.unauthorized"
   | Some Failure_code.None_pending -> "bus.none-pending"
-
-let upload_fields =
-  [
-    "name";
-    "file";
-    "format";
-    "storageUri";
-    "language";
-    "entityTypes";
-    "sourceAnnotationId";
-    "sourceResourceId";
-    "generationPrompt";
-    "generator";
-    "jobId";
-    "isDraft";
-    "cloneToken";
-    "archiveOriginal";
-  ]

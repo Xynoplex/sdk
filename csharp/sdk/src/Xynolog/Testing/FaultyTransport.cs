@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
 using Xynolog.Errors;
+using Xynolog.Http;
 using Xynolog.Protocol;
 using Xynolog.Types;
 
@@ -59,7 +60,7 @@ public sealed class FaultyTransport(IEnumerable<FaultAction>? schedule = null, R
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var path = request.RequestUri?.AbsolutePath;
-        if (path == "/bus/subscribe")
+        if (path == GatewayRoute.SubscribeToBus.Path)
         {
             var subscription = await BodyAsync<BusSubscribeRequest>(request, cancellationToken).ConfigureAwait(Spawning.Captures);
             lock (gate)
@@ -68,11 +69,11 @@ public sealed class FaultyTransport(IEnumerable<FaultAction>? schedule = null, R
                 var stream = new EventStream(subscription, Remove);
                 streams.Add(stream);
                 var content = new StreamContent(stream);
-                content.Headers.ContentType = new("text/event-stream");
+                content.Headers.ContentType = new(GatewayMedia.SubscribeToBusAnswers);
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
             }
         }
-        if (path != "/bus/emit")
+        if (path != GatewayRoute.EmitOnBus.Path)
             return Other is { } other ? await other(request, cancellationToken).ConfigureAwait(Spawning.Captures)
                 : new HttpResponseMessage(HttpStatusCode.NotFound) { Content = JsonContent.Create(new { error = $"No response scripted for {path}." }) };
 
