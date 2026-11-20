@@ -720,6 +720,170 @@ let redirect () =
   assert (complete callback = Error Error_codes.Sign_in.no_pending);
   assert (!discovery = 2 && !exchanges = 1 && !takes = 4)
 
+(* A writer held to [schema] both ways: what it wrote, [written], holds
+   every member the schema states and no other, and a stored value without
+   one of them reads, by [reads], exactly when the schema does not require
+   it. A member the schema gains, or one the writer adds, fails here. *)
+let census ~what schema written reads =
+  let names value = List.sort compare (List.map fst (J.to_assoc value)) in
+  let required =
+    match field "required" schema with
+    | `Null -> []
+    | listed -> List.map J.to_string (J.to_list listed)
+  in
+  let members = names (field "properties" schema) in
+  Alcotest.(check (list string))
+    (what ^ " is written with the schema's members")
+    members
+    (names (`Assoc written));
+  Alcotest.(check bool) (what ^ " reads as written") true (reads written);
+  List.iter
+    (fun member ->
+      Alcotest.(check bool)
+        (what ^ " without " ^ member ^ " reads only if it is not required")
+        (not (List.mem member required))
+        (reads (List.remove_assoc member written)))
+    members
+
+let hashtable_storage () : R.storage =
+  let values = Hashtbl.create 4 in
+  {
+    read = Hashtbl.find_opt values;
+    write = Hashtbl.replace values;
+    remove = Hashtbl.remove values;
+  }
+
+let stored_session_census () =
+  let storage = hashtable_storage () in
+  R.store_session storage "kb-1"
+    {
+      access = "access";
+      refresh = "refresh";
+      client_id = "script";
+      token_endpoint = "https://issuer.example/token";
+      revocation_endpoint = Some "https://issuer.example/revoke";
+      person_key = Some "person";
+    };
+  let key = R.session_key "kb-1" in
+  let written =
+    J.to_assoc (Yojson.Safe.from_string (Option.get (storage.read key)))
+  in
+  census ~what:"a stored session" (Protocol.table "session/StoredSession.json")
+    written (fun fields ->
+      storage.write key (Yojson.Safe.to_string (`Assoc fields));
+      R.stored_session storage "kb-1" <> None)
+
+let open_resource_census () =
+  Eio_mock.Backend.run @@ fun () ->
+  let storage = hashtable_storage () in
+  let browser =
+    R.new_xynolog_browser
+      {
+        storage;
+        clock =
+          Clock.make
+            ~monotonic:(Eio_mock.Clock.Mono.make ())
+            ~wall:(Eio_mock.Clock.make ())
+            ~jitter:(Random.State.make [| 1 |]);
+        fresh_id = (fun () -> "kb-1");
+        factory = (fun _ -> assert false);
+      }
+  in
+  R.set_open_resources browser ~kb_id:"kb-1"
+    [
+      {
+        id = "res-1";
+        name = "A resource";
+        opened_at = 1;
+        order = 0;
+        media_type = Some "text/plain";
+        storage_uri = Some "file://store/res-1";
+      };
+    ];
+  let key = R.open_resources_by_kb_key in
+  let written =
+    match
+      field "kb-1" (Yojson.Safe.from_string (Option.get (storage.read key)))
+    with
+    | `List [ `Assoc fields ] -> fields
+    | _ -> Alcotest.fail "the open resource is not written as one object"
+  in
+  census ~what:"an open resource" (Protocol.table "session/OpenResource.json")
+    written (fun fields ->
+      storage.write key
+        (Yojson.Safe.to_string (`Assoc [ ("kb-1", `List [ `Assoc fields ]) ]));
+      R.open_resources browser ~kb_id:"kb-1" <> [])
+
+(* The pending authorization a redirect sign-in keeps
+   (session/stored.json's pendingAuthorization), and its issuer, each held to
+   the table: a value reads when the sign-in it began completes. *)
+let pending_authorization_census () =
+  Eio_mock.Backend.run @@ fun () ->
+  let storage = hashtable_storage () in
+  let config : R.xynolog_browser_config =
+    {
+      storage;
+      clock =
+        Clock.make
+          ~monotonic:(Eio_mock.Clock.Mono.make ())
+          ~wall:(Eio_mock.Clock.make ())
+          ~jitter:(Random.State.make [| 1 |]);
+      fresh_id = (fun () -> "kb-pending");
+      factory = (fun _ -> assert false);
+    }
+  in
+  let target =
+    decode Models.kb_endpoint
+      (Yojson.Safe.from_string
+         {|{"kind":"http","host":"localhost","port":4010,"protocol":"http"}|})
+  in
+  let http (request : OAuth.request) =
+    match request.meth with
+    | "GET" ->
+        ( 200,
+          {|{"issuer":"https://issuer.example","authorization_endpoint":"https://issuer.example/auth","token_endpoint":"https://issuer.example/token","device_authorization_endpoint":"https://issuer.example/device","revocation_endpoint":"https://issuer.example/revoke"}|}
+        )
+    | "POST" -> (200, {|{"access_token":"access","refresh_token":"refresh"}|})
+    | _ -> assert false
+  in
+  let origin = "http://localhost:4010/callback" in
+  let location =
+    R.begin_sign_in
+      (R.new_xynolog_browser config)
+      ~http ~issuer:"https://issuer.example"
+      ~random:(fun length -> String.make length 'a')
+      ~redirect_uri:origin ~target ~kb_id:"kb-pending"
+      ~expected_did:"did:web:kb.example" ~expected_name:"Actual" ()
+    |> Result.get_ok |> Uri.of_string
+  in
+  let callback =
+    origin ^ "?code=one&state="
+    ^ Option.get (Uri.get_query_param location "state")
+  in
+  let key = R.pending_authorization_key in
+  let written =
+    J.to_assoc (Yojson.Safe.from_string (Option.get (storage.read key)))
+  in
+  let reads fields =
+    storage.write key (Yojson.Safe.to_string (`Assoc fields));
+    Result.is_ok
+      (R.complete_sign_in (R.new_xynolog_browser config) ~http ~callback
+         ~describe:(fun _ ~access:_ ->
+           Ok
+             (decode Models.kb_description
+                (Yojson.Safe.from_string
+                   {|{"name":"Actual","domain":"kb.example"}|}))))
+  in
+  let schema =
+    field "pendingAuthorization" (Protocol.table "session/stored.json")
+  in
+  census ~what:"a pending authorization" schema written reads;
+  census ~what:"a pending authorization's issuer"
+    (field "issuer" (field "properties" schema))
+    (J.to_assoc (List.assoc "issuer" written))
+    (fun issuer ->
+      reads (("issuer", `Assoc issuer) :: List.remove_assoc "issuer" written))
+
 let session_unit startup () =
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
@@ -1488,6 +1652,12 @@ let () =
           Alcotest.test_case "shared gateway origins" `Quick gateway_urls;
           Alcotest.test_case "verified sign-in" `Quick sign_in;
           Alcotest.test_case "durable redirect and replay" `Quick redirect;
+          Alcotest.test_case "a stored session is the table's" `Quick
+            stored_session_census;
+          Alcotest.test_case "an open resource is the table's" `Quick
+            open_resource_census;
+          Alcotest.test_case "a pending authorization is the table's" `Quick
+            pending_authorization_census;
           Alcotest.test_case "session unit and durable renewal" `Quick
             (session_unit `Accept);
           Alcotest.test_case "startup refuses once then confirms" `Quick
