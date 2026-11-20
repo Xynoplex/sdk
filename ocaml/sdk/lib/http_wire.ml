@@ -73,7 +73,9 @@ let body_text body = Eio.Buf_read.(take_all (of_flow ~max_size:16_777_216 body))
 
 let header name =
   List.find_map (fun (key, value) ->
-      if String.lowercase_ascii key = name then Some value else None)
+      if String.lowercase_ascii key = String.lowercase_ascii name then
+        Some value
+      else None)
 
 let credential_refused status body =
   status = 401 || (status = 429 && json_text "code" body = Some "refusal-rate")
@@ -86,15 +88,19 @@ let bearer token headers =
 let sleep t = Retry.sleep_ms t.clock
 
 let retry_after headers =
-  Option.bind (header "retry-after" headers) Retry.retry_after_ms
+  Option.bind
+    (header Gateway_http.Header.retry_after headers)
+    Retry.retry_after_ms
   |> Option.fold ~none:0. ~some:float
 
 let subscribe t ~sw snapshot ~bearer:token =
-  let meth, path = Http_facts.subscribe in
+  let meth, path = Gateway_http.subscribe_to_bus in
   let body = Result.get_ok (Subscription.encode_subscription snapshot) in
   let status, headers, stream =
     t.call ~sw ~meth ~path
-      ~headers:(bearer (Some token) [ ("content-type", "application/json") ])
+      ~headers:
+        (bearer (Some token)
+           [ ("content-type", Gateway_http.Media.subscribe_to_bus_sends) ])
       ~body ~progress:None
   in
   if status = 200 then Ok (Eio.Buf_read.of_flow ~max_size:16_777_216 stream)
@@ -115,7 +121,9 @@ let subscribe t ~sw snapshot ~bearer:token =
 let exchange t ~auth ?progress ?timeout_ms ?(headers = []) ?(body = "")
     ?(attempts = 1) ?(initial_delay = 0) ?(max_delay = 0) ?(jitter = false)
     (meth, path) read =
-  let keyed = Option.is_some (header "idempotency-key" headers) in
+  let keyed =
+    Option.is_some (header Gateway_http.Header.idempotency_key headers)
+  in
   let initial = if auth then Session.credential t.session else None in
   let rec attempt token renewed left delay =
     let send () =
@@ -227,7 +235,8 @@ let emit t ~client_id ?scope ?correlation_id ?trace channel source =
       exchange t ~auth:true ~timeout_ms:timing.emit_timeout_ms ~body
         ~headers:
           ([
-             ("content-type", "application/json"); ("idempotency-key", t.key ());
+             ("content-type", Gateway_http.Media.emit_on_bus_sends);
+             (Gateway_http.Header.idempotency_key, t.key ());
            ]
           @ Option.fold ~none:[]
               ~some:(fun (trace : Wire_stream.trace) ->
@@ -239,8 +248,8 @@ let emit t ~client_id ?scope ?correlation_id ?trace channel source =
               trace)
         ~attempts:timing.emit_attempts
         ~initial_delay:timing.emit_initial_delay_ms
-        ~max_delay:timing.emit_max_delay_ms ~jitter:true Http_facts.emit
-        read_text)
+        ~max_delay:timing.emit_max_delay_ms ~jitter:true
+        Gateway_http.emit_on_bus read_text)
 
 let bus_failure payload =
   Http_facts.bus_failure
@@ -251,13 +260,13 @@ let json_get t ?(auth = true) path =
   exchange t ~auth ~timeout_ms:t.timing.request_timeout_ms ~attempts:2
     ~initial_delay:Client_timing.request_retry_pause_ms path read_text
 
-let health t = json_get t ~auth:false Http_facts.health
-let status t = json_get t Http_facts.status
-let current_user t = json_get t Http_facts.current_user
+let health t = json_get t ~auth:false Gateway_http.get_health
+let status t = json_get t Gateway_http.get_status
+let current_user t = json_get t Gateway_http.get_current_user
 
 let check_user t token =
   try
-    let meth, path = Http_facts.current_user in
+    let meth, path = Gateway_http.get_current_user in
     let check () =
       Switch.run (fun sw ->
           let status, _, stream =
@@ -294,7 +303,7 @@ let check_user t token =
       }
 
 let protected_resource_metadata t =
-  json_get t ~auth:false Http_facts.protected_resource_metadata
+  json_get t ~auth:false Gateway_http.get_protected_resource_metadata
 
 let on_resource (meth, path) resource =
   let id = Identifiers.Resource_id.to_string resource in
@@ -314,14 +323,17 @@ let resource_json t row path resource =
   around t row (resource_attrs resource) (fun () ->
       json_get t (on_resource path resource))
 
-let graph t = resource_json t Telemetry_facts.content_get_graph Http_facts.graph
+let graph t =
+  resource_json t Telemetry_facts.content_get_graph
+    Gateway_http.get_resource_json_ld
 
 let annotations t =
-  resource_json t Telemetry_facts.content_get_annotations Http_facts.annotations
+  resource_json t Telemetry_facts.content_get_annotations
+    Gateway_http.get_resource_annotations
 
 let anchored_text t =
   resource_json t Telemetry_facts.content_get_anchored_text
-    Http_facts.anchored_text
+    Gateway_http.get_resource_anchored_text
 
 let media_token t resource =
   let body =
@@ -332,8 +344,8 @@ let media_token t resource =
          ])
   in
   exchange t ~auth:true ~timeout_ms:t.timing.request_timeout_ms ~body
-    ~headers:[ ("content-type", "application/json") ]
-    Http_facts.media_token read_text
+    ~headers:[ ("content-type", Gateway_http.Media.create_media_token_sends) ]
+    Gateway_http.create_media_token read_text
 
 let with_content t ?(streaming = true) resource consume =
   Bus_log.write "GET" ~channel:"content"
@@ -348,7 +360,8 @@ let with_content t ?(streaming = true) resource consume =
   around t Telemetry_facts.content_get attrs (fun () ->
       exchange t ~auth:true ~timeout_ms:t.timing.request_timeout_ms ~attempts:2
         ~initial_delay:Client_timing.request_retry_pause_ms
-        (on_resource Http_facts.representation resource) (fun headers stream ->
+        (on_resource Gateway_http.get_resource_representation resource)
+        (fun headers stream ->
           let content_type =
             Option.value
               (header "content-type" headers)
@@ -382,13 +395,13 @@ let put t ~fields ~bytes ~on_progress =
       in
       List.iter
         (fun name ->
-          if name <> "file" then
+          if name <> Gateway_http.Upload_field.file then
             Option.iter (part name) (List.assoc_opt name fields))
-        Http_facts.upload_fields;
+        Gateway_http.Upload_field.all;
       Buffer.add_string buffer
-        ("--" ^ boundary
-       ^ "\r\n\
-          Content-Disposition: form-data; name=\"file\"; filename=\"upload\"\r\n\
+        ("--" ^ boundary ^ "\r\nContent-Disposition: form-data; name=\""
+       ^ Gateway_http.Upload_field.file
+       ^ "\"; filename=\"upload\"\r\n\
           Content-Type: application/octet-stream\r\n\
           \r\n");
       let offset = Buffer.length buffer in
@@ -405,8 +418,10 @@ let put t ~fields ~bytes ~on_progress =
       exchange t ~auth:true ~body ~progress:report
         ~headers:
           [
-            ("content-type", "multipart/form-data; boundary=" ^ boundary);
-            ("idempotency-key", key);
+            ( "content-type",
+              Gateway_http.Media.upload_resource_sends ^ "; boundary="
+              ^ boundary );
+            (Gateway_http.Header.idempotency_key, key);
           ]
         ~attempts:2 ~initial_delay:Client_timing.request_retry_pause_ms
-        Http_facts.upload read_text)
+        Gateway_http.upload_resource read_text)

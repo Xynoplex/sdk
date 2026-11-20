@@ -11,6 +11,7 @@
   schema_codec
   selector_codec
   http_facts
+  gateway_http
   telemetry_facts
   live_facts
   client_query

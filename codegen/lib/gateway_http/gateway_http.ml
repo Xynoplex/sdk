@@ -11,6 +11,7 @@ module Python = Python
 module Swift = Swift
 module Kotlin = Kotlin
 module Csharp = Csharp
+module Ocaml = Ocaml
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
@@ -23,5 +24,6 @@ let files ~root:_ (spec : Spec.t) =
         Swift.file m;
         Kotlin.file m;
         Csharp.file m;
+        Ocaml.file m;
       ])
     (Model.derive spec)

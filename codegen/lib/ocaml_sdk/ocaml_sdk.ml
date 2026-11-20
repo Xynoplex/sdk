@@ -25,7 +25,7 @@ let files ~root (spec : Spec.t) =
   let* selector = Selector.derive spec in
   let* records = Records.derive spec table in
   let* codes = Error_codes.Table.derive spec.tables.errors_codes in
-  let* http = Http_facts.file spec codes in
+  let* http = Http_facts.file codes in
   let* facts = Facts.files spec in
   let* bus =
     Bus.Registry.derive
