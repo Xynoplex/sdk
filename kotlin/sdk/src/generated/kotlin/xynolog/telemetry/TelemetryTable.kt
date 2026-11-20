@@ -47,3 +47,38 @@ internal object TelemetryTable {
      */
     val XYNOLOG_BUS_SENT: MetricRow = MetricRow("xynolog.bus.sent", "Emits the client sent.")
 }
+
+/**
+ * An attribute key a row of the telemetry table lists.
+ */
+internal const val ATTR_BUS_CHANNEL: String = "bus.channel"
+
+/**
+ * An attribute key a row of the telemetry table lists.
+ */
+internal const val ATTR_BUS_SCOPE: String = "bus.scope"
+
+/**
+ * An attribute key a row of the telemetry table lists.
+ */
+internal const val ATTR_CONTENT_FORMAT: String = "content.format"
+
+/**
+ * An attribute key a row of the telemetry table lists.
+ */
+internal const val ATTR_CONTENT_SIZE_BYTES: String = "content.size_bytes"
+
+/**
+ * An attribute key a row of the telemetry table lists.
+ */
+internal const val ATTR_CONTENT_STREAM: String = "content.stream"
+
+/**
+ * An attribute key a row of the telemetry table lists.
+ */
+internal const val ATTR_RESOURCE_ID: String = "resource.id"
+
+/**
+ * An attribute key a row of the telemetry table lists.
+ */
+internal const val ATTR_THREAD_ID: String = "thread.id"

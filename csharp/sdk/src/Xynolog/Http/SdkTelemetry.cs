@@ -27,8 +27,8 @@ internal static class SdkTelemetry
 
     internal static ActivityTagsCollection BusTags(string channel, ResourceId? scope)
     {
-        var tags = new ActivityTagsCollection { { "bus.channel", channel } };
-        if (scope is ResourceId resource) tags.Add("bus.scope", resource.Value);
+        var tags = new ActivityTagsCollection { { TelemetryKeys.BusChannel, channel } };
+        if (scope is ResourceId resource) tags.Add(TelemetryKeys.BusScope, resource.Value);
         return tags;
     }
 

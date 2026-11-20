@@ -14,6 +14,13 @@ from dataclasses import dataclass
 from typing import Final, Literal, final
 
 __all__ = [
+    "ATTR_BUS_CHANNEL",
+    "ATTR_BUS_SCOPE",
+    "ATTR_CONTENT_FORMAT",
+    "ATTR_CONTENT_SIZE_BYTES",
+    "ATTR_CONTENT_STREAM",
+    "ATTR_RESOURCE_ID",
+    "ATTR_THREAD_ID",
     "BUS_EMIT",
     "BUS_RECV",
     "CONTENT_GET",
@@ -138,3 +145,17 @@ SPANS: Final[tuple[SpanRow, ...]] = (
 )
 
 METRICS: Final[tuple[MetricRow, ...]] = (XYNOLOG_BUS_SENT,)
+
+ATTR_BUS_CHANNEL: Final = "bus.channel"
+
+ATTR_BUS_SCOPE: Final = "bus.scope"
+
+ATTR_CONTENT_FORMAT: Final = "content.format"
+
+ATTR_CONTENT_SIZE_BYTES: Final = "content.size_bytes"
+
+ATTR_CONTENT_STREAM: Final = "content.stream"
+
+ATTR_RESOURCE_ID: Final = "resource.id"
+
+ATTR_THREAD_ID: Final = "thread.id"

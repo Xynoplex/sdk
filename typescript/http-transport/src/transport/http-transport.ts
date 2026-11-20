@@ -36,7 +36,13 @@ import {
   gatewayRoutes,
   relayFrames,
 } from '@xynolog/core';
-import { SpanKind, recordBusSent, withSpan } from '@xynolog/observability';
+import {
+  ATTR_BUS_CHANNEL,
+  ATTR_BUS_SCOPE,
+  SpanKind,
+  recordBusSent,
+  withSpan,
+} from '@xynolog/observability';
 import {
   createActorStateUnit,
   renewedToken,
@@ -585,8 +591,8 @@ export class HttpTransport implements ITransport, IGatewayOperations {
       {
         kind: SpanKind.PRODUCER,
         attrs: {
-          'bus.channel': channel as string,
-          ...(envelope?.scope ? { 'bus.scope': envelope.scope } : {}),
+          [ATTR_BUS_CHANNEL]: channel as string,
+          ...(envelope?.scope ? { [ATTR_BUS_SCOPE]: envelope.scope } : {}),
         },
       },
     );
