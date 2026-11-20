@@ -70,6 +70,8 @@ let python_constant name =
     (Text.upper_snake (without_channel name));
   Buffer.contents out
 
+let python_key key = "ATTR_" ^ key_upper key
+
 let derive (table : T.t) =
   let refusals = ref [] in
   let refuse pointer message =
@@ -155,7 +157,8 @@ let derive (table : T.t) =
     @ List.map (fun r -> go_identifier "metric" r.name) metrics
     @ List.map (go_identifier "key") keys);
   distinct "Python constant"
-    (List.map (fun r -> python_constant r.name) (spans @ metrics));
+    (List.map (fun r -> python_constant r.name) (spans @ metrics)
+    @ List.map python_key keys);
   match List.rev !refusals with
   | [] -> Ok { spans; metrics; keys }
   | errors -> Error errors
@@ -232,8 +235,6 @@ let go (t : t) =
               ];
         };
   }
-
-let python_key key = "ATTR_" ^ key_upper key
 
 let python (t : t) =
   let module P = Python_syntax in
