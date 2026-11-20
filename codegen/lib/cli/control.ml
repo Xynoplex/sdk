@@ -317,15 +317,14 @@ let derive ~root (spec : Spec.t) =
                           "controlErrorDataSchema: the schema of a failed \
                            request's error data.")
                      "controlErrorDataSchema"
-                     (q (repository error_data)));
+                     (q (id ~root error_data)));
                 G.Var
                   (G.spec
                      ~doc:
                        (G.prose
                           "controlSchemaFiles: the text of every schema a \
                            control message is read against, and of every \
-                           schema those refer to, by its path in the \
-                           repository.")
+                           schema those refer to, by its $id.")
                      "controlSchemaFiles"
                      (G.lines
                         ~of_:(G.Map (G.Named "string", G.Named "string"))
@@ -333,7 +332,7 @@ let derive ~root (spec : Spec.t) =
                         (List.map
                            (fun file ->
                              G.element
-                               ~key:(q (repository file))
+                               ~key:(q (id ~root file))
                                (q (text ~root file)))
                            reached)));
                 G.Var
@@ -351,8 +350,8 @@ let derive ~root (spec : Spec.t) =
                                (G.inline
                                   [
                                     G.keyed "name" (q m.name);
-                                    G.keyed "params" (q (repository params));
-                                    G.keyed "result" (q (repository result));
+                                    G.keyed "params" (q (id ~root params));
+                                    G.keyed "result" (q (id ~root result));
                                     G.keyed "exclusive"
                                       (G.Name (string_of_bool m.exclusive));
                                     G.keyed "sends" (strings m.sends);
@@ -373,7 +372,7 @@ let derive ~root (spec : Spec.t) =
                                   [
                                     G.keyed "name" (q n.name);
                                     G.keyed "from" (q (T.from_value n.from));
-                                    G.keyed "params" (q (repository params));
+                                    G.keyed "params" (q (id ~root params));
                                   ]))
                            notifications)));
                 G.Consts

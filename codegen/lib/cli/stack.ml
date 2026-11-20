@@ -209,6 +209,30 @@ let kind spec file =
       | _ -> None)
   | _ -> None
 
+(* The apiVersion every kind of document states: the const of the one schema
+   each kind's [apiVersion] refers to. *)
+let api_version spec kinds =
+  let stated (file, _) =
+    match layer file (schema spec file) with
+    | { properties = Some properties; _ } -> (
+        match List.assoc_opt "apiVersion" properties with
+        | Some (Schema.Schema { ref_ = Some r; _ }) -> (
+            match resolve spec r with
+            | target, "", referred -> (
+                match layer target referred with
+                | { const = Some (String_literal version); _ } -> version
+                | _ -> refuse target "states no version as its const")
+            | _ -> refuse file "its apiVersion refers within a file")
+        | _ -> refuse file "its apiVersion refers to no schema")
+    | _ -> refuse file "a document states no properties"
+  in
+  match List.sort_uniq String.compare (List.map stated kinds) with
+  | [ version ] -> version
+  | versions ->
+      refuse stack
+        ("the kinds of document state the versions "
+        ^ String.concat ", " versions)
+
 let header =
   G.verbatim
     ("Code generated from protocol/specs/src/stack and \
@@ -287,19 +311,27 @@ let derive ~root (spec : Spec.t) =
             imports = [];
             decls =
               [
+                G.Const
+                  (G.spec
+                     ~doc:
+                       (G.prose
+                          "APIVersion: the apiVersion every kind of document \
+                           states.")
+                     "APIVersion"
+                     (q (api_version spec kinds)));
                 G.Var
                   (G.spec
                      ~doc:
                        (G.prose
                           "schemaFiles: the text of every schema a document is \
                            read against, and of every schema those refer to, \
-                           by its path in the repository.")
+                           by its $id.")
                      "schemaFiles"
                      (map
                         (List.map
                            (fun file ->
                              G.element
-                               ~key:(q (repository file))
+                               ~key:(q (id ~root file))
                                (q (text ~root file)))
                            reached)));
                 G.Var
@@ -312,7 +344,7 @@ let derive ~root (spec : Spec.t) =
                      (map
                         (List.map
                            (fun (key, file) ->
-                             G.element ~key:(q key) (q (repository file)))
+                             G.element ~key:(q key) (q (id ~root file)))
                            (List.map (fun (file, kind) -> (kind, file)) kinds
                            @ [ (fst (titled project), project) ]))));
               ];
