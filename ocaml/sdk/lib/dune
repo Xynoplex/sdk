@@ -11,6 +11,7 @@
   schema_codec
   selector_codec
   http_facts
+  sign_in_store_names
   gateway_http
   telemetry_facts
   live_facts

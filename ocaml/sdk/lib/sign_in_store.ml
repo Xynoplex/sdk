@@ -73,7 +73,7 @@ let decode = function
 
 let document t =
   try
-    let path = file t "tokens.json" in
+    let path = file t Sign_in_store_names.document in
     let stat = Unix.lstat path in
     if
       stat.st_kind <> Unix.S_REG
@@ -111,7 +111,7 @@ let owned_directory t =
 
 let with_lock t f =
   owned_directory t;
-  let path = file t "tokens.lock" in
+  let path = file t Sign_in_store_names.lock in
   let open_fd () =
     try
       Unix.openfile path
@@ -164,7 +164,7 @@ let write t entries =
       flush stream;
       Unix.fsync (Unix.descr_of_out_channel stream);
       close_out stream;
-      Unix.rename path (file t "tokens.json");
+      Unix.rename path (file t Sign_in_store_names.document);
       renamed := true)
 
 let replace entries key fields =

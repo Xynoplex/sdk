@@ -38,6 +38,7 @@ type expr =
   | Str of string  (** Every character as itself but what must be escaped. *)
   | Ascii of string  (** Printable ASCII, every other UTF-16 unit escaped. *)
   | Int of int
+  | Hex of string  (** Hex digits, written after [0x]. *)
   | Char of char
   | Call of call
   | Member of expr * string  (** [e.name] *)
@@ -441,6 +442,11 @@ let rec expr ~depth e =
   | Str text -> escaped text
   | Ascii text -> ascii text
   | Int n -> string_of_int n
+  | Hex digits ->
+      if digits <> "" && String.for_all Text.is_hex_digit digits then
+        "0x" ^ digits
+      else
+        invalid_arg (Printf.sprintf "Kotlin_syntax: %S is no hex number" digits)
   | Char c -> char_literal c
   | Call { callee; types; args; layout; lambda } -> (
       receiver ~depth callee
@@ -813,7 +819,7 @@ let referenced decls =
   let rec of_expr = function
     | Name name | Class_literal name -> [ first name ]
     | Reference (owner, _) -> [ first owner ]
-    | This | Null | Bool _ | Str _ | Ascii _ | Int _ | Char _ -> []
+    | This | Null | Bool _ | Str _ | Ascii _ | Int _ | Hex _ | Char _ -> []
     | Call { callee; types; args; lambda; layout = _ } ->
         of_expr callee
         @ List.concat_map of_type types

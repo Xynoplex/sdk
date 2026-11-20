@@ -38,17 +38,13 @@ from typing import Final, Literal, final, override
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
 from xynolog import _owner_only_table
+from xynolog._sign_in_store_names import FILE_NAME, LOCK_NAME, LOCK_OFFSET_HIGH
 from xynolog.errors import SignInError
 from xynolog.oauth_clients import SCRIPT_CLIENT_ID
 from xynolog.session import HeldSignIn, SignInKept, text_claim, token_expiry
 from xynolog.sign_in import SignIn
 
 __all__ = ["FILE_NAME", "SignInStore", "System", "state_dir", "this_system"]
-
-FILE_NAME: Final = "tokens.json"
-"""The file's name in the launcher's state home."""
-
-_LOCK_NAME: Final = "tokens.lock"
 
 type System = Literal["macos", "windows", "other"]
 """The systems the state home differs by: macOS, Windows, and everything else."""
@@ -110,7 +106,7 @@ if sys.platform == "win32":
     def _lock(descriptor: int) -> None:
         # The one byte the launcher locks, far past anything a lock file holds;
         # a program that locks the whole file, as the Rust SDK does, covers it.
-        where = _Overlapped(None, None, 0, 0x40000000, None)
+        where = _Overlapped(None, None, 0, LOCK_OFFSET_HIGH, None)
         locked = ctypes.windll.kernel32.LockFileEx(
             wintypes.HANDLE(msvcrt.get_osfhandle(descriptor)), _LOCKFILE_EXCLUSIVE_LOCK, 0, 1, 0, ctypes.byref(where)
         )
@@ -287,7 +283,7 @@ class SignInStore:
 
     def __init__(self, path: str | os.PathLike[str]) -> None:
         self._path: Final = os.fspath(path)
-        self._lock_path: Final = os.path.join(os.path.dirname(self._path), _LOCK_NAME)
+        self._lock_path: Final = os.path.join(os.path.dirname(self._path), LOCK_NAME)
         # One change at a time from this process: the file lock is between
         # processes, and two handles of one process on one file do not exclude
         # each other on every system.

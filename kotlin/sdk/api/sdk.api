@@ -1485,8 +1485,11 @@ public final class xynolog/signin/SignInStore {
 	public final fun read ()Lkotlinx/serialization/json/JsonObject;
 }
 
-public final class xynolog/signin/StateHomeKt {
+public final class xynolog/signin/SignInStoreNamesKt {
 	public static final field FILE_NAME Ljava/lang/String;
+}
+
+public final class xynolog/signin/StateHomeKt {
 	public static final fun stateDir (Lxynolog/signin/Platform;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static final fun thisPlatform ()Lxynolog/signin/Platform;
 }

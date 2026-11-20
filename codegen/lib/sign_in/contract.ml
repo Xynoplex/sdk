@@ -73,12 +73,7 @@ let read ~root =
           run (function ' ' | '\t' | '\n' | '\r' -> true | _ -> false) text i
         in
         if starts_at ~prefix:"0x" text j then
-          let digits, _ =
-            run
-              (function
-                | '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' -> true | _ -> false)
-              text (j + 2)
-          in
+          let digits, _ = run Text.is_hex_digit text (j + 2) in
           if digits = "" then None else Some digits
         else None)
       (ends ~prefix:"OffsetHigh:" text)

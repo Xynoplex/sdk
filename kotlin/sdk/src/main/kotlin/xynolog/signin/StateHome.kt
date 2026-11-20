@@ -2,12 +2,6 @@ package xynolog.signin
 
 import java.util.Locale
 
-/** The file the launcher keeps its sign-ins in, in its state home. */
-public const val FILE_NAME: String = "tokens.json"
-
-/** The file every writer of the sign-ins locks, beside them. */
-internal const val LOCK_NAME: String = "tokens.lock"
-
 /** The systems the launcher's state home differs by: macOS, Windows, and everything else. */
 public enum class Platform { MACOS, WINDOWS, OTHER }
 
