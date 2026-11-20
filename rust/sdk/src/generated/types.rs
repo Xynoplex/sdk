@@ -2172,6 +2172,45 @@ impl BusSubscribeRequestScopedItem {
     }
 }
 
+/// What a worker's claiming of jobs is told: the jobs it takes, and how long it waits for what it waits on. A wait left out is client/timing.json's of the same name.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClaimOptions {
+    /// The jobs this claim takes. A job is handed over when it matches any one of them.
+    pub accepts: Vec<JobFilter>,
+    /// How long it waits for the answer to one claim, in milliseconds.
+    #[serde(rename = "jobClaimTimeoutMs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub job_claim_timeout_ms: Option<u64>,
+    /// How long a held job may show no activity before it is called stalled, in milliseconds.
+    #[serde(rename = "heldJobStallMs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub held_job_stall_ms: Option<u64>,
+    /// How often it looks at how long a held job has shown no activity, in milliseconds.
+    #[serde(rename = "heldJobStallCheckMs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub held_job_stall_check_ms: Option<u64>,
+    /// How long it waits for the record to acknowledge a commit of annotations, in milliseconds.
+    #[serde(rename = "markCommitTimeoutMs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mark_commit_timeout_ms: Option<u64>,
+}
+
+impl ClaimOptions {
+    /// The `ClaimOptions` that states these and nothing else.
+    pub fn new(accepts: Vec<JobFilter>) -> Self {
+        Self {
+            accepts,
+            job_claim_timeout_ms: None,
+            held_job_stall_ms: None,
+            held_job_stall_check_ms: None,
+            mark_commit_timeout_ms: None,
+        }
+    }
+}
+
+schema!(ClaimOptions);
+
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct CloneResourceWithTokenResponse {
     /// Generated clone token
@@ -2405,6 +2444,37 @@ impl CreateAnnotationRequest {
 }
 
 schema!(CreateAnnotationRequest);
+
+/// What creating a resource from a clone token is told: the token, the clone's name and text, and whether the source is archived once the clone exists.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct CreateFromTokenOptions {
+    pub token: String,
+    pub name: String,
+    /// The clone's text, uploaded as its content.
+    pub content: String,
+    #[serde(rename = "archiveOriginal")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archive_original: Option<bool>,
+}
+
+impl CreateFromTokenOptions {
+    /// The `CreateFromTokenOptions` that states these and nothing else.
+    pub fn new(
+        token: impl Into<String>,
+        name: impl Into<String>,
+        content: impl Into<String>,
+    ) -> Self {
+        Self {
+            token: token.into(),
+            name: name.into(),
+            content: content.into(),
+            archive_original: None,
+        }
+    }
+}
+
+schema!(CreateFromTokenOptions);
 
 /// The id of the resource an upload created. The Archivist answers it (200) once it has stored the bytes and recorded the resource, and the gateway forwards it (202), so the id is the one the record minted and its creation event is persisted. What remains asynchronous is downstream projection: graph, views and vectors settle afterwards.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -3648,6 +3718,33 @@ impl GatherResourceFailed {
 }
 
 schema!(GatherResourceFailed);
+
+/// What gathering the context of a resource is told beside the resource: GatherResourceRequestOptions, each member of which a caller may leave out. client/surface.json's `gather.resource` cases state what is sent for one left out.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GatherResourceOptions {
+    /// How many links out from the resource the knowledge graph reaches, nearest first: 1 is what the resource links to and what cites it, and each further link out adds what those link to and what cites them
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub depth: Option<u16>,
+    /// Maximum number of related resources to include
+    #[serde(rename = "maxResources")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_resources: Option<u16>,
+    /// Whether to include resource content in the gathered result
+    #[serde(rename = "includeContent")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub include_content: Option<bool>,
+    /// Whether to include resource summaries in the gathered result
+    #[serde(rename = "includeSummary")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub include_summary: Option<bool>,
+    /// Entity types to exclude from the semantic recall built into this context (caller-supplied; e.g. a chat consumer passes ['Question'] so prior questions never ground answer generation). Optional; default none.
+    #[serde(rename = "excludeEntityTypes")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exclude_entity_types: Option<Vec<String>>,
+}
+
+schema!(GatherResourceOptions);
 
 /// Request payload sent on the gather:resource-requested bus channel to gather context for a resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5519,6 +5616,22 @@ impl JobPendingStatus {
         }
     }
 }
+
+/// How a job's `pollUntilComplete` asks for the job's status: how long it waits between its asks, and how long it goes on asking. A member left out is client/timing.json's: `jobPollMs` and `jobPollTimeoutMs`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct JobPollOptions {
+    /// How long it waits between one ask and the next, in milliseconds.
+    #[serde(rename = "everyMs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub every_ms: Option<u64>,
+    /// How long it goes on asking, from its first ask, before it fails as timed out, in milliseconds.
+    #[serde(rename = "withinMs")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub within_ms: Option<u64>,
+}
+
+schema!(JobPollOptions);
 
 /// Progress report from a running job. The required field is `percentage`; `message` carries the coded phase and the rest are optional job-shape fields. This is the single progress shape for every job type — annotation workers and generation alike. Terminality is signalled on `job:complete` / `job:fail`, not here. A flow that iterates a user-chosen list (entity types for references, categories for tags) reports its position as one `current`/`processed`/`total` triple, the same shape for both, so a client never needs to know which flow it is drawing.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7991,6 +8104,21 @@ impl MatchSearchFailed {
 
 schema!(MatchSearchFailed);
 
+/// What a search for what a reference could refer to is told beside the reference and its context: MatchSearchRequest's other members. client/surface.json's `match.search` cases state what is sent for one left out.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MatchSearchOptions {
+    /// Maximum number of candidate results to return
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u16>,
+    /// Enable semantic similarity scoring in addition to keyword matching
+    #[serde(rename = "useSemanticScoring")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub use_semantic_scoring: Option<bool>,
+}
+
+schema!(MatchSearchOptions);
+
 /// Request payload sent on the match:search-request bus channel to find candidate matches.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct MatchSearchRequest {
@@ -9541,6 +9669,25 @@ pub struct ResourceMovedPayload {
 }
 
 schema!(ResourceMovedPayload);
+
+/// What a text search for resources is told beside its text: MatchResourcesRequest's other members. client/surface.json's `match.resources` cases state what is sent for one left out.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResourceSearchFilters {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archived: Option<bool>,
+    #[serde(rename = "entityType")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_type: Option<String>,
+    /// How many of the resources the search finds are passed over before the page begins.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub offset: Option<u64>,
+    /// The most resources a page has.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u16>,
+}
+
+schema!(ResourceSearchFilters);
 
 /// Payload for mark:unarchived domain event (empty payload)
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]

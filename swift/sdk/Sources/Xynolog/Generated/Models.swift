@@ -2353,6 +2353,45 @@ public struct BusSubscribeRequestScopedItem: Codable, Sendable {
   }
 }
 
+public struct ClaimOptions: Codable, Sendable {
+  public var accepts: [JobFilter]
+  public var heldJobStallCheckMs: Int?
+  public var heldJobStallMs: Int?
+  public var jobClaimTimeoutMs: Int?
+  public var markCommitTimeoutMs: Int?
+  public init(
+    accepts: [JobFilter], heldJobStallCheckMs: Int? = nil, heldJobStallMs: Int? = nil,
+    jobClaimTimeoutMs: Int? = nil, markCommitTimeoutMs: Int? = nil
+  ) {
+    self.accepts = accepts
+    self.heldJobStallCheckMs = heldJobStallCheckMs
+    self.heldJobStallMs = heldJobStallMs
+    self.jobClaimTimeoutMs = jobClaimTimeoutMs
+    self.markCommitTimeoutMs = markCommitTimeoutMs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      [
+        "accepts", "heldJobStallCheckMs", "heldJobStallMs", "jobClaimTimeoutMs",
+        "markCommitTimeoutMs",
+      ], in: "ClaimOptions")
+    self.accepts = try c.value("accepts")
+    self.heldJobStallCheckMs = try c.ifPresent("heldJobStallCheckMs")
+    self.heldJobStallMs = try c.ifPresent("heldJobStallMs")
+    self.jobClaimTimeoutMs = try c.ifPresent("jobClaimTimeoutMs")
+    self.markCommitTimeoutMs = try c.ifPresent("markCommitTimeoutMs")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.accepts, as: "accepts")
+    try c.encodeIfPresent(self.heldJobStallCheckMs, as: "heldJobStallCheckMs")
+    try c.encodeIfPresent(self.heldJobStallMs, as: "heldJobStallMs")
+    try c.encodeIfPresent(self.jobClaimTimeoutMs, as: "jobClaimTimeoutMs")
+    try c.encodeIfPresent(self.markCommitTimeoutMs, as: "markCommitTimeoutMs")
+  }
+}
+
 public struct CloneResourceWithTokenResponse: Codable, Sendable {
   public var expiresAt: String
   public var resource: ResourceDescriptor
@@ -2574,6 +2613,35 @@ public struct CreateAnnotationRequest: Codable, Sendable {
     try c.encodeIfPresent(self.body, as: "body")
     try c.encode(self.motivation, as: "motivation")
     try c.encode(self.target, as: "target")
+  }
+}
+
+public struct CreateFromTokenOptions: Codable, Sendable {
+  public var archiveOriginal: Bool?
+  public var content: String
+  public var name: String
+  public var token: String
+  public init(archiveOriginal: Bool? = nil, content: String, name: String, token: String) {
+    self.archiveOriginal = archiveOriginal
+    self.content = content
+    self.name = name
+    self.token = token
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["archiveOriginal", "content", "name", "token"], in: "CreateFromTokenOptions")
+    self.archiveOriginal = try c.ifPresent("archiveOriginal")
+    self.content = try c.value("content")
+    self.name = try c.value("name")
+    self.token = try c.value("token")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.archiveOriginal, as: "archiveOriginal")
+    try c.encode(self.content, as: "content")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.token, as: "token")
   }
 }
 
@@ -3749,6 +3817,43 @@ public struct GatherResourceOptions: Codable, Sendable {
     try c.refuseUnknown(
       ["depth", "excludeEntityTypes", "includeContent", "includeSummary", "maxResources"],
       in: "GatherResourceOptions")
+    self.depth = try c.ifPresent("depth")
+    self.excludeEntityTypes = try c.ifPresent("excludeEntityTypes")
+    self.includeContent = try c.ifPresent("includeContent")
+    self.includeSummary = try c.ifPresent("includeSummary")
+    self.maxResources = try c.ifPresent("maxResources")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.depth, as: "depth")
+    try c.encodeIfPresent(self.excludeEntityTypes, as: "excludeEntityTypes")
+    try c.encodeIfPresent(self.includeContent, as: "includeContent")
+    try c.encodeIfPresent(self.includeSummary, as: "includeSummary")
+    try c.encodeIfPresent(self.maxResources, as: "maxResources")
+  }
+}
+
+public struct GatherResourceOptionsValue: Codable, Sendable {
+  public var depth: Int?
+  public var excludeEntityTypes: [String]?
+  public var includeContent: Bool?
+  public var includeSummary: Bool?
+  public var maxResources: Int?
+  public init(
+    depth: Int? = nil, excludeEntityTypes: [String]? = nil, includeContent: Bool? = nil,
+    includeSummary: Bool? = nil, maxResources: Int? = nil
+  ) {
+    self.depth = depth
+    self.excludeEntityTypes = excludeEntityTypes
+    self.includeContent = includeContent
+    self.includeSummary = includeSummary
+    self.maxResources = maxResources
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["depth", "excludeEntityTypes", "includeContent", "includeSummary", "maxResources"],
+      in: "GatherResourceOptionsValue")
     self.depth = try c.ifPresent("depth")
     self.excludeEntityTypes = try c.ifPresent("excludeEntityTypes")
     self.includeContent = try c.ifPresent("includeContent")
@@ -5598,6 +5703,26 @@ public struct JobPending: Codable, Sendable {
 
 public enum JobPendingStatus: String, Codable, Sendable, CaseIterable {
   case pending = "pending"
+}
+
+public struct JobPollOptions: Codable, Sendable {
+  public var everyMs: Int?
+  public var withinMs: Int?
+  public init(everyMs: Int? = nil, withinMs: Int? = nil) {
+    self.everyMs = everyMs
+    self.withinMs = withinMs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["everyMs", "withinMs"], in: "JobPollOptions")
+    self.everyMs = try c.ifPresent("everyMs")
+    self.withinMs = try c.ifPresent("withinMs")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.everyMs, as: "everyMs")
+    try c.encodeIfPresent(self.withinMs, as: "withinMs")
+  }
 }
 
 public struct JobProgress: Codable, Sendable {
@@ -7776,6 +7901,26 @@ public struct MatchSearchFailed: Codable, Sendable {
   }
 }
 
+public struct MatchSearchOptions: Codable, Sendable {
+  public var limit: Int?
+  public var useSemanticScoring: Bool?
+  public init(limit: Int? = nil, useSemanticScoring: Bool? = nil) {
+    self.limit = limit
+    self.useSemanticScoring = useSemanticScoring
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["limit", "useSemanticScoring"], in: "MatchSearchOptions")
+    self.limit = try c.ifPresent("limit")
+    self.useSemanticScoring = try c.ifPresent("useSemanticScoring")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.limit, as: "limit")
+    try c.encodeIfPresent(self.useSemanticScoring, as: "useSemanticScoring")
+  }
+}
+
 public struct MatchSearchRequest: Codable, Sendable {
   public var context: GatheredContext
   public var limit: Int?
@@ -9399,6 +9544,36 @@ public struct ResourceMovedPayload: Codable, Sendable {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.fromUri, as: "fromUri")
     try c.encode(self.toUri, as: "toUri")
+  }
+}
+
+public struct ResourceSearchFilters: Codable, Sendable {
+  public var archived: Bool?
+  public var entityType: String?
+  public var limit: Int?
+  public var offset: Int?
+  public init(
+    archived: Bool? = nil, entityType: String? = nil, limit: Int? = nil, offset: Int? = nil
+  ) {
+    self.archived = archived
+    self.entityType = entityType
+    self.limit = limit
+    self.offset = offset
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["archived", "entityType", "limit", "offset"], in: "ResourceSearchFilters")
+    self.archived = try c.ifPresent("archived")
+    self.entityType = try c.ifPresent("entityType")
+    self.limit = try c.ifPresent("limit")
+    self.offset = try c.ifPresent("offset")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.archived, as: "archived")
+    try c.encodeIfPresent(self.entityType, as: "entityType")
+    try c.encodeIfPresent(self.limit, as: "limit")
+    try c.encodeIfPresent(self.offset, as: "offset")
   }
 }
 

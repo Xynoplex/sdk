@@ -6,7 +6,7 @@ import type {
   JobId,
   components,
 } from '@xynolog/core';
-import type { ITransport } from '@xynolog/core';
+import type { ClaimOptions, ITransport } from '@xynolog/core';
 import {
   Bus,
   BUS_REQUEST_TIMEOUT_MS,
@@ -14,7 +14,7 @@ import {
   JOB_POLL_MS,
   JOB_POLL_TIMEOUT_MS,
 } from '@xynolog/core';
-import { ClaimsObservable, type ClaimOptions } from '../claims';
+import { ClaimsObservable } from '../claims';
 import type { JobNamespace as IJobNamespace } from './types';
 
 type JobStatusResponse = components['schemas']['JobStatusResponse'];

@@ -101,15 +101,15 @@ let roots ~root (spec : Spec.t) =
     ((name, path, { Models.schema; json = titled spec.ids ~file records json })
       : _)
   in
-  let closed_in = Definitions.closed_in spec in
-  (* A schema that closes what it composes is read as the one object it means
-     ([Definitions.closed_in]), and validated as that object. *)
+  let written = Definitions.whole spec in
+  (* A schema is read as a writer reads one whole ([Definitions.whole]), and
+     validated as what it is then. *)
   let whole name path =
     let* stated = schema_of spec path in
     let* schema =
       Result.map_error
         (fun message -> [ { Decode.file = path; pointer = ""; message } ])
-        (closed_in stated)
+        (written stated)
     in
     let* json =
       if schema = stated then json ~root path else Ok (Schema.runtime schema)

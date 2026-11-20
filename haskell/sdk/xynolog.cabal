@@ -281,6 +281,7 @@ library internal
     Xynolog.Internal.Generated.Models.BusResumeGap
     Xynolog.Internal.Generated.Models.BusStreamMessage
     Xynolog.Internal.Generated.Models.BusSubscribeRequest
+    Xynolog.Internal.Generated.Models.ClaimOptions
     Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse
     Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponseBusEnvelope
     Xynolog.Internal.Generated.Models.CommandError
@@ -290,6 +291,7 @@ library internal
     Xynolog.Internal.Generated.Models.ContextualSummaryResponse
     Xynolog.Internal.Generated.Models.ContextualSummaryResponseBusEnvelope
     Xynolog.Internal.Generated.Models.CreateAnnotationRequest
+    Xynolog.Internal.Generated.Models.CreateFromTokenOptions
     Xynolog.Internal.Generated.Models.CreateResourceResponse
     Xynolog.Internal.Generated.Models.CursorsPath
     Xynolog.Internal.Generated.Models.DeviceCode
@@ -391,6 +393,7 @@ library internal
     Xynolog.Internal.Generated.Models.JobMetadata
     Xynolog.Internal.Generated.Models.JobParams
     Xynolog.Internal.Generated.Models.JobPending
+    Xynolog.Internal.Generated.Models.JobPollOptions
     Xynolog.Internal.Generated.Models.JobProgress
     Xynolog.Internal.Generated.Models.JobProgressAnalyzing
     Xynolog.Internal.Generated.Models.JobProgressAnalyzingTags
@@ -509,6 +512,7 @@ library internal
     Xynolog.Internal.Generated.Models.ResourceErrorEvent
     Xynolog.Internal.Generated.Models.ResourceId
     Xynolog.Internal.Generated.Models.ResourceMovedPayload
+    Xynolog.Internal.Generated.Models.ResourceSearchFilters
     Xynolog.Internal.Generated.Models.ResourceUnarchivedPayload
     Xynolog.Internal.Generated.Models.ResourceUpdatedPayload
     Xynolog.Internal.Generated.Models.ResourceUpload

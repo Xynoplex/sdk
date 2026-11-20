@@ -34,6 +34,7 @@ let adapters (spec : Spec.t) =
   Client_types.Haskell.adapters
     ~names:(Client_types.Haskell.adapted spec)
     ~shape:(Client_types.Model.shape model)
+    ~whole:(Client_types.Haskell.whole spec)
 
 (* The package's manifest: its template with the model modules listed, at
    the version the committed manifest states, which scripts/sdk_version.py

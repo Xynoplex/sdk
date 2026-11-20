@@ -34,7 +34,7 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use xynolog::annotations::{annotation_of_span, reconcile};
 use xynolog::cache::CacheState;
 use xynolog::channels::{BRIDGED_CHANNELS, PrincipalProfile};
-use xynolog::claims::{ClaimOptions, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, JobFailure};
+use xynolog::claims::{HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, JobFailure};
 use xynolog::client::ClientOptions;
 use xynolog::discovery::{
     DiscoveryAbsentReason, DiscoveryRead, DiscoveryState, DiscoveryTransport,
@@ -65,7 +65,7 @@ use xynolog::types::{
     LocalEndpoint, MarkJobDone, MarkJobFilter, MarkJobFilterParams, Motivation,
     PrincipalProfileCommand, QuotedText, TextSpan,
 };
-use xynolog::types::{SessionEndReason, StoredSession};
+use xynolog::types::{ClaimOptions, SessionEndReason, StoredSession};
 use xynolog_http_transport::agent::{AgentSignInError, AgentToken};
 use xynolog_http_transport::client::client;
 use xynolog_http_transport::client_assertion::{JWT_BEARER, LIFETIME_SECONDS, thumbprint};

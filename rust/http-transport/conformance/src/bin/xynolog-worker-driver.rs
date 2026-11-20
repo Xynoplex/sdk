@@ -17,11 +17,11 @@ use opentelemetry::context::FutureExt;
 use opentelemetry::trace::{SpanKind, TraceContextExt, Tracer};
 use opentelemetry::{Context, KeyValue, global};
 use xynolog::claims::{
-    ClaimOptions, ClaimTiming, Claims, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, JobFailure,
+    Claims, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, JobFailure,
 };
 use xynolog::client::{ClientOptions, XynologClient};
 use xynolog::transport::{ConnectionState, ResourceHold, Transport};
-use xynolog::types::{Annotation, JobProgress, ResourceId};
+use xynolog::types::{Annotation, ClaimOptions, JobProgress, ResourceId};
 use xynolog_conformance_drivers::{
     Arguments, Driver, Ended, Running, count, failure, identifier, locked, object, say, serve,
     text, texts,
@@ -43,11 +43,21 @@ struct Opened {
     _token: watch::Sender<Option<String>>,
 }
 
+/// The milliseconds of each wait a case states a worker keeps, none for one
+/// it leaves to protocol/specs/src/client/timing.json.
+#[derive(Default, Clone, Copy)]
+struct Waits {
+    job_claim_timeout_ms: Option<u64>,
+    held_job_stall_ms: Option<u64>,
+    held_job_stall_check_ms: Option<u64>,
+    mark_commit_timeout_ms: Option<u64>,
+}
+
 #[derive(Default)]
 struct Worker {
     opened: Mutex<Option<Arc<Opened>>>,
-    /// A worker's timing, as `open` stated it.
-    timing: Mutex<ClaimTiming>,
+    /// A worker's waits, as `open` stated them.
+    waits: Mutex<Waits>,
     claims: Mutex<Option<Arc<Claims>>>,
     /// The job the worker holds, until an operation settles it, and the
     /// context in which the span it is run in is the current one.
@@ -139,7 +149,7 @@ impl Worker {
             return Err(Ended::Misuse("a transport is already open".to_owned()));
         }
         let mut timing = Timing::default();
-        let mut worker = ClaimTiming::default();
+        let mut waits = Waits::default();
         let stated = match args.get("timing") {
             None => &Arguments::new(),
             Some(_) => object(args, "timing")?,
@@ -150,10 +160,10 @@ impl Worker {
                 "reconnectMs" => timing.reconnect = ms(name)?,
                 "lazyRemoveMs" => timing.lazy_remove = ms(name)?,
                 "lingerMs" => timing.linger = ms(name)?,
-                "jobClaimTimeoutMs" => worker.job_claim = ms(name)?,
-                "heldJobStallMs" => worker.held_job_stall = ms(name)?,
-                "heldJobStallCheckMs" => worker.held_job_stall_check = ms(name)?,
-                "markCommitTimeoutMs" => worker.mark_commit = ms(name)?,
+                "jobClaimTimeoutMs" => waits.job_claim_timeout_ms = Some(count(stated, name)?),
+                "heldJobStallMs" => waits.held_job_stall_ms = Some(count(stated, name)?),
+                "heldJobStallCheckMs" => waits.held_job_stall_check_ms = Some(count(stated, name)?),
+                "markCommitTimeoutMs" => waits.mark_commit_timeout_ms = Some(count(stated, name)?),
                 other => {
                     return Err(Ended::Misuse(format!(
                         "this driver cannot override {other}"
@@ -172,7 +182,7 @@ impl Worker {
         if commits {
             channels.extend(JOB_COMMIT_CHANNELS.map(str::to_owned));
         }
-        *locked(&self.timing) = worker;
+        *locked(&self.waits) = waits;
         let (token, tokens) = watch::channel(Some(text(args, "token")?.to_owned()));
         let transport = HttpTransport::new(HttpTransportConfig {
             base_url: text(args, "baseUrl")?.to_owned(),
@@ -232,8 +242,12 @@ impl Worker {
         let accepts = args
             .get("accepts")
             .ok_or_else(|| Ended::Misuse("accepts must be a list of filters".to_owned()))?;
+        let waits = *locked(&self.waits);
         let claims = Arc::new(self.opened()?.client.job.claim(ClaimOptions {
-            timing: *locked(&self.timing),
+            job_claim_timeout_ms: waits.job_claim_timeout_ms,
+            held_job_stall_ms: waits.held_job_stall_ms,
+            held_job_stall_check_ms: waits.held_job_stall_check_ms,
+            mark_commit_timeout_ms: waits.mark_commit_timeout_ms,
             ..ClaimOptions::new(typed(accepts, "accepts")?)
         }));
         *locked(&self.claims) = Some(claims.clone());

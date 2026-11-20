@@ -36,14 +36,6 @@ func (f ResourceFilters) limit() int {
 	return f.Limit
 }
 
-// MatchSearchOptions is how a search for a reference's candidates is run.
-// Limit is how many it gives, ten when it is zero; UseSemanticScoring scores
-// by meaning, as it does when it is nil.
-type MatchSearchOptions struct {
-	Limit              int
-	UseSemanticScoring *bool
-}
-
 // MatchNamespace is searching: for what a reference could refer to, and for
 // resources by text.
 type MatchNamespace struct {
@@ -51,11 +43,12 @@ type MatchNamespace struct {
 	live  *live
 }
 
-// Search is the candidates for a reference, given its gathered context.
-func (n *MatchNamespace) Search(resourceID api.ResourceId, referenceID api.AnnotationId, gathered api.GatheredContext, options MatchSearchOptions) *Running[api.MatchSearchResult] {
-	limit := options.Limit
-	if limit == 0 {
-		limit = matchCandidates
+// Search is the candidates for a reference, given its gathered context. An
+// option left out is sent as client/surface.json's match.search cases say.
+func (n *MatchNamespace) Search(resourceID api.ResourceId, referenceID api.AnnotationId, gathered api.GatheredContext, options api.MatchSearchOptions) *Running[api.MatchSearchResult] {
+	limit := matchCandidates
+	if options.Limit != nil {
+		limit = *options.Limit
 	}
 	semantic := true
 	if options.UseSemanticScoring != nil {

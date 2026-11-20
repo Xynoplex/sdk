@@ -8,7 +8,7 @@ import type {
   EventBus,
   components,
 } from '@xynolog/core';
-import type { ITransport } from '@xynolog/core';
+import type { ITransport, ResourceSearchFilters } from '@xynolog/core';
 import { Bus } from '@xynolog/core';
 import { CacheObservable, StreamObservable } from '../awaitable';
 import { createCache, type Cache } from '../cache';
@@ -17,7 +17,6 @@ import type {
   MatchNamespace as IMatchNamespace,
   MatchSearchProgress,
   MatchedResources,
-  ResourceSearchFilters,
 } from './types';
 
 /**

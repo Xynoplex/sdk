@@ -100,6 +100,27 @@ let adapted_names =
     "BeginAuthorizationOptions";
   ]
 
+(* Each client type read whole: an object whose one member is a whole number
+   of at least zero. *)
+let read_whole _ =
+  Ok
+    (Schema.Schema
+       {
+         Schema.empty with
+         type_ = Some [ Object ];
+         properties =
+           Some
+             [
+               ( "start",
+                 Schema.Schema
+                   {
+                     Schema.empty with
+                     type_ = Some [ Integer ];
+                     minimum = Some 0.;
+                   } );
+             ];
+       })
+
 let adapted reconciled ~methods =
   shapes
     [
@@ -171,9 +192,9 @@ let cases =
                       M.Fields
                         [ member ~required:false "selector" (Scalar String) ] );
                   ])));
-    case "an adapter states an integer as one" (fun () ->
+    case "an adapter states an object as its schema read whole" (fun () ->
         match
-          W.adapters ~names:adapted_names
+          W.adapters ~names:adapted_names ~whole:read_whole
             ~shape:
               (adapted
                  (M.Fields [ member "start" (Scalar Integer) ])
@@ -183,24 +204,21 @@ let cases =
             match List.assoc_opt "TextSpan" adapters with
             | Some
                 (Schema.Schema
-                   {
-                     properties = Some properties;
-                     additional_properties = closed;
-                     _;
-                   }) -> (
-                Alcotest.(check bool)
-                  "it states no member but its own" true
-                  (closed = Some (Schema.Boolean_schema false));
+                   { title = Some "TextSpan"; properties = Some properties; _ })
+              -> (
                 match List.assoc_opt "start" properties with
-                | Some (Schema.Schema { type_ = Some [ Integer ]; _ }) -> ()
-                | _ -> Alcotest.fail "start is not an integer")
-            | _ -> Alcotest.fail "no TextSpan of properties")
+                | Some
+                    (Schema.Schema
+                       { type_ = Some [ Integer ]; minimum = Some 0.; _ }) ->
+                    ()
+                | _ -> Alcotest.fail "start is not the integer read whole")
+            | _ -> Alcotest.fail "no TextSpan titled and of properties")
         | Error _ -> Alcotest.fail "refused");
     case
       "an adapter states a union as its branches, each a type closed on its tag"
       (fun () ->
         match
-          W.adapters ~names:adapted_names
+          W.adapters ~names:adapted_names ~whole:read_whole
             ~shape:
               (adapted
                  (reconciled_union

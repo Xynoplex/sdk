@@ -30,11 +30,11 @@ let found ~shape name =
       Error [ refusal name "is no client type, and a Haskell writer reads it" ]
 
 (* A client type as the haskell-sdk group models one, beside the types it
-   brings: words; an object's members, each a scalar or another type's
-   schema; or a union of its branches, each its own type named for the word
-   that tags it, an object of that word and its members. Each object states
-   no member but its own. *)
-let adapter name =
+   brings: words; an object, as [whole] reads it; or a union of its
+   branches, each its own type named for the word that tags it, an object of
+   that word and its members, each a scalar or another type's schema. Each
+   branch states no member but its own. *)
+let adapter ~whole name =
   let object_ members =
     let* properties =
       Spec.all
@@ -87,8 +87,11 @@ let adapter name =
   in
   function
   | Words w -> Ok [ (name, titled name (words w)) ]
-  | Fields members ->
-      Result.map (fun o -> [ (name, titled name o) ]) (object_ members)
+  | Fields _ -> (
+      let* s = whole name in
+      match s with
+      | Schema.Schema s -> Ok [ (name, titled name s) ]
+      | Schema.Boolean_schema _ -> Error [ refusal name "is no object" ])
   | Union { tag; branches } ->
       let* branches =
         Spec.all
@@ -138,13 +141,23 @@ let adapted spec =
            [ "PendingAnnotation"; "UploadProgress"; "FrameRefusalReason" ]))
     (Definitions.generated_client_types spec)
 
-(* The client types [names] the Haskell SDK models. *)
-let adapters ~names ~shape =
+(* A client type of [spec] read whole ([Definitions.whole]), by its name. *)
+let whole (spec : Spec.t) =
+  let written = Definitions.whole spec in
+  fun name ->
+    let file = Definitions.client_types ^ name ^ ".json" in
+    Result.map_error
+      (fun message -> [ { Decode.file; pointer = ""; message } ])
+      (written (List.assoc file spec.schemas))
+
+(* The client types [names] the Haskell SDK models: an object as [whole]
+   reads it, its bounds and what is said of it kept. *)
+let adapters ~names ~shape ~whole =
   Spec.all
     (List.map
        (fun name ->
          let* s = found ~shape name in
-         adapter name s)
+         adapter ~whole name s)
        names)
   |> Result.map List.concat
 

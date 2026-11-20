@@ -137,11 +137,56 @@ let schema_of ~ids ~schemas (r : Decode.reference) =
   | Some s -> Ok s
   | None -> Error ("$ref " ^ r.target ^ " names no schema")
 
-(* A schema of [spec] as it means one: each schema within it that closes what
-   it composes read as the one object it means ([Normalize.closed_within]). *)
-let closed_in (spec : Spec.t) =
+(* [s] with each [$ref] to a member of another schema ([/properties/<member>])
+   written in its place, since a member is no schema of its own (S6); but a
+   [$ref] to a record a table states ([recorded], by its key) names that
+   record. Nothing may be said beside a reference written in its place, and
+   a member that reaches itself so is refused. *)
+let members_in_place ~ids ~schemas ~recorded s =
+  let rec members trail = function
+    | Schema.Boolean_schema _ as b -> b
+    | Schema.Schema l -> (
+        match l.ref_ with
+        | None -> Schema.Schema (Schema.map (members trail) l)
+        | Some r ->
+            let key = Table_records.key ids r in
+            let member =
+              match String.split_on_char '/' (snd (Decode.resolve ids r)) with
+              | [ ""; "properties"; _ ] -> not (List.mem key recorded)
+              | _ -> false
+            in
+            if not member then Schema.Schema l
+            else (
+              (match said_of_reference l r with
+              | Ok None -> ()
+              | Ok (Some _) ->
+                  refuse
+                    "$ref %s is written in its place, so nothing can be said \
+                     of it beside it"
+                    r.target
+              | Error message -> refuse "%s" message);
+              match schema_at ~ids ~schemas r with
+              | Some target -> members (in_place ~trail key) target
+              | None -> refuse "$ref %s names no schema" r.target))
+  in
+  members [] s
+
+(* A schema of [spec] as a writer that reads one whole writes it: each member
+   of another schema it refers to written in its place
+   ([members_in_place]), and each schema within it that closes what it
+   composes read as the one object it means ([Normalize.closed_within]). *)
+let whole (spec : Spec.t) =
+  let ids = spec.ids in
   let schemas = Hashtbl.of_seq (List.to_seq spec.schemas) in
-  Normalize.closed_within spec.ids ~find:(schema_of ~ids:spec.ids ~schemas)
+  let recorded =
+    match Table_records.all spec with
+    | Ok records -> List.map (fun (key, _, _) -> key) records
+    | Error message -> refuse "%s" message
+  in
+  fun s ->
+    match members_in_place ~ids ~schemas ~recorded s with
+    | s -> Normalize.closed_within ids ~find:(schema_of ~ids ~schemas) s
+    | exception Refused message -> Error message
 
 (* What a client hands its callers that no wire message carries: each file of
    protocol/specs/src/client/types, and the records of the registry and of the
@@ -149,20 +194,10 @@ let closed_in (spec : Spec.t) =
 let client_types = "client/types/"
 
 (* The client types each SDK writes by hand: SearchState and JobEvent, each
-   held to its schema by a census in every SDK, and the options the namespace
-   methods take, which wait on the namespace types that take them. *)
+   held to its schema by a census in every SDK; and PutBinaryRequest, whose
+   file is bytes, which the Swift, Kotlin and Haskell writers state as text. *)
 let hand_written_client_types =
-  [
-    "SearchState";
-    "JobEvent";
-    "ClaimOptions";
-    "CreateFromTokenOptions";
-    "GatherResourceOptions";
-    "JobPollOptions";
-    "MatchSearchOptions";
-    "PutBinaryRequest";
-    "ResourceSearchFilters";
-  ]
+  [ "SearchState"; "JobEvent"; "PutBinaryRequest" ]
 
 (* The client types every SDK generates, by name: each file of
    protocol/specs/src/client/types but the hand-written ones, each of which

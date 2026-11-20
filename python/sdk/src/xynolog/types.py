@@ -112,6 +112,7 @@ __all__ = [
     "BusStreamMessage",
     "BusSubscribeRequest",
     "BusSubscribeRequestScopedItem",
+    "ClaimOptions",
     "CloneResourceWithTokenResponse",
     "CommandError",
     "CommandErrorCode",
@@ -123,6 +124,7 @@ __all__ = [
     "ContextualSummaryResponseContext",
     "ContextualSummaryResponseRelevantFields",
     "CreateAnnotationRequest",
+    "CreateFromTokenOptions",
     "CreateResourceResponse",
     "CursorsPath",
     "DeviceCode",
@@ -174,6 +176,7 @@ __all__ = [
     "GatherReferencedByResult",
     "GatherResourceComplete",
     "GatherResourceFailed",
+    "GatherResourceOptions",
     "GatherResourceRequest",
     "GatherResourceRequestOptions",
     "GatherSummaryRequest",
@@ -237,6 +240,7 @@ __all__ = [
     "JobMetadata",
     "JobParams",
     "JobPending",
+    "JobPollOptions",
     "JobProgress",
     "JobProgressAnalyzing",
     "JobProgressAnalyzingTags",
@@ -328,6 +332,7 @@ __all__ = [
     "MatchResourcesResponseMatchKind",
     "MatchResourcesResult",
     "MatchSearchFailed",
+    "MatchSearchOptions",
     "MatchSearchRequest",
     "MatchSearchResult",
     "MediaTokenRequest",
@@ -378,6 +383,7 @@ __all__ = [
     "ResourceDescriptorIdentifierObject",
     "ResourceErrorEvent",
     "ResourceMovedPayload",
+    "ResourceSearchFilters",
     "ResourceUnarchivedPayload",
     "ResourceUpdatedPayload",
     "ResourceUpload",
@@ -2148,6 +2154,34 @@ class BusSubscribeRequest(WireModel, frozen=True, extra="forbid"):
     ]
 
 
+class ClaimOptions(WireModel, frozen=True, extra="forbid"):
+    """
+    What a worker's claiming of jobs is told: the jobs it takes, and how long it waits for what it waits on. A wait left out is client/timing.json's of the same name.
+    """
+
+    accepts: Annotated[
+        list[JobFilter], Field(description="The jobs this claim takes. A job is handed over when it matches any one of them.")
+    ]
+    job_claim_timeout_ms: Annotated[
+        int | None, Field(alias="jobClaimTimeoutMs", description="How long it waits for the answer to one claim, in milliseconds.")
+    ] = None
+    held_job_stall_ms: Annotated[
+        int | None,
+        Field(alias="heldJobStallMs", description="How long a held job may show no activity before it is called stalled, in milliseconds."),
+    ] = None
+    held_job_stall_check_ms: Annotated[
+        int | None,
+        Field(alias="heldJobStallCheckMs", description="How often it looks at how long a held job has shown no activity, in milliseconds."),
+    ] = None
+    mark_commit_timeout_ms: Annotated[
+        int | None,
+        Field(
+            alias="markCommitTimeoutMs",
+            description="How long it waits for the record to acknowledge a commit of annotations, in milliseconds.",
+        ),
+    ] = None
+
+
 class CloneResourceWithTokenResponse(WireModel, frozen=True):
     token: Annotated[str, Field(description="Generated clone token")]
     expires_at: Annotated[str, Field(alias="expiresAt", description="ISO 8601 timestamp when token expires")]
@@ -2222,6 +2256,17 @@ class CreateAnnotationRequest(WireModel, frozen=True):
             description="Optional body. Omit for annotations whose motivation alone is meaningful (highlighting) or whose user-supplied content is empty. Shape matches Annotation.body."
         ),
     ] = None
+
+
+class CreateFromTokenOptions(WireModel, frozen=True, extra="forbid"):
+    """
+    What creating a resource from a clone token is told: the token, the clone's name and text, and whether the source is archived once the clone exists.
+    """
+
+    token: str
+    name: str
+    content: Annotated[str, Field(description="The clone's text, uploaded as its content.")]
+    archive_original: Annotated[bool | None, Field(alias="archiveOriginal")] = None
 
 
 class CreateResourceResponse(WireModel, frozen=True):
@@ -3002,6 +3047,33 @@ class GatherResourceFailed(CommandError, frozen=True):
     """
 
     resource_id: Annotated[ResourceId, Field(alias="resourceId", description="The resource the gather was asked for.")]
+
+
+class GatherResourceOptions(WireModel, frozen=True, extra="forbid"):
+    """
+    What gathering the context of a resource is told beside the resource: GatherResourceRequestOptions, each member of which a caller may leave out. client/surface.json's `gather.resource` cases state what is sent for one left out.
+    """
+
+    depth: Annotated[
+        int | None,
+        Field(
+            description="How many links out from the resource the knowledge graph reaches, nearest first: 1 is what the resource links to and what cites it, and each further link out adds what those link to and what cites them"
+        ),
+    ] = None
+    max_resources: Annotated[int | None, Field(alias="maxResources", description="Maximum number of related resources to include")] = None
+    include_content: Annotated[
+        bool | None, Field(alias="includeContent", description="Whether to include resource content in the gathered result")
+    ] = None
+    include_summary: Annotated[
+        bool | None, Field(alias="includeSummary", description="Whether to include resource summaries in the gathered result")
+    ] = None
+    exclude_entity_types: Annotated[
+        list[str] | None,
+        Field(
+            alias="excludeEntityTypes",
+            description="Entity types to exclude from the semantic recall built into this context (caller-supplied; e.g. a chat consumer passes ['Question'] so prior questions never ground answer generation). Optional; default none.",
+        ),
+    ] = None
 
 
 class GatherResourceRequestOptions(WireModel, frozen=True):
@@ -4259,6 +4331,22 @@ class JobFailedPayload(WireModel, frozen=True):
     durability: DurabilityEvidence | None = None
 
 
+class JobPollOptions(WireModel, frozen=True, extra="forbid"):
+    """
+    How a job's `pollUntilComplete` asks for the job's status: how long it waits between its asks, and how long it goes on asking. A member left out is client/timing.json's: `jobPollMs` and `jobPollTimeoutMs`.
+    """
+
+    every_ms: Annotated[
+        int | None, Field(alias="everyMs", description="How long it waits between one ask and the next, in milliseconds.")
+    ] = None
+    within_ms: Annotated[
+        int | None,
+        Field(
+            alias="withinMs", description="How long it goes on asking, from its first ask, before it fails as timed out, in milliseconds."
+        ),
+    ] = None
+
+
 class MarkJobQueuedEvent(WireModel, frozen=True):
     """
     A pending `mark` job, announced with its parameters as it was created.
@@ -4945,6 +5033,17 @@ class MatchSearchFailed(CommandError, frozen=True):
     reference_id: Annotated[AnnotationId, Field(alias="referenceId", description="The reference the search was asked for.")]
 
 
+class MatchSearchOptions(WireModel, frozen=True, extra="forbid"):
+    """
+    What a search for what a reference could refer to is told beside the reference and its context: MatchSearchRequest's other members. client/surface.json's `match.search` cases state what is sent for one left out.
+    """
+
+    limit: Annotated[int | None, Field(description="Maximum number of candidate results to return")] = None
+    use_semantic_scoring: Annotated[
+        bool | None, Field(alias="useSemanticScoring", description="Enable semantic similarity scoring in addition to keyword matching")
+    ] = None
+
+
 class MatchSearchRequest(WireModel, frozen=True):
     """
     Request payload sent on the match:search-request bus channel to find candidate matches.
@@ -5314,6 +5413,19 @@ class ResourceMovedPayload(WireModel, frozen=True):
 
     from_uri: Annotated[str, Field(alias="fromUri", description="Previous file:// URI")]
     to_uri: Annotated[str, Field(alias="toUri", description="New file:// URI")]
+
+
+class ResourceSearchFilters(WireModel, frozen=True, extra="forbid"):
+    """
+    What a text search for resources is told beside its text: MatchResourcesRequest's other members. client/surface.json's `match.resources` cases state what is sent for one left out.
+    """
+
+    archived: bool | None = None
+    entity_type: Annotated[str | None, Field(alias="entityType")] = None
+    offset: Annotated[
+        int | None, Field(description="How many of the resources the search finds are passed over before the page begins.")
+    ] = None
+    limit: Annotated[int | None, Field(description="The most resources a page has.")] = None
 
 
 class ResourceUnarchivedPayload(WireModel, frozen=True):

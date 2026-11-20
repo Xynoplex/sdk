@@ -73,6 +73,7 @@ import type {
   BusOperationKey,
   BusRequestErrorCode,
   BusPrimitive,
+  ClaimOptions,
   EventMap,
   JobFilter,
   JobId,
@@ -180,24 +181,6 @@ export function willRetryAfter(
     (failureClass === undefined || RETRIED[failureClass]) &&
     budget.retryCount < budget.maxRetries
   );
-}
-
-export interface ClaimOptions {
-  /**
-   * The jobs this worker takes: the claim's `accepts`, and what a
-   * `job:queued` is checked against. At least one.
-   */
-  accepts: JobFilter[];
-  /**
-   * `jobClaimTimeoutMs`, `heldJobStallMs`, `heldJobStallCheckMs` and
-   * `markCommitTimeoutMs` of protocol/specs/src/client/timing.json, for a caller that
-   * must not wait them out: a test, or the conformance driver. Absent, the
-   * table's values stand.
-   */
-  jobClaimTimeoutMs?: number;
-  heldJobStallMs?: number;
-  heldJobStallCheckMs?: number;
-  markCommitTimeoutMs?: number;
 }
 
 /**

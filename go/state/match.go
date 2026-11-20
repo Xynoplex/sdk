@@ -44,10 +44,7 @@ func (u *MatchStateUnit) heard(frame xynolog.Frame, refused error) {
 // search runs one search, and says what it came to under the asker's id. A
 // request that states no option of the search leaves it to the namespace.
 func (u *MatchStateUnit) search(request api.MatchSearchRequest, correlationID string) {
-	options := xynolog.MatchSearchOptions{UseSemanticScoring: request.UseSemanticScoring}
-	if request.Limit != nil {
-		options.Limit = *request.Limit
-	}
+	options := api.MatchSearchOptions{Limit: request.Limit, UseSemanticScoring: request.UseSemanticScoring}
 	found, err := u.client.Match.Search(request.ResourceId, request.ReferenceId, request.Context, options).Wait(u.alive)
 	u.mu.Lock()
 	defer u.mu.Unlock()
