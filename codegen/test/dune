@@ -205,3 +205,8 @@
  (name definitions)
  (modules definitions)
  (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))
+
+(test
+ (name surface)
+ (modules surface)
+ (libraries xynolog_codegen xynolog-protocol xynolog-protocol.schema yojson alcotest))

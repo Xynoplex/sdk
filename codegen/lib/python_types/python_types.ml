@@ -382,6 +382,20 @@ and inherited st name (n : D.node) parts ~doc =
       ~extra:(match extras with [] -> None | e :: _ -> Some e)
       ~doc body
 
+(* The type a value of [s] is held as where it is stated, [at] being the
+   schema and its member that state it: what types.py names it there, or, a
+   value stated alone, what it is. One stated alone that types.py would have
+   to declare is refused, since none does. *)
+let held ~(definitions : D.definitions) ?at (s : D.t) =
+  let st = { definitions; kinds = []; tagged = []; declared = [] } in
+  match at with
+  | Some (owner, member) -> placed st owner member s
+  | None ->
+      let t = placed st "" "" s in
+      if st.declared <> [] then
+        refuse "a value stated alone is a type types.py declares nowhere";
+      t
+
 (* Pydantic reads a model's annotations as Python runs its class, and a name
    not yet defined leaves the model unbuilt until it is first used; so each
    declaration follows every one it names, as far as a cycle allows. *)

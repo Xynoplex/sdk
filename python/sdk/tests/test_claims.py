@@ -53,6 +53,7 @@ from xynolog.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MARK_COMMIT_TIMEO
 from xynolog.transport import Frame, FrameRefusal, TraceContext
 from xynolog.types import (
     Annotation,
+    ClaimOptions,
     DurabilityEvidence,
     FailureClass,
     JobFilter,
@@ -294,7 +295,7 @@ async def having_committed(*observed: DurabilityEvidence) -> AsyncGenerator[tupl
     """A worker that holds `job-1` and has committed once for each of `observed`, in order. Leaving the block stops it."""
     w = World(channels=WORKER, wire=wire_for(*observed))
     w.offered.append(running("job-1"))
-    async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+    async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
         job = await held(claims)
         for at, how in enumerate(observed):
             failed = await commit_observing(w, job, how, f"ann-{at}")
@@ -358,7 +359,7 @@ def test_claims_nothing_until_read_then_claims_and_holds_the_job_as_the_record_s
                 params={"motivation": "highlighting", "density": 3},
             )
         )
-        async with w.client.job.claim(EVERYTHING[:1]) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING[:1])) as claims:
             await turns()
             assert w.sent("job:claim") == []
 
@@ -379,7 +380,7 @@ def test_claims_again_when_a_job_is_settled_and_an_announcement_while_one_is_hel
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.extend(running(job_id) for job_id in ("job-1", "job-2", "job-3"))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             first = await held(claims)
             w.relay("job:queued", queued("highlighting"))
             await turns()
@@ -401,7 +402,7 @@ def test_claims_again_when_a_job_is_settled_and_an_announcement_while_one_is_hel
 def test_a_matching_announcement_claims_and_one_that_matches_no_filter_does_not() -> None:
     async def scenario() -> None:
         w = World(channels=WORKER)
-        async with w.client.job.claim(TAGGING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=TAGGING)) as claims:
             reading = asyncio.ensure_future(held(claims))
             await turns()
             assert len(w.sent("job:claim")) == 1, "the first claim, answered with nothing pending"
@@ -424,7 +425,7 @@ def test_an_announcement_its_transport_refused_wakes_the_worker_as_a_matching_on
     async def scenario() -> None:
         # Each claim is answered a tenth of a second after it is sent, so that one is in flight when an announcement comes.
         w = World(channels=WORKER, wire=[Delay(100)])
-        async with w.client.job.claim(TAGGING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=TAGGING)) as claims:
             reading = asyncio.ensure_future(held(claims))
             await turns()
             assert len(w.sent("job:claim")) == 1, "the first claim, in flight"
@@ -458,7 +459,7 @@ def test_claims_when_the_stream_opens_and_when_it_opens_again() -> None:
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.transport.set_state("connecting")
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             reading = asyncio.ensure_future(anext(claims))
             await turns()
             assert w.sent("job:claim") == [], "a claim on a closed stream would only be refused here"
@@ -482,7 +483,7 @@ def test_a_refusal_is_handed_out_with_its_code_and_a_reply_that_names_no_job_is_
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.refusals.append({"message": "the caller is not a worker for this knowledge base", "code": "unauthorized"})
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             assert await soon(anext(claims)) == ClaimRefusal("bus.unauthorized", "the caller is not a worker for this knowledge base")
             assert len(w.sent("job:claim")) == 1, "it does not ask again by itself"
 
@@ -508,7 +509,7 @@ def test_of_the_refusals_nobody_has_read_the_latest_are_kept_in_order_and_the_jo
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.refusals.extend({"message": f"refusal {serial}", "code": "peer-unavailable"} for serial in range(refused + 1))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             # The first read begins claiming, and is handed the first refusal.
             assert await soon(anext(claims)) == ClaimRefusal("bus.peer-unavailable", "refusal 0")
             # Then nobody reads while each wake-up is refused.
@@ -536,7 +537,7 @@ def test_a_stream_that_does_not_name_what_claiming_reads_cannot_carry_a_workers_
     async def scenario() -> None:
         # A worker on such a stream would claim once and never be woken, with nothing to show for it.
         w = World(channels=("job:claimed", "job:claim-failed"))
-        claims = w.client.job.claim(EVERYTHING)
+        claims = w.client.job.claim(ClaimOptions(accepts=EVERYTHING))
         with pytest.raises(BusRequestError) as refused:
             await anext(claims)
         assert refused.value.code == "bus.unsubscribed"
@@ -556,7 +557,7 @@ def test_a_held_job_says_its_whole_lifecycle_itself() -> None:
         w = World(channels=WORKER)
         w.offered.append(running("job-1", metadata={"retryCount": 1}))
         cursor: JsonObject = {"next": 1200, "size": 800, "found": 4, "emitted": 3, "errors": 0}
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             assert isinstance(job, HeldMarkJob)
             await job.start()
@@ -606,7 +607,7 @@ def test_a_yield_job_focused_on_an_annotation_is_anchored_to_it_and_says_so() ->
                 },
             )
         )
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             assert isinstance(job, HeldYieldJob)
             assert job.annotation_id == "ann-7"
@@ -637,7 +638,7 @@ def test_a_failure_says_whether_it_will_be_retried_and_a_cancel_says_only_what_i
                 running("job-3"),
             ]
         )
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             await (await held(claims)).fail("the model timed out", completed_units=["Person"])
             await (await held(claims)).fail("the model timed out")
             await (await held(claims)).cancel(["Person"])
@@ -673,7 +674,7 @@ def test_a_cancellation_that_names_the_held_job_is_signalled_and_any_other_is_no
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             w.relay("job:cancel-requested", {"jobId": "job-7"})
             await turns()
@@ -693,7 +694,7 @@ def test_a_worker_that_stops_fails_the_job_it_holds_and_a_job_left_unsettled_is_
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.extend([running("job-1"), running("job-2")])
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             async with await held(claims):
                 pass  # Held, and left without being settled.
             assert [said["error"] for said in w.sent("job:fail")] == ["The worker let go of the job without settling it"]
@@ -727,7 +728,7 @@ def test_a_stream_that_does_not_name_what_a_commit_awaits_carries_a_workers_clai
         # A worker that never commits names nothing more, and claims as any other.
         w = World(channels=JOB_CLAIM_CHANNELS)
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             with pytest.raises(BusRequestError) as refused:
                 await job.commit(RESOURCE, [made("ann-1")])
@@ -745,7 +746,7 @@ def test_a_commit_cites_the_job_and_is_established_when_the_record_acknowledges_
         # The acknowledgement takes half a minute to arrive: inside the commit's wait, which is the table's.
         w = World(channels=WORKER, wire=[Deliver(), Delay(30_000), Deliver()])
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             before = claims.vitals()
             # A job commits on more than one resource: here, on one that is not its own.
@@ -786,7 +787,7 @@ def test_a_batch_of_no_annotations_is_no_commit_and_a_job_that_committed_nothing
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.extend([running("job-1"), running("job-2")])
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             await job.commit(RESOURCE, [])
             assert w.requested("mark:commit") == []
@@ -806,7 +807,7 @@ def test_a_commit_the_record_refuses_raises_the_records_reason_and_nothing_is_as
         w = World(channels=WORKER)
         w.offered.append(running("job-1"))
         w.refusing_commits = True
-        async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
             job = await held(claims)
             with pytest.raises(BusRequestError) as refused:
                 await soon(job.commit(RESOURCE, [made("ann-1")]))
@@ -834,7 +835,7 @@ def test_a_commit_nobody_acknowledges_asks_whether_the_batchs_last_annotation_is
     async def scenario() -> None:
         w = World(channels=WORKER, wire=wire_for("probe-confirmed"))
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
             job = await held(claims)
             await hurried(job.commit(ResourceId("res-new"), [made("ann-1"), made("ann-2")]))
 
@@ -855,7 +856,7 @@ def test_answered_that_it_is_not_there_the_commit_raises_what_its_unanswered_req
     async def scenario() -> None:
         w = World(channels=WORKER, wire=wire_for("probe-refused"))
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
             job = await held(claims)
             failed = await commit_observing(w, job, "probe-refused")
 
@@ -889,7 +890,7 @@ def test_not_answered_the_commit_waits_as_long_again_raises_the_same_and_the_fai
         w.offered.append(running("job-1"))
         # Each wait is the table's: for the acknowledgement, and then for the answer.
         wait = MARK_COMMIT_TIMEOUT_MS / 1000
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             committing = asyncio.ensure_future(job.commit(RESOURCE, [made("ann-1")]))
             await pass_time(wait - 1)
@@ -921,7 +922,7 @@ def test_an_acknowledgement_this_sdk_cannot_type_establishes_the_commit_all_the_
         w = World(channels=WORKER)
         w.offered.append(running("job-1"))
         w.transport.queue_reply("mark:commit", [{"stored": "every one of them"}])
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             await soon(job.commit(RESOURCE, [made("ann-1")]))
             assert w.requested("browse:annotation-requested") == [], "the record has answered"
@@ -938,7 +939,7 @@ def test_an_answer_this_sdk_cannot_type_establishes_the_commit_all_the_same() ->
         w = World(channels=WORKER, wire=wire_for("probe-confirmed"))
         w.offered.append(running("job-1"))
         w.transport.queue_reply("browse:annotation-requested", [{"held": True}])
-        async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
             job = await held(claims)
             await hurried(job.commit(RESOURCE, [made("ann-1")]))
             assert len(w.requested("browse:annotation-requested")) == 1
@@ -955,7 +956,7 @@ def test_an_answer_this_sdk_cannot_type_establishes_the_commit_all_the_same() ->
 def test_a_question_that_fails_under_any_code_but_the_records_refusal_is_one_nobody_answered() -> None:
     async def observed(w: World) -> JsonValue:
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
             job = await held(claims)
             with pytest.raises(BusRequestError) as failed:
                 await hurried(job.commit(RESOURCE, [made("ann-1")]))
@@ -985,7 +986,7 @@ def test_any_other_failure_of_the_commits_request_is_raised_as_it_is_and_nothing
     async def scenario() -> None:
         w = World(channels=WORKER, wire=[Deliver(), RejectEmit(), Deliver()])
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
             job = await held(claims)
             with pytest.raises(TransportError, match="emit rejected by schedule on mark:commit"):
                 await soon(job.commit(RESOURCE, [made("ann-1")]))
@@ -1003,7 +1004,7 @@ def test_a_settled_job_commits_nothing() -> None:
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             await finish(job)
             with pytest.raises(RuntimeError, match="already settled"):
@@ -1087,7 +1088,7 @@ def test_a_yield_job_commits_and_says_how_its_commits_were_established_as_a_mark
     async def scenario() -> None:
         w = World(channels=WORKER, wire=wire_for("probe-confirmed"))
         w.offered.append(running("job-1", "yield"))
-        async with w.client.job.claim(EVERYTHING, mark_commit_timeout_ms=QUICK) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, mark_commit_timeout_ms=QUICK)) as claims:
             job = await held(claims)
             assert isinstance(job, HeldYieldJob)
             assert await commit_observing(w, job, "probe-confirmed") is None
@@ -1104,7 +1105,7 @@ def test_vitals_say_what_the_worker_holds_and_has_done_and_a_silent_held_job_is_
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING, held_job_stall_ms=400, held_job_stall_check_ms=100) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, held_job_stall_ms=400, held_job_stall_check_ms=100)) as claims:
             empty = claims.vitals()
             assert (empty.last_claim_at, empty.active_job, empty.jobs_completed) == (None, None, 0)
             stalls = Heard(claims.stalled())
@@ -1153,7 +1154,7 @@ def test_the_first_reader_of_stalls_is_given_the_latest_found_before_it_came_in_
             await pass_time(0.6, step=0.1)
             await finish(job)
 
-        async with w.client.job.claim(EVERYTHING, held_job_stall_ms=400, held_job_stall_check_ms=100) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, held_job_stall_ms=400, held_job_stall_check_ms=100)) as claims:
             for _ in range(found):
                 await stalled_and_finished(claims)
             first = Heard(claims.stalled())
@@ -1174,7 +1175,7 @@ def test_stalls_nobody_read_are_dropped_as_the_claims_close_so_a_reader_who_come
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING, held_job_stall_ms=400, held_job_stall_check_ms=100) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING, held_job_stall_ms=400, held_job_stall_check_ms=100)) as claims:
             job = await held(claims)
             await pass_time(0.6, step=0.1)
             await finish(job)
@@ -1188,7 +1189,7 @@ def test_vitals_stamp_an_announcement_its_transport_refused_which_was_received_a
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.append(running("job-1"))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             job = await held(claims)
             assert claims.vitals().last_queued_event_at is None
             w.relay_refused("job:queued")
@@ -1207,7 +1208,7 @@ def test_a_claim_is_made_in_no_trace_whatever_span_the_job_before_it_was_settled
     async def scenario() -> None:
         w = World(channels=WORKER)
         w.offered.extend(running(job_id) for job_id in ("job-1", "job-2", "job-3"))
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             first = await held(claims)
             # A worker's code settles each job inside the span it opened for it.
             with in_span(7):
@@ -1228,7 +1229,7 @@ def test_a_claim_is_made_in_no_trace_whatever_span_the_job_before_it_was_settled
 def test_the_first_claim_and_one_an_announcement_wakes_are_made_in_no_trace_whatever_span_the_claims_are_first_read_in() -> None:
     async def scenario() -> None:
         w = World(channels=WORKER)
-        async with w.client.job.claim(TAGGING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=TAGGING)) as claims:
             with in_span(9):
                 reading = asyncio.ensure_future(held(claims))
                 await turns()
@@ -1249,7 +1250,7 @@ def test_a_held_job_states_the_trace_its_reply_arrived_in_and_none_when_it_arriv
         # The first claim's own answer is lost on the wire, and the test answers it by hand.
         w = World(channels=WORKER, wire=[DropReply(), Deliver(), Deliver()])
         arrived_in = TraceContext(traceparent="00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01", tracestate="vendor=value")
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             reading = asyncio.ensure_future(held(claims))
             await turns()
             (claim,) = w.requested("job:claim")
@@ -1283,7 +1284,7 @@ def test_a_job_held_with_async_with_runs_its_block_in_the_trace_its_reply_arrive
         # The first claim's own answer is lost on the wire, and the test answers it by hand.
         w = World(channels=WORKER, wire=[DropReply(), Deliver(), Deliver()])
         arrived_in = TraceContext(traceparent="00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01")
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             reading = asyncio.ensure_future(held(claims))
             await turns()
             (claim,) = w.requested("job:claim")
@@ -1321,7 +1322,7 @@ def test_a_held_jobs_trace_is_a_value_that_work_done_outside_its_block_continues
     async def scenario() -> None:
         w = World(channels=WORKER, wire=[DropReply(), Deliver()])
         arrived_in = TraceContext(traceparent="00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01")
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             reading = asyncio.ensure_future(held(claims))
             await turns()
             (claim,) = w.requested("job:claim")
@@ -1347,7 +1348,7 @@ def test_a_block_left_with_its_job_unsettled_fails_the_job_and_leaves_the_jobs_t
     async def scenario() -> None:
         w = World(channels=WORKER, wire=[DropReply(), Deliver()])
         arrived_in = TraceContext(traceparent="00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01")
-        async with w.client.job.claim(EVERYTHING) as claims:
+        async with w.client.job.claim(ClaimOptions(accepts=EVERYTHING)) as claims:
             reading = asyncio.ensure_future(held(claims))
             await turns()
             (claim,) = w.requested("job:claim")

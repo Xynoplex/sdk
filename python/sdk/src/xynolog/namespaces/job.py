@@ -4,7 +4,7 @@ Creating a job is `mark.delegate` and `yield_.delegate`.
 """
 
 import asyncio
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from typing import Final, final
 
 from xynolog.bus import Typed
@@ -23,10 +23,10 @@ from xynolog.timing import (
     MARK_COMMIT_TIMEOUT_MS,
 )
 from xynolog.types import (
+    ClaimOptions,
     JobCancelRequest,
     JobCompleteCommand,
     JobFailCommand,
-    JobFilter,
     JobQueuedEvent,
     JobReportProgressCommand,
     JobStatusRequest,
@@ -67,8 +67,8 @@ class JobNamespace:
         self,
         job_id: JobId,
         *,
-        every_ms: int = JOB_POLL_MS,
-        within_ms: int = JOB_POLL_TIMEOUT_MS,
+        every_ms: int | None = None,
+        within_ms: int | None = None,
         on_status: Callable[[JobStatusResponse], None] | None = None,
     ) -> JobStatusResponse:
         """Ask for a job's status every `every_ms` until it has ended, giving each answer to `on_status`.
@@ -79,6 +79,8 @@ class JobNamespace:
         follows. The two are the values of protocol/specs/src/client/timing.json
         unless a caller states others.
         """
+        every_ms = JOB_POLL_MS if every_ms is None else every_ms
+        within_ms = JOB_POLL_TIMEOUT_MS if within_ms is None else within_ms
         due = asyncio.timeout_at(asyncio.get_running_loop().time() + within_ms / 1000)
         try:
             async with due:
@@ -104,16 +106,8 @@ class JobNamespace:
         """
         return (await self._links.request(JOB_CANCEL_REQUESTED, JobCancelRequest(job_id=job_id))).response.cancelled
 
-    def claim(
-        self,
-        accepts: Sequence[JobFilter],
-        *,
-        job_claim_timeout_ms: int = JOB_CLAIM_TIMEOUT_MS,
-        held_job_stall_ms: int = HELD_JOB_STALL_MS,
-        held_job_stall_check_ms: int = HELD_JOB_STALL_CHECK_MS,
-        mark_commit_timeout_ms: int = MARK_COMMIT_TIMEOUT_MS,
-    ) -> Claims:
-        """A worker's side: claim the jobs `accepts` describes, and hold one at a time.
+    def claim(self, options: ClaimOptions) -> Claims:
+        """A worker's side: claim the jobs `options.accepts` describes, and hold one at a time.
 
         Claiming begins when the claims are first read, and each job they
         hand out says its own lifecycle, commits its own annotations and
@@ -123,12 +117,16 @@ class JobNamespace:
         four waits are the values of protocol/specs/src/client/timing.json unless a
         caller that must not wait them out states others.
         """
+
+        def wait(stated: int | None, table: int) -> int:
+            return table if stated is None else stated
+
         return Claims(
             self._links.transport,
             self._links.run,
-            accepts,
-            job_claim_timeout_ms=job_claim_timeout_ms,
-            held_job_stall_ms=held_job_stall_ms,
-            held_job_stall_check_ms=held_job_stall_check_ms,
-            mark_commit_timeout_ms=mark_commit_timeout_ms,
+            options.accepts,
+            job_claim_timeout_ms=wait(options.job_claim_timeout_ms, JOB_CLAIM_TIMEOUT_MS),
+            held_job_stall_ms=wait(options.held_job_stall_ms, HELD_JOB_STALL_MS),
+            held_job_stall_check_ms=wait(options.held_job_stall_check_ms, HELD_JOB_STALL_CHECK_MS),
+            mark_commit_timeout_ms=wait(options.mark_commit_timeout_ms, MARK_COMMIT_TIMEOUT_MS),
         )

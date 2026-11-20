@@ -43,7 +43,7 @@ from xynolog.operations import BROWSE_EVENTS_REQUESTED
 from xynolog.session import HeldSignIn, MemorySignIn, XynologSession
 from xynolog.testing import FaultyTransport, InMemoryContent, StubGateway, create_test_client, refuse_unscripted_operation
 from xynolog.transport import Frame
-from xynolog.types import DiscoveredKB, HighlightingJobParams, HttpEndpoint, JobFilter, JobProgress, KbTarget, UserResponse
+from xynolog.types import ClaimOptions, DiscoveredKB, HighlightingJobParams, HttpEndpoint, JobFilter, JobProgress, KbTarget, UserResponse
 from xynolog.watched import Variable
 
 TABLE: Final = read(SPEC / "client/clock-cases.json")
@@ -530,7 +530,7 @@ async def held_job_stall(given: JsonObject, held: AsyncExitStack) -> Subject:
     held.push_async_callback(transport.close)
     client = XynologClient(transport, InMemoryContent(), StubGateway())
     held.push_async_callback(client.close)
-    claims = await held.enter_async_context(client.job.claim(MARK_JOBS))
+    claims = await held.enter_async_context(client.job.claim(ClaimOptions(accepts=MARK_JOBS)))
     job = await anext(claims)
     assert not isinstance(job, ClaimRefusal), job
 

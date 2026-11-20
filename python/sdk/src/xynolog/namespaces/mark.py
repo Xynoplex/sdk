@@ -42,9 +42,9 @@ class MarkNamespace:
     def __init__(self, links: Links) -> None:
         self._links: Final = links
 
-    async def annotation(self, request: CreateAnnotationRequest) -> MarkCreateOkResponse:
+    async def annotation(self, input: CreateAnnotationRequest) -> MarkCreateOkResponse:
         """Create an annotation on the resource its target names."""
-        created = await self._links.request(MARK_CREATE_REQUEST, MarkCreateRequest(resource_id=request.target.source, request=request))
+        created = await self._links.request(MARK_CREATE_REQUEST, MarkCreateRequest(resource_id=input.target.source, request=input))
         return created.response
 
     async def delete(self, resource_id: ResourceId, annotation_id: AnnotationId) -> None:
@@ -80,10 +80,10 @@ class MarkNamespace:
         """Signal: a new annotation is wanted on `source`."""
         self._links.signal(MARK_REQUESTED, MarkRequestedEvent(source=source, selector=selector, motivation=motivation))
 
-    def submit(self, event: MarkSubmitEvent) -> None:
+    def submit(self, input: MarkSubmitEvent) -> None:
         """Signal: submit the annotation that is pending."""
-        self._links.signal(MARK_SUBMIT, event)
+        self._links.signal(MARK_SUBMIT, input)
 
-    def report_delete_error(self, event: ResourceErrorEvent) -> None:
+    def report_delete_error(self, input: ResourceErrorEvent) -> None:
         """Signal: a delete failed where nothing could show it. Said by whoever awaited `delete`, which knows the resource."""
-        self._links.signal(MARK_DELETE_ERROR, event)
+        self._links.signal(MARK_DELETE_ERROR, input)

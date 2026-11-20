@@ -32,27 +32,31 @@ class MatchNamespace:
         reference_id: AnnotationId,
         context: GatheredContext,
         *,
-        limit: int = _CANDIDATES,
-        use_semantic_scoring: bool = True,
+        limit: int | None = None,
+        use_semantic_scoring: bool | None = None,
     ) -> Running[MatchSearchResult]:
         """Candidates for a reference, given its gathered context: ten, scored semantically, when nothing else is stated."""
         request = MatchSearchRequest(
-            resource_id=resource_id, reference_id=reference_id, context=context, limit=limit, use_semantic_scoring=use_semantic_scoring
+            resource_id=resource_id,
+            reference_id=reference_id,
+            context=context,
+            limit=_CANDIDATES if limit is None else limit,
+            use_semantic_scoring=True if use_semantic_scoring is None else use_semantic_scoring,
         )
         return Running(lambda _: self._links.run(self._links.request(MATCH_SEARCH_REQUESTED, request)))
 
-    def request_search(self, request: MatchSearchRequest, correlation_id: str) -> None:
+    def request_search(self, input: MatchSearchRequest, correlation_id: str) -> None:
         """Signal: a search is wanted. The client's own state runs it, and answers under `correlation_id`."""
-        self._links.signal(MATCH_SEARCH_REQUESTED.request, request, correlation_id=correlation_id)
+        self._links.signal(MATCH_SEARCH_REQUESTED.request, input, correlation_id=correlation_id)
 
     def resources(
         self,
         search: str,
         *,
-        limit: int = _LIST_LIMIT,
-        offset: int = 0,
         archived: bool | None = None,
         entity_type: str | None = None,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> Cached[MatchResourcesResponse]:
         """A page of the resources a search for `search` finds, among those the filters admit: the first hundred when nothing is stated.
 
@@ -62,5 +66,9 @@ class MatchNamespace:
         the answer's `match_kind` says which it is.
         """
         return self._live.query(
-            Keyed(self._live.searches, ResourceSearch(search, ResourceFilters(limit, offset, archived, entity_type)), itself)
+            Keyed(
+                self._live.searches,
+                ResourceSearch(search, ResourceFilters(_LIST_LIMIT if limit is None else limit, offset or 0, archived, entity_type)),
+                itself,
+            )
         )
