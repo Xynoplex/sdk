@@ -1,0 +1,202 @@
+name: Publish the SDK to a registry
+
+# Library publishing (versioning R17, R18, R20): a person dispatches this at a
+# released tag, one registry at a time, and approves it in the `release`
+# environment:
+#
+#   gh workflow run publish.yml --ref v0.8.0 -f registry=pypi
+#
+# It publishes the bundle that tag's release workflow released, downloaded and
+# checked against the release's digest, never a rebuild. Each registry trusts
+# only this workflow in that environment (trusted publishing), so nothing here
+# holds a registry credential. A registry that failed spends only its own
+# version.
+#
+#   go      Go's release is the person's signed go/vX.Y.Z (scripts/tag-release.sh
+#           go). This checks that tag, and that the module the Go proxy serves
+#           is the one the bundle released.
+#   pypi    the wheel and the source distribution
+#   npm     the five TypeScript packages, in version.json's order
+on:
+  workflow_dispatch:
+    inputs:
+      registry:
+        description: The registry to publish to
+        type: choice
+        required: true
+        options: [go, pypi, npm]
+
+permissions: {}
+
+jobs:
+  version:
+    name: The release this commit names
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.tags.outputs.tag }}
+      go: ${{ steps.tags.outputs.go }}
+      release: ${{ steps.tags.outputs.release }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - id: tags
+        run: |
+          read -r -a tags <<< "$(python3 scripts/sdk_version.py tags)"
+          {
+            echo "tag=${tags[0]}"
+            echo "go=${tags[1]}"
+            echo "release=$(python3 scripts/sdk_version.py release)"
+          } >> "$GITHUB_OUTPUT"
+
+  tag:
+    needs: version
+    permissions:
+      contents: read
+    uses: xynolog/.github/.github/workflows/release-tag.yml@a70ee7f6c3e7321ef54a071c78504c20e2669110
+    with:
+      tags: ${{ inputs.registry == 'go' && format('{0} {1}', needs.version.outputs.tag, needs.version.outputs.go) || needs.version.outputs.tag }}
+
+  bundle:
+    name: The bundle this tag released
+    needs: [version, tag]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: The release's digest, its languages and Protocol commit
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          gh release download "$TAG" --pattern "xynolog-sdk-artifacts-$TAG.tar.gz.sha256" --output - > "$RUNNER_TEMP/bundle.sha256"
+          {
+            echo "sha256=$(awk '{print $1}' "$RUNNER_TEMP/bundle.sha256")"
+            echo "languages=$(sed -n 's/^LANGUAGES := //p' Makefile | tr -s ' ' ',')"
+            echo "protocol=$(git ls-tree HEAD protocol | awk '{print $3}')"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download the released bundle by its digest
+        id: download
+        uses: ./.github/actions/download-bundle
+        with:
+          tag: ${{ needs.version.outputs.tag }}
+          commit: ${{ github.sha }}
+          protocol-commit: ${{ steps.release.outputs.protocol }}
+          sha256: ${{ steps.release.outputs.sha256 }}
+          languages: ${{ steps.release.outputs.languages }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sdk-artifacts
+          path: ${{ steps.download.outputs.path }}
+          if-no-files-found: error
+          include-hidden-files: true
+
+  go:
+    name: The Go proxy serves the released module
+    if: inputs.registry == 'go'
+    needs: [version, bundle]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-go@v7.0.0
+        with:
+          go-version-file: go/go.mod
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdk-artifacts
+          path: ${{ runner.temp }}/sdk-artifacts
+      # Go hashes a module's files, not its zip's bytes, so the two sums agree
+      # exactly when the proxy serves what the bundle released.
+      - name: The proxy's module is the bundle's
+        env:
+          BUNDLE: ${{ runner.temp }}/sdk-artifacts
+          RELEASE: ${{ needs.version.outputs.release }}
+        run: |
+          module="github.com/xynolog/sdk/go@v$RELEASE"
+          cd "$RUNNER_TEMP"
+          released="$(GOPROXY="file://$BUNDLE/go/go-proxy" GONOSUMDB=github.com/xynolog/sdk/go GOFLAGS=-modcacherw GOMODCACHE="$RUNNER_TEMP/bundle-cache" go mod download -json "$module" | jq -r .Sum)"
+          served="$(GOPROXY=https://proxy.golang.org GOFLAGS=-modcacherw GOMODCACHE="$RUNNER_TEMP/proxy-cache" go mod download -json "$module" | jq -r .Sum)"
+          echo "bundle: $released"
+          echo "proxy:  $served"
+          test "$released" = "$served" || { echo "::error::the Go proxy serves $module with $served, not the released $released" >&2; exit 1; }
+
+  pypi:
+    name: PyPI
+    if: inputs.registry == 'pypi'
+    needs: bundle
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdk-artifacts
+          path: ${{ runner.temp }}/sdk-artifacts
+      - name: The bundle's Python distributions
+        env:
+          BUNDLE: ${{ runner.temp }}/sdk-artifacts
+        shell: python3 {0}
+        run: |
+          import json, os, shutil
+          bundle = os.environ["BUNDLE"]
+          dist = os.path.join(os.environ["RUNNER_TEMP"], "dist")
+          os.makedirs(dist)
+          manifest = json.load(open(os.path.join(bundle, "artifacts.json")))
+          for artifact in manifest["artifacts"]:
+              if artifact["ecosystem"] == "python":
+                  shutil.copy(os.path.join(bundle, artifact["path"]), dist)
+                  print(artifact["path"])
+      - uses: pypa/gh-action-pypi-publish@v1.14.3
+        with:
+          packages-dir: ${{ runner.temp }}/dist
+
+  npm:
+    name: npm
+    if: inputs.registry == 'npm'
+    needs: bundle
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install --global npm@12.2.2
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdk-artifacts
+          path: ${{ runner.temp }}/sdk-artifacts
+      - name: Publish each package, in version.json's order
+        env:
+          BUNDLE: ${{ runner.temp }}/sdk-artifacts
+        run: |
+          node -e '
+            const { readFileSync } = require("node:fs");
+            const { join } = require("node:path");
+            const bundle = process.env.BUNDLE;
+            const order = Object.entries(JSON.parse(readFileSync("version.json", "utf8")).packages)
+              .filter(([, p]) => p.publish).map(([name]) => name);
+            const artifacts = JSON.parse(readFileSync(join(bundle, "artifacts.json"), "utf8")).artifacts
+              .filter((a) => a.ecosystem === "npm");
+            for (const name of order) {
+              const found = artifacts.filter((a) => a.package === name);
+              if (found.length !== 1) { console.error(`the bundle holds ${found.length} packages named ${name}`); process.exit(1); }
+              console.log(join(bundle, found[0].path));
+            }
+          ' > "$RUNNER_TEMP/npm-packages"
+          while IFS= read -r package; do
+            npm publish "$package" --access public
+          done < "$RUNNER_TEMP/npm-packages"

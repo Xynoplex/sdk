@@ -1,7 +1,9 @@
 name: Publish SDK artifact bundle
 
-# A person releases the SDK by pushing its two signed tags
-# (scripts/tag-release.sh); `v*` matches the SDK's, not Go's `go/v…`.
+# Library tagging (versioning R17): a person pushes the signed vX.Y.Z
+# (scripts/tag-release.sh), and this builds, verifies and releases the
+# nine-language bundle at it. `v*` matches the SDK's tag, not Go's `go/v…`,
+# which the person pushes only once this has released the bundle (R16).
 on:
   push:
     tags: ["v*"]
@@ -9,8 +11,31 @@ on:
 permissions: {}
 
 jobs:
+  version:
+    name: The release this commit names
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - id: tag
+        run: |
+          read -r -a tags <<< "$(python3 scripts/sdk_version.py tags)"
+          echo "tag=${tags[0]}" >> "$GITHUB_OUTPUT"
+
+  tag:
+    needs: version
+    permissions:
+      contents: read
+    uses: xynolog/.github/.github/workflows/release-tag.yml@a70ee7f6c3e7321ef54a071c78504c20e2669110
+    with:
+      tags: ${{ needs.version.outputs.tag }}
+
   bundle:
     name: Build and release immutable SDK artifacts
+    needs: tag
     runs-on: ubuntu-latest
     # It creates the release and uploads its assets.
     permissions:
@@ -27,32 +52,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.4.1
 
-      # The tags are the release: both name version.json's coming release, sit
-      # on this commit, and are annotated tags the release signer signed. The
-      # pushed tag is fetched again as itself, an annotated tag object, rather
-      # than trusted as the checkout left it. A tag object names itself, and
-      # that name must be the ref's, so a signed tag cannot stand in for
-      # another. The release checks then hold main to holding this commit, so
-      # what is released came through a pull request.
-      - name: The release tags are signed by the release signer, on a commit main holds
-        shell: bash
-        env:
-          # The one key a release tag may be signed with. A pull request that
-          # changes it changes who can release the SDK.
-          RELEASE_SIGNER: 'release namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJJ31NyQTK0Ei9DAoAw6TdxWueTtsRtLv0hPp368eynn'
-        run: |
-          fail() { echo "::error::$1" >&2; exit 1; }
-          read -r -a tags <<< "$(python3 scripts/sdk_version.py tags)"
-          test "$GITHUB_REF_NAME" = "${tags[0]}" || fail "$GITHUB_REF_NAME is not the coming release's tag, ${tags[0]}"
-          printf '%s\n' "$RELEASE_SIGNER" > "$RUNNER_TEMP/release-signers"
-          for tag in "${tags[@]}"; do
-            git fetch --quiet --force --no-tags origin "+refs/tags/$tag:refs/tags/$tag" || fail "$tag was not pushed"
-            test "$(git cat-file -t "refs/tags/$tag")" = tag || fail "$tag is not an annotated tag"
-            test "$(git for-each-ref --format='%(tag)' "refs/tags/$tag")" = "$tag" || fail "the tag object pushed as $tag names itself otherwise"
-            test "$(git rev-parse "refs/tags/$tag^{commit}")" = "$(git rev-parse HEAD)" || fail "$tag is not on this commit"
-            git -c gpg.format=ssh -c gpg.ssh.allowedSignersFile="$RUNNER_TEMP/release-signers" verify-tag "$tag" || fail "the release signer did not sign $tag"
-          done
-          bash scripts/release-ready.sh
+      - name: The commit is ready to release
+        run: bash scripts/release-ready.sh
 
       - name: Build native packages and bundle
         shell: bash
@@ -80,7 +81,10 @@ jobs:
             echo "Immutable SDK artifact release already exists: $GITHUB_REF_NAME" >&2
             exit 1
           fi
+          # The Protocol commit it speaks, read from the submodule: Protocol
+          # has no version, and the commit is the whole pin.
           gh release create "$GITHUB_REF_NAME" "$asset" "$checksum" \
             --target "$GITHUB_SHA" \
             --title "Xynolog SDK artifacts ${GITHUB_REF_NAME}" \
+            --notes "Built from Protocol $(git rev-parse HEAD:protocol)." \
             --generate-notes
