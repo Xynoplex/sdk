@@ -104,9 +104,9 @@ class GatherStateUnit(StateUnit):
         self,
         annotation_id: AnnotationId,
         *,
-        context_window: int = 2000,
         include_source_context: bool | None = None,
         include_target_context: bool | None = None,
+        context_window: int | None = None,
     ) -> None:
         """Gather the context around an annotation of this unit's resource, with what `client.gather.annotation` takes."""
         if self._disposed:
@@ -128,11 +128,11 @@ class GatherStateUnit(StateUnit):
         self,
         resource_id: ResourceId,
         *,
-        depth: int = 2,
-        max_resources: int = 10,
-        include_content: bool = True,
-        include_summary: bool = False,
-        exclude_entity_types: Sequence[str] = (),
+        depth: int | None = None,
+        max_resources: int | None = None,
+        include_content: bool | None = None,
+        include_summary: bool | None = None,
+        exclude_entity_types: Sequence[str] | None = None,
     ) -> None:
         """Gather the context around a whole resource, with what `client.gather.resource` takes."""
         if self._disposed:
@@ -155,9 +155,9 @@ class GatherStateUnit(StateUnit):
         self,
         annotation_id: AnnotationId,
         *,
-        context_window: int,
         include_source_context: bool | None,
         include_target_context: bool | None,
+        context_window: int | None,
     ) -> GatheredContext:
         complete = await self._client.gather.annotation(
             self._resource_id,
