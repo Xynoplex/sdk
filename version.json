@@ -1,16 +1,5 @@
 {
-  "release": "26.11.0",
-  "compatibility": {
-    "csharp": 1,
-    "go": 1,
-    "haskell": 1,
-    "kotlin": 1,
-    "ocaml": 1,
-    "python": 1,
-    "rust": 1,
-    "swift": 1,
-    "typescript": 1
-  },
+  "release": "0.8.0",
   "packages": {
     "@xynolog/core": {
       "dir": "typescript/core",

@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
 """The SDK's version in each language, derived from version.json.
 
-version.json names two things: the coming release, `YY.M.N`, and each
-language's compatibility number `C`. A language publishes the release as
-`C.YYMM.N`, the month as two digits.
-Every package version and file name is derived here, and nothing else reads
-version.json's `release` or `compatibility`.
+version.json names the coming release, a semantic version `X.Y.Z`, and every
+one of the nine languages publishes it as it is. Below 1.0 the minor number is
+the break. Every package version and file name is derived here, and nothing
+else reads version.json's `release`.
 
-A commit that the release tag `vYY.M.N` points at builds the release. Every
+A commit that the release tag `vX.Y.Z` points at builds the release. Every
 other commit builds a development version: a pre-release of the coming
 release, labelled by the commit's UTC time and hash, which a shallow checkout
 has (Hackage's by the time alone). A development version is never pushed to a
 registry.
 
-A release is tagged twice, `vYY.M.N` and Go's `go/vC.YYMM.N`. Once it is, the
+A release is tagged twice, `vX.Y.Z` and Go's `go/vX.Y.Z`. Once it is, the
 coming release must move on, or every later commit's development version
 would sort before the release it follows.
 
-    sdk_version.py release          the coming release, YY.M.N
+    sdk_version.py release          the coming release, X.Y.Z
     sdk_version.py tags             its release tags, the SDK's first
     sdk_version.py <language>       that language's version for this commit
     sdk_version.py check            the committed manifests hold the release's versions
     sdk_version.py write            write them there
     sdk_version.py unreleased       the coming release is not yet tagged, but on this commit
-    sdk_version.py move YY.M.N      make YY.M.N, a later release, the coming one
+    sdk_version.py move X.Y.Z       make X.Y.Z, a later release, the coming one
 """
 
 import json
@@ -35,7 +34,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RELEASE = re.compile(r"([0-9]{2})\.([1-9]|1[0-2])\.(0|[1-9][0-9]*)")
+RELEASE = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
 GO_MODULE = "github.com/xynolog/sdk/go"
 
 
@@ -51,21 +50,17 @@ LANGUAGES = makefile_languages()
 
 def config() -> dict:
     data = json.loads((ROOT / "version.json").read_text())
+    if sorted(data) != ["packages", "release"]:
+        raise SystemExit(f"version.json: names {sorted(data)}, not the release and the packages")
     if not RELEASE.fullmatch(data["release"]):
-        raise SystemExit(f"version.json: release {data['release']!r} is not YY.M.N")
-    if sorted(data["compatibility"]) != sorted(LANGUAGES):
-        raise SystemExit(f"version.json: compatibility names {sorted(data['compatibility'])}, not {sorted(LANGUAGES)}")
-    for language, number in data["compatibility"].items():
-        if type(number) is not int or number < 1:
-            raise SystemExit(f"version.json: {language}'s compatibility number {number!r} is not a whole number from 1")
+        raise SystemExit(f"version.json: release {data['release']!r} is not X.Y.Z")
     return data
 
 
 def released(data: dict, language: str) -> str:
     if language not in LANGUAGES:
         raise SystemExit(f"sdk_version.py: unknown SDK language {language!r}")
-    year, month, count = RELEASE.fullmatch(data["release"]).groups()
-    return f"{data['compatibility'][language]}.{year}{int(month):02d}.{count}"
+    return data["release"]
 
 
 def development(data: dict, language: str, time: str, commit: str) -> str:
@@ -87,9 +82,9 @@ def tags(data: dict) -> list:
 
 
 def go_module(data: dict) -> str:
-    """From compatibility number 2, Go names the module by it."""
-    number = data["compatibility"]["go"]
-    return GO_MODULE if number == 1 else f"{GO_MODULE}/v{number}"
+    """From major version 2, Go names the module by it."""
+    major = int(RELEASE.fullmatch(data["release"]).group(1))
+    return GO_MODULE if major < 2 else f"{GO_MODULE}/v{major}"
 
 
 def git(*arguments: str) -> str:
@@ -176,7 +171,7 @@ def unreleased() -> None:
     if tagged is not None and tagged != git("rev-parse", "HEAD"):
         raise SystemExit(
             f"version.json's release {data['release']} is already tagged, at {tagged}:"
-            " make a later release the coming one (sdk_version.py move YY.M.N)"
+            " make a later release the coming one (sdk_version.py move X.Y.Z)"
         )
     print(f"The coming release {data['release']} is not yet tagged on another commit.")
 
@@ -184,7 +179,7 @@ def unreleased() -> None:
 def move(release: str) -> None:
     data = config()
     if not RELEASE.fullmatch(release):
-        raise SystemExit(f"sdk_version.py: {release!r} is not YY.M.N")
+        raise SystemExit(f"sdk_version.py: {release!r} is not X.Y.Z")
     order = [tuple(int(part) for part in RELEASE.fullmatch(value).groups()) for value in (data["release"], release)]
     if order[1] <= order[0]:
         raise SystemExit(f"sdk_version.py: {release} does not come after {data['release']}")

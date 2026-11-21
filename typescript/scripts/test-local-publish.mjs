@@ -43,7 +43,7 @@ test('publication stamping is confined to the complete isolated npm input set', 
     const before = paths.map((path) => readFileSync(join(f.source, path)));
     const result = f.run('stage', f.stage);
     assert.equal(result.status, 0, result.stderr);
-    const stamp = spawnSync(process.execPath, [join(f.stage, 'typescript/scripts/stamp-versions.mjs'), '1.2611.0-dev.20261116000000.gfixture'], { encoding: 'utf8' });
+    const stamp = spawnSync(process.execPath, [join(f.stage, 'typescript/scripts/stamp-versions.mjs'), '0.8.0-dev.20261116000000.gfixture'], { encoding: 'utf8' });
     assert.equal(stamp.status, 0, stamp.stderr);
     paths.forEach((path, index) => assert.deepEqual(readFileSync(join(f.source, path)), before[index], path));
     for (const entry of Object.values(f.version.packages).filter((entry) => entry.publish)) {
