@@ -34,7 +34,7 @@ import {
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { getActiveTraceparent, withTraceparent } from '@xynolog/observability';
-import type { Annotation, BusPrimitive } from '@xynolog/core';
+import type { Annotation, BusPrimitive, ClaimOptions } from '@xynolog/core';
 import {
   BusRequestError,
   ERRORS_KEPT_FOR_FIRST_READER_COUNT,
@@ -53,7 +53,6 @@ import {
   JOB_CLAIM_CHANNELS,
   JOB_COMMIT_CHANNELS,
   willRetryAfter,
-  type ClaimOptions,
   type ClaimRefusal,
   type HeldJob,
   type HeldJobStall,

@@ -1752,6 +1752,35 @@ func (v BusSubscribeRequestScopedItem) MarshalJSON() ([]byte, error) {
 	return json.Marshal(written(v))
 }
 
+// ClaimOptions What a worker's claiming of jobs is told: the jobs it takes,
+// and how long it waits for what it waits on. A wait left out is
+// client/timing.json's of the same name.
+type ClaimOptions struct {
+	// Accepts The jobs this claim takes. A job is handed over when it matches
+	// any one of them.
+	Accepts []JobFilter `json:"accepts"`
+	// HeldJobStallCheckMs How often it looks at how long a held job has shown no
+	// activity, in milliseconds.
+	HeldJobStallCheckMs *int `json:"heldJobStallCheckMs,omitempty"`
+	// HeldJobStallMs How long a held job may show no activity before it is
+	// called stalled, in milliseconds.
+	HeldJobStallMs *int `json:"heldJobStallMs,omitempty"`
+	// JobClaimTimeoutMs How long it waits for the answer to one claim, in
+	// milliseconds.
+	JobClaimTimeoutMs *int `json:"jobClaimTimeoutMs,omitempty"`
+	// MarkCommitTimeoutMs How long it waits for the record to acknowledge a
+	// commit of annotations, in milliseconds.
+	MarkCommitTimeoutMs *int `json:"markCommitTimeoutMs,omitempty"`
+}
+
+// MarshalJSON writes v, each list its schema requires that Go holds as nil
+// written as the empty list.
+func (v ClaimOptions) MarshalJSON() ([]byte, error) {
+	type written ClaimOptions
+	v.Accepts = listOf(v.Accepts)
+	return json.Marshal(written(v))
+}
+
 type CloneResourceWithTokenResponse struct {
 	// ExpiresAt ISO 8601 timestamp when token expires
 	ExpiresAt string             `json:"expiresAt"`
@@ -1955,6 +1984,17 @@ type CreateAnnotationRequest struct {
 	Body       *AnnotationBodies `json:"body,omitempty"`
 	Motivation Motivation        `json:"motivation"`
 	Target     AnnotationTarget  `json:"target"`
+}
+
+// CreateFromTokenOptions What creating a resource from a clone token is told:
+// the token, the clone's name and text, and whether the source is archived
+// once the clone exists.
+type CreateFromTokenOptions struct {
+	ArchiveOriginal *bool `json:"archiveOriginal,omitempty"`
+	// Content The clone's text, uploaded as its content.
+	Content string `json:"content"`
+	Name    string `json:"name"`
+	Token   string `json:"token"`
 }
 
 // CreateResourceResponse The id of the resource an upload created. The
@@ -3037,6 +3077,29 @@ type GatherResourceFailed struct {
 	Message string `json:"message"`
 	// ResourceId The resource the gather was asked for.
 	ResourceId ResourceId `json:"resourceId"`
+}
+
+// GatherResourceOptions What gathering the context of a resource is told
+// beside the resource: GatherResourceRequestOptions, each member of which a
+// caller may leave out. client/surface.json's `gather.resource` cases state
+// what is sent for one left out.
+type GatherResourceOptions struct {
+	// Depth How many links out from the resource the knowledge graph reaches,
+	// nearest first: 1 is what the resource links to and what cites it, and each
+	// further link out adds what those link to and what cites them
+	Depth *int `json:"depth,omitempty"`
+	// ExcludeEntityTypes Entity types to exclude from the semantic recall built
+	// into this context (caller-supplied; e.g. a chat consumer passes
+	// ['Question'] so prior questions never ground answer generation). Optional;
+	// default none.
+	ExcludeEntityTypes *[]string `json:"excludeEntityTypes,omitempty"`
+	// IncludeContent Whether to include resource content in the gathered result
+	IncludeContent *bool `json:"includeContent,omitempty"`
+	// IncludeSummary Whether to include resource summaries in the gathered
+	// result
+	IncludeSummary *bool `json:"includeSummary,omitempty"`
+	// MaxResources Maximum number of related resources to include
+	MaxResources *int `json:"maxResources,omitempty"`
 }
 
 // GatherResourceRequest Request payload sent on the gather:resource-requested
@@ -4425,6 +4488,18 @@ func (e JobPendingStatus) Valid() bool {
 		return true
 	}
 	return false
+}
+
+// JobPollOptions How a job's `pollUntilComplete` asks for the job's status:
+// how long it waits between its asks, and how long it goes on asking. A
+// member left out is client/timing.json's: `jobPollMs` and
+// `jobPollTimeoutMs`.
+type JobPollOptions struct {
+	// EveryMs How long it waits between one ask and the next, in milliseconds.
+	EveryMs *int `json:"everyMs,omitempty"`
+	// WithinMs How long it goes on asking, from its first ask, before it fails
+	// as timed out, in milliseconds.
+	WithinMs *int `json:"withinMs,omitempty"`
 }
 
 // JobProgress Progress report from a running job. The required field is
@@ -6298,6 +6373,18 @@ type MatchSearchFailed struct {
 	ReferenceId AnnotationId `json:"referenceId"`
 }
 
+// MatchSearchOptions What a search for what a reference could refer to is
+// told beside the reference and its context: MatchSearchRequest's other
+// members. client/surface.json's `match.search` cases state what is sent for
+// one left out.
+type MatchSearchOptions struct {
+	// Limit Maximum number of candidate results to return
+	Limit *int `json:"limit,omitempty"`
+	// UseSemanticScoring Enable semantic similarity scoring in addition to
+	// keyword matching
+	UseSemanticScoring *bool `json:"useSemanticScoring,omitempty"`
+}
+
 // MatchSearchRequest Request payload sent on the match:search-request bus
 // channel to find candidate matches.
 type MatchSearchRequest struct {
@@ -7484,6 +7571,19 @@ type ResourceMovedPayload struct {
 	FromUri string `json:"fromUri"`
 	// ToUri New file:// URI
 	ToUri string `json:"toUri"`
+}
+
+// ResourceSearchFilters What a text search for resources is told beside its
+// text: MatchResourcesRequest's other members. client/surface.json's
+// `match.resources` cases state what is sent for one left out.
+type ResourceSearchFilters struct {
+	Archived   *bool   `json:"archived,omitempty"`
+	EntityType *string `json:"entityType,omitempty"`
+	// Limit The most resources a page has.
+	Limit *int `json:"limit,omitempty"`
+	// Offset How many of the resources the search finds are passed over before
+	// the page begins.
+	Offset *int `json:"offset,omitempty"`
 }
 
 // ResourceUnarchivedPayload Payload for mark:unarchived domain event (empty

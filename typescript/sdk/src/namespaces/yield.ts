@@ -23,10 +23,9 @@ import type { JobFollowTiming } from './job-status-poll';
 import type {
   YieldNamespace as IYieldNamespace,
   CreateResourceInput,
-  CreateFromTokenOptions,
 } from './types';
 
-import type { ResourceDescriptor } from '@xynolog/core';
+import type { CreateFromTokenOptions, ResourceDescriptor } from '@xynolog/core';
 
 type CloneResourceWithTokenResponse =
   components['schemas']['CloneResourceWithTokenResponse'];

@@ -13,9 +13,9 @@ use crate::timing::{
 use crate::transport::{ContentTransport, Envelope, PutBinaryRequest, Upload};
 use crate::types::ResourceId;
 use crate::types::{
-    CloneResourceWithTokenResponse, CreateResourceResponse, GatheredContextFocus,
-    GenerationJobParams, ResourceDescriptor, YieldCloneResourceRequest, YieldCloneTokenRequest,
-    YieldJobCompleteCommand, YieldJobCreateCommand,
+    CloneResourceWithTokenResponse, CreateFromTokenOptions, CreateResourceResponse,
+    GatheredContextFocus, GenerationJobParams, ResourceDescriptor, YieldCloneResourceRequest,
+    YieldCloneTokenRequest, YieldJobCompleteCommand, YieldJobCreateCommand,
 };
 use bytes::Bytes;
 use std::sync::Arc;
@@ -28,17 +28,6 @@ use std::time::Duration;
 pub fn stall_deadline(max_tokens: Option<f64>) -> Duration {
     let tokens = max_tokens.unwrap_or(GENERATION_STALL_ASSUMED_TOKENS_COUNT as f64);
     GENERATION_STALL_FLOOR.max(GENERATION_STALL_PER_TOKEN.mul_f64(tokens.max(0.0)))
-}
-
-/// What a clone is created with: the token of its source, and its own name
-/// and content.
-#[derive(Debug, Clone)]
-pub struct CreateFromTokenOptions {
-    pub token: String,
-    pub name: String,
-    pub content: String,
-    /// Archive the source once the clone exists.
-    pub archive_original: Option<bool>,
 }
 
 pub struct YieldNamespace {

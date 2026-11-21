@@ -20,7 +20,7 @@ let sign_in_file = "sign-in-store/SignIn.json"
    component of the API. *)
 let spec_of (spec : Spec.t) : (Types.spec, string) result =
   let schema_of file = List.assoc_opt file spec.schemas in
-  let closed_in = Definitions.closed_in spec in
+  let whole = Definitions.whole spec in
   let components =
     List.map
       (fun (name, reference) ->
@@ -37,7 +37,7 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
         let* rest = rest in
         match schema_of file with
         | Some schema ->
-            let* schema = closed_in schema in
+            let* schema = whole schema in
             Ok ((name, schema) :: rest)
         | None ->
             Error

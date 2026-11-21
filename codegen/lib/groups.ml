@@ -29,6 +29,7 @@ let sdk =
     { name = "job-storage"; files = Job_storage.files };
     { name = "limits"; files = Limits.files };
     { name = "client-types"; files = Client_types.files };
+    { name = "surface"; files = Surface.Calls.files };
     { name = "testing"; files = Testing.files };
     { name = "gateway-http"; files = Gateway_http.files };
     { name = "ocaml-sdk"; files = Ocaml_sdk.files };

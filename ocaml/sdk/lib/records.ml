@@ -7216,6 +7216,25 @@ module Begin_authorization_options = struct
   }
 end
 
+module Claim_options = struct
+  type t = {
+    accepts : [ `JobFilter ] Models.t list;
+    job_claim_timeout_ms : int option;
+    held_job_stall_ms : int option;
+    held_job_stall_check_ms : int option;
+    mark_commit_timeout_ms : int option;
+  }
+end
+
+module Create_from_token_options = struct
+  type t = {
+    token : string;
+    name : string;
+    content : string;
+    archive_original : bool option;
+  }
+end
+
 module Device_code = struct
   type t = {
     user_code : string;
@@ -7225,8 +7244,26 @@ module Device_code = struct
   }
 end
 
+module Gather_resource_options = struct
+  type t = {
+    depth : int option;
+    max_resources : int option;
+    include_content : bool option;
+    include_summary : bool option;
+    exclude_entity_types : string list option;
+  }
+end
+
 module Issued_tokens = struct
   type t = { access : string; refresh : string }
+end
+
+module Job_poll_options = struct
+  type t = { every_ms : int option; within_ms : int option }
+end
+
+module Match_search_options = struct
+  type t = { limit : int option; use_semantic_scoring : bool option }
 end
 
 module Pdf_coordinate = struct
@@ -7275,6 +7312,15 @@ module Reconciled_span = struct
         suffix : string option;
         match_quality : Enums.Match_quality.t;
       }
+end
+
+module Resource_search_filters = struct
+  type t = {
+    archived : bool option;
+    entity_type : string option;
+    offset : int option;
+    limit : int option;
+  }
 end
 
 module Text_span = struct

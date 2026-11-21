@@ -52,7 +52,7 @@ use tokio::sync::watch;
 use xynolog::bus::{Bus, operation};
 use xynolog::cache::{Cache, CachePersister};
 use xynolog::channels::BRIDGED_CHANNELS;
-use xynolog::claims::{ClaimOptions, JOB_CLAIM_CHANNELS};
+use xynolog::claims::JOB_CLAIM_CHANNELS;
 use xynolog::client::XynologClient;
 use xynolog::discovery::{DiscoveryRead, DiscoveryState, DiscoveryTransport, subscribe_discovery};
 use xynolog::errors::{BusRequestErrorCode, XynologError};
@@ -62,7 +62,7 @@ use xynolog::testing::{FaultyTransport, TestClientOptions, as_id, create_test_cl
 use xynolog::transport::{
     BoxFuture, ConnectionState, Envelope, Frame, GatewayOperations, ResourceHold, Transport,
 };
-use xynolog::types::StoredSession;
+use xynolog::types::{ClaimOptions, StoredSession};
 use xynolog::types::{
     DiscoveredKB, HighlightingJobParams, HttpEndpoint, HttpEndpointProtocol, JobFilter,
     JobProgress, JobStatusResponse, KbTarget, UserResponse,

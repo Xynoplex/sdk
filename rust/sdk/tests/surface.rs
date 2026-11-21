@@ -16,7 +16,7 @@ use std::time::Duration;
 use xynolog::channels::BRIDGED_CHANNELS;
 use xynolog::claims::JOB_CLAIM_CHANNELS;
 use xynolog::client::XynologClient;
-use xynolog::namespaces::{CreateFromTokenOptions, ResourceFilters};
+use xynolog::namespaces::ResourceFilters;
 use xynolog::testing::as_id;
 use xynolog::testing::{
     ContentCall, FaultyTransport, InMemoryContent, StubGateway, TestClientOptions,
@@ -510,12 +510,11 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
         }
         ("yield", "createFromToken") => {
             let options = Args(args.options());
-            let options = CreateFromTokenOptions {
-                token: options.text("token"),
-                name: options.text("name"),
-                content: options.text("content"),
-                archive_original: None,
-            };
+            let options = xynolog::types::CreateFromTokenOptions::new(
+                options.text("token"),
+                options.text("name"),
+                options.text("content"),
+            );
             go!(client.yield_.create_from_token(options))
         }
         ("yield", "clone") => client.yield_.clone(),
@@ -565,9 +564,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             let accepts = serde_json::from_value(options["accepts"].clone())
                 .unwrap_or_else(|error| panic!("the case's accepts are not filters: {error}"));
             // Claiming begins when the claims are first read.
-            let claims = client
-                .job
-                .claim(xynolog::claims::ClaimOptions::new(accepts));
+            let claims = client.job.claim(xynolog::types::ClaimOptions::new(accepts));
             tokio::spawn(async move {
                 let _ = claims.next().await;
             });

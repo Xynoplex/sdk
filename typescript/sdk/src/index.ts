@@ -51,7 +51,6 @@ export {
   JOB_CLAIM_CHANNELS,
   JOB_COMMIT_CHANNELS,
   willRetryAfter,
-  type ClaimOptions,
   type ClaimRefusal,
   type HeldJob,
   type HeldJobStall,
@@ -129,6 +128,10 @@ export type {
   ResourceDescriptor,
   TagCategory,
   TagSchema,
+  // The options the client's methods take
+  ClaimOptions,
+  CreateFromTokenOptions,
+  ResourceSearchFilters,
   // Transport contracts
   ConnectionState,
   IContentTransport,

@@ -192,7 +192,7 @@ class BrowseNamespace:
         return self._of(resource_id, self._live.resource, resource_id, itself)
 
     def resources(
-        self, *, limit: int = _LIST_LIMIT, offset: int = 0, archived: bool | None = None, entity_type: str | None = None
+        self, *, archived: bool | None = None, entity_type: str | None = None, offset: int | None = None, limit: int | None = None
     ) -> Cached[ListResourcesResponse]:
         """A page of the resources the filters admit: the first hundred when nothing is stated.
 
@@ -202,7 +202,8 @@ class BrowseNamespace:
         resources this client holds the scope of, and by nothing else.
         Finding resources by text is `match.resources`.
         """
-        return self._live.query(Keyed(self._live.lists, ResourceFilters(limit, offset, archived, entity_type), itself))
+        filters = ResourceFilters(_LIST_LIMIT if limit is None else limit, offset or 0, archived, entity_type)
+        return self._live.query(Keyed(self._live.lists, filters, itself))
 
     def annotations(self, resource_id: ResourceId) -> Cached[list[Annotation]]:
         """A resource's annotations."""
@@ -272,9 +273,10 @@ class BrowseNamespace:
         request = BrowseAnnotationHistoryRequest(resource_id=resource_id, annotation_id=annotation_id)
         return (await self._links.request(BROWSE_ANNOTATION_HISTORY_REQUESTED, request)).response
 
-    async def files(self, path: str = ".", *, sort: BrowseDirectoryRequestSort = "name") -> BrowseDirectoryResultResponse:
+    async def files(self, dir_path: str | None = None, sort: BrowseDirectoryRequestSort | None = None) -> BrowseDirectoryResultResponse:
         """The entries of a directory of the knowledge base's tree: its root when no path is stated, by name when no order is."""
-        return (await self._links.request(BROWSE_DIRECTORY_REQUESTED, BrowseDirectoryRequest(path=path, sort=sort))).response
+        request = BrowseDirectoryRequest(path="." if dir_path is None else dir_path, sort="name" if sort is None else sort)
+        return (await self._links.request(BROWSE_DIRECTORY_REQUESTED, request)).response
 
     async def kb(self) -> KbDescription:
         """What the knowledge base says of itself: its name and domain, and its working tree's branch.

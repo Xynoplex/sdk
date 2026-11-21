@@ -10,7 +10,7 @@ use tokio::sync::mpsc;
 use xynolog::annotations::{annotation_of_span, reconcile};
 use xynolog::bus::{operation, reply_names};
 use xynolog::channels::BRIDGED_CHANNELS;
-use xynolog::claims::{ClaimOptions, Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, Mark};
+use xynolog::claims::{Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, Mark};
 use xynolog::client::XynologClient;
 use xynolog::errors::XynologError;
 use xynolog::session::{
@@ -28,10 +28,10 @@ use xynolog::testing::{
 use xynolog::transport::{BoxFuture, Envelope, Frame, PutBinaryRequest};
 use xynolog::types::StoredSession;
 use xynolog::types::{
-    Agent, GatherResourceRequestOptions, GenerationJobParams, HighlightingJobParams, HttpEndpoint,
-    HttpEndpointProtocol, InvalidIdentifier, JobCompleteCommand, KbEndpoint, KnowledgeBase,
-    LinkingJobParams, MarkJobCompleteCommand, MarkJobDone, Motivation, PendingAnnotation,
-    QuotedText, ResourceId, TextSpan, YieldJobResult,
+    Agent, ClaimOptions, GatherResourceRequestOptions, GenerationJobParams, HighlightingJobParams,
+    HttpEndpoint, HttpEndpointProtocol, InvalidIdentifier, JobCompleteCommand, KbEndpoint,
+    KnowledgeBase, LinkingJobParams, MarkJobCompleteCommand, MarkJobDone, Motivation,
+    PendingAnnotation, QuotedText, ResourceId, TextSpan, YieldJobResult,
 };
 
 // ── The examples ────────────────────────────────────────────────────────

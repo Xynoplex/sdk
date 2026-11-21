@@ -17,8 +17,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use xynolog::bus::reply_channels_for;
 use xynolog::claims::{
-    ClaimOptions, ClaimRefusal, ClaimTiming, Claims, HeldJob, HeldJobStall, JOB_CLAIM_CHANNELS,
-    JOB_COMMIT_CHANNELS, JobFailure,
+    ClaimRefusal, Claims, HeldJob, HeldJobStall, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS,
+    JobFailure,
 };
 use xynolog::client::XynologClient;
 use xynolog::errors::{BusRequestError, BusRequestErrorCode, XynologError};
@@ -29,8 +29,8 @@ use xynolog::types::DurabilityEvidence::{
     Acknowledged, ProbeConfirmed, ProbeRefused, ProbeUnreachable,
 };
 use xynolog::types::{
-    Annotation, DurabilityEvidence, FailureClass, FrameRefusalReason, JobFilter, JobProgress,
-    JobType, MarkJobDone, ResourceId, YieldJobResult,
+    Annotation, ClaimOptions, DurabilityEvidence, FailureClass, FrameRefusalReason, JobFilter,
+    JobProgress, JobType, MarkJobDone, ResourceId, YieldJobResult,
 };
 
 /// What the stand-in dispatcher answers the next claims with, and what the
@@ -352,10 +352,7 @@ impl World {
     /// A worker's claims whose commits wait `QUICK_COMMIT`.
     fn quick_claims(&self) -> Claims {
         self.client.job.claim(ClaimOptions {
-            timing: ClaimTiming {
-                mark_commit: QUICK_COMMIT,
-                ..ClaimTiming::default()
-            },
+            mark_commit_timeout_ms: Some(millis(QUICK_COMMIT)),
             ..ClaimOptions::new(everything())
         })
     }
@@ -429,6 +426,11 @@ async fn finish(job: HeldJob) {
 
 /// A commit's wait, for a test that must not wait a minute for the record.
 const QUICK_COMMIT: Duration = Duration::from_millis(20);
+
+/// `wait` as the milliseconds a `ClaimOptions` states it in.
+fn millis(wait: Duration) -> u64 {
+    u64::try_from(wait.as_millis()).expect("a test's wait is short")
+}
 
 /// What the wire does to a commit's reply, and to the reply to the question
 /// a lost one asks, for the commit to observe `how`.
@@ -812,10 +814,7 @@ async fn a_reply_that_names_no_job_is_refused_here_never_held_and_the_next_annou
 async fn a_claim_nobody_answers_is_given_up_after_its_timeout_and_reported() {
     let w = world_meeting(vec![FaultAction::DropReply, FaultAction::Deliver]);
     let claims = w.client.job.claim(ClaimOptions {
-        timing: ClaimTiming {
-            job_claim: Duration::from_millis(20),
-            ..ClaimTiming::default()
-        },
+        job_claim_timeout_ms: Some(20),
         ..ClaimOptions::new(everything())
     });
 
@@ -1429,10 +1428,7 @@ async fn not_answered_it_waits_as_long_again_fails_the_same_way_and_says_that_no
     let w = world_observing(&[ProbeUnreachable]);
     w.offer(running("job-1", "mark", json!({}), json!({})));
     let claims = w.client.job.claim(ClaimOptions {
-        timing: ClaimTiming {
-            mark_commit: wait,
-            ..ClaimTiming::default()
-        },
+        mark_commit_timeout_ms: Some(millis(wait)),
         ..ClaimOptions::new(everything())
     });
     let job = held(&claims).await;
@@ -1775,20 +1771,13 @@ async fn vitals_say_what_the_worker_heard_holds_and_has_done() {
     assert_eq!(claims.vitals().jobs_completed, 1);
 }
 
-fn quick() -> ClaimTiming {
-    ClaimTiming {
-        held_job_stall: Duration::from_millis(400),
-        held_job_stall_check: Duration::from_millis(100),
-        ..ClaimTiming::default()
-    }
-}
-
-/// Longer than `quick`'s stall threshold, and its next check after it.
+/// Longer than `quick_claims`'s stall threshold, and its next check after it.
 const PAST_THE_STALL: Duration = Duration::from_millis(600);
 
 fn quick_claims(w: &World) -> Claims {
     w.client.job.claim(ClaimOptions {
-        timing: quick(),
+        held_job_stall_ms: Some(400),
+        held_job_stall_check_ms: Some(100),
         ..ClaimOptions::new(everything())
     })
 }
