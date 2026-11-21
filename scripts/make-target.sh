@@ -114,7 +114,9 @@ case "${1:-}" in
   test-swift)
     # SwiftPM's build directory (the dependencies' checkouts and what every
     # build compiled of them, the refusals' canary build too) outlives the
-    # container. CI's tests job caches this directory.
+    # container. CI's tests job caches this directory, once the checks pass,
+    # as the runner's user; the container's root writes some of it readable
+    # by root alone.
     swift_build="$HOME/.cache/xynolog/swift-build"
     mkdir -p "$swift_build"
     in_container "swift:$(sh "$ROOT/swift/scripts/swift-version.sh")" '
@@ -124,7 +126,8 @@ case "${1:-}" in
       Scripts/test.sh
       swift format lint --strict --recursive .
       Scripts/census.sh
-      Scripts/refusals.sh' --memory 4g --volume "$swift_build:/swift-build"
+      Scripts/refusals.sh
+      find /swift-build -mindepth 1 -exec chmod a+rX {} +' --memory 4g --volume "$swift_build:/swift-build"
     ;;
   test-haskell|haskell-dependencies)
     "$RUNTIME" build --build-arg "GHC_VERSION=$(bash "$ROOT/haskell/toolchain/toolchain.sh" --ghc)" \
