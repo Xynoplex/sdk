@@ -112,12 +112,19 @@ case "${1:-}" in
       ./gradlew --no-daemon --console=plain check' --memory 4g --volume "$gradle_home:/gradle" --env GRADLE_USER_HOME=/gradle
     ;;
   test-swift)
+    # SwiftPM's build directory (the dependencies' checkouts and what every
+    # build compiled of them, the refusals' canary build too) outlives the
+    # container. CI's tests job caches this directory.
+    swift_build="$HOME/.cache/xynolog/swift-build"
+    mkdir -p "$swift_build"
     in_container "swift:$(sh "$ROOT/swift/scripts/swift-version.sh")" '
       cd /tmp/sdk/swift/sdk
+      rm -rf .build
+      ln -s /swift-build .build
       Scripts/test.sh
       swift format lint --strict --recursive .
       Scripts/census.sh
-      Scripts/refusals.sh' --memory 4g
+      Scripts/refusals.sh' --memory 4g --volume "$swift_build:/swift-build"
     ;;
   test-haskell|haskell-dependencies)
     "$RUNTIME" build --build-arg "GHC_VERSION=$(bash "$ROOT/haskell/toolchain/toolchain.sh" --ghc)" \
