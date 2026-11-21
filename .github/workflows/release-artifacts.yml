@@ -29,7 +29,7 @@ jobs:
     needs: version
     permissions:
       contents: read
-    uses: xynolog/.github/.github/workflows/release-tag.yml@a70ee7f6c3e7321ef54a071c78504c20e2669110
+    uses: xynolog/.github/.github/workflows/release-tag.yml@8e5e3b02c34517d3f8b49645330930983d07b7ac
     with:
       tags: ${{ needs.version.outputs.tag }}
 
