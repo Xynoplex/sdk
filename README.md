@@ -61,7 +61,11 @@ To release, check out the commit on `main` and run `bash scripts/tag-release.sh`
 - `main` holds the commit;
 - the Protocol submodule's commit is on Protocol's `main`.
 
-It then signs and pushes `vX.Y.Z` and Go's `go/vX.Y.Z` together. Pushing `go/v…` releases the Go module, since the Go module proxy serves the tag from then on. The release workflow publishes nothing until it has fetched both tags and found each one annotated, named as pushed, on the commit, and signed by the key it trusts; it then runs the same checks again.
+It then signs and pushes `vX.Y.Z`. That starts the release workflow, which does nothing until it has fetched the tag and found it annotated, named as pushed, on a commit `main` holds, and signed by the release signer (`xynolog/.github`'s `release-tag.yml`); it then runs the same checks again, and builds, verifies and releases the nine-language bundle as the GitHub release `vX.Y.Z`.
+
+Once that release exists, run `bash scripts/tag-release.sh go` on the same commit. It signs and pushes Go's `go/vX.Y.Z`, which is itself the Go release, since the Go module proxy serves the tag from then on; so it waits for the bundle, and a failed build spends no Go version.
+
+Each registry then takes the released bundle, never a rebuild: dispatch `publish.yml` at the tag, one registry at a time, and approve it in the `release` environment, for example `gh workflow run publish.yml --ref vX.Y.Z -f registry=pypi`. Each registry accepts the SDK only through trusted publishing from that workflow and environment. `registry=go` checks the signed Go tag and that the module the Go proxy serves is the bundle's.
 
 Once the release is tagged, CI fails until the coming release moves on: `python3 scripts/sdk_version.py move X.Y.Z` writes a later one into `version.json` and every manifest, in a pull request of its own.
 
