@@ -42,9 +42,9 @@ class GatherNamespace:
         resource_id: ResourceId,
         annotation_id: AnnotationId,
         *,
-        context_window: int = _CONTEXT_WINDOW,
         include_source_context: bool | None = None,
         include_target_context: bool | None = None,
+        context_window: int | None = None,
     ) -> Running[GatherAnnotationComplete]:
         """The context around one annotation, taking `context_window` characters of its source: two thousand when none is stated.
 
@@ -52,7 +52,7 @@ class GatherNamespace:
         as stated, and as the gatherer decides when not.
         """
         options = GatherAnnotationOptions(
-            context_window=context_window,
+            context_window=_CONTEXT_WINDOW if context_window is None else context_window,
             include_source_context=include_source_context,
             include_target_context=include_target_context,
         )
@@ -63,11 +63,11 @@ class GatherNamespace:
         self,
         resource_id: ResourceId,
         *,
-        depth: int = _DEPTH,
-        max_resources: int = _MAX_RESOURCES,
-        include_content: bool = True,
-        include_summary: bool = False,
-        exclude_entity_types: Sequence[str] = (),
+        depth: int | None = None,
+        max_resources: int | None = None,
+        include_content: bool | None = None,
+        include_summary: bool | None = None,
+        exclude_entity_types: Sequence[str] | None = None,
     ) -> GatheredContext:
         """The context around a whole resource.
 
@@ -77,20 +77,16 @@ class GatherNamespace:
         links to and what cites it are both followed. An empty exclusion
         excludes nothing, and is not sent.
         """
-        options = (
-            GatherResourceRequestOptions(
-                depth=depth,
-                max_resources=max_resources,
-                include_content=include_content,
-                include_summary=include_summary,
-                exclude_entity_types=list(exclude_entity_types),
-            )
-            if exclude_entity_types
-            else GatherResourceRequestOptions(
-                depth=depth, max_resources=max_resources, include_content=include_content, include_summary=include_summary
-            )
+        options = GatherResourceRequestOptions(
+            depth=_DEPTH if depth is None else depth,
+            max_resources=_MAX_RESOURCES if max_resources is None else max_resources,
+            include_content=True if include_content is None else include_content,
+            include_summary=False if include_summary is None else include_summary,
+            exclude_entity_types=list(exclude_entity_types) if exclude_entity_types else None,
         )
-        gathered = await self._links.request(GATHER_RESOURCE_REQUESTED, GatherResourceRequest(resource_id=resource_id, options=options))
+        gathered = await self._links.request(
+            GATHER_RESOURCE_REQUESTED, GatherResourceRequest(resource_id=resource_id, options=stated(options))
+        )
         return gathered.response
 
     def referenced_by(self, resource_id: ResourceId) -> Cached[list[GetReferencedByResponseReferencedByItem]]:

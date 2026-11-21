@@ -126,7 +126,8 @@ export type StoredSession = records['StoredSession'];
 
 /**
  * The client types (protocol/specs/src/client/types) a client holds beside the
- * wire's, and why discovery found no launcher (client/discovery-absent.json).
+ * wire's, the options its methods take, and why discovery found no launcher
+ * (client/discovery-absent.json).
  */
 export type AnchorMethod = records['AnchorMethod'];
 export type MatchQuality = records['MatchQuality'];
@@ -141,3 +142,9 @@ export type QuotedText = records['QuotedText'];
 export type TextSpan = records['TextSpan'];
 export type ReconciledSpan = records['ReconciledSpan'];
 export type UploadProgress = records['UploadProgress'];
+export type ClaimOptions = records['ClaimOptions'];
+export type CreateFromTokenOptions = records['CreateFromTokenOptions'];
+export type GatherResourceOptions = records['GatherResourceOptions'];
+export type JobPollOptions = records['JobPollOptions'];
+export type MatchSearchOptions = records['MatchSearchOptions'];
+export type ResourceSearchFilters = records['ResourceSearchFilters'];

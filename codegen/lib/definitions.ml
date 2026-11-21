@@ -122,38 +122,76 @@ let schema_of ~ids ~schemas (r : Decode.reference) =
   | Some s -> Ok s
   | None -> Error ("$ref " ^ r.target ^ " names no schema")
 
-(* A schema of [spec] as it means one: each file it refers to that no
-   generation names written in its place ([Schema_names.in_place]), and each
-   schema within it that closes what it composes read as the one object it
-   means ([Normalize.closed_within]). *)
-let closed_in (spec : Spec.t) =
-  let in_place = Schema_names.in_place spec in
+(* [s] with each [$ref] to a member of another schema ([/properties/<member>])
+   written in its place, since a member is no schema of its own (S6); but a
+   [$ref] to a record a table states ([recorded], by its key) names that
+   record. Nothing may be said beside a reference written in its place, and
+   a member that reaches itself so is refused. *)
+let members_in_place ~ids ~schemas ~recorded s =
+  let rec members trail = function
+    | Schema.Boolean_schema _ as b -> b
+    | Schema.Schema l -> (
+        match l.ref_ with
+        | None -> Schema.Schema (Schema.map (members trail) l)
+        | Some r ->
+            let key = Table_records.key ids r in
+            let member =
+              match String.split_on_char '/' (snd (Decode.resolve ids r)) with
+              | [ ""; "properties"; _ ] -> not (List.mem key recorded)
+              | _ -> false
+            in
+            if not member then Schema.Schema l
+            else (
+              (match Schema_names.said_of_reference l r with
+              | Ok None -> ()
+              | Ok (Some _) ->
+                  refuse
+                    "$ref %s is written in its place, so nothing can be said \
+                     of it beside it"
+                    r.target
+              | Error message -> refuse "%s" message);
+              match schema_at ~ids ~schemas r with
+              | Some target -> members (in_place ~trail key) target
+              | None -> refuse "$ref %s names no schema" r.target))
+  in
+  members [] s
+
+(* A schema of [spec] as a writer that reads one whole writes it: each member
+   of another schema it refers to written in its place ([members_in_place]),
+   then each file it refers to that no generation names
+   ([Schema_names.in_place]), which a member written in place may refer to,
+   and each schema within it that closes what it composes read as the one
+   object it means ([Normalize.closed_within]). *)
+let whole (spec : Spec.t) =
+  let ids = spec.ids in
   let schemas = Hashtbl.of_seq (List.to_seq spec.schemas) in
+  let recorded =
+    match Table_records.all spec with
+    | Ok records -> List.map (fun (key, _, _) -> key) records
+    | Error message -> refuse "%s" message
+  in
+  let files = Schema_names.in_place spec in
   fun s ->
-    Result.bind (in_place s)
-      (Normalize.closed_within spec.ids
-         ~find:(schema_of ~ids:spec.ids ~schemas))
+    match members_in_place ~ids ~schemas ~recorded s with
+    | s ->
+        Result.bind (files s)
+          (Normalize.closed_within ids ~find:(schema_of ~ids ~schemas))
+    | exception Refused message -> Error message
 
 (* The client types each SDK writes by hand: SearchState and JobEvent, each
-   held to its schema by a census in every SDK; the options the namespace
-   methods take, which wait on the namespace types that take them; and what
-   the engines and content methods return, which waits on each SDK's methods
-   returning what client/surface.json says they return. *)
+   held to its schema by a census in every SDK; PutBinaryRequest, whose file
+   is bytes, which the Swift, Kotlin and Haskell writers state as text; and
+   what the engines and content methods return, which waits on each SDK's
+   methods returning what client/surface.json says they return. *)
 let hand_written_client_types =
   [
     "SearchState";
     "JobEvent";
-    "ClaimOptions";
-    "CreateFromTokenOptions";
+    "PutBinaryRequest";
     "EngineWithLimits";
     "EnginesWithLimits";
-    "GatherResourceOptions";
-    "JobPollOptions";
-    "MatchSearchOptions";
-    "PutBinaryRequest";
     "ResourceRepresentation";
     "ResourceRepresentationStream";
-    "ResourceSearchFilters";
   ]
 
 (* The client types every SDK generates, by name: each file of

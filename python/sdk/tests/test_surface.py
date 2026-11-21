@@ -1,8 +1,9 @@
 """The client's surface against `protocol/specs/src/client/surface.json`.
 
 Every method the table lists is called as each of its cases states, and what
-the call did first is held to the row. A row with no call here fails, and so
-does a call here with no row: the table and this SDK list the same methods.
+the call did first is held to the row. The calls are surface_calls.py's,
+generated from the table: a method this SDK lacks, or takes otherwise than the
+table says, fails the type checkers.
 
 What a method does first is one of: a request of a bus operation, a frame sent
 over the wire, a frame published on the client's own bus, a call of the
@@ -13,21 +14,19 @@ what it was answered.
 """
 
 import asyncio
-from collections.abc import Awaitable, Callable, Mapping
-from functools import partial
+from collections.abc import Callable
 from typing import Final, final
 
 import pytest
 from aio import run, soon
-from pydantic import JsonValue, TypeAdapter
+from pydantic import JsonValue
 from spec import SPEC, JsonObject, objects, read, text
+from surface_arguments import Args, Client
+from surface_calls import CALLS, EVENTS
 
-from xynolog.bus import Typed
 from xynolog.channels import BRIDGED_CHANNELS
 from xynolog.claims import JOB_CLAIM_CHANNELS
 from xynolog.client import XynologClient
-from xynolog.identifiers import AnnotationId, JobId, ResourceId
-from xynolog.model import WireModel, written
 from xynolog.testing import (
     ContentCall,
     FaultyTransport,
@@ -40,24 +39,7 @@ from xynolog.testing import (
     PutBinary,
     StubGateway,
 )
-from xynolog.transport import Frame, FrameRefusal, PutBinaryRequest
-from xynolog.types import (
-    AnchorRect,
-    AnnotationSelector,
-    BindBodyOperation,
-    BindInitiateCommand,
-    BrowseDirectoryRequestSort,
-    CreateAnnotationRequest,
-    GatheredContext,
-    GenerationJobParams,
-    JobFilter,
-    MarkJobParams,
-    MarkSubmitEvent,
-    MatchSearchRequest,
-    Motivation,
-    ResourceErrorEvent,
-    TagSchema,
-)
+from xynolog.transport import Frame
 
 TABLE = read(SPEC / "client/surface.json")
 
@@ -69,17 +51,6 @@ def fixtures() -> JsonObject:
 
 
 FIXTURES: Final = fixtures()
-
-type Client = XynologClient[FaultyTransport]
-type Args = Mapping[str, JsonValue]
-
-_MOTIVATION = TypeAdapter[Motivation](Motivation)
-_SELECTOR = TypeAdapter[AnnotationSelector](AnnotationSelector)
-_OPERATIONS = TypeAdapter[list[BindBodyOperation]](list[BindBodyOperation])
-_SORT = TypeAdapter[BrowseDirectoryRequestSort](BrowseDirectoryRequestSort)
-_FILTERS = TypeAdapter[list[JobFilter]](list[JobFilter])
-_MARK_PARAMS = TypeAdapter[MarkJobParams](MarkJobParams)
-_NAMES = TypeAdapter[list[str]](list[str])
 
 
 def resolved(value: JsonValue) -> JsonValue:
@@ -106,258 +77,6 @@ def numbers(value: JsonValue) -> JsonValue:
     if isinstance(value, dict):
         return {key: numbers(item) for key, item in value.items()}
     return value
-
-
-def rid(args: Args, name: str = "resourceId") -> ResourceId:
-    return ResourceId(text(args[name], name))
-
-
-def aid(args: Args, name: str = "annotationId") -> AnnotationId:
-    return AnnotationId(text(args[name], name))
-
-
-def options(args: Args) -> JsonObject:
-    stated = args.get("options", {})
-    assert isinstance(stated, dict)
-    return stated
-
-
-def whole(value: JsonValue, name: str) -> int:
-    assert isinstance(value, int), f"{name} is not a whole number"
-    assert not isinstance(value, bool), f"{name} is not a whole number"
-    return value
-
-
-def flag(value: JsonValue, name: str) -> bool:
-    assert isinstance(value, bool), f"{name} is not a flag"
-    return value
-
-
-@final
-class Filters:
-    """The filters a list or a search is given. A filter this SDK has no argument for fails the case rather than going unsent."""
-
-    def __init__(self, args: Args) -> None:
-        stated = args.get("filters", {})
-        assert isinstance(stated, dict)
-        unknown = set(stated) - {"limit", "offset", "archived", "entityType"}
-        assert not unknown, f"the case filters by {unknown}, which this SDK's lists do not take"
-        self.limit = whole(stated["limit"], "limit") if "limit" in stated else None
-        self.offset = whole(stated["offset"], "offset") if "offset" in stated else None
-        self.archived = flag(stated["archived"], "archived") if "archived" in stated else None
-        self.entity_type = text(stated["entityType"], "entityType") if "entityType" in stated else None
-
-
-def listed(client: Client, args: Args) -> Awaitable[object]:
-    # What the case does not state is what the SDK sends unasked.
-    filters = Filters(args)
-    resources = partial(client.browse.resources, archived=filters.archived, entity_type=filters.entity_type)
-    if filters.limit is not None:
-        resources = partial(resources, limit=filters.limit)
-    if filters.offset is not None:
-        resources = partial(resources, offset=filters.offset)
-    return resources().fresh()
-
-
-def found(client: Client, args: Args) -> Awaitable[object]:
-    filters = Filters(args)
-    resources = partial(client.match.resources, text(args["search"], "search"), archived=filters.archived, entity_type=filters.entity_type)
-    if filters.limit is not None:
-        resources = partial(resources, limit=filters.limit)
-    if filters.offset is not None:
-        resources = partial(resources, offset=filters.offset)
-    return resources().fresh()
-
-
-def directory(client: Client, args: Args) -> Awaitable[object]:
-    # What the case does not state is what the SDK sends unasked.
-    if "dirPath" not in args:
-        return client.browse.files()
-    return client.browse.files(text(args["dirPath"], "dirPath"), sort=_SORT.validate_python(args["sort"]))
-
-
-def gathered_annotation(client: Client, args: Args) -> Awaitable[object]:
-    stated = options(args)
-    unknown = set(stated) - {"contextWindow", "includeSourceContext", "includeTargetContext"}
-    assert not unknown, f"the case states {unknown}, which gather.annotation does not take"
-    gather = partial(
-        client.gather.annotation,
-        rid(args),
-        aid(args),
-        include_source_context=flag(stated["includeSourceContext"], "includeSourceContext") if "includeSourceContext" in stated else None,
-        include_target_context=flag(stated["includeTargetContext"], "includeTargetContext") if "includeTargetContext" in stated else None,
-    )
-    if "contextWindow" in stated:
-        gather = partial(gather, context_window=whole(stated["contextWindow"], "contextWindow"))
-    return gather()
-
-
-def gathered_resource(client: Client, args: Args) -> Awaitable[object]:
-    stated = options(args)
-    unknown = set(stated) - {"depth", "maxResources", "includeContent", "includeSummary", "excludeEntityTypes"}
-    assert not unknown, f"the case states {unknown}, which gather.resource does not take"
-    if "depth" not in stated:
-        # Only an exclusion is stated, or nothing is.
-        return client.gather.resource(rid(args), exclude_entity_types=_NAMES.validate_python(stated.get("excludeEntityTypes", [])))
-    return client.gather.resource(
-        rid(args),
-        depth=whole(stated["depth"], "depth"),
-        max_resources=whole(stated["maxResources"], "maxResources"),
-        include_content=flag(stated["includeContent"], "includeContent"),
-        include_summary=flag(stated["includeSummary"], "includeSummary"),
-        exclude_entity_types=_NAMES.validate_python(stated.get("excludeEntityTypes", [])),
-    )
-
-
-def searched(client: Client, args: Args) -> Awaitable[object]:
-    context, stated = GatheredContext.model_validate(args["context"]), options(args)
-    if not stated:
-        return client.match.search(rid(args), aid(args, "referenceId"), context)
-    return client.match.search(
-        rid(args),
-        aid(args, "referenceId"),
-        context,
-        limit=whole(stated["limit"], "limit"),
-        use_semantic_scoring=flag(stated["useSemanticScoring"], "useSemanticScoring"),
-    )
-
-
-def made(client: Client, args: Args) -> Awaitable[object]:
-    # How long the follower waits is the caller's own, and is given beside the job's parameters.
-    unknown = set(args) - {"params", "stallDeadlineMs"}
-    assert not unknown, f"the case states {unknown}, which yield.delegate does not take"
-    params = GenerationJobParams.model_validate(args["params"])
-    if "stallDeadlineMs" not in args:
-        return client.yield_.delegate(params)
-    return client.yield_.delegate(params, stall_deadline_ms=whole(args["stallDeadlineMs"], "stallDeadlineMs"))
-
-
-def uploaded(client: Client, args: Args) -> Awaitable[object]:
-    data = args["data"]
-    assert isinstance(data, dict)
-    return client.yield_.resource(
-        PutBinaryRequest(
-            name=text(data["name"], "name"),
-            file=text(data["file"], "file").encode(),
-            format=text(data["format"], "format"),
-            storage_uri=text(data["storageUri"], "storageUri"),
-        )
-    )
-
-
-def cloned(client: Client, args: Args) -> Awaitable[object]:
-    stated = options(args)
-    return client.yield_.create_from_token(
-        token=text(stated["token"], "token"), name=text(stated["name"], "name"), content=text(stated["content"], "content")
-    )
-
-
-def polled(client: Client, args: Args) -> Awaitable[object]:
-    return client.job.poll_until_complete(JobId(text(args["jobId"], "jobId")), every_ms=10, within_ms=50)
-
-
-def claimed(client: Client, args: Args) -> Awaitable[object]:
-    """The first thing a worker's claims hand out: claiming begins when they are first read."""
-    options = args["options"]
-    assert isinstance(options, dict)
-    return anext(client.job.claim(_FILTERS.validate_python(options["accepts"])))
-
-
-def hovered(client: Client, args: Args) -> None:
-    hovering = args["annotationId"]
-    client.beckon.hover(None if hovering is None else AnnotationId(text(hovering, "annotationId")))
-
-
-# Every method this SDK's client has that is called, as the table names them: an awaitable for one that is awaited, nothing for a signal.
-CALLS: Final[dict[tuple[str, str], Callable[[Client, Args], Awaitable[object] | None]]] = {
-    ("frame", "addEntityType"): lambda client, args: client.frame.add_entity_type(text(args["type"], "type")),
-    ("frame", "addEntityTypes"): lambda client, args: client.frame.add_entity_types(_NAMES.validate_python(args["types"])),
-    ("frame", "addTagSchema"): lambda client, args: client.frame.add_tag_schema(TagSchema.model_validate(args["schema"])),
-    ("browse", "resource"): lambda client, args: client.browse.resource(rid(args)).fresh(),
-    ("browse", "resources"): listed,
-    ("browse", "annotations"): lambda client, args: client.browse.annotations(rid(args)).fresh(),
-    ("browse", "annotation"): lambda client, args: client.browse.annotation(rid(args), aid(args)).fresh(),
-    ("browse", "entityTypes"): lambda client, _: client.browse.entity_types().fresh(),
-    ("browse", "tagSchemas"): lambda client, _: client.browse.tag_schemas().fresh(),
-    ("browse", "engines"): lambda client, _: client.browse.engines().fresh(),
-    ("browse", "events"): lambda client, args: client.browse.events(rid(args)).fresh(),
-    ("browse", "resourceContent"): lambda client, args: client.browse.resource_content(rid(args)),
-    ("browse", "resourceGraph"): lambda client, args: client.browse.resource_graph(rid(args)),
-    ("browse", "resourceAnchoredText"): lambda client, args: client.browse.resource_anchored_text(rid(args)),
-    ("browse", "resourceRepresentation"): lambda client, args: client.browse.resource_representation(rid(args)),
-    ("browse", "resourceRepresentationStream"): lambda client, args: client.browse.resource_representation_stream(rid(args)),
-    ("browse", "resourceEvents"): lambda client, args: client.browse.resource_events(rid(args)),
-    ("browse", "annotationHistory"): lambda client, args: client.browse.annotation_history(rid(args), aid(args)),
-    ("browse", "files"): directory,
-    ("browse", "kb"): lambda client, _: client.browse.kb(),
-    ("browse", "click"): lambda client, args: client.browse.click(
-        aid(args), AnchorRect.model_validate(args["anchorRect"]) if "anchorRect" in args else None
-    ),
-    ("browse", "openResource"): lambda client, args: client.browse.open_resource(rid(args)),
-    ("browse", "resourceViewed"): lambda client, args: client.browse.resource_viewed(rid(args)),
-    ("mark", "annotation"): lambda client, args: client.mark.annotation(CreateAnnotationRequest.model_validate(args["input"])),
-    ("mark", "delete"): lambda client, args: client.mark.delete(rid(args), aid(args)),
-    ("mark", "archive"): lambda client, args: client.mark.archive(rid(args)),
-    ("mark", "unarchive"): lambda client, args: client.mark.unarchive(rid(args)),
-    ("mark", "updateEntityTypes"): lambda client, args: client.mark.update_entity_types(
-        rid(args), _NAMES.validate_python(args["current"]), _NAMES.validate_python(args["updated"])
-    ),
-    ("mark", "delegate"): lambda client, args: client.mark.delegate(rid(args), _MARK_PARAMS.validate_python(args["params"])),
-    ("mark", "request"): lambda client, args: client.mark.request(
-        rid(args, "source"), _SELECTOR.validate_python(args["selector"]), _MOTIVATION.validate_python(args["motivation"])
-    ),
-    ("mark", "submit"): lambda client, args: client.mark.submit(MarkSubmitEvent.model_validate(args["input"])),
-    ("mark", "reportDeleteError"): lambda client, args: client.mark.report_delete_error(ResourceErrorEvent.model_validate(args["input"])),
-    ("bind", "body"): lambda client, args: client.bind.body(rid(args), aid(args), _OPERATIONS.validate_python(args["operations"])),
-    ("bind", "initiate"): lambda client, args: client.bind.initiate(BindInitiateCommand.model_validate(args["input"])),
-    ("bind", "reportBodyError"): lambda client, args: client.bind.report_body_error(ResourceErrorEvent.model_validate(args["input"])),
-    ("gather", "annotation"): gathered_annotation,
-    ("gather", "resource"): gathered_resource,
-    ("gather", "referencedBy"): lambda client, args: client.gather.referenced_by(rid(args)).fresh(),
-    ("match", "search"): searched,
-    ("match", "requestSearch"): lambda client, args: client.match.request_search(
-        MatchSearchRequest.model_validate(args["input"]), text(args["correlationId"], "correlationId")
-    ),
-    ("match", "resources"): found,
-    ("yield", "resource"): uploaded,
-    ("yield", "delegate"): made,
-    ("yield", "cloneToken"): lambda client, args: client.yield_.clone_token(rid(args)),
-    ("yield", "fromToken"): lambda client, args: client.yield_.from_token(text(args["token"], "token")),
-    ("yield", "createFromToken"): cloned,
-    ("yield", "clone"): lambda client, _: client.yield_.clone(),
-    ("beckon", "attention"): lambda client, args: client.beckon.attention(rid(args), aid(args) if "annotationId" in args else None),
-    ("beckon", "click"): lambda client, args: client.beckon.click(aid(args)),
-    ("beckon", "openResource"): lambda client, args: client.beckon.open_resource(rid(args)),
-    ("beckon", "sparkleAll"): lambda client, args: client.beckon.sparkle_all(aid(args)),
-    ("beckon", "hover"): hovered,
-    ("beckon", "sparkle"): lambda client, args: client.beckon.sparkle(aid(args)),
-    ("job", "status"): lambda client, args: client.job.status(JobId(text(args["jobId"], "jobId"))),
-    ("job", "pollUntilComplete"): polled,
-    ("job", "cancel"): lambda client, args: client.job.cancel(JobId(text(args["jobId"], "jobId"))),
-    ("job", "claim"): claimed,
-    ("auth", "me"): lambda client, _: client.auth.me(),
-    ("auth", "mediaToken"): lambda client, args: client.auth.media_token(rid(args)),
-    ("auth", "protectedResourceMetadata"): lambda client, _: client.auth.protected_resource_metadata(),
-    ("system", "healthCheck"): lambda client, _: client.system.health_check(),
-    ("system", "status"): lambda client, _: client.system.status(),
-}
-
-
-async def first_payload[P: WireModel](events: Typed[P]) -> JsonObject:
-    """The payload of the next event, as the wire would carry it. A refusal of it fails the case."""
-    heard = await anext(events)
-    if isinstance(heard, FrameRefusal):
-        raise AssertionError(f"a payload on {heard.channel} was refused: its `{heard.member}` {heard.reason}")
-    return written(heard.payload)
-
-
-# Every method that gives the events of a channel: what the next one carried.
-EVENTS: Final[dict[tuple[str, str], Callable[[Client], Awaitable[JsonObject]]]] = {
-    ("job", "queued"): lambda client: first_payload(client.job.queued()),
-    ("job", "progress"): lambda client: first_payload(client.job.progress()),
-    ("job", "complete"): lambda client: first_payload(client.job.complete()),
-    ("job", "fail"): lambda client: first_payload(client.job.fail()),
-}
 
 
 def content_call(call: ContentCall) -> tuple[str, JsonObject]:
@@ -534,11 +253,3 @@ def test_a_method_does_what_its_row_says(case: tuple[str, str, JsonObject, JsonO
             await world.over()
 
     run(scenario())
-
-
-def test_the_table_and_this_sdk_list_the_same_methods() -> None:
-    assert sorted({(namespace, method) for namespace, method, _, _ in CASES}) == sorted([*CALLS, *EVENTS])
-    assert len(CALLS) + len(EVENTS) == 66
-    shapes = TABLE["shapes"]
-    assert isinstance(shapes, dict)
-    assert set(shapes) == {"promise", "stream", "delegation", "upload", "cache", "signal", "count", "events", "claims"}

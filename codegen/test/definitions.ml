@@ -21,6 +21,9 @@ let schemas =
            "a/b":{"type":"boolean"},
            "names":{"type":"array","items":{"type":"string"}},
            "either":{"oneOf":[{"type":"string"},{"type":"number"}]}}}|});
+  Hashtbl.replace t "components/schemas/Loop.json"
+    (schema "components/schemas/Loop.json"
+       {|{"type":"object","properties":{"self":{"$ref":"#/properties/self"}}}|});
   Hashtbl.replace t "client/registry.json#/properties/types/0"
     (schema "client/registry.json" {|{"title":"Entry","type":"object"}|});
   t
@@ -180,6 +183,72 @@ let in_place_cases =
         | Ok _ -> Alcotest.fail "accepted");
   ]
 
+(* A schema of the client's [properties], each [$ref] read from Options.json,
+   with each member of another schema written in its place, [recorded] naming
+   records a table states. *)
+let in_place ?(recorded = []) properties =
+  let s =
+    schema "client/types/Options.json"
+      (Printf.sprintf {|{"type":"object","properties":{%s}}|} properties)
+  in
+  Definitions.members_in_place ~ids ~schemas ~recorded s
+
+let member_of = function
+  | Schema.Schema { properties = Some ps; _ } -> List.assoc_opt "m" ps
+  | Schema.Boolean_schema _ | Schema.Schema _ -> None
+
+let still_a_reference = function
+  | Some (Schema.Schema { ref_ = Some _; _ }) -> ()
+  | _ -> Alcotest.fail "the reference was written in its place"
+
+let limit =
+  {|"m":{"$ref":"../../components/schemas/Request.json#/properties/limit"}|}
+
+let whole =
+  [
+    case "a member of another schema is written in its place" (fun () ->
+        match member_of (in_place limit) with
+        | Some
+            (Schema.Schema { type_ = Some [ Integer ]; minimum = Some 1.; _ })
+          ->
+            ()
+        | _ -> Alcotest.fail "m is not the integer limit is");
+    case "a whole file stays a reference" (fun () ->
+        still_a_reference
+          (member_of
+             (in_place {|"m":{"$ref":"../../components/schemas/Request.json"}|})));
+    case "a reference to what the file defines stays a reference" (fun () ->
+        still_a_reference
+          (member_of
+             (in_place
+                {|"m":{"$ref":"../../components/schemas/Request.json#/$defs/Members"}|})));
+    case "a record a table states stays a reference" (fun () ->
+        still_a_reference
+          (member_of
+             (in_place
+                ~recorded:
+                  [ "components/schemas/Request.json#/properties/limit" ]
+                limit)));
+    case "a description beside a member written in place is refused" (fun () ->
+        match
+          in_place
+            {|"m":{"$ref":"../../components/schemas/Request.json#/properties/limit","description":"d"}|}
+        with
+        | exception Definitions.Refused _ -> ()
+        | _ -> Alcotest.fail "the description was dropped");
+    case "a member that reaches itself in its place is refused" (fun () ->
+        match
+          in_place
+            {|"m":{"$ref":"../../components/schemas/Loop.json#/properties/self"}|}
+        with
+        | exception Definitions.Refused _ -> ()
+        | _ -> Alcotest.fail "the member was written in place without end");
+  ]
+
 let () =
   Alcotest.run "definitions"
-    [ ("a $ref's schema", cases); ("files written in place", in_place_cases) ]
+    [
+      ("a $ref's schema", cases);
+      ("files written in place", in_place_cases);
+      ("members written in place", whole);
+    ]

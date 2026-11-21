@@ -166,7 +166,7 @@ let derive (spec : Spec.t) =
     | Some s -> Ok s
     | None -> Error ("refers to " ^ r.target ^ ", which is no schema")
   in
-  let closed_in = Definitions.closed_in spec in
+  let whole = Definitions.whole spec in
   (* An object's members: one that is all of some schemas, those of what they
      merge to ([Normalize]), in the order they state them. *)
   let object_ file pointer : Schema.t -> member list option = function
@@ -245,7 +245,7 @@ let derive (spec : Spec.t) =
     List.filter_map
       (fun (file, s) ->
         if String.starts_with ~prefix:types file then (
-          match closed_in s with
+          match whole s with
           | Ok s ->
               Option.map (fun shape -> (name_of file, shape)) (shape file s)
           | Error message ->

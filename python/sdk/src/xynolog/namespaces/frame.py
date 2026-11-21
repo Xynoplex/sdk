@@ -21,13 +21,13 @@ class FrameNamespace:
     def __init__(self, links: Links) -> None:
         self._links: Final = links
 
-    async def add_entity_type(self, entity_type: str) -> None:
+    async def add_entity_type(self, type: str) -> None:
         """Add one entity type. Adding one that is there already changes nothing."""
-        await self._links.request(FRAME_ADD_ENTITY_TYPE, FrameAddEntityTypeCommand(tag=entity_type))
+        await self._links.request(FRAME_ADD_ENTITY_TYPE, FrameAddEntityTypeCommand(tag=type))
 
-    async def add_entity_types(self, entity_types: Sequence[str]) -> None:
+    async def add_entity_types(self, types: Sequence[str]) -> None:
         """Add several, one request each, in order. The first that fails ends it."""
-        for entity_type in entity_types:
+        for entity_type in types:
             await self.add_entity_type(entity_type)
 
     async def add_tag_schema(self, schema: TagSchema) -> None:

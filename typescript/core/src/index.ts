@@ -144,6 +144,12 @@ export type {
   TextSpan,
   ReconciledSpan,
   UploadProgress,
+  ClaimOptions,
+  CreateFromTokenOptions,
+  GatherResourceOptions,
+  JobPollOptions,
+  MatchSearchOptions,
+  ResourceSearchFilters,
 } from './payload-types';
 
 // Event utilities

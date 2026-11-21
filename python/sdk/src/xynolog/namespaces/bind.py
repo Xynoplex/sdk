@@ -29,10 +29,10 @@ class BindNamespace:
             BIND_UPDATE_BODY, BindUpdateBodyCommand(annotation_id=annotation_id, resource_id=resource_id, operations=list(operations))
         )
 
-    def initiate(self, command: BindInitiateCommand) -> None:
+    def initiate(self, input: BindInitiateCommand) -> None:
         """Signal: a binding is wanted for an annotation."""
-        self._links.signal(BIND_INITIATE, command)
+        self._links.signal(BIND_INITIATE, input)
 
-    def report_body_error(self, event: ResourceErrorEvent) -> None:
+    def report_body_error(self, input: ResourceErrorEvent) -> None:
         """Signal: a body update failed where nothing could show it."""
-        self._links.signal(BIND_BODY_ERROR, event)
+        self._links.signal(BIND_BODY_ERROR, input)

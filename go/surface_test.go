@@ -372,9 +372,10 @@ var calls = map[string]call{
 	},
 	"match.search": func(ctx context.Context, c *xynolog.Client, a args) {
 		stated := a.stated("options", "limit", "useSemanticScoring")
-		var options xynolog.MatchSearchOptions
+		var options api.MatchSearchOptions
 		if raw, ok := stated["limit"]; ok {
-			options.Limit = decodeInto[int](a, raw)
+			limit := decodeInto[int](a, raw)
+			options.Limit = &limit
 		}
 		if raw, ok := stated["useSemanticScoring"]; ok {
 			semantic := decodeInto[bool](a, raw)
@@ -414,7 +415,7 @@ var calls = map[string]call{
 	},
 	"yield.createFromToken": func(ctx context.Context, c *xynolog.Client, a args) {
 		stated := a.stated("options", "token", "name", "content")
-		_, _ = c.Yield.CreateFromToken(ctx, xynolog.CreateFromTokenOptions{
+		_, _ = c.Yield.CreateFromToken(ctx, api.CreateFromTokenOptions{
 			Token:   decodeInto[string](a, stated["token"]),
 			Name:    decodeInto[string](a, stated["name"]),
 			Content: decodeInto[string](a, stated["content"]),

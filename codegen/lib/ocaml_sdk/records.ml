@@ -14,8 +14,8 @@
    variant, a constructor per value of its tag carrying the branch's other
    members. A member is the table record or the enum it names, a string, a
    boolean, an integer or a number, a string component as a string and any
-   other as its [Models] value; one that may be absent, or null, is an
-   option. *)
+   other as its [Models] value, or a list of one of those; one that may be
+   absent, or null, is an option. *)
 
 module O = Ocaml_syntax
 
@@ -112,12 +112,12 @@ let tabled (spec : Spec.t) table =
     raise (Refused { Decode.file; pointer = pointer ^ at; message })
   in
   let enums = Enums.tabled spec.ids table in
-  let closed_in = Definitions.closed_in spec in
+  let whole = Definitions.whole spec in
   let clients =
     List.filter_map
       (fun name ->
         let key = Schema_names.client_types ^ name ^ ".json" in
-        match closed_in (List.assoc key spec.schemas) with
+        match whole (List.assoc key spec.schemas) with
         | Ok schema when Enums.is_enum schema -> None
         | Ok schema -> Some (key, name, schema)
         | Error message -> refuse key "" message)
@@ -166,15 +166,10 @@ let tabled (spec : Spec.t) table =
           | Error message -> refuse key at message)
       | Schema.Boolean_schema _ -> (schema, false)
     in
-    let referent =
+    let rec base_of schema =
       match schema with
-      | Schema.Schema { ref_ = Some r; _ } ->
-          Some (Table_records.key spec.Spec.ids r)
-      | _ -> None
-    in
-    let base, need =
-      match referent with
-      | Some target -> (
+      | Schema.Schema { ref_ = Some r; _ } -> (
+          let target = Table_records.key spec.Spec.ids r in
           match (enum_of target, module_of target, component target) with
           | Some m, _, _ -> (O.type_ ("Enums." ^ m ^ ".t"), None)
           | None, Some m, _ -> (O.type_ (m ^ ".t"), Some m)
@@ -187,18 +182,17 @@ let tabled (spec : Spec.t) table =
               (O.type_ "Models.t" ~args:[ O.tags [ component ] ], None)
           | None, None, None ->
               refuse key at "names no schema the OCaml SDK has a type for")
-      | None -> (
-          match schema with
-          | Schema.Schema { type_ = Some [ String ]; enum = None; _ } ->
-              (O.type_ "string", None)
-          | Schema.Schema { type_ = Some [ Boolean ]; _ } ->
-              (O.type_ "bool", None)
-          | Schema.Schema { type_ = Some [ Integer ]; _ } ->
-              (O.type_ "int", None)
-          | Schema.Schema { type_ = Some [ Number ]; _ } ->
-              (O.type_ "float", None)
-          | _ -> refuse key at "is no member the OCaml SDK has a type for")
+      | Schema.Schema { type_ = Some [ String ]; enum = None; _ } ->
+          (O.type_ "string", None)
+      | Schema.Schema { type_ = Some [ Boolean ]; _ } -> (O.type_ "bool", None)
+      | Schema.Schema { type_ = Some [ Integer ]; _ } -> (O.type_ "int", None)
+      | Schema.Schema { type_ = Some [ Number ]; _ } -> (O.type_ "float", None)
+      | Schema.Schema { type_ = Some [ Array ]; items = Some items; _ } ->
+          let item, need = base_of items in
+          (O.type_ "list" ~args:[ item ], need)
+      | _ -> refuse key at "is no member the OCaml SDK has a type for"
     in
+    let base, need = base_of schema in
     let type_ =
       match (List.mem name required, nullable) with
       | true, false -> base

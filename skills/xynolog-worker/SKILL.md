@@ -468,6 +468,7 @@ from xynolog.types import (
     Agent,
     AgentSoftware,
     Annotation,
+    ClaimOptions,
     JobProgress,
     MarkJobDone,
     MarkJobFilter,
@@ -503,7 +504,7 @@ async def highlight(client: XynologClient[HttpTransport], job: HeldMarkJob, gene
 async def work(gateway: str, issuer: str, client_id: str, key: str) -> None:
     # The process signs in at its issuer as its account, by its key: the agent its work is attributed to.
     service = ServiceToken(KeyCredential(issuer=issuer, client_id=client_id, private_key=private_key_from_pem(key)))
-    accepts = [MarkJobFilter(job_type="mark", params=MarkJobFilterParams(motivation="highlighting"))]
+    options = ClaimOptions(accepts=[MarkJobFilter(job_type="mark", params=MarkJobFilterParams(motivation="highlighting"))])
     async with (
         AgentToken(gateway, service=service) as agent,
         # Its stream names what claiming and committing read. This worker awaits nothing else, so it names nothing else.
@@ -518,7 +519,7 @@ async def work(gateway: str, issuer: str, client_id: str, key: str) -> None:
         # What made the annotations it commits: the agent, as the gateway names it, and the engine it ran. It carries no name.
         generator = AgentSoftware(type="Software", id=agent.did, provider=PROVIDER, model=MODEL)
         # Leaving this block stops the worker: a job it still holds is failed first, and the queue retries it.
-        async with client.job.claim(accepts) as claims:
+        async with client.job.claim(options) as claims:
             # Each job the worker comes to hold, one at a time. The next is claimed when this one settles.
             async for handed in claims:
                 match handed:

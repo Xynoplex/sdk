@@ -29,6 +29,8 @@ import {
   type Motivation,
   type PutBinaryRequest,
   type ResourceId,
+  type ClaimOptions,
+  type CreateFromTokenOptions,
   type TagSchema,
   type components,
 } from '@xynolog/core';
@@ -38,11 +40,7 @@ import {
   StreamObservable,
   UploadObservable,
 } from '../awaitable';
-import {
-  ClaimsObservable,
-  JOB_CLAIM_CHANNELS,
-  type ClaimOptions,
-} from '../claims';
+import { ClaimsObservable, JOB_CLAIM_CHANNELS } from '../claims';
 import { XynologClient } from '../client';
 import { FaultyTransport } from '../testing';
 import type {
@@ -51,7 +49,6 @@ import type {
   BindNamespace,
   BrowseNamespace,
   CreateAnnotationInput,
-  CreateFromTokenOptions,
   FrameNamespace,
   GatherNamespace,
   JobNamespace,

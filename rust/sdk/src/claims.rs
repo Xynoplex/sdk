@@ -65,10 +65,10 @@ use crate::locked;
 use crate::timing::{HELD_JOB_STALL, HELD_JOB_STALL_CHECK, JOB_CLAIM_TIMEOUT, MARK_COMMIT_TIMEOUT};
 use crate::transport::{ConnectionState, Envelope, Events, TraceCarrier, Transport};
 use crate::types::{
-    Annotation, AnnotationId, BrowseAnnotationRequest, DurabilityEvidence, FailureClass,
-    GatheredContext, GatheredContextFocus, JobCancelCommand, JobCheckpointCommand, JobClaimCommand,
-    JobCompleteCommand, JobFailCommand, JobFilter, JobId, JobMetadata, JobParams, JobProgress,
-    JobReportProgressCommand, JobRunning, JobStartCommand, JobType, MarkCommitCommand,
+    Annotation, AnnotationId, BrowseAnnotationRequest, ClaimOptions, DurabilityEvidence,
+    FailureClass, GatheredContext, GatheredContextFocus, JobCancelCommand, JobCheckpointCommand,
+    JobClaimCommand, JobCompleteCommand, JobFailCommand, JobFilter, JobId, JobMetadata, JobParams,
+    JobProgress, JobReportProgressCommand, JobRunning, JobStartCommand, JobType, MarkCommitCommand,
     MarkJobCompleteCommand, MarkJobResult, ResourceId, UnitCursor, YieldJobCompleteCommand,
     YieldJobResult,
 };
@@ -145,9 +145,9 @@ pub fn will_retry_after(metadata: &JobMetadata, failure_class: Option<FailureCla
 }
 
 /// The waits a worker keeps, each the value of protocol/specs/src/client/timing.json
-/// unless a caller that must not wait it out states another.
+/// unless its `ClaimOptions` state another.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ClaimTiming {
+struct ClaimTiming {
     /// How long a claim waits for its answer.
     pub job_claim: Duration,
     /// How long a held job may show no activity before it is stalled.
@@ -159,32 +159,14 @@ pub struct ClaimTiming {
     pub mark_commit: Duration,
 }
 
-impl Default for ClaimTiming {
-    fn default() -> ClaimTiming {
+impl ClaimTiming {
+    fn of(options: &ClaimOptions) -> ClaimTiming {
+        let stated = |ms: Option<u64>, table: Duration| ms.map_or(table, Duration::from_millis);
         ClaimTiming {
-            job_claim: JOB_CLAIM_TIMEOUT,
-            held_job_stall: HELD_JOB_STALL,
-            held_job_stall_check: HELD_JOB_STALL_CHECK,
-            mark_commit: MARK_COMMIT_TIMEOUT,
-        }
-    }
-}
-
-/// What a worker claims with.
-#[derive(Debug, Clone)]
-pub struct ClaimOptions {
-    /// The jobs this worker takes: the claim's `accepts`, and what a
-    /// `job:queued` is checked against. At least one.
-    pub accepts: Vec<JobFilter>,
-    pub timing: ClaimTiming,
-}
-
-impl ClaimOptions {
-    /// Claim the jobs `accepts` describes, waiting as the table says.
-    pub fn new(accepts: Vec<JobFilter>) -> ClaimOptions {
-        ClaimOptions {
-            accepts,
-            timing: ClaimTiming::default(),
+            job_claim: stated(options.job_claim_timeout_ms, JOB_CLAIM_TIMEOUT),
+            held_job_stall: stated(options.held_job_stall_ms, HELD_JOB_STALL),
+            held_job_stall_check: stated(options.held_job_stall_check_ms, HELD_JOB_STALL_CHECK),
+            mark_commit: stated(options.mark_commit_timeout_ms, MARK_COMMIT_TIMEOUT),
         }
     }
 }
@@ -1298,8 +1280,8 @@ impl Claims {
             inner: Arc::new(Inner {
                 wire: Bus::new(transport.clone()),
                 transport,
+                timing: ClaimTiming::of(&options),
                 accepts: options.accepts,
-                timing: options.timing,
                 state: Mutex::new(State::default()),
                 settled: Notify::new(),
                 stalls: KeptForFirstReader::new(),

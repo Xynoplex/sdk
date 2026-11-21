@@ -43,4 +43,4 @@ pub use mark::MarkNamespace;
 pub use match_::MatchNamespace;
 pub(crate) use refresher::Refresher;
 pub use system::SystemNamespace;
-pub use yield_::{CreateFromTokenOptions, YieldNamespace, stall_deadline};
+pub use yield_::{YieldNamespace, stall_deadline};

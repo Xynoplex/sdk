@@ -28,16 +28,6 @@ func generationStallDeadline(timing Timing, maxTokens *float64) time.Duration {
 	return max(timing.GenerationStallFloor, grown)
 }
 
-// CreateFromTokenOptions is a clone to create: the token its source was
-// shared under, the clone's name and its text, and whether the source is
-// archived once the clone exists (nil: it is not).
-type CreateFromTokenOptions struct {
-	Token           string
-	Name            string
-	Content         string
-	ArchiveOriginal *bool
-}
-
 // YieldNamespace is creating resources.
 type YieldNamespace struct {
 	links   *links
@@ -113,7 +103,7 @@ func (n *YieldNamespace) FromToken(ctx context.Context, token string) (api.Resou
 // made from. The source is read first. The clone's content then goes by the
 // upload path, in the format its source's allows (mediatypes.CloneFormat)
 // and under a name made from its own.
-func (n *YieldNamespace) CreateFromToken(ctx context.Context, options CreateFromTokenOptions) (api.CreateResourceResponse, error) {
+func (n *YieldNamespace) CreateFromToken(ctx context.Context, options api.CreateFromTokenOptions) (api.CreateResourceResponse, error) {
 	source, err := n.FromToken(ctx, options.Token)
 	if err != nil {
 		return api.CreateResourceResponse{}, err

@@ -39,9 +39,8 @@ from xynolog.events import Events
 from xynolog.http import HttpTransport, Timing
 from xynolog.identifiers import InvalidIdentifier, ResourceId
 from xynolog.model import written
-from xynolog.timing import HELD_JOB_STALL_CHECK_MS, HELD_JOB_STALL_MS, JOB_CLAIM_TIMEOUT_MS, MARK_COMMIT_TIMEOUT_MS
 from xynolog.transport import ConnectionState, ResourceHold
-from xynolog.types import Annotation, FailureClass, JobFilter, JobProgress, MarkJobResult, UnitCursor, YieldJobResult
+from xynolog.types import Annotation, ClaimOptions, FailureClass, JobFilter, JobProgress, MarkJobResult, UnitCursor, YieldJobResult
 from xynolog.watched import Variable
 
 _FILTERS: Final = TypeAdapter[list[JobFilter]](list[JobFilter])
@@ -56,25 +55,22 @@ _ANNOTATIONS: Final = TypeAdapter[list[Annotation]](list[Annotation])
 @final
 @dataclass(frozen=True, slots=True)
 class _Waits:
-    """A worker's waits, as `open` stated them: each the table's unless a case states another."""
+    """A worker's waits, as `open` stated them: None for one a case leaves to the table."""
 
-    job_claim_timeout_ms: int = JOB_CLAIM_TIMEOUT_MS
-    held_job_stall_ms: int = HELD_JOB_STALL_MS
-    held_job_stall_check_ms: int = HELD_JOB_STALL_CHECK_MS
-    mark_commit_timeout_ms: int = MARK_COMMIT_TIMEOUT_MS
+    job_claim_timeout_ms: int | None = None
+    held_job_stall_ms: int | None = None
+    held_job_stall_check_ms: int | None = None
+    mark_commit_timeout_ms: int | None = None
 
 
 def _timings(stated: Arguments) -> tuple[Timing, _Waits]:
     """The timing a case states, each entry by its name in `protocol/specs/src/client/timing.json`: the transport's, and a worker's."""
     known = Timing()
     reconnect_ms, lazy_remove_ms, linger_ms = known.reconnect_ms, known.lazy_remove_ms, known.linger_ms
-    waits = _Waits()
-    job_claim_timeout_ms, held_job_stall_ms, held_job_stall_check_ms, mark_commit_timeout_ms = (
-        waits.job_claim_timeout_ms,
-        waits.held_job_stall_ms,
-        waits.held_job_stall_check_ms,
-        waits.mark_commit_timeout_ms,
-    )
+    job_claim_timeout_ms: int | None = None
+    held_job_stall_ms: int | None = None
+    held_job_stall_check_ms: int | None = None
+    mark_commit_timeout_ms: int | None = None
     for name in stated:
         match name:
             case "reconnectMs":
@@ -252,11 +248,13 @@ class Worker:
             raise Misuse("the worker is already claiming")
         accepts = _as_the_suite_wrote_it(_FILTERS, args.get("accepts"), "accepts")
         claims = self._opened().job.claim(
-            accepts,
-            job_claim_timeout_ms=self._waits.job_claim_timeout_ms,
-            held_job_stall_ms=self._waits.held_job_stall_ms,
-            held_job_stall_check_ms=self._waits.held_job_stall_check_ms,
-            mark_commit_timeout_ms=self._waits.mark_commit_timeout_ms,
+            ClaimOptions(
+                accepts=accepts,
+                job_claim_timeout_ms=self._waits.job_claim_timeout_ms,
+                held_job_stall_ms=self._waits.held_job_stall_ms,
+                held_job_stall_check_ms=self._waits.held_job_stall_check_ms,
+                mark_commit_timeout_ms=self._waits.mark_commit_timeout_ms,
+            )
         )
         self._claims = claims
         self._telling.append(self._reporters.create_task(self._reading(claims)))

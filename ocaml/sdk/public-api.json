@@ -191,7 +191,7 @@
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
     "lib/record_reader.ml": "053aa7e17c38b3cedb840b7623fd666e17717a5bbe8e1087b56aaf05d8ac3d89",
     "lib/record_reader.mli": "8f988856668a1d426cb6384fa2bf2703d6d791be33f82c8db87c2e1fd1919ce5",
-    "lib/records.ml": "8df65d6059e020bbb35f2a3aab834bd2d9a460b220be1a549352954affb607cb",
+    "lib/records.ml": "461eeb9ff2a11c2071e664916103456e216336ec223b7056081017ea760e4d73",
     "lib/redirect_sign_in.ml": "d3b7206b16548f24a4fcf3dfa6143bc7fc8fa0fe4de2e61598a460be41c2ef6f",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
     "lib/registry.ml": "b7d3d0a4bb36ac212add5c60d050b7e64e0047722f5a7a542bc2daea3bc83f6a",
@@ -14169,6 +14169,41 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Claim_options",
+      "declaration": "module Claim_options :\n  sig\n    type t = {\n      accepts : [ `JobFilter ] Xynolog__.Models.t list;\n      job_claim_timeout_ms : int option;\n      held_job_stall_ms : int option;\n      held_job_stall_check_ms : int option;\n      mark_commit_timeout_ms : int option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Claim_options.t",
+      "declaration": "type t = {\n  accepts : [ `JobFilter ] Xynolog__.Models.t list;\n  job_claim_timeout_ms : int option;\n  held_job_stall_ms : int option;\n  held_job_stall_check_ms : int option;\n  mark_commit_timeout_ms : int option;\n}",
+      "representation": "record",
+      "fields": [
+        "accepts",
+        "job_claim_timeout_ms",
+        "held_job_stall_ms",
+        "held_job_stall_check_ms",
+        "mark_commit_timeout_ms"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Create_from_token_options",
+      "declaration": "module Create_from_token_options :\n  sig\n    type t = {\n      token : string;\n      name : string;\n      content : string;\n      archive_original : bool option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Create_from_token_options.t",
+      "declaration": "type t = {\n  token : string;\n  name : string;\n  content : string;\n  archive_original : bool option;\n}",
+      "representation": "record",
+      "fields": [
+        "token",
+        "name",
+        "content",
+        "archive_original"
+      ]
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Device_code",
       "declaration": "module Device_code :\n  sig\n    type t = {\n      user_code : string;\n      verification_uri : string;\n      verification_uri_complete : string option;\n      expires_in : int;\n    }\n  end"
     },
@@ -14186,6 +14221,24 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Gather_resource_options",
+      "declaration": "module Gather_resource_options :\n  sig\n    type t = {\n      depth : int option;\n      max_resources : int option;\n      include_content : bool option;\n      include_summary : bool option;\n      exclude_entity_types : string list option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Gather_resource_options.t",
+      "declaration": "type t = {\n  depth : int option;\n  max_resources : int option;\n  include_content : bool option;\n  include_summary : bool option;\n  exclude_entity_types : string list option;\n}",
+      "representation": "record",
+      "fields": [
+        "depth",
+        "max_resources",
+        "include_content",
+        "include_summary",
+        "exclude_entity_types"
+      ]
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Issued_tokens",
       "declaration": "module Issued_tokens :\n  sig type t = { access : string; refresh : string; } end"
     },
@@ -14197,6 +14250,36 @@
       "fields": [
         "access",
         "refresh"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Job_poll_options",
+      "declaration": "module Job_poll_options :\n  sig type t = { every_ms : int option; within_ms : int option; } end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Job_poll_options.t",
+      "declaration": "type t = { every_ms : int option; within_ms : int option; }",
+      "representation": "record",
+      "fields": [
+        "every_ms",
+        "within_ms"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Match_search_options",
+      "declaration": "module Match_search_options :\n  sig\n    type t = { limit : int option; use_semantic_scoring : bool option; }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Match_search_options.t",
+      "declaration": "type t = { limit : int option; use_semantic_scoring : bool option; }",
+      "representation": "record",
+      "fields": [
+        "limit",
+        "use_semantic_scoring"
       ]
     },
     {
@@ -14310,6 +14393,23 @@
           ],
           "unit": false
         }
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Resource_search_filters",
+      "declaration": "module Resource_search_filters :\n  sig\n    type t = {\n      archived : bool option;\n      entity_type : string option;\n      offset : int option;\n      limit : int option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Resource_search_filters.t",
+      "declaration": "type t = {\n  archived : bool option;\n  entity_type : string option;\n  offset : int option;\n  limit : int option;\n}",
+      "representation": "record",
+      "fields": [
+        "archived",
+        "entity_type",
+        "offset",
+        "limit"
       ]
     },
     {

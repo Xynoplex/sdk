@@ -15,6 +15,7 @@ from xynolog.timing import GENERATION_STALL_ASSUMED_TOKENS_COUNT, GENERATION_STA
 from xynolog.transport import ContentTransport, PutBinaryRequest, Upload
 from xynolog.types import (
     CloneResourceWithTokenResponse,
+    CreateFromTokenOptions,
     CreateResourceResponse,
     GatheredContextFocusResource,
     GenerationJobParams,
@@ -75,26 +76,24 @@ class YieldNamespace:
         answer = await self._links.request(YIELD_CLONE_RESOURCE_REQUESTED, YieldCloneResourceRequest(token=token))
         return answer.response.source_resource
 
-    async def create_from_token(
-        self, *, token: str, name: str, content: str, archive_original: bool | None = None
-    ) -> CreateResourceResponse:
-        """Create a resource as a clone of the one `token` was made from.
+    async def create_from_token(self, options: CreateFromTokenOptions) -> CreateResourceResponse:
+        """Create a resource as a clone of the one `options.token` was made from.
 
         The source is read first. The clone's content then goes by the upload
         path, in the format its source's allows
         (`xynolog.media_types.clone_format`) and under a name made from its
-        own. `archive_original` archives the source once the clone exists.
+        own. `options.archive_original` archives the source once the clone exists.
         """
-        source = await self.from_token(token)
+        source = await self.from_token(options.token)
         format_ = clone_format(primary_media_type(source))
         return await self._content.put_binary(
             PutBinaryRequest(
-                name=name,
-                file=content.encode(),
+                name=options.name,
+                file=options.content.encode(),
                 format=format_.media_type,
-                storage_uri=storage_uri(name, format_),
-                clone_token=token,
-                archive_original=archive_original,
+                storage_uri=storage_uri(options.name, format_),
+                clone_token=options.token,
+                archive_original=options.archive_original,
             )
         )
 

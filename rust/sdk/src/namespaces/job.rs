@@ -6,11 +6,12 @@ use crate::bus::Typed;
 use crate::channels::{
     JobCancelRequested, JobComplete, JobFail, JobQueued, JobReportProgress, JobStatusRequested,
 };
-use crate::claims::{ClaimOptions, Claims};
+use crate::claims::Claims;
 use crate::client::Links;
 use crate::errors::{BusRequestError, BusRequestErrorCode, XynologError};
 use crate::event_bus::BusFrames;
 use crate::timing::{JOB_POLL, JOB_POLL_TIMEOUT};
+use crate::types::ClaimOptions;
 use crate::types::JobId;
 use crate::types::{
     JobCancelRequest, JobStatusRequest, JobStatusResponse, JobStatusResponseStatus,

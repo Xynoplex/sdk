@@ -46,7 +46,7 @@ held with `async with` runs its block in that trace: so a span a worker
 starts there, and every message the job sends from inside it, continue the
 trace that began with the claim, with nothing written for it.
 
-    async with client.job.claim(accepts) as claims:
+    async with client.job.claim(ClaimOptions(accepts=accepts)) as claims:
         async for handed in claims:
             if isinstance(handed, ClaimRefusal):
                 continue  # the host judges: `bus.unauthorized` means stop

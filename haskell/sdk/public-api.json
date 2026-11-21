@@ -98,6 +98,7 @@
     "generated/Xynolog/Internal/Generated/Models/BusResumeGap.hs": "079b6ee0e64e00a04ad6c54e82ac08a190a210ce3f2f9e1df79e6955521b116b",
     "generated/Xynolog/Internal/Generated/Models/BusStreamMessage.hs": "717099baafa75383e799d25bc6e4030c10a71d433f68dccf5decfc52a8529d94",
     "generated/Xynolog/Internal/Generated/Models/BusSubscribeRequest.hs": "5a7eacebbe663c2353e65758a1ddcfb6f8e2e54a57fb80f1f9dd7a34ba46b7f7",
+    "generated/Xynolog/Internal/Generated/Models/ClaimOptions.hs": "d6da01cd6259141026e6607cf1aab82ed11f8fbb48a20d83192aae7b6bfb9936",
     "generated/Xynolog/Internal/Generated/Models/CloneResourceWithTokenResponse.hs": "d0cdc72c7db984a0f5b5e2bc9c46dfd51e2f9f03b29407ddbfdbc9acec018132",
     "generated/Xynolog/Internal/Generated/Models/CloneResourceWithTokenResponseBusEnvelope.hs": "a1d780fb0fcbece86128df6f48deb75673fb75c97e80f5cac7fe8230874a238e",
     "generated/Xynolog/Internal/Generated/Models/CommandError.hs": "57ad5ea92db9d3b443e6e533e9a4e081e3299d640a1002fdc13352048c151118",
@@ -107,6 +108,7 @@
     "generated/Xynolog/Internal/Generated/Models/ContextualSummaryResponse.hs": "881acb17f2fd2e6f5e34f79ed26ca249c31db767fd744f3b761e6a42c970e857",
     "generated/Xynolog/Internal/Generated/Models/ContextualSummaryResponseBusEnvelope.hs": "005722a15930dd345f19630885fc835e57fa8ac84b00388ad587638999a33605",
     "generated/Xynolog/Internal/Generated/Models/CreateAnnotationRequest.hs": "6124c0e6ca2ffcabfa80e8c7903a97be3e0252ab390d4b8bf6b34e5b72e8388f",
+    "generated/Xynolog/Internal/Generated/Models/CreateFromTokenOptions.hs": "ae73f0a710933a6eaa1ea858376b9486bf0faa1b45d2a53b3ecadbd9fc9b8154",
     "generated/Xynolog/Internal/Generated/Models/CreateResourceResponse.hs": "4142869578505512d5b6948b23cafe98049625041f92f9b4ff368b551daadc33",
     "generated/Xynolog/Internal/Generated/Models/CursorsPath.hs": "c6c33600ce6bd386d9c7059f60c7e09dcf596ddfbe361b2a86259b3cb4c879cb",
     "generated/Xynolog/Internal/Generated/Models/DeviceCode.hs": "8a242801af5b4b57c9a26f683e4b93fcd74771272e3494ac9ca49a08caa477e3",
@@ -208,6 +210,7 @@
     "generated/Xynolog/Internal/Generated/Models/JobMetadata.hs": "2189633ad3b0fdb140fb0a8903344e6dfe019556fd4aca6c9a9d2336b247fb2f",
     "generated/Xynolog/Internal/Generated/Models/JobParams.hs": "1f4ef0b1f66551ca90de1eff76a16fba304ea568c78357fea074a294afed2c3f",
     "generated/Xynolog/Internal/Generated/Models/JobPending.hs": "37c6758d01d32f10bb7f3a441f39b3e3e11d75c49695e09a9e662dd492cab3f0",
+    "generated/Xynolog/Internal/Generated/Models/JobPollOptions.hs": "44a330c9644b1afc9ee59ce69633559c6d39ba15c143615f14f195403e4789d6",
     "generated/Xynolog/Internal/Generated/Models/JobProgress.hs": "5c90b1663cd176191e31772db3e95692f162c458572a463ef4a0846e1c3301c1",
     "generated/Xynolog/Internal/Generated/Models/JobProgressAnalyzing.hs": "97a630fcee70444de577211cf0f2175c75faf9d2a35d9a4f86446ae17f64f0a7",
     "generated/Xynolog/Internal/Generated/Models/JobProgressAnalyzingTags.hs": "d502fdf17af9a3853df381f7ebaa251637938d99c821d1a55802e7292220173b",
@@ -327,6 +330,7 @@
     "generated/Xynolog/Internal/Generated/Models/ResourceErrorEvent.hs": "f1e4c4cbc51da4ff0ab5b324df4122bb0551025d268822ea5a0fd3110b5a7bb6",
     "generated/Xynolog/Internal/Generated/Models/ResourceId.hs": "3fa506f6f6b9d0522c7f73264c62528478441ce1288c0ebc52452b02acec67ee",
     "generated/Xynolog/Internal/Generated/Models/ResourceMovedPayload.hs": "0e4aaa5a6b2c1423ae49317130daa2d134fff21837e4cb4bdea7eadb222f45e2",
+    "generated/Xynolog/Internal/Generated/Models/ResourceSearchFilters.hs": "92db488825a063211e7e88fa83287596d1c61867fe8775f4da00447356845823",
     "generated/Xynolog/Internal/Generated/Models/ResourceUnarchivedPayload.hs": "fa8af18e7b882aa899de6c45ff12920abe9f8c0abcd28f03a9bfc0aa44205835",
     "generated/Xynolog/Internal/Generated/Models/ResourceUpdatedPayload.hs": "efb5117296a12c6478daafe8289bf584804d0e27609bad327938e054eb67f610",
     "generated/Xynolog/Internal/Generated/Models/ResourceUpload.hs": "3704cef8a2a022d03230ed1fa18de884d64fcb48b92a8c382718abfacb72768e",
@@ -412,7 +416,7 @@
     "generated/Xynolog/Internal/Generated/PendingAnnotation.hs": "92d649918dbb3c601b8ecb95ad0f690d1d19f8bebb505734c6730bbdef89e830",
     "generated/Xynolog/Internal/Generated/Principals.hs": "02fd2fd7b956e96bcda03bb7685472bf1a029666bf21fe32c1ff3e0ab217ceb9",
     "generated/Xynolog/Internal/Generated/Required.hs": "0497d1dc98daa2c134175ab9a82767782c3b5e387415cee83a244988b0a7821a",
-    "generated/Xynolog/Internal/Generated/Schemas.hs": "a8643d7f4e73ac57338fb2165495cc881eb6282bd5663c07eb438e177faa9351",
+    "generated/Xynolog/Internal/Generated/Schemas.hs": "68f241d6ca61986a270e312b1266b5e4c7fd80cd2b895ce514f8a5d9216dbe43",
     "generated/Xynolog/Internal/Generated/SearchState.hs": "d5994a174a2a535cb04661283a500feb97cf4e80783492c2cf390e712b38c0a9",
     "generated/Xynolog/Internal/Generated/ServiceProof.hs": "86e44db90b1ac4a3713f4794f4f1f2f32bdf7eeeb7ad24e12046c050f8acadaf",
     "generated/Xynolog/Internal/Generated/SessionFactoryOptions.hs": "1378c790f4a48832e1a0a938eb64c8759870e4ebf73f2445e8ba81c354334c45",
@@ -540,7 +544,7 @@
     "src/Xynolog/Tokens.hs": "bba264adde2b8a6c123b9e64e99aeae6fd917f9a09f10194684a8daf708bceca",
     "src/Xynolog/Transport.hs": "5f0c95953108daa834e02c580f0ffb49c3d8fb30ad4cf0424ae3b19c500de034",
     "src/Xynolog/Transport/Facts.hs": "b861a07eb1fc5319a56fec2889c08f9fe7d59c43682d5b488d14520377ff08ba",
-    "src/Xynolog/Types.hs": "0f7efb8fffcddf6bea47b83b1ebb8f33786f32b086309114711ab8382f87b43c",
+    "src/Xynolog/Types.hs": "eff14bebefb44272d5e0f39492ce3d1b2e57913d8e7bb6f0a71060f26c6de655",
     "src/Xynolog/Types/Presence.hs": "0c700ed04e5fe1fe43786d384622dbf716ea8703a1af8b8d8b894876dbe13a8f",
     "src/Xynolog/Worker.hs": "b3059ffc5f52c53c19d967ae9551f753a142ef3827730ed3b5e10722d3445706",
     "src/Xynolog/Yield.hs": "591b83ed53bf6af381c539738b2d4993d196912f4131bd26d4d7b0624354a562",
@@ -3397,6 +3401,10 @@
           "definition": "data Xynolog.Internal.Generated.Models.BusSubscribeRequest.BusSubscribeRequestScopedItem = ...",
           "kind": "*"
         },
+        "ClaimOptions": {
+          "definition": "data Xynolog.Internal.Generated.Models.ClaimOptions.ClaimOptions = ...",
+          "kind": "*"
+        },
         "CloneResourceWithTokenResponse": {
           "definition": "data Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse.CloneResourceWithTokenResponse = ...",
           "kind": "*"
@@ -3451,6 +3459,10 @@
         },
         "CreateAnnotationRequest": {
           "definition": "data Xynolog.Internal.Generated.Models.CreateAnnotationRequest.CreateAnnotationRequest = ...",
+          "kind": "*"
+        },
+        "CreateFromTokenOptions": {
+          "definition": "data Xynolog.Internal.Generated.Models.CreateFromTokenOptions.CreateFromTokenOptions = ...",
           "kind": "*"
         },
         "CreateResourceResponse": {
@@ -4063,6 +4075,10 @@
         },
         "JobPendingStatus": {
           "definition": "data Xynolog.Internal.Generated.Models.JobPending.JobPendingStatus = ...",
+          "kind": "*"
+        },
+        "JobPollOptions": {
+          "definition": "data Xynolog.Internal.Generated.Models.JobPollOptions.JobPollOptions = ...",
           "kind": "*"
         },
         "JobProgress": {
@@ -4801,6 +4817,10 @@
           "definition": "data Xynolog.Internal.Generated.Models.ResourceMovedPayload.ResourceMovedPayload = ...",
           "kind": "*"
         },
+        "ResourceSearchFilters": {
+          "definition": "data Xynolog.Internal.Generated.Models.ResourceSearchFilters.ResourceSearchFilters = ...",
+          "kind": "*"
+        },
         "ResourceUnarchivedPayload": {
           "definition": "data Xynolog.Internal.Generated.Models.ResourceUnarchivedPayload.ResourceUnarchivedPayload = ...",
           "kind": "*"
@@ -5446,6 +5466,7 @@
         "BusStreamMessageBranch2": "Xynolog.Internal.Generated.Models.BusPingMessage.BusPingMessage -> Xynolog.Internal.Generated.Models.BusStreamMessage.BusStreamMessage",
         "BusSubscribeRequest": "Data.Text.Internal.Text -> Maybe [Data.Text.Internal.Text] -> Maybe [Data.Text.Internal.Text] -> Maybe [Xynolog.Internal.Generated.Models.BusSubscribeRequest.BusSubscribeRequestScopedItem] -> Xynolog.Internal.Generated.Models.BusSubscribeRequest.BusSubscribeRequest",
         "BusSubscribeRequestScopedItem": "[Data.Text.Internal.Text] -> Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Generated.Models.BusSubscribeRequest.BusSubscribeRequestScopedItem",
+        "ClaimOptions": "[Xynolog.Internal.Generated.Models.JobFilter.JobFilter] -> Maybe Integer -> Maybe Integer -> Maybe Integer -> Maybe Integer -> Xynolog.Internal.Generated.Models.ClaimOptions.ClaimOptions",
         "CloneResourceWithTokenResponse": "Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptor -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse.CloneResourceWithTokenResponse",
         "CloneResourceWithTokenResponseBusEnvelope": "Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse.CloneResourceWithTokenResponse -> Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponseBusEnvelope.CloneResourceWithTokenResponseBusEnvelope",
         "CommandError": "Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.CommandError.CommandError",
@@ -5466,6 +5487,7 @@
         "ContextualSummaryResponseContext": "Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ContextualSummaryResponse.ContextualSummaryResponseContext",
         "ContextualSummaryResponseRelevantFields": "[Data.Text.Internal.Text] -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ContextualSummaryResponse.ContextualSummaryResponseRelevantFields",
         "CreateAnnotationRequest": "Maybe Xynolog.Internal.Generated.Models.AnnotationBodies.AnnotationBodies -> Xynolog.Internal.Generated.Models.Motivation.Motivation -> Xynolog.Internal.Generated.Models.AnnotationTarget.AnnotationTarget -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.CreateAnnotationRequest.CreateAnnotationRequest",
+        "CreateFromTokenOptions": "Maybe Bool -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.CreateFromTokenOptions.CreateFromTokenOptions",
         "CreateResourceResponse": "Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.CreateResourceResponse.CreateResourceResponse",
         "CursorsPath": "Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.CursorsPath.CursorsPath",
         "DeviceCode": "Integer -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.DeviceCode.DeviceCode",
@@ -5657,6 +5679,7 @@
         "JobParams": "Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Maybe Xynolog.Internal.Generated.Models.TagSchema.TagSchema -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.JobParams.JobParams",
         "JobPending": "Xynolog.Internal.Generated.Models.JobMetadata.JobMetadata -> Xynolog.Internal.Generated.Models.JobParams.JobParams -> Xynolog.Internal.Generated.Models.JobPending.JobPendingStatus -> Xynolog.Internal.Generated.Models.JobPending.JobPending",
         "JobPendingStatusPending": "Xynolog.Internal.Generated.Models.JobPending.JobPendingStatus",
+        "JobPollOptions": "Maybe Integer -> Maybe Integer -> Xynolog.Internal.Generated.Models.JobPollOptions.JobPollOptions",
         "JobProgress": "Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe [Xynolog.Internal.Generated.Models.JobProgress.JobProgressCompletedItemsItem] -> Maybe Xynolog.Internal.Generated.Models.JobProgress.JobProgressCurrent -> Maybe Integer -> Maybe Integer -> Maybe Integer -> Maybe Xynolog.Internal.Generated.Models.JobProgressMessage.JobProgressMessage -> Data.Scientific.Scientific -> Maybe Integer -> Maybe [Xynolog.Internal.Generated.Models.JobProgress.JobProgressRequestParamsItem] -> Maybe Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.JobProgress.JobProgress",
         "JobProgressAnalyzing": "Xynolog.Internal.Generated.Models.JobProgressAnalyzing.JobProgressAnalyzingCode -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.JobProgressAnalyzing.JobProgressAnalyzing",
         "JobProgressAnalyzingCodeAnalyzing": "Xynolog.Internal.Generated.Models.JobProgressAnalyzing.JobProgressAnalyzingCode",
@@ -5918,6 +5941,7 @@
         "ResourceDescriptorWasDerivedFromBranch2": "[Xynolog.Internal.Generated.Models.ResourceId.ResourceId] -> Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorWasDerivedFrom",
         "ResourceErrorEvent": "Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ResourceErrorEvent.ResourceErrorEvent",
         "ResourceMovedPayload": "Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ResourceMovedPayload.ResourceMovedPayload",
+        "ResourceSearchFilters": "Maybe Bool -> Maybe Data.Text.Internal.Text -> Maybe Integer -> Maybe Integer -> Xynolog.Internal.Generated.Models.ResourceSearchFilters.ResourceSearchFilters",
         "ResourceUnarchivedPayload": "Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ResourceUnarchivedPayload.ResourceUnarchivedPayload",
         "ResourceUpdatedPayload": "Maybe Integer -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ResourceUpdatedPayload.ResourceUpdatedPayload",
         "ResourceUpload": "Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.JobId.JobId -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ResourceUpload.ResourceUpload",
@@ -6424,6 +6448,11 @@
         "busSubscribeRequestScopedItemChannels": "Xynolog.Internal.Generated.Models.BusSubscribeRequest.BusSubscribeRequestScopedItem -> [Data.Text.Internal.Text]",
         "busSubscribeRequestScopedItemLastEventId": "Xynolog.Internal.Generated.Models.BusSubscribeRequest.BusSubscribeRequestScopedItem -> Maybe Data.Text.Internal.Text",
         "busSubscribeRequestScopedItemScope": "Xynolog.Internal.Generated.Models.BusSubscribeRequest.BusSubscribeRequestScopedItem -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
+        "claimOptionsAccepts": "Xynolog.Internal.Generated.Models.ClaimOptions.ClaimOptions -> [Xynolog.Internal.Generated.Models.JobFilter.JobFilter]",
+        "claimOptionsHeldJobStallCheckMs": "Xynolog.Internal.Generated.Models.ClaimOptions.ClaimOptions -> Maybe Integer",
+        "claimOptionsHeldJobStallMs": "Xynolog.Internal.Generated.Models.ClaimOptions.ClaimOptions -> Maybe Integer",
+        "claimOptionsJobClaimTimeoutMs": "Xynolog.Internal.Generated.Models.ClaimOptions.ClaimOptions -> Maybe Integer",
+        "claimOptionsMarkCommitTimeoutMs": "Xynolog.Internal.Generated.Models.ClaimOptions.ClaimOptions -> Maybe Integer",
         "cloneResourceWithTokenResponseAdditionalProperties": "Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse.CloneResourceWithTokenResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "cloneResourceWithTokenResponseBusEnvelopeResponse": "Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponseBusEnvelope.CloneResourceWithTokenResponseBusEnvelope -> Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse.CloneResourceWithTokenResponse",
         "cloneResourceWithTokenResponseExpiresAt": "Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse.CloneResourceWithTokenResponse -> Data.Text.Internal.Text",
@@ -6458,6 +6487,10 @@
         "createAnnotationRequestBody": "Xynolog.Internal.Generated.Models.CreateAnnotationRequest.CreateAnnotationRequest -> Maybe Xynolog.Internal.Generated.Models.AnnotationBodies.AnnotationBodies",
         "createAnnotationRequestMotivation": "Xynolog.Internal.Generated.Models.CreateAnnotationRequest.CreateAnnotationRequest -> Xynolog.Internal.Generated.Models.Motivation.Motivation",
         "createAnnotationRequestTarget": "Xynolog.Internal.Generated.Models.CreateAnnotationRequest.CreateAnnotationRequest -> Xynolog.Internal.Generated.Models.AnnotationTarget.AnnotationTarget",
+        "createFromTokenOptionsArchiveOriginal": "Xynolog.Internal.Generated.Models.CreateFromTokenOptions.CreateFromTokenOptions -> Maybe Bool",
+        "createFromTokenOptionsContent": "Xynolog.Internal.Generated.Models.CreateFromTokenOptions.CreateFromTokenOptions -> Data.Text.Internal.Text",
+        "createFromTokenOptionsName": "Xynolog.Internal.Generated.Models.CreateFromTokenOptions.CreateFromTokenOptions -> Data.Text.Internal.Text",
+        "createFromTokenOptionsToken": "Xynolog.Internal.Generated.Models.CreateFromTokenOptions.CreateFromTokenOptions -> Data.Text.Internal.Text",
         "createResourceResponseAdditionalProperties": "Xynolog.Internal.Generated.Models.CreateResourceResponse.CreateResourceResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "createResourceResponseResourceId": "Xynolog.Internal.Generated.Models.CreateResourceResponse.CreateResourceResponse -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
         "cursorsPathValue": "Xynolog.Internal.Generated.Models.CursorsPath.CursorsPath -> Data.Text.Internal.Text",
@@ -6903,6 +6936,8 @@
         "jobPendingMetadata": "Xynolog.Internal.Generated.Models.JobPending.JobPending -> Xynolog.Internal.Generated.Models.JobMetadata.JobMetadata",
         "jobPendingParams": "Xynolog.Internal.Generated.Models.JobPending.JobPending -> Xynolog.Internal.Generated.Models.JobParams.JobParams",
         "jobPendingStatus": "Xynolog.Internal.Generated.Models.JobPending.JobPending -> Xynolog.Internal.Generated.Models.JobPending.JobPendingStatus",
+        "jobPollOptionsEveryMs": "Xynolog.Internal.Generated.Models.JobPollOptions.JobPollOptions -> Maybe Integer",
+        "jobPollOptionsWithinMs": "Xynolog.Internal.Generated.Models.JobPollOptions.JobPollOptions -> Maybe Integer",
         "jobProgressAdditionalProperties": "Xynolog.Internal.Generated.Models.JobProgress.JobProgress -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "jobProgressAnalyzingAdditionalProperties": "Xynolog.Internal.Generated.Models.JobProgressAnalyzing.JobProgressAnalyzing -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "jobProgressAnalyzingCode": "Xynolog.Internal.Generated.Models.JobProgressAnalyzing.JobProgressAnalyzing -> Xynolog.Internal.Generated.Models.JobProgressAnalyzing.JobProgressAnalyzingCode",
@@ -7405,6 +7440,10 @@
         "resourceMovedPayloadAdditionalProperties": "Xynolog.Internal.Generated.Models.ResourceMovedPayload.ResourceMovedPayload -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "resourceMovedPayloadFromUri": "Xynolog.Internal.Generated.Models.ResourceMovedPayload.ResourceMovedPayload -> Data.Text.Internal.Text",
         "resourceMovedPayloadToUri": "Xynolog.Internal.Generated.Models.ResourceMovedPayload.ResourceMovedPayload -> Data.Text.Internal.Text",
+        "resourceSearchFiltersArchived": "Xynolog.Internal.Generated.Models.ResourceSearchFilters.ResourceSearchFilters -> Maybe Bool",
+        "resourceSearchFiltersEntityType": "Xynolog.Internal.Generated.Models.ResourceSearchFilters.ResourceSearchFilters -> Maybe Data.Text.Internal.Text",
+        "resourceSearchFiltersLimit": "Xynolog.Internal.Generated.Models.ResourceSearchFilters.ResourceSearchFilters -> Maybe Integer",
+        "resourceSearchFiltersOffset": "Xynolog.Internal.Generated.Models.ResourceSearchFilters.ResourceSearchFilters -> Maybe Integer",
         "resourceUnarchivedPayloadAdditionalProperties": "Xynolog.Internal.Generated.Models.ResourceUnarchivedPayload.ResourceUnarchivedPayload -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "resourceUpdatedPayloadAdditionalProperties": "Xynolog.Internal.Generated.Models.ResourceUpdatedPayload.ResourceUpdatedPayload -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "resourceUpdatedPayloadContentByteSize": "Xynolog.Internal.Generated.Models.ResourceUpdatedPayload.ResourceUpdatedPayload -> Maybe Integer",

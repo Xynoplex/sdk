@@ -46,13 +46,16 @@ import type {
   YieldJobCompletion,
 } from '../awaitable';
 import type {
+  ClaimOptions,
   components,
+  CreateFromTokenOptions,
   EventMap,
   FrameRefusal,
   HealthCheckResponse,
+  ResourceSearchFilters,
   StatusResponse,
 } from '@xynolog/core';
-import type { ClaimOptions, ClaimsObservable } from '../claims';
+import type { ClaimsObservable } from '../claims';
 import type {
   ResourceId,
   AnnotationId,
@@ -114,14 +117,6 @@ export interface CreateResourceInput {
   isDraft?: boolean;
 }
 
-/** Options for yield.createFromToken() */
-export type CreateFromTokenOptions = {
-  token: string;
-  name: string;
-  content: string;
-  archiveOriginal?: boolean;
-};
-
 /** Referenced-by entry from gather.referencedBy() */
 export type ReferencedByEntry =
   components['schemas']['GetReferencedByResponse']['referencedBy'][number];
@@ -160,12 +155,6 @@ export type ResourceList = Omit<
 /** The filters a list of resources takes: the list request, whole. */
 export type ResourceListFilters =
   components['schemas']['BrowseResourcesRequest'];
-
-/** The filters a text search takes beside its text: the search request, less its text. */
-export type ResourceSearchFilters = Omit<
-  components['schemas']['MatchResourcesRequest'],
-  'search'
->;
 
 /**
  * What `match.resources()` emits: the search-reply envelope, not just the

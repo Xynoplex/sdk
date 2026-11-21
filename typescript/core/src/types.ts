@@ -5740,6 +5740,35 @@ export interface records {
     expectedName?: string;
   };
   /**
+   * What a worker's claiming of jobs is told: the jobs it takes, and how long
+   * it waits for what it waits on. A wait left out is client/timing.json's of
+   * the same name.
+   */
+  ClaimOptions: {
+    /**
+     * The jobs this claim takes. A job is handed over when it matches any one
+     * of them.
+     */
+    accepts: components['schemas']['JobFilter'][];
+    /** How long it waits for the answer to one claim, in milliseconds. */
+    jobClaimTimeoutMs?: number;
+    /**
+     * How long a held job may show no activity before it is called stalled, in
+     * milliseconds.
+     */
+    heldJobStallMs?: number;
+    /**
+     * How often it looks at how long a held job has shown no activity, in
+     * milliseconds.
+     */
+    heldJobStallCheckMs?: number;
+    /**
+     * How long it waits for the record to acknowledge a commit of annotations,
+     * in milliseconds.
+     */
+    markCommitTimeoutMs?: number;
+  };
+  /**
    * Who the knowledge base at an address says it is, asked with a token just
    * issued, before any entry is made for it.
    */
@@ -5748,6 +5777,17 @@ export interface records {
     did: components['schemas']['UserId'];
     /** What it says of itself. */
     description: components['schemas']['KbDescription'];
+  };
+  /**
+   * What creating a resource from a clone token is told: the token, the clone's
+   * name and text, and whether the source is archived once the clone exists.
+   */
+  CreateFromTokenOptions: {
+    token: string;
+    name: string;
+    /** The clone's text, uploaded as its content. */
+    content: string;
+    archiveOriginal?: boolean;
   };
   /**
    * What a device-authorization grant (RFC 8628) shows the person signing in:
@@ -5782,6 +5822,32 @@ export interface records {
    * (specs/src/bus/frame-cases.json).
    */
   FrameRefusalReason: 'lacks' | 'malformed';
+  /**
+   * What gathering the context of a resource is told beside the resource:
+   * GatherResourceRequestOptions, each member of which a caller may leave out.
+   * client/surface.json's `gather.resource` cases state what is sent for one
+   * left out.
+   */
+  GatherResourceOptions: {
+    /**
+     * How many links out from the resource the knowledge graph reaches, nearest
+     * first: 1 is what the resource links to and what cites it, and each
+     * further link out adds what those link to and what cites them
+     */
+    depth?: number;
+    /** Maximum number of related resources to include */
+    maxResources?: number;
+    /** Whether to include resource content in the gathered result */
+    includeContent?: boolean;
+    /** Whether to include resource summaries in the gathered result */
+    includeSummary?: boolean;
+    /**
+     * Entity types to exclude from the semantic recall built into this context
+     * (caller-supplied; e.g. a chat consumer passes ['Question'] so prior
+     * questions never ground answer generation). Optional; default none.
+     */
+    excludeEntityTypes?: string[];
+  };
   /** The tokens an issuer issued at the end of a sign-in. */
   IssuedTokens: {
     /** The access token: short-lived, sent as a Bearer token. */
@@ -5790,6 +5856,20 @@ export interface records {
      * The refresh token: what renews the access token without another sign-in.
      */
     refresh: string;
+  };
+  /**
+   * How a job's `pollUntilComplete` asks for the job's status: how long it
+   * waits between its asks, and how long it goes on asking. A member left out
+   * is client/timing.json's: `jobPollMs` and `jobPollTimeoutMs`.
+   */
+  JobPollOptions: {
+    /** How long it waits between one ask and the next, in milliseconds. */
+    everyMs?: number;
+    /**
+     * How long it goes on asking, from its first ask, before it fails as timed
+     * out, in milliseconds.
+     */
+    withinMs?: number;
   };
   /**
    * A different knowledge base answers at a registered address. Both dids,
@@ -5834,6 +5914,18 @@ export interface records {
    * reconcile's rule (specs/src/annotations/reconcile-cases.json).
    */
   MatchQuality: 'normalized' | 'case-insensitive' | 'fuzzy';
+  /**
+   * What a search for what a reference could refer to is told beside the
+   * reference and its context: MatchSearchRequest's other members.
+   * client/surface.json's `match.search` cases state what is sent for one left
+   * out.
+   */
+  MatchSearchOptions: {
+    /** Maximum number of candidate results to return */
+    limit?: number;
+    /** Enable semantic similarity scoring in addition to keyword matching */
+    useSemanticScoring?: boolean;
+  };
   /**
    * A rectangle on a page of a PDF, in PDF points, from the page's bottom-left
    * corner with y increasing upward: what an RFC 3778 fragment selector names.
@@ -5959,6 +6051,22 @@ export interface records {
         anchorMethod: 'fuzzy-match';
         matchQuality: records['MatchQuality'];
       };
+  /**
+   * What a text search for resources is told beside its text:
+   * MatchResourcesRequest's other members. client/surface.json's
+   * `match.resources` cases state what is sent for one left out.
+   */
+  ResourceSearchFilters: {
+    archived?: boolean;
+    entityType?: string;
+    /**
+     * How many of the resources the search finds are passed over before the
+     * page begins.
+     */
+    offset?: number;
+    /** The most resources a page has. */
+    limit?: number;
+  };
   /**
    * Why a session ended: `expired`, the issuer refused to renew its token;
    * `refused`, the gateway refused a token its issuer had just issued.
