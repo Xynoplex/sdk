@@ -8,14 +8,16 @@ edited by hand. The SDK is developed in
 describes its use.
 
 Add the package to your `Package.swift` by this repository's URL, from the
-version you want:
+version you want. Below 1.0 the minor number is the break, and SwiftPM's
+`from:` would let a breaking `0.y` through, so take releases up to the next
+minor:
 
 ```swift
-.package(url: "https://github.com/xynolog/sdk-swift.git", from: "<version>"),
+.package(url: "https://github.com/xynolog/sdk-swift.git", .upToNextMinor(from: "<version>")),
 ```
 
 and add `.product(name: "Xynolog", package: "sdk-swift")` to your target's
 dependencies. `XynologTesting` holds the test doubles.
 
 The wire models in `Sources/Xynolog/Generated` are generated from the
-Protocol release the SDK release was built from.
+Protocol commit the SDK release was built from.

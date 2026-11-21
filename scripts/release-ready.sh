@@ -6,7 +6,9 @@
 #   - the coming release is not tagged on another commit;
 #   - main holds the commit, so its release workflow and the signing key it
 #     trusts came through a pull request;
-#   - its Protocol submodule is at a released Protocol, `vYY.M.N`.
+#   - its Protocol submodule's commit is on Protocol's main, so no release
+#     builds from an unmerged Protocol change. Protocol has no versions; the
+#     commit is the whole pin.
 #
 #   scripts/release-ready.sh
 
@@ -22,9 +24,12 @@ git fetch --quiet origin main
 git merge-base --is-ancestor HEAD FETCH_HEAD || fail "main does not hold $(git rev-parse HEAD)"
 
 protocol="$(git rev-parse HEAD:protocol)"
-url="$(git config --file .gitmodules submodule.protocol.url)"
-released="$(git ls-remote --tags "$url" \
-  | grep -E "^$protocol"$'\t'"refs/tags/v[0-9]{2}\.([1-9]|1[0-2])\.(0|[1-9][0-9]*)(\^\{\})?$" \
-  | sed -E 's#^.*refs/tags/##; s#\^\{\}$##' | sort -u || true)"
-test -n "$released" || fail "the Protocol submodule's commit $protocol is not a Protocol release (no vYY.M.N tag at it in $url)"
-echo "Protocol $released, at $protocol."
+# A shallow submodule cannot answer ancestry, so its history comes too.
+if test "$(git -C protocol rev-parse --is-shallow-repository)" = true; then
+  git -C protocol fetch --quiet --unshallow origin main
+else
+  git -C protocol fetch --quiet origin main
+fi
+git -C protocol merge-base --is-ancestor "$protocol" FETCH_HEAD \
+  || fail "the Protocol submodule's commit $protocol is not on Protocol's main"
+echo "Protocol $protocol, on Protocol's main."
