@@ -116,7 +116,7 @@ sample depth schema
             _ -> case KM.lookup "type" fields of
               Just (String "string") -> do
                 let width = case KM.lookup "minLength" fields of Just (Number n) -> ceiling n; _ -> 0
-                choose [String text | text <- [T.replicate width "a", "a", "did:example:probe", "e-a", "e-a:b:c", "p-a-1", T.replicate 64 "a"]]
+                choose [String text | text <- [T.replicate width "a", "a", "did:example:probe", "did:web:probe", "e-a", "e-a:b:c", "p-a-1", T.replicate 64 "a"]]
               Just (String "integer") -> choose [Number (case KM.lookup "minimum" fields of Just (Number n) -> fromInteger (ceiling n); _ -> 0)]
               Just (String "number") -> choose [Number (case KM.lookup "minimum" fields of Just (Number n) -> n; _ -> 0)]
               Just (String "boolean") -> Right (Bool False)
@@ -124,7 +124,10 @@ sample depth schema
               Just (Array names) | [declared, String "null"] <- toList names -> nested (Object (KM.insert "type" declared fields))
               Just (String "array") -> do
                 let size = case KM.lookup "minItems" fields of Just (Number n) -> ceiling n; _ -> 0
-                items <- mapM (const (nested (at "items" schema))) [1 :: Int .. size]
+                    member = at "items" schema
+                items <- case (KM.lookup "uniqueItems" fields, at "enum" member) of
+                  (Just (Bool True), Array values) -> Right (take size (toList values))
+                  _ -> mapM (const (nested member)) [1 :: Int .. size]
                 choose [Array (V.fromList items)]
               Just (String "object") -> do
                 let properties = object (at "properties" schema)

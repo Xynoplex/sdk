@@ -161,9 +161,10 @@ func (n *BrowseNamespace) Kb(ctx context.Context) (api.KbDescription, error) {
 	return answer.Response, err
 }
 
-// Click signals that this viewer clicked an annotation.
-func (n *BrowseNamespace) Click(annotationID api.AnnotationId) {
-	signal(n.links, bus.BrowseClick, api.BrowseClickEvent{AnnotationId: annotationID}, Envelope{})
+// Click signals that this viewer clicked an annotation, and where it is on
+// this viewer's screen when that is known (nil: not known).
+func (n *BrowseNamespace) Click(annotationID api.AnnotationId, anchorRect *api.AnchorRect) {
+	signal(n.links, bus.BrowseClick, api.BrowseClickEvent{AnnotationId: annotationID, AnchorRect: anchorRect}, Envelope{})
 }
 
 // OpenResource signals that this viewer opens a resource.

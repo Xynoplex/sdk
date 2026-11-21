@@ -42,6 +42,7 @@ from xynolog.testing import (
 )
 from xynolog.transport import Frame, FrameRefusal, PutBinaryRequest
 from xynolog.types import (
+    AnchorRect,
     AnnotationSelector,
     BindBodyOperation,
     BindInitiateCommand,
@@ -289,7 +290,9 @@ CALLS: Final[dict[tuple[str, str], Callable[[Client, Args], Awaitable[object] | 
     ("browse", "annotationHistory"): lambda client, args: client.browse.annotation_history(rid(args), aid(args)),
     ("browse", "files"): directory,
     ("browse", "kb"): lambda client, _: client.browse.kb(),
-    ("browse", "click"): lambda client, args: client.browse.click(aid(args)),
+    ("browse", "click"): lambda client, args: client.browse.click(
+        aid(args), AnchorRect.model_validate(args["anchorRect"]) if "anchorRect" in args else None
+    ),
     ("browse", "openResource"): lambda client, args: client.browse.open_resource(rid(args)),
     ("browse", "resourceViewed"): lambda client, args: client.browse.resource_viewed(rid(args)),
     ("mark", "annotation"): lambda client, args: client.mark.annotation(CreateAnnotationRequest.model_validate(args["input"])),

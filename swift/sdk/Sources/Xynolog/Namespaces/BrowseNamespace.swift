@@ -75,8 +75,11 @@ public struct BrowseNamespace: Sendable {
   public func kb() async throws -> KbDescription {
     try await wire.request(Operations.browseKbRequested, BrowseKbRequest()).response
   }
-  public func click(_ annotationId: AnnotationId) throws {
-    try bus.emit(Channels.browseClick, BrowseClickEvent(annotationId: annotationId))
+  /// Open an annotation for this viewer, and where it is on this viewer's screen when that is
+  /// known.
+  public func click(_ annotationId: AnnotationId, anchorRect: AnchorRect? = nil) throws {
+    try bus.emit(
+      Channels.browseClick, BrowseClickEvent(anchorRect: anchorRect, annotationId: annotationId))
   }
   public func openResource(_ resourceId: ResourceId) throws {
     try bus.emit(Channels.browseResourceOpen, BrowseResourceOpenEvent(resourceId: resourceId))

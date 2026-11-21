@@ -14,6 +14,7 @@
     "generated/Xynolog/Internal/Generated/Models/AgentPerson.hs": "243eee749b684a21936cf878d249c92b6dda2563fddfe3846f5cf429fcf62aed",
     "generated/Xynolog/Internal/Generated/Models/AgentSoftware.hs": "af3c91d6fa0ebff66e2f1477697ca438bb47ab62923f3655f1b4feb16028f507",
     "generated/Xynolog/Internal/Generated/Models/AnchorMethod.hs": "79f06f11961df4813d8743c9d59f6d8f3259d9edb3a6f01ae8d49eef78fc6f3d",
+    "generated/Xynolog/Internal/Generated/Models/AnchorRect.hs": "1734536e8246cd6742a3ffc2062f1467d6e57f524f3b4acb3e5c6ba2912cf054",
     "generated/Xynolog/Internal/Generated/Models/AnchoredText.hs": "08c7cf0e8bd7ce6916e3c837c470d2cb2c24ccc141662e29cddda0f9a5299512",
     "generated/Xynolog/Internal/Generated/Models/AnchoredTextAbsent.hs": "d48c9f0065f343472487ef38c29cdb406b81409604429c4d2174be63dc80f80c",
     "generated/Xynolog/Internal/Generated/Models/AnchoredTextAnswer.hs": "212dc879a251abc3d82b75fea222ef16bdb4e3f882c0e8143f55f6c5fd017c8e",
@@ -35,7 +36,7 @@
     "generated/Xynolog/Internal/Generated/Models/ArchivistConfig.hs": "eab801c4cd0e7f20d381b4bdcefc83d3a5c7de21184a9f1797f17f4a0668781e",
     "generated/Xynolog/Internal/Generated/Models/ArchivistEngines.hs": "3e86ad4f7a6a68c1f644ac6943c21638289d977a5782151ac853bb1066bcf29c",
     "generated/Xynolog/Internal/Generated/Models/ArchivistEventsResponse.hs": "3acff28e13ad0db0edfba13e8f291e4cd95c2434e9815be8a32f10cd2dc8431b",
-    "generated/Xynolog/Internal/Generated/Models/ArchivistHealth.hs": "5e627a25a05d2ed4b34d5c6cb375c26068e1ce736f0820e4949cc58cbacd1937",
+    "generated/Xynolog/Internal/Generated/Models/ArchivistHealth.hs": "0fabac9284822a23f64a64d8ff02576886747c5de8a576843b80fe19e0812e47",
     "generated/Xynolog/Internal/Generated/Models/ArchivistStream.hs": "b2990b0c9af11523ea8a836201a58481882a5ab1540c1bf451dca260b10d2268",
     "generated/Xynolog/Internal/Generated/Models/ArchivistStreamsResponse.hs": "e1c5bb5044ef01438c2f3f708ed93ace9ae30577d6e8f2453b218a2147733c3a",
     "generated/Xynolog/Internal/Generated/Models/AssessingJobParams.hs": "a55297c115fde5be4bc2482984daf8d4e7664606f782fb3ac5f0f39c73b053b5",
@@ -57,7 +58,7 @@
     "generated/Xynolog/Internal/Generated/Models/BrowseAnnotationHistoryResult.hs": "18253d9c72093aa25fb52a81dc405ef6273555ad8db2212c670e11e5a7b0f7a8",
     "generated/Xynolog/Internal/Generated/Models/BrowseAnnotationRequest.hs": "3ea8b8e4c0b9131489003b3b42b2786917a3ce53a5c75f94c8e1eba8ec28778a",
     "generated/Xynolog/Internal/Generated/Models/BrowseAnnotationResult.hs": "1fe3fcfeac664585f9f1824223a0c665e0361f8f8c34ebf7c2618fe64c86a983",
-    "generated/Xynolog/Internal/Generated/Models/BrowseClickEvent.hs": "28f007c42e274ddf4f8da914467c5ba2f9d27f0311bc943ff4bf6bc763adc239",
+    "generated/Xynolog/Internal/Generated/Models/BrowseClickEvent.hs": "e8bd530e3bc2d4e19a750f2e3e5674585a59d50f36cc9ebfa3250c331441eba2",
     "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryFailed.hs": "b15f7a9fc2c4f04a9aa4dc67cdff4c18c72997bf9779c31dee2dff22e4029a13",
     "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryRequest.hs": "39e79d76534cdf36bf3337d10fdd6693dd419929e6dbeacfc842245cf16022c4",
     "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryResult.hs": "0808db856ad816bb634ab5c73a509b4132162a52d3f7125b64ec4768e6343159",
@@ -245,6 +246,7 @@
     "generated/Xynolog/Internal/Generated/Models/KnowledgeGraph.hs": "46a4cac6d7796abb591f941b86708809c602dcd0d7b53f5f9b0a4cac92060f10",
     "generated/Xynolog/Internal/Generated/Models/LibrarianConfig.hs": "7c0d2d51209dfa482880c91178dd094546c83041aeab164579d8f5262a197831",
     "generated/Xynolog/Internal/Generated/Models/LibrarianEngineConfig.hs": "757109ce754037dc58b8aaf1eb2d392abbc8fb4f061a7c2b4c2494feb22e2370",
+    "generated/Xynolog/Internal/Generated/Models/LibrarianHealth.hs": "7c7e686246081d99e6069094e6306421ba820f2364bd60eea36b47cc58bcb55a",
     "generated/Xynolog/Internal/Generated/Models/LimitRefusal.hs": "a539ef6d74116078f9fba963799ea5f2a156c75a56bdaa6d7df3545d42cce957",
     "generated/Xynolog/Internal/Generated/Models/LinkingJobParams.hs": "4613c86e547edcbb81c3b8cc3dd78dc48ab329fb6114785d0b696763b46ad019",
     "generated/Xynolog/Internal/Generated/Models/ListResourcesResponse.hs": "5b652cf9e381eb5c0ea8c46afb3c216eb9aabeb151cc609f47b88ee7af40277d",
@@ -347,7 +349,10 @@
     "generated/Xynolog/Internal/Generated/Models/SignedIn.hs": "2169d39bb7e2e0215e0d390f2c9dff93b8fbe761108ea006eee573ef6b5f1418",
     "generated/Xynolog/Internal/Generated/Models/SmeltRebuildAnchorsCommand.hs": "61ba7f70ddd8d2c661abeed84c450db6ff1863ec2e0924d1296d19238a891a4a",
     "generated/Xynolog/Internal/Generated/Models/SmeltSettled.hs": "5cd234f32856ec3322b0a9b469ec442ac709c8f696e56831da2f6c4f0444c6be",
-    "generated/Xynolog/Internal/Generated/Models/SmelterConfig.hs": "ad6c96840fff1e939e9a3403a6053034aa1a3695f681587627f562db966d92df",
+    "generated/Xynolog/Internal/Generated/Models/SmelterChunking.hs": "868888d00201570220fa172df6af2e778ee94992244e57283f02b2236e6a5ccb",
+    "generated/Xynolog/Internal/Generated/Models/SmelterConfig.hs": "ceff6ae9e746d5ac8d8ccfd8a13960046e270b07854b37b933d1b4c22b33140b",
+    "generated/Xynolog/Internal/Generated/Models/SmelterHealth.hs": "a6bdc6e34787356f6004c5a75c6c577aae12317a576957fc3b898389df027d0c",
+    "generated/Xynolog/Internal/Generated/Models/SmelterReconcileSummary.hs": "3e2a23f63c0a2be5f9a9c7d2f014b69da5ef59426075a3523656876f0f4820fe",
     "generated/Xynolog/Internal/Generated/Models/SpecificResource.hs": "cb40b6aac1f9e87ff51017c2b2b148c4f5c45473927e1b281dc7d0914cb3a77f",
     "generated/Xynolog/Internal/Generated/Models/StatusResponse.hs": "8b46bc2d9e0cb043277ac383113ae3eeeaf49078146d46e47e64463ac4103086",
     "generated/Xynolog/Internal/Generated/Models/StorageUriEntry.hs": "bb5447213b070fea049882e189b33551e6894d44b70c43c1998dfa721980dcaf",
@@ -377,6 +382,7 @@
     "generated/Xynolog/Internal/Generated/Models/WeaveApplied.hs": "31081b83c11e1b337a651685ede7d13d4dbaee20aa1a4092b758ec954a87649f",
     "generated/Xynolog/Internal/Generated/Models/WeaveRebuildCommand.hs": "db94b40b0c2065ddf6a4ddc041cd72ed7af219698c18728091151639a56ef2aa",
     "generated/Xynolog/Internal/Generated/Models/WeaverConfig.hs": "6e11d6e436cda23502400c89a025ca11becc566c973af88db40622ecbe6040a1",
+    "generated/Xynolog/Internal/Generated/Models/WeaverHealth.hs": "4d076cd635a77cf1b547e2156769e278a22711dc9c0c790233f44103b3731b41",
     "generated/Xynolog/Internal/Generated/Models/WorkerConfig.hs": "e391614a3e8b4dc77e22c3106b3209f3f89bb20fb5a2c5743e5e4963838cb897",
     "generated/Xynolog/Internal/Generated/Models/WorkerEngineConfig.hs": "d540913036664d0910f14134a89999886ce346fa211112437756c3d2ec0bc4fd",
     "generated/Xynolog/Internal/Generated/Models/WorkerEngineHealth.hs": "f9c2bf6dc0223e7474aacab1ae69f9c9b941e09949e111c3d35829420549a88e",
@@ -405,8 +411,8 @@
     "generated/Xynolog/Internal/Generated/OperationReports.hs": "ae06fe64f5efd431f7b6a2406b8fe53f1513c80a1e5bb24894e1cf36492c3365",
     "generated/Xynolog/Internal/Generated/PendingAnnotation.hs": "92d649918dbb3c601b8ecb95ad0f690d1d19f8bebb505734c6730bbdef89e830",
     "generated/Xynolog/Internal/Generated/Principals.hs": "02fd2fd7b956e96bcda03bb7685472bf1a029666bf21fe32c1ff3e0ab217ceb9",
-    "generated/Xynolog/Internal/Generated/Required.hs": "e5e609258787fb3f90036fc2da74e0ea52418f586d0aea6b0d876cc73bc0ada4",
-    "generated/Xynolog/Internal/Generated/Schemas.hs": "8fab7d7caa13ea5c5601419ec7b72aa0eb1130dc9f8b40bbd6e8c3f1be615c39",
+    "generated/Xynolog/Internal/Generated/Required.hs": "0497d1dc98daa2c134175ab9a82767782c3b5e387415cee83a244988b0a7821a",
+    "generated/Xynolog/Internal/Generated/Schemas.hs": "a8643d7f4e73ac57338fb2165495cc881eb6282bd5663c07eb438e177faa9351",
     "generated/Xynolog/Internal/Generated/SearchState.hs": "d5994a174a2a535cb04661283a500feb97cf4e80783492c2cf390e712b38c0a9",
     "generated/Xynolog/Internal/Generated/ServiceProof.hs": "86e44db90b1ac4a3713f4794f4f1f2f32bdf7eeeb7ad24e12046c050f8acadaf",
     "generated/Xynolog/Internal/Generated/SessionFactoryOptions.hs": "1378c790f4a48832e1a0a938eb64c8759870e4ebf73f2445e8ba81c354334c45",
@@ -424,7 +430,7 @@
     "internal/Xynolog/Internal/Annotations/Pdf.hs": "0dd84d104588203087cac52010ba6e1e2db5b94b6d723faaa741ca29ae4eb83d",
     "internal/Xynolog/Internal/Annotations/Spans.hs": "b04e842749cbe56777728d4817d7c669cfd57ac11a1c02e2143eb56c756d7752",
     "internal/Xynolog/Internal/Broadcast.hs": "336246ac6d68e996f3a618dc295e2ca88445c7c04c6aa189b8271a763bc19ee8",
-    "internal/Xynolog/Internal/Browse.hs": "5e0d97dabe4876483d20617e25118fffe25f82707da45ae321cd8ed3edef4d66",
+    "internal/Xynolog/Internal/Browse.hs": "579cbe694e901dc85a4af6b094306f6407c3de66422f01e617353aa868d4b29c",
     "internal/Xynolog/Internal/Bus.hs": "ba523392247c26f3d6477309925cf64193632f02420d192f16a3b7e0bd92a032",
     "internal/Xynolog/Internal/BusLog.hs": "777b527c5ea4e45ebdae229bdaf035a9822aaa257855f30b3744e9aacd695a59",
     "internal/Xynolog/Internal/Cache.hs": "41299da4f86b18d8852236e361f26a6ffddc45862b76a09c7421a032c776c915",
@@ -469,7 +475,7 @@
     "public-api.inputs.json": "e88f293799bdd5010b5faeda50a0c66fd97922d3c88c20af310d5e58cfb1fd83",
     "src/Xynolog/Annotations.hs": "d1cc51b79c521fac9c82a42b8130e0ceed8447cbf83c83367e2bd5c748d3956d",
     "src/Xynolog/Auth.hs": "6e54fb8f0476ddb03a3cbd96d2d6dc78db75273d73de1dc2e9fd12f0b0958ea3",
-    "src/Xynolog/Beckon.hs": "a3009900650efd3cfb90b06df0bb10703523fbff113d305030acb51372578ac2",
+    "src/Xynolog/Beckon.hs": "5d1f4035dddebf727cbac0b7f8d4ba479b48950260e5cd693c8188c94597bc2b",
     "src/Xynolog/Bind.hs": "15d3888734db74cf37109fe563de2be3aac97e70d7a198ee29258ee555129430",
     "src/Xynolog/Browse.hs": "90f640f96028ef1efa6ab90954484c7bbf504bbbf3301d21f58cde802b842d5f",
     "src/Xynolog/Bus.hs": "0304dc279931be04c0788b938845c94b6ab8ad7c333dc2438b6125516932d2f0",
@@ -482,7 +488,7 @@
     "src/Xynolog/Delegation.hs": "dc5779ae67ae4622e585e80020efcd7d2f49a8063d0c7b428d368652c08cc3bf",
     "src/Xynolog/Discovery.hs": "251635cef8030323d8df7b362ec99e601dbd40d6760afa766819215a85a34db5",
     "src/Xynolog/Discovery/Reasons.hs": "330719d247c1d390ec0ff28d1b953e2739b574b0246bba3a8ad8e653e34b456b",
-    "src/Xynolog/ErrorCodes.hs": "a61ad810b0f691fac67d2d57e7a0de2a0590dde6f4af512f2c6351cc8b9a68f0",
+    "src/Xynolog/ErrorCodes.hs": "46211c00be1b7355454f80776ab5617643c532691f9258d8f7b5c1ce7662ed7c",
     "src/Xynolog/Errors.hs": "7b4b3d4c65dc58a4cf3feea15a399a6ed9fea864034162cc5addbf178a9f49d0",
     "src/Xynolog/EventBus.hs": "3bcaf7c024c351ddf744a3bc193052176ce9357437c5775e327ddcec35acd742",
     "src/Xynolog/Frame.hs": "bbe63fb7fcd51e4f37195f1c7279698b263d17adeae94db3584270a180f52242",
@@ -534,7 +540,7 @@
     "src/Xynolog/Tokens.hs": "bba264adde2b8a6c123b9e64e99aeae6fd917f9a09f10194684a8daf708bceca",
     "src/Xynolog/Transport.hs": "5f0c95953108daa834e02c580f0ffb49c3d8fb30ad4cf0424ae3b19c500de034",
     "src/Xynolog/Transport/Facts.hs": "b861a07eb1fc5319a56fec2889c08f9fe7d59c43682d5b488d14520377ff08ba",
-    "src/Xynolog/Types.hs": "6a9b24ba9a9934d2ed619745f3eeefdb3f8c5474ab0a0efabd37d945659f3608",
+    "src/Xynolog/Types.hs": "0f7efb8fffcddf6bea47b83b1ebb8f33786f32b086309114711ab8382f87b43c",
     "src/Xynolog/Types/Presence.hs": "0c700ed04e5fe1fe43786d384622dbf716ea8703a1af8b8d8b894876dbe13a8f",
     "src/Xynolog/Worker.hs": "b3059ffc5f52c53c19d967ae9551f753a142ef3827730ed3b5e10722d3445706",
     "src/Xynolog/Yield.hs": "591b83ed53bf6af381c539738b2d4993d196912f4131bd26d4d7b0624354a562",
@@ -693,7 +699,7 @@
         "annotation": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Xynolog.Internal.Cache.Query Xynolog.Internal.Generated.Models.Annotation.Annotation",
         "annotationHistory": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> IO Xynolog.Internal.Generated.Models.GetAnnotationHistoryResponse.GetAnnotationHistoryResponse",
         "annotations": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Cache.Query [Xynolog.Internal.Generated.Models.Annotation.Annotation]",
-        "click": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> GHC.Internal.Conc.Sync.STM ()",
+        "click": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> GHC.Internal.Conc.Sync.STM ()",
         "engines": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Cache.Query [Xynolog.Internal.Generated.Models.EngineWithLimits.EngineWithLimits]",
         "entityTypes": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Cache.Query [Data.Text.Internal.Text]",
         "events": "Xynolog.Internal.Browse.BrowseNamespace -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Cache.Query [Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent]",
@@ -1367,6 +1373,8 @@
         "ControlConfirmationRequired": "Xynolog.ErrorCodes.ControlCode",
         "ControlDependencyUnavailable": "Xynolog.ErrorCodes.ControlCode",
         "ControlFailed": "Xynolog.ErrorCodes.ControlCode",
+        "ControlInstanceInUse": "Xynolog.ErrorCodes.ControlCode",
+        "ControlInstanceNotFound": "Xynolog.ErrorCodes.ControlCode",
         "ControlInvalidParams": "Xynolog.ErrorCodes.ControlCode",
         "ControlInvalidRequest": "Xynolog.ErrorCodes.ControlCode",
         "ControlInvalidService": "Xynolog.ErrorCodes.ControlCode",
@@ -2925,6 +2933,10 @@
           "definition": "data Xynolog.Internal.Generated.Models.AnchorMethod.AnchorMethod = ...",
           "kind": "*"
         },
+        "AnchorRect": {
+          "definition": "data Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect = ...",
+          "kind": "*"
+        },
         "AnchoredText": {
           "definition": "data Xynolog.Internal.Generated.Models.AnchoredText.AnchoredText = ...",
           "kind": "*"
@@ -3059,6 +3071,10 @@
         },
         "ArchivistHealth": {
           "definition": "data Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealth = ...",
+          "kind": "*"
+        },
+        "ArchivistHealthActorsItem": {
+          "definition": "data Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthActorsItem = ...",
           "kind": "*"
         },
         "ArchivistHealthStatus": {
@@ -4313,6 +4329,18 @@
           "definition": "data Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig = ...",
           "kind": "*"
         },
+        "LibrarianHealth": {
+          "definition": "data Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealth = ...",
+          "kind": "*"
+        },
+        "LibrarianHealthActorsItem": {
+          "definition": "data Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthActorsItem = ...",
+          "kind": "*"
+        },
+        "LibrarianHealthStatus": {
+          "definition": "data Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthStatus = ...",
+          "kind": "*"
+        },
         "LimitRefusal": {
           "definition": "data Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal = ...",
           "kind": "*"
@@ -4873,12 +4901,60 @@
           "definition": "data Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettledReason = ...",
           "kind": "*"
         },
+        "SmelterChunking": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking = ...",
+          "kind": "*"
+        },
         "SmelterConfig": {
           "definition": "data Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig = ...",
           "kind": "*"
         },
-        "SmelterConfigChunking": {
-          "definition": "data Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfigChunking = ...",
+        "SmelterHealth": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth = ...",
+          "kind": "*"
+        },
+        "SmelterHealthFollowing": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing = ...",
+          "kind": "*"
+        },
+        "SmelterHealthFollowingSweep": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowingSweep = ...",
+          "kind": "*"
+        },
+        "SmelterHealthIndex": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndex = ...",
+          "kind": "*"
+        },
+        "SmelterHealthIndexStamp": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStamp = ...",
+          "kind": "*"
+        },
+        "SmelterHealthIndexStampEmbedding": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStampEmbedding = ...",
+          "kind": "*"
+        },
+        "SmelterHealthReconcile": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcile = ...",
+          "kind": "*"
+        },
+        "SmelterHealthReconcilePhase": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcilePhase = ...",
+          "kind": "*"
+        },
+        "SmelterHealthStatus": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStatus = ...",
+          "kind": "*"
+        },
+        "SmelterHealthStream": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream = ...",
+          "kind": "*"
+        },
+        "SmelterReconcileSummary": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary = ...",
+          "kind": "*"
+        },
+        "SmelterReconcileSummaryResourcesSkipped": {
+          "definition": "data Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummaryResourcesSkipped = ...",
           "kind": "*"
         },
         "SpecificResource": {
@@ -5045,6 +5121,34 @@
           "definition": "data Xynolog.Internal.Generated.Models.WeaverConfig.WeaverConfig = ...",
           "kind": "*"
         },
+        "WeaverHealth": {
+          "definition": "data Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealth = ...",
+          "kind": "*"
+        },
+        "WeaverHealthFollowing": {
+          "definition": "data Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing = ...",
+          "kind": "*"
+        },
+        "WeaverHealthFollowingSweep": {
+          "definition": "data Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowingSweep = ...",
+          "kind": "*"
+        },
+        "WeaverHealthReconcile": {
+          "definition": "data Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcile = ...",
+          "kind": "*"
+        },
+        "WeaverHealthReconcilePhase": {
+          "definition": "data Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcilePhase = ...",
+          "kind": "*"
+        },
+        "WeaverHealthReconcileSummary": {
+          "definition": "data Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary = ...",
+          "kind": "*"
+        },
+        "WeaverHealthStatus": {
+          "definition": "data Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthStatus = ...",
+          "kind": "*"
+        },
         "WorkerConfig": {
           "definition": "data Xynolog.Internal.Generated.Models.WorkerConfig.WorkerConfig = ...",
           "kind": "*"
@@ -5189,6 +5293,7 @@
         "AnchorMethodFirstU2d_ofU2d_many": "Xynolog.Internal.Generated.Models.AnchorMethod.AnchorMethod",
         "AnchorMethodFuzzyU2d_match": "Xynolog.Internal.Generated.Models.AnchorMethod.AnchorMethod",
         "AnchorMethodUniqueU2d_match": "Xynolog.Internal.Generated.Models.AnchorMethod.AnchorMethod",
+        "AnchorRect": "Data.Scientific.Scientific -> Data.Scientific.Scientific -> Data.Scientific.Scientific -> Data.Scientific.Scientific -> Data.Scientific.Scientific -> Data.Scientific.Scientific -> Data.Scientific.Scientific -> Data.Scientific.Scientific -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect",
         "AnchoredText": "[Xynolog.Internal.Generated.Models.PdfTextItem.PdfTextItem] -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.AnchoredText.AnchoredText",
         "AnchoredTextAbsent": "Xynolog.Internal.Generated.Models.AnchoredTextAbsent.AnchoredTextAbsentKind -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.AnchoredTextAbsent.AnchoredTextAbsent",
         "AnchoredTextAbsentKindNoU2d_map": "Xynolog.Internal.Generated.Models.AnchoredTextAbsent.AnchoredTextAbsentKind",
@@ -5230,7 +5335,10 @@
         "ArchivistEnginesJobs": "Maybe Xynolog.Internal.Generated.Models.ArchivistEngines.ArchivistEnginesJobsMark -> Maybe Xynolog.Internal.Generated.Models.Engine.Engine -> Xynolog.Internal.Generated.Models.ArchivistEngines.ArchivistEnginesJobs",
         "ArchivistEnginesJobsMark": "Maybe Xynolog.Internal.Generated.Models.Engine.Engine -> Maybe Xynolog.Internal.Generated.Models.Engine.Engine -> Maybe Xynolog.Internal.Generated.Models.Engine.Engine -> Maybe Xynolog.Internal.Generated.Models.Engine.Engine -> Maybe Xynolog.Internal.Generated.Models.Engine.Engine -> Xynolog.Internal.Generated.Models.ArchivistEngines.ArchivistEnginesJobsMark",
         "ArchivistEventsResponse": "[Xynolog.Internal.Generated.Models.StoredEventResponse.StoredEventResponse] -> Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ArchivistEventsResponse.ArchivistEventsResponse",
-        "ArchivistHealth": "[Data.Text.Internal.Text] -> Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthStatus -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealth",
+        "ArchivistHealth": "[Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthActorsItem] -> Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthStatus -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealth",
+        "ArchivistHealthActorsItemBrowser": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthActorsItem",
+        "ArchivistHealthActorsItemCloneTokenManager": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthActorsItem",
+        "ArchivistHealthActorsItemStower": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthActorsItem",
         "ArchivistHealthStatusOk": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthStatus",
         "ArchivistStream": "Integer -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Generated.Models.ArchivistStream.ArchivistStream",
         "ArchivistStreamsResponse": "[Xynolog.Internal.Generated.Models.ArchivistStream.ArchivistStream] -> Xynolog.Internal.Generated.Models.ArchivistStreamsResponse.ArchivistStreamsResponse",
@@ -5278,7 +5386,7 @@
         "BrowseAnnotationHistoryResult": "Xynolog.Internal.Generated.Models.GetAnnotationHistoryResponse.GetAnnotationHistoryResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseAnnotationHistoryResult.BrowseAnnotationHistoryResult",
         "BrowseAnnotationRequest": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseAnnotationRequest.BrowseAnnotationRequest",
         "BrowseAnnotationResult": "Xynolog.Internal.Generated.Models.GetAnnotationResponse.GetAnnotationResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseAnnotationResult.BrowseAnnotationResult",
-        "BrowseClickEvent": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent",
+        "BrowseClickEvent": "Maybe Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent",
         "BrowseDirectoryFailed": "Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed",
         "BrowseDirectoryRequest": "Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.BrowseDirectoryRequest.BrowseDirectoryRequestSort -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseDirectoryRequest.BrowseDirectoryRequest",
         "BrowseDirectoryRequestSortAnnotationCount": "Xynolog.Internal.Generated.Models.BrowseDirectoryRequest.BrowseDirectoryRequestSort",
@@ -5646,6 +5754,10 @@
         "LibrarianConfigGather": "Integer -> Xynolog.Internal.Generated.Models.LibrarianConfig.LibrarianConfigGather",
         "LibrarianConfigSearch": "Data.Scientific.Scientific -> Xynolog.Internal.Generated.Models.LibrarianConfig.LibrarianConfigSearch",
         "LibrarianEngineConfig": "Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.Engine.Engine -> Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig",
+        "LibrarianHealth": "[Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthActorsItem] -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthStatus -> Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealth",
+        "LibrarianHealthActorsItemGatherer": "Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthActorsItem",
+        "LibrarianHealthActorsItemMatcher": "Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthActorsItem",
+        "LibrarianHealthStatusOk": "Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthStatus",
         "LimitRefusal": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode -> Maybe Data.Aeson.Types.Internal.Value -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal",
         "LimitRefusalCodeCapacity": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode",
         "LimitRefusalCodeEmitU2d_rate": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode",
@@ -5843,8 +5955,32 @@
         "SmeltSettledReasonNoU2d_extractor": "Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettledReason",
         "SmeltSettledReasonNoU2d_textU2d_layer": "Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettledReason",
         "SmeltSettledReasonTooU2d_large": "Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettledReason",
-        "SmelterConfig": "Xynolog.Internal.Generated.Models.ServiceAddress.ServiceAddress -> Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfigChunking -> Xynolog.Internal.Generated.Models.CursorsPath.CursorsPath -> Xynolog.Internal.Generated.Models.EmbeddingConfig.EmbeddingConfig -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ServiceIdentity.ServiceIdentity -> Xynolog.Internal.Generated.Models.KbIdentity.KbIdentity -> Xynolog.Internal.Generated.Models.LogFormat.LogFormat -> Xynolog.Internal.Generated.Models.LogLevel.LogLevel -> Integer -> Integer -> Xynolog.Internal.Generated.Models.VectorsConfig.VectorsConfig -> Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig",
-        "SmelterConfigChunking": "Integer -> Integer -> Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfigChunking",
+        "SmelterChunking": "Integer -> Integer -> Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking",
+        "SmelterConfig": "Xynolog.Internal.Generated.Models.ServiceAddress.ServiceAddress -> Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking -> Xynolog.Internal.Generated.Models.CursorsPath.CursorsPath -> Xynolog.Internal.Generated.Models.EmbeddingConfig.EmbeddingConfig -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ServiceIdentity.ServiceIdentity -> Xynolog.Internal.Generated.Models.KbIdentity.KbIdentity -> Xynolog.Internal.Generated.Models.LogFormat.LogFormat -> Xynolog.Internal.Generated.Models.LogLevel.LogLevel -> Integer -> Integer -> Xynolog.Internal.Generated.Models.VectorsConfig.VectorsConfig -> Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig",
+        "SmelterHealth": "Integer -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndex -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcile -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStatus -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth",
+        "SmelterHealthFollowing": "Integer -> Integer -> Integer -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowingSweep -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing",
+        "SmelterHealthFollowingSweepDone": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowingSweep",
+        "SmelterHealthFollowingSweepDue": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowingSweep",
+        "SmelterHealthFollowingSweepPending": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowingSweep",
+        "SmelterHealthFollowingSweepRunning": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowingSweep",
+        "SmelterHealthIndex": "Bool -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStamp -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndex",
+        "SmelterHealthIndexStamp": "Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStampEmbedding -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStamp",
+        "SmelterHealthIndexStampEmbedding": "Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStampEmbedding",
+        "SmelterHealthReconcile": "Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcilePhase -> Maybe Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcile",
+        "SmelterHealthReconcilePhaseDone": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcilePhase",
+        "SmelterHealthReconcilePhaseFailed": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcilePhase",
+        "SmelterHealthReconcilePhasePending": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcilePhase",
+        "SmelterHealthReconcilePhaseRunning": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcilePhase",
+        "SmelterHealthStatusOk": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStatus",
+        "SmelterHealthStreamClosed": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "SmelterHealthStreamConnecting": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "SmelterHealthStreamDegraded": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "SmelterHealthStreamInitial": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "SmelterHealthStreamOpen": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "SmelterHealthStreamReconnecting": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "SmelterHealthStreamUnauthenticated": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "SmelterReconcileSummary": "Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummaryResourcesSkipped -> Integer -> Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary",
+        "SmelterReconcileSummaryResourcesSkipped": "Data.Aeson.KeyMap.KeyMap Integer -> Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummaryResourcesSkipped",
         "SpecificResource": "Maybe Xynolog.Internal.Generated.Models.BodyPurpose.BodyPurpose -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Generated.Models.SpecificResource.SpecificResourceType -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.SpecificResource.SpecificResource",
         "SpecificResourceTypeSpecificResource": "Xynolog.Internal.Generated.Models.SpecificResource.SpecificResourceType",
         "StatusResponse": "Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.StatusResponse.StatusResponseFeatures -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.StatusResponse.StatusResponse",
@@ -5952,6 +6088,19 @@
         "WeaveApplied": "Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.WeaveApplied.WeaveApplied",
         "WeaveRebuildCommand": "Maybe Xynolog.Internal.Generated.Models.UserId.UserId -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.WeaveRebuildCommand.WeaveRebuildCommand",
         "WeaverConfig": "Xynolog.Internal.Generated.Models.ServiceAddress.ServiceAddress -> Xynolog.Internal.Generated.Models.CursorsPath.CursorsPath -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.GraphConfig.GraphConfig -> Xynolog.Internal.Generated.Models.ServiceIdentity.ServiceIdentity -> Xynolog.Internal.Generated.Models.KbIdentity.KbIdentity -> Xynolog.Internal.Generated.Models.LogFormat.LogFormat -> Xynolog.Internal.Generated.Models.LogLevel.LogLevel -> Integer -> Xynolog.Internal.Generated.Models.WeaverConfig.WeaverConfig",
+        "WeaverHealth": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcile -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthStatus -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealth",
+        "WeaverHealthFollowing": "Integer -> Integer -> Integer -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowingSweep -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing",
+        "WeaverHealthFollowingSweepDone": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowingSweep",
+        "WeaverHealthFollowingSweepDue": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowingSweep",
+        "WeaverHealthFollowingSweepPending": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowingSweep",
+        "WeaverHealthFollowingSweepRunning": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowingSweep",
+        "WeaverHealthReconcile": "Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcilePhase -> Maybe Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcile",
+        "WeaverHealthReconcilePhaseDone": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcilePhase",
+        "WeaverHealthReconcilePhaseFailed": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcilePhase",
+        "WeaverHealthReconcilePhasePending": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcilePhase",
+        "WeaverHealthReconcilePhaseRunning": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcilePhase",
+        "WeaverHealthReconcileSummary": "Integer -> Integer -> Integer -> Integer -> Integer -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary",
+        "WeaverHealthStatusOk": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthStatus",
         "WorkerConfig": "[Xynolog.Internal.Generated.Models.WorkerKnowledgeBaseConfig.WorkerKnowledgeBaseConfig] -> Xynolog.Internal.Generated.Models.LogFormat.LogFormat -> Xynolog.Internal.Generated.Models.LogLevel.LogLevel -> Data.Text.Internal.Text -> Integer -> Xynolog.Internal.Generated.Models.WorkerConfig.WorkerConfig",
         "WorkerEngineConfig": "Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.Engine.Engine -> [Xynolog.Internal.Generated.Models.JobFilter.JobFilter] -> Xynolog.Internal.Generated.Models.WorkerEngineConfig.WorkerEngineConfig",
         "WorkerEngineHealth": "Maybe Xynolog.Internal.Generated.Models.WorkerEngineHealth.WorkerEngineHealthActiveJob -> Xynolog.Internal.Generated.Models.Engine.Engine -> [Xynolog.Internal.Generated.Models.JobFilter.JobFilter] -> Integer -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.WorkerEngineHealth.WorkerEngineHealth",
@@ -6008,6 +6157,15 @@
         "agentSoftwareProvider": "Xynolog.Internal.Generated.Models.AgentSoftware.AgentSoftware -> Maybe Data.Text.Internal.Text",
         "agentSoftwareU40_id": "Xynolog.Internal.Generated.Models.AgentSoftware.AgentSoftware -> Maybe Data.Text.Internal.Text",
         "agentSoftwareU40_type": "Xynolog.Internal.Generated.Models.AgentSoftware.AgentSoftware -> Xynolog.Internal.Generated.Models.AgentSoftware.AgentSoftwareU40_type",
+        "anchorRectAdditionalProperties": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
+        "anchorRectBottom": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
+        "anchorRectHeight": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
+        "anchorRectLeft": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
+        "anchorRectRight": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
+        "anchorRectTop": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
+        "anchorRectWidth": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
+        "anchorRectX": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
+        "anchorRectY": "Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect -> Data.Scientific.Scientific",
         "anchoredTextAbsentAdditionalProperties": "Xynolog.Internal.Generated.Models.AnchoredTextAbsent.AnchoredTextAbsent -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "anchoredTextAbsentKind": "Xynolog.Internal.Generated.Models.AnchoredTextAbsent.AnchoredTextAbsent -> Xynolog.Internal.Generated.Models.AnchoredTextAbsent.AnchoredTextAbsentKind",
         "anchoredTextAdditionalProperties": "Xynolog.Internal.Generated.Models.AnchoredText.AnchoredText -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
@@ -6084,7 +6242,7 @@
         "archivistEventsResponseAdditionalProperties": "Xynolog.Internal.Generated.Models.ArchivistEventsResponse.ArchivistEventsResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "archivistEventsResponseEvents": "Xynolog.Internal.Generated.Models.ArchivistEventsResponse.ArchivistEventsResponse -> [Xynolog.Internal.Generated.Models.StoredEventResponse.StoredEventResponse]",
         "archivistEventsResponseLastSequence": "Xynolog.Internal.Generated.Models.ArchivistEventsResponse.ArchivistEventsResponse -> Integer",
-        "archivistHealthActors": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealth -> [Data.Text.Internal.Text]",
+        "archivistHealthActors": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealth -> [Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthActorsItem]",
         "archivistHealthAdditionalProperties": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealth -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "archivistHealthStatus": "Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealth -> Xynolog.Internal.Generated.Models.ArchivistHealth.ArchivistHealthStatus",
         "archivistStreamLastSequence": "Xynolog.Internal.Generated.Models.ArchivistStream.ArchivistStream -> Integer",
@@ -6155,6 +6313,7 @@
         "browseAnnotationResultAdditionalProperties": "Xynolog.Internal.Generated.Models.BrowseAnnotationResult.BrowseAnnotationResult -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "browseAnnotationResultResponse": "Xynolog.Internal.Generated.Models.BrowseAnnotationResult.BrowseAnnotationResult -> Xynolog.Internal.Generated.Models.GetAnnotationResponse.GetAnnotationResponse",
         "browseClickEventAdditionalProperties": "Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
+        "browseClickEventAnchorRect": "Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent -> Maybe Xynolog.Internal.Generated.Models.AnchorRect.AnchorRect",
         "browseClickEventAnnotationId": "Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId",
         "browseDirectoryFailedAdditionalProperties": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "browseDirectoryFailedCode": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode",
@@ -6900,6 +7059,9 @@
         "librarianEngineConfigApiKeyEnv": "Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig -> Maybe Data.Text.Internal.Text",
         "librarianEngineConfigBaseUrl": "Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig -> Data.Text.Internal.Text",
         "librarianEngineConfigEngine": "Xynolog.Internal.Generated.Models.LibrarianEngineConfig.LibrarianEngineConfig -> Xynolog.Internal.Generated.Models.Engine.Engine",
+        "librarianHealthActors": "Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealth -> [Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthActorsItem]",
+        "librarianHealthKb": "Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealth -> Data.Text.Internal.Text",
+        "librarianHealthStatus": "Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealth -> Xynolog.Internal.Generated.Models.LibrarianHealth.LibrarianHealthStatus",
         "limitRefusalAdditionalProperties": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "limitRefusalCode": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal -> Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusalCode",
         "limitRefusalDetails": "Xynolog.Internal.Generated.Models.LimitRefusal.LimitRefusal -> Maybe Data.Aeson.Types.Internal.Value",
@@ -7357,10 +7519,10 @@
         "smeltSettledOutcome": "Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettled -> Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettledOutcome",
         "smeltSettledReason": "Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettled -> Maybe Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettledReason",
         "smeltSettledResourceId": "Xynolog.Internal.Generated.Models.SmeltSettled.SmeltSettled -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
+        "smelterChunkingChunkSize": "Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking -> Integer",
+        "smelterChunkingOverlap": "Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking -> Integer",
         "smelterConfigArchivist": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Xynolog.Internal.Generated.Models.ServiceAddress.ServiceAddress",
-        "smelterConfigChunking": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfigChunking",
-        "smelterConfigChunkingChunkSize": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfigChunking -> Integer",
-        "smelterConfigChunkingOverlap": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfigChunking -> Integer",
+        "smelterConfigChunking": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking",
         "smelterConfigCursorsPath": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Xynolog.Internal.Generated.Models.CursorsPath.CursorsPath",
         "smelterConfigEmbedding": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Xynolog.Internal.Generated.Models.EmbeddingConfig.EmbeddingConfig",
         "smelterConfigGatewayUrl": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Data.Text.Internal.Text",
@@ -7371,6 +7533,39 @@
         "smelterConfigPdfsAtOnce": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Integer",
         "smelterConfigPort": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Integer",
         "smelterConfigVectors": "Xynolog.Internal.Generated.Models.SmelterConfig.SmelterConfig -> Xynolog.Internal.Generated.Models.VectorsConfig.VectorsConfig",
+        "smelterHealthEventsProcessed": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth -> Integer",
+        "smelterHealthFollowing": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing",
+        "smelterHealthFollowingRefused": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing -> Integer",
+        "smelterHealthFollowingStopped": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing -> Integer",
+        "smelterHealthFollowingStreamDrops": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing -> Integer",
+        "smelterHealthFollowingSweep": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowing -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthFollowingSweep",
+        "smelterHealthIndex": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndex",
+        "smelterHealthIndexMadeAnew": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndex -> Bool",
+        "smelterHealthIndexStamp": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndex -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStamp",
+        "smelterHealthIndexStampChunking": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStamp -> Xynolog.Internal.Generated.Models.SmelterChunking.SmelterChunking",
+        "smelterHealthIndexStampEmbedding": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStamp -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStampEmbedding",
+        "smelterHealthIndexStampEmbeddingModel": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStampEmbedding -> Data.Text.Internal.Text",
+        "smelterHealthIndexStampEmbeddingType": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthIndexStampEmbedding -> Data.Text.Internal.Text",
+        "smelterHealthKb": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth -> Data.Text.Internal.Text",
+        "smelterHealthReconcile": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcile",
+        "smelterHealthReconcileError": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcile -> Maybe Data.Text.Internal.Text",
+        "smelterHealthReconcilePhase": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcile -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcilePhase",
+        "smelterHealthReconcileSummary": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthReconcile -> Maybe Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary",
+        "smelterHealthStatus": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStatus",
+        "smelterHealthStream": "Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealth -> Xynolog.Internal.Generated.Models.SmelterHealth.SmelterHealthStream",
+        "smelterReconcileSummaryAnnotationVectorsDeleted": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryAnnotationsEmbedded": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryAnnotationsRestamped": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourceVectorsDeleted": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourcesEligible": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourcesEmbedded": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourcesFailed": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourcesIndexed": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourcesReanchored": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourcesRestamped": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
+        "smelterReconcileSummaryResourcesSkipped": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummaryResourcesSkipped",
+        "smelterReconcileSummaryResourcesSkippedAdditionalProperties": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummaryResourcesSkipped -> Data.Aeson.KeyMap.KeyMap Integer",
+        "smelterReconcileSummaryResourcesUnavailable": "Xynolog.Internal.Generated.Models.SmelterReconcileSummary.SmelterReconcileSummary -> Integer",
         "specificResourceAdditionalProperties": "Xynolog.Internal.Generated.Models.SpecificResource.SpecificResource -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "specificResourcePurpose": "Xynolog.Internal.Generated.Models.SpecificResource.SpecificResource -> Maybe Xynolog.Internal.Generated.Models.BodyPurpose.BodyPurpose",
         "specificResourceSource": "Xynolog.Internal.Generated.Models.SpecificResource.SpecificResource -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
@@ -7487,6 +7682,22 @@
         "weaverConfigLogFormat": "Xynolog.Internal.Generated.Models.WeaverConfig.WeaverConfig -> Xynolog.Internal.Generated.Models.LogFormat.LogFormat",
         "weaverConfigLogLevel": "Xynolog.Internal.Generated.Models.WeaverConfig.WeaverConfig -> Xynolog.Internal.Generated.Models.LogLevel.LogLevel",
         "weaverConfigPort": "Xynolog.Internal.Generated.Models.WeaverConfig.WeaverConfig -> Integer",
+        "weaverHealthFollowing": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealth -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing",
+        "weaverHealthFollowingRefused": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing -> Integer",
+        "weaverHealthFollowingStopped": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing -> Integer",
+        "weaverHealthFollowingStreamDrops": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing -> Integer",
+        "weaverHealthFollowingSweep": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowing -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthFollowingSweep",
+        "weaverHealthKb": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealth -> Data.Text.Internal.Text",
+        "weaverHealthReconcile": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealth -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcile",
+        "weaverHealthReconcileError": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcile -> Maybe Data.Text.Internal.Text",
+        "weaverHealthReconcilePhase": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcile -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcilePhase",
+        "weaverHealthReconcileSummary": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcile -> Maybe Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary",
+        "weaverHealthReconcileSummaryDivergent": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary -> Integer",
+        "weaverHealthReconcileSummaryHealFailures": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary -> Integer",
+        "weaverHealthReconcileSummaryHealed": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary -> Integer",
+        "weaverHealthReconcileSummaryOrphaned": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary -> Integer",
+        "weaverHealthReconcileSummaryResourcesChecked": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthReconcileSummary -> Integer",
+        "weaverHealthStatus": "Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealth -> Xynolog.Internal.Generated.Models.WeaverHealth.WeaverHealthStatus",
         "workerConfigKnowledgeBases": "Xynolog.Internal.Generated.Models.WorkerConfig.WorkerConfig -> [Xynolog.Internal.Generated.Models.WorkerKnowledgeBaseConfig.WorkerKnowledgeBaseConfig]",
         "workerConfigLogFormat": "Xynolog.Internal.Generated.Models.WorkerConfig.WorkerConfig -> Xynolog.Internal.Generated.Models.LogFormat.LogFormat",
         "workerConfigLogLevel": "Xynolog.Internal.Generated.Models.WorkerConfig.WorkerConfig -> Xynolog.Internal.Generated.Models.LogLevel.LogLevel",

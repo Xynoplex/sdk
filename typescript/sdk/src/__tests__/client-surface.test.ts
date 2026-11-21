@@ -192,7 +192,7 @@ const CALLS: Calls = {
     files: (c, a) =>
       c.browse.files(optional(a['dirPath']), optional(a['sort'])),
     kb: (c) => c.browse.kb(),
-    click: (c, a) => c.browse.click(aid(a)),
+    click: (c, a) => c.browse.click(aid(a), optional(a['anchorRect'])),
     openResource: (c, a) => c.browse.openResource(rid(a)),
     resourceViewed: (c, a) => c.browse.resourceViewed(rid(a)),
   },

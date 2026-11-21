@@ -32,7 +32,7 @@ use crate::state_unit::StateUnit;
 use crate::timing::MAX_STORED_BYTES_COUNT;
 use crate::transport::{BoxFuture, Content, ContentStream, ContentTransport, Envelope};
 use crate::types::{
-    AnchoredTextAnswer, Annotation, AttributedEvent, BrowseAnnotationHistoryRequest,
+    AnchorRect, AnchoredTextAnswer, Annotation, AttributedEvent, BrowseAnnotationHistoryRequest,
     BrowseAnnotationRequest, BrowseClickEvent, BrowseDirectoryRequest, BrowseDirectoryRequestSort,
     BrowseDirectoryResultResponse, BrowseEnginesRequest, BrowseEntityTypesRequest,
     BrowseEventsRequest, BrowseKbRequest, BrowseResourceOpenEvent, BrowseResourceRequest,
@@ -1027,10 +1027,12 @@ impl BrowseNamespace {
 
     // ── Signals ─────────────────────────────────────────────────────────
 
-    /// Signal: open an annotation for this viewer.
-    pub fn click(&self, annotation_id: &AnnotationId) {
+    /// Signal: open an annotation for this viewer, and where it is on this
+    /// viewer's screen when that is known.
+    pub fn click(&self, annotation_id: &AnnotationId, anchor_rect: Option<&AnchorRect>) {
         self.links.signal::<BrowseClick>(
             &BrowseClickEvent {
+                anchor_rect: anchor_rect.cloned(),
                 annotation_id: annotation_id.clone(),
             },
             Envelope::default(),
