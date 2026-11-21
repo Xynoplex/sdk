@@ -240,6 +240,29 @@ impl AnchorMethod {
 
 schema!(AnchorMethod);
 
+/// Where a clicked annotation's element is on the viewer's screen: its rectangle in viewport pixels, as a DOM rectangle states it. A viewer's own geometry: it rides a viewer's local frames, and a frame another participant's screen receives carries none.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct AnchorRect {
+    /// The rectangle's horizontal origin.
+    pub x: f64,
+    /// The rectangle's vertical origin.
+    pub y: f64,
+    /// The rectangle's width.
+    pub width: f64,
+    /// The rectangle's height.
+    pub height: f64,
+    /// The rectangle's top edge.
+    pub top: f64,
+    /// The rectangle's right edge.
+    pub right: f64,
+    /// The rectangle's bottom edge.
+    pub bottom: f64,
+    /// The rectangle's left edge.
+    pub left: f64,
+}
+
+schema!(AnchorRect);
+
 /// Text paired with the geometry that indexes it — the minimum needed to turn a range of the text, two offsets counted in Unicode code points, into a selection, or a rectangle into a quote. Whole-resource: a producer iterates page by page, but every consumer wants one map.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct AnchoredText {
@@ -883,13 +906,13 @@ schema!(ArchivistEventsResponse);
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct ArchivistHealth {
     pub status: ArchivistHealthStatus,
-    /// The record actors this process hosts.
-    pub actors: Vec<String>,
+    /// The record actors this process hosts: each of the enum's, once, in the order the enum lists them.
+    pub actors: Vec<ArchivistHealthActorsItem>,
 }
 
 impl ArchivistHealth {
     /// The `ArchivistHealth` that states these and nothing else.
-    pub fn new(actors: Vec<String>) -> Self {
+    pub fn new(actors: Vec<ArchivistHealthActorsItem>) -> Self {
         Self {
             status: ArchivistHealthStatus::Ok,
             actors,
@@ -898,6 +921,29 @@ impl ArchivistHealth {
 }
 
 schema!(ArchivistHealth);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ArchivistHealthActorsItem {
+    #[serde(rename = "stower")]
+    Stower,
+    #[serde(rename = "browser")]
+    Browser,
+    #[serde(rename = "cloneTokenManager")]
+    CloneTokenManager,
+}
+
+impl ArchivistHealthActorsItem {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ArchivistHealthActorsItem::Stower => "stower",
+            ArchivistHealthActorsItem::Browser => "browser",
+            ArchivistHealthActorsItem::CloneTokenManager => "cloneTokenManager",
+        }
+    }
+}
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1497,6 +1543,19 @@ schema!(BrowseAnnotationResult);
 pub struct BrowseClickEvent {
     #[serde(rename = "annotationId")]
     pub annotation_id: AnnotationId,
+    #[serde(rename = "anchorRect")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub anchor_rect: Option<AnchorRect>,
+}
+
+impl BrowseClickEvent {
+    /// The `BrowseClickEvent` that states these and nothing else.
+    pub fn new(annotation_id: AnnotationId) -> Self {
+        Self {
+            annotation_id,
+            anchor_rect: None,
+        }
+    }
 }
 
 schema!(BrowseClickEvent);
@@ -7140,6 +7199,67 @@ impl LibrarianEngineConfig {
 
 schema!(LibrarianEngineConfig);
 
+/// The Librarian's health answer (LIBRARIAN.md § Health). Its port opens last, after it has begun to take requests from the bus, so a Librarian whose health answers is answering.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LibrarianHealth {
+    pub status: LibrarianHealthStatus,
+    /// The DID of the knowledge base it serves: the one its document names, which that knowledge base said it is before the Librarian reached its stores.
+    pub kb: String,
+    /// The two actors it runs, `matcher` and `gatherer`.
+    pub actors: Vec<LibrarianHealthActorsItem>,
+}
+
+impl LibrarianHealth {
+    /// The `LibrarianHealth` that states these and nothing else.
+    pub fn new(kb: impl Into<String>, actors: Vec<LibrarianHealthActorsItem>) -> Self {
+        Self {
+            status: LibrarianHealthStatus::Ok,
+            kb: kb.into(),
+            actors,
+        }
+    }
+}
+
+schema!(LibrarianHealth);
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum LibrarianHealthActorsItem {
+    #[serde(rename = "matcher")]
+    Matcher,
+    #[serde(rename = "gatherer")]
+    Gatherer,
+}
+
+impl LibrarianHealthActorsItem {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            LibrarianHealthActorsItem::Matcher => "matcher",
+            LibrarianHealthActorsItem::Gatherer => "gatherer",
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum LibrarianHealthStatus {
+    #[serde(rename = "ok")]
+    Ok,
+}
+
+impl LibrarianHealthStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            LibrarianHealthStatus::Ok => "ok",
+        }
+    }
+}
+
 /// An ErrorResponse that names, in `code`, the limit the request met.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct LimitRefusal {
@@ -7301,7 +7421,7 @@ impl LocalEndpointKind {
     }
 }
 
-/// How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
+/// How each log line is written to stdout (service-telemetry/log-lines.json): `json`, one JSON object per line; or `simple`, a line of words followed by any metadata as JSON.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
 )]
@@ -10234,6 +10354,19 @@ impl SmeltSettledReason {
     }
 }
 
+/// The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterChunking {
+    /// The size of a chunk.
+    #[serde(rename = "chunkSize")]
+    pub chunk_size: u64,
+    /// How much of a chunk the next one repeats.
+    pub overlap: u64,
+}
+
+schema!(SmelterChunking);
+
 /// Everything a Smelter reads at boot: nothing in it is defaulted by the Smelter. Whoever starts a Smelter writes it, from the knowledge base's stack documents, and the Smelter reads it from the path its `--config` flag names. This schema is the contract, and a Smelter needs no launcher. Started without `--config`, or with a path that names no file, the Smelter refuses to start and says which. No secret is a value here: an embedding provider's key is named by the environment variable that holds it, and the Smelter's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -10248,8 +10381,7 @@ pub struct SmelterConfig {
     pub archivist: ServiceAddress,
     pub embedding: EmbeddingConfig,
     pub vectors: VectorsConfig,
-    /// The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
-    pub chunking: SmelterConfigChunking,
+    pub chunking: SmelterChunking,
     /// How many PDFs the Smelter works on at once. Each one under way holds its bytes, a page of a scan in pixels beside the OCR process reading it, and its text and vectors, so whoever starts a Smelter sizes this with the memory it gives it. Every other resource is indexed beside them.
     #[serde(rename = "pdfsAtOnce")]
     pub pdfs_at_once: u64,
@@ -10265,16 +10397,266 @@ pub struct SmelterConfig {
 
 schema!(SmelterConfig);
 
-/// The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
+/// The Smelter's health answer (SMELTER.md § Health): seven members, each from what the Smelter holds, for it asks nothing of the gateway, its embedding provider or its vector database to answer. `status` is `ok` whenever it answers, and says what else is so in the members beside it.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct SmelterConfigChunking {
-    /// The size of a chunk.
-    #[serde(rename = "chunkSize")]
-    pub chunk_size: u64,
-    /// How much of a chunk the next one repeats.
-    pub overlap: u64,
+pub struct SmelterHealth {
+    pub status: SmelterHealthStatus,
+    /// The DID of the knowledge base it serves: the one its settings name, which that knowledge base said it is before the Smelter reached its index.
+    pub kb: String,
+    /// The state of its own stream of the record, one of the seven of TRANSPORT-HTTP.md § Connection lifecycle. Events are delivered to it while it is `open`.
+    pub stream: SmelterHealthStream,
+    /// How far it has followed the record. Its sweep is also `due` where its start's reconcile failed.
+    pub following: SmelterHealthFollowing,
+    /// How many events it has applied since it started: events of the kinds that do something, and not refused. Neither an event taken as nothing nor the work of a reconcile or a rebuild is counted.
+    #[serde(rename = "eventsProcessed")]
+    pub events_processed: u64,
+    /// How far the latest reconcile has got: the pass's `summary` when it is done, or its `error` when it failed.
+    pub reconcile: SmelterHealthReconcile,
+    /// What the Smelter holds its index to, and what this start did for that.
+    pub index: SmelterHealthIndex,
 }
+
+impl SmelterHealth {
+    /// The `SmelterHealth` that states these and nothing else.
+    pub fn new(
+        kb: impl Into<String>,
+        stream: SmelterHealthStream,
+        following: SmelterHealthFollowing,
+        events_processed: u64,
+        reconcile: SmelterHealthReconcile,
+        index: SmelterHealthIndex,
+    ) -> Self {
+        Self {
+            status: SmelterHealthStatus::Ok,
+            kb: kb.into(),
+            stream,
+            following,
+            events_processed,
+            reconcile,
+            index,
+        }
+    }
+}
+
+schema!(SmelterHealth);
+
+/// How far it has followed the record. Its sweep is also `due` where its start's reconcile failed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterHealthFollowing {
+    /// The latest sweep's phase: `pending` before its stream first opens, `running`, `done`, or `due` where the record could not be listed and the sweep is tried again.
+    pub sweep: SmelterHealthFollowingSweep,
+    /// How many resources' logs a failed taking has stopped until the next sweep.
+    pub stopped: u64,
+    /// How many events it refused as recorded since it started.
+    pub refused: u64,
+    /// How many times its stream has dropped since it started.
+    #[serde(rename = "streamDrops")]
+    pub stream_drops: u64,
+}
+
+/// The latest sweep's phase: `pending` before its stream first opens, `running`, `done`, or `due` where the record could not be listed and the sweep is tried again.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SmelterHealthFollowingSweep {
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "running")]
+    Running,
+    #[serde(rename = "done")]
+    Done,
+    #[serde(rename = "due")]
+    Due,
+}
+
+impl SmelterHealthFollowingSweep {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SmelterHealthFollowingSweep::Pending => "pending",
+            SmelterHealthFollowingSweep::Running => "running",
+            SmelterHealthFollowingSweep::Done => "done",
+            SmelterHealthFollowingSweep::Due => "due",
+        }
+    }
+}
+
+/// What the Smelter holds its index to, and what this start did for that.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterHealthIndex {
+    /// The model and the cut it makes an index by.
+    pub stamp: SmelterHealthIndexStamp,
+    /// Whether this start made the index again, as it does where the index stated another stamp, or none.
+    #[serde(rename = "madeAnew")]
+    pub made_anew: bool,
+}
+
+/// The model and the cut it makes an index by.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterHealthIndexStamp {
+    /// The embedding provider's kind and model.
+    pub embedding: SmelterHealthIndexStampEmbedding,
+    pub chunking: SmelterChunking,
+}
+
+/// The embedding provider's kind and model.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterHealthIndexStampEmbedding {
+    pub r#type: String,
+    pub model: String,
+}
+
+/// How far the latest reconcile has got: the pass's `summary` when it is done, or its `error` when it failed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterHealthReconcile {
+    pub phase: SmelterHealthReconcilePhase,
+    /// What the pass came to.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub summary: Option<SmelterReconcileSummary>,
+    /// Why it failed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+impl SmelterHealthReconcile {
+    /// The `SmelterHealthReconcile` that states these and nothing else.
+    pub fn new(phase: SmelterHealthReconcilePhase) -> Self {
+        Self {
+            phase,
+            summary: None,
+            error: None,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SmelterHealthReconcilePhase {
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "running")]
+    Running,
+    #[serde(rename = "done")]
+    Done,
+    #[serde(rename = "failed")]
+    Failed,
+}
+
+impl SmelterHealthReconcilePhase {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SmelterHealthReconcilePhase::Pending => "pending",
+            SmelterHealthReconcilePhase::Running => "running",
+            SmelterHealthReconcilePhase::Done => "done",
+            SmelterHealthReconcilePhase::Failed => "failed",
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SmelterHealthStatus {
+    #[serde(rename = "ok")]
+    Ok,
+}
+
+impl SmelterHealthStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SmelterHealthStatus::Ok => "ok",
+        }
+    }
+}
+
+/// The state of its own stream of the record, one of the seven of TRANSPORT-HTTP.md § Connection lifecycle. Events are delivered to it while it is `open`.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SmelterHealthStream {
+    #[serde(rename = "initial")]
+    Initial,
+    #[serde(rename = "connecting")]
+    Connecting,
+    #[serde(rename = "open")]
+    Open,
+    #[serde(rename = "reconnecting")]
+    Reconnecting,
+    #[serde(rename = "degraded")]
+    Degraded,
+    #[serde(rename = "unauthenticated")]
+    Unauthenticated,
+    #[serde(rename = "closed")]
+    Closed,
+}
+
+impl SmelterHealthStream {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SmelterHealthStream::Initial => "initial",
+            SmelterHealthStream::Connecting => "connecting",
+            SmelterHealthStream::Open => "open",
+            SmelterHealthStream::Reconnecting => "reconnecting",
+            SmelterHealthStream::Degraded => "degraded",
+            SmelterHealthStream::Unauthenticated => "unauthenticated",
+            SmelterHealthStream::Closed => "closed",
+        }
+    }
+}
+
+/// What a Smelter's reconcile came to (SMELTER.md § Reconcile), as its health reports a pass that is done (SmelterHealth's `reconcile.summary`). The first four add up to how many resources it set out to index, less any whose indexing was no longer wanted when its turn came.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SmelterReconcileSummary {
+    /// How many resources it set out to index were indexed.
+    #[serde(rename = "resourcesEmbedded")]
+    pub resources_embedded: u64,
+    /// How many were skipped, by the reason each was skipped for: a reason `smelt:settled` carries (SmeltSettled).
+    #[serde(rename = "resourcesSkipped")]
+    pub resources_skipped: std::collections::BTreeMap<String, u64>,
+    /// How many could not be read.
+    #[serde(rename = "resourcesUnavailable")]
+    pub resources_unavailable: u64,
+    /// How many failed.
+    #[serde(rename = "resourcesFailed")]
+    pub resources_failed: u64,
+    /// How many resources it planned to rewrite the entity types of.
+    #[serde(rename = "resourcesRestamped")]
+    pub resources_restamped: u64,
+    /// How many resources it planned to derive the anchored text of again.
+    #[serde(rename = "resourcesReanchored")]
+    pub resources_reanchored: u64,
+    /// How many resources it planned to take out of the index.
+    #[serde(rename = "resourceVectorsDeleted")]
+    pub resource_vectors_deleted: u64,
+    /// How many annotations it planned to index.
+    #[serde(rename = "annotationsEmbedded")]
+    pub annotations_embedded: u64,
+    /// How many annotations it planned to rewrite the entity types of.
+    #[serde(rename = "annotationsRestamped")]
+    pub annotations_restamped: u64,
+    /// How many annotations it planned to take out of the index.
+    #[serde(rename = "annotationVectorsDeleted")]
+    pub annotation_vectors_deleted: u64,
+    /// How many resources of the catalog have text.
+    #[serde(rename = "resourcesEligible")]
+    pub resources_eligible: u64,
+    /// How many resources have points when it ends.
+    #[serde(rename = "resourcesIndexed")]
+    pub resources_indexed: u64,
+}
+
+schema!(SmelterReconcileSummary);
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct SpecificResource {
@@ -11516,6 +11898,164 @@ pub struct WeaverConfig {
 }
 
 schema!(WeaverConfig);
+
+/// The Weaver's health answer (WEAVER.md § Health). `status` is `ok` whenever the Weaver answers: it says nothing of whether the Weaver can reach the gateway or the graph.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WeaverHealth {
+    pub status: WeaverHealthStatus,
+    /// The DID of the knowledge base it serves: the one its settings name, which that knowledge base said it is before the Weaver connected to the graph database.
+    pub kb: String,
+    /// How far a follower of the record has followed it, as every follower says it at its health port (WEAVER.md § Health, SMELTER.md § Health).
+    pub following: WeaverHealthFollowing,
+    /// How far the reconcile its first sweep is followed by has got (WEAVER.md § Reconcile): the pass's `summary` when it is done, or its `error` when it failed.
+    pub reconcile: WeaverHealthReconcile,
+}
+
+impl WeaverHealth {
+    /// The `WeaverHealth` that states these and nothing else.
+    pub fn new(
+        kb: impl Into<String>,
+        following: WeaverHealthFollowing,
+        reconcile: WeaverHealthReconcile,
+    ) -> Self {
+        Self {
+            status: WeaverHealthStatus::Ok,
+            kb: kb.into(),
+            following,
+            reconcile,
+        }
+    }
+}
+
+schema!(WeaverHealth);
+
+/// How far a follower of the record has followed it, as every follower says it at its health port (WEAVER.md § Health, SMELTER.md § Health).
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WeaverHealthFollowing {
+    /// The latest sweep's phase: `pending` before its stream first opens, `running`, `done`, or `due` where the record could not be listed and the sweep is tried again.
+    pub sweep: WeaverHealthFollowingSweep,
+    /// How many resources' logs a failed taking has stopped until the next sweep.
+    pub stopped: u64,
+    /// How many events it refused as recorded since it started.
+    pub refused: u64,
+    /// How many times its stream has dropped since it started.
+    #[serde(rename = "streamDrops")]
+    pub stream_drops: u64,
+}
+
+/// The latest sweep's phase: `pending` before its stream first opens, `running`, `done`, or `due` where the record could not be listed and the sweep is tried again.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum WeaverHealthFollowingSweep {
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "running")]
+    Running,
+    #[serde(rename = "done")]
+    Done,
+    #[serde(rename = "due")]
+    Due,
+}
+
+impl WeaverHealthFollowingSweep {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            WeaverHealthFollowingSweep::Pending => "pending",
+            WeaverHealthFollowingSweep::Running => "running",
+            WeaverHealthFollowingSweep::Done => "done",
+            WeaverHealthFollowingSweep::Due => "due",
+        }
+    }
+}
+
+/// How far the reconcile its first sweep is followed by has got (WEAVER.md § Reconcile): the pass's `summary` when it is done, or its `error` when it failed.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WeaverHealthReconcile {
+    pub phase: WeaverHealthReconcilePhase,
+    /// What the pass found and did.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub summary: Option<WeaverHealthReconcileSummary>,
+    /// Why it failed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+impl WeaverHealthReconcile {
+    /// The `WeaverHealthReconcile` that states these and nothing else.
+    pub fn new(phase: WeaverHealthReconcilePhase) -> Self {
+        Self {
+            phase,
+            summary: None,
+            error: None,
+        }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum WeaverHealthReconcilePhase {
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "running")]
+    Running,
+    #[serde(rename = "done")]
+    Done,
+    #[serde(rename = "failed")]
+    Failed,
+}
+
+impl WeaverHealthReconcilePhase {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            WeaverHealthReconcilePhase::Pending => "pending",
+            WeaverHealthReconcilePhase::Running => "running",
+            WeaverHealthReconcilePhase::Done => "done",
+            WeaverHealthReconcilePhase::Failed => "failed",
+        }
+    }
+}
+
+/// What the pass found and did.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WeaverHealthReconcileSummary {
+    /// How many resources it checked.
+    #[serde(rename = "resourcesChecked")]
+    pub resources_checked: u64,
+    /// How many of them were divergent: the graph held them otherwise than the record.
+    pub divergent: u64,
+    /// How many divergent resources it rebuilt.
+    pub healed: u64,
+    /// How many it did not heal, because the rebuild stopped at an event it could not apply.
+    #[serde(rename = "healFailures")]
+    pub heal_failures: u64,
+    /// How many orphaned views it found: resources the catalog lists and the record holds no events for. Each is counted, and not healed.
+    pub orphaned: u64,
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum WeaverHealthStatus {
+    #[serde(rename = "ok")]
+    Ok,
+}
+
+impl WeaverHealthStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            WeaverHealthStatus::Ok => "ok",
+        }
+    }
+}
 
 /// Everything a worker reads at boot: nothing in it is defaulted by the worker. The launcher writes it for the machine's worker, from the knowledge bases on that worker's list: each local knowledge base as its start places it, from its stack documents, and each added by `xynolog worker kb add`, offered the engines of the local one it was added from. The worker reads it from the path its `--config` flag names (its image passes `/etc/xynolog/worker.json`). Whoever starts a worker another way writes the same document: this schema is the contract, and a worker needs no launcher. Started without `--config`, or with a path that names no file, the worker refuses to start and says which. No secret is a value here: a provider's key is named by the environment variable that holds it, and the key the worker signs in with at every knowledge base is `XYNOLOG_OIDC_CLIENT_KEY` in its environment, an RSA private key; each knowledge base names the client that holds its public half there. A document that does not validate is refused at boot, naming each failing field.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]

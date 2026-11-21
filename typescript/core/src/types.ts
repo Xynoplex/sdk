@@ -78,6 +78,30 @@ export interface components {
       parameters?: { [key: string]: unknown };
     } & { [key: string]: unknown };
     /**
+     * Where a clicked annotation's element is on the viewer's screen: its
+     * rectangle in viewport pixels, as a DOM rectangle states it. A viewer's
+     * own geometry: it rides a viewer's local frames, and a frame another
+     * participant's screen receives carries none.
+     */
+    AnchorRect: {
+      /** The rectangle's horizontal origin. */
+      x: number;
+      /** The rectangle's vertical origin. */
+      y: number;
+      /** The rectangle's width. */
+      width: number;
+      /** The rectangle's height. */
+      height: number;
+      /** The rectangle's top edge. */
+      top: number;
+      /** The rectangle's right edge. */
+      right: number;
+      /** The rectangle's bottom edge. */
+      bottom: number;
+      /** The rectangle's left edge. */
+      left: number;
+    };
+    /**
      * Text paired with the geometry that indexes it — the minimum needed to
      * turn a range of the text, two offsets counted in Unicode code points,
      * into a selection, or a rectangle into a quote. Whole-resource: a producer
@@ -480,8 +504,11 @@ export interface components {
     /** The Archivist's liveness answer: it serves, and the actors it hosts. */
     ArchivistHealth: {
       status: 'ok';
-      /** The record actors this process hosts. */
-      actors: string[];
+      /**
+       * The record actors this process hosts: each of the enum's, once, in the
+       * order the enum lists them.
+       */
+      actors: ('stower' | 'browser' | 'cloneTokenManager')[];
     };
     /**
      * One stream of the event log, and where it stands: the resource it is of,
@@ -679,6 +706,7 @@ export interface components {
      */
     BrowseClickEvent: {
       annotationId: components['schemas']['AnnotationId'];
+      anchorRect?: components['schemas']['AnchorRect'];
     };
     /**
      * The payload of `browse:directory-failed`: a CommandError that names the
@@ -3287,6 +3315,22 @@ export interface components {
        */
       apiKeyEnv?: string;
     };
+    /**
+     * The Librarian's health answer (LIBRARIAN.md § Health). Its port opens
+     * last, after it has begun to take requests from the bus, so a Librarian
+     * whose health answers is answering.
+     */
+    LibrarianHealth: {
+      status: 'ok';
+      /**
+       * The DID of the knowledge base it serves: the one its document names,
+       * which that knowledge base said it is before the Librarian reached its
+       * stores.
+       */
+      kb: string;
+      /** The two actors it runs, `matcher` and `gatherer`. */
+      actors: ('matcher' | 'gatherer')[];
+    };
     /** An ErrorResponse that names, in `code`, the limit the request met. */
     LimitRefusal: components['schemas']['ErrorResponse'] & {
       /**
@@ -3352,9 +3396,9 @@ export interface components {
       kbId: string;
     };
     /**
-     * How each log line is written to stdout: `json`, one JSON object per line
-     * carrying the active trace's `trace_id` and `span_id`; or `simple`,
-     * `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
+     * How each log line is written to stdout
+     * (service-telemetry/log-lines.json): `json`, one JSON object per line; or
+     * `simple`, a line of words followed by any metadata as JSON.
      */
     LogFormat: 'json' | 'simple';
     /**
@@ -4550,6 +4594,16 @@ export interface components {
         | 'too-large';
     };
     /**
+     * The two numbers a text is cut by before it is embedded, both in tokens, a
+     * token being taken as four code points.
+     */
+    SmelterChunking: {
+      /** The size of a chunk. */
+      chunkSize: number;
+      /** How much of a chunk the next one repeats. */
+      overlap: number;
+    };
+    /**
      * Everything a Smelter reads at boot: nothing in it is defaulted by the
      * Smelter. Whoever starts a Smelter writes it, from the knowledge base's
      * stack documents, and the Smelter reads it from the path its `--config`
@@ -4574,16 +4628,7 @@ export interface components {
       archivist: components['schemas']['ServiceAddress'];
       embedding: components['schemas']['EmbeddingConfig'];
       vectors: components['schemas']['VectorsConfig'];
-      /**
-       * The two numbers a text is cut by before it is embedded, both in tokens,
-       * a token being taken as four code points.
-       */
-      chunking: {
-        /** The size of a chunk. */
-        chunkSize: number;
-        /** How much of a chunk the next one repeats. */
-        overlap: number;
-      };
+      chunking: components['schemas']['SmelterChunking'];
       /**
        * How many PDFs the Smelter works on at once. Each one under way holds
        * its bytes, a page of a scan in pixels beside the OCR process reading
@@ -4597,6 +4642,126 @@ export interface components {
       port: number;
       logLevel: components['schemas']['LogLevel'];
       logFormat: components['schemas']['LogFormat'];
+    };
+    /**
+     * The Smelter's health answer (SMELTER.md § Health): seven members, each
+     * from what the Smelter holds, for it asks nothing of the gateway, its
+     * embedding provider or its vector database to answer. `status` is `ok`
+     * whenever it answers, and says what else is so in the members beside it.
+     */
+    SmelterHealth: {
+      status: 'ok';
+      /**
+       * The DID of the knowledge base it serves: the one its settings name,
+       * which that knowledge base said it is before the Smelter reached its
+       * index.
+       */
+      kb: string;
+      /**
+       * The state of its own stream of the record, one of the seven of
+       * TRANSPORT-HTTP.md § Connection lifecycle. Events are delivered to it
+       * while it is `open`.
+       */
+      stream:
+        | 'initial'
+        | 'connecting'
+        | 'open'
+        | 'reconnecting'
+        | 'degraded'
+        | 'unauthenticated'
+        | 'closed';
+      /**
+       * How far it has followed the record. Its sweep is also `due` where its
+       * start's reconcile failed.
+       */
+      following: {
+        /**
+         * The latest sweep's phase: `pending` before its stream first opens,
+         * `running`, `done`, or `due` where the record could not be listed and
+         * the sweep is tried again.
+         */
+        sweep: 'pending' | 'running' | 'done' | 'due';
+        /**
+         * How many resources' logs a failed taking has stopped until the next
+         * sweep.
+         */
+        stopped: number;
+        /** How many events it refused as recorded since it started. */
+        refused: number;
+        /** How many times its stream has dropped since it started. */
+        streamDrops: number;
+      };
+      /**
+       * How many events it has applied since it started: events of the kinds
+       * that do something, and not refused. Neither an event taken as nothing
+       * nor the work of a reconcile or a rebuild is counted.
+       */
+      eventsProcessed: number;
+      /**
+       * How far the latest reconcile has got: the pass's `summary` when it is
+       * done, or its `error` when it failed.
+       */
+      reconcile: {
+        phase: 'pending' | 'running' | 'done' | 'failed';
+        /** What the pass came to. */
+        summary?: components['schemas']['SmelterReconcileSummary'];
+        /** Why it failed. */
+        error?: string;
+      };
+      /**
+       * What the Smelter holds its index to, and what this start did for that.
+       */
+      index: {
+        /** The model and the cut it makes an index by. */
+        stamp: {
+          /** The embedding provider's kind and model. */
+          embedding: {
+            type: string;
+            model: string;
+          };
+          chunking: components['schemas']['SmelterChunking'];
+        };
+        /**
+         * Whether this start made the index again, as it does where the index
+         * stated another stamp, or none.
+         */
+        madeAnew: boolean;
+      };
+    };
+    /**
+     * What a Smelter's reconcile came to (SMELTER.md § Reconcile), as its
+     * health reports a pass that is done (SmelterHealth's `reconcile.summary`).
+     * The first four add up to how many resources it set out to index, less any
+     * whose indexing was no longer wanted when its turn came.
+     */
+    SmelterReconcileSummary: {
+      /** How many resources it set out to index were indexed. */
+      resourcesEmbedded: number;
+      /**
+       * How many were skipped, by the reason each was skipped for: a reason
+       * `smelt:settled` carries (SmeltSettled).
+       */
+      resourcesSkipped: { [key: string]: number };
+      /** How many could not be read. */
+      resourcesUnavailable: number;
+      /** How many failed. */
+      resourcesFailed: number;
+      /** How many resources it planned to rewrite the entity types of. */
+      resourcesRestamped: number;
+      /** How many resources it planned to derive the anchored text of again. */
+      resourcesReanchored: number;
+      /** How many resources it planned to take out of the index. */
+      resourceVectorsDeleted: number;
+      /** How many annotations it planned to index. */
+      annotationsEmbedded: number;
+      /** How many annotations it planned to rewrite the entity types of. */
+      annotationsRestamped: number;
+      /** How many annotations it planned to take out of the index. */
+      annotationVectorsDeleted: number;
+      /** How many resources of the catalog have text. */
+      resourcesEligible: number;
+      /** How many resources have points when it ends. */
+      resourcesIndexed: number;
     };
     SpecificResource: {
       type: 'SpecificResource';
@@ -5025,6 +5190,73 @@ export interface components {
       port: number;
       logLevel: components['schemas']['LogLevel'];
       logFormat: components['schemas']['LogFormat'];
+    };
+    /**
+     * The Weaver's health answer (WEAVER.md § Health). `status` is `ok`
+     * whenever the Weaver answers: it says nothing of whether the Weaver can
+     * reach the gateway or the graph.
+     */
+    WeaverHealth: {
+      status: 'ok';
+      /**
+       * The DID of the knowledge base it serves: the one its settings name,
+       * which that knowledge base said it is before the Weaver connected to the
+       * graph database.
+       */
+      kb: string;
+      /**
+       * How far a follower of the record has followed it, as every follower
+       * says it at its health port (WEAVER.md § Health, SMELTER.md § Health).
+       */
+      following: {
+        /**
+         * The latest sweep's phase: `pending` before its stream first opens,
+         * `running`, `done`, or `due` where the record could not be listed and
+         * the sweep is tried again.
+         */
+        sweep: 'pending' | 'running' | 'done' | 'due';
+        /**
+         * How many resources' logs a failed taking has stopped until the next
+         * sweep.
+         */
+        stopped: number;
+        /** How many events it refused as recorded since it started. */
+        refused: number;
+        /** How many times its stream has dropped since it started. */
+        streamDrops: number;
+      };
+      /**
+       * How far the reconcile its first sweep is followed by has got (WEAVER.md
+       * § Reconcile): the pass's `summary` when it is done, or its `error` when
+       * it failed.
+       */
+      reconcile: {
+        phase: 'pending' | 'running' | 'done' | 'failed';
+        /** What the pass found and did. */
+        summary?: {
+          /** How many resources it checked. */
+          resourcesChecked: number;
+          /**
+           * How many of them were divergent: the graph held them otherwise than
+           * the record.
+           */
+          divergent: number;
+          /** How many divergent resources it rebuilt. */
+          healed: number;
+          /**
+           * How many it did not heal, because the rebuild stopped at an event
+           * it could not apply.
+           */
+          healFailures: number;
+          /**
+           * How many orphaned views it found: resources the catalog lists and
+           * the record holds no events for. Each is counted, and not healed.
+           */
+          orphaned: number;
+        };
+        /** Why it failed. */
+        error?: string;
+      };
     };
     /**
      * Everything a worker reads at boot: nothing in it is defaulted by the

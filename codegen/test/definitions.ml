@@ -114,6 +114,75 @@ let cases =
         | _ -> Alcotest.fail "the member is not written in place");
   ]
 
+let did = "KbDid.json"
+
+let in_place_schemas =
+  let t = Hashtbl.create 4 in
+  Hashtbl.replace t did
+    (schema did
+       {|{"type":"string","pattern":"^did:web:\\S+$","description":"A DID."}|});
+  Hashtbl.replace t "Loop.json"
+    (schema "Loop.json" {|{"type":"array","items":{"$ref":"Loop.json"}}|});
+  t
+
+let named key = if key = request then Some "Request" else None
+
+let written text =
+  Schema_names.files_in_place ~ids ~schemas:in_place_schemas ~named
+    (schema "Health.json" text)
+
+let property name = function
+  | Ok (Schema.Schema { properties = Some properties; _ }) ->
+      List.assoc name properties
+  | Ok _ -> Alcotest.fail "no properties"
+  | Error message -> Alcotest.fail message
+
+let description = function
+  | Schema.Schema { description; _ } -> description
+  | Schema.Boolean_schema _ -> None
+
+let in_place_cases =
+  [
+    case "a file nothing names is written in place, described as said beside"
+      (fun () ->
+        let kb =
+          property "kb"
+            (written
+               {|{"type":"object","properties":{"kb":{"$ref":"KbDid.json","description":"Its DID."}}}|})
+        in
+        Alcotest.(check (option type_name))
+          "type" (Some Schema.String) (type_of (Some kb));
+        Alcotest.(check (option string))
+          "description" (Some "Its DID.") (description kb));
+    case "a file written in place keeps its own description when none is said"
+      (fun () ->
+        Alcotest.(check (option string))
+          "description" (Some "A DID.")
+          (description
+             (property "kb"
+                (written
+                   {|{"type":"object","properties":{"kb":{"$ref":"KbDid.json"}}}|}))));
+    case "a file a generation names stays a reference" (fun () ->
+        match
+          property "r"
+            (written
+               {|{"type":"object","properties":{"r":{"$ref":"components/schemas/Request.json"}}}|})
+        with
+        | Schema.Schema { ref_ = Some _; _ } -> ()
+        | _ -> Alcotest.fail "written in place");
+    case "a constraint beside a reference is refused" (fun () ->
+        match
+          written
+            {|{"type":"object","properties":{"kb":{"$ref":"KbDid.json","minLength":1}}}|}
+        with
+        | Error _ -> ()
+        | Ok _ -> Alcotest.fail "accepted");
+    case "a file that reaches itself is refused" (fun () ->
+        match written {|{"$ref":"Loop.json"}|} with
+        | Error _ -> ()
+        | Ok _ -> Alcotest.fail "accepted");
+  ]
+
 (* A schema of the client's [properties], each [$ref] read from Options.json,
    with each member of another schema written in its place, [recorded] naming
    records a table states. *)
@@ -178,4 +247,8 @@ let whole =
 
 let () =
   Alcotest.run "definitions"
-    [ ("a $ref's schema", cases); ("members written in place", whole) ]
+    [
+      ("a $ref's schema", cases);
+      ("files written in place", in_place_cases);
+      ("members written in place", whole);
+    ]

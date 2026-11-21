@@ -45,7 +45,7 @@ func Annotate(ctx context.Context, client *xynolog.Client, resource api.Resource
 	if err != nil {
 		return err
 	}
-	client.Browse.Click(annotation) // a signal: this viewer's own, never sent
+	client.Browse.Click(annotation, nil) // a signal: this viewer's own, never sent
 	fmt.Println(reached, counted)
 	return nil
 }

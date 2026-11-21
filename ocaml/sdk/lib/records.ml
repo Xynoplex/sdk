@@ -558,16 +558,55 @@ module Browse_annotation_result = struct
     project (fields_of (Models.json model))
 end
 
-module Browse_click_event = struct
+module Anchor_rect = struct
   type t = {
-    annotation_id : Yojson.Raw.t;
+    x : Yojson.Raw.t;
+    y : Yojson.Raw.t;
+    width : Yojson.Raw.t;
+    height : Yojson.Raw.t;
+    top : Yojson.Raw.t;
+    right : Yojson.Raw.t;
+    bottom : Yojson.Raw.t;
+    left : Yojson.Raw.t;
     extra : (string * Yojson.Raw.t) list;
   }
 
   let project fields =
     let reader = start fields in
     let record =
-      { annotation_id = required reader raw "annotationId"; extra = [] }
+      {
+        x = required reader raw "x";
+        y = required reader raw "y";
+        width = required reader raw "width";
+        height = required reader raw "height";
+        top = required reader raw "top";
+        right = required reader raw "right";
+        bottom = required reader raw "bottom";
+        left = required reader raw "left";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `AnchorRect ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Browse_click_event = struct
+  type t = {
+    annotation_id : Yojson.Raw.t;
+    anchor_rect : Yojson.Raw.t Types.presence;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        annotation_id = required reader raw "annotationId";
+        anchor_rect = optional reader raw "anchorRect";
+        extra = [];
+      }
     in
     { record with extra = rest reader }
 
@@ -6549,6 +6588,52 @@ module Librarian_engine_config = struct
     project (fields_of (Models.json model))
 end
 
+module Librarian_health = struct
+  type t = {
+    status : string;
+    kb : Yojson.Raw.t;
+    actors : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        kb = required reader raw "kb";
+        actors = required reader raw "actors";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `LibrarianHealth ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Smelter_chunking = struct
+  type t = {
+    chunk_size : Yojson.Raw.t;
+    overlap : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        chunk_size = required reader raw "chunkSize";
+        overlap = required reader raw "overlap";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `SmelterChunking ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
 module Smelter_config = struct
   type t = {
     kb : Yojson.Raw.t;
@@ -6588,6 +6673,81 @@ module Smelter_config = struct
     { record with extra = rest reader }
 
   let of_model (model : [ `SmelterConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Smelter_health = struct
+  type t = {
+    status : string;
+    kb : Yojson.Raw.t;
+    stream : string;
+    following : Yojson.Raw.t;
+    events_processed : Yojson.Raw.t;
+    reconcile : Yojson.Raw.t;
+    index : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        kb = required reader raw "kb";
+        stream = required reader string "stream";
+        following = required reader raw "following";
+        events_processed = required reader raw "eventsProcessed";
+        reconcile = required reader raw "reconcile";
+        index = required reader raw "index";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `SmelterHealth ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Smelter_reconcile_summary = struct
+  type t = {
+    resources_embedded : Yojson.Raw.t;
+    resources_skipped : Yojson.Raw.t;
+    resources_unavailable : Yojson.Raw.t;
+    resources_failed : Yojson.Raw.t;
+    resources_restamped : Yojson.Raw.t;
+    resources_reanchored : Yojson.Raw.t;
+    resource_vectors_deleted : Yojson.Raw.t;
+    annotations_embedded : Yojson.Raw.t;
+    annotations_restamped : Yojson.Raw.t;
+    annotation_vectors_deleted : Yojson.Raw.t;
+    resources_eligible : Yojson.Raw.t;
+    resources_indexed : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        resources_embedded = required reader raw "resourcesEmbedded";
+        resources_skipped = required reader raw "resourcesSkipped";
+        resources_unavailable = required reader raw "resourcesUnavailable";
+        resources_failed = required reader raw "resourcesFailed";
+        resources_restamped = required reader raw "resourcesRestamped";
+        resources_reanchored = required reader raw "resourcesReanchored";
+        resource_vectors_deleted = required reader raw "resourceVectorsDeleted";
+        annotations_embedded = required reader raw "annotationsEmbedded";
+        annotations_restamped = required reader raw "annotationsRestamped";
+        annotation_vectors_deleted =
+          required reader raw "annotationVectorsDeleted";
+        resources_eligible = required reader raw "resourcesEligible";
+        resources_indexed = required reader raw "resourcesIndexed";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `SmelterReconcileSummary ] Models.t) =
     project (fields_of (Models.json model))
 end
 
@@ -6662,6 +6822,32 @@ module Weaver_config = struct
     { record with extra = rest reader }
 
   let of_model (model : [ `WeaverConfig ] Models.t) =
+    project (fields_of (Models.json model))
+end
+
+module Weaver_health = struct
+  type t = {
+    status : string;
+    kb : Yojson.Raw.t;
+    following : Yojson.Raw.t;
+    reconcile : Yojson.Raw.t;
+    extra : (string * Yojson.Raw.t) list;
+  }
+
+  let project fields =
+    let reader = start fields in
+    let record =
+      {
+        status = required reader string "status";
+        kb = required reader raw "kb";
+        following = required reader raw "following";
+        reconcile = required reader raw "reconcile";
+        extra = [];
+      }
+    in
+    { record with extra = rest reader }
+
+  let of_model (model : [ `WeaverHealth ] Models.t) =
     project (fields_of (Models.json model))
 end
 

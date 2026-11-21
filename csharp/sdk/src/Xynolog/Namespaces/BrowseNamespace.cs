@@ -75,8 +75,8 @@ public sealed class BrowseNamespace
         (await wire.RequestAsync(BusOperations.BrowseKbRequested, new BrowseKbRequest(), cancellation: cancellation)
             .ConfigureAwait(Spawning.Captures)).Response;
 
-    public void Click(AnnotationId annotationId) =>
-        bus.Emit(BusChannels.BrowseClick, new BrowseClickEvent { AnnotationId = annotationId });
+    public void Click(AnnotationId annotationId, AnchorRect? anchorRect = null) =>
+        bus.Emit(BusChannels.BrowseClick, new BrowseClickEvent { AnnotationId = annotationId, AnchorRect = anchorRect });
 
     public void OpenResource(ResourceId resourceId) =>
         bus.Emit(BusChannels.BrowseResourceOpen, new BrowseResourceOpenEvent { ResourceId = resourceId });

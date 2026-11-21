@@ -92,6 +92,8 @@ let adapter ~whole name =
       match s with
       | Schema.Schema s -> Ok [ (name, titled name s) ]
       | Schema.Boolean_schema _ -> Error [ refusal name "is no object" ])
+  | Items _ ->
+      Error [ refusal name "is a list, which the group models as none" ]
   | Union { tag; branches } ->
       let* branches =
         Spec.all
@@ -145,7 +147,7 @@ let adapted spec =
 let whole (spec : Spec.t) =
   let written = Definitions.whole spec in
   fun name ->
-    let file = Definitions.client_types ^ name ^ ".json" in
+    let file = Schema_names.client_types ^ name ^ ".json" in
     Result.map_error
       (fun message -> [ { Decode.file; pointer = ""; message } ])
       (written (List.assoc file spec.schemas))

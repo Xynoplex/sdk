@@ -58,7 +58,7 @@ type Timing struct {
 	// again when the gateway answered it with a status that promises recovery,
 	// or did not answer at all, and a repeat cannot cause a second effect: its
 	// method cannot, or it carries an `Idempotency-Key`, as an upload does
-	// (`transport` in specs/src/retry/cases.json); once, after this wait, or
+	// (`transport` in specs/src/retry/rules.json); once, after this wait, or
 	// after a refusal's `Retry-After` when that is longer. A request whose
 	// credential was refused is renewed and sent again at once, without this
 	// wait, and one unanswered at its deadline (`httpRequestTimeoutMs`) is not

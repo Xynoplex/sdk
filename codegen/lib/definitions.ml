@@ -1,8 +1,8 @@
 (* The gateway's component schemas as the Rust and Swift types are generated
    from them: the document bundled (each file it names as a component, or that
    a directory of schemas holds, is a schema by its name, and any other file a
-   [$ref] names is written in its place; a [$ref] has only a description
-   beside it, which is what is said of it there),
+   [$ref] names is written in its place ([Schema_names]); a [$ref] has only a
+   description beside it, which is what is said of it there),
    and a schema that may be null ([Null_form]) as the union of [Null] and what
    it is beside null, or, beside one [type], [Or_null]. A schema that
    states an [allOf] holds its
@@ -90,21 +90,6 @@ let in_place ~trail file =
     refuse "%s reaches itself through the files written in its place" file;
   file :: trail
 
-(* What a schema that states a [$ref] says of the schema it names: a
-   description, or nothing. A constraint on a reference is an [allOf], so
-   any other keyword beside one is refused. *)
-let said_of_reference (s : _ Schema.layer) (r : Decode.reference) =
-  match
-    List.filter (fun k -> k <> "$ref" && k <> "description") (Schema.keywords s)
-  with
-  | [] -> Ok s.description
-  | k :: _ ->
-      Error
-        (Printf.sprintf
-           "$ref %s has %s beside it: only a description is said of a \
-            reference, and a constraint on one is an allOf"
-           r.target k)
-
 (* A schema a [$ref] names, as [named] names it or, when it names none, the
    schema written in its place from [schemas]. *)
 type referent = Named of string | In_place of string * Schema.t
@@ -157,7 +142,7 @@ let members_in_place ~ids ~schemas ~recorded s =
             in
             if not member then Schema.Schema l
             else (
-              (match said_of_reference l r with
+              (match Schema_names.said_of_reference l r with
               | Ok None -> ()
               | Ok (Some _) ->
                   refuse
@@ -172,9 +157,11 @@ let members_in_place ~ids ~schemas ~recorded s =
   members [] s
 
 (* A schema of [spec] as a writer that reads one whole writes it: each member
-   of another schema it refers to written in its place
-   ([members_in_place]), and each schema within it that closes what it
-   composes read as the one object it means ([Normalize.closed_within]). *)
+   of another schema it refers to written in its place ([members_in_place]),
+   then each file it refers to that no generation names
+   ([Schema_names.in_place]), which a member written in place may refer to,
+   and each schema within it that closes what it composes read as the one
+   object it means ([Normalize.closed_within]). *)
 let whole (spec : Spec.t) =
   let ids = spec.ids in
   let schemas = Hashtbl.of_seq (List.to_seq spec.schemas) in
@@ -183,21 +170,29 @@ let whole (spec : Spec.t) =
     | Ok records -> List.map (fun (key, _, _) -> key) records
     | Error message -> refuse "%s" message
   in
+  let files = Schema_names.in_place spec in
   fun s ->
     match members_in_place ~ids ~schemas ~recorded s with
-    | s -> Normalize.closed_within ids ~find:(schema_of ~ids ~schemas) s
+    | s ->
+        Result.bind (files s)
+          (Normalize.closed_within ids ~find:(schema_of ~ids ~schemas))
     | exception Refused message -> Error message
 
-(* What a client hands its callers that no wire message carries: each file of
-   protocol/specs/src/client/types, and the records of the registry and of the
-   state units' notices. *)
-let client_types = "client/types/"
-
 (* The client types each SDK writes by hand: SearchState and JobEvent, each
-   held to its schema by a census in every SDK; and PutBinaryRequest, whose
-   file is bytes, which the Swift, Kotlin and Haskell writers state as text. *)
+   held to its schema by a census in every SDK; PutBinaryRequest, whose file
+   is bytes, which the Swift, Kotlin and Haskell writers state as text; and
+   what the engines and content methods return, which waits on each SDK's
+   methods returning what client/surface.json says they return. *)
 let hand_written_client_types =
-  [ "SearchState"; "JobEvent"; "PutBinaryRequest" ]
+  [
+    "SearchState";
+    "JobEvent";
+    "PutBinaryRequest";
+    "EngineWithLimits";
+    "EnginesWithLimits";
+    "ResourceRepresentation";
+    "ResourceRepresentationStream";
+  ]
 
 (* The client types every SDK generates, by name: each file of
    protocol/specs/src/client/types but the hand-written ones, each of which
@@ -206,7 +201,7 @@ let generated_client_types (spec : Spec.t) =
   let names =
     List.filter_map
       (fun (key, _) ->
-        if String.starts_with ~prefix:client_types key then
+        if String.starts_with ~prefix:Schema_names.client_types key then
           Some (Filename.remove_extension (Filename.basename key))
         else None)
       spec.schemas
@@ -214,8 +209,8 @@ let generated_client_types (spec : Spec.t) =
   List.iter
     (fun name ->
       if not (List.mem name names) then
-        refuse "%s%s.json, which an SDK writes by hand, is gone" client_types
-          name)
+        refuse "%s%s.json, which an SDK writes by hand, is gone"
+          Schema_names.client_types name)
     hand_written_client_types;
   List.sort String.compare
     (List.filter (fun n -> not (List.mem n hand_written_client_types)) names)
@@ -227,7 +222,7 @@ let records spec =
 
 let client_roots (spec : Spec.t) =
   List.filter
-    (String.starts_with ~prefix:client_types)
+    (String.starts_with ~prefix:Schema_names.client_types)
     (List.map fst spec.schemas)
   @ List.filter_map
       (fun (key, _, _) ->
@@ -259,7 +254,7 @@ let view ~ids ~named ~schemas =
       match s.ref_ with
       | Some r -> (
           let description =
-            match said_of_reference s r with
+            match Schema_names.said_of_reference s r with
             | Ok d -> d
             | Error message -> refuse "%s" message
           in
@@ -382,27 +377,23 @@ let bundle (spec : Spec.t) =
   let ids = spec.ids in
   let schemas = Hashtbl.create 1024 in
   List.iter (fun (file, s) -> Hashtbl.replace schemas file s) spec.schemas;
-  let records = records spec in
-  List.iter (fun (key, _, s) -> Hashtbl.replace schemas key s) records;
+  List.iter (fun (key, _, s) -> Hashtbl.replace schemas key s) (records spec);
   let declared =
     List.map
       (fun (name, r) -> (fst (Decode.resolve spec.Spec.ids r), name))
       (Roots.all spec)
   in
-  let titled = List.map (fun (key, name, _) -> (key, name)) records in
-  (* A schema is named by the name [Roots] gives it, a table's record by
-     its title, and a whole file of a directory of schemas or of client types
-     by its own. A member of a file is named by none. *)
-  let named key =
-    match List.assoc_opt key (declared @ titled) with
-    | Some name -> Some name
-    | None ->
-        if
-          (not (String.contains key '#'))
-          && (Filename.basename (Filename.dirname key) = "schemas"
-             || String.starts_with ~prefix:client_types key)
-        then Some (stem key)
-        else None
+  let named =
+    match Schema_names.named spec with
+    | Ok named -> named
+    | Error message -> refuse "%s" message
+  in
+  (* Each schema a writer is handed, the files no generation names written in
+     their places ([Schema_names.in_place]). *)
+  let in_place =
+    let in_place = Schema_names.in_place spec in
+    fun s ->
+      match in_place s with Ok s -> s | Error message -> refuse "%s" message
   in
   let response file =
     match List.assoc_opt file spec.responses with
@@ -511,7 +502,9 @@ let bundle (spec : Spec.t) =
         match Hashtbl.find_opt by_name name with
         | None -> refuse "the spec declares no schema %s" name
         | Some file ->
-            let v = view ~ids ~named ~schemas (Hashtbl.find schemas file) in
+            let v =
+              view ~ids ~named ~schemas (in_place (Hashtbl.find schemas file))
+            in
             Hashtbl.replace views name v;
             v)
   in
@@ -524,7 +517,7 @@ let bundle (spec : Spec.t) =
   let names = names_of (Hashtbl.mem gateway) in
   {
     definitions = { names; schema };
-    view = view ~ids ~named ~schemas;
+    view = (fun s -> view ~ids ~named ~schemas (in_place s));
     bodies =
       List.filter_map named (List.concat_map refs body_schemas)
       |> List.sort_uniq String.compare;

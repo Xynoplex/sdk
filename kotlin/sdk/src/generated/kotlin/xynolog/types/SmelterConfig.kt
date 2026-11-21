@@ -17,8 +17,7 @@ public data class SmelterConfig(
     public val archivist: ServiceAddress,
     public val embedding: EmbeddingConfig,
     public val vectors: VectorsConfig,
-    /** The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points. */
-    public val chunking: SmelterConfigChunking,
+    public val chunking: SmelterChunking,
     /** How many PDFs the Smelter works on at once. Each one under way holds its bytes, a page of a scan in pixels beside the OCR process reading it, and its text and vectors, so whoever starts a Smelter sizes this with the memory it gives it. Every other resource is indexed beside them. */
     public val pdfsAtOnce: Long,
     public val cursorsPath: CursorsPath,
@@ -35,7 +34,7 @@ public data class SmelterConfig(
         private val archivist: ServiceAddress,
         private val embedding: EmbeddingConfig,
         private val vectors: VectorsConfig,
-        private val chunking: SmelterConfigChunking,
+        private val chunking: SmelterChunking,
         private val pdfsAtOnce: Long,
         private val cursorsPath: CursorsPath,
         private val port: Long,
@@ -48,6 +47,6 @@ public data class SmelterConfig(
     public companion object {
         /** A builder of a `SmelterConfig` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: ServiceIdentity, archivist: ServiceAddress, embedding: EmbeddingConfig, vectors: VectorsConfig, chunking: SmelterConfigChunking, pdfsAtOnce: Long, cursorsPath: CursorsPath, port: Long, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, archivist, embedding, vectors, chunking, pdfsAtOnce, cursorsPath, port, logLevel, logFormat)
+        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: ServiceIdentity, archivist: ServiceAddress, embedding: EmbeddingConfig, vectors: VectorsConfig, chunking: SmelterChunking, pdfsAtOnce: Long, cursorsPath: CursorsPath, port: Long, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, archivist, embedding, vectors, chunking, pdfsAtOnce, cursorsPath, port, logLevel, logFormat)
     }
 }

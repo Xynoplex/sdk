@@ -116,7 +116,7 @@ let tabled (spec : Spec.t) table =
   let clients =
     List.filter_map
       (fun name ->
-        let key = Definitions.client_types ^ name ^ ".json" in
+        let key = Schema_names.client_types ^ name ^ ".json" in
         match whole (List.assoc key spec.schemas) with
         | Ok schema when Enums.is_enum schema -> None
         | Ok schema -> Some (key, name, schema)
@@ -141,7 +141,7 @@ let tabled (spec : Spec.t) table =
     | None ->
         List.find_map
           (fun name ->
-            if key = Definitions.client_types ^ name ^ ".json" then
+            if key = Schema_names.client_types ^ name ^ ".json" then
               Some (Enums.module_name name)
             else None)
           (Enums.client_types spec)

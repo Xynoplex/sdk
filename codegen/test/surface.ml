@@ -54,7 +54,14 @@ let callback ?(required = false) parameter : S.parameters_item =
     }
 
 let row ?(shape = S.Promise) method_ parameters : S.methods_item =
-  { method_; shape; via = Request { request = "a:b" }; parameters; cases = [] }
+  {
+    method_;
+    shape;
+    via = Request { request = "a:b" };
+    parameters;
+    returns = None;
+    cases = [];
+  }
 
 let methods rows =
   M.methods ~ids ~view ~schema

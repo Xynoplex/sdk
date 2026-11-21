@@ -27,6 +27,7 @@ import xynolog.transport.Content
 import xynolog.transport.ContentStream
 import xynolog.transport.ContentTransport
 import xynolog.transport.ResourceHold
+import xynolog.types.AnchorRect
 import xynolog.types.AnchoredTextAnswer
 import xynolog.types.Annotation
 import xynolog.types.AttributedEvent
@@ -205,9 +206,11 @@ public class BrowseNamespace internal constructor(private val links: Links, priv
     /** `kb`, for Java. */
     public fun kbFuture(): CompletableFuture<KbDescription> = links.future { kb() }
 
-    /** Signal: open an annotation for this viewer. */
+    /** Signal: open an annotation for this viewer, and where it is on this viewer's screen when that is known. */
+    @JvmOverloads
     @JvmExposeBoxed
-    public fun click(annotationId: AnnotationId): Unit = links.signal(Channels.BROWSE_CLICK, BrowseClickEvent(annotationId = annotationId))
+    public fun click(annotationId: AnnotationId, anchorRect: AnchorRect? = null): Unit =
+        links.signal(Channels.BROWSE_CLICK, BrowseClickEvent(anchorRect = anchorRect, annotationId = annotationId))
 
     /** Signal: open a resource for this viewer. */
     @JvmExposeBoxed

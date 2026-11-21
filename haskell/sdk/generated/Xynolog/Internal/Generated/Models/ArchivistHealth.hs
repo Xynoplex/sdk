@@ -2,15 +2,14 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.ArchivistHealth (ArchivistHealth (..), ArchivistHealthStatus (..)) where
+module Xynolog.Internal.Generated.Models.ArchivistHealth (ArchivistHealth (..), ArchivistHealthActorsItem (..), ArchivistHealthStatus (..)) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
-import Data.Text (Text)
 import Xynolog.Internal.Codec
 
 data ArchivistHealth = ArchivistHealth
-  { archivistHealthActors :: [Text],
+  { archivistHealthActors :: [ArchivistHealthActorsItem],
     archivistHealthStatus :: ArchivistHealthStatus,
     archivistHealthAdditionalProperties :: KM.KeyMap Value
   }
@@ -19,6 +18,15 @@ data ArchivistHealth = ArchivistHealth
 instance FromJSON ArchivistHealth where parseJSON = checked "ArchivistHealth" $ withObject "ArchivistHealth" (\fields -> ArchivistHealth <$> (fields .: "actors") <*> (fields .: "status") <*> traverse parseJSON (withoutFields ["actors", "status"] fields))
 
 instance ToJSON ArchivistHealth where toJSON value = Object (KM.fromList (concat [[("actors", toJSON (archivistHealthActors value))], [("status", toJSON (archivistHealthStatus value))]]) <> fmap toJSON (withoutFields ["actors", "status"] (archivistHealthAdditionalProperties value)))
+
+data ArchivistHealthActorsItem = ArchivistHealthActorsItemStower | ArchivistHealthActorsItemBrowser | ArchivistHealthActorsItemCloneTokenManager deriving (Eq, Show)
+
+instance FromJSON ArchivistHealthActorsItem where parseJSON = checked "ArchivistHealthActorsItem" $ \value -> if value == String "stower" then pure ArchivistHealthActorsItemStower else if value == String "browser" then pure ArchivistHealthActorsItemBrowser else if value == String "cloneTokenManager" then pure ArchivistHealthActorsItemCloneTokenManager else fail "unknown enumeration member"
+
+instance ToJSON ArchivistHealthActorsItem where
+  toJSON ArchivistHealthActorsItemStower = String "stower"
+  toJSON ArchivistHealthActorsItemBrowser = String "browser"
+  toJSON ArchivistHealthActorsItemCloneTokenManager = String "cloneTokenManager"
 
 data ArchivistHealthStatus = ArchivistHealthStatusOk deriving (Eq, Show)
 

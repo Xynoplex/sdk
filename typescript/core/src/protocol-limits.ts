@@ -21,6 +21,7 @@ export const operationLimits = {
         'xynolog-worker': 'unlimited',
       },
     },
+    streamLeaseSeconds: 30,
   },
   'POST /bus/emit': {
     maxBodyBytes: 4194304,

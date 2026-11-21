@@ -150,6 +150,13 @@ let tables : (string * (Coverage_sdk.t -> coverage)) list =
           Absent
             "The Archivist files keys in its own stores; no SDK files or reads \
              a shard." );
+    ( "bus/event-id-cases.json",
+      function
+      | Typescript | Python | Rust | Go | Csharp | Haskell | Kotlin | Ocaml
+      | Swift ->
+          Absent
+            "The gateway's own: it gives each bus-event its id, and an SDK \
+             hands an id back only to resume after it." );
     ( "bus/frame-cases.json",
       function
       | Typescript ->
@@ -794,4 +801,11 @@ let tables : (string * (Coverage_sdk.t -> coverage)) list =
           Absent
             "Xynolog's worker reads a model's reply into its items; no SDK \
              reads one." );
+    ( "worker/prompt-cases.json",
+      function
+      | Typescript | Python | Rust | Go | Csharp | Haskell | Kotlin | Ocaml
+      | Swift ->
+          Absent
+            "Xynolog's worker writes its own prompts; no SDK asks a model \
+             about a text." );
   ]

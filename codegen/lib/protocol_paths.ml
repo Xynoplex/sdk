@@ -127,6 +127,15 @@ let entries directory =
   | names -> Array.to_list names
   | exception Sys_error _ -> []
 
+(* A directory a walk descends into: a symbolic link is none, since what it
+   names is walked where it is, and a link to a directory that holds it, as
+   Protocol's conformance/ocaml/protocol is, would be walked without end. *)
+let walked path =
+  match Unix.lstat path with
+  | { Unix.st_kind = S_DIR; _ } -> true
+  | _ -> false
+  | exception Unix.Unix_error _ -> false
+
 (* Whether a file under [directory] answers the segments of a pattern: [**]
    is any number of directories, and [*] in a segment any run of
    characters. *)
@@ -137,7 +146,7 @@ let rec found directory = function
       || List.exists
            (fun name ->
              let path = Filename.concat directory name in
-             Sys.is_directory path && found path ("**" :: rest))
+             walked path && found path ("**" :: rest))
            (entries directory)
   | segment :: rest when String.contains segment '*' ->
       List.exists
@@ -152,7 +161,7 @@ let present ~sdk path =
   else Sys.file_exists (Filename.concat sdk path)
 
 (* Each file of the Protocol checkout, by its path from [protocol], but none
-   of a checkout nested in it. *)
+   of a checkout nested in it, and no symbolic link. *)
 let rec files ~protocol path =
   let full = Filename.concat protocol path in
   List.sort String.compare (entries full)
@@ -160,10 +169,12 @@ let rec files ~protocol path =
   |> List.concat_map (fun name ->
       let inner = if path = "" then name else path ^ "/" ^ name in
       let full = Filename.concat protocol inner in
-      if Sys.is_directory full then
-        if Sys.file_exists (Filename.concat full ".git") then []
-        else files ~protocol inner
-      else [ inner ])
+      match Unix.lstat full with
+      | { Unix.st_kind = S_DIR; _ } ->
+          if Sys.file_exists (Filename.concat full ".git") then []
+          else files ~protocol inner
+      | { Unix.st_kind = S_LNK; _ } -> []
+      | _ -> [ inner ])
 
 let line text offset =
   let rec count i lines =

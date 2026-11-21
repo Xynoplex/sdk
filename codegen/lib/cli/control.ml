@@ -85,6 +85,13 @@ let rec type_of st ~from_ name (s : Schema.t) =
             if rl.type_ = Some [ Object ] then
               object_type st ~from_:file title rl
             else scalar_type st ~from_:file ~own:true title rl)
+  | {
+   type_ = Some [ Object ];
+   properties = None;
+   additional_properties = Some (Schema.Schema _ as values);
+   _;
+  } ->
+      G.Map (G.Named "string", type_of st ~from_ (name ^ "Value") values)
   | { type_ = Some [ Object ]; properties = None; _ } ->
       refuse from_ (name ^ " is an object with no properties")
   | { type_ = Some [ Object ]; _ } -> object_type st ~from_ name l

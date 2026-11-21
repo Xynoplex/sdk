@@ -306,8 +306,15 @@ var calls = map[string]call{
 		}
 		_, _ = c.Browse.Files(ctx, dirPath, order)
 	},
-	"browse.kb":             func(ctx context.Context, c *xynolog.Client, a args) { _, _ = c.Browse.Kb(ctx) },
-	"browse.click":          func(_ context.Context, c *xynolog.Client, a args) { c.Browse.Click(a.aid("annotationId")) },
+	"browse.kb": func(ctx context.Context, c *xynolog.Client, a args) { _, _ = c.Browse.Kb(ctx) },
+	"browse.click": func(_ context.Context, c *xynolog.Client, a args) {
+		var anchorRect *api.AnchorRect
+		if a.has("anchorRect") {
+			anchorRect = &api.AnchorRect{}
+			a.into("anchorRect", anchorRect)
+		}
+		c.Browse.Click(a.aid("annotationId"), anchorRect)
+	},
 	"browse.openResource":   func(_ context.Context, c *xynolog.Client, a args) { c.Browse.OpenResource(a.rid("resourceId")) },
 	"browse.resourceViewed": func(_ context.Context, c *xynolog.Client, a args) { c.Browse.ResourceViewed(a.rid("resourceId")) },
 	"mark.annotation": func(ctx context.Context, c *xynolog.Client, a args) {

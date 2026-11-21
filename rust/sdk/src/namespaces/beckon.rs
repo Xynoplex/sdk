@@ -41,6 +41,9 @@ impl BeckonNamespace {
     pub async fn click(&self, annotation_id: &AnnotationId) -> Result<Option<u64>, XynologError> {
         self.links
             .drive::<BrowseClick>(&BrowseClickEvent {
+                // A viewer's own geometry: another participant's screen
+                // receives none.
+                anchor_rect: None,
                 annotation_id: annotation_id.clone(),
             })
             .await

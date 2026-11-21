@@ -24,11 +24,12 @@ type held =
 
 and member = { name : string; held : held; required : bool }
 
-(* A type: words, an object's members, or a union told apart by one member
-   whose value names each branch. *)
+(* A type: words, an object's members, a list of what each item holds, or a
+   union told apart by one member whose value names each branch. *)
 type shape =
   | Words of string list
   | Fields of member list
+  | Items of held
   | Union of { tag : string; branches : (string * member list) list }
 
 type t = {
@@ -105,7 +106,9 @@ let derive (spec : Spec.t) =
             Option.map (fun members -> Inline members) (fields file pointer l)
         | { type_ = Some [ t ]; _ }
           when List.for_all
-                 (fun k -> List.mem k [ "type"; "minimum"; "maximum" ])
+                 (fun k ->
+                   List.mem k
+                     [ "type"; "minimum"; "maximum"; "minLength"; "maxLength" ])
                  (described l)
                && t <> Schema.Array ->
             Some (Scalar t)
@@ -231,6 +234,11 @@ let derive (spec : Spec.t) =
         if List.length (List.sort_uniq compare words) <> List.length words then
           refuse file "/oneOf" ("names two branches by one " ^ tag);
         Some (Union { tag; branches })
+    | Schema.Schema ({ type_ = Some [ Array ]; items = Some item; _ } as s)
+      when List.for_all
+             (fun k -> List.mem k [ "title"; "type"; "items" ])
+             (described s) ->
+        Option.map (fun item -> Items item) (held item file "/items")
     | s -> Option.map (fun members -> Fields members) (object_ file "" s)
   in
   let shapes =

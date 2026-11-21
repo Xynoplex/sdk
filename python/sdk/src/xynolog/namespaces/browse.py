@@ -24,6 +24,7 @@ from xynolog.stored import WHOLE_KEY
 from xynolog.transport import Content, ContentStream, ContentTransport, ResourceHold
 from xynolog.types import (
     AnchoredTextAnswer,
+    AnchorRect,
     Annotation,
     AttributedEvent,
     BrowseAnnotationHistoryRequest,
@@ -287,9 +288,9 @@ class BrowseNamespace:
 
     # ── Signals ─────────────────────────────────────────────────────────
 
-    def click(self, annotation_id: AnnotationId) -> None:
-        """Signal: open an annotation for this viewer."""
-        self._links.signal(BROWSE_CLICK, BrowseClickEvent(annotation_id=annotation_id))
+    def click(self, annotation_id: AnnotationId, anchor_rect: AnchorRect | None = None) -> None:
+        """Signal: open an annotation for this viewer, and where it is on this viewer's screen when that is known."""
+        self._links.signal(BROWSE_CLICK, BrowseClickEvent(annotation_id=annotation_id, anchor_rect=anchor_rect))
 
     def open_resource(self, resource_id: ResourceId) -> None:
         """Signal: open a resource for this viewer."""

@@ -978,7 +978,10 @@ public final class xynolog/namespaces/BrowseNamespace {
 	public final fun annotations (Lxynolog/identifiers/ResourceId;)Lxynolog/cache/Cached;
 	public final fun annotations-n-VWWI8 (Ljava/lang/String;)Lxynolog/cache/Cached;
 	public final fun click (Lxynolog/identifiers/AnnotationId;)V
+	public final fun click (Lxynolog/identifiers/AnnotationId;Lxynolog/types/AnchorRect;)V
 	public final fun click-FNmhOTc (Ljava/lang/String;)V
+	public final fun click-KjjMSAs (Ljava/lang/String;Lxynolog/types/AnchorRect;)V
+	public static synthetic fun click-KjjMSAs$default (Lxynolog/namespaces/BrowseNamespace;Ljava/lang/String;Lxynolog/types/AnchorRect;ILjava/lang/Object;)V
 	public final fun engines ()Lxynolog/cache/Cached;
 	public final fun entityTypes ()Lxynolog/cache/Cached;
 	public final fun events (Lxynolog/identifiers/ResourceId;)Lxynolog/cache/Cached;

@@ -303,7 +303,10 @@ invoke (Rig client _ clock _) namespace member args = case (namespace, member) o
     sort <- optional "sort" args
     void (Browse.files (Client.browse client) path sort)
   ("browse", "kb") -> void (Browse.kb (Client.browse client))
-  ("browse", "click") -> field "annotationId" args >>= atomically . Browse.click (Client.browse client)
+  ("browse", "click") -> do
+    annotation <- field "annotationId" args
+    anchorRect <- optional "anchorRect" args
+    atomically (Browse.click (Client.browse client) annotation anchorRect)
   ("browse", "openResource") -> field "resourceId" args >>= atomically . Browse.openResource (Client.browse client)
   ("browse", "resourceViewed") -> field "resourceId" args >>= Browse.resourceViewed (Client.browse client)
   ("gather", "annotation") -> do

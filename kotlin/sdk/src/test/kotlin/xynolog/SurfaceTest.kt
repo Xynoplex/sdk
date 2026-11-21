@@ -55,6 +55,7 @@ import xynolog.transport.ResourceHold
 import xynolog.transport.Transport
 import xynolog.transport.Upload
 import xynolog.transport.Watched
+import xynolog.types.AnchorRect
 import xynolog.types.AnchoredTextAnswer
 import xynolog.types.AnnotationSelector
 import xynolog.types.BindBodyOperation
@@ -148,7 +149,7 @@ private val calls: Map<String, Call> = mapOf(
         if (a["dirPath"] == null) c.browse.files() else c.browse.files(a.text("dirPath"), a.read("sort", BrowseDirectoryRequestSort.serializer()))
     },
     "browse.kb" to { c, _ -> c.browse.kb() },
-    "browse.click" to { c, a -> c.browse.click(a.annotation()) },
+    "browse.click" to { c, a -> c.browse.click(a.annotation(), a["anchorRect"]?.let { a.read("anchorRect", AnchorRect.serializer()) }) },
     "browse.openResource" to { c, a -> c.browse.openResource(a.resource()) },
     "browse.resourceViewed" to { c, a -> c.browse.resourceViewed(a.resource()) },
     "mark.annotation" to { c, a -> c.mark.annotation(a.read("input", CreateAnnotationRequest.serializer())) },

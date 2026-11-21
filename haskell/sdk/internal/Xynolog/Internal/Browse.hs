@@ -216,8 +216,10 @@ files namespace path sort =
 kb :: BrowseNamespace -> IO KbDescription
 kb namespace = browseKbResultResponse <$> Bus.request (wire namespace) BrowseKbRequestedOperation (BrowseKbRequest mempty) (Timing.busRequestTimeoutMs (timing namespace))
 
-click :: BrowseNamespace -> AnnotationId -> STM ()
-click namespace identity = Local.signal (local namespace) BrowseClick (BrowseClickEvent identity mempty) NoScope
+-- | Open an annotation for this viewer, and where it is on this viewer's
+-- screen when that is known.
+click :: BrowseNamespace -> AnnotationId -> Maybe AnchorRect -> STM ()
+click namespace identity anchorRect = Local.signal (local namespace) BrowseClick (BrowseClickEvent anchorRect identity mempty) NoScope
 
 openResource :: BrowseNamespace -> ResourceId -> STM ()
 openResource namespace identity = Local.signal (local namespace) BrowseResourceOpen (BrowseResourceOpenEvent identity mempty) NoScope

@@ -92,7 +92,7 @@ type node =
 let node : Schema.t -> node = function
   | Boolean_schema b -> Bool_node b
   | Schema ({ ref_ = Some reference; _ } as s) -> (
-      match Definitions.said_of_reference s reference with
+      match Schema_names.said_of_reference s reference with
       | Ok description -> Ref { reference; description }
       | Error message -> Names.refuse "%s" message)
   | Schema s -> (

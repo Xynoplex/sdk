@@ -16,6 +16,7 @@ from spec import JsonObject
 from surface_arguments import Args, Client, first_payload, fresh, given, maybe, member, PUT_BINARY_REQUEST
 from xynolog.identifiers import AnnotationId, JobId, ResourceId
 from xynolog.types import (
+    AnchorRect,
     AnnotationSelector,
     BindBodyOperation,
     BindInitiateCommand,
@@ -33,6 +34,7 @@ from xynolog.types import (
     TagSchema,
 )
 
+ANCHOR_RECT: Final = TypeAdapter[AnchorRect](AnchorRect)
 ANNOTATION_ID: Final = TypeAdapter[AnnotationId](AnnotationId)
 ANNOTATION_ID_OR_NONE: Final = TypeAdapter[AnnotationId | None](AnnotationId | None)
 ANNOTATION_SELECTOR: Final = TypeAdapter[AnnotationSelector](AnnotationSelector)
@@ -152,7 +154,7 @@ def browse_kb(client: Client, args: Args) -> Awaitable[object] | None:
 
 
 def browse_click(client: Client, args: Args) -> Awaitable[object] | None:
-    client.browse.click(annotation_id=given(args, "annotationId", ANNOTATION_ID))
+    client.browse.click(annotation_id=given(args, "annotationId", ANNOTATION_ID), anchor_rect=maybe(args, "anchorRect", ANCHOR_RECT))
     return None
 
 

@@ -316,7 +316,9 @@ private let callsByName:
     },
     "browse.kb": { client, _ in try await encoded(client.browse.kb()) },
     "browse.click": { client, args in
-      try client.browse.click(decoded(AnnotationId.self, required(args, "annotationId")))
+      try client.browse.click(
+        decoded(AnnotationId.self, required(args, "annotationId")),
+        anchorRect: args["anchorRect"].map { try decoded(AnchorRect.self, $0) })
       return nil
     },
     "browse.openResource": { client, args in

@@ -220,6 +220,29 @@ func (e AnchorMethod) Valid() bool {
 	return false
 }
 
+// AnchorRect Where a clicked annotation's element is on the viewer's screen:
+// its rectangle in viewport pixels, as a DOM rectangle states it. A viewer's
+// own geometry: it rides a viewer's local frames, and a frame another
+// participant's screen receives carries none.
+type AnchorRect struct {
+	// Bottom The rectangle's bottom edge.
+	Bottom float64 `json:"bottom"`
+	// Height The rectangle's height.
+	Height float64 `json:"height"`
+	// Left The rectangle's left edge.
+	Left float64 `json:"left"`
+	// Right The rectangle's right edge.
+	Right float64 `json:"right"`
+	// Top The rectangle's top edge.
+	Top float64 `json:"top"`
+	// Width The rectangle's width.
+	Width float64 `json:"width"`
+	// X The rectangle's horizontal origin.
+	X float64 `json:"x"`
+	// Y The rectangle's vertical origin.
+	Y float64 `json:"y"`
+}
+
 // AnchoredText Text paired with the geometry that indexes it — the minimum
 // needed to turn a range of the text, two offsets counted in Unicode code
 // points, into a selection, or a rectangle into a quote. Whole-resource: a
@@ -824,9 +847,10 @@ func (v ArchivistEventsResponse) MarshalJSON() ([]byte, error) {
 // ArchivistHealth The Archivist's liveness answer: it serves, and the actors
 // it hosts.
 type ArchivistHealth struct {
-	// Actors The record actors this process hosts.
-	Actors []string              `json:"actors"`
-	Status ArchivistHealthStatus `json:"status"`
+	// Actors The record actors this process hosts: each of the enum's, once, in
+	// the order the enum lists them.
+	Actors []ArchivistHealthActorsItem `json:"actors"`
+	Status ArchivistHealthStatus       `json:"status"`
 }
 
 // MarshalJSON writes v, each list its schema requires that Go holds as nil
@@ -835,6 +859,24 @@ func (v ArchivistHealth) MarshalJSON() ([]byte, error) {
 	type written ArchivistHealth
 	v.Actors = listOf(v.Actors)
 	return json.Marshal(written(v))
+}
+
+type ArchivistHealthActorsItem string
+
+// The values of ArchivistHealthActorsItem.
+const (
+	ArchivistHealthActorsItemStower            ArchivistHealthActorsItem = "stower"
+	ArchivistHealthActorsItemBrowser           ArchivistHealthActorsItem = "browser"
+	ArchivistHealthActorsItemCloneTokenManager ArchivistHealthActorsItem = "cloneTokenManager"
+)
+
+// Valid is whether e is one of ArchivistHealthActorsItem's values.
+func (e ArchivistHealthActorsItem) Valid() bool {
+	switch e {
+	case ArchivistHealthActorsItemStower, ArchivistHealthActorsItemBrowser, ArchivistHealthActorsItemCloneTokenManager:
+		return true
+	}
+	return false
 }
 
 type ArchivistHealthStatus string
@@ -1231,6 +1273,7 @@ type BrowseAnnotationResult struct {
 // and over the wire by a driver opening an annotation on another
 // participant's screen.
 type BrowseClickEvent struct {
+	AnchorRect   *AnchorRect  `json:"anchorRect,omitempty"`
 	AnnotationId AnnotationId `json:"annotationId"`
 }
 
@@ -5630,6 +5673,60 @@ type LibrarianEngineConfig struct {
 	Engine  Engine `json:"engine"`
 }
 
+// LibrarianHealth The Librarian's health answer (LIBRARIAN.md § Health). Its
+// port opens last, after it has begun to take requests from the bus, so a
+// Librarian whose health answers is answering.
+type LibrarianHealth struct {
+	// Actors The two actors it runs, `matcher` and `gatherer`.
+	Actors []LibrarianHealthActorsItem `json:"actors"`
+	// Kb The DID of the knowledge base it serves: the one its document names,
+	// which that knowledge base said it is before the Librarian reached its
+	// stores.
+	Kb     string                `json:"kb"`
+	Status LibrarianHealthStatus `json:"status"`
+}
+
+// MarshalJSON writes v, each list its schema requires that Go holds as nil
+// written as the empty list.
+func (v LibrarianHealth) MarshalJSON() ([]byte, error) {
+	type written LibrarianHealth
+	v.Actors = listOf(v.Actors)
+	return json.Marshal(written(v))
+}
+
+type LibrarianHealthActorsItem string
+
+// The values of LibrarianHealthActorsItem.
+const (
+	LibrarianHealthActorsItemMatcher  LibrarianHealthActorsItem = "matcher"
+	LibrarianHealthActorsItemGatherer LibrarianHealthActorsItem = "gatherer"
+)
+
+// Valid is whether e is one of LibrarianHealthActorsItem's values.
+func (e LibrarianHealthActorsItem) Valid() bool {
+	switch e {
+	case LibrarianHealthActorsItemMatcher, LibrarianHealthActorsItemGatherer:
+		return true
+	}
+	return false
+}
+
+type LibrarianHealthStatus string
+
+// The values of LibrarianHealthStatus.
+const (
+	LibrarianHealthStatusOk LibrarianHealthStatus = "ok"
+)
+
+// Valid is whether e is one of LibrarianHealthStatus's values.
+func (e LibrarianHealthStatus) Valid() bool {
+	switch e {
+	case LibrarianHealthStatusOk:
+		return true
+	}
+	return false
+}
+
 // LimitRefusal An ErrorResponse that names, in `code`, the limit the request
 // met.
 type LimitRefusal struct {
@@ -5774,9 +5871,9 @@ func (e LocalEndpointKind) Valid() bool {
 	return false
 }
 
-// LogFormat How each log line is written to stdout: `json`, one JSON object
-// per line carrying the active trace's `trace_id` and `span_id`; or `simple`,
-// `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
+// LogFormat How each log line is written to stdout
+// (service-telemetry/log-lines.json): `json`, one JSON object per line; or
+// `simple`, a line of words followed by any metadata as JSON.
 type LogFormat string
 
 // The values of LogFormat.
@@ -8020,6 +8117,15 @@ func (e SmeltSettledReason) Valid() bool {
 	return false
 }
 
+// SmelterChunking The two numbers a text is cut by before it is embedded,
+// both in tokens, a token being taken as four code points.
+type SmelterChunking struct {
+	// ChunkSize The size of a chunk.
+	ChunkSize int `json:"chunkSize"`
+	// Overlap How much of a chunk the next one repeats.
+	Overlap int `json:"overlap"`
+}
+
 // SmelterConfig Everything a Smelter reads at boot: nothing in it is
 // defaulted by the Smelter. Whoever starts a Smelter writes it, from the
 // knowledge base's stack documents, and the Smelter reads it from the path
@@ -8034,12 +8140,10 @@ type SmelterConfig struct {
 	// Archivist Where the Archivist listens. The Smelter reads a resource's
 	// bytes from it, and keeps the anchored-text store there, as its service
 	// account.
-	Archivist ServiceAddress `json:"archivist"`
-	// Chunking The two numbers a text is cut by before it is embedded, both in
-	// tokens, a token being taken as four code points.
-	Chunking    SmelterConfigChunking `json:"chunking"`
-	CursorsPath CursorsPath           `json:"cursorsPath"`
-	Embedding   EmbeddingConfig       `json:"embedding"`
+	Archivist   ServiceAddress  `json:"archivist"`
+	Chunking    SmelterChunking `json:"chunking"`
+	CursorsPath CursorsPath     `json:"cursorsPath"`
+	Embedding   EmbeddingConfig `json:"embedding"`
 	// GatewayUrl The URL the Smelter reaches the gateway at: its route to the
 	// bus.
 	GatewayUrl string `json:"gatewayUrl"`
@@ -8058,13 +8162,202 @@ type SmelterConfig struct {
 	Vectors VectorsConfig `json:"vectors"`
 }
 
-// SmelterConfigChunking The two numbers a text is cut by before it is
-// embedded, both in tokens, a token being taken as four code points.
-type SmelterConfigChunking struct {
-	// ChunkSize The size of a chunk.
-	ChunkSize int `json:"chunkSize"`
-	// Overlap How much of a chunk the next one repeats.
-	Overlap int `json:"overlap"`
+// SmelterHealth The Smelter's health answer (SMELTER.md § Health): seven
+// members, each from what the Smelter holds, for it asks nothing of the
+// gateway, its embedding provider or its vector database to answer. `status`
+// is `ok` whenever it answers, and says what else is so in the members beside
+// it.
+type SmelterHealth struct {
+	// EventsProcessed How many events it has applied since it started: events of
+	// the kinds that do something, and not refused. Neither an event taken as
+	// nothing nor the work of a reconcile or a rebuild is counted.
+	EventsProcessed int `json:"eventsProcessed"`
+	// Following How far it has followed the record. Its sweep is also `due`
+	// where its start's reconcile failed.
+	Following SmelterHealthFollowing `json:"following"`
+	// Index What the Smelter holds its index to, and what this start did for
+	// that.
+	Index SmelterHealthIndex `json:"index"`
+	// Kb The DID of the knowledge base it serves: the one its settings name,
+	// which that knowledge base said it is before the Smelter reached its index.
+	Kb string `json:"kb"`
+	// Reconcile How far the latest reconcile has got: the pass's `summary` when
+	// it is done, or its `error` when it failed.
+	Reconcile SmelterHealthReconcile `json:"reconcile"`
+	Status    SmelterHealthStatus    `json:"status"`
+	// Stream The state of its own stream of the record, one of the seven of
+	// TRANSPORT-HTTP.md § Connection lifecycle. Events are delivered to it while
+	// it is `open`.
+	Stream SmelterHealthStream `json:"stream"`
+}
+
+// SmelterHealthFollowing How far it has followed the record. Its sweep is
+// also `due` where its start's reconcile failed.
+type SmelterHealthFollowing struct {
+	// Refused How many events it refused as recorded since it started.
+	Refused int `json:"refused"`
+	// Stopped How many resources' logs a failed taking has stopped until the
+	// next sweep.
+	Stopped int `json:"stopped"`
+	// StreamDrops How many times its stream has dropped since it started.
+	StreamDrops int `json:"streamDrops"`
+	// Sweep The latest sweep's phase: `pending` before its stream first opens,
+	// `running`, `done`, or `due` where the record could not be listed and the
+	// sweep is tried again.
+	Sweep SmelterHealthFollowingSweep `json:"sweep"`
+}
+
+// SmelterHealthFollowingSweep The latest sweep's phase: `pending` before its
+// stream first opens, `running`, `done`, or `due` where the record could not
+// be listed and the sweep is tried again.
+type SmelterHealthFollowingSweep string
+
+// The values of SmelterHealthFollowingSweep.
+const (
+	SmelterHealthFollowingSweepPending SmelterHealthFollowingSweep = "pending"
+	SmelterHealthFollowingSweepRunning SmelterHealthFollowingSweep = "running"
+	SmelterHealthFollowingSweepDone    SmelterHealthFollowingSweep = "done"
+	SmelterHealthFollowingSweepDue     SmelterHealthFollowingSweep = "due"
+)
+
+// Valid is whether e is one of SmelterHealthFollowingSweep's values.
+func (e SmelterHealthFollowingSweep) Valid() bool {
+	switch e {
+	case SmelterHealthFollowingSweepPending, SmelterHealthFollowingSweepRunning, SmelterHealthFollowingSweepDone, SmelterHealthFollowingSweepDue:
+		return true
+	}
+	return false
+}
+
+// SmelterHealthIndex What the Smelter holds its index to, and what this start
+// did for that.
+type SmelterHealthIndex struct {
+	// MadeAnew Whether this start made the index again, as it does where the
+	// index stated another stamp, or none.
+	MadeAnew bool `json:"madeAnew"`
+	// Stamp The model and the cut it makes an index by.
+	Stamp SmelterHealthIndexStamp `json:"stamp"`
+}
+
+// SmelterHealthIndexStamp The model and the cut it makes an index by.
+type SmelterHealthIndexStamp struct {
+	Chunking SmelterChunking `json:"chunking"`
+	// Embedding The embedding provider's kind and model.
+	Embedding SmelterHealthIndexStampEmbedding `json:"embedding"`
+}
+
+// SmelterHealthIndexStampEmbedding The embedding provider's kind and model.
+type SmelterHealthIndexStampEmbedding struct {
+	Model string `json:"model"`
+	Type  string `json:"type"`
+}
+
+// SmelterHealthReconcile How far the latest reconcile has got: the pass's
+// `summary` when it is done, or its `error` when it failed.
+type SmelterHealthReconcile struct {
+	// Error Why it failed.
+	Error *string                     `json:"error,omitempty"`
+	Phase SmelterHealthReconcilePhase `json:"phase"`
+	// Summary What the pass came to.
+	Summary *SmelterReconcileSummary `json:"summary,omitempty"`
+}
+
+type SmelterHealthReconcilePhase string
+
+// The values of SmelterHealthReconcilePhase.
+const (
+	SmelterHealthReconcilePhasePending SmelterHealthReconcilePhase = "pending"
+	SmelterHealthReconcilePhaseRunning SmelterHealthReconcilePhase = "running"
+	SmelterHealthReconcilePhaseDone    SmelterHealthReconcilePhase = "done"
+	SmelterHealthReconcilePhaseFailed  SmelterHealthReconcilePhase = "failed"
+)
+
+// Valid is whether e is one of SmelterHealthReconcilePhase's values.
+func (e SmelterHealthReconcilePhase) Valid() bool {
+	switch e {
+	case SmelterHealthReconcilePhasePending, SmelterHealthReconcilePhaseRunning, SmelterHealthReconcilePhaseDone, SmelterHealthReconcilePhaseFailed:
+		return true
+	}
+	return false
+}
+
+type SmelterHealthStatus string
+
+// The values of SmelterHealthStatus.
+const (
+	SmelterHealthStatusOk SmelterHealthStatus = "ok"
+)
+
+// Valid is whether e is one of SmelterHealthStatus's values.
+func (e SmelterHealthStatus) Valid() bool {
+	switch e {
+	case SmelterHealthStatusOk:
+		return true
+	}
+	return false
+}
+
+// SmelterHealthStream The state of its own stream of the record, one of the
+// seven of TRANSPORT-HTTP.md § Connection lifecycle. Events are delivered to
+// it while it is `open`.
+type SmelterHealthStream string
+
+// The values of SmelterHealthStream.
+const (
+	SmelterHealthStreamInitial         SmelterHealthStream = "initial"
+	SmelterHealthStreamConnecting      SmelterHealthStream = "connecting"
+	SmelterHealthStreamOpen            SmelterHealthStream = "open"
+	SmelterHealthStreamReconnecting    SmelterHealthStream = "reconnecting"
+	SmelterHealthStreamDegraded        SmelterHealthStream = "degraded"
+	SmelterHealthStreamUnauthenticated SmelterHealthStream = "unauthenticated"
+	SmelterHealthStreamClosed          SmelterHealthStream = "closed"
+)
+
+// Valid is whether e is one of SmelterHealthStream's values.
+func (e SmelterHealthStream) Valid() bool {
+	switch e {
+	case SmelterHealthStreamInitial, SmelterHealthStreamConnecting, SmelterHealthStreamOpen, SmelterHealthStreamReconnecting, SmelterHealthStreamDegraded, SmelterHealthStreamUnauthenticated, SmelterHealthStreamClosed:
+		return true
+	}
+	return false
+}
+
+// SmelterReconcileSummary What a Smelter's reconcile came to (SMELTER.md §
+// Reconcile), as its health reports a pass that is done (SmelterHealth's
+// `reconcile.summary`). The first four add up to how many resources it set
+// out to index, less any whose indexing was no longer wanted when its turn
+// came.
+type SmelterReconcileSummary struct {
+	// AnnotationVectorsDeleted How many annotations it planned to take out of
+	// the index.
+	AnnotationVectorsDeleted int `json:"annotationVectorsDeleted"`
+	// AnnotationsEmbedded How many annotations it planned to index.
+	AnnotationsEmbedded int `json:"annotationsEmbedded"`
+	// AnnotationsRestamped How many annotations it planned to rewrite the entity
+	// types of.
+	AnnotationsRestamped int `json:"annotationsRestamped"`
+	// ResourceVectorsDeleted How many resources it planned to take out of the
+	// index.
+	ResourceVectorsDeleted int `json:"resourceVectorsDeleted"`
+	// ResourcesEligible How many resources of the catalog have text.
+	ResourcesEligible int `json:"resourcesEligible"`
+	// ResourcesEmbedded How many resources it set out to index were indexed.
+	ResourcesEmbedded int `json:"resourcesEmbedded"`
+	// ResourcesFailed How many failed.
+	ResourcesFailed int `json:"resourcesFailed"`
+	// ResourcesIndexed How many resources have points when it ends.
+	ResourcesIndexed int `json:"resourcesIndexed"`
+	// ResourcesReanchored How many resources it planned to derive the anchored
+	// text of again.
+	ResourcesReanchored int `json:"resourcesReanchored"`
+	// ResourcesRestamped How many resources it planned to rewrite the entity
+	// types of.
+	ResourcesRestamped int `json:"resourcesRestamped"`
+	// ResourcesSkipped How many were skipped, by the reason each was skipped
+	// for: a reason `smelt:settled` carries (SmeltSettled).
+	ResourcesSkipped map[string]int `json:"resourcesSkipped"`
+	// ResourcesUnavailable How many could not be read.
+	ResourcesUnavailable int `json:"resourcesUnavailable"`
 }
 
 type SpecificResource struct {
@@ -8948,6 +9241,127 @@ type WeaverConfig struct {
 	LogLevel  LogLevel        `json:"logLevel"`
 	// Port The port the Weaver answers `/health` on.
 	Port int `json:"port"`
+}
+
+// WeaverHealth The Weaver's health answer (WEAVER.md § Health). `status` is
+// `ok` whenever the Weaver answers: it says nothing of whether the Weaver can
+// reach the gateway or the graph.
+type WeaverHealth struct {
+	// Following How far a follower of the record has followed it, as every
+	// follower says it at its health port (WEAVER.md § Health, SMELTER.md §
+	// Health).
+	Following WeaverHealthFollowing `json:"following"`
+	// Kb The DID of the knowledge base it serves: the one its settings name,
+	// which that knowledge base said it is before the Weaver connected to the
+	// graph database.
+	Kb string `json:"kb"`
+	// Reconcile How far the reconcile its first sweep is followed by has got
+	// (WEAVER.md § Reconcile): the pass's `summary` when it is done, or its
+	// `error` when it failed.
+	Reconcile WeaverHealthReconcile `json:"reconcile"`
+	Status    WeaverHealthStatus    `json:"status"`
+}
+
+// WeaverHealthFollowing How far a follower of the record has followed it, as
+// every follower says it at its health port (WEAVER.md § Health, SMELTER.md §
+// Health).
+type WeaverHealthFollowing struct {
+	// Refused How many events it refused as recorded since it started.
+	Refused int `json:"refused"`
+	// Stopped How many resources' logs a failed taking has stopped until the
+	// next sweep.
+	Stopped int `json:"stopped"`
+	// StreamDrops How many times its stream has dropped since it started.
+	StreamDrops int `json:"streamDrops"`
+	// Sweep The latest sweep's phase: `pending` before its stream first opens,
+	// `running`, `done`, or `due` where the record could not be listed and the
+	// sweep is tried again.
+	Sweep WeaverHealthFollowingSweep `json:"sweep"`
+}
+
+// WeaverHealthFollowingSweep The latest sweep's phase: `pending` before its
+// stream first opens, `running`, `done`, or `due` where the record could not
+// be listed and the sweep is tried again.
+type WeaverHealthFollowingSweep string
+
+// The values of WeaverHealthFollowingSweep.
+const (
+	WeaverHealthFollowingSweepPending WeaverHealthFollowingSweep = "pending"
+	WeaverHealthFollowingSweepRunning WeaverHealthFollowingSweep = "running"
+	WeaverHealthFollowingSweepDone    WeaverHealthFollowingSweep = "done"
+	WeaverHealthFollowingSweepDue     WeaverHealthFollowingSweep = "due"
+)
+
+// Valid is whether e is one of WeaverHealthFollowingSweep's values.
+func (e WeaverHealthFollowingSweep) Valid() bool {
+	switch e {
+	case WeaverHealthFollowingSweepPending, WeaverHealthFollowingSweepRunning, WeaverHealthFollowingSweepDone, WeaverHealthFollowingSweepDue:
+		return true
+	}
+	return false
+}
+
+// WeaverHealthReconcile How far the reconcile its first sweep is followed by
+// has got (WEAVER.md § Reconcile): the pass's `summary` when it is done, or
+// its `error` when it failed.
+type WeaverHealthReconcile struct {
+	// Error Why it failed.
+	Error *string                    `json:"error,omitempty"`
+	Phase WeaverHealthReconcilePhase `json:"phase"`
+	// Summary What the pass found and did.
+	Summary *WeaverHealthReconcileSummary `json:"summary,omitempty"`
+}
+
+type WeaverHealthReconcilePhase string
+
+// The values of WeaverHealthReconcilePhase.
+const (
+	WeaverHealthReconcilePhasePending WeaverHealthReconcilePhase = "pending"
+	WeaverHealthReconcilePhaseRunning WeaverHealthReconcilePhase = "running"
+	WeaverHealthReconcilePhaseDone    WeaverHealthReconcilePhase = "done"
+	WeaverHealthReconcilePhaseFailed  WeaverHealthReconcilePhase = "failed"
+)
+
+// Valid is whether e is one of WeaverHealthReconcilePhase's values.
+func (e WeaverHealthReconcilePhase) Valid() bool {
+	switch e {
+	case WeaverHealthReconcilePhasePending, WeaverHealthReconcilePhaseRunning, WeaverHealthReconcilePhaseDone, WeaverHealthReconcilePhaseFailed:
+		return true
+	}
+	return false
+}
+
+// WeaverHealthReconcileSummary What the pass found and did.
+type WeaverHealthReconcileSummary struct {
+	// Divergent How many of them were divergent: the graph held them otherwise
+	// than the record.
+	Divergent int `json:"divergent"`
+	// HealFailures How many it did not heal, because the rebuild stopped at an
+	// event it could not apply.
+	HealFailures int `json:"healFailures"`
+	// Healed How many divergent resources it rebuilt.
+	Healed int `json:"healed"`
+	// Orphaned How many orphaned views it found: resources the catalog lists and
+	// the record holds no events for. Each is counted, and not healed.
+	Orphaned int `json:"orphaned"`
+	// ResourcesChecked How many resources it checked.
+	ResourcesChecked int `json:"resourcesChecked"`
+}
+
+type WeaverHealthStatus string
+
+// The values of WeaverHealthStatus.
+const (
+	WeaverHealthStatusOk WeaverHealthStatus = "ok"
+)
+
+// Valid is whether e is one of WeaverHealthStatus's values.
+func (e WeaverHealthStatus) Valid() bool {
+	switch e {
+	case WeaverHealthStatusOk:
+		return true
+	}
+	return false
 }
 
 // WorkerConfig Everything a worker reads at boot: nothing in it is defaulted

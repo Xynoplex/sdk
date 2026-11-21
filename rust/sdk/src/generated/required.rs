@@ -86,6 +86,26 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         },
     ),
     (
+        "AnchorRect",
+        Shape {
+            kinds: Some(&[Kind::Object]),
+            required: &[
+                "x", "y", "width", "height", "top", "right", "bottom", "left",
+            ],
+            members: &[
+                ("bottom", of(&[Kind::Number])),
+                ("height", of(&[Kind::Number])),
+                ("left", of(&[Kind::Number])),
+                ("right", of(&[Kind::Number])),
+                ("top", of(&[Kind::Number])),
+                ("width", of(&[Kind::Number])),
+                ("x", of(&[Kind::Number])),
+                ("y", of(&[Kind::Number])),
+            ],
+            ..NONE
+        },
+    ),
+    (
         "AnchoredText",
         Shape {
             kinds: Some(&[Kind::Object]),
@@ -704,7 +724,17 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                     "actors",
                     Shape {
                         kinds: Some(&[Kind::Array]),
-                        items: Some(&of(&[Kind::String])),
+                        min_items: Some(3),
+                        max_items: Some(3),
+                        items: Some(&Shape {
+                            kinds: Some(&[Kind::String]),
+                            enumeration: Some(&[
+                                Listed::Text("stower"),
+                                Listed::Text("browser"),
+                                Listed::Text("cloneTokenManager"),
+                            ]),
+                            ..NONE
+                        }),
                         ..NONE
                     },
                 ),
@@ -1060,7 +1090,10 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         Shape {
             kinds: Some(&[Kind::Object]),
             required: &["annotationId"],
-            members: &[("annotationId", reference("AnnotationId"))],
+            members: &[
+                ("anchorRect", reference("AnchorRect")),
+                ("annotationId", reference("AnnotationId")),
+            ],
             ..NONE
         },
     ),
@@ -4842,6 +4875,104 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         },
     ),
     (
+        "LibrarianHealth",
+        Shape {
+            kinds: Some(&[Kind::Object]),
+            required: &["status", "kb", "actors"],
+            members: &[
+                (
+                    "actors",
+                    Shape {
+                        kinds: Some(&[Kind::Array]),
+                        min_items: Some(2),
+                        items: Some(&Shape {
+                            kinds: Some(&[Kind::String]),
+                            enumeration: Some(&[Listed::Text("matcher"), Listed::Text("gatherer")]),
+                            ..NONE
+                        }),
+                        ..NONE
+                    },
+                ),
+                (
+                    "kb",
+                    Shape {
+                        kinds: Some(&[Kind::String]),
+                        pattern: Some(&[
+                            Step {
+                                of: &[(100, 100)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(105, 105)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(100, 100)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(58, 58)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(119, 119)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(101, 101)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(98, 98)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(58, 58)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[
+                                    (0, 8),
+                                    (14, 31),
+                                    (33, 159),
+                                    (161, 5759),
+                                    (5761, 8191),
+                                    (8203, 8231),
+                                    (8234, 8238),
+                                    (8240, 8286),
+                                    (8288, 12287),
+                                    (12289, 65278),
+                                    (65280, 1114111),
+                                ],
+                                min: 1,
+                                max: None,
+                            },
+                        ]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "status",
+                    Shape {
+                        kinds: Some(&[Kind::String]),
+                        enumeration: Some(&[Listed::Text("ok")]),
+                        ..NONE
+                    },
+                ),
+            ],
+            closed: Some(&["actors", "kb", "status"]),
+            ..NONE
+        },
+    ),
+    (
         "LimitRefusal",
         Shape {
             kinds: Some(&[Kind::Object]),
@@ -6748,6 +6879,33 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
         },
     ),
     (
+        "SmelterChunking",
+        Shape {
+            kinds: Some(&[Kind::Object]),
+            required: &["chunkSize", "overlap"],
+            members: &[
+                (
+                    "chunkSize",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(1.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "overlap",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+            ],
+            closed: Some(&["chunkSize", "overlap"]),
+            ..NONE
+        },
+    ),
+    (
         "SmelterConfig",
         Shape {
             kinds: Some(&[Kind::Object]),
@@ -6767,33 +6925,7 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
             ],
             members: &[
                 ("archivist", reference("ServiceAddress")),
-                (
-                    "chunking",
-                    Shape {
-                        kinds: Some(&[Kind::Object]),
-                        required: &["chunkSize", "overlap"],
-                        members: &[
-                            (
-                                "chunkSize",
-                                Shape {
-                                    kinds: Some(&[Kind::Integer]),
-                                    minimum: Some(1.0),
-                                    ..NONE
-                                },
-                            ),
-                            (
-                                "overlap",
-                                Shape {
-                                    kinds: Some(&[Kind::Integer]),
-                                    minimum: Some(0.0),
-                                    ..NONE
-                                },
-                            ),
-                        ],
-                        closed: Some(&["chunkSize", "overlap"]),
-                        ..NONE
-                    },
-                ),
+                ("chunking", reference("SmelterChunking")),
                 ("cursorsPath", reference("CursorsPath")),
                 ("embedding", reference("EmbeddingConfig")),
                 (
@@ -6840,6 +6972,393 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "pdfsAtOnce",
                 "port",
                 "vectors",
+            ]),
+            ..NONE
+        },
+    ),
+    (
+        "SmelterHealth",
+        Shape {
+            kinds: Some(&[Kind::Object]),
+            required: &[
+                "status",
+                "kb",
+                "stream",
+                "following",
+                "eventsProcessed",
+                "reconcile",
+                "index",
+            ],
+            members: &[
+                (
+                    "eventsProcessed",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "following",
+                    Shape {
+                        kinds: Some(&[Kind::Object]),
+                        required: &["sweep", "stopped", "refused", "streamDrops"],
+                        members: &[
+                            (
+                                "refused",
+                                Shape {
+                                    kinds: Some(&[Kind::Integer]),
+                                    minimum: Some(0.0),
+                                    ..NONE
+                                },
+                            ),
+                            (
+                                "stopped",
+                                Shape {
+                                    kinds: Some(&[Kind::Integer]),
+                                    minimum: Some(0.0),
+                                    ..NONE
+                                },
+                            ),
+                            (
+                                "streamDrops",
+                                Shape {
+                                    kinds: Some(&[Kind::Integer]),
+                                    minimum: Some(0.0),
+                                    ..NONE
+                                },
+                            ),
+                            (
+                                "sweep",
+                                Shape {
+                                    kinds: Some(&[Kind::String]),
+                                    enumeration: Some(&[
+                                        Listed::Text("pending"),
+                                        Listed::Text("running"),
+                                        Listed::Text("done"),
+                                        Listed::Text("due"),
+                                    ]),
+                                    ..NONE
+                                },
+                            ),
+                        ],
+                        closed: Some(&["refused", "stopped", "streamDrops", "sweep"]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "index",
+                    Shape {
+                        kinds: Some(&[Kind::Object]),
+                        required: &["stamp", "madeAnew"],
+                        members: &[
+                            ("madeAnew", of(&[Kind::Boolean])),
+                            (
+                                "stamp",
+                                Shape {
+                                    kinds: Some(&[Kind::Object]),
+                                    required: &["embedding", "chunking"],
+                                    members: &[
+                                        ("chunking", reference("SmelterChunking")),
+                                        (
+                                            "embedding",
+                                            Shape {
+                                                kinds: Some(&[Kind::Object]),
+                                                required: &["type", "model"],
+                                                members: &[
+                                                    (
+                                                        "model",
+                                                        Shape {
+                                                            kinds: Some(&[Kind::String]),
+                                                            min_length: Some(1),
+                                                            ..NONE
+                                                        },
+                                                    ),
+                                                    (
+                                                        "type",
+                                                        Shape {
+                                                            kinds: Some(&[Kind::String]),
+                                                            min_length: Some(1),
+                                                            ..NONE
+                                                        },
+                                                    ),
+                                                ],
+                                                closed: Some(&["model", "type"]),
+                                                ..NONE
+                                            },
+                                        ),
+                                    ],
+                                    closed: Some(&["chunking", "embedding"]),
+                                    ..NONE
+                                },
+                            ),
+                        ],
+                        closed: Some(&["madeAnew", "stamp"]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "kb",
+                    Shape {
+                        kinds: Some(&[Kind::String]),
+                        pattern: Some(&[
+                            Step {
+                                of: &[(100, 100)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(105, 105)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(100, 100)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(58, 58)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(119, 119)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(101, 101)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(98, 98)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(58, 58)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[
+                                    (0, 8),
+                                    (14, 31),
+                                    (33, 159),
+                                    (161, 5759),
+                                    (5761, 8191),
+                                    (8203, 8231),
+                                    (8234, 8238),
+                                    (8240, 8286),
+                                    (8288, 12287),
+                                    (12289, 65278),
+                                    (65280, 1114111),
+                                ],
+                                min: 1,
+                                max: None,
+                            },
+                        ]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "reconcile",
+                    Shape {
+                        kinds: Some(&[Kind::Object]),
+                        required: &["phase"],
+                        members: &[
+                            ("error", of(&[Kind::String])),
+                            (
+                                "phase",
+                                Shape {
+                                    kinds: Some(&[Kind::String]),
+                                    enumeration: Some(&[
+                                        Listed::Text("pending"),
+                                        Listed::Text("running"),
+                                        Listed::Text("done"),
+                                        Listed::Text("failed"),
+                                    ]),
+                                    ..NONE
+                                },
+                            ),
+                            ("summary", reference("SmelterReconcileSummary")),
+                        ],
+                        closed: Some(&["error", "phase", "summary"]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "status",
+                    Shape {
+                        kinds: Some(&[Kind::String]),
+                        enumeration: Some(&[Listed::Text("ok")]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "stream",
+                    Shape {
+                        kinds: Some(&[Kind::String]),
+                        enumeration: Some(&[
+                            Listed::Text("initial"),
+                            Listed::Text("connecting"),
+                            Listed::Text("open"),
+                            Listed::Text("reconnecting"),
+                            Listed::Text("degraded"),
+                            Listed::Text("unauthenticated"),
+                            Listed::Text("closed"),
+                        ]),
+                        ..NONE
+                    },
+                ),
+            ],
+            closed: Some(&[
+                "eventsProcessed",
+                "following",
+                "index",
+                "kb",
+                "reconcile",
+                "status",
+                "stream",
+            ]),
+            ..NONE
+        },
+    ),
+    (
+        "SmelterReconcileSummary",
+        Shape {
+            kinds: Some(&[Kind::Object]),
+            required: &[
+                "resourcesEmbedded",
+                "resourcesSkipped",
+                "resourcesUnavailable",
+                "resourcesFailed",
+                "resourcesRestamped",
+                "resourcesReanchored",
+                "resourceVectorsDeleted",
+                "annotationsEmbedded",
+                "annotationsRestamped",
+                "annotationVectorsDeleted",
+                "resourcesEligible",
+                "resourcesIndexed",
+            ],
+            members: &[
+                (
+                    "annotationVectorsDeleted",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "annotationsEmbedded",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "annotationsRestamped",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourceVectorsDeleted",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesEligible",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesEmbedded",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesFailed",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesIndexed",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesReanchored",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesRestamped",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesSkipped",
+                    Shape {
+                        kinds: Some(&[Kind::Object]),
+                        values: Some(&Shape {
+                            kinds: Some(&[Kind::Integer]),
+                            minimum: Some(0.0),
+                            ..NONE
+                        }),
+                        ..NONE
+                    },
+                ),
+                (
+                    "resourcesUnavailable",
+                    Shape {
+                        kinds: Some(&[Kind::Integer]),
+                        minimum: Some(0.0),
+                        ..NONE
+                    },
+                ),
+            ],
+            closed: Some(&[
+                "annotationVectorsDeleted",
+                "annotationsEmbedded",
+                "annotationsRestamped",
+                "resourceVectorsDeleted",
+                "resourcesEligible",
+                "resourcesEmbedded",
+                "resourcesFailed",
+                "resourcesIndexed",
+                "resourcesReanchored",
+                "resourcesRestamped",
+                "resourcesSkipped",
+                "resourcesUnavailable",
             ]),
             ..NONE
         },
@@ -7477,6 +7996,227 @@ pub(crate) const SCHEMAS: &[(&str, Shape)] = &[
                 "logLevel",
                 "port",
             ]),
+            ..NONE
+        },
+    ),
+    (
+        "WeaverHealth",
+        Shape {
+            kinds: Some(&[Kind::Object]),
+            required: &["status", "kb", "following", "reconcile"],
+            members: &[
+                (
+                    "following",
+                    Shape {
+                        kinds: Some(&[Kind::Object]),
+                        required: &["sweep", "stopped", "refused", "streamDrops"],
+                        members: &[
+                            (
+                                "refused",
+                                Shape {
+                                    kinds: Some(&[Kind::Integer]),
+                                    minimum: Some(0.0),
+                                    ..NONE
+                                },
+                            ),
+                            (
+                                "stopped",
+                                Shape {
+                                    kinds: Some(&[Kind::Integer]),
+                                    minimum: Some(0.0),
+                                    ..NONE
+                                },
+                            ),
+                            (
+                                "streamDrops",
+                                Shape {
+                                    kinds: Some(&[Kind::Integer]),
+                                    minimum: Some(0.0),
+                                    ..NONE
+                                },
+                            ),
+                            (
+                                "sweep",
+                                Shape {
+                                    kinds: Some(&[Kind::String]),
+                                    enumeration: Some(&[
+                                        Listed::Text("pending"),
+                                        Listed::Text("running"),
+                                        Listed::Text("done"),
+                                        Listed::Text("due"),
+                                    ]),
+                                    ..NONE
+                                },
+                            ),
+                        ],
+                        closed: Some(&["refused", "stopped", "streamDrops", "sweep"]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "kb",
+                    Shape {
+                        kinds: Some(&[Kind::String]),
+                        pattern: Some(&[
+                            Step {
+                                of: &[(100, 100)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(105, 105)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(100, 100)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(58, 58)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(119, 119)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(101, 101)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(98, 98)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[(58, 58)],
+                                min: 1,
+                                max: Some(1),
+                            },
+                            Step {
+                                of: &[
+                                    (0, 8),
+                                    (14, 31),
+                                    (33, 159),
+                                    (161, 5759),
+                                    (5761, 8191),
+                                    (8203, 8231),
+                                    (8234, 8238),
+                                    (8240, 8286),
+                                    (8288, 12287),
+                                    (12289, 65278),
+                                    (65280, 1114111),
+                                ],
+                                min: 1,
+                                max: None,
+                            },
+                        ]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "reconcile",
+                    Shape {
+                        kinds: Some(&[Kind::Object]),
+                        required: &["phase"],
+                        members: &[
+                            ("error", of(&[Kind::String])),
+                            (
+                                "phase",
+                                Shape {
+                                    kinds: Some(&[Kind::String]),
+                                    enumeration: Some(&[
+                                        Listed::Text("pending"),
+                                        Listed::Text("running"),
+                                        Listed::Text("done"),
+                                        Listed::Text("failed"),
+                                    ]),
+                                    ..NONE
+                                },
+                            ),
+                            (
+                                "summary",
+                                Shape {
+                                    kinds: Some(&[Kind::Object]),
+                                    required: &[
+                                        "resourcesChecked",
+                                        "divergent",
+                                        "healed",
+                                        "healFailures",
+                                        "orphaned",
+                                    ],
+                                    members: &[
+                                        (
+                                            "divergent",
+                                            Shape {
+                                                kinds: Some(&[Kind::Integer]),
+                                                minimum: Some(0.0),
+                                                ..NONE
+                                            },
+                                        ),
+                                        (
+                                            "healFailures",
+                                            Shape {
+                                                kinds: Some(&[Kind::Integer]),
+                                                minimum: Some(0.0),
+                                                ..NONE
+                                            },
+                                        ),
+                                        (
+                                            "healed",
+                                            Shape {
+                                                kinds: Some(&[Kind::Integer]),
+                                                minimum: Some(0.0),
+                                                ..NONE
+                                            },
+                                        ),
+                                        (
+                                            "orphaned",
+                                            Shape {
+                                                kinds: Some(&[Kind::Integer]),
+                                                minimum: Some(0.0),
+                                                ..NONE
+                                            },
+                                        ),
+                                        (
+                                            "resourcesChecked",
+                                            Shape {
+                                                kinds: Some(&[Kind::Integer]),
+                                                minimum: Some(0.0),
+                                                ..NONE
+                                            },
+                                        ),
+                                    ],
+                                    closed: Some(&[
+                                        "divergent",
+                                        "healFailures",
+                                        "healed",
+                                        "orphaned",
+                                        "resourcesChecked",
+                                    ]),
+                                    ..NONE
+                                },
+                            ),
+                        ],
+                        closed: Some(&["error", "phase", "summary"]),
+                        ..NONE
+                    },
+                ),
+                (
+                    "status",
+                    Shape {
+                        kinds: Some(&[Kind::String]),
+                        enumeration: Some(&[Listed::Text("ok")]),
+                        ..NONE
+                    },
+                ),
+            ],
+            closed: Some(&["following", "kb", "reconcile", "status"]),
             ..NONE
         },
     ),

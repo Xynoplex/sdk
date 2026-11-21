@@ -182,8 +182,8 @@
     "lib/media_facts.ml": "462bb526a754d71c947d838d618ffdc3ad255ab8b61307ac3aa05ddc498fcf2a",
     "lib/media_types.ml": "627feecc23b4f887709476ee12e6fe99099303c19e06be88240ac8bf1905413d",
     "lib/media_types.mli": "2d65a7872184f4fedba7fb88e5ab2069b0031e9ac924fb0a093978e31ad0c7cc",
-    "lib/models.ml": "9a6a7823329398ef10995f8758f95e42d0ce2bac3eff7cbc62fc597d4b3ddb8f",
-    "lib/models.mli": "b37e8935a0265559bee835a8d2fdee2aaecfbcfdb9a97b4f65a323aa3fe5e65e",
+    "lib/models.ml": "b62645c05999a85cfebb3cbf96ecbd327ab003273037363af86ee98869b275f7",
+    "lib/models.mli": "db214e415b9cd4ab92e0edbc54fd0c972f5efaa9e4712643f0efa5b01d8ddcb5",
     "lib/namespace_methods.ml": "37178853cd16d5975132820d07bf0ee703039b946557167dd39560f0b5025147",
     "lib/oauth.ml": "b62c51759ebb98f90ed1bf2793eace04878198f2c4705724f72776f028091dc0",
     "lib/oauth.mli": "6f1104c9fa330b6f9fb7cec7f8e173d6a7f05c66cb18fd20d1895a6b3288b460",
@@ -191,7 +191,7 @@
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
     "lib/record_reader.ml": "053aa7e17c38b3cedb840b7623fd666e17717a5bbe8e1087b56aaf05d8ac3d89",
     "lib/record_reader.mli": "8f988856668a1d426cb6384fa2bf2703d6d791be33f82c8db87c2e1fd1919ce5",
-    "lib/records.ml": "7e020b49d46cbbe6459a4a25240899e6c08e932d0d8da138f5681472b550e751",
+    "lib/records.ml": "461eeb9ff2a11c2071e664916103456e216336ec223b7056081017ea760e4d73",
     "lib/redirect_sign_in.ml": "d3b7206b16548f24a4fcf3dfa6143bc7fc8fa0fe4de2e61598a460be41c2ef6f",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
     "lib/registry.ml": "b7d3d0a4bb36ac212add5c60d050b7e64e0047722f5a7a542bc2daea3bc83f6a",
@@ -205,7 +205,7 @@
     "lib/running.mli": "74bef29c19b9b132888e875f77ea4fec64855a7bb7c6e119e0fb8346a47176f9",
     "lib/schema_codec.ml": "6180a43f50c61f69f205cd16372013e9d597cceaceb72c2d241873b2e3d6031b",
     "lib/schema_shape.ml": "fe4e72c044905dad381dff38a06ee4809e2411698b6c9096926b17f077eb3cc3",
-    "lib/schema_shapes.ml": "efb4ab8ba29987e48d283baac31903d05c8a5349ad6ff1e9b2e785ebabf0bc2c",
+    "lib/schema_shapes.ml": "a25c28d54ef8e4040b9a43c667f029430cdc3c710c382125398c15e494410508",
     "lib/search_pipeline.ml": "c686787cea18854164219082e02d586aa34f7a0801c876cb011648bd72222ba0",
     "lib/search_pipeline.mli": "8569d48ac54fb0e5b0165613f479fce0d4dcd897d89dae4699c8d25f6d5db0d3",
     "lib/selector.ml": "b24657f0d60a45a7deefaa23ae4f8d6800ec007f3c13cdbb004944cfa014b432",
@@ -3352,6 +3352,11 @@
     },
     {
       "kind": "value",
+      "path": "Xynolog.Models.anchor_rect",
+      "declaration": "val anchor_rect : [ `AnchorRect ] descriptor"
+    },
+    {
+      "kind": "value",
       "path": "Xynolog.Models.anchored_text",
       "declaration": "val anchored_text : [ `AnchoredText ] descriptor"
     },
@@ -4412,6 +4417,11 @@
     },
     {
       "kind": "value",
+      "path": "Xynolog.Models.librarian_health",
+      "declaration": "val librarian_health : [ `LibrarianHealth ] descriptor"
+    },
+    {
+      "kind": "value",
       "path": "Xynolog.Models.limit_refusal",
       "declaration": "val limit_refusal : [ `LimitRefusal ] descriptor"
     },
@@ -4832,8 +4842,23 @@
     },
     {
       "kind": "value",
+      "path": "Xynolog.Models.smelter_chunking",
+      "declaration": "val smelter_chunking : [ `SmelterChunking ] descriptor"
+    },
+    {
+      "kind": "value",
       "path": "Xynolog.Models.smelter_config",
       "declaration": "val smelter_config : [ `SmelterConfig ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.smelter_health",
+      "declaration": "val smelter_health : [ `SmelterHealth ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.smelter_reconcile_summary",
+      "declaration": "val smelter_reconcile_summary : [ `SmelterReconcileSummary ] descriptor"
     },
     {
       "kind": "value",
@@ -4949,6 +4974,11 @@
       "kind": "value",
       "path": "Xynolog.Models.weaver_config",
       "declaration": "val weaver_config : [ `WeaverConfig ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.weaver_health",
+      "declaration": "val weaver_health : [ `WeaverHealth ] descriptor"
     },
     {
       "kind": "value",
@@ -5750,16 +5780,49 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Anchor_rect",
+      "declaration": "module Anchor_rect :\n  sig\n    type t = {\n      x : Yojson.Raw.t;\n      y : Yojson.Raw.t;\n      width : Yojson.Raw.t;\n      height : Yojson.Raw.t;\n      top : Yojson.Raw.t;\n      right : Yojson.Raw.t;\n      bottom : Yojson.Raw.t;\n      left : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `AnchorRect ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Anchor_rect.t",
+      "declaration": "type t = {\n  x : Yojson.Raw.t;\n  y : Yojson.Raw.t;\n  width : Yojson.Raw.t;\n  height : Yojson.Raw.t;\n  top : Yojson.Raw.t;\n  right : Yojson.Raw.t;\n  bottom : Yojson.Raw.t;\n  left : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "top",
+        "right",
+        "bottom",
+        "left",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Anchor_rect.project",
+      "declaration": "val project : (string * Yojson.Raw.t) list -> t"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Anchor_rect.of_model",
+      "declaration": "val of_model : [ `AnchorRect ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Browse_click_event",
-      "declaration": "module Browse_click_event :\n  sig\n    type t = {\n      annotation_id : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `BrowseClickEvent ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Browse_click_event :\n  sig\n    type t = {\n      annotation_id : Yojson.Raw.t;\n      anchor_rect : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `BrowseClickEvent ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Browse_click_event.t",
-      "declaration": "type t = {\n  annotation_id : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  annotation_id : Yojson.Raw.t;\n  anchor_rect : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "annotation_id",
+        "anchor_rect",
         "extra"
       ]
     },
@@ -12807,6 +12870,59 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Librarian_health",
+      "declaration": "module Librarian_health :\n  sig\n    type t = {\n      status : string;\n      kb : Yojson.Raw.t;\n      actors : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `LibrarianHealth ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Librarian_health.t",
+      "declaration": "type t = {\n  status : string;\n  kb : Yojson.Raw.t;\n  actors : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "status",
+        "kb",
+        "actors",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Librarian_health.project",
+      "declaration": "val project : (string * Yojson.Raw.t) list -> t"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Librarian_health.of_model",
+      "declaration": "val of_model : [ `LibrarianHealth ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Smelter_chunking",
+      "declaration": "module Smelter_chunking :\n  sig\n    type t = {\n      chunk_size : Yojson.Raw.t;\n      overlap : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `SmelterChunking ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Smelter_chunking.t",
+      "declaration": "type t = {\n  chunk_size : Yojson.Raw.t;\n  overlap : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "chunk_size",
+        "overlap",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Smelter_chunking.project",
+      "declaration": "val project : (string * Yojson.Raw.t) list -> t"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Smelter_chunking.of_model",
+      "declaration": "val of_model : [ `SmelterChunking ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Smelter_config",
       "declaration": "module Smelter_config :\n  sig\n    type t = {\n      kb : Yojson.Raw.t;\n      gateway_url : string;\n      identity : Yojson.Raw.t;\n      archivist : Yojson.Raw.t;\n      embedding : Yojson.Raw.t;\n      vectors : Yojson.Raw.t;\n      chunking : Yojson.Raw.t;\n      pdfs_at_once : Yojson.Raw.t;\n      cursors_path : Yojson.Raw.t;\n      port : Yojson.Raw.t;\n      log_level : Yojson.Raw.t;\n      log_format : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `SmelterConfig ] Xynolog__.Models.t -> t\n  end"
     },
@@ -12840,6 +12956,73 @@
       "kind": "value",
       "path": "Xynolog.Records.Smelter_config.of_model",
       "declaration": "val of_model : [ `SmelterConfig ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Smelter_health",
+      "declaration": "module Smelter_health :\n  sig\n    type t = {\n      status : string;\n      kb : Yojson.Raw.t;\n      stream : string;\n      following : Yojson.Raw.t;\n      events_processed : Yojson.Raw.t;\n      reconcile : Yojson.Raw.t;\n      index : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `SmelterHealth ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Smelter_health.t",
+      "declaration": "type t = {\n  status : string;\n  kb : Yojson.Raw.t;\n  stream : string;\n  following : Yojson.Raw.t;\n  events_processed : Yojson.Raw.t;\n  reconcile : Yojson.Raw.t;\n  index : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "status",
+        "kb",
+        "stream",
+        "following",
+        "events_processed",
+        "reconcile",
+        "index",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Smelter_health.project",
+      "declaration": "val project : (string * Yojson.Raw.t) list -> t"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Smelter_health.of_model",
+      "declaration": "val of_model : [ `SmelterHealth ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Smelter_reconcile_summary",
+      "declaration": "module Smelter_reconcile_summary :\n  sig\n    type t = {\n      resources_embedded : Yojson.Raw.t;\n      resources_skipped : Yojson.Raw.t;\n      resources_unavailable : Yojson.Raw.t;\n      resources_failed : Yojson.Raw.t;\n      resources_restamped : Yojson.Raw.t;\n      resources_reanchored : Yojson.Raw.t;\n      resource_vectors_deleted : Yojson.Raw.t;\n      annotations_embedded : Yojson.Raw.t;\n      annotations_restamped : Yojson.Raw.t;\n      annotation_vectors_deleted : Yojson.Raw.t;\n      resources_eligible : Yojson.Raw.t;\n      resources_indexed : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `SmelterReconcileSummary ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Smelter_reconcile_summary.t",
+      "declaration": "type t = {\n  resources_embedded : Yojson.Raw.t;\n  resources_skipped : Yojson.Raw.t;\n  resources_unavailable : Yojson.Raw.t;\n  resources_failed : Yojson.Raw.t;\n  resources_restamped : Yojson.Raw.t;\n  resources_reanchored : Yojson.Raw.t;\n  resource_vectors_deleted : Yojson.Raw.t;\n  annotations_embedded : Yojson.Raw.t;\n  annotations_restamped : Yojson.Raw.t;\n  annotation_vectors_deleted : Yojson.Raw.t;\n  resources_eligible : Yojson.Raw.t;\n  resources_indexed : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "resources_embedded",
+        "resources_skipped",
+        "resources_unavailable",
+        "resources_failed",
+        "resources_restamped",
+        "resources_reanchored",
+        "resource_vectors_deleted",
+        "annotations_embedded",
+        "annotations_restamped",
+        "annotation_vectors_deleted",
+        "resources_eligible",
+        "resources_indexed",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Smelter_reconcile_summary.project",
+      "declaration": "val project : (string * Yojson.Raw.t) list -> t"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Smelter_reconcile_summary.of_model",
+      "declaration": "val of_model : [ `SmelterReconcileSummary ] Xynolog__.Models.t -> t"
     },
     {
       "kind": "module",
@@ -12926,6 +13109,34 @@
       "kind": "value",
       "path": "Xynolog.Records.Weaver_config.of_model",
       "declaration": "val of_model : [ `WeaverConfig ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Weaver_health",
+      "declaration": "module Weaver_health :\n  sig\n    type t = {\n      status : string;\n      kb : Yojson.Raw.t;\n      following : Yojson.Raw.t;\n      reconcile : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `WeaverHealth ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Weaver_health.t",
+      "declaration": "type t = {\n  status : string;\n  kb : Yojson.Raw.t;\n  following : Yojson.Raw.t;\n  reconcile : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "status",
+        "kb",
+        "following",
+        "reconcile",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Weaver_health.project",
+      "declaration": "val project : (string * Yojson.Raw.t) list -> t"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Weaver_health.of_model",
+      "declaration": "val of_model : [ `WeaverHealth ] Xynolog__.Models.t -> t"
     },
     {
       "kind": "module",

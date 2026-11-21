@@ -23,7 +23,7 @@ use xynolog::testing::{
     create_test_client,
 };
 use xynolog::transport::{Envelope, Frame, PutBinaryRequest};
-use xynolog::types::GatherAnnotationOptions;
+use xynolog::types::{AnchorRect, GatherAnnotationOptions};
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/client/surface.json"))
@@ -343,7 +343,13 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             go!(client.browse.files(path.as_deref(), sort))
         }
         ("browse", "kb") => go!(client.browse.kb()),
-        ("browse", "click") => client.browse.click(&as_id(&args.text("annotationId"))),
+        ("browse", "click") => client.browse.click(
+            &as_id(&args.text("annotationId")),
+            args.0
+                .contains_key("anchorRect")
+                .then(|| args.typed::<AnchorRect>("anchorRect"))
+                .as_ref(),
+        ),
         ("browse", "openResource") => client
             .browse
             .open_resource(&as_id(&args.text("resourceId"))),

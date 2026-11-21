@@ -212,7 +212,8 @@ public sealed partial class TransportTests
             switch (method)
             {
                 case "click":
-                    await VerifyLocalAsync(BusChannels.BrowseClick, () => client.Browse.Click(args.GetProperty("annotationId").Deserialize<AnnotationId>()), example);
+                    var anchorRect = args.TryGetProperty("anchorRect", out var rect) ? rect.Deserialize<AnchorRect>() : null;
+                    await VerifyLocalAsync(BusChannels.BrowseClick, () => client.Browse.Click(args.GetProperty("annotationId").Deserialize<AnnotationId>(), anchorRect), example);
                     break;
                 case "openResource":
                     await VerifyLocalAsync(BusChannels.BrowseResourceOpen, () => client.Browse.OpenResource(args.GetProperty("resourceId").Deserialize<ResourceId>()), example);
