@@ -14,12 +14,17 @@ import xynolog.identifiers.AnnotationId
 public data class BrowseClickEvent(
     @get:JvmExposeBoxed
     public val annotationId: AnnotationId,
+    public val anchorRect: AnchorRect? = null,
 ) {
     /** How Java makes a `BrowseClickEvent`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val annotationId: AnnotationId,
     ) {
-        public fun build(): BrowseClickEvent = BrowseClickEvent(annotationId = annotationId)
+        private var anchorRect: AnchorRect? = null
+
+        public fun anchorRect(anchorRect: AnchorRect?): Builder = apply { this.anchorRect = anchorRect }
+
+        public fun build(): BrowseClickEvent = BrowseClickEvent(annotationId = annotationId, anchorRect = anchorRect)
     }
 
     public companion object {

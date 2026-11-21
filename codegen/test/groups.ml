@@ -59,6 +59,7 @@ let base : Yojson.Safe.t =
                 ("request", `String "demo:limits-requested");
                 ("result", `String "demo:limits-result");
                 ("failure", `String "demo:limits-failed");
+                ("answeredBy", `String "archivist");
                 ("docs", docs);
               ];
           ] );
@@ -99,6 +100,13 @@ let base : Yojson.Safe.t =
           [
             ("meaning", `String "Where a relayed frame carries its trace.");
             ("field", `String "_carried");
+          ] );
+      ( "stamps",
+        `Assoc
+          [
+            ("meaning", `String "The members of a payload the gateway writes.");
+            ("emitter", `String "_userId");
+            ("roles", `String "_roles");
           ] );
     ]
 
@@ -455,6 +463,7 @@ let derivations =
                    ("request", `String "other:limits-requested");
                    ("result", `String "other:limits-result");
                    ("failure", `String "other:limits-failed");
+                   ("answeredBy", `String "archivist");
                    ("docs", docs);
                  ])
          |> append [ "effect"; "writes" ] (`String "other:limits-requested"))

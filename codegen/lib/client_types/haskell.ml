@@ -89,6 +89,8 @@ let adapter name =
   | Words w -> Ok [ (name, titled name (words w)) ]
   | Fields members ->
       Result.map (fun o -> [ (name, titled name o) ]) (object_ members)
+  | Items _ ->
+      Error [ refusal name "is a list, which the group models as none" ]
   | Union { tag; branches } ->
       let* branches =
         Spec.all

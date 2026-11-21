@@ -650,7 +650,7 @@ export const CHANNEL_SCHEMAS = {
   'browse:directory-requested': 'BrowseDirectoryRequest',
   'browse:directory-result': 'BrowseDirectoryResult',
   'browse:directory-failed': null, // BrowseDirectoryFailed
-  'browse:click': 'BrowseClickEvent', // includes runtime `anchorRect?: AnchorRect`
+  'browse:click': 'BrowseClickEvent',
   'browse:resource-open': 'BrowseResourceOpenEvent',
   'browse:resource-viewed': 'BrowseResourceViewedEvent',
   'browse:entity-type-clicked': 'BrowseEntityTypeClickedEvent',

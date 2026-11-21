@@ -8,7 +8,7 @@ namespace Xynolog.Types;
 public sealed record SmelterConfig
 {
     [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
-    [global::Xynolog.Serialization.Wire("chunking")] public required global::Xynolog.Types.SmelterConfigChunking Chunking { get; init; }
+    [global::Xynolog.Serialization.Wire("chunking")] public required global::Xynolog.Types.SmelterChunking Chunking { get; init; }
     [global::Xynolog.Serialization.Wire("cursorsPath")] public required string CursorsPath { get; init; }
     [global::Xynolog.Serialization.Wire("embedding")] public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
     [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }

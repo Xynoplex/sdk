@@ -98,8 +98,10 @@ let squeeze text =
           (List.of_seq (String.to_seq text))))
 
 (* The roots ([Roots]), each the schema of the file its reference
-   names. *)
+   names, with each file it refers to that no generation names written in its
+   place ([Schema_names.in_place]). *)
 let components (spec : Spec.t) =
+  let in_place = Schema_names.in_place spec in
   each
     (fun (name, (r : Decode.reference)) ->
       let file, fragment = Decode.resolve spec.Spec.ids r in
@@ -113,7 +115,7 @@ let components (spec : Spec.t) =
          ^ name)
       else
         match List.assoc_opt file spec.schemas with
-        | Some s -> Ok (name, s)
+        | Some s -> Result.map (fun s -> (name, s)) (in_place s)
         | None -> Error ("no schema file " ^ file))
     (Roots.all spec)
 

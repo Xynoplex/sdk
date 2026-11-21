@@ -198,6 +198,7 @@ library internal
     Xynolog.Internal.Generated.Models.AgentPerson
     Xynolog.Internal.Generated.Models.AgentSoftware
     Xynolog.Internal.Generated.Models.AnchorMethod
+    Xynolog.Internal.Generated.Models.AnchorRect
     Xynolog.Internal.Generated.Models.AnchoredText
     Xynolog.Internal.Generated.Models.AnchoredTextAbsent
     Xynolog.Internal.Generated.Models.AnchoredTextAnswer
@@ -429,6 +430,7 @@ library internal
     Xynolog.Internal.Generated.Models.KnowledgeGraph
     Xynolog.Internal.Generated.Models.LibrarianConfig
     Xynolog.Internal.Generated.Models.LibrarianEngineConfig
+    Xynolog.Internal.Generated.Models.LibrarianHealth
     Xynolog.Internal.Generated.Models.LimitRefusal
     Xynolog.Internal.Generated.Models.LinkingJobParams
     Xynolog.Internal.Generated.Models.ListResourcesResponse
@@ -531,7 +533,10 @@ library internal
     Xynolog.Internal.Generated.Models.SignedIn
     Xynolog.Internal.Generated.Models.SmeltRebuildAnchorsCommand
     Xynolog.Internal.Generated.Models.SmeltSettled
+    Xynolog.Internal.Generated.Models.SmelterChunking
     Xynolog.Internal.Generated.Models.SmelterConfig
+    Xynolog.Internal.Generated.Models.SmelterHealth
+    Xynolog.Internal.Generated.Models.SmelterReconcileSummary
     Xynolog.Internal.Generated.Models.SpecificResource
     Xynolog.Internal.Generated.Models.StatusResponse
     Xynolog.Internal.Generated.Models.StorageUriEntry
@@ -561,6 +566,7 @@ library internal
     Xynolog.Internal.Generated.Models.WeaveApplied
     Xynolog.Internal.Generated.Models.WeaveRebuildCommand
     Xynolog.Internal.Generated.Models.WeaverConfig
+    Xynolog.Internal.Generated.Models.WeaverHealth
     Xynolog.Internal.Generated.Models.WorkerConfig
     Xynolog.Internal.Generated.Models.WorkerEngineConfig
     Xynolog.Internal.Generated.Models.WorkerEngineHealth

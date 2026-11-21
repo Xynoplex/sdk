@@ -64,13 +64,14 @@ let registry events =
        {|{"$comment":"c",
           "channelOrder":{"eventMap":[%s],"schemas":[]},
           "channels":[%s],
-          "operations":[{"request":"demo:limits-requested","result":"demo:limits-result","failure":"demo:limits-failed","docs":{"lead":[],"trailing":""}}],
+          "operations":[{"request":"demo:limits-requested","result":"demo:limits-result","failure":"demo:limits-failed","answeredBy":"archivist","docs":{"lead":[],"trailing":""}}],
           "docs":{"eventName":["P."],"enrichedEvents":["P."],"channelSchemas":["P."],"emittableChannel":["P."]},
           "inProcess":{"doc":["P."],"channels":[]},
           "kind":{"doc":["P."],"command":[],"event":[%s]},
           "audience":{"doc":["P."],"everyone":[%s],"scoped":[],"declared":[]},
           "effect":{"doc":["P."],"writes":["demo:limits-requested"],"reads":[]},
-          "trace":{"meaning":"Where a relayed frame carries its trace.","field":"_carried"}}|}
+          "trace":{"meaning":"Where a relayed frame carries its trace.","field":"_carried"},
+          "stamps":{"meaning":"The members of a payload the gateway writes.","emitter":"_userId","roles":"_roles"}}|}
        (quoted (operation @ names))
        (String.concat ","
           (List.map2 channel operation

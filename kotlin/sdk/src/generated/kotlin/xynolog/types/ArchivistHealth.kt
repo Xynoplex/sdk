@@ -14,12 +14,12 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 public data class ArchivistHealth(
     @EncodeDefault
     public val status: ArchivistHealthStatus = ArchivistHealthStatus.Ok,
-    /** The record actors this process hosts. */
-    public val actors: kotlin.collections.List<String>,
+    /** The record actors this process hosts: each of the enum's, once, in the order the enum lists them. */
+    public val actors: kotlin.collections.List<ArchivistHealthActorsItem>,
 ) {
     /** How Java makes a `ArchivistHealth`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val actors: kotlin.collections.List<String>,
+        private val actors: kotlin.collections.List<ArchivistHealthActorsItem>,
     ) {
         public fun build(): ArchivistHealth = ArchivistHealth(actors = actors)
     }
@@ -27,6 +27,6 @@ public data class ArchivistHealth(
     public companion object {
         /** A builder of a `ArchivistHealth` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(actors: kotlin.collections.List<String>): Builder = Builder(actors)
+        public fun builder(actors: kotlin.collections.List<ArchivistHealthActorsItem>): Builder = Builder(actors)
     }
 }

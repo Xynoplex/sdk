@@ -5,7 +5,7 @@
 namespace Xynolog.Types;
 
 [global::Xynolog.Serialization.WireObject]
-public sealed record SmelterConfigChunking
+public sealed record SmelterChunking
 {
     [global::Xynolog.Serialization.Wire("chunkSize")] public required long ChunkSize { get; init; }
     [global::Xynolog.Serialization.Wire("overlap")] public required long Overlap { get; init; }

@@ -19,14 +19,21 @@ module Rust = Rust
 
 let refusal file pointer message = { Decode.file; pointer; message }
 
-(* Each root ([Roots]): its name, its file and its schema. *)
+(* Each root ([Roots]): its name, its file and its schema, with each file it
+   refers to that no generation names written in its place
+   ([Schema_names.in_place]). *)
 let components (spec : Spec.t) =
+  let in_place = Schema_names.in_place spec in
   List.map
     (fun (name, (reference : Decode.reference)) ->
       match Decode.resolve spec.Spec.ids reference with
       | file, "" -> (
           match List.assoc_opt file spec.schemas with
-          | Some schema -> Ok (name, file, schema)
+          | Some schema ->
+              Result.map_error (refusal file "")
+                (Result.map
+                   (fun schema -> (name, file, schema))
+                   (in_place schema))
           | None ->
               Error
                 (refusal reference.file reference.pointer

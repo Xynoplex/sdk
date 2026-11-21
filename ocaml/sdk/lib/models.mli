@@ -13,6 +13,7 @@ val agent : [ `Agent ] descriptor
 val agent_organization : [ `AgentOrganization ] descriptor
 val agent_person : [ `AgentPerson ] descriptor
 val agent_software : [ `AgentSoftware ] descriptor
+val anchor_rect : [ `AnchorRect ] descriptor
 val anchored_text : [ `AnchoredText ] descriptor
 val anchored_text_absent : [ `AnchoredTextAbsent ] descriptor
 val anchored_text_answer : [ `AnchoredTextAnswer ] descriptor
@@ -263,6 +264,7 @@ val knowledge_base : [ `KnowledgeBase ] descriptor
 val knowledge_graph : [ `KnowledgeGraph ] descriptor
 val librarian_config : [ `LibrarianConfig ] descriptor
 val librarian_engine_config : [ `LibrarianEngineConfig ] descriptor
+val librarian_health : [ `LibrarianHealth ] descriptor
 val limit_refusal : [ `LimitRefusal ] descriptor
 val linking_job_params : [ `LinkingJobParams ] descriptor
 val list_resources_response : [ `ListResourcesResponse ] descriptor
@@ -356,7 +358,10 @@ val settings_locale_changed_event : [ `SettingsLocaleChangedEvent ] descriptor
 val settings_theme_changed_event : [ `SettingsThemeChangedEvent ] descriptor
 val smelt_rebuild_anchors_command : [ `SmeltRebuildAnchorsCommand ] descriptor
 val smelt_settled : [ `SmeltSettled ] descriptor
+val smelter_chunking : [ `SmelterChunking ] descriptor
 val smelter_config : [ `SmelterConfig ] descriptor
+val smelter_health : [ `SmelterHealth ] descriptor
+val smelter_reconcile_summary : [ `SmelterReconcileSummary ] descriptor
 val specific_resource : [ `SpecificResource ] descriptor
 val status_response : [ `StatusResponse ] descriptor
 val storage_uri_entry : [ `StorageUriEntry ] descriptor
@@ -380,6 +385,7 @@ val voyage_embedding_config : [ `VoyageEmbeddingConfig ] descriptor
 val weave_applied : [ `WeaveApplied ] descriptor
 val weave_rebuild_command : [ `WeaveRebuildCommand ] descriptor
 val weaver_config : [ `WeaverConfig ] descriptor
+val weaver_health : [ `WeaverHealth ] descriptor
 val worker_config : [ `WorkerConfig ] descriptor
 val worker_engine_config : [ `WorkerEngineConfig ] descriptor
 val worker_engine_health : [ `WorkerEngineHealth ] descriptor

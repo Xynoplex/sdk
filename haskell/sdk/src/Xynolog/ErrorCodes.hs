@@ -35,7 +35,7 @@ instance ToJSON BusRequestCode where toJSON = String . busRequestCode
 
 instance FromJSON BusRequestCode where parseJSON = withText "BusRequestCode" (\value -> maybe (fail "unknown error code") pure (parseBusRequestCode value))
 
-data ControlCode = ControlInvalidParams | ControlUnsupportedApiVersion | ControlInvalidRequest | ControlInvalidService | ControlInvalidValue | ControlUnknownSetting | ControlTargetRequired | ControlTargetAmbiguous | ControlRootNotFound | ControlRootNotRegistered | ControlStackNotRunning | ControlStackRunning | ControlStartInProgress | ControlRuntimeUnavailable | ControlDependencyUnavailable | ControlUnreachable | ControlConfirmationRequired | ControlUnreadableState | ControlAlreadySignedIn | ControlSignInFailed | ControlCancelled | ControlFailed deriving (Eq, Ord, Show, Enum, Bounded)
+data ControlCode = ControlInvalidParams | ControlUnsupportedApiVersion | ControlInvalidRequest | ControlInvalidService | ControlInvalidValue | ControlUnknownSetting | ControlTargetRequired | ControlTargetAmbiguous | ControlRootNotFound | ControlRootNotRegistered | ControlStackNotRunning | ControlStackRunning | ControlStartInProgress | ControlRuntimeUnavailable | ControlDependencyUnavailable | ControlUnreachable | ControlInstanceInUse | ControlInstanceNotFound | ControlConfirmationRequired | ControlUnreadableState | ControlAlreadySignedIn | ControlSignInFailed | ControlCancelled | ControlFailed deriving (Eq, Ord, Show, Enum, Bounded)
 
 controlCode :: ControlCode -> Text
 controlCode ControlInvalidParams = "control.invalid-params"
@@ -54,6 +54,8 @@ controlCode ControlStartInProgress = "control.start-in-progress"
 controlCode ControlRuntimeUnavailable = "control.runtime-unavailable"
 controlCode ControlDependencyUnavailable = "control.dependency-unavailable"
 controlCode ControlUnreachable = "control.unreachable"
+controlCode ControlInstanceInUse = "control.instance-in-use"
+controlCode ControlInstanceNotFound = "control.instance-not-found"
 controlCode ControlConfirmationRequired = "control.confirmation-required"
 controlCode ControlUnreadableState = "control.unreadable-state"
 controlCode ControlAlreadySignedIn = "control.already-signed-in"
@@ -79,6 +81,8 @@ parseControlCode value = case value of
   "control.runtime-unavailable" -> Just ControlRuntimeUnavailable
   "control.dependency-unavailable" -> Just ControlDependencyUnavailable
   "control.unreachable" -> Just ControlUnreachable
+  "control.instance-in-use" -> Just ControlInstanceInUse
+  "control.instance-not-found" -> Just ControlInstanceNotFound
   "control.confirmation-required" -> Just ControlConfirmationRequired
   "control.unreadable-state" -> Just ControlUnreadableState
   "control.already-signed-in" -> Just ControlAlreadySignedIn

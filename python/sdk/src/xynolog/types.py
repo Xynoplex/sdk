@@ -17,6 +17,7 @@ __all__ = [
     "AgentPerson",
     "AgentSoftware",
     "AnchorMethod",
+    "AnchorRect",
     "AnchoredText",
     "AnchoredTextAbsent",
     "AnchoredTextAnswer",
@@ -43,6 +44,7 @@ __all__ = [
     "ArchivistEnginesJobsMark",
     "ArchivistEventsResponse",
     "ArchivistHealth",
+    "ArchivistHealthActorsItem",
     "ArchivistStream",
     "ArchivistStreamsResponse",
     "AssessingJobParams",
@@ -291,6 +293,8 @@ __all__ = [
     "LibrarianConfigGather",
     "LibrarianConfigSearch",
     "LibrarianEngineConfig",
+    "LibrarianHealth",
+    "LibrarianHealthActorsItem",
     "LimitRefusal",
     "LimitRefusalCode",
     "LinkingJobParams",
@@ -401,8 +405,18 @@ __all__ = [
     "SmeltSettled",
     "SmeltSettledOutcome",
     "SmeltSettledReason",
+    "SmelterChunking",
     "SmelterConfig",
-    "SmelterConfigChunking",
+    "SmelterHealth",
+    "SmelterHealthFollowing",
+    "SmelterHealthFollowingSweep",
+    "SmelterHealthIndex",
+    "SmelterHealthIndexStamp",
+    "SmelterHealthIndexStampEmbedding",
+    "SmelterHealthReconcile",
+    "SmelterHealthReconcilePhase",
+    "SmelterHealthStream",
+    "SmelterReconcileSummary",
     "SpecificResource",
     "StatusResponse",
     "StatusResponseFeatures",
@@ -437,6 +451,12 @@ __all__ = [
     "WeaveApplied",
     "WeaveRebuildCommand",
     "WeaverConfig",
+    "WeaverHealth",
+    "WeaverHealthFollowing",
+    "WeaverHealthFollowingSweep",
+    "WeaverHealthReconcile",
+    "WeaverHealthReconcilePhase",
+    "WeaverHealthReconcileSummary",
     "WorkerConfig",
     "WorkerEngineConfig",
     "WorkerEngineHealth",
@@ -535,6 +555,21 @@ type AnchorMethod = Annotated[
         description="How a quoted selection was found in a text. Which word a span is found by is reconcile's rule (specs/src/annotations/reconcile-cases.json)."
     ),
 ]
+
+
+class AnchorRect(WireModel, frozen=True):
+    """
+    Where a clicked annotation's element is on the viewer's screen: its rectangle in viewport pixels, as a DOM rectangle states it. A viewer's own geometry: it rides a viewer's local frames, and a frame another participant's screen receives carries none.
+    """
+
+    x: Annotated[float, Field(description="The rectangle's horizontal origin.")]
+    y: Annotated[float, Field(description="The rectangle's vertical origin.")]
+    width: Annotated[float, Field(description="The rectangle's width.")]
+    height: Annotated[float, Field(description="The rectangle's height.")]
+    top: Annotated[float, Field(description="The rectangle's top edge.")]
+    right: Annotated[float, Field(description="The rectangle's right edge.")]
+    bottom: Annotated[float, Field(description="The rectangle's bottom edge.")]
+    left: Annotated[float, Field(description="The rectangle's left edge.")]
 
 
 class PdfTextItem(WireModel, frozen=True):
@@ -1072,7 +1107,7 @@ type LogLevel = Annotated[
 type LogFormat = Annotated[
     Literal["json", "simple"],
     Field(
-        description="How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON."
+        description="How each log line is written to stdout (service-telemetry/log-lines.json): `json`, one JSON object per line; or `simple`, a line of words followed by any metadata as JSON."
     ),
 ]
 
@@ -1165,13 +1200,19 @@ class ArchivistEventsResponse(WireModel, frozen=True):
     ]
 
 
+type ArchivistHealthActorsItem = Literal["stower", "browser", "cloneTokenManager"]
+
+
 class ArchivistHealth(WireModel, frozen=True):
     """
     The Archivist's liveness answer: it serves, and the actors it hosts.
     """
 
     status: Literal["ok"]
-    actors: Annotated[list[str], Field(description="The record actors this process hosts.")]
+    actors: Annotated[
+        list[ArchivistHealthActorsItem],
+        Field(description="The record actors this process hosts: each of the enum's, once, in the order the enum lists them."),
+    ]
 
 
 class ArchivistStream(WireModel, frozen=True, extra="forbid"):
@@ -1520,6 +1561,7 @@ class BrowseClickEvent(WireModel, frozen=True):
     """
 
     annotation_id: Annotated[AnnotationId, Field(alias="annotationId")]
+    anchor_rect: Annotated[AnchorRect | None, Field(alias="anchorRect")] = None
 
 
 type CommandErrorCode = Annotated[
@@ -4644,6 +4686,24 @@ class LibrarianConfig(WireModel, frozen=True, extra="forbid"):
     log_format: Annotated[LogFormat, Field(alias="logFormat")]
 
 
+type LibrarianHealthActorsItem = Literal["matcher", "gatherer"]
+
+
+class LibrarianHealth(WireModel, frozen=True, extra="forbid"):
+    """
+    The Librarian's health answer (LIBRARIAN.md § Health). Its port opens last, after it has begun to take requests from the bus, so a Librarian whose health answers is answering.
+    """
+
+    status: Literal["ok"]
+    kb: Annotated[
+        str,
+        Field(
+            description="The DID of the knowledge base it serves: the one its document names, which that knowledge base said it is before the Librarian reached its stores."
+        ),
+    ]
+    actors: Annotated[list[LibrarianHealthActorsItem], Field(description="The two actors it runs, `matcher` and `gatherer`.")]
+
+
 type LimitRefusalCode = Annotated[
     Literal["streams", "emit-rate", "unanswered-requests", "capacity", "refusal-rate"],
     Field(
@@ -5577,7 +5637,7 @@ class SmeltSettled(WireModel, frozen=True):
     reason: SmeltSettledReason | None = None
 
 
-class SmelterConfigChunking(WireModel, frozen=True, extra="forbid"):
+class SmelterChunking(WireModel, frozen=True, extra="forbid"):
     """
     The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
     """
@@ -5602,7 +5662,7 @@ class SmelterConfig(WireModel, frozen=True, extra="forbid"):
     ]
     embedding: EmbeddingConfig
     vectors: VectorsConfig
-    chunking: SmelterConfigChunking
+    chunking: SmelterChunking
     pdfs_at_once: Annotated[
         int,
         Field(
@@ -5614,6 +5674,138 @@ class SmelterConfig(WireModel, frozen=True, extra="forbid"):
     port: Annotated[int, Field(description="The port the Smelter answers `/health` on.")]
     log_level: Annotated[LogLevel, Field(alias="logLevel")]
     log_format: Annotated[LogFormat, Field(alias="logFormat")]
+
+
+type SmelterHealthStream = Annotated[
+    Literal["initial", "connecting", "open", "reconnecting", "degraded", "unauthenticated", "closed"],
+    Field(
+        description="The state of its own stream of the record, one of the seven of TRANSPORT-HTTP.md § Connection lifecycle. Events are delivered to it while it is `open`."
+    ),
+]
+
+type SmelterHealthFollowingSweep = Annotated[
+    Literal["pending", "running", "done", "due"],
+    Field(
+        description="The latest sweep's phase: `pending` before its stream first opens, `running`, `done`, or `due` where the record could not be listed and the sweep is tried again."
+    ),
+]
+
+
+class SmelterHealthFollowing(WireModel, frozen=True, extra="forbid"):
+    """
+    How far it has followed the record. Its sweep is also `due` where its start's reconcile failed.
+    """
+
+    sweep: SmelterHealthFollowingSweep
+    stopped: Annotated[int, Field(description="How many resources' logs a failed taking has stopped until the next sweep.")]
+    refused: Annotated[int, Field(description="How many events it refused as recorded since it started.")]
+    stream_drops: Annotated[int, Field(alias="streamDrops", description="How many times its stream has dropped since it started.")]
+
+
+type SmelterHealthReconcilePhase = Literal["pending", "running", "done", "failed"]
+
+
+class SmelterReconcileSummary(WireModel, frozen=True, extra="forbid"):
+    """
+    What a Smelter's reconcile came to (SMELTER.md § Reconcile), as its health reports a pass that is done (SmelterHealth's `reconcile.summary`). The first four add up to how many resources it set out to index, less any whose indexing was no longer wanted when its turn came.
+    """
+
+    resources_embedded: Annotated[int, Field(alias="resourcesEmbedded", description="How many resources it set out to index were indexed.")]
+    resources_skipped: Annotated[
+        dict[str, int],
+        Field(
+            alias="resourcesSkipped",
+            description="How many were skipped, by the reason each was skipped for: a reason `smelt:settled` carries (SmeltSettled).",
+        ),
+    ]
+    resources_unavailable: Annotated[int, Field(alias="resourcesUnavailable", description="How many could not be read.")]
+    resources_failed: Annotated[int, Field(alias="resourcesFailed", description="How many failed.")]
+    resources_restamped: Annotated[
+        int, Field(alias="resourcesRestamped", description="How many resources it planned to rewrite the entity types of.")
+    ]
+    resources_reanchored: Annotated[
+        int, Field(alias="resourcesReanchored", description="How many resources it planned to derive the anchored text of again.")
+    ]
+    resource_vectors_deleted: Annotated[
+        int, Field(alias="resourceVectorsDeleted", description="How many resources it planned to take out of the index.")
+    ]
+    annotations_embedded: Annotated[int, Field(alias="annotationsEmbedded", description="How many annotations it planned to index.")]
+    annotations_restamped: Annotated[
+        int, Field(alias="annotationsRestamped", description="How many annotations it planned to rewrite the entity types of.")
+    ]
+    annotation_vectors_deleted: Annotated[
+        int, Field(alias="annotationVectorsDeleted", description="How many annotations it planned to take out of the index.")
+    ]
+    resources_eligible: Annotated[int, Field(alias="resourcesEligible", description="How many resources of the catalog have text.")]
+    resources_indexed: Annotated[int, Field(alias="resourcesIndexed", description="How many resources have points when it ends.")]
+
+
+class SmelterHealthReconcile(WireModel, frozen=True, extra="forbid"):
+    """
+    How far the latest reconcile has got: the pass's `summary` when it is done, or its `error` when it failed.
+    """
+
+    phase: SmelterHealthReconcilePhase
+    summary: Annotated[SmelterReconcileSummary | None, Field(description="What the pass came to.")] = None
+    error: Annotated[str | None, Field(description="Why it failed.")] = None
+
+
+class SmelterHealthIndexStampEmbedding(WireModel, frozen=True, extra="forbid"):
+    """
+    The embedding provider's kind and model.
+    """
+
+    type: str
+    model: str
+
+
+class SmelterHealthIndexStamp(WireModel, frozen=True, extra="forbid"):
+    """
+    The model and the cut it makes an index by.
+    """
+
+    embedding: SmelterHealthIndexStampEmbedding
+    chunking: SmelterChunking
+
+
+class SmelterHealthIndex(WireModel, frozen=True, extra="forbid"):
+    """
+    What the Smelter holds its index to, and what this start did for that.
+    """
+
+    stamp: SmelterHealthIndexStamp
+    made_anew: Annotated[
+        bool,
+        Field(
+            alias="madeAnew",
+            description="Whether this start made the index again, as it does where the index stated another stamp, or none.",
+        ),
+    ]
+
+
+class SmelterHealth(WireModel, frozen=True, extra="forbid"):
+    """
+    The Smelter's health answer (SMELTER.md § Health): seven members, each from what the Smelter holds, for it asks nothing of the gateway, its embedding provider or its vector database to answer. `status` is `ok` whenever it answers, and says what else is so in the members beside it.
+    """
+
+    status: Literal["ok"]
+    kb: Annotated[
+        str,
+        Field(
+            description="The DID of the knowledge base it serves: the one its settings name, which that knowledge base said it is before the Smelter reached its index."
+        ),
+    ]
+    stream: SmelterHealthStream
+    following: SmelterHealthFollowing
+    events_processed: Annotated[
+        int,
+        Field(
+            alias="eventsProcessed",
+            description="How many events it has applied since it started: events of the kinds that do something, and not refused. Neither an event taken as nothing nor the work of a reconcile or a rebuild is counted.",
+        ),
+    ]
+    reconcile: SmelterHealthReconcile
+    index: SmelterHealthIndex
 
 
 class StatusResponseFeatures(WireModel, frozen=True):
@@ -5823,6 +6015,74 @@ class WeaverConfig(WireModel, frozen=True, extra="forbid"):
     port: Annotated[int, Field(description="The port the Weaver answers `/health` on.")]
     log_level: Annotated[LogLevel, Field(alias="logLevel")]
     log_format: Annotated[LogFormat, Field(alias="logFormat")]
+
+
+type WeaverHealthFollowingSweep = Annotated[
+    Literal["pending", "running", "done", "due"],
+    Field(
+        description="The latest sweep's phase: `pending` before its stream first opens, `running`, `done`, or `due` where the record could not be listed and the sweep is tried again."
+    ),
+]
+
+
+class WeaverHealthFollowing(WireModel, frozen=True, extra="forbid"):
+    """
+    How far a follower of the record has followed it, as every follower says it at its health port (WEAVER.md § Health, SMELTER.md § Health).
+    """
+
+    sweep: WeaverHealthFollowingSweep
+    stopped: Annotated[int, Field(description="How many resources' logs a failed taking has stopped until the next sweep.")]
+    refused: Annotated[int, Field(description="How many events it refused as recorded since it started.")]
+    stream_drops: Annotated[int, Field(alias="streamDrops", description="How many times its stream has dropped since it started.")]
+
+
+type WeaverHealthReconcilePhase = Literal["pending", "running", "done", "failed"]
+
+
+class WeaverHealthReconcileSummary(WireModel, frozen=True, extra="forbid"):
+    """
+    What the pass found and did.
+    """
+
+    resources_checked: Annotated[int, Field(alias="resourcesChecked", description="How many resources it checked.")]
+    divergent: Annotated[int, Field(description="How many of them were divergent: the graph held them otherwise than the record.")]
+    healed: Annotated[int, Field(description="How many divergent resources it rebuilt.")]
+    heal_failures: Annotated[
+        int,
+        Field(alias="healFailures", description="How many it did not heal, because the rebuild stopped at an event it could not apply."),
+    ]
+    orphaned: Annotated[
+        int,
+        Field(
+            description="How many orphaned views it found: resources the catalog lists and the record holds no events for. Each is counted, and not healed."
+        ),
+    ]
+
+
+class WeaverHealthReconcile(WireModel, frozen=True, extra="forbid"):
+    """
+    How far the reconcile its first sweep is followed by has got (WEAVER.md § Reconcile): the pass's `summary` when it is done, or its `error` when it failed.
+    """
+
+    phase: WeaverHealthReconcilePhase
+    summary: WeaverHealthReconcileSummary | None = None
+    error: Annotated[str | None, Field(description="Why it failed.")] = None
+
+
+class WeaverHealth(WireModel, frozen=True, extra="forbid"):
+    """
+    The Weaver's health answer (WEAVER.md § Health). `status` is `ok` whenever the Weaver answers: it says nothing of whether the Weaver can reach the gateway or the graph.
+    """
+
+    status: Literal["ok"]
+    kb: Annotated[
+        str,
+        Field(
+            description="The DID of the knowledge base it serves: the one its settings name, which that knowledge base said it is before the Weaver connected to the graph database."
+        ),
+    ]
+    following: WeaverHealthFollowing
+    reconcile: WeaverHealthReconcile
 
 
 class WorkerKnowledgeBaseConfigIdentity(WireModel, frozen=True, extra="forbid"):

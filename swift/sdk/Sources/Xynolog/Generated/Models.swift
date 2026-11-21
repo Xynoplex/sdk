@@ -175,6 +175,52 @@ public enum AnchorMethod: String, Codable, Sendable, CaseIterable {
   case fuzzyMatch = "fuzzy-match"
 }
 
+public struct AnchorRect: Codable, Sendable {
+  public var bottom: Double
+  public var height: Double
+  public var left: Double
+  public var right: Double
+  public var top: Double
+  public var width: Double
+  public var x: Double
+  public var y: Double
+  public init(
+    bottom: Double, height: Double, left: Double, right: Double, top: Double, width: Double,
+    x: Double, y: Double
+  ) {
+    self.bottom = bottom
+    self.height = height
+    self.left = left
+    self.right = right
+    self.top = top
+    self.width = width
+    self.x = x
+    self.y = y
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.bottom = try c.value("bottom")
+    self.height = try c.value("height")
+    self.left = try c.value("left")
+    self.right = try c.value("right")
+    self.top = try c.value("top")
+    self.width = try c.value("width")
+    self.x = try c.value("x")
+    self.y = try c.value("y")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.bottom, as: "bottom")
+    try c.encode(self.height, as: "height")
+    try c.encode(self.left, as: "left")
+    try c.encode(self.right, as: "right")
+    try c.encode(self.top, as: "top")
+    try c.encode(self.width, as: "width")
+    try c.encode(self.x, as: "x")
+    try c.encode(self.y, as: "y")
+  }
+}
+
 public struct AnchoredText: Codable, Sendable {
   public var items: [PdfTextItem]
   public var text: String
@@ -930,9 +976,9 @@ public struct ArchivistEventsResponse: Codable, Sendable {
 }
 
 public struct ArchivistHealth: Codable, Sendable {
-  public var actors: [String]
+  public var actors: [ArchivistHealthActorsItem]
   public let status: ArchivistHealthStatus
-  public init(actors: [String]) {
+  public init(actors: [ArchivistHealthActorsItem]) {
     self.actors = actors
     self.status = .ok
   }
@@ -946,6 +992,12 @@ public struct ArchivistHealth: Codable, Sendable {
     try c.encode(self.actors, as: "actors")
     try c.encode(self.status, as: "status")
   }
+}
+
+public enum ArchivistHealthActorsItem: String, Codable, Sendable, CaseIterable {
+  case stower = "stower"
+  case browser = "browser"
+  case cloneTokenManager = "cloneTokenManager"
 }
 
 public enum ArchivistHealthStatus: String, Codable, Sendable, CaseIterable {
@@ -1469,16 +1521,20 @@ public struct BrowseAnnotationResult: Codable, Sendable {
 }
 
 public struct BrowseClickEvent: Codable, Sendable {
+  public var anchorRect: AnchorRect?
   public var annotationId: AnnotationId
-  public init(annotationId: AnnotationId) {
+  public init(anchorRect: AnchorRect? = nil, annotationId: AnnotationId) {
+    self.anchorRect = anchorRect
     self.annotationId = annotationId
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
+    self.anchorRect = try c.ifPresent("anchorRect")
     self.annotationId = try c.value("annotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.anchorRect, as: "anchorRect")
     try c.encode(self.annotationId, as: "annotationId")
   }
 }
@@ -6902,6 +6958,39 @@ public struct LibrarianEngineConfig: Codable, Sendable {
   }
 }
 
+public struct LibrarianHealth: Codable, Sendable {
+  public var actors: [LibrarianHealthActorsItem]
+  public var kb: String
+  public let status: LibrarianHealthStatus
+  public init(actors: [LibrarianHealthActorsItem], kb: String) {
+    self.actors = actors
+    self.kb = kb
+    self.status = .ok
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["actors", "kb", "status"], in: "LibrarianHealth")
+    self.actors = try c.value("actors")
+    self.kb = try c.value("kb")
+    self.status = try c.value("status")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.actors, as: "actors")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.status, as: "status")
+  }
+}
+
+public enum LibrarianHealthActorsItem: String, Codable, Sendable, CaseIterable {
+  case matcher = "matcher"
+  case gatherer = "gatherer"
+}
+
+public enum LibrarianHealthStatus: String, Codable, Sendable, CaseIterable {
+  case ok = "ok"
+}
+
 public struct LimitRefusal: Codable, Sendable {
   public var code: LimitRefusalCode
   public var details: JSONValue?
@@ -10068,9 +10157,29 @@ public enum SmeltSettledReason: String, Codable, Sendable, CaseIterable {
   case tooLarge = "too-large"
 }
 
+public struct SmelterChunking: Codable, Sendable {
+  public var chunkSize: Int
+  public var overlap: Int
+  public init(chunkSize: Int, overlap: Int) {
+    self.chunkSize = chunkSize
+    self.overlap = overlap
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["chunkSize", "overlap"], in: "SmelterChunking")
+    self.chunkSize = try c.value("chunkSize")
+    self.overlap = try c.value("overlap")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.chunkSize, as: "chunkSize")
+    try c.encode(self.overlap, as: "overlap")
+  }
+}
+
 public struct SmelterConfig: Codable, Sendable {
   public var archivist: ServiceAddress
-  public var chunking: SmelterConfigChunking
+  public var chunking: SmelterChunking
   public var cursorsPath: CursorsPath
   public var embedding: EmbeddingConfig
   public var gatewayUrl: String
@@ -10082,7 +10191,7 @@ public struct SmelterConfig: Codable, Sendable {
   public var port: Int
   public var vectors: VectorsConfig
   public init(
-    archivist: ServiceAddress, chunking: SmelterConfigChunking, cursorsPath: CursorsPath,
+    archivist: ServiceAddress, chunking: SmelterChunking, cursorsPath: CursorsPath,
     embedding: EmbeddingConfig, gatewayUrl: String, identity: ServiceIdentity, kb: KbIdentity,
     logFormat: LogFormat, logLevel: LogLevel, pdfsAtOnce: Int, port: Int, vectors: VectorsConfig
   ) {
@@ -10136,23 +10245,263 @@ public struct SmelterConfig: Codable, Sendable {
   }
 }
 
-public struct SmelterConfigChunking: Codable, Sendable {
-  public var chunkSize: Int
-  public var overlap: Int
-  public init(chunkSize: Int, overlap: Int) {
-    self.chunkSize = chunkSize
-    self.overlap = overlap
+public struct SmelterHealth: Codable, Sendable {
+  public var eventsProcessed: Int
+  public var following: SmelterHealthFollowing
+  public var index: SmelterHealthIndex
+  public var kb: String
+  public var reconcile: SmelterHealthReconcile
+  public let status: SmelterHealthStatus
+  public var stream: SmelterHealthStream
+  public init(
+    eventsProcessed: Int, following: SmelterHealthFollowing, index: SmelterHealthIndex, kb: String,
+    reconcile: SmelterHealthReconcile, stream: SmelterHealthStream
+  ) {
+    self.eventsProcessed = eventsProcessed
+    self.following = following
+    self.index = index
+    self.kb = kb
+    self.reconcile = reconcile
+    self.status = .ok
+    self.stream = stream
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["chunkSize", "overlap"], in: "SmelterConfigChunking")
-    self.chunkSize = try c.value("chunkSize")
-    self.overlap = try c.value("overlap")
+    try c.refuseUnknown(
+      ["eventsProcessed", "following", "index", "kb", "reconcile", "status", "stream"],
+      in: "SmelterHealth")
+    self.eventsProcessed = try c.value("eventsProcessed")
+    self.following = try c.value("following")
+    self.index = try c.value("index")
+    self.kb = try c.value("kb")
+    self.reconcile = try c.value("reconcile")
+    self.status = try c.value("status")
+    self.stream = try c.value("stream")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.chunkSize, as: "chunkSize")
-    try c.encode(self.overlap, as: "overlap")
+    try c.encode(self.eventsProcessed, as: "eventsProcessed")
+    try c.encode(self.following, as: "following")
+    try c.encode(self.index, as: "index")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.reconcile, as: "reconcile")
+    try c.encode(self.status, as: "status")
+    try c.encode(self.stream, as: "stream")
+  }
+}
+
+public struct SmelterHealthFollowing: Codable, Sendable {
+  public var refused: Int
+  public var stopped: Int
+  public var streamDrops: Int
+  public var sweep: SmelterHealthFollowingSweep
+  public init(refused: Int, stopped: Int, streamDrops: Int, sweep: SmelterHealthFollowingSweep) {
+    self.refused = refused
+    self.stopped = stopped
+    self.streamDrops = streamDrops
+    self.sweep = sweep
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["refused", "stopped", "streamDrops", "sweep"], in: "SmelterHealthFollowing")
+    self.refused = try c.value("refused")
+    self.stopped = try c.value("stopped")
+    self.streamDrops = try c.value("streamDrops")
+    self.sweep = try c.value("sweep")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.refused, as: "refused")
+    try c.encode(self.stopped, as: "stopped")
+    try c.encode(self.streamDrops, as: "streamDrops")
+    try c.encode(self.sweep, as: "sweep")
+  }
+}
+
+public enum SmelterHealthFollowingSweep: String, Codable, Sendable, CaseIterable {
+  case pending = "pending"
+  case running = "running"
+  case done = "done"
+  case due = "due"
+}
+
+public struct SmelterHealthIndex: Codable, Sendable {
+  public var madeAnew: Bool
+  public var stamp: SmelterHealthIndexStamp
+  public init(madeAnew: Bool, stamp: SmelterHealthIndexStamp) {
+    self.madeAnew = madeAnew
+    self.stamp = stamp
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["madeAnew", "stamp"], in: "SmelterHealthIndex")
+    self.madeAnew = try c.value("madeAnew")
+    self.stamp = try c.value("stamp")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.madeAnew, as: "madeAnew")
+    try c.encode(self.stamp, as: "stamp")
+  }
+}
+
+public struct SmelterHealthIndexStamp: Codable, Sendable {
+  public var chunking: SmelterChunking
+  public var embedding: SmelterHealthIndexStampEmbedding
+  public init(chunking: SmelterChunking, embedding: SmelterHealthIndexStampEmbedding) {
+    self.chunking = chunking
+    self.embedding = embedding
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["chunking", "embedding"], in: "SmelterHealthIndexStamp")
+    self.chunking = try c.value("chunking")
+    self.embedding = try c.value("embedding")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.chunking, as: "chunking")
+    try c.encode(self.embedding, as: "embedding")
+  }
+}
+
+public struct SmelterHealthIndexStampEmbedding: Codable, Sendable {
+  public var model: String
+  public var type: String
+  public init(model: String, type: String) {
+    self.model = model
+    self.type = type
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["model", "type"], in: "SmelterHealthIndexStampEmbedding")
+    self.model = try c.value("model")
+    self.type = try c.value("type")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.model, as: "model")
+    try c.encode(self.type, as: "type")
+  }
+}
+
+public struct SmelterHealthReconcile: Codable, Sendable {
+  public var error: String?
+  public var phase: SmelterHealthReconcilePhase
+  public var summary: SmelterReconcileSummary?
+  public init(
+    error: String? = nil, phase: SmelterHealthReconcilePhase,
+    summary: SmelterReconcileSummary? = nil
+  ) {
+    self.error = error
+    self.phase = phase
+    self.summary = summary
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["error", "phase", "summary"], in: "SmelterHealthReconcile")
+    self.error = try c.ifPresent("error")
+    self.phase = try c.value("phase")
+    self.summary = try c.ifPresent("summary")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.error, as: "error")
+    try c.encode(self.phase, as: "phase")
+    try c.encodeIfPresent(self.summary, as: "summary")
+  }
+}
+
+public enum SmelterHealthReconcilePhase: String, Codable, Sendable, CaseIterable {
+  case pending = "pending"
+  case running = "running"
+  case done = "done"
+  case failed = "failed"
+}
+
+public enum SmelterHealthStatus: String, Codable, Sendable, CaseIterable {
+  case ok = "ok"
+}
+
+public enum SmelterHealthStream: String, Codable, Sendable, CaseIterable {
+  case initial = "initial"
+  case connecting = "connecting"
+  case `open` = "open"
+  case reconnecting = "reconnecting"
+  case degraded = "degraded"
+  case unauthenticated = "unauthenticated"
+  case closed = "closed"
+}
+
+public struct SmelterReconcileSummary: Codable, Sendable {
+  public var annotationVectorsDeleted: Int
+  public var annotationsEmbedded: Int
+  public var annotationsRestamped: Int
+  public var resourceVectorsDeleted: Int
+  public var resourcesEligible: Int
+  public var resourcesEmbedded: Int
+  public var resourcesFailed: Int
+  public var resourcesIndexed: Int
+  public var resourcesReanchored: Int
+  public var resourcesRestamped: Int
+  public var resourcesSkipped: [String: Int]
+  public var resourcesUnavailable: Int
+  public init(
+    annotationVectorsDeleted: Int, annotationsEmbedded: Int, annotationsRestamped: Int,
+    resourceVectorsDeleted: Int, resourcesEligible: Int, resourcesEmbedded: Int,
+    resourcesFailed: Int, resourcesIndexed: Int, resourcesReanchored: Int, resourcesRestamped: Int,
+    resourcesSkipped: [String: Int], resourcesUnavailable: Int
+  ) {
+    self.annotationVectorsDeleted = annotationVectorsDeleted
+    self.annotationsEmbedded = annotationsEmbedded
+    self.annotationsRestamped = annotationsRestamped
+    self.resourceVectorsDeleted = resourceVectorsDeleted
+    self.resourcesEligible = resourcesEligible
+    self.resourcesEmbedded = resourcesEmbedded
+    self.resourcesFailed = resourcesFailed
+    self.resourcesIndexed = resourcesIndexed
+    self.resourcesReanchored = resourcesReanchored
+    self.resourcesRestamped = resourcesRestamped
+    self.resourcesSkipped = resourcesSkipped
+    self.resourcesUnavailable = resourcesUnavailable
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      [
+        "annotationVectorsDeleted", "annotationsEmbedded", "annotationsRestamped",
+        "resourceVectorsDeleted", "resourcesEligible", "resourcesEmbedded", "resourcesFailed",
+        "resourcesIndexed", "resourcesReanchored", "resourcesRestamped", "resourcesSkipped",
+        "resourcesUnavailable",
+      ], in: "SmelterReconcileSummary")
+    self.annotationVectorsDeleted = try c.value("annotationVectorsDeleted")
+    self.annotationsEmbedded = try c.value("annotationsEmbedded")
+    self.annotationsRestamped = try c.value("annotationsRestamped")
+    self.resourceVectorsDeleted = try c.value("resourceVectorsDeleted")
+    self.resourcesEligible = try c.value("resourcesEligible")
+    self.resourcesEmbedded = try c.value("resourcesEmbedded")
+    self.resourcesFailed = try c.value("resourcesFailed")
+    self.resourcesIndexed = try c.value("resourcesIndexed")
+    self.resourcesReanchored = try c.value("resourcesReanchored")
+    self.resourcesRestamped = try c.value("resourcesRestamped")
+    self.resourcesSkipped = try c.value("resourcesSkipped")
+    self.resourcesUnavailable = try c.value("resourcesUnavailable")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationVectorsDeleted, as: "annotationVectorsDeleted")
+    try c.encode(self.annotationsEmbedded, as: "annotationsEmbedded")
+    try c.encode(self.annotationsRestamped, as: "annotationsRestamped")
+    try c.encode(self.resourceVectorsDeleted, as: "resourceVectorsDeleted")
+    try c.encode(self.resourcesEligible, as: "resourcesEligible")
+    try c.encode(self.resourcesEmbedded, as: "resourcesEmbedded")
+    try c.encode(self.resourcesFailed, as: "resourcesFailed")
+    try c.encode(self.resourcesIndexed, as: "resourcesIndexed")
+    try c.encode(self.resourcesReanchored, as: "resourcesReanchored")
+    try c.encode(self.resourcesRestamped, as: "resourcesRestamped")
+    try c.encode(self.resourcesSkipped, as: "resourcesSkipped")
+    try c.encode(self.resourcesUnavailable, as: "resourcesUnavailable")
   }
 }
 
@@ -11477,6 +11826,143 @@ public struct WeaverConfig: Codable, Sendable {
   }
 }
 
+public struct WeaverHealth: Codable, Sendable {
+  public var following: WeaverHealthFollowing
+  public var kb: String
+  public var reconcile: WeaverHealthReconcile
+  public let status: WeaverHealthStatus
+  public init(following: WeaverHealthFollowing, kb: String, reconcile: WeaverHealthReconcile) {
+    self.following = following
+    self.kb = kb
+    self.reconcile = reconcile
+    self.status = .ok
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["following", "kb", "reconcile", "status"], in: "WeaverHealth")
+    self.following = try c.value("following")
+    self.kb = try c.value("kb")
+    self.reconcile = try c.value("reconcile")
+    self.status = try c.value("status")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.following, as: "following")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.reconcile, as: "reconcile")
+    try c.encode(self.status, as: "status")
+  }
+}
+
+public struct WeaverHealthFollowing: Codable, Sendable {
+  public var refused: Int
+  public var stopped: Int
+  public var streamDrops: Int
+  public var sweep: WeaverHealthFollowingSweep
+  public init(refused: Int, stopped: Int, streamDrops: Int, sweep: WeaverHealthFollowingSweep) {
+    self.refused = refused
+    self.stopped = stopped
+    self.streamDrops = streamDrops
+    self.sweep = sweep
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["refused", "stopped", "streamDrops", "sweep"], in: "WeaverHealthFollowing")
+    self.refused = try c.value("refused")
+    self.stopped = try c.value("stopped")
+    self.streamDrops = try c.value("streamDrops")
+    self.sweep = try c.value("sweep")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.refused, as: "refused")
+    try c.encode(self.stopped, as: "stopped")
+    try c.encode(self.streamDrops, as: "streamDrops")
+    try c.encode(self.sweep, as: "sweep")
+  }
+}
+
+public enum WeaverHealthFollowingSweep: String, Codable, Sendable, CaseIterable {
+  case pending = "pending"
+  case running = "running"
+  case done = "done"
+  case due = "due"
+}
+
+public struct WeaverHealthReconcile: Codable, Sendable {
+  public var error: String?
+  public var phase: WeaverHealthReconcilePhase
+  public var summary: WeaverHealthReconcileSummary?
+  public init(
+    error: String? = nil, phase: WeaverHealthReconcilePhase,
+    summary: WeaverHealthReconcileSummary? = nil
+  ) {
+    self.error = error
+    self.phase = phase
+    self.summary = summary
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["error", "phase", "summary"], in: "WeaverHealthReconcile")
+    self.error = try c.ifPresent("error")
+    self.phase = try c.value("phase")
+    self.summary = try c.ifPresent("summary")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.error, as: "error")
+    try c.encode(self.phase, as: "phase")
+    try c.encodeIfPresent(self.summary, as: "summary")
+  }
+}
+
+public enum WeaverHealthReconcilePhase: String, Codable, Sendable, CaseIterable {
+  case pending = "pending"
+  case running = "running"
+  case done = "done"
+  case failed = "failed"
+}
+
+public struct WeaverHealthReconcileSummary: Codable, Sendable {
+  public var divergent: Int
+  public var healFailures: Int
+  public var healed: Int
+  public var orphaned: Int
+  public var resourcesChecked: Int
+  public init(divergent: Int, healFailures: Int, healed: Int, orphaned: Int, resourcesChecked: Int)
+  {
+    self.divergent = divergent
+    self.healFailures = healFailures
+    self.healed = healed
+    self.orphaned = orphaned
+    self.resourcesChecked = resourcesChecked
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["divergent", "healFailures", "healed", "orphaned", "resourcesChecked"],
+      in: "WeaverHealthReconcileSummary")
+    self.divergent = try c.value("divergent")
+    self.healFailures = try c.value("healFailures")
+    self.healed = try c.value("healed")
+    self.orphaned = try c.value("orphaned")
+    self.resourcesChecked = try c.value("resourcesChecked")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.divergent, as: "divergent")
+    try c.encode(self.healFailures, as: "healFailures")
+    try c.encode(self.healed, as: "healed")
+    try c.encode(self.orphaned, as: "orphaned")
+    try c.encode(self.resourcesChecked, as: "resourcesChecked")
+  }
+}
+
+public enum WeaverHealthStatus: String, Codable, Sendable, CaseIterable {
+  case ok = "ok"
+}
+
 public struct WorkerConfig: Codable, Sendable {
   public var knowledgeBases: [WorkerKnowledgeBaseConfig]
   public var logFormat: LogFormat
@@ -12355,6 +12841,8 @@ public enum ControlErrorCode: String, Codable, Sendable, CaseIterable {
   case controlRuntimeUnavailable = "control.runtime-unavailable"
   case controlDependencyUnavailable = "control.dependency-unavailable"
   case controlUnreachable = "control.unreachable"
+  case controlInstanceInUse = "control.instance-in-use"
+  case controlInstanceNotFound = "control.instance-not-found"
   case controlConfirmationRequired = "control.confirmation-required"
   case controlUnreadableState = "control.unreadable-state"
   case controlAlreadySignedIn = "control.already-signed-in"
@@ -14055,6 +14543,14 @@ internal let requiredSchemas: [String: Shape] = {
       "model": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
       "parameters": Shape(kinds: [.object]), "provider": Shape(kinds: [.string]),
     ])
+  shapes["AnchorRect"] = Shape(
+    kinds: [.object], required: ["x", "y", "width", "height", "top", "right", "bottom", "left"],
+    members: [
+      "bottom": Shape(kinds: [.number]), "height": Shape(kinds: [.number]),
+      "left": Shape(kinds: [.number]), "right": Shape(kinds: [.number]),
+      "top": Shape(kinds: [.number]), "width": Shape(kinds: [.number]),
+      "x": Shape(kinds: [.number]), "y": Shape(kinds: [.number]),
+    ])
   shapes["AnchoredText"] = Shape(
     kinds: [.object], required: ["text", "items"],
     members: [
@@ -14237,7 +14733,11 @@ internal let requiredSchemas: [String: Shape] = {
   shapes["ArchivistHealth"] = Shape(
     kinds: [.object], required: ["status", "actors"],
     members: [
-      "actors": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "actors": Shape(
+        kinds: [.array], minItems: 3, maxItems: 3,
+        items: Shape(
+          kinds: [.string],
+          enumeration: [.string("stower"), .string("browser"), .string("cloneTokenManager")])),
       "status": Shape(kinds: [.string], enumeration: [.string("ok")]),
     ])
   shapes["ArchivistStream"] = Shape(
@@ -14350,7 +14850,7 @@ internal let requiredSchemas: [String: Shape] = {
     members: ["response": Shape(ref: "GetAnnotationResponse")])
   shapes["BrowseClickEvent"] = Shape(
     kinds: [.object], required: ["annotationId"],
-    members: ["annotationId": Shape(ref: "AnnotationId")])
+    members: ["anchorRect": Shape(ref: "AnchorRect"), "annotationId": Shape(ref: "AnnotationId")])
   shapes["BrowseDirectoryFailed"] = Shape(
     kinds: [.object],
     allOf: [
@@ -15488,6 +15988,26 @@ internal let requiredSchemas: [String: Shape] = {
       "apiKeyEnv": Shape(kinds: [.string], minLength: 1),
       "baseUrl": Shape(kinds: [.string], minLength: 1), "engine": Shape(ref: "Engine"),
     ], closed: ["apiKeyEnv", "baseUrl", "engine"])
+  shapes["LibrarianHealth"] = Shape(
+    kinds: [.object], required: ["status", "kb", "actors"],
+    members: [
+      "actors": Shape(
+        kinds: [.array], minItems: 2,
+        items: Shape(kinds: [.string], enumeration: [.string("matcher"), .string("gatherer")])),
+      "kb": Shape(
+        kinds: [.string],
+        pattern: [
+          Step(of: [100...100], min: 1, max: 1), Step(of: [105...105], min: 1, max: 1),
+          Step(of: [100...100], min: 1, max: 1), Step(of: [58...58], min: 1, max: 1),
+          Step(of: [119...119], min: 1, max: 1), Step(of: [101...101], min: 1, max: 1),
+          Step(of: [98...98], min: 1, max: 1), Step(of: [58...58], min: 1, max: 1),
+          Step(
+            of: [
+              0...8, 14...31, 33...159, 161...5759, 5761...8191, 8203...8231, 8234...8238,
+              8240...8286, 8288...12287, 12289...65278, 65280...1_114_111,
+            ], min: 1, max: nil),
+        ]), "status": Shape(kinds: [.string], enumeration: [.string("ok")]),
+    ], closed: ["actors", "kb", "status"])
   shapes["LimitRefusal"] = Shape(
     kinds: [.object],
     allOf: [
@@ -16054,6 +16574,12 @@ internal let requiredSchemas: [String: Shape] = {
           .string("corrupt"), .string("too-large"),
         ]), "resourceId": Shape(ref: "ResourceId"),
     ])
+  shapes["SmelterChunking"] = Shape(
+    kinds: [.object], required: ["chunkSize", "overlap"],
+    members: [
+      "chunkSize": Shape(kinds: [.integer], minimum: 1.0),
+      "overlap": Shape(kinds: [.integer], minimum: 0.0),
+    ], closed: ["chunkSize", "overlap"])
   shapes["SmelterConfig"] = Shape(
     kinds: [.object],
     required: [
@@ -16061,14 +16587,8 @@ internal let requiredSchemas: [String: Shape] = {
       "cursorsPath", "port", "logLevel", "logFormat",
     ],
     members: [
-      "archivist": Shape(ref: "ServiceAddress"),
-      "chunking": Shape(
-        kinds: [.object], required: ["chunkSize", "overlap"],
-        members: [
-          "chunkSize": Shape(kinds: [.integer], minimum: 1.0),
-          "overlap": Shape(kinds: [.integer], minimum: 0.0),
-        ], closed: ["chunkSize", "overlap"]), "cursorsPath": Shape(ref: "CursorsPath"),
-      "embedding": Shape(ref: "EmbeddingConfig"),
+      "archivist": Shape(ref: "ServiceAddress"), "chunking": Shape(ref: "SmelterChunking"),
+      "cursorsPath": Shape(ref: "CursorsPath"), "embedding": Shape(ref: "EmbeddingConfig"),
       "gatewayUrl": Shape(kinds: [.string], minLength: 1),
       "identity": Shape(ref: "ServiceIdentity"), "kb": Shape(ref: "KbIdentity"),
       "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
@@ -16079,6 +16599,95 @@ internal let requiredSchemas: [String: Shape] = {
     closed: [
       "archivist", "chunking", "cursorsPath", "embedding", "gatewayUrl", "identity", "kb",
       "logFormat", "logLevel", "pdfsAtOnce", "port", "vectors",
+    ])
+  shapes["SmelterHealth"] = Shape(
+    kinds: [.object],
+    required: ["status", "kb", "stream", "following", "eventsProcessed", "reconcile", "index"],
+    members: [
+      "eventsProcessed": Shape(kinds: [.integer], minimum: 0.0),
+      "following": Shape(
+        kinds: [.object], required: ["sweep", "stopped", "refused", "streamDrops"],
+        members: [
+          "refused": Shape(kinds: [.integer], minimum: 0.0),
+          "stopped": Shape(kinds: [.integer], minimum: 0.0),
+          "streamDrops": Shape(kinds: [.integer], minimum: 0.0),
+          "sweep": Shape(
+            kinds: [.string],
+            enumeration: [.string("pending"), .string("running"), .string("done"), .string("due")]),
+        ], closed: ["refused", "stopped", "streamDrops", "sweep"]),
+      "index": Shape(
+        kinds: [.object], required: ["stamp", "madeAnew"],
+        members: [
+          "madeAnew": Shape(kinds: [.boolean]),
+          "stamp": Shape(
+            kinds: [.object], required: ["embedding", "chunking"],
+            members: [
+              "chunking": Shape(ref: "SmelterChunking"),
+              "embedding": Shape(
+                kinds: [.object], required: ["type", "model"],
+                members: [
+                  "model": Shape(kinds: [.string], minLength: 1),
+                  "type": Shape(kinds: [.string], minLength: 1),
+                ], closed: ["model", "type"]),
+            ], closed: ["chunking", "embedding"]),
+        ], closed: ["madeAnew", "stamp"]),
+      "kb": Shape(
+        kinds: [.string],
+        pattern: [
+          Step(of: [100...100], min: 1, max: 1), Step(of: [105...105], min: 1, max: 1),
+          Step(of: [100...100], min: 1, max: 1), Step(of: [58...58], min: 1, max: 1),
+          Step(of: [119...119], min: 1, max: 1), Step(of: [101...101], min: 1, max: 1),
+          Step(of: [98...98], min: 1, max: 1), Step(of: [58...58], min: 1, max: 1),
+          Step(
+            of: [
+              0...8, 14...31, 33...159, 161...5759, 5761...8191, 8203...8231, 8234...8238,
+              8240...8286, 8288...12287, 12289...65278, 65280...1_114_111,
+            ], min: 1, max: nil),
+        ]),
+      "reconcile": Shape(
+        kinds: [.object], required: ["phase"],
+        members: [
+          "error": Shape(kinds: [.string]),
+          "phase": Shape(
+            kinds: [.string],
+            enumeration: [
+              .string("pending"), .string("running"), .string("done"), .string("failed"),
+            ]), "summary": Shape(ref: "SmelterReconcileSummary"),
+        ], closed: ["error", "phase", "summary"]),
+      "status": Shape(kinds: [.string], enumeration: [.string("ok")]),
+      "stream": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("initial"), .string("connecting"), .string("open"), .string("reconnecting"),
+          .string("degraded"), .string("unauthenticated"), .string("closed"),
+        ]),
+    ], closed: ["eventsProcessed", "following", "index", "kb", "reconcile", "status", "stream"])
+  shapes["SmelterReconcileSummary"] = Shape(
+    kinds: [.object],
+    required: [
+      "resourcesEmbedded", "resourcesSkipped", "resourcesUnavailable", "resourcesFailed",
+      "resourcesRestamped", "resourcesReanchored", "resourceVectorsDeleted", "annotationsEmbedded",
+      "annotationsRestamped", "annotationVectorsDeleted", "resourcesEligible", "resourcesIndexed",
+    ],
+    members: [
+      "annotationVectorsDeleted": Shape(kinds: [.integer], minimum: 0.0),
+      "annotationsEmbedded": Shape(kinds: [.integer], minimum: 0.0),
+      "annotationsRestamped": Shape(kinds: [.integer], minimum: 0.0),
+      "resourceVectorsDeleted": Shape(kinds: [.integer], minimum: 0.0),
+      "resourcesEligible": Shape(kinds: [.integer], minimum: 0.0),
+      "resourcesEmbedded": Shape(kinds: [.integer], minimum: 0.0),
+      "resourcesFailed": Shape(kinds: [.integer], minimum: 0.0),
+      "resourcesIndexed": Shape(kinds: [.integer], minimum: 0.0),
+      "resourcesReanchored": Shape(kinds: [.integer], minimum: 0.0),
+      "resourcesRestamped": Shape(kinds: [.integer], minimum: 0.0),
+      "resourcesSkipped": Shape(kinds: [.object], values: Shape(kinds: [.integer], minimum: 0.0)),
+      "resourcesUnavailable": Shape(kinds: [.integer], minimum: 0.0),
+    ],
+    closed: [
+      "annotationVectorsDeleted", "annotationsEmbedded", "annotationsRestamped",
+      "resourceVectorsDeleted", "resourcesEligible", "resourcesEmbedded", "resourcesFailed",
+      "resourcesIndexed", "resourcesReanchored", "resourcesRestamped", "resourcesSkipped",
+      "resourcesUnavailable",
     ])
   shapes["SpecificResource"] = Shape(
     kinds: [.object], required: ["type", "source"],
@@ -16261,6 +16870,54 @@ internal let requiredSchemas: [String: Shape] = {
       "archivist", "cursorsPath", "gatewayUrl", "graph", "identity", "kb", "logFormat", "logLevel",
       "port",
     ])
+  shapes["WeaverHealth"] = Shape(
+    kinds: [.object], required: ["status", "kb", "following", "reconcile"],
+    members: [
+      "following": Shape(
+        kinds: [.object], required: ["sweep", "stopped", "refused", "streamDrops"],
+        members: [
+          "refused": Shape(kinds: [.integer], minimum: 0.0),
+          "stopped": Shape(kinds: [.integer], minimum: 0.0),
+          "streamDrops": Shape(kinds: [.integer], minimum: 0.0),
+          "sweep": Shape(
+            kinds: [.string],
+            enumeration: [.string("pending"), .string("running"), .string("done"), .string("due")]),
+        ], closed: ["refused", "stopped", "streamDrops", "sweep"]),
+      "kb": Shape(
+        kinds: [.string],
+        pattern: [
+          Step(of: [100...100], min: 1, max: 1), Step(of: [105...105], min: 1, max: 1),
+          Step(of: [100...100], min: 1, max: 1), Step(of: [58...58], min: 1, max: 1),
+          Step(of: [119...119], min: 1, max: 1), Step(of: [101...101], min: 1, max: 1),
+          Step(of: [98...98], min: 1, max: 1), Step(of: [58...58], min: 1, max: 1),
+          Step(
+            of: [
+              0...8, 14...31, 33...159, 161...5759, 5761...8191, 8203...8231, 8234...8238,
+              8240...8286, 8288...12287, 12289...65278, 65280...1_114_111,
+            ], min: 1, max: nil),
+        ]),
+      "reconcile": Shape(
+        kinds: [.object], required: ["phase"],
+        members: [
+          "error": Shape(kinds: [.string]),
+          "phase": Shape(
+            kinds: [.string],
+            enumeration: [
+              .string("pending"), .string("running"), .string("done"), .string("failed"),
+            ]),
+          "summary": Shape(
+            kinds: [.object],
+            required: ["resourcesChecked", "divergent", "healed", "healFailures", "orphaned"],
+            members: [
+              "divergent": Shape(kinds: [.integer], minimum: 0.0),
+              "healFailures": Shape(kinds: [.integer], minimum: 0.0),
+              "healed": Shape(kinds: [.integer], minimum: 0.0),
+              "orphaned": Shape(kinds: [.integer], minimum: 0.0),
+              "resourcesChecked": Shape(kinds: [.integer], minimum: 0.0),
+            ], closed: ["divergent", "healFailures", "healed", "orphaned", "resourcesChecked"]),
+        ], closed: ["error", "phase", "summary"]),
+      "status": Shape(kinds: [.string], enumeration: [.string("ok")]),
+    ], closed: ["following", "kb", "reconcile", "status"])
   shapes["WorkerConfig"] = Shape(
     kinds: [.object],
     required: ["knowledgeBases", "modelCatalogue", "port", "logLevel", "logFormat"],

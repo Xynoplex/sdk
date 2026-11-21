@@ -2,7 +2,7 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.SmelterConfig (SmelterConfig (..), SmelterConfigChunking (..)) where
+module Xynolog.Internal.Generated.Models.SmelterConfig (SmelterConfig (..)) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
@@ -15,11 +15,12 @@ import Xynolog.Internal.Generated.Models.LogFormat
 import Xynolog.Internal.Generated.Models.LogLevel
 import Xynolog.Internal.Generated.Models.ServiceAddress
 import Xynolog.Internal.Generated.Models.ServiceIdentity
+import Xynolog.Internal.Generated.Models.SmelterChunking
 import Xynolog.Internal.Generated.Models.VectorsConfig
 
 data SmelterConfig = SmelterConfig
   { smelterConfigArchivist :: ServiceAddress,
-    smelterConfigChunking :: SmelterConfigChunking,
+    smelterConfigChunking :: SmelterChunking,
     smelterConfigCursorsPath :: CursorsPath,
     smelterConfigEmbedding :: EmbeddingConfig,
     smelterConfigGatewayUrl :: Text,
@@ -36,13 +37,3 @@ data SmelterConfig = SmelterConfig
 instance FromJSON SmelterConfig where parseJSON = checked "SmelterConfig" $ withObject "SmelterConfig" (\fields -> SmelterConfig <$> (fields .: "archivist") <*> (fields .: "chunking") <*> (fields .: "cursorsPath") <*> (fields .: "embedding") <*> (fields .: "gatewayUrl") <*> (fields .: "identity") <*> (fields .: "kb") <*> (fields .: "logFormat") <*> (fields .: "logLevel") <*> (fields .: "pdfsAtOnce") <*> (fields .: "port") <*> (fields .: "vectors"))
 
 instance ToJSON SmelterConfig where toJSON value = Object (KM.fromList (concat [[("archivist", toJSON (smelterConfigArchivist value))], [("chunking", toJSON (smelterConfigChunking value))], [("cursorsPath", toJSON (smelterConfigCursorsPath value))], [("embedding", toJSON (smelterConfigEmbedding value))], [("gatewayUrl", toJSON (smelterConfigGatewayUrl value))], [("identity", toJSON (smelterConfigIdentity value))], [("kb", toJSON (smelterConfigKb value))], [("logFormat", toJSON (smelterConfigLogFormat value))], [("logLevel", toJSON (smelterConfigLogLevel value))], [("pdfsAtOnce", toJSON (smelterConfigPdfsAtOnce value))], [("port", toJSON (smelterConfigPort value))], [("vectors", toJSON (smelterConfigVectors value))]]))
-
-data SmelterConfigChunking = SmelterConfigChunking
-  { smelterConfigChunkingChunkSize :: Integer,
-    smelterConfigChunkingOverlap :: Integer
-  }
-  deriving (Eq, Show)
-
-instance FromJSON SmelterConfigChunking where parseJSON = checked "SmelterConfigChunking" $ withObject "SmelterConfigChunking" (\fields -> SmelterConfigChunking <$> (fields .: "chunkSize") <*> (fields .: "overlap"))
-
-instance ToJSON SmelterConfigChunking where toJSON value = Object (KM.fromList (concat [[("chunkSize", toJSON (smelterConfigChunkingChunkSize value))], [("overlap", toJSON (smelterConfigChunkingOverlap value))]]))

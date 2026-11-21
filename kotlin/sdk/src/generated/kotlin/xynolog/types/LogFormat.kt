@@ -6,7 +6,7 @@ package xynolog.types
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON. */
+/** How each log line is written to stdout (service-telemetry/log-lines.json): `json`, one JSON object per line; or `simple`, a line of words followed by any metadata as JSON. */
 @Serializable
 public enum class LogFormat(
     /** The value as the wire spells it. */

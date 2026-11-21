@@ -9,4 +9,5 @@
   xynolog-protocol.schema
   yojson
   compiler-libs.common
+  unix
   ocamlformat-lib))
